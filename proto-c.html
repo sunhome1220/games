@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>原型 C：回力車象棋・車頭射擊＋衝撞</title>
+<style>
+  * { box-sizing:border-box; }
+  /* 手機：禁止長按選字、放大鏡、系統選單與點擊高亮，避免干擾拖曳 */
+  html, body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
+  button, a { touch-action:manipulation; }
+  body { margin:0; background:#1d2030; color:#eef; font:15px/1.5 "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+         display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+  header { width:100%; max-width:560px; padding:8px 12px; display:flex; gap:8px; align-items:center; justify-content:space-between; }
+  header a { color:#e8c88a; text-decoration:none; }
+  #turn { font-weight:700; font-size:18px; }
+  #info { width:100%; max-width:560px; padding:0 12px 6px; min-height:2.8em; font-size:14px; }
+  canvas { width:min(96vw, 560px, calc((100vh - 140px) * 520 / 576)); display:block; touch-action:none; border-radius:6px; box-shadow:0 4px 18px #0008; }
+  button { background:#e8c88a; color:#2b2118; border:0; border-radius:4px; padding:6px 12px; font:inherit; cursor:pointer; }
+  table { margin:10px 0 20px; border-collapse:collapse; font-size:13px; }
+  td, th { padding:3px 8px; border-bottom:1px solid #3a3f5a; text-align:center; }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html">← 選單</a>
+  <span id="turn"></span>
+  <button id="restart">重新開始</button>
+</header>
+<div id="info"></div>
+<canvas id="cv"></canvas>
+<table id="legend"></table>
+<script>
+// ===== 原型 C：車頭朝向射擊 + 衝撞傷害 =====
+// 拉動方向同時決定「移動方向」與「車頭朝向」，停下後武器朝車頭方向開火。
+// 機槍打到射線上第一台車（敵我不分），迫擊砲固定落在前方 N 格處爆炸（範圍傷害）。
+// 高速撞擊也會造成傷害，兵/卒撞擊傷害加倍。
+const C = 56, M = 36, W = C * 8 + M * 2, H = C * 9 + M * 2, R = 21;
+const FR = 900, MAXPULL = 120, E = 0.85, DPR = 2;
+const RAM_MIN = 220;      // 撞擊速度門檻
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+cv.width = W * DPR; cv.height = H * DPR; ctx.scale(DPR, DPR);
+// 擋掉長按選單／選字／捲動等瀏覽器預設手勢（pointer 事件仍正常觸發）
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+document.addEventListener('selectstart', e => e.preventDefault());
+const gx = c => M + c * C, gy = r => M + r * C;
+
+const SIDE = [{ name: '紅方', col: '#c0392b' }, { name: '黑方', col: '#1d1d1d' }];
+const TYPES = {
+  K: { n: ['帥', '將'], hp: 10, dist: 2 * C,   mass: 3,   ram: 1,   w: '無', gun: null },
+  R: { n: ['俥', '車'], hp: 8,  dist: 6 * C,   mass: 2,   ram: 1,   w: '機槍',   gun: 'ray',    range: 3.2 * C, dmg: 2 },
+  C: { n: ['炮', '砲'], hp: 6,  dist: 2.5 * C, mass: 1.5, ram: 0.5, w: '迫擊砲', gun: 'mortar', range: 3.5 * C, dmg: 3, splash: 0.8 * C },
+  P: { n: ['兵', '卒'], hp: 4,  dist: 4.5 * C, mass: 1.2, ram: 2,   w: '衝鋒', gun: null },
+};
+const LAYOUT = [['K',4,9],['R',0,9],['R',8,9],['C',1,7],['C',7,7],['P',0,6],['P',2,6],['P',4,6],['P',6,6],['P',8,6]];
+
+let pieces, turn, state, drag, mover, timer, fx, winner, log;
+const $ = id => document.getElementById(id);
+const alive = () => pieces.filter(p => p.hp > 0);
+const setMsg = s => $('info').textContent = s;
+const nm = p => p.T.n[p.s];
+
+function reset() {
+  pieces = [];
+  for (let s = 0; s < 2; s++)
+    for (const [t, c, r] of LAYOUT) {
+      const T = TYPES[t];
+      pieces.push({ s, t, T, x: gx(c), y: gy(s ? 9 - r : r), vx: 0, vy: 0, hp: T.hp, hd: s ? Math.PI / 2 : -Math.PI / 2 });
+    }
+  turn = 0; state = 'aim'; drag = null; fx = []; winner = null; log = [];
+  updateHeader();
+  setMsg('往後拉決定方向與力道，放開衝出；停下後朝「車頭方向」開火。高速撞擊也會造成傷害（敵我不分）。');
+}
+function updateHeader() {
+  $('turn').textContent = SIDE[turn].name + ' 回合';
+  $('turn').style.color = turn ? '#ddd' : '#ff7b6b';
+}
+
+function damage(p, n, why) {
+  if (n <= 0 || p.hp <= 0) return;
+  p.hp = Math.max(0, p.hp - n);
+  fx.push({ k: 'txt', x: p.x, y: p.y - R, txt: '-' + n, t: 1, T: 1 });
+  if (p.hp <= 0) fx.push({ k: 'boom', x: p.x, y: p.y, t: 0.6, T: 0.6 });
+  log.push(`${nm(p)}${why} -${n}` + (p.hp <= 0 ? '（擊毀）' : ''));
+  setMsg(log.slice(-4).join('；'));
+  checkWin();
+}
+
+// ----- 物理 -----
+function moveOne(p, dt) {
+  const sp = Math.hypot(p.vx, p.vy);
+  if (sp > 0) {
+    const ns = Math.max(0, sp - FR * dt);
+    p.vx *= ns / sp; p.vy *= ns / sp;
+    p.x += p.vx * dt; p.y += p.vy * dt;
+  }
+  if (p.x < R) { p.x = R; p.vx = -p.vx * 0.6; }
+  if (p.x > W - R) { p.x = W - R; p.vx = -p.vx * 0.6; }
+  if (p.y < R) { p.y = R; p.vy = -p.vy * 0.6; }
+  if (p.y > H - R) { p.y = H - R; p.vy = -p.vy * 0.6; }
+}
+function collide(a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+  if (d >= 2 * R || d === 0) return;
+  const nx = dx / d, ny = dy / d, ma = a.T.mass, mb = b.T.mass, ov = 2 * R - d;
+  a.x -= nx * ov * mb / (ma + mb); a.y -= ny * ov * mb / (ma + mb);
+  b.x += nx * ov * ma / (ma + mb); b.y += ny * ov * ma / (ma + mb);
+  const va = a.vx * nx + a.vy * ny, vb = -(b.vx * nx + b.vy * ny), vn = va + vb;
+  if (vn <= 0) return;
+  const j = (1 + E) * vn / (1 / ma + 1 / mb);
+  a.vx -= j / ma * nx; a.vy -= j / ma * ny;
+  b.vx += j / mb * nx; b.vy += j / mb * ny;
+  if (vn > RAM_MIN) {
+    const [att, def] = va >= vb ? [a, b] : [b, a];
+    damage(def, Math.round(vn / 250 * att.T.ram), `被${nm(att)}撞擊`);
+  }
+}
+function physics(dt) {
+  const ps = alive();
+  for (const p of ps) moveOne(p, dt);
+  for (let i = 0; i < ps.length; i++)
+    for (let j = i + 1; j < ps.length; j++) if (ps[i].hp > 0 && ps[j].hp > 0) collide(ps[i], ps[j]);
+}
+function predict(p, vx, vy) {
+  const q = { x: p.x, y: p.y, vx, vy, T: p.T }, pts = [[q.x, q.y]];
+  for (let i = 0; i < 600 && (q.vx || q.vy); i++) { moveOne(q, 1 / 120); if (i % 4 === 0) pts.push([q.x, q.y]); }
+  pts.push([q.x, q.y]);
+  return pts;
+}
+function pullInfo() {
+  const p = drag.p, dx = p.x - drag.x, dy = p.y - drag.y, len = Math.hypot(dx, dy);
+  const pw = Math.min(len, MAXPULL) / MAXPULL;
+  const v = Math.sqrt(2 * FR * pw * p.T.dist);
+  return { len, pw, vx: len ? dx / len * v : 0, vy: len ? dy / len * v : 0, hd: Math.atan2(dy, dx) };
+}
+
+// ----- 武器 -----
+// 機槍：沿車頭方向的射線，回傳第一個碰到的棋子與命中點
+function rayHit(a, x, y, hd) {
+  const dx = Math.cos(hd), dy = Math.sin(hd);
+  let best = null, bt = a.T.range;
+  for (const p of alive()) {
+    if (p === a) continue;
+    const ox = p.x - x, oy = p.y - y, t = ox * dx + oy * dy;
+    const perp2 = ox * ox + oy * oy - t * t;
+    if (t <= 0 || perp2 > R * R) continue;
+    const th = t - Math.sqrt(R * R - perp2);
+    if (th < bt) { bt = th; best = p; }
+  }
+  return { p: best, x: x + dx * bt, y: y + dy * bt };
+}
+function mortarPoint(a, x, y, hd) { return { x: x + Math.cos(hd) * a.T.range, y: y + Math.sin(hd) * a.T.range }; }
+
+// ----- 回合流程 -----
+function onStop() {
+  state = 'fire'; timer = 0.7;
+  const a = mover;
+  if (a.hp <= 0 || !a.T.gun) return;
+  const col = a.s ? '#222' : '#e74c3c';
+  if (a.T.gun === 'ray') {
+    const h = rayHit(a, a.x, a.y, a.hd);
+    fx.push({ k: 'proj', x1: a.x, y1: a.y, x2: h.x, y2: h.y, col, t: 0.25, T: 0.25,
+              done: () => h.p ? damage(h.p, a.T.dmg, `中${nm(a)}機槍`) : (log.push(`${nm(a)}機槍落空`), setMsg(log.slice(-4).join('；'))) });
+  } else {
+    const t = mortarPoint(a, a.x, a.y, a.hd);
+    fx.push({ k: 'shell', x1: a.x, y1: a.y, x2: t.x, y2: t.y, col, t: 0.7, T: 0.7, done: () => {
+      fx.push({ k: 'blast', x: t.x, y: t.y, r: a.T.splash, t: 0.5, T: 0.5 });
+      const hit = alive().filter(p => Math.hypot(p.x - t.x, p.y - t.y) <= a.T.splash + R * 0.5);
+      if (!hit.length) { log.push(`${nm(a)}砲彈落空`); setMsg(log.slice(-4).join('；')); }
+      hit.forEach(p => damage(p, a.T.dmg, `被${nm(a)}砲擊`));
+    } });
+  }
+}
+function checkWin() {
+  for (const s of [0, 1])
+    if (winner === null && !pieces.some(p => p.s === s && p.t === 'K' && p.hp > 0)) winner = 1 - s;
+}
+function endTurn() {
+  if (winner !== null) { state = 'over'; return; }
+  turn = 1 - turn; state = 'aim'; updateHeader();
+}
+function update(dt) {
+  if (state === 'moving') {
+    for (let i = 0; i < 4; i++) physics(dt / 4);
+    if (alive().every(p => Math.hypot(p.vx, p.vy) < 2)) { pieces.forEach(p => p.vx = p.vy = 0); onStop(); }
+  } else if (state === 'fire') {
+    timer -= dt;
+    if (timer <= 0 && !fx.some(f => f.done)) endTurn();
+  }
+  fx.forEach(f => f.t -= dt);
+  const finished = fx.filter(f => f.t <= 0);
+  fx = fx.filter(f => f.t > 0);
+  finished.forEach(f => f.done && f.done());
+}
+
+// ----- 輸入 -----
+function pos(e) {
+  const r = cv.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height };
+}
+cv.addEventListener('pointerdown', e => {
+  const m = pos(e);
+  if (state === 'over') { reset(); return; }
+  if (state !== 'aim') return;
+  const p = alive().find(p => p.s === turn && Math.hypot(p.x - m.x, p.y - m.y) < R + 6);
+  if (p) { drag = { p, x: m.x, y: m.y }; cv.setPointerCapture(e.pointerId); }
+});
+cv.addEventListener('pointermove', e => { if (drag) Object.assign(drag, pos(e)); });
+cv.addEventListener('pointerup', () => {
+  if (!drag) return;
+  const { len, vx, vy, hd } = pullInfo(), p = drag.p;
+  drag = null;
+  if (len < 10) return;
+  p.vx = vx; p.vy = vy; p.hd = hd;
+  mover = p; log = []; state = 'moving';
+});
+$('restart').onclick = reset;
+
+// ----- 繪圖 -----
+function line(x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+function circle(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); }
+function drawBoard() {
+  ctx.fillStyle = '#e8c88a'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#6b4423'; ctx.lineWidth = 1.5;
+  for (let r = 0; r <= 9; r++) line(gx(0), gy(r), gx(8), gy(r));
+  line(gx(0), gy(0), gx(0), gy(9)); line(gx(8), gy(0), gx(8), gy(9));
+  for (let c = 1; c < 8; c++) { line(gx(c), gy(0), gx(c), gy(4)); line(gx(c), gy(5), gx(c), gy(9)); }
+  for (const r of [0, 7]) { line(gx(3), gy(r), gx(5), gy(r + 2)); line(gx(5), gy(r), gx(3), gy(r + 2)); }
+  ctx.lineWidth = 3; ctx.strokeRect(gx(0) - 6, gy(0) - 6, 8 * C + 12, 9 * C + 12);
+  ctx.fillStyle = '#6b4423'; ctx.font = 'bold 24px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('楚　河', gx(2), gy(4.5)); ctx.fillText('漢　界', gx(6), gy(4.5));
+}
+function drawPiece(p) {
+  ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.hd);
+  ctx.fillStyle = '#333';
+  for (const [x, y] of [[-11, -R], [11, -R], [-11, R], [11, R]]) ctx.fillRect(x - 5, y - 3, 10, 6);
+  // 車頭：有武器的畫砲管
+  ctx.fillStyle = SIDE[p.s].col;
+  if (p.T.gun) ctx.fillRect(R - 4, -3, 14, 6);
+  else { ctx.beginPath(); ctx.moveTo(R + 7, 0); ctx.lineTo(R - 1, -6); ctx.lineTo(R - 1, 6); ctx.fill(); }
+  ctx.rotate(-p.hd);
+  circle(0, 0, R); ctx.fillStyle = '#f6e3b8'; ctx.fill();
+  ctx.strokeStyle = SIDE[p.s].col; ctx.lineWidth = 2.5; ctx.stroke();
+  circle(0, 0, R - 4); ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = SIDE[p.s].col; ctx.font = 'bold 20px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(p.T.n[p.s], 0, 1);
+  const k = p.hp / p.T.hp;
+  ctx.fillStyle = '#0007'; ctx.fillRect(-R, R + 4, 2 * R, 5);
+  ctx.fillStyle = k > 0.5 ? '#2ecc71' : k > 0.25 ? '#f1c40f' : '#e74c3c'; ctx.fillRect(-R, R + 4, 2 * R * k, 5);
+  ctx.restore();
+}
+function draw() {
+  drawBoard();
+  if (state === 'aim') for (const p of alive()) if (p.s === turn) {
+    circle(p.x, p.y, R + 5); ctx.strokeStyle = turn ? '#0005' : '#c0392b66'; ctx.lineWidth = 3; ctx.stroke();
+  }
+  if (drag) {
+    const p = drag.p, { len, pw, vx, vy, hd } = pullInfo();
+    ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); line(p.x, p.y, drag.x, drag.y); ctx.setLineDash([]);
+    if (len >= 10) {
+      const pts = predict(p, vx, vy), [ex, ey] = pts[pts.length - 1];
+      ctx.strokeStyle = SIDE[p.s].col; ctx.lineWidth = 2; ctx.beginPath();
+      pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+      circle(ex, ey, R); ctx.stroke();
+      if (p.T.gun === 'ray') {
+        const h = rayHit(p, ex, ey, hd);
+        ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 3; ctx.setLineDash([8, 5]); line(ex, ey, h.x, h.y); ctx.setLineDash([]);
+        if (h.p) { circle(h.p.x, h.p.y, R + 6); ctx.strokeStyle = h.p.s === p.s ? '#9b59b6' : '#ff0'; ctx.stroke(); }
+      } else if (p.T.gun === 'mortar') {
+        const t = mortarPoint(p, ex, ey, hd);
+        ctx.strokeStyle = '#e67e2288'; ctx.lineWidth = 2; ctx.setLineDash([3, 6]); line(ex, ey, t.x, t.y); ctx.setLineDash([]);
+        circle(t.x, t.y, p.T.splash); ctx.fillStyle = '#e67e2233'; ctx.fill(); ctx.strokeStyle = '#e67e22'; ctx.stroke();
+        line(t.x - 8, t.y, t.x + 8, t.y); line(t.x, t.y - 8, t.x, t.y + 8);
+      }
+      setMsg(`${nm(p)}（${p.T.w}）力道 ${Math.round(pw * 100)}%` + (p.T.gun ? `　射程 ${(p.T.range / C).toFixed(1)} 格　威力 ${p.T.dmg}　（預估不含碰撞；紫圈＝會誤傷自己人）` : '　靠撞擊造成傷害'));
+    }
+  }
+  for (const p of alive()) drawPiece(p);
+  for (const f of fx) {
+    const a = f.t / f.T, k = 1 - a;
+    if (f.k === 'proj') {
+      ctx.strokeStyle = f.col; ctx.lineWidth = 3;
+      line(f.x1, f.y1, f.x1 + (f.x2 - f.x1) * k, f.y1 + (f.y2 - f.y1) * k);
+    }
+    if (f.k === 'shell') {
+      const x = f.x1 + (f.x2 - f.x1) * k, y = f.y1 + (f.y2 - f.y1) * k - Math.sin(k * Math.PI) * 60;
+      circle(x, y, 5 + Math.sin(k * Math.PI) * 4); ctx.fillStyle = f.col; ctx.fill();
+    }
+    ctx.globalAlpha = a;
+    if (f.k === 'blast') { circle(f.x, f.y, f.r * (0.4 + k * 0.6)); ctx.fillStyle = '#f39c12'; ctx.fill(); }
+    if (f.k === 'txt') { ctx.fillStyle = '#e00'; ctx.font = 'bold 22px sans-serif'; ctx.fillText(f.txt, f.x, f.y - k * 30); }
+    if (f.k === 'boom') { circle(f.x, f.y, R + k * 30); ctx.fillStyle = '#c0392b'; ctx.fill(); }
+    ctx.globalAlpha = 1;
+  }
+  if (state === 'over') {
+    ctx.fillStyle = '#000a'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = winner ? '#fff' : '#ff7b6b'; ctx.font = 'bold 44px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(SIDE[winner].name + ' 勝利！', W / 2, H / 2 - 10);
+    ctx.fillStyle = '#fff'; ctx.font = '18px sans-serif'; ctx.fillText('點擊棋盤重新開始', W / 2, H / 2 + 34);
+  }
+}
+let last = performance.now();
+function loop(now) { update(Math.min(0.05, (now - last) / 1000)); last = now; draw(); requestAnimationFrame(loop); }
+
+$('legend').innerHTML = '<tr><th>兵種</th><th>武器</th><th>血量</th><th>移動力</th><th>射程(格)</th><th>威力</th><th>撞擊</th></tr>' +
+  Object.values(TYPES).map(T => `<tr><td>${T.n.join('/')}</td><td>${T.w}</td><td>${T.hp}</td><td>${(T.dist / C).toFixed(1)}</td>` +
+    `<td>${T.range ? (T.range / C).toFixed(1) + (T.gun === 'mortar' ? '（定點）' : '') : '-'}</td><td>${T.dmg || '-'}</td><td>×${T.ram}</td></tr>`).join('');
+reset();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
