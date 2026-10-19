@@ -56,7 +56,6 @@ try { cardsOn = localStorage.getItem('rc-cards') !== '0'; } catch (e) {}
 { const q = new URLSearchParams(location.search).get('cards'); if (q === '0') cardsOn = false; else if (q === '1') cardsOn = true; }
 const ALL_TYPES = ['K', 'R', 'N', 'C', 'E', 'G', 'P', 'P2'];
 const allFx = (stat, v) => Object.fromEntries(ALL_TYPES.map(k => [k, { [stat]: v }]));   // 全軍都加（或減）同一個數值
-const bigText = (txt, col) => fx.push({ k: 'txt', x: W / 2, y: H / 2 - 20, txt, t: 2.6, T: 2.6, col, side: 0 });
 // 終極魔法用：對棋子造成法術傷害（無視減傷、但神之護盾擋得住；noKill 時至少留 ¼ 心，帥／將不會被法術直接擊殺），並在 delay 秒後播爆炸
 function spellHit(p, d, delay = 0, noKill = false) {
   if (immune[p.s] > 0) { fx.push({ k: 'txt', x: p.x, y: p.y - R, txt: '免疫', t: 1.2, T: 1.2, col: '#2f6fb5', side: p.s, delay: delay || 0.001 }); return 0; }
@@ -121,24 +120,28 @@ const CARDS = validateCards([
   { id: 'foe_aa', tier: 3, ic: '📵', name: '敵方・雷達失靈', desc: '敵方象的防空範圍 −1.5 格（最低 ½ 格）', max: 1, foe: { E: { aa: -1.5 * C } } },
   // ── 終極魔法（✨，只在後期選牌才可能出現，每次三選一最多出現一張）──
   { id: 'ult_meteor', tier: 4, ic: '☄️', name: '終極魔法・隕石雨', desc: '敵方所有棋子各受 1 心傷害（帥／將不會被打死，最少剩 ¼ 心）', max: 1,
-    instant: s => { bigText('☄️ 隕石雨！', '#c0392b'); alive().filter(p => p.s === 1 - s).forEach((p, i) => spellHit(p, 1, 0.3 + i * 0.12, p.t === 'K')); checkWin(); } },
+    instant: s => {
+      const foes = alive().filter(p => p.s === 1 - s), at = i => 0.5 + i * 0.12;   // 每顆隕石依序落下，at＝落地時間（和傷害的 delay 對齊）
+      ultCast('meteor', s, foes.map((p, i) => ({ x: p.x, y: p.y, at: at(i) })));
+      foes.forEach((p, i) => spellHit(p, 1, at(i), p.t === 'K')); checkWin();
+    } },
   { id: 'ult_revive', tier: 4, ic: '😇', name: '終極魔法・起死回生', desc: '復活最多 2 顆己方陣亡的棋子（優先價值高的，帥除外），滿血回到出生點', max: 1, cond: s => deadOf(s).length > 0,
     instant: s => {
-      bigText('😇 起死回生！', '#159447');
+      const ts = [];
       for (const p of deadOf(s).sort((a, b) => unitValue(b) - unitValue(a)).slice(0, 2)) {
-        const [x, y] = reviveCell(p); p.T = TT[s][p.t]; p.hp = p.T.hp; p.x = x; p.y = y; p.cd = 0; p.vx = p.vy = 0; p.flash = 0.8;
+        const [x, y] = reviveCell(p); p.T = TT[s][p.t]; p.hp = p.T.hp; p.x = x; p.y = y; p.cd = 0; p.vx = p.vy = 0; p.flash = 0.8; ts.push({ x, y, at: 0.15 + ts.length * 0.25 });
         flashAt(x, y, 70, 0.3); emit(x, y, 30, { k: 'spark', sp: 160, life: 0.9, size: 3, col: '#7dff9a' }); parts.push({ x, y, vx: 0, vy: 0, t: 0.6, L: 0.6, size: 70, k: 'ring', drag: 0 });
       }
-      SFX.play('heal');
+      ultCast('revive', s, ts);
     } },
   { id: 'ult_time', tier: 4, ic: '⏳', name: '終極魔法・時間暫停', desc: '這個回合結束後，你再行動一次（對手跳過一回合）', max: 1,
-    instant: s => { extraTurn[s]++; bigText('⏳ 時間暫停！', '#6a4bc4'); } },
+    instant: s => { extraTurn[s]++; ultCast('time', s); } },
   { id: 'ult_shield', tier: 4, ic: '🛡️', name: '終極魔法・神之護盾', desc: '己方所有棋子在對手的下一個回合完全免疫傷害', max: 1,
-    instant: s => { immune[s] = 1; bigText('🛡️ 神之護盾！', '#2f6fb5'); for (const p of alive().filter(q => q.s === s)) { flashAt(p.x, p.y, 50, 0.3); emit(p.x, p.y, 10, { k: 'spark', sp: 90, life: 0.8, size: 2.5, col: '#9fd0ff' }); } } },
+    instant: s => { immune[s] = 1; ultCast('shield', s, alive().filter(q => q.s === s).map(p => ({ x: p.x, y: p.y, at: 0.2 }))); } },
   { id: 'ult_judge', tier: 4, ic: '⚡', name: '終極魔法・天雷審判', desc: '敵方帥／將受 1.5 心雷擊（不會被直接打死，最少剩 ¼ 心）', max: 1,
-    instant: s => { bigText('⚡ 天雷審判！', '#d4a017'); for (const k of alive().filter(p => p.s === 1 - s && p.t === 'K')) { spellHit(k, 1.5, 0.4, true); flashAt(k.x, k.y, 110, 0.35); } checkWin(); } },
+    instant: s => { const ks = alive().filter(p => p.s === 1 - s && p.t === 'K'); ultCast('judge', s, ks.map(k => ({ x: k.x, y: k.y, at: 0.35 }))); for (const k of ks) spellHit(k, 1.5, 0.37, true); checkWin(); } },
   { id: 'ult_freeze', tier: 4, ic: '❄️', name: '終極魔法・冰封世界', desc: '敵方俥、傌、炮、象全部進入 2 回合冷卻（俥、傌只剩步槍，炮不能開火，象不能防空）', max: 1,
-    instant: s => { bigText('❄️ 冰封世界！', '#4aa3df'); for (const p of alive().filter(q => q.s === 1 - s && q.T.reload > 0)) { p.cd = Math.max(p.cd || 0, 2); emit(p.x, p.y, 14, { k: 'spark', sp: 110, life: 0.9, size: 3, col: '#bfe6ff' }); flashAt(p.x, p.y, 44, 0.25); } } },
+    instant: s => { const ps = alive().filter(q => q.s === 1 - s && q.T.reload > 0); for (const p of ps) p.cd = Math.max(p.cd || 0, 2); ultCast('freeze', s, ps.map(p => ({ x: p.x, y: p.y, at: 0.45 }))); } },
 ]);
 const cardOf = id => CARDS.find(c => c.id === id);
 let pickQ = [], pickSide = null, waitingFor = null, incoming = [];
@@ -176,7 +179,8 @@ function applyCard(side, id) {
     else if (p.hp > p.T.hp) p.hp = p.T.hp;   // 敵方血量上限被削：現有血量不能超過新上限
   }
   if (c.instant) c.instant(side);
-  SFX.play(tierOf(c) >= 4 ? 'win' : 'card'); toast(`${SIDE[side].name}獲得${tierOf(c) >= 4 ? '' : '強化'}：${c.ic} ${c.name}`); renderPerks();
+  if (tierOf(c) < 4) SFX.play('card');   // 終極魔法有自己的聲音（見 ultimate.js）
+  toast(`${SIDE[side].name}獲得${tierOf(c) >= 4 ? '' : '強化'}：${c.ic} ${c.name}`); renderPerks();
 }
 // 戰地醫療：side 方回合開始時，只替「象 2.5 格內、血量最少」的一位友軍回復（多隻象取最大回復量）
 function healPhase(side) {

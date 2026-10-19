@@ -96,6 +96,7 @@ function drawPiece(p) {
   ctx.fillStyle = SIDE[p.s].col; ctx.font = 'bold 20px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText((p.T.face || p.T.n)[p.s], 0, 1);
   drawIcon(p);
+  drawShieldAura(p);
   if (p.T.id === 'P2' && !p.drop) {   // 士官長：金色外圈＋官階標誌（三條 V 形臂章）
     circle(0, 0, R + 2); ctx.strokeStyle = '#e0a800'; ctx.lineWidth = 2.5; ctx.stroke();
     ctx.strokeStyle = '#e0a800'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
@@ -283,6 +284,7 @@ function crate(x, y, chute) {
 function drawProj(f) {
   if (f.delay > 0) return;
   if (f.k === 'drop') { drawDrop(f); return; }
+  if (f.k === 'ult') { drawUltWorld(f, P2D); return; }
   const [x, y, gx0, gy0, k] = projPos(f);
   if (f.k === 'pellets') {
     const k = 1 - Math.max(0, f.t) / f.T;
@@ -372,6 +374,7 @@ function draw() {
   drawParts();
   for (const f of fx) if (f.k === 'txt') drawTxtFx(f);
   ctx.restore();
+  for (const f of fx) if (f.k === 'ult') drawUltScreen(f);
   drawOver();
 }
 function drawTxtFx(f) {
