@@ -67,6 +67,22 @@ module.exports = [
     });
     t.assert.ok(n > 300);
   } },
+  { name: '3D 空投：運輸機飛過、補給箱降落傘緩降、落地後清掉模型並升官', async fn(t) {
+    const pg = await open3d(t);
+    const r = await pg.evaluate(() => {
+      const [p] = T_.place([{ s: 0, t: 'P', c: 3, r: 5 }]); quick = false; selectPiece(p); const mv = sel.moves[0]; sel.dest = mv; go(mv);
+      for (let i = 0; i < 400 && state !== 'target'; i++) update(0.02);
+      const f = fx.find(x => x.k === 'drop'), o = { hasFx: !!f, seen: { plane: false, chute: false, crateLow: false } };
+      for (let i = 0; i < 300 && fx.includes(f); i++) {
+        update(0.02); draw3D(); const d = V3.drops.get(f); if (!d) continue;
+        if (d.plane.g.visible && d.plane.g.position.y > 100) o.seen.plane = true;
+        if (d.goods.chute.visible && d.goods.g.position.y > 30) o.seen.chute = true;
+        if (d.goods.g.position.y < 10) o.seen.crateLow = true;
+      }
+      draw3D(); o.cleaned = V3.drops.size === 0; o.promoted = p.T.id === 'P2'; return o;
+    });
+    t.assert.deepStrictEqual(r, { hasFx: true, seen: { plane: true, chute: true, crateLow: true }, cleaned: true, promoted: true });
+  } },
   { name: '3D 傾斜角設定與重置視角', async fn(t) {
     const pg = await open3d(t);
     await pg.evaluate(() => { $('tilt').value = 60; $('tilt').dispatchEvent(new Event('input')); V3.az = 1; });
