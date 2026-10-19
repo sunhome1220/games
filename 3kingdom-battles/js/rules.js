@@ -7,9 +7,9 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const other = s => (s === 'att' ? 'def' : 'att');
 
-  function rngFrom(seed) {
-    let a = seed >>> 0;
-    return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  // 亂數狀態放在 g.rs，存檔時一起存，讀檔後接著產生同樣的亂數
+  function rngOf(g) {
+    return () => { const a = (g.rs = ((g.rs | 0) + 0x6D2B79F5) | 0); let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   }
 
   function inMap(g, c, r) { return r >= 0 && r < g.Hh && c >= 0 && c < g.W; }
@@ -18,12 +18,13 @@
     const sc = SCENARIOS.find(s => s.id === scId);
     const seed = opts.seed != null ? opts.seed : (Date.now() % 1e9);
     const g = {
-      sc, scId, seed, rnd: rngFrom(seed), player: opts.player || null,
+      sc, scId, seed, rs: seed >>> 0, player: opts.player || null,
       map: sc.map.map(row => row.split('')), W: sc.map[0].length, Hh: sc.map.length,
       hp: {}, ladders: {}, units: [], round: 0, order: [], oi: -1, active: null,
       vars: JSON.parse(JSON.stringify(sc.vars)), log: [], fx: [], over: null,
       stats: { att: { kills: 0, lost: 0 }, def: { kills: 0, lost: 0 } }, flags: {},
     };
+    g.rnd = rngOf(g);
     for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
       const t = TERRAIN[g.map[r][c]]; if (t.hp) g.hp[H.key(c, r)] = t.hp;
     }
@@ -40,6 +41,22 @@
         moved: false, acted: false, attacked: false, mpBonus: 0, ignoreZOC: false, buff: {},
       });
     });
+    return g;
+  }
+
+  // ---------- 存檔／讀檔 ----------
+  // 存成純資料：劇本用 scId 重新對應、城內範圍 Set 轉陣列；特效佇列與底線開頭的暫存（AI 快取、名牌畫布）不存
+  function serialize(g) {
+    return JSON.parse(JSON.stringify(g, function (k, v) {
+      if (this === g && (k === 'sc' || k === 'rnd' || k === 'fx')) return undefined;
+      if (k[0] === '_') return undefined;
+      return v instanceof Set ? [...v] : v;
+    }));
+  }
+  function restore(o) {
+    const sc = SCENARIOS.find(s => s.id === o.scId); if (!sc) throw new Error('找不到戰役：' + o.scId);
+    const g = Object.assign(JSON.parse(JSON.stringify(o)), { sc, city: new Set(o.city), fx: [] });
+    g.rnd = rngOf(g);
     return g;
   }
 
@@ -738,7 +755,7 @@
 
   // ---------- 匯出 ----------
   root.RULES = {
-    newGame, startRound, nextActivation, endActivation, activeUnit, upcoming,
+    newGame, serialize, restore, startRound, nextActivation, endActivation, activeUnit, upcoming,
     reachable, pathTo, moveUnit, undoMove, setFacing, maxMP,
     attackTargets, structTargets, attack, calcDamage, canCounter, actionsFor, doAction,
     unitAt, terr, tAt, state, STATE_NAME, formOf, encircled, adjEnemies, sideHit, inCity, onWall, isEngine, gen, ty, has, alive, enemiesOf, friendsOf,
