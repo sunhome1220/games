@@ -173,3 +173,10 @@ table.ft th { color: var(--gold); font-weight: normal; }
 body.swap { --att: #e0604f; --def: #5d8de0; }
 body.swap .chip.att, body.swap .badge.att { background: #a8382c; } body.swap .chip.def, body.swap .badge.def { background: #2f5aa8; }
 body.swap .logl.att { color: #f3c0b6; } body.swap .logl.def { color: #b7cdf5; }
+
+/* 插圖 */
+.art { margin: 0 0 10px; }
+.art svg.scene { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid rgba(232, 200, 140, 0.55); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45); }
+.art figcaption { font-size: 12px; color: var(--dim); margin-top: 6px; line-height: 1.5; }
+#modal.wide .box { max-width: 640px; }
+.brief .art { margin: 4px 0 14px; }

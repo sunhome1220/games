@@ -34,6 +34,7 @@
 | `js/portraits.js` | 武將頭像：依《三國演義》外貌描寫用 SVG 繪製（`LOOKS`），以及演義中寫到的情緒（`MOODS`，附原文與回數）；戰前說明「登場武將」、部隊資訊、事件、單挑／技能特寫與結局會用到 |
 | `assets/portraits/` | 頭像美術規範 `ART_GUIDE.md`、人物清單與生成模板 `characters.js`、生成紀錄 `log.json`、提示詞 `prompts/`；PNG 審核通過後自動取代 SVG |
 | `tools/portraits.js` | 頭像工具：`prompts` 產生提示詞、`import` 入庫並記錄、`check` 檢查對應與規格、`sheet` 縮小辨識度對照表、`gen` 直接呼叫 OpenAI 圖片 API |
+| `js/scenes.js` | 插圖：用 SVG 程式繪製的水墨風場景（遠山、霧、河、城樓、營帳、軍隊、騎兵、火、大水、斷橋……）。`EVENT` 把事件標題對到場景，結局用 `劇本:結局` 當鍵；新增事件或結局時記得加一張 |
 | `js/ui.js`、`js/main.js` | 選關、戰前說明、戰場操作面板、結局 |
 | `js/version.js`、`tools/bump_version.py` | 版本號；改版時執行 `python3 3kingdom-battles/tools/bump_version.py 2026-xx-xx.nn` |
 | `js/changelog.js`、`js/update.js` | 更新內容（**每次改版在 `CHANGELOG` 最上面加一筆**）與新版本通知：有新版時下方跳出「🆕 有新版本，點此更新」，改版後第一次開啟自動彈出新內容 |

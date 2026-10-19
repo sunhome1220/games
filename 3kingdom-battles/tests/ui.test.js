@@ -143,4 +143,17 @@ module.exports = [
     env.assert(r.hud.includes('撤軍'), r.hud);
     await pg.click('#btnGoal'); env.assert((await pg.textContent('#modalBody')).includes('逍遙津'));
   } },
+  { name: '插圖：每個事件與結局都有插圖，戰前說明與事件視窗會顯示', async fn(env) {
+    const pg = await env.open();
+    const missing = await pg.evaluate(() => {
+      const out = [];
+      for (const [sc, E] of Object.entries(RULES.ENDINGS)) for (const route of Object.keys(E)) if (!SCENES.forEnding(sc, route).startsWith('<svg')) out.push(sc + ':' + route);
+      for (const t of Object.keys(SCENES.EVENT)) if (!SCENES.forEvent('', t).startsWith('<svg')) out.push(t);
+      for (const sc of DATA.SCENARIOS.filter(s => s.playable)) if (!SCENES.intro(sc.id).startsWith('<svg')) out.push(sc.id + ':intro');
+      return out;
+    });
+    env.assert.deepStrictEqual(missing, []);
+    await pg.click('#scList button.att'); env.assert(await pg.isVisible('#briefBox .art svg.scene'), '戰前說明應有插圖');
+    await pg.click('#btnGo'); await pg.waitForSelector('#modal .art svg.scene', { timeout: 10000 });
+  } },
 ];
