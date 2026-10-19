@@ -22,6 +22,7 @@ module.exports = [
       t.assert.strictEqual(b.slice(1, 4).toString(), 'PNG'); t.assert.strictEqual(`${w}x${h}`, ic.sizes, ic.src + ' 尺寸與 manifest 不符');
     }
     t.assert.ok(m.icons.some(i => i.sizes === '192x192') && m.icons.some(i => i.sizes === '512x512'));
+    t.assert.ok(m.icons.some(i => i.purpose === 'maskable'), '缺 maskable 圖示');
     for (const must of ['rel="manifest"', 'rel="apple-touch-icon"', 'apple-mobile-web-app-capable']) t.assert.ok(html.includes(must), '缺 ' + must);
     t.assert.ok(fs.existsSync(path.join(root, 'icons/apple-touch-icon.png')));
   } },
