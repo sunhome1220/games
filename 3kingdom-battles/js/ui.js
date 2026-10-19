@@ -399,10 +399,11 @@
     modal(`<h2>戰報</h2>${L.map(l => `<div class="logl ${l.kind === 'event' ? 'event' : l.side || ''}">第${l.round}回合　${esc(l.text)}</div>`).join('')}`, [['關閉', true]]);
   }
   async function showMenu() {
-    const r = await modal(`<h2>選單</h2><p>動畫速度：目前 ${S.speed}x</p>`, [['繼續', 0], ['動畫速度', 1], ['重新開始這一關', 2], ['回到選關', 3]]);
+    const r = await modal(`<h2>選單</h2><p>動畫速度：目前 ${S.speed}x</p>`, [['繼續', 0], ['動畫速度', 1], ['重新開始這一關', 2], ['回到選關', 3], ['更新內容', 4]]);
     if (r === 1) { S.speed = S.speed >= 4 ? 1 : S.speed * 2; toast(`動畫速度 ${S.speed}x`); }
     if (r === 2 && S.g) startBattle(S.g.scId, S.side);
     if (r === 3) { S.g = null; renderSelect(); }
+    if (r === 4 && root.UPDATE) root.UPDATE.showLog(true);
   }
   function showEnd() {
     const g = S.g; const o = g.over; const E = R.ENDINGS[g.scId][o.route]; const sc = g.sc;

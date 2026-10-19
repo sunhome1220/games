@@ -27,6 +27,7 @@
 | `tools/portraits.js` | 頭像工具：`prompts` 產生提示詞、`import` 入庫並記錄、`check` 檢查對應與規格、`sheet` 縮小辨識度對照表、`gen` 直接呼叫 OpenAI 圖片 API |
 | `js/ui.js`、`js/main.js` | 選關、戰前說明、戰場操作面板、結局 |
 | `js/version.js`、`tools/bump_version.py` | 版本號；改版時執行 `python3 3kingdom-battles/tools/bump_version.py 2026-xx-xx.nn` |
+| `js/changelog.js`、`js/update.js` | 更新內容（**每次改版在 `CHANGELOG` 最上面加一筆**）與新版本通知：有新版時下方跳出「🆕 有新版本，點此更新」，改版後第一次開啟自動彈出新內容 |
 | `vendor/three.min.js` | 只打包用到的 Three.js 類別；`render3d.js` 用到的類別有增減時執行 `bash 3kingdom-battles/tools/build_three.sh` |
 | `tools/sim.js` | AI 對 AI 模擬：`node 3kingdom-battles/tools/sim.js 30 v` 看勝負分布（調平衡用） |
 | `tests/` | 自動化測試 |
@@ -34,7 +35,7 @@
 ## 測試
 ```bash
 npm i playwright                          # 第一次
-node 3kingdom-battles/tests/run.js        # 全部（規則 10 項＋頭像 2 項＋介面 8 項）
+node 3kingdom-battles/tests/run.js        # 全部（規則 10 項＋頭像 2 項＋介面 9 項）
 node 3kingdom-battles/tests/run.js 攻城   # 名稱含「攻城」的
 ```
 網址參數：`?sc=xiapi&side=att|def` 直接開戰、`&seed=數字` 固定亂數、`&speed=2` 動畫速度、`&auto` 雙方都由電腦操作、`&fast` 跳過動畫。
