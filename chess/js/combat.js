@@ -45,7 +45,7 @@ function scan(a, x = a.x, y = a.y, T0 = null) {
 }
 // 兵過河後永久升級成霰彈兵
 // 空投動畫：運輸機飛過 → 投下降落傘補給箱 → 落地爆開，兵升任士官長
-const DROP_T = 2.2, LAND_AT = 0.62;   // 動畫進行到 62% 時箱子落地
+const DROP_T = 3.2, LAND_AT = 0.62;   // 動畫進行到 62% 時箱子落地
 function airdrop(p) {
   p.drop = DROP_T;   // 動畫期間先不顯示官階標誌
   fx.push({ k: 'drop', x: p.x, y: p.y, t: DROP_T, T: DROP_T, side: p.s, land: () => {

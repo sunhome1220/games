@@ -5,7 +5,7 @@
 //  · 特效：子彈、火箭、砲彈、爆炸粒子、愛心、冷卻徽章、飄字都畫在上方的 HUD 畫布，位置由 3D 投影而來
 //  · 點選：從螢幕座標射線打到棋盤平面，換算回平面座標，直接沿用原本的 input.js
 // Three.js 只在選了 3D 時才動態載入（vendor/three.min.js）。
-const V3 = { ready: false, on: false, az: 0, tilt: 45, rot: true, pieces: new Map(), tex: new Map(), mats: new Map() };
+const V3 = { ready: false, on: false, az: 0, tilt: 45, rot: true, pieces: new Map(), drops: new Map(), tex: new Map(), mats: new Map() };
 const V3_FOV = 34, V3_MIN_TILT = 25, V3_MAX_TILT = 75;
 
 // 暫時把畫布換成別張（離屏地面層／HUD 用），畫完換回來
@@ -203,7 +203,7 @@ function drawHud() {
 function drawProj3D(f) {
   if (f.delay > 0) return;
   const k = V3.dpr, [x, sy, gx, gy, kk] = projPos(f), H0 = 16;
-  if (f.k === 'drop') { drawDrop3D(f); return; }
+  if (f.k === 'drop') return;   // 空投是 3D 模型，見 syncDrops()
   const dirx = Math.cos(f.dir || 0), diry = Math.sin(f.dir || 0);
   if (f.k === 'pellets') {
     const t = 1 - Math.max(0, f.t) / f.T;
@@ -239,14 +239,77 @@ function drawProj3D(f) {
     ctx.fillStyle = '#333'; ctx.fillRect(-9, -3.6, 4, 1.4); ctx.fillRect(-9, 2.2, 4, 1.4); ctx.fillRect(-9, -0.6, 5, 1.2);
   }
 }
-// 空投：補給箱帶降落傘從高空緩降（運輸機省略，直接顯示箱子）
-function drawDrop3D(f) {
-  const k = V3.dpr, t = 1 - Math.max(0, f.t) / f.T, rel = 0.22;
-  if (t < rel) return;
-  const fall = Math.min(1, (t - rel) / (LAND_AT - rel)), e = 1 - (1 - fall) * (1 - fall) * (1 - fall);
-  let a = 1; if (t >= LAND_AT) a = Math.max(0, 1 - (t - LAND_AT) / 0.18); if (a <= 0) return;
-  const h = t >= LAND_AT ? 4 : 360 * (1 - e) + 4, [sx, sy] = P3(f.x, h, f.y), s = S3(f.x, h, f.y);
-  ctx.setTransform(k * s, 0, 0, k * s, k * sx, k * sy); ctx.globalAlpha = a; crate(0, 0, t >= LAND_AT ? 0 : 1 - fall * 0.15); ctx.globalAlpha = 1;
+// ----- 空投（3D）：運輸機飛越棋盤 → 投下降落傘補給箱 → 傘衣展開、緩降、落地後降落傘塌下、箱子淡出 -----
+const DROP_ALT = 150, DROP_REL = 0.22;   // 飛行高度；投放時間點（動畫進度）
+function buildPlane(col) {
+  const g = new V3.T.Group(), olive = 0x4a5a3a, dark = 0x2b3a22;
+  const fus = cyl(5.5, 4.2, 46, olive, 0, 0, 0, g, 16); fus.rotation.z = Math.PI / 2;
+  const nose = new V3.T.Mesh(new V3.T.ConeGeometry(5.5, 9, 16), mat(olive)); nose.rotation.z = -Math.PI / 2; nose.position.x = 27.5; nose.castShadow = true; g.add(nose);
+  const tailCone = new V3.T.Mesh(new V3.T.ConeGeometry(4.2, 10, 16), mat(olive)); tailCone.rotation.z = Math.PI / 2; tailCone.position.x = -28; tailCone.castShadow = true; g.add(tailCone);
+  box(12, 1.6, 74, olive, 2, 1.5, 0, g);                      // 主翼
+  box(8, 1.2, 26, olive, -22, 1.5, 0, g);                     // 水平尾翼
+  box(9, 11, 1.6, col, -22, 7, 0, g);                         // 垂直尾翼（隊色）
+  box(8, 3, 9.5, 0x9fd0e8, 17, 3.2, 0, g);                    // 駕駛艙玻璃
+  box(2, 4.5, 12, 0x1d1d1d, -4, -4, 0, g);                    // 貨艙門
+  const props = [];
+  for (const z of [-17, 17]) {                                // 兩具螺旋槳引擎
+    const eng = cyl(3.6, 3.6, 12, dark, 6, -1, z, g, 12); eng.rotation.z = Math.PI / 2;
+    const pr = new V3.T.Group(); pr.position.set(12.5, -1, z); box(0.8, 17, 2.4, 0x111111, 0, 0, 0, pr); box(0.8, 2.4, 17, 0x111111, 0, 0, 0, pr); g.add(pr); props.push(pr);
+  }
+  return { g, props };
+}
+function buildDropGoods(opacityMats) {
+  const T = V3.T, g = new T.Group(), own = (c, o = {}) => { const m = new T.MeshStandardMaterial({ color: c, roughness: 0.7, transparent: true, ...o }); opacityMats.push(m); return m; };
+  const crate = new T.Group();
+  const body = new T.Mesh(new T.BoxGeometry(15, 12, 15), own(0xa77b3f)); body.castShadow = true; crate.add(body);
+  for (const [w, h, d, x, y, z] of [[15.6, 2, 2, 0, 6, 0], [2, 2, 15.6, 0, 6, 0], [15.6, 1.6, 1.6, 0, 0, 7.6], [15.6, 1.6, 1.6, 0, 0, -7.6]]) { const m = new T.Mesh(new T.BoxGeometry(w, h, d), own(0x5a3d17)); m.position.set(x, y, z); crate.add(m); }
+  const red = new T.Mesh(new T.BoxGeometry(5, 5, 15.6), own(0xd6453a)); red.position.y = 1; crate.add(red);
+  g.add(crate);
+  if (!V3.tex.has('canopy')) {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 8; const x = c.getContext('2d');
+    for (let i = 0; i < 16; i++) { x.fillStyle = i % 2 ? '#d6453a' : '#f2f2f2'; x.fillRect(i * 16, 0, 16, 8); }
+    const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; V3.tex.set('canopy', t);
+  }
+  const chute = new T.Group();
+  const dome = new T.Mesh(new T.SphereGeometry(24, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), own(0xffffff, { map: V3.tex.get('canopy'), side: T.DoubleSide }));
+  dome.scale.y = 0.62; dome.castShadow = true; chute.add(dome);
+  const pts = []; for (const [sx, sz] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) pts.push(sx * 17, 0, sz * 17, sx * 5, -30, sz * 5);
+  const lg = new T.BufferGeometry(); lg.setAttribute('position', new T.Float32BufferAttribute(pts, 3));
+  const lm = new T.LineBasicMaterial({ color: 0x555555, transparent: true }); opacityMats.push(lm);
+  chute.add(new T.LineSegments(lg, lm)); chute.position.y = 36;
+  g.add(chute);
+  return { g, crate, chute };
+}
+function makeDrop(f) {
+  const mats = [], plane = buildPlane(parseInt(SIDE[f.side ?? 0].col.slice(1), 16)), goods = buildDropGoods(mats);
+  plane.g.scale.setScalar(1.15); V3.scene.add(plane.g); V3.scene.add(goods.g);
+  return { plane, goods, mats, rolled: false };
+}
+function syncDrops() {
+  const now = performance.now() / 1000, live = new Set();
+  for (const f of fx) {
+    if (f.k !== 'drop') continue;
+    live.add(f); let d = V3.drops.get(f); if (!d) { d = makeDrop(f); V3.drops.set(f, d); }
+    const t = 1 - Math.max(0, f.t) / f.T, px = -230 + (f.x + 230) * t / DROP_REL;   // 飛機的遊戲 x 座標（t = DROP_REL 時剛好在目標正上方）
+    const pl = d.plane.g; pl.visible = px < W + 280;
+    pl.position.set(px - W / 2, DROP_ALT + 14 + Math.sin(now * 3) * 2, f.y - H / 2); pl.rotation.x = Math.sin(now * 2.2) * 0.05;
+    for (const pr of d.plane.props) pr.rotation.x += 0.9;
+    const gd = d.goods, released = t >= DROP_REL;
+    if (!released) { gd.g.position.set(px - W / 2, DROP_ALT + 4, f.y - H / 2); gd.chute.visible = false; gd.crate.scale.setScalar(0.7); }   // 還掛在機腹下
+    else {
+      const fall = Math.min(1, (t - DROP_REL) / (LAND_AT - DROP_REL)), e = 1 - (1 - fall) * (1 - fall) * (1 - fall), landed = t >= LAND_AT;
+      const sway = Math.sin(fall * 9) * 6 * (1 - fall), h = landed ? 6 : 6 + (DROP_ALT - 2) * (1 - e);
+      gd.g.position.set(f.x - W / 2 + sway, h, f.y - H / 2); gd.g.rotation.z = Math.sin(fall * 9 + 1) * 0.08 * (1 - fall);
+      gd.crate.scale.setScalar(0.7 + 0.3 * Math.min(1, fall * 6));
+      gd.chute.visible = true;
+      const open = Math.min(1, fall * 7);   // 剛投下時傘衣由小展開
+      if (!landed) { gd.chute.scale.set(0.25 + 0.75 * open, 0.25 + 0.75 * open, 0.25 + 0.75 * open); gd.chute.position.y = 36 * open; gd.chute.rotation.x = 0; }
+      else { const c = Math.min(1, (t - LAND_AT) / 0.1); gd.chute.scale.set(1 + 0.3 * c, 1 - 0.8 * c, 1 + 0.3 * c); gd.chute.position.y = 36 * (1 - c) + 6 * c; }   // 落地：降落傘塌下
+      const a = landed ? Math.max(0, 1 - (t - LAND_AT) / 0.18) : 1; for (const m of d.mats) m.opacity = a;
+      gd.g.visible = a > 0;
+    }
+  }
+  for (const [f, d] of V3.drops) if (!live.has(f)) { V3.scene.remove(d.plane.g, d.goods.g); d.mats.forEach(m => m.dispose()); V3.drops.delete(f); }
 }
 
 // ----- 每格畫面 -----
@@ -258,7 +321,7 @@ function draw3D() {
     ctx.restore();
   });
   V3.flatTex.needsUpdate = true;
-  syncPieces(); updateCamera();
+  syncPieces(); syncDrops(); updateCamera();
   V3.r.render(V3.scene, V3.cam);
   drawHud();
 }
