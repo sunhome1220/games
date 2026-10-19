@@ -88,8 +88,8 @@ label.tilt input { flex:1; }
 /* 開始畫面：標題列固定在上方（關閉鈕永遠點得到）；不常用的選項收進可展開的區塊，避免超出一頁 */
 #lobby .lhead { position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between; background:#2b3a31; padding:14px 0 8px; margin-bottom:2px; }
 #lobby .lhead button { width:auto; margin:0; padding:6px 14px; text-align:center; }
-#lobby details.sec { margin:8px 0 2px; border-top:1px solid #4d6355; padding-top:2px; }
-#lobby details.sec > summary { cursor:pointer; list-style:none; padding:10px 4px; font-size:15px; color:#cfe0d4; display:flex; justify-content:space-between; align-items:center; -webkit-tap-highlight-color:transparent; }
+#lobby details.sec { margin:4px 0 0; border-top:1px solid #4d6355; padding-top:0; }
+#lobby details.sec > summary { cursor:pointer; list-style:none; padding:8px 4px; font-size:15px; color:#cfe0d4; display:flex; justify-content:space-between; align-items:center; -webkit-tap-highlight-color:transparent; }
 #lobby details.sec > summary::-webkit-details-marker { display:none; }
 #lobby details.sec > summary::after { content:'▸'; color:#8fa595; transition:transform .15s; }
 #lobby details.sec[open] > summary::after { transform:rotate(90deg); }
@@ -101,3 +101,12 @@ label.tilt input { flex:1; }
 #tipCard .tipRow { display:flex; gap:8px; margin-top:8px; }
 #tipCard .tipRow > * { flex:1; text-align:center; padding:8px 4px; margin:0; }
 #tipCard a.btnlink { display:block; border-radius:4px; background:#e8c88a; color:#2b2118; text-decoration:none; font-weight:700; }
+/* 強化卡牌等級 */
+i.tier { font-style:normal; font-size:11px; font-weight:700; padding:1px 7px; border-radius:9px; margin-right:6px; display:inline-block; vertical-align:middle; color:#fff; background:#7d8a80; }
+i.tier.t2 { background:#2f6fb5; } i.tier.t3 { background:#8e3fb8; } i.tier.t4 { background:linear-gradient(90deg,#c98a00,#e8b400); }
+.cbtn.t2 { border-color:#3a7bd5; }
+.cbtn.t3 { border-color:#b04bd6; box-shadow:0 0 10px #b04bd688; }
+.cbtn.t4 { border-color:#e8b400; background:linear-gradient(135deg,#fff3c4,#ffd36b); box-shadow:0 0 16px #ffb400cc; animation:ultGlow 1.4s ease-in-out infinite alternate; }
+@keyframes ultGlow { from { box-shadow:0 0 8px #ffb40088; } to { box-shadow:0 0 22px #ffb400; } }
+.pitem .tier { margin-bottom:2px; }
+#lobby .note { font-size:12.5px; color:#a9bcaf; line-height:1.5; padding:2px 4px 8px; }

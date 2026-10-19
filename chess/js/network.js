@@ -2,11 +2,11 @@
 // 連線做法：輪到誰，誰的裝置就是「主控」——它算物理、把動作（出發／開火）送給對方播放動畫，
 // 回合結束時送出完整局面快照，對方直接套用，兩台裝置就不會因浮點誤差而越跑越不同步。
 function snapshot() {
-  return { turn, winner, md: mods, tp: turnsPlayed, ps: pieces.map(p => [p.x, p.y, p.hp, p.cd, p.T.id === 'P2' ? 1 : 0, p.hd]) };
+  return { turn, winner, md: mods, tp: turnsPlayed, im: immune, xt: extraTurn, ps: pieces.map(p => [p.x, p.y, p.hp, p.cd, p.T.id === 'P2' ? 1 : 0, p.hd]) };
 }
 function applySnap(sn) {
   if (JSON.stringify(sn.md) !== JSON.stringify(mods)) { mods = JSON.parse(JSON.stringify(sn.md)); buildTypes(0); buildTypes(1); }
-  turnsPlayed = sn.tp.slice();
+  turnsPlayed = sn.tp.slice(); immune = (sn.im || [0, 0]).slice(); extraTurn = (sn.xt || [0, 0]).slice();
   sn.ps.forEach(([x, y, hp, cd, pr, hd], i) => {
     const p = pieces[i];
     Object.assign(p, { x, y, hp, cd, hd, vx: 0, vy: 0, cdFresh: false });
@@ -30,7 +30,7 @@ function applyEnd() {
 function send(m) { if (online() && conn && conn.open) conn.send(m); }
 function onNet(m) {
   if (m.t === 'reset') { reset(); setMsg('對手重新開始了一局。'); return; }
-  if (m.t === 'cfg') { if (cardsOn !== m.cards) { cardsOn = m.cards; showCardsBtn(); } reset(); return; }   // 連線時以房主的強化卡牌設定為準
+  if (m.t === 'cfg') { if (cardsOn !== m.cards || (m.every && cardEvery !== m.every)) { cardsOn = m.cards; if (m.every) cardEvery = m.every; showCardsBtn(); } reset(); return; }   // 連線時以房主的強化卡牌設定為準
   if (m.t === 'card') { incoming.push(m); drainIncoming(); return; }
   if (m.t === 'launch') {
     const p = pieces[m.i];
@@ -79,7 +79,7 @@ function bindConn(c, side) {
   c.on('open', () => {
     mode = 'online'; mySide = side; pendingEnd = null;
     reset(); $('lobby').hidden = true;
-    if (side === 0) send({ t: 'cfg', cards: cardsOn });
+    if (side === 0) send({ t: 'cfg', cards: cardsOn, every: cardEvery });
     netStatus('✅ 已連線');
     setMsg(side === 0 ? '對手已加入！你執紅先手，開始吧。' : '已加入房間！你執黑，等待紅方先手…');
   });
