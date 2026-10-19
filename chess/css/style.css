@@ -21,8 +21,8 @@
   #bar.flip { transform:rotate(180deg); }   /* 面對面：輪到黑方時訊息列轉向黑方 */
   #lobby { position:fixed; inset:0; background:#000b; display:flex; align-items:center; justify-content:center; z-index:10; padding:16px; }
   #lobby[hidden] { display:none; }
-  #lobby .box { background:#2b3a31; border:1px solid #4d6355; border-radius:10px; padding:18px; width:100%; max-width:380px; -webkit-user-select:text; user-select:text; }
-  #lobby h2 { margin:0 0 12px; font-size:19px; color:#e8c88a; }
+  #lobby .box { background:#2b3a31; border:1px solid #4d6355; border-radius:10px; padding:0 18px 14px; width:100%; max-width:380px; max-height:calc(100vh - 32px); max-height:calc(100dvh - 32px); overflow-y:auto; -webkit-overflow-scrolling:touch; -webkit-user-select:text; user-select:text; }
+  #lobby h2 { margin:0; font-size:19px; color:#e8c88a; }
   #lobby h3 { margin:14px 0 6px; font-size:15px; color:#cfe0d4; }
   #lobby button { width:100%; margin:4px 0; text-align:left; }
   #lobby small { color:#a9bcaf; }
@@ -85,3 +85,11 @@ label.tilt input { flex:1; }
 #installOv ol { margin:6px 0 10px; padding-left:20px; font-size:14px; line-height:1.55; color:#dfe9e2; }
 #installOv .sub { font-size:13px; color:#a9bcaf; }
 #installOv #instUrl { color:#ffd166; word-break:break-all; user-select:text; -webkit-user-select:text; }
+/* 開始畫面：標題列固定在上方（關閉鈕永遠點得到）；不常用的選項收進可展開的區塊，避免超出一頁 */
+#lobby .lhead { position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between; background:#2b3a31; padding:14px 0 8px; margin-bottom:2px; }
+#lobby .lhead button { width:auto; margin:0; padding:6px 14px; text-align:center; }
+#lobby details.sec { margin:8px 0 2px; border-top:1px solid #4d6355; padding-top:2px; }
+#lobby details.sec > summary { cursor:pointer; list-style:none; padding:10px 4px; font-size:15px; color:#cfe0d4; display:flex; justify-content:space-between; align-items:center; -webkit-tap-highlight-color:transparent; }
+#lobby details.sec > summary::-webkit-details-marker { display:none; }
+#lobby details.sec > summary::after { content:'▸'; color:#8fa595; transition:transform .15s; }
+#lobby details.sec[open] > summary::after { transform:rotate(90deg); }

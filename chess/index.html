@@ -33,49 +33,50 @@
   <button id="instCopy" style="width:100%;margin-top:8px">🔗 複製遊戲連結</button><button id="instClose" style="width:100%;margin-top:8px">關閉</button></div></div>
 <button id="newver" hidden>🆕 有新版本，點此更新</button>
 <div id="lobby" hidden><div class="box">
-  <h2>對戰模式</h2>
+  <div class="lhead"><h2>對戰模式</h2><button id="mClose" title="關閉">✕</button></div>
   <button id="mCards">🃏 強化卡牌：開<br><small>開局與每 10 回合三選一強化（連線時以房主設定為準）</small></button>
   <button id="mLocal">📱 同裝置・並排<br><small>兩人輪流用同一支手機／電腦</small></button>
   <button id="mFace">🔄 同裝置・面對面<br><small>平板放桌上，兩人對坐，黑方文字倒轉</small></button>
-  <h3>🌐 兩台裝置連線</h3>
-  <button id="mHost">建立房間（我執紅先手）</button>
-  <div class="row"><input id="roomIn" inputmode="numeric" maxlength="4" placeholder="輸入 4 位數房號"><button id="mJoin">加入（執黑）</button></div>
-  <div id="netStatus"></div>
   <h3>🤖 與電腦對戰（我執紅先手）</h3>
   <div class="row lv">
     <button data-lv="1">1<br>新手</button><button data-lv="2">2<br>簡單</button><button data-lv="3">3<br>普通</button><button data-lv="4">4<br>困難</button><button data-lv="5">5<br>大師</button>
   </div>
-  <h3>🎥 畫面</h3>
-  <div class="row"><button id="v3d">立體 3D</button><button id="v2d">平面 2D</button></div>
-  <div class="row" id="tiltRow" hidden><label class="tilt">視角傾斜 <input id="tilt" type="range" min="25" max="75" step="5" value="45"> <span id="tiltV">45°</span></label></div>
-  <button id="mRot" hidden>👆 手指旋轉視角：開</button>
-  <h3>📲 方便下次開啟</h3>
-  <button id="mInstall">📲 加到手機主畫面／安裝<br><small>之後點圖示就能玩，還是沒有網址列的全螢幕</small></button>
-  <h3>其他</h3>
   <button id="mRestart">↺ 重新開始這局</button>
-  <button id="mLog">📋 更新內容</button>
-  <button id="mReload">🔄 重新整理（載入最新版）</button>
-  <div id="ver"></div>
-  <button id="mClose">✕ 關閉</button>
+  <details class="sec" id="secNet"><summary>🌐 兩台裝置連線</summary>
+    <button id="mHost">建立房間（我執紅先手）</button>
+    <div class="row"><input id="roomIn" inputmode="numeric" maxlength="4" placeholder="輸入 4 位數房號"><button id="mJoin">加入（執黑）</button></div>
+    <div id="netStatus"></div>
+  </details>
+  <details class="sec" id="secView"><summary>🎥 畫面設定</summary>
+    <div class="row"><button id="v3d">立體 3D</button><button id="v2d">平面 2D</button></div>
+    <div class="row" id="tiltRow" hidden><label class="tilt">視角傾斜 <input id="tilt" type="range" min="25" max="75" step="5" value="45"> <span id="tiltV">45°</span></label></div>
+    <button id="mRot" hidden>👆 手指旋轉視角：開</button>
+  </details>
+  <details class="sec" id="secMore"><summary>⚙️ 更多</summary>
+    <button id="mInstall">📲 加到手機主畫面／安裝<br><small>之後點圖示就能玩，還是沒有網址列的全螢幕</small></button>
+    <button id="mLog">📋 更新內容</button>
+    <button id="mReload">🔄 重新整理（載入最新版）</button>
+    <div id="ver"></div>
+  </details>
 </div></div>
-<script src="js/config.js?v=2026-10-19.05"></script>
-<script src="js/audio.js?v=2026-10-19.05"></script>
-<script src="js/particles.js?v=2026-10-19.05"></script>
-<script src="js/physics.js?v=2026-10-19.05"></script>
-<script src="js/movement.js?v=2026-10-19.05"></script>
-<script src="js/combat.js?v=2026-10-19.05"></script>
-<script src="js/turn.js?v=2026-10-19.05"></script>
-<script src="js/input.js?v=2026-10-19.05"></script>
-<script src="js/render.js?v=2026-10-19.05"></script>
-<script src="js/render3d.js?v=2026-10-19.05"></script>
-<script src="js/view3d.js?v=2026-10-19.05"></script>
-<script src="js/ai.js?v=2026-10-19.05"></script>
-<script src="js/cards.js?v=2026-10-19.05"></script>
-<script src="js/changelog.js?v=2026-10-19.05"></script>
-<script src="js/version.js?v=2026-10-19.05"></script>
-<script src="js/update.js?v=2026-10-19.05"></script>
-<script src="js/pwa.js?v=2026-10-19.05"></script>
-<script src="js/network.js?v=2026-10-19.05"></script>
-<script src="js/main.js?v=2026-10-19.05"></script>
+<script src="js/config.js?v=2026-10-19.06"></script>
+<script src="js/audio.js?v=2026-10-19.06"></script>
+<script src="js/particles.js?v=2026-10-19.06"></script>
+<script src="js/physics.js?v=2026-10-19.06"></script>
+<script src="js/movement.js?v=2026-10-19.06"></script>
+<script src="js/combat.js?v=2026-10-19.06"></script>
+<script src="js/turn.js?v=2026-10-19.06"></script>
+<script src="js/input.js?v=2026-10-19.06"></script>
+<script src="js/render.js?v=2026-10-19.06"></script>
+<script src="js/render3d.js?v=2026-10-19.06"></script>
+<script src="js/view3d.js?v=2026-10-19.06"></script>
+<script src="js/ai.js?v=2026-10-19.06"></script>
+<script src="js/cards.js?v=2026-10-19.06"></script>
+<script src="js/changelog.js?v=2026-10-19.06"></script>
+<script src="js/version.js?v=2026-10-19.06"></script>
+<script src="js/update.js?v=2026-10-19.06"></script>
+<script src="js/pwa.js?v=2026-10-19.06"></script>
+<script src="js/network.js?v=2026-10-19.06"></script>
+<script src="js/main.js?v=2026-10-19.06"></script>
 </body>
 </html>
