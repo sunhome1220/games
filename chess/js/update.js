@@ -21,5 +21,6 @@ if (location.protocol.startsWith('http')) {
   checkUpdate();
   setInterval(checkUpdate, 5 * 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(); });
+  addEventListener('focus', checkUpdate); addEventListener('pageshow', checkUpdate);   // 切回分頁／從背景還原也檢查
 }
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>回力車象棋 原型選單</title>
+<title>遊戲列表</title>
 <style>
   * { box-sizing:border-box; }
   body { margin:0; background:#2b2118; color:#f5e9d3; font:15px/1.6 "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif; }
@@ -14,53 +14,40 @@
   a.card:hover { border-color:#e8c88a; }
   h2 { margin:0 0 6px; font-size:18px; color:#e8c88a; }
   ul { margin:6px 0 0; padding-left:20px; color:#d8c8ae; font-size:14px; }
+  h2 small { font-size:13px; color:#c9b79a; font-weight:400; margin-left:6px; }
+  a.feat { border-color:#e8c88a; }
+  details.old { margin-top:18px; border-top:1px solid #5a4632; padding-top:6px; }
+  details.old summary { cursor:pointer; color:#c9b79a; padding:8px 0; }
 </style>
 </head>
 <body>
 <main>
-  <h1>回力車象棋・三個原型</h1>
-  <p class="lead">雙人同機輪流（熱座）。按住己方棋子往後拉 → 調整方向與力道 → 放開往前衝。攻下對方的帥／將即獲勝。</p>
+  <h1>🎮 遊戲列表</h1>
   <p><button onclick="location.replace(location.pathname + '?v=' + Date.now())"
      style="background:#e8c88a;color:#2b2118;border:0;border-radius:4px;padding:6px 12px;font:inherit;cursor:pointer">🔄 重新整理（載入最新版）</button></p>
 
-  <a class="card" href="proto-a.html">
-    <h2>A・自動開火（最單純）</h2>
+  <a class="card feat" href="chess/index.html">
+    <h2>瘋狂象棋 <small>立體 3D・回合制戰術象棋</small></h2>
     <ul>
-      <li>每回合拉一台車，停下後自動攻擊射程內最近的敵人</li>
-      <li>兵種：帥、俥（快、機槍）、炮（慢、遠程高傷）、兵（近戰）</li>
-      <li>重點：純粹比「停在哪裡」，節奏最快</li>
+      <li>象棋的棋盤與兵種，但每顆棋子都是裝了武器的小車：點選 → 綠點移動 → 點準星開火，攻下對方帥／將獲勝</li>
+      <li>俥機槍、炮（迫擊炮）曲射、傌火箭、相防空砲、仕護衛、兵過河後空投升任士官長</li>
+      <li>🃏 強化卡牌：四個等級、45 張，含削弱敵方與隕石雨、起死回生、時間暫停等終極魔法</li>
+      <li>立體 3D 畫面（可手指旋轉視角）或平面 2D；同裝置並排／面對面、兩台裝置連線、對電腦（5 級難度）</li>
+      <li>可「加到手機主畫面」，之後點圖示就能玩</li>
     </ul>
   </a>
 
-  <a class="card" href="chess/index.html">
-    <h2>瘋狂象棋（原型 B・戰術瞄準）</h2>
-    <ul>
-      <li>點選棋子 → 綠點顯示可走的位置 → 點綠點移動；或直接點黃色準星原地開火</li>
-      <li>直射武器會被中間棋子擋住；炮為曲射可越過但有最小射程；多一個兵種「傌（火箭）」</li>
-      <li>河道泥濘減速、帥／將限九宮，最接近象棋的策略感</li>
-      <li>血量以愛心計：帥／將 3 心、俥 4 心、仕／傌／炮／相 3 心、兵／卒 2 心；棋子上方有兵種圖示</li>
-      <li>仕／士：護衛，九宮內斜走一格，近距離手槍 1 心（相鄰與斜角）；帥被直射（非炮、非火箭）時，若士的某個落點剛好在射線上，會自動走過去擋並換位</li>
-      <li>兵／卒未過河只能前進一格；過河後有空投補給，升任士官長：血量 2→3 心且滿血、每次最多走 2 格、可前進或橫移（仍不能往後退）、換上強化霰彈槍（越近越痛）</li>
-      <li>俥走法如傳統象棋（橫線／直線不限距離、不能穿過棋子），機槍也只能打同一橫線／直線上的目標、射程 4.2 格（比炮短 1 格，2 心，射後裝填 1 回合、期間改用步槍）；傌走日字（蹩馬腳不能走；日字都走不了時改走一步），火箭只能打日字位置（2 心、可被相攔截），近戰隨時可用步槍（1 心）；炮（迫擊炮）走法同車、2 心曲射、只能打同一橫線／直線上、距離 4～5.2 格的目標（射後裝填 1 回合，冷卻期間完全無法攻擊，近距離毫無辦法），相鄰受 1/2、斜角受 1/4（敵我皆傷）；傌的火箭同樣射後裝填 1 回合</li>
-      <li>冷卻顯示：冷卻中的棋子變暗，右上角橘色徽章顯示剩餘回合；冷卻完畢的炮／傌／象亮綠燈</li>
-      <li>選好目的地後按「出發」才移動，點別處可取消；開啟「⚡快速」則點綠點立即出發；移動後會顯示攻擊範圍，不滿意可按「取消移動」退回原位換別的棋</li>
-      <li>只能停在空的交叉點，路徑被擋住就過不去，不會撞開別人</li>
-      <li>相／象：防空砲（曳光彈、空中爆炸），自動攔截落點在 2.5 格內的火箭和砲彈（攔截後冷卻一次：對方的下一次攻擊攔截不了），手槍 1 心，可打相鄰與田字對角點的敵人（如同象棋的象）；走田字（象眼被塞就過不去；田字走不了時改走一步），不能過河</li>
-      <li>雙方都沒有能過河的棋子（只剩帥／仕／象）時直接和局</li>
-      <li>音效與開火、爆炸動畫；攻擊時有方向性的武器會轉向攻擊方向</li>
-      <li>🃏 強化卡牌（不可疊加，每張只能拿一次）：開局與每 N 回合（可設定 3～20）三選一，45 種、四個等級（越後面越瘋狂）：加強火力／射程／血量、減傷、削弱敵方、象的戰地醫療與防空，以及隕石雨、起死回生、時間暫停等終極魔法，開始畫面可開關；棋盤下方「🃏 我的強化」可重看已拿到的卡與累計效果（卡牌表可維護增減，見 games/CARDS.md）；☰ 選單可查看「更新內容」</li>
-      <li>☰ 對戰模式：同裝置並排、同裝置面對面（黑方文字倒轉）、兩台裝置用房號／連結連線，或與電腦對戰（5 級難度）</li>
-    </ul>
-  </a>
-
-  <a class="card" href="proto-c.html">
-    <h2>C・車頭射擊＋衝撞（物理流）</h2>
-    <ul>
-      <li>拉動方向同時決定車頭朝向，停下後朝車頭方向開火</li>
-      <li>機槍打射線上第一台車（會誤傷自己人）；迫擊砲固定落在前方 3.5 格範圍爆炸</li>
-      <li>高速撞擊造成傷害，兵／卒撞擊加倍，最有彈珠台的爽感</li>
-    </ul>
-  </a>
+  <details class="old">
+    <summary>🧪 早期原型（A・C）</summary>
+    <a class="card" href="proto-a.html">
+      <h2>A・自動開火</h2>
+      <ul><li>每回合拉一台車，停下後自動攻擊射程內最近的敵人，節奏最快</li></ul>
+    </a>
+    <a class="card" href="proto-c.html">
+      <h2>C・車頭射擊＋衝撞</h2>
+      <ul><li>拉動方向同時決定車頭朝向，停下後朝車頭方向開火；高速撞擊造成傷害</li></ul>
+    </a>
+  </details>
 </main>
 </body>
 </html>
