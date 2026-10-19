@@ -130,10 +130,8 @@ function bcConnect(room, side) {
 
 // 一局結束：停一下讓玩家看結果，然後回到設定頁（對戰模式），由玩家選下一局怎麼玩
 function gameOverToLobby() { setTimeout(() => { if (state === 'over') $('lobby').hidden = false; }, 1400); }
-let helpFrom = null;
-function openHelp(from) { helpFrom = from; $('helpOv').hidden = false; }
-$('helpBtn').onclick = () => openHelp(null);
-$('helpClose').onclick = () => { $('helpOv').hidden = true; if (helpFrom === 'lobby') $('lobby').hidden = false; helpFrom = null; };
+let helpFrom = null;   // 從設定頁開的說明，關掉後回到設定頁
+$('legendClose').addEventListener('click', () => { if (helpFrom === 'lobby') $('lobby').hidden = false; helpFrom = null; });
 $('menu').onclick = () => { SFX.init(); $('lobby').hidden = false; };
 $('mClose').onclick = () => $('lobby').hidden = true;
 $('mLocal').onclick = () => setMode('local');
@@ -145,6 +143,6 @@ document.querySelectorAll('#lobby .lv button').forEach(b => b.onclick = () => {
   aiLevel = +b.dataset.lv; setMode('ai');
   setMsg(`對電腦（${AI_LEVELS[aiLevel]}）：你執紅先手，點選棋子開始。`);
 });
-$('mHelp').onclick = () => { $('lobby').hidden = true; openHelp('lobby'); };
+$('mHelp').onclick = () => { $('lobby').hidden = true; helpFrom = 'lobby'; $('legendOv').hidden = false; };
 $('mRestart').onclick = () => { restart(); $('lobby').hidden = true; };
 
