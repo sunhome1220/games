@@ -74,6 +74,7 @@
     show('scrBrief'); $('#title').textContent = sc.name; setTone(sc);
     $('#briefBox').innerHTML = `<div class="brief">
       <h1>第 ${sc.no} 關・${sc.name}</h1>
+      ${art(root.SCENES && root.SCENES.intro(sc.id))}
       <p class="lead">${sc.year}｜你扮演 <b class="${side}">${me.name}</b>（${side === 'att' ? '攻方' : '守方'}），對手是電腦操控的${foe.name}。</p>
       <h2>戰役背景</h2><p>${esc(B.background)}</p>
       <h2>雙方兵力</h2>
@@ -195,7 +196,7 @@
       const f = g.fx.shift();
       if (f.t === 'log') { renderLastLog(); continue; }
       if (f.t === 'round') { renderHUD(); toast(`第 ${f.n} 回合`); continue; }
-      if (f.t === 'msg') { renderHUD(); if (!S.fast) await modal(`<h2>${esc(f.title)}</h2>${faces(f.who)}<p style="white-space:pre-line">${esc(f.text)}</p>`, [['繼續', true]]); continue; }
+      if (f.t === 'msg') { renderHUD(); if (!S.fast) await modal(`${art(root.SCENES && root.SCENES.forEvent(g.scId, f.title))}<h2>${esc(f.title)}</h2>${faces(f.who)}<p style="white-space:pre-line">${esc(f.text)}</p>`, [['繼續', true]], { wide: true }); continue; }
       if (f.t === 'duel') duelCut(f);
       if (f.t === 'skill') { const u = g.units[f.id]; if (!R.isEngine(u)) cutIn([[u.gen, battleMood(u.gen, ['rage', 'laugh', 'plan', 'plot']), u.side]], `${u.name}【${f.name}】`); }
       if (f.t === 'over') continue;
@@ -535,12 +536,16 @@
     toast(`${t.name}：${t.desc || ''}`, 2600);
   }
 
+  // 插圖（js/scenes.js）；cap 是圖下的小字說明
+  const art = (svg, cap) => (svg ? `<figure class="art">${svg}${cap ? `<figcaption>${esc(cap)}</figcaption>` : ''}</figure>` : '');
+
   // ---------- 視窗 ----------
   // opts.list：按鈕一個一行（存檔清單用），不特別標出第一個
   function modal(html, btns, opts = {}) {
     return new Promise(res => {
       $('#modalBody').innerHTML = html;
       $('#modalBtns').className = 'row' + (opts.list ? ' list' : '');
+      $('#modal').classList.toggle('wide', !!opts.wide);
       $('#modalBtns').innerHTML = btns.map(([t, v], i) => `<button data-i="${i}" class="${i === 0 && !opts.list ? 'main' : ''}">${t}</button>`).join('');
       $('#modal').hidden = false;
       for (const b of document.querySelectorAll('#modalBtns button')) b.onclick = () => { $('#modal').hidden = true; res(btns[+b.dataset.i][1]); };
@@ -588,13 +593,13 @@
     root.V3.clearHighlights(); root.V3.showSides(null); root.V3.selectRing(null);
     $('#panel').innerHTML = `<div class="hint">戰役結束：${win ? '勝利' : '敗北'}</div><div class="acts"><button id="bEndShow">查看結局</button></div>`;
     $('#bEndShow').onclick = showEnd;
-    modal(`<h2>${win ? '🏆 勝利！' : '敗北…'}　${E.title}</h2>
+    modal(`${art(root.SCENES && root.SCENES.forEnding(g.scId, o.route), E.title)}<h2>${win ? '🏆 勝利！' : '敗北…'}　${E.title}</h2>
       <p><span class="tag ${E.tag === '尊重歷史' ? 'h' : 'r'}">${E.tag}</span>${sc.sides[o.winner].name}獲勝（第 ${o.round} 回合）</p>
       ${faces(E.who)}
       <p>${esc(E.text)}</p>${E.who && E.who.some(([gn, m]) => P.MOODS[gn][m] && P.MOODS[gn][m].quote && P.MOODS[gn][m].src === '第 19 回') ? `<h3>演義・白門樓</h3><ul class="quotes">${E.who.map(([gn, m]) => P.MOODS[gn][m]).filter(M => M && M.quote && M.src === '第 19 回').map(M => `<li>${esc(M.quote)}</li>`).join('')}</ul>` : ''}
       <h3>你的戰果</h3><p>${sc.sides.att.name}損失 ${st.att.lost} 人；${sc.sides.def.name}損失 ${st.def.lost} 人。${endNotes(g)}</p>
       <h3>史實經過</h3><ul>${sc.brief.history.map(h => `<li>${esc(h)}</li>`).join('')}</ul>`,
-      [['再玩一次', 'again'], ['換另一邊玩', 'swap'], ['回到選關', 'menu'], ['看戰場', 'stay']]).then(r => {
+      [['再玩一次', 'again'], ['換另一邊玩', 'swap'], ['回到選關', 'menu'], ['看戰場', 'stay']], { wide: true }).then(r => {
         if (r === 'again') startBattle(g.scId, S.side);
         else if (r === 'swap') showBrief(g.scId, R.other(S.side));
         else if (r === 'menu') renderSelect();
