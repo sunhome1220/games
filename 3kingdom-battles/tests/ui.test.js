@@ -18,6 +18,19 @@ module.exports = [
     env.assert(await pg.isVisible('#cv3'));
     env.assert((await pg.$$eval('#order .chip', e => e.length)) > 5);
   } },
+  { name: '武將頭像：戰前說明列出登場武將，點開有演義外貌與情緒頭像', async fn(env) {
+    const pg = await env.open();
+    await pg.click('#scList button.att');
+    const gens = await pg.$$eval('#briefBox .roster [data-gen]', e => e.map(x => x.dataset.gen));
+    for (const g of ['caocao', 'xiahoudun', 'liubei', 'guanyu', 'xunyou', 'lubu', 'zhangliao', 'gaoshun', 'chengong', 'houcheng', 'songxian', 'weixu'])
+      env.assert(gens.includes(g), '缺少武將頭像：' + g);
+    await pg.click('#briefBox .roster [data-gen="lubu"]');
+    env.assert((await pg.$$eval('#modalBody .gm svg', e => e.length)) >= 4, '呂布應有平常＋3 種情緒');
+    env.assert((await pg.textContent('#modalBody')).includes('紫金冠'));
+    // 每位武將的每種情緒都畫得出來
+    const bad = await pg.evaluate(() => Object.keys(PORTRAITS.LOOKS).flatMap(g => PORTRAITS.moodsOf(g).filter(m => !PORTRAITS.svg(g, m.id).startsWith('<svg')).map(m => g + ':' + m.id)));
+    env.assert.deepStrictEqual(bad, []);
+  } },
   { name: '玩家回合：移動、攻擊預覽與確認', async fn(env) {
     const pg = await env.open('sc=xiapi&side=att&seed=2&speed=4');
     await env.myTurn(pg);

@@ -622,12 +622,12 @@
     onRoundStart(g) {
       const v = g.vars;
       if (g.round === 1) {
-        msg(g, '下邳之戰', '曹操大軍東征，呂布在泗水西岸列陣迎擊。陳宮建議：「將軍若引兵屯於城外，宮守城於內，曹軍攻城則將軍擊其背，攻將軍則宮出兵救之，此掎角之勢也。」');
+        msg(g, '下邳之戰', '曹操大軍東征，呂布在泗水西岸列陣迎擊。陳宮建議：「將軍若引兵屯於城外，宮守城於內，曹軍攻城則將軍擊其背，攻將軍則宮出兵救之，此掎角之勢也。」', null, [['chengong', 'default']]);
       }
       if (g.round === v.digUnlock && !v.flooded) {
         v.digOpen = true;
         const xun = g.units.find(u => u.gen === 'xunyou' && u.alive && u.side === 'att');
-        msg(g, '荀攸、郭嘉獻策', `${xun ? '荀攸' : '郭嘉'}進言：「呂布勇而無謀，今三戰皆北，其銳氣衰矣。」建議掘開泗水、沂水灌城。\n【可以掘堤了】派步兵或弓兵到城北的「河堤」上執行「掘堤」，累計 ${v.digNeed} 次就能水淹下邳。${xun ? '荀攸親自督工效率加倍。' : ''}`, 'att');
+        msg(g, '荀攸、郭嘉獻策', `${xun ? '荀攸' : '郭嘉'}進言：「呂布勇而無謀，今三戰皆北，其銳氣衰矣。」建議掘開泗水、沂水灌城。\n【可以掘堤了】派步兵或弓兵到城北的「河堤」上執行「掘堤」，累計 ${v.digNeed} 次就能水淹下邳。${xun ? '荀攸親自督工效率加倍。' : ''}`, 'att', [[xun ? 'xunyou' : 'caocao', xun ? 'plan' : 'default']]);
       }
     },
     actions(g, u, add) {
@@ -649,7 +649,7 @@
       const hexes = [];
       for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'l') { g.map[r][c] = 'w'; hexes.push([c, r]); }
       g.fx.push({ t: 'flood', hexes });
-      msg(g, '水淹下邳', '泗水、沂水決堤，大水灌入下邳城下。城外一片汪洋，城內糧草漸絕、人心惶惶。', 'att');
+      msg(g, '水淹下邳', '泗水、沂水決堤，大水灌入下邳城下。城外一片汪洋，城內糧草漸絕、人心惶惶。', 'att', [['lubu', 'haggard']]);
       for (const u of alive(g)) if (g.map[u.r][u.c] === 'w') {
         if (isEngine(u)) { log(g, `${u.name}被大水沖走`, u.side, 'bad'); destroy(g, u, '被大水沖毀'); continue; }
         u.coh = clamp(u.coh - 25, 0, 100); applyLoss(g, u, Math.round(u.troops * 0.08), {});
@@ -666,7 +666,7 @@
         if (on && on.side === 'def' && !v.depotBurnt) {
           v.depotBurnt = true; v.supply -= 7; g.map[depot[1]][depot[0]] = '.';
           g.fx.push({ t: 'burn', c: depot[0], r: depot[1] });
-          msg(g, '火燒糧營', `${on.name}突入曹軍糧營放火！曹軍糧草 −7。`, 'def');
+          msg(g, '火燒糧營', `${on.name}突入曹軍糧營放火！曹軍糧草 −7。`, 'def', [[on.gen, 'default']]);
         } else if (g.units.some(u => u.alive && u.side === 'def' && !isEngine(u) && H.dist(u.c, u.r, depot[0], depot[1]) <= 2)) {
           v.supply -= 1; log(g, '呂布軍襲擾曹軍糧道，糧草 −1', 'def', 'big');
         }
@@ -696,7 +696,7 @@
       for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'G' && c < 18) { g.map[r][c] = 'o'; g.hp[H.key(c, r)] = 0; g.fx.push({ t: 'struct', c, r, dmg: 0, broke: true, kind: 'open' }); }
       const chen = g.units.find(u => u.gen === 'chengong' && u.alive && u.side === 'def');
       if (chen && inCity(g, chen)) { chen.troops = Math.round(chen.troops * 0.5); chen.coh = 10; chen.mor = 20; checkCollapse(g, chen); }
-      msg(g, '侯成、宋憲、魏續倒戈', `${traitors.map(u => u.name).join('、')}${chen ? '綁了陳宮，' : ''}率眾開城投降曹操！西城門已經打開。`, 'att');
+      msg(g, '侯成、宋憲、魏續倒戈', `${traitors.map(u => u.name).join('、')}${chen ? '綁了陳宮，' : ''}率眾開城投降曹操！西城門已經打開。`, 'att', traitors.map(u => [u.gen, u.gen === 'houcheng' ? 'grudge' : 'plot']));
     },
     victory(g, roundEnd) {
       const v = g.vars;
@@ -720,18 +720,19 @@
       return null;
     },
   };
-  function msg(g, title, text, side) { g.log.push({ round: g.round, text: `【${title}】${text}`, side: side || null, kind: 'event' }); g.fx.push({ t: 'msg', title, text, side }); }
+  // who：事件頭像 [[武將, 情緒], …]
+  function msg(g, title, text, side, who) { g.log.push({ round: g.round, text: `【${title}】${text}`, side: side || null, kind: 'event' }); g.fx.push({ t: 'msg', title, text, side, who }); }
 
   // ---------- 結局文字 ----------
   const ENDINGS = {
     xiapi: {
-      history: { title: '白門樓', tag: '尊重歷史', text: '水淹下邳、部將倒戈，呂布在白門樓被圍投降。一如史書所載：曹操縊殺呂布，陳宮、高順從容就死，張遼歸降曹操。' },
-      storm: { title: '強攻破城', tag: '異於史實', text: '曹軍不靠水攻與內應，以器械與猛攻正面攻陷下邳。呂布被擒，曹操一統徐州的時間比歷史更早。' },
-      field: { title: '野戰擒呂布', tag: '逆轉歷史', text: '曹軍在泗水西岸的野戰中就擊潰了呂布本陣，下邳不戰而降。天下第一猛將的傳說，在城外就畫下句點。' },
-      supply: { title: '曹軍糧盡退兵', tag: '逆轉歷史', text: '下邳城堅守到底，曹軍糧草耗盡，只得撤回許都。呂布保住徐州，天下局勢從此大不相同。' },
-      jijiao: { title: '掎角之計奏效', tag: '逆轉歷史', text: '呂布終於採納陳宮的掎角之計：城外騎兵襲擾糧道，城內堅守不出，曹軍進退兩難，只好糧盡退兵。' },
-      caodown: { title: '曹操兵敗下邳', tag: '逆轉歷史', text: '曹操本陣被呂布軍擊潰，曹軍大亂退走。少了曹操的中原，歷史將走向完全不同的方向。' },
-      rout: { title: '曹軍全面潰敗', tag: '逆轉歷史', text: '曹軍各部相繼潰散，東征以慘敗收場。' },
+      history: { title: '白門樓', tag: '尊重歷史', text: '水淹下邳、部將倒戈，呂布在白門樓被圍投降。一如史書所載：曹操縊殺呂布，陳宮、高順從容就死，張遼歸降曹操。', who: [['lubu', 'plead'], ['caocao', 'weep'], ['chengong', 'calm'], ['gaoshun', 'silent'], ['zhangliao', 'defy'], ['liubei', 'cold']] },
+      storm: { title: '強攻破城', tag: '異於史實', text: '曹軍不靠水攻與內應，以器械與猛攻正面攻陷下邳。呂布被擒，曹操一統徐州的時間比歷史更早。', who: [['caocao', 'laugh'], ['lubu', 'plead']] },
+      field: { title: '野戰擒呂布', tag: '逆轉歷史', text: '曹軍在泗水西岸的野戰中就擊潰了呂布本陣，下邳不戰而降。天下第一猛將的傳說，在城外就畫下句點。', who: [['caocao', 'laugh'], ['lubu', 'plead']] },
+      supply: { title: '曹軍糧盡退兵', tag: '逆轉歷史', text: '下邳城堅守到底，曹軍糧草耗盡，只得撤回許都。呂布保住徐州，天下局勢從此大不相同。', who: [['lubu', 'default'], ['caocao', 'default']] },
+      jijiao: { title: '掎角之計奏效', tag: '逆轉歷史', text: '呂布終於採納陳宮的掎角之計：城外騎兵襲擾糧道，城內堅守不出，曹軍進退兩難，只好糧盡退兵。', who: [['chengong', 'default'], ['lubu', 'default']] },
+      caodown: { title: '曹操兵敗下邳', tag: '逆轉歷史', text: '曹操本陣被呂布軍擊潰，曹軍大亂退走。少了曹操的中原，歷史將走向完全不同的方向。', who: [['lubu', 'default'], ['caocao', 'default']] },
+      rout: { title: '曹軍全面潰敗', tag: '逆轉歷史', text: '曹軍各部相繼潰散，東征以慘敗收場。', who: [['lubu', 'default']] },
     },
   };
 

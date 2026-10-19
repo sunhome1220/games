@@ -7,6 +7,36 @@
   root.UI = S;
   const COL = { move: 0x4fc3f7, attack: 0xff4d3d, struct: 0xff9a3a, target: 0xc77dff, face: 0xffe08a };
 
+  // ---------- 武將頭像 ----------
+  const P = root.PORTRAITS;
+  // 武將在劇本裡屬於哪一方（決定頭像底色）
+  function genSide(gen, sc) { const x = ((sc || (S.g && S.g.sc) || D.SCENARIOS[0]).units || []).find(v => v.gen === gen); return x ? x.side : null; }
+  function face(gen, mood, opts = {}) {
+    const M = P.MOODS[gen] && P.MOODS[gen][mood];
+    return `<figure class="pt ${opts.cls || ''}" ${opts.data ? `data-gen="${gen}"` : ''}>${P.svg(gen, mood, { side: opts.side || genSide(gen, opts.sc), name: D.GENERALS[gen].name })}${opts.caption ? `<figcaption>${esc(D.GENERALS[gen].name)}${M && mood !== 'default' ? `・${esc(M.name)}` : ''}</figcaption>` : ''}</figure>`;
+  }
+  const faces = (who, opts) => who && who.length ? `<div class="pts">${who.map(([gn, m]) => face(gn, m, { caption: true, ...opts })).join('')}</div>` : '';
+  // 戰鬥中用的情緒：不用「被綁」的那幾張
+  function battleMood(gen, prefs) { const m = P.MOODS[gen] || {}; return prefs.find(k => m[k] && !m[k].bound) || 'default'; }
+  // 戰場上的頭像特寫（不擋操作，自己消失）
+  let cutT = null;
+  function cutIn(list, text) {
+    if (S.fast) return;
+    const el = $('#cutin'); if (!el) return;
+    el.innerHTML = `<div class="pts">${list.map(([gn, m, side]) => face(gn, m, { side, caption: true })).join('<b class="vs">VS</b>')}</div>${text ? `<div class="ct">${esc(text)}</div>` : ''}`;
+    el.hidden = false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+    clearTimeout(cutT); cutT = setTimeout(() => (el.hidden = true), 2200 / S.speed);
+  }
+  // 武將錄：所有外貌與情緒頭像、演義原文
+  function showGeneral(gen, sc) {
+    const G = D.GENERALS[gen], L = P.LOOKS[gen];
+    const ms = P.moodsOf(gen);
+    return modal(`<h2>${esc(G.name)}</h2>
+      <p>${esc(G.bio)}</p>
+      <div class="box2"><b>演義外貌</b>（${esc(L.src)}）：${esc(L.desc)}</div>
+      <div class="gal">${ms.map(m => `<div class="gm">${face(gen, m.id, { sc, cls: 'lg' })}<b>${esc(m.name)}</b>${m.quote ? `<small>${esc(m.quote)}${m.src ? `（${esc(m.src)}）` : ''}</small>` : ''}</div>`).join('')}</div>`, [['關閉', true]]);
+  }
+
   // ---------- 畫面切換 ----------
   function show(id) { for (const el of document.querySelectorAll('.screen')) el.hidden = el.id !== id; }
 
@@ -41,6 +71,8 @@
       <h2>戰役背景</h2><p>${esc(B.background)}</p>
       <h2>雙方兵力</h2>
       <div class="box2"><b class="att">${sc.sides.att.name}</b>：${esc(B.forces.att)}<br><b class="def">${sc.sides.def.name}</b>：${esc(B.forces.def)}</div>
+      <h2>登場武將</h2><p class="lead">點頭像看《三國演義》裡的外貌描寫與各種情緒。</p>
+      <div class="roster">${['att', 'def'].map(sd => `<div><b class="${sd}">${sc.sides[sd].name}</b><div class="pts">${[...new Set(sc.units.filter(x => x.side === sd).map(x => x.gen))].map(gn => face(gn, 'default', { sc, caption: true, data: true })).join('')}</div></div>`).join('')}</div>
       <h2>勝利條件</h2><ul>${B.goal[side].map(x => `<li>${esc(x)}</li>`).join('')}</ul>
       <h2>攻城戰說明</h2><ul>${B.siege.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
       <h2>尊重歷史，還是逆轉歷史？</h2>
@@ -55,6 +87,7 @@
       </ul>
       <div class="row"><button class="main" id="btnGo">⚔ 開戰</button><button id="btnHow">📖 陣型與規則說明</button><button id="btnBackSel">← 換一關</button></div>
     </div>`;
+    for (const f of document.querySelectorAll('#briefBox .roster [data-gen]')) f.onclick = () => showGeneral(f.dataset.gen, sc);
     $('#btnGo').onclick = () => startBattle(scId, side);
     $('#btnHow').onclick = showHelp;
     $('#btnBackSel').onclick = renderSelect;
@@ -104,13 +137,24 @@
       const f = g.fx.shift();
       if (f.t === 'log') { renderLastLog(); continue; }
       if (f.t === 'round') { renderHUD(); toast(`第 ${f.n} 回合`); continue; }
-      if (f.t === 'msg') { renderHUD(); if (!S.fast) await modal(`<h2>${esc(f.title)}</h2><p style="white-space:pre-line">${esc(f.text)}</p>`, [['繼續', true]]); continue; }
+      if (f.t === 'msg') { renderHUD(); if (!S.fast) await modal(`<h2>${esc(f.title)}</h2>${faces(f.who)}<p style="white-space:pre-line">${esc(f.text)}</p>`, [['繼續', true]]); continue; }
+      if (f.t === 'duel') duelCut(f);
+      if (f.t === 'skill') { const u = g.units[f.id]; if (!R.isEngine(u)) cutIn([[u.gen, battleMood(u.gen, ['rage', 'laugh', 'plan', 'plot']), u.side]], `${u.name}【${f.name}】`); }
       if (f.t === 'over') continue;
       if (S.fast) { if (['move', 'warp', 'face', 'form', 'attack', 'dead', 'defect', 'struct', 'flood', 'burn', 'ladder'].includes(f.t)) { if (f.t === 'flood') f.hexes.forEach(([c, r]) => root.V3.refreshHex(g, c, r)); if (f.t === 'struct' && f.broke) root.V3.refreshHex(g, f.c, f.r); if (f.t === 'burn') root.V3.refreshHex(g, f.c, f.r); if (f.t === 'ladder') root.V3.ladderMarks(g); } continue; }
       await root.V3.playFx(f, g, S.speed);
     }
     root.V3.syncUnits(g);
     renderHUD();
+  }
+
+  function duelCut(f) {
+    const g = S.g, a = g.units[f.a], d = g.units[f.d];
+    const WIN = ['laugh', 'rage', 'plan', 'plot'], LOSE = ['haggard', 'cry', 'sigh', 'grudge', 'weep'];
+    const ma = f.result === 'win' ? WIN : f.result === 'lose' ? LOSE : ['rage', 'default'];
+    const md = f.result === 'lose' ? WIN : f.result === 'win' || f.result === 'refuse' ? LOSE : ['rage', 'default'];
+    const txt = { win: `單挑！${a.name}獲勝`, lose: `單挑！${d.name}獲勝`, draw: '大戰數十回合，不分勝負', refuse: `${d.name}不敢應戰` }[f.result];
+    cutIn([[a.gen, battleMood(a.gen, ma), a.side], [d.gen, battleMood(d.gen, md), d.side]], txt);
   }
 
   // ---------- 玩家操作 ----------
@@ -228,7 +272,7 @@
     if (R.encircled(g, u)) tags.push('<span class="m-bad">被包圍</span>');
     if (R.onWall(g, u)) tags.push('城上');
     const t = R.terr(g, u.c, u.r); tags.push(t.name);
-    return `<div class="ucard"><div class="badge ${u.side}">${eng ? ty.icon : gn.mark}</div><div class="uinfo">
+    return `<div class="ucard">${eng ? `<div class="badge ${u.side}">${ty.icon}</div>` : `<div class="badge pt ${u.side}" data-gen="${u.gen}" title="看${esc(gn.name)}的武將錄">${P.svg(u.gen, 'default', { side: u.side, name: gn.name, frame: u.side === 'att' ? '#5d8de0' : '#e0604f' })}</div>`}<div class="uinfo">
       <div class="uname">${esc(u.name)}<small>${eng ? ty.name : `${ty.name}${u.label ? '・' + u.label : ''}　統${gn.lead} 武${gn.war} 智${gn.int}`}</small></div>
       <div class="usub">${tags.join('｜')}</div>
       <div class="bars"><span>兵力</span>${bar(u.troops, u.max, u.side === 'att' ? 'var(--att)' : 'var(--def)')}<span>${u.troops}</span>
@@ -247,7 +291,7 @@
       h += unitCard(insp) + skillLine(insp);
       if (!R.isEngine(insp) && !R.onWall(g, insp)) h += `<div class="usub" style="margin-top:4px">方向受傷倍率：${profileText((R.formOf(insp) || { def: D.BASE_DEF }).def)}</div>`;
       h += `<div class="acts"><button id="bkSel">↩ 回到${esc(u.name)}</button></div>`;
-      $('#panel').innerHTML = h; $('#bkSel').onclick = () => { S.inspect = null; refresh(); }; return;
+      $('#panel').innerHTML = h; $('#bkSel').onclick = () => { S.inspect = null; refresh(); }; hookFaces(); return;
     }
     h += unitCard(u);
     if (S.mode === 'face') {
@@ -277,8 +321,9 @@
     on('#bEnd', endUnit); on('#bFaceOk', finishUnit); on('#bFaceBack', () => { S.mode = 'main'; refresh(); });
     on('#bFormBack', () => { S.mode = 'main'; S.pending = null; refresh(); }); on('#bTgBack', () => { S.mode = 'main'; S.pending = null; refresh(); });
     on('#bUndo', () => { R.undoMove(g, u); drain().then(refresh); });
-    on('#bPvOk', confirmPreview); on('#bPvNo', () => { S.preview = null; refresh(); });
+    hookFaces(); on('#bPvOk', confirmPreview); on('#bPvNo', () => { S.preview = null; refresh(); });
   }
+  function hookFaces() { for (const b of document.querySelectorAll('#panel .badge[data-gen]')) b.onclick = () => showGeneral(b.dataset.gen); }
   function profileText(p) { return D.SIDE_NAME.map((n, i) => `<span class="${p[i] <= 1 ? 'm-good' : p[i] <= 1.25 ? 'm-warn' : 'm-bad'}">${n}×${p[i].toFixed(2).replace(/0$/, '')}</span>`).join(' '); }
   function previewHTML(u) {
     const g = S.g, p = S.preview;
@@ -298,6 +343,7 @@
     const g = S.g; const u = show || active;
     if (!u) return;
     $('#panel').innerHTML = `<div class="usub" style="margin-bottom:4px">${show ? '查看部隊' : (isMine(active) ? '' : '敵軍行動中')}</div>` + unitCard(u) + (show ? skillLine(u) : '') + lastLogHTML();
+    hookFaces();
   }
   function lastLogHTML() {
     const L = S.g.log.slice(-3).reverse();
@@ -367,7 +413,8 @@
     $('#bEndShow').onclick = showEnd;
     modal(`<h2>${win ? '🏆 勝利！' : '敗北…'}　${E.title}</h2>
       <p><span class="tag ${E.tag === '尊重歷史' ? 'h' : 'r'}">${E.tag}</span>${sc.sides[o.winner].name}獲勝（第 ${o.round} 回合）</p>
-      <p>${esc(E.text)}</p>
+      ${faces(E.who)}
+      <p>${esc(E.text)}</p>${E.who && E.who.some(([gn, m]) => P.MOODS[gn][m] && P.MOODS[gn][m].quote && P.MOODS[gn][m].src === '第 19 回') ? `<h3>演義・白門樓</h3><ul class="quotes">${E.who.map(([gn, m]) => P.MOODS[gn][m]).filter(M => M && M.quote && M.src === '第 19 回').map(M => `<li>${esc(M.quote)}</li>`).join('')}</ul>` : ''}
       <h3>你的戰果</h3><p>${sc.sides.att.name}損失 ${st.att.lost} 人；${sc.sides.def.name}損失 ${st.def.lost} 人。${g.vars.flooded ? '有水淹下邳。' : '沒有水淹。'}${g.vars.betrayed ? '城內將領倒戈。' : '沒有人倒戈。'}${g.vars.depotBurnt ? '曹軍糧營被燒。' : ''}</p>
       <h3>史實經過</h3><ul>${sc.brief.history.map(h => `<li>${esc(h)}</li>`).join('')}</ul>`,
       [['再玩一次', 'again'], ['換另一邊玩', 'swap'], ['回到選關', 'menu'], ['看戰場', 'stay']]).then(r => {
