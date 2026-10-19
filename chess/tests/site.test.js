@@ -77,6 +77,26 @@ module.exports = [
     const r = await pg.evaluate(() => { const a = $('mTip'); return { inMore: !!a.closest('#secMore'), target: a.target, rel: a.rel, https: a.href.startsWith('https://service.jkopay.com/'), amount50: new URL(a.href).searchParams.get('amount') === '50', hiddenByDefault: !$('secMore').open }; });
     t.assert.deepStrictEqual(r, { inMore: true, target: '_blank', rel: 'noopener noreferrer', https: true, amount50: true, hiddenByDefault: true });
   } },
+  { name: '更新通知：偵測到新版本時顯示「有新版本」按鈕（開始畫面開著也點得到），版本相同時不顯示', async fn(t) {
+    const pg = await t.open('', { mode: false });
+    let ver = '2099-01-01.01';
+    await pg.route('**/js/version.js?check=*', r => r.fulfill({ contentType: 'text/javascript', body: `const VERSION = '${ver}';` }));
+    await pg.evaluate(() => checkUpdate()); t.assert.strictEqual(await pg.evaluate(() => $('newver').hidden), false, '有新版本卻沒顯示按鈕');
+    const r = await pg.evaluate(() => { const b = $('newver').getBoundingClientRect(), top = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return top === $('newver') || $('newver').contains(top); });
+    t.assert.ok(r, '按鈕被開始畫面或其他元素蓋住');
+    ver = await pg.evaluate(() => VERSION); await pg.evaluate(() => checkUpdate()); t.assert.strictEqual(await pg.evaluate(() => $('newver').hidden), true, '版本相同不該顯示');
+    await pg.evaluate(() => { $('newver').hidden = false; }); await pg.evaluate(() => dispatchEvent(new Event('focus'))); await pg.waitForTimeout(300);
+    t.assert.strictEqual(await pg.evaluate(() => $('newver').hidden), true, '切回分頁時應重新檢查');
+  } },
+  { name: '舊單檔版本的更新偵測：轉址頁含另一個版本字串，舊頁面才會提示更新', async fn(t) {
+    const html = fs.readFileSync(path.join(root, '..', 'proto-b.html'), 'utf8'), m = html.match(/const VERSION = '([^']+)'/);
+    t.assert.ok(m && m[1] !== fs.readFileSync(path.join(root, 'js/version.js'), 'utf8').match(/const VERSION = '([^']+)'/)[1], '轉址頁要有版本字串');
+  } },
+  { name: '遊戲列表：瘋狂象棋是主卡片，早期原型預設收合', async fn(t) {
+    const pg = await t.ctx.newPage(); await pg.goto(`${t.base}/index.html`);
+    const r = await pg.evaluate(() => ({ feat: document.querySelector('a.feat').getAttribute('href'), old: document.querySelector('details.old').open, oldLinks: [...document.querySelectorAll('details.old a')].map(a => a.getAttribute('href')), visibleCards: [...document.querySelectorAll('a.card')].filter(a => a.checkVisibility()).length }));
+    t.assert.deepStrictEqual(r, { feat: 'chess/index.html', old: false, oldLinks: ['proto-a.html', 'proto-c.html'], visibleCards: 1 }); await pg.close();
+  } },
   { name: '舊網址 proto-b.html 會轉址到 chess/（保留參數）', async fn(t) {
     const pg = await t.ctx.newPage(); await pg.goto(`${t.base}/proto-b.html?room=1234`); await pg.waitForURL(/chess\/index\.html\?room=1234/, { timeout: 5000 }); await pg.close();
   } },
