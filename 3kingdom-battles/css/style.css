@@ -165,3 +165,6 @@ table.ft th { color: var(--gold); font-weight: normal; }
 #floaters, #busy { z-index: 2; }
 .hudlink { background: rgba(127, 211, 255, 0.15); border: 1px solid #7fd3ff; color: #bfe9ff; border-radius: 10px; padding: 0 6px; font-size: 12px; }
 #order .chip.pick { cursor: pointer; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55); }
+.hint.siege { color: #bfe3ff; background: rgba(127, 211, 255, 0.08); border-left: 3px solid #7fd3ff; padding: 4px 8px; border-radius: 4px; }
+.goalst li { margin: 2px 0; }
+#hudTop .mini + .mini { margin-left: 4px; }
