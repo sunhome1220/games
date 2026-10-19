@@ -5,7 +5,7 @@
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const S = { g: null, side: null, speed: 1, mode: 'main', inspect: null, pending: null, preview: null, busy: false, fast: false, auto: false };
   root.UI = S;
-  const COL = { move: 0x00e5ff, moveEdge: 0xe8fdff, attack: 0xff4d3d, struct: 0xff9a3a, target: 0xc77dff, face: 0xffe08a };
+  const COL = { moveEdge: 0xffffff, attack: 0xff4d3d, struct: 0xff9a3a, target: 0xc77dff, face: 0xffe08a };
 
   // ---------- 武將頭像 ----------
   const P = root.PORTRAITS;
@@ -82,7 +82,7 @@
       <p class="lead">真實的歷史經過，會在戰役結束後揭曉並和你的戰果對照。</p>
       <h2>基本操作</h2>
       <ul>
-        <li>輪到你的部隊時：點<b style="color:#4fc3f7">藍色格子</b>移動，點<b style="color:#ff4d3d">紅色敵軍</b>預覽攻擊（再按確認），下方按鈕可變陣、整隊、使用技能。</li>
+        <li>輪到你的部隊時：點<b>白框格子</b>移動，點<b style="color:#ff4d3d">紅色敵軍</b>預覽攻擊（再按確認），下方按鈕可變陣、整隊、使用技能。</li>
         <li>沒有攻擊的話，結束前要選<b>朝向</b>——部隊周圍的彩色圈是方向弱點：<span class="m-good">綠＝強</span>、<span class="m-warn">黃</span>、<span class="m-bad">紅＝弱</span>。</li>
         <li>單指拖曳移動地圖、雙指縮放旋轉（滑鼠：右鍵拖曳旋轉、滾輪縮放）。右上角按鈕也可以轉視角。</li>
       </ul>
@@ -231,7 +231,7 @@
     } else if (S.mode === 'target' && S.pending) {
       for (const t of S.pending.targets) { const [c, r] = typeof t === 'object' ? [t.c, t.r] : [g.units[t].c, g.units[t].r]; L.push({ c, r, color: COL.target, opacity: 0.6 }); }
     } else if (S.mode === 'main') {
-      if (!u.moved) for (const [k, v] of R.reachable(g, u)) if (!v.blocked && v.cost > 0) L.push({ c: v.c, r: v.r, color: COL.move, opacity: 0.55, edge: COL.moveEdge });
+      if (!u.moved) for (const [k, v] of R.reachable(g, u)) if (!v.blocked && v.cost > 0) L.push({ c: v.c, r: v.r, edge: COL.moveEdge, edgeOpacity: 0.6 });
       if (!u.acted) {
         for (const t of R.attackTargets(g, u)) L.push({ c: t.c, r: t.r, color: COL.attack, opacity: 0.6 });
         for (const s of R.structTargets(g, u)) L.push({ c: s.c, r: s.r, color: COL.struct, opacity: 0.6 });
@@ -355,7 +355,7 @@
       h += `<div class="hint">【${esc(S.pending.name)}】點選紫色的目標。${esc(S.pending.desc || '')}</div><div class="acts"><button id="bTgBack">↩ 取消</button></div>`;
     } else {
       if (S.preview) h += previewHTML(u);
-      else h += `<div class="hint">${!u.moved ? '點藍色格子移動；' : ''}${!u.acted ? '點紅色敵軍預覽攻擊；也可以用下面的按鈕。' : '動作已用完，按「結束行動」選朝向。'}</div>`;
+      else h += `<div class="hint">${!u.moved ? '點白框格子移動；' : ''}${!u.acted ? '點紅色敵軍預覽攻擊；也可以用下面的按鈕。' : '動作已用完，按「結束行動」選朝向。'}</div>`;
       const acts = R.actionsFor(g, u).filter(a => !(a.pre && u.moved));
       h += '<div class="acts">';
       acts.forEach((a, i) => { h += `<button data-a="${i}" class="${a.skill ? 'skill' : ''}" ${a.enabled ? '' : 'style="opacity:.45"'} title="${esc(a.desc || '')}">${esc(a.name)}</button>`; });

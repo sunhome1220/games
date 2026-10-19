@@ -57,7 +57,20 @@
   }
 
   // 世界座標
-  function wpos(c, r) { const [x, y] = HX.center(c, r); return [x - V.ox, y - V.oz]; }
+  function wpos(c, r) { const [x, y] = HX.center(c, r); const sx = V.snap && V.snap[HX.key(c, r)]; return [(sx != null ? sx : x) - V.ox, y - V.oz]; }
+  // 城牆拉直：同一欄連續好幾列的城牆，在六角格裡奇偶列會左右錯開成鋸齒；畫面上把它們對齊到同一條直線（規則仍是六角格）
+  const WALLISH = ch => ch === 'W' || ch === 'T' || ch === 'G' || ch === 'o' || ch === 'r';
+  function computeSnap(g) {
+    V.snap = {}; const M = g.sc.map;
+    for (let c = 0; c < g.W; c++) {
+      let r0 = 0;
+      for (let r = 0; r <= g.Hh; r++) {
+        if (r < g.Hh && WALLISH(M[r][c])) continue;
+        if (r - r0 >= 3) for (let k = r0; k < r; k++) V.snap[HX.key(c, k)] = HX.S3 * (c + 0.25);
+        r0 = r + 1;
+      }
+    }
+  }
   function topAt(g, c, r) { return standY(g.map[r][c]); }
 
   // ---------- 材質工具 ----------
@@ -75,6 +88,7 @@
     V.units.forEach(u => V.scene.remove(u.grp)); V.units.clear();
     V.g = g; V.world = new T.Group(); V.scene.add(V.world);
     const [mx, mz] = HX.center(g.W - 1, g.Hh - 1); V.ox = (mx + HX.S3 * 0.5) / 2; V.oz = mz / 2;
+    computeSnap(g);
     V.cam3.tx = 0; V.cam3.tz = 0;
     // 底座
     const base = mesh(new T.BoxGeometry(mx + 4, 1.2, mz + 4), mat(0x5b4630), false, true); base.position.y = -0.85; V.world.add(base);
@@ -92,20 +106,38 @@
     const water = new T.Mesh(new T.PlaneGeometry(mx + 4, mz + 4), new T.MeshStandardMaterial({ color: 0x5b9fd6, transparent: true, opacity: 0.45, roughness: 0.2, metalness: 0.1 }));
     water.rotation.x = -Math.PI / 2; water.position.y = -0.02; V.world.add(water); V.water = water;
     buildDeco(g);
+    buildWalls(g);
+    buildFlora(g);
     V.dirty = true;
   }
+  const isWet = ch => ch === '~' || ch === '=' || ch === 'w';
+  // 城牆格的地面：牆體只蓋住格子中間，露出來的部分用旁邊（城外或城內）地面的顏色與高度，城牆邊緣才會是直線
+  function wallGround(g, c, r) {
+    const k = HX.key(c, r), [tx] = HX.center(c, r);
+    const dirs = V.snap[k] != null ? [tx < V.snap[k] ? 3 : 0] : [1, 2, 4, 5, 0, 3];
+    for (const d of dirs) { const [nc, nr] = HX.neighbor(c, r, d); const ch = g.map[nr] && g.map[nr][nc]; if (ch && !'WTGor'.includes(ch) && !TERRAIN_CITY.has(ch)) return [nc, nr]; }
+    for (const d of dirs) { const [nc, nr] = HX.neighbor(c, r, d); const ch = g.map[nr] && g.map[nr][nc]; if (ch && !'WTGor'.includes(ch)) return [nc, nr]; }
+    return null;
+  }
+  const TERRAIN_CITY = new Set(['c', 'P']);
   function tileColor(g, c, r) {
     const ch = g.map[r][c];
+    if ('WTG'.includes(ch)) { const n = wallGround(g, c, r); if (n) return tileColor(g, n[0], n[1]); }
     const col = new T.Color(COLORS[ch] || 0x888888);
-    // 每格微調明暗，看起來比較自然
-    const h = Math.sin(c * 12.9898 + r * 78.233) * 43758.5453; const j = (h - Math.floor(h) - 0.5) * 0.08;
-    col.offsetHSL(0, 0, j);
+    // 大片色塊（低頻起伏）＋每格微調，草地有深淺層次
+    const n = 0.5 * Math.sin(c * 0.55 + r * 0.31) + 0.5 * Math.sin(c * 0.23 - r * 0.6 + 1.7);
+    const h = Math.sin(c * 12.9898 + r * 78.233) * 43758.5453; const j = (h - Math.floor(h) - 0.5);
+    if (ch === '.' || ch === 'l' || ch === 'f' || ch === 'h') col.offsetHSL(n * 0.025, n * 0.06, n * 0.035 + j * 0.05);
+    else col.offsetHSL(0, 0, j * 0.06);
+    // 河邊的草地帶一點沙色
+    if ((ch === '.' || ch === 'l') && HX.neighbors(c, r).some(([nc, nr]) => g.map[nr] && isWet(g.map[nr][nc]))) col.lerp(new T.Color(0xcdbb86), 0.35);
     return col;
   }
   function setTile(g, c, r, i, flag = true) {
     if (i == null) i = r * g.W + c;
-    const ch = g.map[r][c]; const top = TOP[ch] != null ? TOP[ch] : 0.2;
-    const [x, z] = wpos(c, r);
+    const ch = g.map[r][c]; const wg = 'WTG'.includes(ch) ? wallGround(g, c, r) : null;
+    const top = wg ? Math.max(0.1, TOP[g.map[wg[1]][wg[0]]] ?? 0.2) : 'WTG'.includes(ch) ? 0.3 : TOP[ch] != null ? TOP[ch] : 0.2;
+    const [x, z] = HX.center(c, r).map((v, i) => v - (i ? V.oz : V.ox));
     const m = new T.Matrix4().compose(new T.Vector3(x, top, z), new T.Quaternion(), new T.Vector3(1, top + 1, 1));
     V.tiles.setMatrixAt(i, m); V.tiles.setColorAt(i, tileColor(g, c, r));
     if (flag) { V.tiles.instanceMatrix.needsUpdate = true; V.tiles.instanceColor.needsUpdate = true; V.dirty = true; }
@@ -118,6 +150,7 @@
       cone: new T.ConeGeometry(0.28, 0.7, 6), trunk: new T.CylinderGeometry(0.05, 0.06, 0.2, 5),
       merlon: new T.BoxGeometry(0.22, 0.22, 0.22), rock: new T.DodecahedronGeometry(0.22, 0),
       house: new T.BoxGeometry(0.42, 0.28, 0.32), roof4: new T.ConeGeometry(0.36, 0.22, 4),
+      crown: new T.DodecahedronGeometry(0.32, 0), bush: new T.DodecahedronGeometry(0.16, 0), rut: new T.BoxGeometry(1.7, 0.012, 0.1), reed: new T.ConeGeometry(0.03, 0.32, 4),
       plank: new T.BoxGeometry(1.75, 0.08, 1.0), rail: new T.BoxGeometry(1.75, 0.12, 0.06), tent: new T.ConeGeometry(0.3, 0.45, 6),
     };
     for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) decoAt(g, c, r);
@@ -129,17 +162,28 @@
     const grp = new T.Group(); grp.position.set(x, top, z);
     const G = V.geos; const rnd = seeded(c * 31 + r * 17);
     if (ch === 'f') {
-      for (let i = 0; i < 4; i++) {
-        const a = rnd() * Math.PI * 2, d = 0.25 + rnd() * 0.45, s = 0.8 + rnd() * 0.5;
-        const t = mesh(G.cone, mat(i % 2 ? 0x3f6e35 : 0x4b7d3c)); t.position.set(Math.cos(a) * d, 0.45 * s + 0.15, Math.sin(a) * d); t.scale.setScalar(s);
-        const tr = mesh(G.trunk, mat(0x6b4a2b)); tr.position.set(t.position.x, 0.1, t.position.z);
-        grp.add(t, tr);
+      // 松樹與闊葉樹混種，樹下有灌木
+      for (let i = 0; i < 5; i++) {
+        const a = i * 1.26 + rnd() * 0.8, d = i === 4 ? rnd() * 0.15 : 0.35 + rnd() * 0.35, s = 0.75 + rnd() * 0.5;
+        const px = Math.cos(a) * d, pz = Math.sin(a) * d;
+        if (rnd() < 0.55) {
+          const t = mesh(G.cone, mat([0x3a6a32, 0x44773a, 0x2f5c2c][i % 3])); t.position.set(px, 0.45 * s + 0.15, pz); t.scale.setScalar(s); grp.add(t);
+          const t2 = mesh(G.cone, mat(0x4f8541)); t2.position.set(px, 0.72 * s + 0.15, pz); t2.scale.setScalar(s * 0.7); grp.add(t2);
+        } else {
+          const t = mesh(G.crown, mat([0x5c8d3e, 0x6b9a45, 0x4f7f36][i % 3])); t.position.set(px, 0.42 * s + 0.12, pz); t.scale.set(s, s * 0.85, s); grp.add(t);
+        }
+        const tr = mesh(G.trunk, mat(0x6b4a2b)); tr.position.set(px, 0.1, pz); grp.add(tr);
       }
+      for (let i = 0; i < 2; i++) { const b = mesh(G.bush, mat(0x3f6b33)); b.position.set((rnd() - 0.5) * 1.1, 0.06, (rnd() - 0.5) * 1.1); b.scale.set(1.2, 0.7, 1.2); grp.add(b); }
+    } else if (ch === ',') {
+      // 車轍
+      for (const s of [-1, 1]) { const o = mesh(G.rut, mat(0xa58f62), false, true); o.position.set(0, 0.006, s * 0.16); grp.add(o); }
+    } else if (ch === 'l') {
+      if (rnd() < 0.45) for (let i = 0; i < 3; i++) { const o = mesh(G.reed, mat(i % 2 ? 0x8fa35a : 0xa3ad62), false); o.position.set((rnd() - 0.5) * 1.1, 0.12, (rnd() - 0.5) * 1.1); o.rotation.z = (rnd() - 0.5) * 0.4; grp.add(o); }
     } else if (ch === 'h') {
       for (let i = 0; i < 3; i++) { const o = mesh(G.rock, mat(0x8c8a62)); o.position.set((rnd() - 0.5) * 1, 0.05, (rnd() - 0.5) * 1); o.scale.set(1 + rnd(), 0.6 + rnd() * 0.5, 1 + rnd()); grp.add(o); }
     } else if (ch === 'W' || ch === 'T' || ch === 'G') {
-      // 垛口
-      for (let i = 0; i < 6; i++) { const a = (i * 60 + 30) * Math.PI / 180; const o = mesh(G.merlon, mat(0x8a8178)); o.position.set(Math.sin(a) * 0.78, 0.11, Math.cos(a) * 0.78); grp.add(o); }
+      // 城牆本體與垛口在 buildWalls 畫成連續的城垣；這裡只放箭樓、城樓
       if (ch === 'T') {
         const body = mesh(new T.BoxGeometry(0.9, 0.7, 0.9), mat(0xa0583c)); body.position.y = 0.35; grp.add(body);
         const roof = mesh(new T.ConeGeometry(0.85, 0.5, 4), mat(0x4a3b33)); roof.position.y = 0.95; roof.rotation.y = Math.PI / 4; grp.add(roof);
@@ -147,7 +191,7 @@
       if (ch === 'G') {
         const body = mesh(new T.BoxGeometry(1.1, 0.55, 0.7), mat(0xa0583c)); body.position.y = 0.28; grp.add(body);
         const roof = mesh(new T.ConeGeometry(0.95, 0.45, 4), mat(0x4a3b33)); roof.position.y = 0.8; roof.rotation.y = Math.PI / 4; roof.scale.set(1.2, 1, 0.8); grp.add(roof);
-        const door = mesh(new T.BoxGeometry(0.06, 1.0, 0.7), mat(0x5a3418)); door.position.set(-0.99, -0.55, 0); grp.add(door);
+        for (const s of [-1, 1]) { const door = mesh(new T.BoxGeometry(0.06, 1.1, 0.6), mat(0x4a2c14)); door.position.set(s * 0.68, -0.75, 0); grp.add(door); }
       }
     } else if (ch === 'c') {
       if (rnd() < 0.8) for (let i = 0; i < 2; i++) {
@@ -174,7 +218,75 @@
     if (grp.children.length) { V.world.add(grp); V.deco[k] = grp; } else V.deco[k] = null;
   }
   function seeded(s) { let a = s >>> 0; return () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; }; }
-  function refreshHex(g, c, r) { setTile(g, c, r); decoAt(g, c, r); }
+  function refreshHex(g, c, r) {
+    setTile(g, c, r); decoAt(g, c, r);
+    if (WALLISH(g.sc.map[r][c])) buildWalls(g);
+    // 淹水後河岸改變，周圍格子的沙色也要更新
+    for (const [nc, nr] of HX.neighbors(c, r)) if (g.map[nr] && g.map[nr][nc] != null) setTile(g, nc, nr);
+  }
+
+  // 城垣：每格城牆畫一塊牆體，並往相鄰的城牆格各延伸半段，連成一道連續、筆直的城牆；上面兩側排垛口
+  function buildWalls(g) {
+    if (V.walls) V.world.remove(V.walls);
+    const grp = V.walls = new T.Group(); V.wallPick = [];
+    const solid = (c, r) => r >= 0 && r < g.Hh && c >= 0 && c < g.W && 'WTG'.includes(g.map[r][c]);
+    const box = V.wallBox = V.wallBox || new T.BoxGeometry(1, 1, 1);
+    const WW = 1.3, top = TOP.W, merl = [];
+    const tone = (c, r) => (((c * 7 + r * 13) % 3) === 0 ? 0xa39a90 : ((c + r) % 2 ? 0x968d83 : 0x9c9389));
+    const add = (c, r, w, h, d, x, y, z, ang, color, pick = true) => {
+      const o = mesh(box, mat(color), true, true); o.scale.set(w, h, d); o.position.set(x, y, z); o.rotation.y = ang;
+      if (pick) { o.userData.hex = [c, r]; V.wallPick.push(o); } grp.add(o);
+    };
+    for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
+      if (!solid(c, r)) continue;
+      const [x, z] = wpos(c, r); const col = tone(c, r); let ang0 = null;
+      for (let d = 0; d < 6; d++) {
+        const [nc, nr] = HX.neighbor(c, r, d); if (!solid(nc, nr)) continue;
+        const [x2, z2] = wpos(nc, nr); const dx = x2 - x, dz = z2 - z, L = Math.hypot(dx, dz) / 2, ang = Math.atan2(dx, dz);
+        if (ang0 == null) ang0 = ang;
+        const ux = dx / (2 * L), uz = dz / (2 * L);
+        add(c, r, WW, top, L, x + ux * L / 2, top / 2, z + uz * L / 2, ang, col);
+        add(c, r, WW + 0.24, 0.22, L, x + ux * L / 2, 0.11, z + uz * L / 2, ang, 0x7d746b, false);           // 牆基
+        add(c, r, WW + 0.08, 0.07, L, x + ux * L / 2, top - 0.12, z + uz * L / 2, ang, 0x8a8178, false);     // 牆簷
+        for (let t = 0.12; t < L; t += 0.3) for (const s of [-1, 1]) merl.push([x + ux * t + uz * s * (WW / 2 - 0.08), z + uz * t - ux * s * (WW / 2 - 0.08), ang, s]);
+      }
+      const big = g.map[r][c] === 'T' ? 1.75 : WW;
+      add(c, r, big, top, big, x, top / 2, z, ang0 || 0, col);
+      if (g.map[r][c] === 'T') for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; merl.push([x + Math.sin(a) * 0.8, z + Math.cos(a) * 0.8, a, 1]); }
+    }
+    const mg = V.merlonGeo = V.merlonGeo || new T.BoxGeometry(0.16, 0.2, 0.15);
+    const im = new T.InstancedMesh(mg, mat(0x8f867c), Math.max(1, merl.length)); im.count = merl.length; im.castShadow = true;
+    const M4 = new T.Matrix4(), Q = new T.Quaternion(), Y = new T.Vector3(0, 1, 0), ONE = new T.Vector3(1, 1, 1);
+    merl.forEach(([mx, mz, a, s], i) => { M4.compose(new T.Vector3(mx, top + 0.1 - (s < 0 ? 0.04 : 0), mz), Q.setFromAxisAngle(Y, a), ONE); im.setMatrixAt(i, M4); });
+    grp.add(im); V.world.add(grp); V.dirty = true;
+  }
+
+  // 草叢、野花、灌木：平原格隨機撒一些（用 InstancedMesh，一種只要一次繪製）
+  function buildFlora(g) {
+    if (V.flora) V.world.remove(V.flora);
+    const grp = V.flora = new T.Group();
+    const tufts = [], flowers = [], bushes = [];
+    for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
+      if (g.map[r][c] !== '.') continue;
+      const rnd = seeded(c * 131 + r * 71 + 5); const [x, z] = wpos(c, r); const y = TOP['.'];
+      const n = 4 + Math.floor(rnd() * 4);
+      for (let i = 0; i < n; i++) tufts.push([x + (rnd() - 0.5) * 1.4, y, z + (rnd() - 0.5) * 1.4, 0.7 + rnd() * 0.7, rnd()]);
+      if (rnd() < 0.3) for (let i = 0; i < 3; i++) flowers.push([x + (rnd() - 0.5) * 1.2, y + 0.03, z + (rnd() - 0.5) * 1.2, 0.8 + rnd() * 0.5, rnd()]);
+      if (rnd() < 0.14) bushes.push([x + (rnd() - 0.5) * 0.9, y + 0.05, z + (rnd() - 0.5) * 0.9, 0.8 + rnd() * 0.6, rnd()]);
+    }
+    const M4 = new T.Matrix4(), Q = new T.Quaternion(), P = new T.Vector3(), Sc = new T.Vector3(), C = new T.Color();
+    const inst = (geo, list, colors, shadow) => {
+      if (!list.length) return;
+      const im = new T.InstancedMesh(geo, new T.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), list.length); im.castShadow = shadow;
+      list.forEach(([x, y, z, s, k], i) => { M4.compose(P.set(x, y, z), Q, Sc.set(s, s, s)); im.setMatrixAt(i, M4); im.setColorAt(i, C.setHex(colors[Math.floor(k * colors.length)])); });
+      grp.add(im);
+    };
+    const G = V.fgeo = V.fgeo || { tuft: (() => { const t = new T.ConeGeometry(0.05, 0.16, 4); t.translate(0, 0.08, 0); return t; })(), flower: new T.DodecahedronGeometry(0.035, 0), bush: new T.DodecahedronGeometry(0.17, 0) };
+    inst(G.tuft, tufts, [0x6f9a45, 0x7fa84f, 0x5d8a3b, 0x8db35a], false);
+    inst(G.flower, flowers, [0xf4f1e0, 0xf2d35b, 0xe79ab0, 0xc9a7e8], false);
+    inst(G.bush, bushes, [0x47783a, 0x557f3e, 0x3d6a33], true);
+    V.world.add(grp);
+  }
 
   // ---------- 部隊模型 ----------
   function sideColor(side) { return side === 'att' ? 0x3b6fc4 : 0xc8463a; }
@@ -253,6 +365,7 @@
     // 名牌
     const lcv = labelTexture(u, g); const ltex = new T.CanvasTexture(lcv); ltex.colorSpace = T.SRGBColorSpace;
     const label = new T.Sprite(new T.SpriteMaterial({ map: ltex, depthTest: false, transparent: true, opacity: 0.92 })); label.scale.set(1.5, 0.42, 1); label.position.y = 1.45; label.renderOrder = 10;
+    label.raycast = () => {};   // 名牌浮在後一格上方，不攔截點擊（點名牌下方的格子才準）
     grp.add(label); rec.label = label; rec.ltex = ltex;
     V.scene.add(grp); V.units.set(u.id, rec);
     placeUnit(u, g, true);
@@ -357,20 +470,19 @@
     const m = new T.Mesh(hexGeo, new T.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false }));
     m.renderOrder = 2; return m;
   }
-  // 格子外框（可移動格用，讓範圍邊界在各種地形上都清楚）
+  // 格子外框（可移動格用：淡淡的白框）
   let edgeGeo = null;
-  function hexEdge(color) {
-    edgeGeo = edgeGeo || new T.RingGeometry(0.8, 0.97, 6, 1, Math.PI / 6);
-    const m = new T.Mesh(edgeGeo, new T.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, depthWrite: false, side: T.DoubleSide }));
+  function hexEdge(color, opacity = 0.95) {
+    edgeGeo = edgeGeo || new T.RingGeometry(0.84, 0.95, 6, 1, Math.PI / 6);
+    const m = new T.Mesh(edgeGeo, new T.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, side: T.DoubleSide }));
     m.rotation.x = -Math.PI / 2; m.renderOrder = 3; return m;
   }
   function highlight(list) {
     clearHighlights();
     for (const h of list) {
-      const o = hexOverlay(h.color, h.opacity || 0.45); const [x, z] = wpos(h.c, h.r);
-      o.position.set(x, topAt(V.g, h.c, h.r) + 0.04, z); if (h.scale) o.scale.setScalar(h.scale);
-      V.scene.add(o); V.hl.push(o);
-      if (h.edge) { const e = hexEdge(h.edge); e.position.set(x, topAt(V.g, h.c, h.r) + 0.05, z); V.scene.add(e); V.hl.push(e); }
+      const [x, z] = wpos(h.c, h.r);
+      if (h.color != null) { const o = hexOverlay(h.color, h.opacity || 0.45); o.position.set(x, topAt(V.g, h.c, h.r) + 0.04, z); if (h.scale) o.scale.setScalar(h.scale); V.scene.add(o); V.hl.push(o); }
+      if (h.edge) { const e = hexEdge(h.edge, h.edgeOpacity); e.position.set(x, topAt(V.g, h.c, h.r) + 0.05, z); V.scene.add(e); V.hl.push(e); }
     }
     V.dirty = true;
   }
@@ -467,8 +579,9 @@
     if (hu.length) {
       for (const [id, rec] of V.units) { let o = hu[0].object; while (o) { if (o === rec.grp) { const u = V.g.units[id]; V.onTap(u.c, u.r); return; } o = o.parent; } }
     }
-    const hit = V.ray.intersectObject(V.tiles, false)[0];
-    if (hit && hit.instanceId != null) { const [c, r] = V.tileIdx[hit.instanceId]; V.onTap(c, r); }
+    const hit = V.ray.intersectObjects([V.tiles, ...(V.wallPick || [])], false)[0];
+    if (hit && hit.object.userData.hex) { const [c, r] = hit.object.userData.hex; V.onTap(c, r); }
+    else if (hit && hit.instanceId != null) { const [c, r] = V.tileIdx[hit.instanceId]; V.onTap(c, r); }
   }
   function rotate(deg) { V.cam3.yaw += deg; V.dirty = true; }
   function zoom(f) { V.cam3.dist = clampN(V.cam3.dist * f, 7, 55); V.dirty = true; }

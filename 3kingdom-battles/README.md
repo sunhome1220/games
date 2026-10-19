@@ -26,7 +26,7 @@
 | `js/data.js` | 地形、兵種、陣型、技能、武將、戰役劇本與文字（**調整平衡主要改這裡**） |
 | `js/rules.js` | 規則（不碰畫面）：移動、控制區、傷害、方向、合擊、完整度崩潰、攻城、回合結算、下邳事件、勝負與結局 |
 | `js/ai.js` | 電腦：每支部隊列出可到達位置 × 動作打分（戰果 − 風險 + 往目標的路程） |
-| `js/render3d.js` | Three.js 3D 畫面：地形、城池、陣型小兵、器械模型、方向弱點圈、動畫 |
+| `js/render3d.js` | Three.js 3D 畫面：地形（草叢、野花、灌木用 InstancedMesh）、城池（直向城牆在畫面上對齊成直線 `computeSnap`，`buildWalls` 畫連續城垣；規則仍是六角格）、陣型小兵、器械模型、方向弱點圈、動畫 |
 | `js/portraits.js` | 武將頭像：依《三國演義》外貌描寫用 SVG 繪製（`LOOKS`），以及演義中寫到的情緒（`MOODS`，附原文與回數）；戰前說明「登場武將」、部隊資訊、事件、單挑／技能特寫與結局會用到 |
 | `assets/portraits/` | 頭像美術規範 `ART_GUIDE.md`、人物清單與生成模板 `characters.js`、生成紀錄 `log.json`、提示詞 `prompts/`；PNG 審核通過後自動取代 SVG |
 | `tools/portraits.js` | 頭像工具：`prompts` 產生提示詞、`import` 入庫並記錄、`check` 檢查對應與規格、`sheet` 縮小辨識度對照表、`gen` 直接呼叫 OpenAI 圖片 API |
