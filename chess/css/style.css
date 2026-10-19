@@ -35,9 +35,9 @@
             font-weight:700; box-shadow:0 4px 14px #0008; padding:10px 18px; border-radius:20px; }
   #newver[hidden] { display:none; }
   #ver { color:#a9bcaf; font-size:12px; text-align:right; margin-top:8px; }
-  #cardPick, #logOv { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:15; padding:14px; overflow:auto; }
-  #logOv { z-index:30; }
-  #cardPick[hidden], #logOv[hidden] { display:none; }
+  #cardPick, #logOv, #installOv { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:15; padding:14px; overflow:auto; }
+  #logOv, #installOv { z-index:30; }
+  #cardPick[hidden], #logOv[hidden], #installOv[hidden] { display:none; }
   .pbox { background:#2b3a31; border:1px solid #6b8a74; border-radius:12px; padding:16px; width:100%; max-width:400px; -webkit-user-select:none; user-select:none; }
   .pbox.flip { transform:rotate(180deg); }
   .pbox h2 { margin:0 0 4px; font-size:19px; color:#ffd166; text-align:center; }
@@ -82,3 +82,6 @@ label.tilt { flex:1; display:flex; align-items:center; gap:8px; }
 label.tilt input { flex:1; }
 #v3d.on, #v2d.on { background:#f1c40f; font-weight:700; }
 #lobby .row #v3d, #lobby .row #v2d { flex:1; text-align:center; }
+#installOv ol { margin:6px 0 10px; padding-left:20px; font-size:14px; line-height:1.55; color:#dfe9e2; }
+#installOv .sub { font-size:13px; color:#a9bcaf; }
+#installOv #instUrl { color:#ffd166; word-break:break-all; user-select:text; -webkit-user-select:text; }
