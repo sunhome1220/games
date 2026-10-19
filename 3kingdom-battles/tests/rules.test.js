@@ -240,4 +240,20 @@ module.exports = [
     env.assert(isFinite(r.leap) && !isFinite(r.noLeap), '只有孫權能躍馬：' + JSON.stringify(r));
     env.assert(r.over && r.over.winner, 'AI 對 AI 應分出勝負：' + JSON.stringify(r.over));
   } },
+  { name: '救援合流：呂布剩 50 人被圍，高順殺到旁邊合流，呂布脫困、兵力相加', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = T.setup([{ gen: 'lubu', c: 6, r: 8, troops: 50, face: 0 }, { gen: 'gaoshun', c: 5, r: 8, face: 0 },
+        { gen: 'guanyu', c: 7, r: 8, face: 3 }, { gen: 'xiahoudun', c: 6, r: 7, face: 4 }, { gen: 'liubei', c: 6, r: 9, face: 2 }, { gen: 'caocao', c: 0, r: 0 }]);
+      const lu = T.u('lubu'), gao = T.u('gaoshun');
+      g.active = gao.id; gao.moved = false; gao.acted = false;
+      const act = RULES.actionsFor(g, gao).find(a => a.id === 'merge');
+      g.order = [gao.id, lu.id]; g.oi = 0;
+      const ok = RULES.doAction(g, gao, 'merge', lu.id);
+      return { has: !!act && act.targets.includes(lu.id), ok, luAlive: lu.alive, gaoAlive: gao.alive, at: [lu.c, lu.r], troops: lu.troops, type: lu.type, over: g.over, again: g.order.slice(g.oi + 1).includes(lu.id) };
+    });
+    env.assert(!r.again, '合流後呂布這回合不應再行動');
+    env.assert(r.has && r.ok, JSON.stringify(r));
+    env.assert(r.luAlive && !r.gaoAlive && r.at[0] === 5 && r.at[1] === 8 && r.troops === 2550 && r.type === 'inf' && !r.over, JSON.stringify(r));
+  } },
 ];
