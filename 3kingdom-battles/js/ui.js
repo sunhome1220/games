@@ -5,7 +5,7 @@
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const S = { g: null, side: null, speed: 1, mode: 'main', inspect: null, pending: null, preview: null, busy: false, fast: false, auto: false };
   root.UI = S;
-  const COL = { move: 0x4fc3f7, attack: 0xff4d3d, struct: 0xff9a3a, target: 0xc77dff, face: 0xffe08a };
+  const COL = { move: 0x00e5ff, moveEdge: 0xe8fdff, attack: 0xff4d3d, struct: 0xff9a3a, target: 0xc77dff, face: 0xffe08a };
 
   // ---------- 武將頭像 ----------
   const P = root.PORTRAITS;
@@ -181,7 +181,7 @@
     } else if (S.mode === 'target' && S.pending) {
       for (const t of S.pending.targets) { const [c, r] = typeof t === 'object' ? [t.c, t.r] : [g.units[t].c, g.units[t].r]; L.push({ c, r, color: COL.target, opacity: 0.6 }); }
     } else if (S.mode === 'main') {
-      if (!u.moved) for (const [k, v] of R.reachable(g, u)) if (!v.blocked && v.cost > 0) L.push({ c: v.c, r: v.r, color: COL.move, opacity: 0.35 });
+      if (!u.moved) for (const [k, v] of R.reachable(g, u)) if (!v.blocked && v.cost > 0) L.push({ c: v.c, r: v.r, color: COL.move, opacity: 0.55, edge: COL.moveEdge });
       if (!u.acted) {
         for (const t of R.attackTargets(g, u)) L.push({ c: t.c, r: t.r, color: COL.attack, opacity: 0.6 });
         for (const s of R.structTargets(g, u)) L.push({ c: s.c, r: s.r, color: COL.struct, opacity: 0.6 });

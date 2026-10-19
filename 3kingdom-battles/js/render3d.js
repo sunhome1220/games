@@ -356,12 +356,20 @@
     const m = new T.Mesh(hexGeo, new T.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false }));
     m.renderOrder = 2; return m;
   }
+  // 格子外框（可移動格用，讓範圍邊界在各種地形上都清楚）
+  let edgeGeo = null;
+  function hexEdge(color) {
+    edgeGeo = edgeGeo || new T.RingGeometry(0.8, 0.97, 6, 1, Math.PI / 6);
+    const m = new T.Mesh(edgeGeo, new T.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, depthWrite: false, side: T.DoubleSide }));
+    m.rotation.x = -Math.PI / 2; m.renderOrder = 3; return m;
+  }
   function highlight(list) {
     clearHighlights();
     for (const h of list) {
       const o = hexOverlay(h.color, h.opacity || 0.45); const [x, z] = wpos(h.c, h.r);
       o.position.set(x, topAt(V.g, h.c, h.r) + 0.04, z); if (h.scale) o.scale.setScalar(h.scale);
       V.scene.add(o); V.hl.push(o);
+      if (h.edge) { const e = hexEdge(h.edge); e.position.set(x, topAt(V.g, h.c, h.r) + 0.05, z); V.scene.add(e); V.hl.push(e); }
     }
     V.dirty = true;
   }
