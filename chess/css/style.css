@@ -138,3 +138,14 @@ i.tier.t2 { background:#2f6fb5; } i.tier.t3 { background:#8e3fb8; } i.tier.t4 { 
 @keyframes soonPulse { from { opacity:.6; } to { opacity:1; text-shadow:0 0 8px #ffd166; } }
 @media (prefers-reduced-motion: reduce) { .cbtn, .cbtn::after, #cardBox::before, #cardBox h2, #drawIn b.soon { animation:none !important; } }
 #cardPick { overflow-x:hidden; }
+
+/* 操作說明：獨立畫面 */
+#helpOv { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:16; padding:14px; }
+#helpOv[hidden] { display:none; }
+#helpOv .pbox.wide { max-width:640px; max-height:calc(100dvh - 28px); display:flex; flex-direction:column; }
+#helpOv .tblWrap { overflow:auto; -webkit-overflow-scrolling:touch; flex:1; min-height:0; }
+#helpOv #legend { width:100%; font-size:12.5px; color:#dfe9e1; border-collapse:collapse; }
+#helpOv #legend th, #helpOv #legend td { border-bottom:1px solid #4d6355; padding:5px 6px; text-align:left; vertical-align:top; }
+#helpOv #legend th { color:#e8c88a; position:sticky; top:0; background:#2b3a31; white-space:nowrap; }
+#helpBtn { margin:6px 14px 0; }
+#helpOv #legend td:last-child { min-width:230px; line-height:1.5; }

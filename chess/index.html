@@ -23,10 +23,11 @@
 <div id="bar"><div id="info"></div><button id="fire" hidden>出發</button><button id="undo" hidden>↩ 取消移動</button><button id="skip" disabled>不射擊</button></div>
 <canvas id="cv"></canvas>
 <div id="perksBar"><button id="perkBtn" hidden>🃏 我的強化</button><span id="drawIn" hidden></span><span id="perks"></span></div>
-<table id="legend"></table>
+<button id="helpBtn">📖 操作說明・各棋子一覽</button>
 <div id="toast"></div>
 <div id="cardPick" hidden><div class="pbox" id="cardBox"><h2 id="cardTitle"></h2><div class="sub" id="cardSub"></div><div id="cardList"></div></div></div>
 <div id="perkOv" hidden><div class="pbox"><h2>🃏 我的強化</h2><div class="tabs"><button id="pTab0">紅方</button><button id="pTab1">黑方</button></div><div id="perkBody"></div><button id="perkClose" style="width:100%;margin-top:8px">關閉</button></div></div>
+<div id="helpOv" hidden><div class="pbox wide"><h2>📖 操作說明・各棋子一覽</h2><div class="sub">拉動己方棋子移動，停下後點黃色準星的敵人開火；以下是各兵種的規格與特性。</div><div class="tblWrap"><table id="legend"></table></div><button id="helpClose" style="width:100%;margin-top:8px">關閉</button></div></div>
 <div id="logOv" hidden><div class="pbox"><h2>📋 更新內容</h2><div id="logBody"></div><button id="logClose" style="width:100%;margin-top:8px">知道了</button></div></div>
 <div id="installOv" hidden><div class="pbox"><h2>📲 加到主畫面</h2><ol id="instSteps"></ol>
   <div class="sub">遊戲連結（也可以分享給朋友）：<br><b id="instUrl"></b></div>
@@ -42,7 +43,7 @@
   <div class="row lv">
     <button data-lv="1">1<br>新手</button><button data-lv="2">2<br>簡單</button><button data-lv="3">3<br>普通</button><button data-lv="4">4<br>困難</button><button data-lv="5">5<br>大師</button>
   </div>
-  <button id="mRestart">↺ 重新開始這局</button>
+  <div class="row"><button id="mRestart" style="flex:1">↺ 重新開始這局</button><button id="mHelp" style="flex:1">📖 操作說明</button></div>
   <details class="sec" id="secNet"><summary>🌐 兩台裝置連線</summary>
     <button id="mHost">建立房間（我執紅先手）</button>
     <div class="row"><input id="roomIn" inputmode="numeric" maxlength="4" placeholder="輸入 4 位數房號"><button id="mJoin">加入（執黑）</button></div>
@@ -65,25 +66,25 @@
     <div id="ver"></div>
   </details>
 </div></div>
-<script src="js/config.js?v=2026-10-19.14"></script>
-<script src="js/audio.js?v=2026-10-19.14"></script>
-<script src="js/particles.js?v=2026-10-19.14"></script>
-<script src="js/physics.js?v=2026-10-19.14"></script>
-<script src="js/movement.js?v=2026-10-19.14"></script>
-<script src="js/combat.js?v=2026-10-19.14"></script>
-<script src="js/turn.js?v=2026-10-19.14"></script>
-<script src="js/input.js?v=2026-10-19.14"></script>
-<script src="js/render.js?v=2026-10-19.14"></script>
-<script src="js/render3d.js?v=2026-10-19.14"></script>
-<script src="js/view3d.js?v=2026-10-19.14"></script>
-<script src="js/ai.js?v=2026-10-19.14"></script>
-<script src="js/cards.js?v=2026-10-19.14"></script>
-<script src="js/changelog.js?v=2026-10-19.14"></script>
-<script src="js/version.js?v=2026-10-19.14"></script>
-<script src="js/update.js?v=2026-10-19.14"></script>
-<script src="js/pwa.js?v=2026-10-19.14"></script>
-<script src="js/tip.js?v=2026-10-19.14"></script>
-<script src="js/network.js?v=2026-10-19.14"></script>
-<script src="js/main.js?v=2026-10-19.14"></script>
+<script src="js/config.js?v=2026-10-19.15"></script>
+<script src="js/audio.js?v=2026-10-19.15"></script>
+<script src="js/particles.js?v=2026-10-19.15"></script>
+<script src="js/physics.js?v=2026-10-19.15"></script>
+<script src="js/movement.js?v=2026-10-19.15"></script>
+<script src="js/combat.js?v=2026-10-19.15"></script>
+<script src="js/turn.js?v=2026-10-19.15"></script>
+<script src="js/input.js?v=2026-10-19.15"></script>
+<script src="js/render.js?v=2026-10-19.15"></script>
+<script src="js/render3d.js?v=2026-10-19.15"></script>
+<script src="js/view3d.js?v=2026-10-19.15"></script>
+<script src="js/ai.js?v=2026-10-19.15"></script>
+<script src="js/cards.js?v=2026-10-19.15"></script>
+<script src="js/changelog.js?v=2026-10-19.15"></script>
+<script src="js/version.js?v=2026-10-19.15"></script>
+<script src="js/update.js?v=2026-10-19.15"></script>
+<script src="js/pwa.js?v=2026-10-19.15"></script>
+<script src="js/tip.js?v=2026-10-19.15"></script>
+<script src="js/network.js?v=2026-10-19.15"></script>
+<script src="js/main.js?v=2026-10-19.15"></script>
 </body>
 </html>
