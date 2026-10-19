@@ -186,7 +186,7 @@ function endTurn() {
     if (pendingEnd) applyEnd(); else state = 'wait';
     return;
   }
-  if (winner !== null) { state = 'over'; SFX.play('win'); send({ t: 'end', snap: snapshot() }); return; }
+  if (winner !== null) { state = 'over'; SFX.play('win'); countGame(); send({ t: 'end', snap: snapshot() }); return; }
   // 裝填倒數：每結束一個自己的回合減 1（開火那回合不算）
   for (const p of pieces) {
     if (!(p.cd > 0)) continue;
