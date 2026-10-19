@@ -101,7 +101,7 @@
   async function enterBattle(g, side, fresh) {
     show('scrBattle');
     const sc = g.sc; $('#title').textContent = sc.name;
-    S.g = g; S.side = side; S.mode = 'main'; S.inspect = null; S.preview = null; S.pending = null;
+    S.g = g; S.side = side; S.skipRound = null; S.mode = 'main'; S.inspect = null; S.preview = null; S.pending = null;
     root.G = S.g;
     if (!(await root.V3.init($('#stage')))) { $('#panel').innerHTML = '<p>這台裝置無法顯示 3D 畫面（不支援 WebGL）。</p>'; return; }
     root.V3.onTap = onTap;
@@ -166,7 +166,10 @@
       if (g.over) break;
       const u = R.activeUnit(g); if (!u) break;
       renderHUD();
-      if (isMine(u)) { beginPlayer(u); return; }
+      if (isMine(u)) {
+        if (S.skipRound === g.round) { R.endActivation(g); continue; }   // 「結束本回合」：其餘己方部隊原地待命
+        beginPlayer(u); return;
+      }
       S.busy = true; $('#busy').hidden = false; renderPanelEnemy(u);
       if (!S.fast) { root.V3.focus(u.c, u.r); await wait(260 / S.speed); }
       AI.act(g, u);
@@ -266,6 +269,9 @@
     if (t && t.side !== u.side && R.attackTargets(g, u).includes(t)) { S.preview = { unit: t.id, c, r }; S.inspect = null; refresh(); return; }
     const st = R.structTargets(g, u).find(s => s.c === c && s.r === r);
     if (st && !t) { S.preview = { struct: st.k, c, r }; refresh(); return; }
+    if (t && t.side === u.side && t !== u && R.canChoose(g, t.id)) { S.preview = null; S.inspect = null; switchTo(t.id); return; }
+    // 同格的器械：點第二次換成器械
+    if (t && t === u) { const o = R.unitsAt(g, c, r).find(v => v !== u && R.canChoose(g, v.id)); if (o) { switchTo(o.id); return; } }
     if (t) { S.preview = null; S.inspect = t === u ? null : t.id; refresh(); return; }
     if (!u.moved) {
       const reach = R.reachable(g, u); const v = reach.get(H.key(c, r));
@@ -303,8 +309,19 @@
   }
   function endUnit() {
     const g = S.g, u = R.activeUnit(g);
-    if (!u.attacked && S.mode !== 'face') { S.mode = 'face'; S.preview = null; S.inspect = null; root.V3.focus(u.c, u.r); refresh(); return; }
+    if (!u.attacked && !R.isEngine(u) && S.mode !== 'face') { S.mode = 'face'; S.preview = null; S.inspect = null; root.V3.focus(u.c, u.r); refresh(); return; }
     finishUnit();
+  }
+  async function endRound() {
+    const g = S.g, n = R.upcoming(g, 99).filter(id => g.units[id].side === S.side).length;
+    const ok = await modal(`<h2>結束本回合</h2><p>這支部隊和其餘 ${Math.max(0, n - 1)} 支還沒行動的己方部隊，這回合都原地待命（保持目前朝向）。</p>`, [['結束本回合', true], ['取消', false]]);
+    if (!ok || S.g !== g) return;
+    S.skipRound = g.round; finishUnit();
+  }
+  // 改派另一支己方部隊先行動
+  function switchTo(id) {
+    const g = S.g; if (!R.chooseActive(g, id)) return false;
+    const u = R.activeUnit(g); toast(`改由 ${u.name} 先行動`); beginPlayer(u); return true;
   }
   function finishUnit() {
     const g = S.g; S.mode = 'main'; root.V3.clearHighlights(); root.V3.showSides(null); root.V3.selectRing(null);
@@ -357,12 +374,12 @@
       h += `<div class="hint">【${esc(S.pending.name)}】點選紫色的目標。${esc(S.pending.desc || '')}</div><div class="acts"><button id="bTgBack">↩ 取消</button></div>`;
     } else {
       if (S.preview) h += previewHTML(u);
-      else h += `<div class="hint">${!u.moved ? '點白框格子移動；' : ''}${!u.acted ? '點紅色敵軍預覽攻擊；也可以用下面的按鈕。' : '動作已用完，按「結束行動」選朝向。'}</div>`;
+      else h += `<div class="hint">${!u.moved ? '點白框格子移動；' : ''}${!u.acted ? '點紅色敵軍預覽攻擊；也可以用下面的按鈕。' : R.isEngine(u) ? '動作已用完，按「結束行動」。' : '動作已用完，按「結束行動」選朝向。'}${!u.moved && !u.acted ? '<br><small>想先動別的部隊：點地圖上或上方順序列中自己的部隊。</small>' : ''}</div>`;
       const acts = R.actionsFor(g, u).filter(a => !(a.pre && u.moved));
       h += '<div class="acts">';
       acts.forEach((a, i) => { h += `<button data-a="${i}" class="${a.skill ? 'skill' : ''}" ${a.enabled ? '' : 'style="opacity:.45"'} title="${esc(a.desc || '')}">${esc(a.name)}</button>`; });
       if (u.moved && !u.acted) h += `<button id="bUndo">↶ 取消移動</button>`;
-      h += `<button class="end" id="bEnd">${u.attacked ? '✔ 結束行動' : '結束行動 ▶'}</button></div>`;
+      h += `<button class="end" id="bEnd">${u.attacked || R.isEngine(u) ? '✔ 結束行動' : '結束行動 ▶'}</button><button id="bEndRound" title="其餘還沒行動的己方部隊這回合都原地待命">⏭ 結束本回合</button></div>`;
       S._acts = acts;
     }
     h += lastLogHTML();
@@ -370,7 +387,7 @@
     for (const b of document.querySelectorAll('#panel [data-a]')) b.onclick = () => onAction(S._acts[+b.dataset.a]);
     for (const b of document.querySelectorAll('#panel [data-f]')) b.onclick = () => act('form', b.dataset.f);
     const on = (id, fn) => { const e = $(id); if (e) e.onclick = fn; };
-    on('#bEnd', endUnit); on('#bFaceOk', finishUnit); on('#bFaceBack', () => { S.mode = 'main'; refresh(); });
+    on('#bEnd', endUnit); on('#bFaceOk', finishUnit); on('#bEndRound', endRound); on('#bFaceBack', () => { S.mode = 'main'; refresh(); });
     on('#bFormBack', () => { S.mode = 'main'; S.pending = null; refresh(); }); on('#bTgBack', () => { S.mode = 'main'; S.pending = null; refresh(); });
     on('#bUndo', () => { R.undoMove(g, u); drain().then(refresh); });
     hookFaces(); on('#bPvOk', confirmPreview); on('#bPvNo', () => { S.preview = null; refresh(); });
@@ -420,7 +437,11 @@
     const dig = $('#hDig'); if (dig) dig.onclick = () => { const d = digHexes(g)[0]; if (d) { root.V3.focus(d[0], d[1]); toast('⛏ 河堤：曹軍步兵或弓兵站上來就能「掘堤」', 2600); } };
     root.V3.digMarks && root.V3.digMarks(g, v.digOpen && !v.flooded ? digHexes(g).filter(([c, r]) => !R.unitAt(g, c, r)) : []);
     const ids = R.upcoming(g, 14);
-    $('#order').innerHTML = ids.map((id, i) => { const u = g.units[id]; const e = R.isEngine(u); return `<div class="chip ${u.side} ${i === 0 ? 'now' : ''} ${e ? 'eng' : ''}" title="${esc(u.name)}">${e ? R.ty(u).icon : R.gen(u).mark}</div>`; }).join('');
+    $('#order').innerHTML = ids.map((id, i) => { const u = g.units[id]; const e = R.isEngine(u); return `<div class="chip ${u.side} ${i === 0 ? 'now' : ''} ${e ? 'eng' : ''} ${R.canChoose(g, id) && isMine(R.activeUnit(g)) && !S.busy ? 'pick' : ''}" data-id="${id}" title="${esc(u.name)}">${e ? R.ty(u).icon : R.gen(u).mark}</div>`; }).join('');
+    for (const el of document.querySelectorAll('#order .chip')) el.onclick = () => {
+      const id = +el.dataset.id, v = g.units[id];
+      if (!S.busy && isMine(R.activeUnit(g)) && S.mode === 'main' && R.canChoose(g, id)) switchTo(id); else root.V3.focus(v.c, v.r);
+    };
   }
   const digHexes = g => { const L = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') L.push([c, r]); return L; };
   let toastT = null;

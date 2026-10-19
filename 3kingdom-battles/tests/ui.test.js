@@ -112,4 +112,12 @@ module.exports = [
     await pg.click('#modalBtns button:has-text("存檔 2")'); await env.myTurn(pg);
     env.assert.strictEqual(await pg.evaluate(snap), saved);
   } },
+  { name: '結束本回合：其餘己方部隊原地待命，直接進下一回合', async fn(env) {
+    const pg = await env.open('sc=xiapi&side=att&seed=4&fast');
+    await env.myTurn(pg);
+    const round = await pg.evaluate(() => G.round);
+    await pg.click('#bEndRound'); await pg.click('#modalBtns button:has-text("結束本回合")');
+    await env.myTurn(pg);
+    env.assert.strictEqual(await pg.evaluate(() => G.round), round + 1);
+  } },
 ];

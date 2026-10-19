@@ -580,7 +580,9 @@
   }
   function placeUnit(u, g, instant) {
     const rec = V.units.get(u.id); if (!rec) return;
-    const [x, z] = wpos(u.c, u.r); const y = topAt(g, u.c, u.r);
+    let [x, z] = wpos(u.c, u.r); const y = topAt(g, u.c, u.r);
+    // 同一格兩支部隊（器械＋友軍）：器械往右後方挪，作戰部隊往左前方挪
+    if (g.units.some(v => v !== u && v.alive && v.c === u.c && v.r === u.r)) { const e = root.RULES.isEngine(u) ? 1 : -1; x += e * 0.42; z += e * 0.3; }
     rec.home = [x, y, z];
     if (instant || !rec.moving) rec.grp.position.set(x, y, z);
     rec.targetYaw = HX.angleOf(u.face) * Math.PI / 180;

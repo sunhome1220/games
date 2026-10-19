@@ -195,4 +195,26 @@ module.exports = [
     env.assert(isFinite(r.wadeInf) && !isFinite(r.wadeEng), '步兵可以涉水、器械不行：' + JSON.stringify(r));
     env.assert(r.receded && r.after === 'm' && isFinite(r.engAfter), '3 回合後應退成泥濘、器械可以通過：' + JSON.stringify(r));
   } },
+  { name: '同格與順序：器械可和一支友軍同格；己方可以改派別的部隊先行動', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = RULES.newGame('xiapi', { seed: 3 });
+      const ram = g.units.find(u => u.type === 'ram'), inf = g.units.find(u => u.side === 'att' && u.type === 'inf' && u.alive), cav = g.units.find(u => u.side === 'att' && u.type === 'cav' && u.alive);
+      inf.c = 5; inf.r = 12; cav.c = 7; cav.r = 12; ram.c = 6; ram.r = 13;
+      const engWithInf = RULES.canStop(g, ram, 5, 12), cavWithInf = RULES.canStop(g, cav, 5, 12);
+      ram.c = 5; ram.r = 12; const third = RULES.canStop(g, g.units.find(u => u.type === 'ladder'), 5, 12);
+      const top = RULES.unitAt(g, 5, 12) === inf;
+      // 改派順序
+      RULES.startRound(g);
+      while (RULES.activeUnit(g).side !== 'att') RULES.endActivation(g);
+      const cur = RULES.activeUnit(g);
+      const later = g.order.slice(g.oi + 1).map(id => g.units[id]).find(u => u.side === 'att' && u.alive);
+      const ok = RULES.chooseActive(g, later.id);
+      const nowActive = RULES.activeUnit(g) === later, curNext = g.order[g.oi + 1] === cur.id;
+      RULES.endActivation(g);
+      return { engWithInf, cavWithInf, third, top, ok, nowActive, curNext, curAfter: RULES.activeUnit(g) === cur };
+    });
+    env.assert(r.engWithInf && !r.cavWithInf && !r.third && r.top, '同格規則：' + JSON.stringify(r));
+    env.assert(r.ok && r.nowActive && r.curNext && r.curAfter, '改派順序：' + JSON.stringify(r));
+  } },
 ];

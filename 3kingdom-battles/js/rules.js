@@ -63,7 +63,19 @@
   // ---------- 查詢 ----------
   const tAt = (g, c, r) => (r >= 0 && r < g.Hh && c >= 0 && c < g.W ? g.map[r][c] : null);
   const terr = (g, c, r) => TERRAIN[tAt(g, c, r)];
-  const unitAt = (g, c, r) => g.units.find(u => u.alive && u.c === c && u.r === r) || null;
+  // 一格最多兩支部隊：器械可以和一支友軍同格（避免器械塞住路口）。unitAt 優先回傳作戰部隊
+  function unitAt(g, c, r) {
+    let eng = null;
+    for (const u of g.units) if (u.alive && u.c === c && u.r === r) { if (!ty(u).engine) return u; eng = eng || u; }
+    return eng;
+  }
+  const unitsAt = (g, c, r) => g.units.filter(u => u.alive && u.c === c && u.r === r);
+  // u 能不能停在這一格
+  function canStop(g, u, c, r) {
+    const o = unitsAt(g, c, r).filter(v => v !== u);
+    if (!o.length) return true;
+    return o.length === 1 && o[0].side === u.side && (isEngine(u) || isEngine(o[0]));
+  }
   const gen = u => GENERALS[u.gen];
   const ty = u => UNIT_TYPES[u.type];
   const isEngine = u => !!ty(u).engine;
@@ -148,8 +160,8 @@
         open.push([nc2, nc, nr]);
       }
     }
-    // 不能停在友軍所在的格子
-    for (const [k, v] of res) if (k !== start && unitAt(g, v.c, v.r)) v.blocked = true;
+    // 不能停在友軍所在的格子（器械可以和一支友軍同格）
+    for (const [k, v] of res) if (k !== start && !canStop(g, u, v.c, v.r)) v.blocked = true;
     return res;
   }
   function pathTo(reach, k) { const p = []; let cur = k; while (cur) { const v = reach.get(cur); p.unshift([v.c, v.r]); cur = v.prev; } return p; }
@@ -184,6 +196,19 @@
     Object.assign(u, { moved: false, acted: false, attacked: false, mpBonus: 0, ignoreZOC: false, buff: {}, sortie: false, moveLen: 0, from: [u.c, u.r, u.face] });
   }
   const activeUnit = g => (g.active == null ? null : g.units[g.active]);
+  // 不必照順序：輪到己方時（目前的部隊還沒移動、沒動作），可以改派本回合還沒行動的其他己方部隊先動
+  function canChoose(g, id) {
+    const cur = activeUnit(g), u = g.units[id];
+    if (!cur || !u || !u.alive || u === cur || u.side !== cur.side || cur.moved || cur.acted) return false;
+    return g.order.indexOf(id) > g.oi;
+  }
+  function chooseActive(g, id) {
+    if (!canChoose(g, id)) return false;
+    const cur = activeUnit(g);
+    Object.assign(cur, { moved: false, acted: false });
+    g.order.splice(g.order.indexOf(id), 1); g.order.splice(g.oi, 0, id);   // 選中的插到現在，原本輪到的順延一位
+    beginActivation(g, g.units[id]); return true;
+  }
   function endActivation(g) {
     const u = activeUnit(g); if (u) { u.moved = u.acted = true; }
     nextActivation(g);
@@ -393,6 +418,7 @@
     const t = ty(u); if (t.atk <= 0 || u.acted) return [];
     const res = [];
     for (const v of enemiesOf(g, u)) {
+      if (isEngine(v) && unitAt(g, v.c, v.r) !== v) continue;   // 和作戰部隊同格的器械受到掩護，要先打作戰部隊
       const d = H.dist(u.c, u.r, v.c, v.r);
       if (t.ranged) { if (d <= rangeOf(g, u) && d >= (t.minRng || 1)) res.push(v); }
       else if (u.type === 'ram') { /* 衝車只撞門 */ }
@@ -767,7 +793,7 @@
   // ---------- 匯出 ----------
   root.RULES = {
     newGame, serialize, restore, startRound, nextActivation, endActivation, activeUnit, upcoming,
-    reachable, pathTo, moveUnit, undoMove, setFacing, maxMP,
+    reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
     attackTargets, structTargets, attack, calcDamage, canCounter, actionsFor, doAction,
     unitAt, terr, tAt, state, STATE_NAME, formOf, encircled, adjEnemies, sideHit, inCity, onWall, isEngine, gen, ty, has, alive, enemiesOf, friendsOf,
     rangeOf, canMeleeReach, ENDINGS, other, clamp, inZOC, moveCost,
