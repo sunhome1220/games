@@ -4,7 +4,8 @@
 // 河道泥濘（摩擦加倍），帥/將被限制在九宮內。
 const C = 56, M = 46, W = C * 8 + M * 2, H = C * 9 + M * 2, R = 21;
 const FR = 900, RIVER_FR = 2.6, MAXPULL = 120, E = 0.85, DPR = 2;
-const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const cv = document.getElementById('cv');
+let ctx = cv.getContext('2d');   // 立體模式會暫時換成離屏畫布（見 render3d.js 的 withCtx）
 cv.width = W * DPR; cv.height = H * DPR; ctx.scale(DPR, DPR);
 // 擋掉長按選單／選字／捲動等瀏覽器預設手勢（pointer 事件仍正常觸發）
 cv.addEventListener('contextmenu', e => e.preventDefault());

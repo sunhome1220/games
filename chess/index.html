@@ -10,7 +10,7 @@
 <header>
   <a href="../index.html">← 選單</a>
   <span id="turn"></span>
-  <span><button id="quick" title="快速模式：點綠點立即出發，不需確認">⚡快速</button> <button id="mute" title="音效開關">🔊</button> <button id="menu" title="對戰模式／重新開始">☰</button></span>
+  <span><button id="quick" title="快速模式：點綠點立即出發，不需確認">⚡快速</button> <button id="camBtn" title="重置視角（3D）" hidden>🎥</button> <button id="mute" title="音效開關">🔊</button> <button id="menu" title="對戰模式／重新開始">☰</button></span>
 </header>
 <div id="bar"><div id="info"></div><button id="fire" hidden>出發</button><button id="undo" hidden>↩ 取消移動</button><button id="skip" disabled>不射擊</button></div>
 <canvas id="cv"></canvas>
@@ -34,6 +34,10 @@
   <div class="row lv">
     <button data-lv="1">1<br>新手</button><button data-lv="2">2<br>簡單</button><button data-lv="3">3<br>普通</button><button data-lv="4">4<br>困難</button><button data-lv="5">5<br>大師</button>
   </div>
+  <h3>🎥 畫面</h3>
+  <div class="row"><button id="v3d">立體 3D</button><button id="v2d">平面 2D</button></div>
+  <div class="row" id="tiltRow" hidden><label class="tilt">視角傾斜 <input id="tilt" type="range" min="25" max="75" step="5" value="45"> <span id="tiltV">45°</span></label></div>
+  <button id="mRot" hidden>👆 手指旋轉視角：開</button>
   <h3>其他</h3>
   <button id="mRestart">↺ 重新開始這局</button>
   <button id="mLog">📋 更新內容</button>
@@ -41,21 +45,23 @@
   <div id="ver"></div>
   <button id="mClose">✕ 關閉</button>
 </div></div>
-<script src="js/config.js?v=2026-10-18.37"></script>
-<script src="js/audio.js?v=2026-10-18.37"></script>
-<script src="js/particles.js?v=2026-10-18.37"></script>
-<script src="js/physics.js?v=2026-10-18.37"></script>
-<script src="js/movement.js?v=2026-10-18.37"></script>
-<script src="js/combat.js?v=2026-10-18.37"></script>
-<script src="js/turn.js?v=2026-10-18.37"></script>
-<script src="js/input.js?v=2026-10-18.37"></script>
-<script src="js/render.js?v=2026-10-18.37"></script>
-<script src="js/ai.js?v=2026-10-18.37"></script>
-<script src="js/cards.js?v=2026-10-18.37"></script>
-<script src="js/changelog.js?v=2026-10-18.37"></script>
-<script src="js/version.js?v=2026-10-18.37"></script>
-<script src="js/update.js?v=2026-10-18.37"></script>
-<script src="js/network.js?v=2026-10-18.37"></script>
-<script src="js/main.js?v=2026-10-18.37"></script>
+<script src="js/config.js?v=2026-10-19.01"></script>
+<script src="js/audio.js?v=2026-10-19.01"></script>
+<script src="js/particles.js?v=2026-10-19.01"></script>
+<script src="js/physics.js?v=2026-10-19.01"></script>
+<script src="js/movement.js?v=2026-10-19.01"></script>
+<script src="js/combat.js?v=2026-10-19.01"></script>
+<script src="js/turn.js?v=2026-10-19.01"></script>
+<script src="js/input.js?v=2026-10-19.01"></script>
+<script src="js/render.js?v=2026-10-19.01"></script>
+<script src="js/render3d.js?v=2026-10-19.01"></script>
+<script src="js/view3d.js?v=2026-10-19.01"></script>
+<script src="js/ai.js?v=2026-10-19.01"></script>
+<script src="js/cards.js?v=2026-10-19.01"></script>
+<script src="js/changelog.js?v=2026-10-19.01"></script>
+<script src="js/version.js?v=2026-10-19.01"></script>
+<script src="js/update.js?v=2026-10-19.01"></script>
+<script src="js/network.js?v=2026-10-19.01"></script>
+<script src="js/main.js?v=2026-10-19.01"></script>
 </body>
 </html>
