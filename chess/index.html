@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>回力車象棋・戰術瞄準</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <a href="../index.html">← 選單</a>
+  <span id="turn"></span>
+  <span><button id="quick" title="快速模式：點綠點立即出發，不需確認">⚡快速</button> <button id="mute" title="音效開關">🔊</button> <button id="menu" title="對戰模式／重新開始">☰</button></span>
+</header>
+<div id="bar"><div id="info"></div><button id="fire" hidden>出發</button><button id="undo" hidden>↩ 取消移動</button><button id="skip" disabled>不射擊</button></div>
+<canvas id="cv"></canvas>
+<div id="perksBar"><button id="perkBtn" hidden>🃏 我的強化</button><span id="perks"></span></div>
+<table id="legend"></table>
+<div id="toast"></div>
+<div id="cardPick" hidden><div class="pbox" id="cardBox"><h2 id="cardTitle"></h2><div class="sub" id="cardSub"></div><div id="cardList"></div></div></div>
+<div id="perkOv" hidden><div class="pbox"><h2>🃏 我的強化</h2><div class="tabs"><button id="pTab0">紅方</button><button id="pTab1">黑方</button></div><div id="perkBody"></div><button id="perkClose" style="width:100%;margin-top:8px">關閉</button></div></div>
+<div id="logOv" hidden><div class="pbox"><h2>📋 更新內容</h2><div id="logBody"></div><button id="logClose" style="width:100%;margin-top:8px">知道了</button></div></div>
+<button id="newver" hidden>🆕 有新版本，點此更新</button>
+<div id="lobby" hidden><div class="box">
+  <h2>對戰模式</h2>
+  <button id="mCards">🃏 強化卡牌：開<br><small>開局與每 10 回合三選一強化（連線時以房主設定為準）</small></button>
+  <button id="mLocal">📱 同裝置・並排<br><small>兩人輪流用同一支手機／電腦</small></button>
+  <button id="mFace">🔄 同裝置・面對面<br><small>平板放桌上，兩人對坐，黑方文字倒轉</small></button>
+  <h3>🌐 兩台裝置連線</h3>
+  <button id="mHost">建立房間（我執紅先手）</button>
+  <div class="row"><input id="roomIn" inputmode="numeric" maxlength="4" placeholder="輸入 4 位數房號"><button id="mJoin">加入（執黑）</button></div>
+  <div id="netStatus"></div>
+  <h3>🤖 與電腦對戰（我執紅先手）</h3>
+  <div class="row lv">
+    <button data-lv="1">1<br>新手</button><button data-lv="2">2<br>簡單</button><button data-lv="3">3<br>普通</button><button data-lv="4">4<br>困難</button><button data-lv="5">5<br>大師</button>
+  </div>
+  <h3>其他</h3>
+  <button id="mRestart">↺ 重新開始這局</button>
+  <button id="mLog">📋 更新內容</button>
+  <button id="mReload">🔄 重新整理（載入最新版）</button>
+  <div id="ver"></div>
+  <button id="mClose">✕ 關閉</button>
+</div></div>
+<script src="js/config.js?v=2026-10-18.37"></script>
+<script src="js/audio.js?v=2026-10-18.37"></script>
+<script src="js/particles.js?v=2026-10-18.37"></script>
+<script src="js/physics.js?v=2026-10-18.37"></script>
+<script src="js/movement.js?v=2026-10-18.37"></script>
+<script src="js/combat.js?v=2026-10-18.37"></script>
+<script src="js/turn.js?v=2026-10-18.37"></script>
+<script src="js/input.js?v=2026-10-18.37"></script>
+<script src="js/render.js?v=2026-10-18.37"></script>
+<script src="js/ai.js?v=2026-10-18.37"></script>
+<script src="js/cards.js?v=2026-10-18.37"></script>
+<script src="js/changelog.js?v=2026-10-18.37"></script>
+<script src="js/version.js?v=2026-10-18.37"></script>
+<script src="js/update.js?v=2026-10-18.37"></script>
+<script src="js/network.js?v=2026-10-18.37"></script>
+<script src="js/main.js?v=2026-10-18.37"></script>
+</body>
+</html>
