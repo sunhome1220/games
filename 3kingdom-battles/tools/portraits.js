@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // 武將頭像工具（資料在 assets/portraits/characters.js，紀錄在 assets/portraits/log.json）
-//   node 3kingdom-battles/tools/portraits.js prompts [id,id…]      產生提示詞到 assets/portraits/prompts/（貼到任何生成工具用）
-//   node 3kingdom-battles/tools/portraits.js import <id> <圖.png> --model "…" --source "…" --license "…" [--mood m] [--seed n] [--date YYYY-MM-DD]
-//                                                                    手動生成的圖片入庫：檢查 PNG 1024×1024、改成規定檔名、寫入生成紀錄
+//   node 3kingdom-battles/tools/portraits.js prompts [id,id…]      產生提示詞到 assets/portraits/prompts/（含 ChatGPT、Midjourney 版本與第一批清單 batch1.md）
+//   node 3kingdom-battles/tools/portraits.js import <id> <圖> --model "…" --source "…" --license "…" [--mood m] [--seed n] [--date YYYY-MM-DD]
+//                                                                    手動生成的圖片入庫：JPG／WebP／其他尺寸會置中裁切成 1024×1024 PNG，改成規定檔名、寫入生成紀錄
 //   node 3kingdom-battles/tools/portraits.js gen <id,id…> [--n 1]   用 OpenAI 圖片 API 直接生成（需要 OPENAI_API_KEY，模型用 PORTRAIT_MODEL，預設 gpt-image-1）
 //   node 3kingdom-battles/tools/portraits.js check                  檢查人物資料、檔名、圖片規格與紀錄（測試也會跑）
 //   node 3kingdom-battles/tools/portraits.js sheet                  產生縮小辨識度對照表 assets/portraits/sheet.html（＋ sheet.png）
@@ -31,21 +31,42 @@ function prompts() {
   const out = path.join(DIR, 'prompts'); fs.mkdirSync(out, { recursive: true });
   for (const id of ids) {
     const ch = byId(id), p = A.buildPrompt(ch);
-    fs.writeFileSync(path.join(out, `${id}.txt`), `# ${ch.name}（${id}）模板 ${p.template}｜檔名 ${ch.file}\n\n## Prompt\n${p.positive}\n\n## Negative prompt\n${p.negative}\n`);
+    fs.writeFileSync(path.join(out, `${id}.txt`), `# ${ch.name}（${id}）模板 ${p.template}｜檔名 ${ch.file}\n\n## Prompt\n${p.positive}\n\n## Negative prompt\n${p.negative}\n\n## ChatGPT／不支援負面提示詞的工具（整段貼上）\n${p.combined}\n\n## Midjourney（一行）\n${p.midjourney}\n`);
     console.log(`${id}.txt`);
   }
+  // 第一批：一份可以直接複製的清單
+  const b1 = A.CHARACTERS.filter(c => c.batch === 1);
+  fs.writeFileSync(path.join(out, 'batch1.md'), `# 第一批測試頭像提示詞（模板 ${A.TEMPLATE.version}）\n\n每位生成 3～4 張，只用文字提示，不要放參考圖。檔名請取 \`<id>-1.png\`、\`<id>-2.png\`…，連同使用的工具／模型名稱一起上傳。\n\n`
+    + b1.map(ch => { const p = A.buildPrompt(ch); return `## ${ch.name}（${ch.id}）\n\n**ChatGPT 等（整段貼上）**\n\n\`\`\`\n${p.combined}\n\`\`\`\n\n**Midjourney**\n\n\`\`\`\n${p.midjourney}\n\`\`\`\n`; }).join('\n'));
+  console.log('batch1.md');
+}
+
+// 非 1024×1024 PNG（JPG、WebP、其他尺寸）用 Python Pillow 置中裁成正方形再縮放；太小的圖不收
+function normalize(src) {
+  const buf = fs.readFileSync(src), sz = pngSize(buf);
+  if (sz && sz.w === 1024 && sz.h === 1024) return { buf, original: '1024x1024 png' };
+  const { execFileSync } = require('child_process'), tmp = path.join(require('os').tmpdir(), `pt-${process.pid}.png`);
+  const py = `import sys
+from PIL import Image, ImageOps
+im = Image.open(sys.argv[1]); fmt = im.format; im = ImageOps.exif_transpose(im); w, h = im.size; s = min(w, h)
+if s < 768: sys.exit(f"圖片太小：{w}x{h}（短邊至少 768）")
+im = im.convert('RGB').crop(((w - s) // 2, (h - s) // 2, (w - s) // 2 + s, (h - s) // 2 + s)).resize((1024, 1024), Image.LANCZOS)
+im.save(sys.argv[2], 'PNG'); print(f"{w}x{h} {fmt}")`;
+  let original;
+  try { original = execFileSync('python3', ['-I', '-c', py, path.resolve(src), tmp], { encoding: 'utf8', stdio: 'pipe' }).trim(); }
+  catch (e) { throw new Error(String(e.stderr || e.message).trim().split('\n').pop()); }
+  const out = fs.readFileSync(tmp); fs.unlinkSync(tmp);
+  return { buf: out, original: original.toLowerCase() };
 }
 
 function importImage() {
   const [, id, src] = args; const ch = byId(id); const mood = opt('mood');
   const need = ['model', 'source', 'license'].filter(k => !opt(k));
   if (!src || need.length) throw new Error('用法：import <id> <圖.png> --model … --source … --license …（缺 ' + need.join('、') + '）');
-  const buf = fs.readFileSync(src), sz = pngSize(buf);
-  if (!sz) throw new Error('不是 PNG：' + src);
-  if (sz.w !== 1024 || sz.h !== 1024) throw new Error(`尺寸要 1024×1024，這張是 ${sz.w}×${sz.h}`);
+  const { buf, original } = normalize(src);
   const file = fileOf(ch, mood); fs.writeFileSync(path.join(DIR, file), buf);
   const p = A.buildPrompt(ch, moodSpec(ch, mood));
-  writeRecord({ id, mood: mood || 'default', file, date: opt('date') || today(), provider: opt('provider') || 'manual', model: opt('model'), seed: opt('seed') || null, template: p.template, prompt: opt('prompt') || p.positive, negative: p.negative, source: opt('source'), license: opt('license'), sha256: crypto.createHash('sha256').update(buf).digest('hex') });
+  writeRecord({ id, mood: mood || 'default', file, date: opt('date') || today(), provider: opt('provider') || 'manual', model: opt('model'), seed: opt('seed') || null, template: p.template, prompt: opt('prompt') || p.positive, negative: p.negative, source: opt('source'), license: opt('license'), original, sha256: crypto.createHash('sha256').update(buf).digest('hex') });
   console.log(`已存成 assets/portraits/${file}，並寫入生成紀錄。審核後把 characters.js 裡 ${id} 的 status 改成 'approved' 才會在遊戲出現。`);
 }
 

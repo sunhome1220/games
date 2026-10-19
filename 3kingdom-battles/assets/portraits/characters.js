@@ -8,12 +8,12 @@
 
   // ---------- 固定生成模板（不得因角色而改變） ----------
   const TEMPLATE = {
-    version: 'v1',
+    version: 'v2', // v2：臉部加入「多數人審美」要求
     style: 'semi-realistic digital painting, Eastern historical fantasy, painterly brushwork with refined detail, grounded and weighty tone suited to a historical strategy game, late Eastern Han dynasty (circa 200 AD) Chinese costume and armor as historical reference with tasteful artistic stylization',
     lighting: 'soft key light from the upper left at about 45 degrees, gentle fill on the shadow side, subtle warm rim light from the back right separating the figure from the background, cinematic but restrained, no magical glow',
     composition: 'head-and-shoulders bust portrait, single person, centered, facing about three-quarters toward the viewer\'s left, eyes at roughly 40 percent from the top of the frame, the head top at least 10 percent below the top edge, shoulders fully inside the frame with margin on both sides, square 1:1 framing',
     color: 'natural muted palette, restrained saturation, warm earth tones in skin and leather, costume colors limited to the character palette below',
-    face: 'clear readable facial features with natural skin texture and believable proportions, sharp focus on the eyes, expression readable even when scaled down to 64 pixels, attractive modern-appealing features unless the character notes say otherwise',
+    face: 'clear readable facial features with natural skin texture and believable proportions, sharp focus on the eyes, expression readable even when scaled down to 64 pixels, attractive modern-appealing features with broad appeal: harmonious well-proportioned face, clear healthy skin, bright expressive eyes, well-groomed hair and beard, dignified and flattering look, unless the character notes say otherwise',
     background: 'simple softly blurred dark background with a subtle gradient and faint atmospheric haze, no scenery details, no objects, strong value contrast between figure and background',
     negative: [
       'text', 'letters', 'calligraphy', 'logo', 'watermark', 'signature', 'frame', 'border', 'UI elements',
@@ -237,7 +237,14 @@
       `Color: ${T.color}.`,
       `Background: ${T.background}.`,
     ].join('\n');
-    return { positive, negative: T.negative.join(', '), template: T.version };
+    const negative = T.negative.join(', ');
+    return {
+      positive, negative, template: T.version,
+      // 不支援負面提示詞的工具（ChatGPT 等）用單段版本
+      combined: `${positive}\nDo not include: ${negative}.`,
+      // Midjourney：一行，正方形，原始風格，--no 放主要禁止項
+      midjourney: `${positive.replace(/\n/g, ' ')} --ar 1:1 --style raw --no ${T.negative.slice(0, 26).join(', ')}`,
+    };
   }
 
   // 遊戲用：查某武將某情緒有沒有審核通過的圖片
