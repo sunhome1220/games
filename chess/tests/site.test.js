@@ -35,7 +35,8 @@ module.exports = [
   } },
   { name: '加到主畫面按鈕：跳出說明（含平台步驟與可複製的連結）', async fn(t) {
     const pg = await t.open('', { mode: false });
-    await pg.click('#mInstall');
+    t.assert.strictEqual(await pg.evaluate(() => $('secMore').open), false);   // 預設收合
+    await pg.click('#secMore > summary'); await pg.click('#mInstall');
     const r = await pg.evaluate(() => ({ open: !$('installOv').hidden, steps: $('instSteps').children.length, url: $('instUrl').textContent, expect: gameUrl() }));
     t.assert.ok(r.open && r.steps >= 2); t.assert.strictEqual(r.url, r.expect); t.assert.ok(/\/chess\/$/.test(r.url), '連結應指向 chess/：' + r.url);
     await pg.click('#instClose'); t.assert.strictEqual(await pg.evaluate(() => $('installOv').hidden), true);
@@ -47,6 +48,29 @@ module.exports = [
       const r = await pg.evaluate(() => { const h = document.querySelector('header'); return { over: document.documentElement.scrollWidth - window.innerWidth, hdr: h.scrollWidth - h.clientWidth }; });
       t.assert.ok(r.over <= 0 && r.hdr <= 0, `${view} 版面溢出：${JSON.stringify(r)}`); await pg.close();
     }
+  } },
+  { name: '開始畫面：不常用的區塊預設收合，常用按鈕都在畫面內；小螢幕也不超出一頁', async fn(t) {
+    for (const [w, h] of [[360, 640], [390, 700]]) {
+      const pg = await t.ctx.newPage(); await pg.setViewportSize({ width: w, height: h });
+      await pg.goto(`${t.base}/chess/index.html?nolog=1&cards=0&view=2d`); await pg.waitForTimeout(300);
+      const r = await pg.evaluate(() => {
+        const box = document.querySelector('#lobby .box'), vh = innerHeight, inView = id => { const b = $(id).getBoundingClientRect(); return b.top >= 0 && b.bottom <= vh; };
+        return { closed: ['secNet', 'secView', 'secMore'].every(id => !$(id).open), main: ['mCards', 'mLocal', 'mFace', 'mRestart', 'mClose'].every(inView), lv: [...document.querySelectorAll('[data-lv]')].every(b => { const r = b.getBoundingClientRect(); return r.bottom <= vh; }), fit: box.scrollHeight <= box.clientHeight };
+      });
+      t.assert.deepStrictEqual(r, { closed: true, main: true, lv: true, fit: true }, `${w}x${h} ` + JSON.stringify(r)); await pg.close();
+    }
+  } },
+  { name: '開始畫面：全部展開時可捲動，關閉鈕固定在最上方仍點得到', async fn(t) {
+    const pg = await t.ctx.newPage(); await pg.setViewportSize({ width: 360, height: 560 });
+    await pg.goto(`${t.base}/chess/index.html?nolog=1&cards=0&view=2d`); await pg.waitForTimeout(300);
+    await pg.evaluate(() => document.querySelectorAll('#lobby details').forEach(d => { d.open = true; }));
+    const r = await pg.evaluate(() => { const b = document.querySelector('#lobby .box'); b.scrollTop = b.scrollHeight; const c = $('mClose').getBoundingClientRect(); return { scrolls: b.scrollHeight > b.clientHeight, closeVisible: c.top >= 0 && c.bottom <= innerHeight, last: $('ver').getBoundingClientRect().bottom <= innerHeight }; });
+    t.assert.deepStrictEqual(r, { scrolls: true, closeVisible: true, last: true });
+    await pg.click('#mClose'); t.assert.strictEqual(await pg.evaluate(() => $('lobby').hidden), true); await pg.close();
+  } },
+  { name: '連結帶房號（?room=）時自動展開「兩台裝置連線」', async fn(t) {
+    const pg = await t.ctx.newPage(); await pg.goto(`${t.base}/chess/index.html?nolog=1&cards=0&view=2d&room=1234`); await pg.waitForTimeout(400);
+    t.assert.strictEqual(await pg.evaluate(() => $('secNet').open), true); await pg.close();
   } },
   { name: '舊網址 proto-b.html 會轉址到 chess/（保留參數）', async fn(t) {
     const pg = await t.ctx.newPage(); await pg.goto(`${t.base}/proto-b.html?room=1234`); await pg.waitForURL(/chess\/index\.html\?room=1234/, { timeout: 5000 }); await pg.close();
