@@ -88,4 +88,28 @@ module.exports = [
     const t = await pg.textContent('#modalBody');
     env.assert(t.includes('史實經過'), t.slice(0, 80));
   } },
+  { name: '存檔：自動存檔、手動儲存、重新開啟後繼續與讀取舊檔', async fn(env) {
+    const snap = () => { const u = RULES.activeUnit(G); return JSON.stringify({ round: G.round, active: u && u.id, units: G.units.map(x => [x.c, x.r, x.troops, x.alive]) }); };
+    let pg = await env.open('sc=xiapi&side=att&seed=4&fast');
+    await env.myTurn(pg);
+    env.assert(await pg.evaluate(() => !!UI.readSaves().auto), '輪到玩家時應自動存檔');
+    // 手動存到存檔 2
+    await pg.click('#btnMenu'); await pg.click('#modalBtns button:has-text("儲存")');
+    await pg.click('#modalBtns button:has-text("存檔 2")');
+    const saved = await pg.evaluate(snap);
+    // 再打一步（結束行動），讓自動存檔往前
+    await pg.click('#bEnd'); await pg.click('#bFaceOk'); await env.myTurn(pg);
+    const later = await pg.evaluate(snap);
+    env.assert.notStrictEqual(later, saved);
+    // 重新開啟：選關畫面有「繼續上次戰役」，接著自動存檔的進度
+    await pg.close(); pg = await env.open();
+    env.assert(await pg.isVisible('#btnContinue'), '選關畫面應出現繼續上次戰役');
+    await pg.click('#btnContinue'); await env.myTurn(pg);
+    env.assert.strictEqual(await pg.evaluate(snap), later);
+    env.assert(await pg.isVisible('#cv3'));
+    // 讀取存檔 2：回到手動存檔時的狀態
+    await pg.click('#btnMenu'); await pg.click('#modalBtns button:has-text("讀取存檔")');
+    await pg.click('#modalBtns button:has-text("存檔 2")'); await env.myTurn(pg);
+    env.assert.strictEqual(await pg.evaluate(snap), saved);
+  } },
 ];

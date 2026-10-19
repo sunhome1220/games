@@ -152,3 +152,10 @@ table.ft th { color: var(--gold); font-weight: normal; }
 #logBody ul { margin: 0; padding-left: 20px; }
 #logBody li { margin: 4px 0; }
 .linkbtn { background: none; border: 0; padding: 0; color: var(--gold); text-decoration: underline; font-size: 12px; }
+
+/* 存檔 */
+#saveBar .row { margin: 0 0 14px; }
+#saveBar button { text-align: center; }
+#saveBar small, #modalBtns small { display: block; font-size: 12px; opacity: 0.8; font-weight: normal; }
+#modalBtns.list button { flex-basis: 100%; text-align: left; }
+#modalBtns.list small { display: inline; margin-left: 6px; }

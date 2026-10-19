@@ -43,6 +43,7 @@
   // ---------- 選關 ----------
   function renderSelect() {
     show('scrSelect'); $('#title').textContent = '三國・名戰錄';
+    renderSaveBar();
     $('#scList').innerHTML = D.SCENARIOS.map(sc => `
       <div class="sc ${sc.playable ? '' : 'lock'}">
         <div><span class="no">第 ${sc.no} 關</span><b>${sc.name}</b><span class="diff">${sc.year}・難度 ${sc.diff}${sc.playable ? '' : '・製作中'}</span></div>
@@ -95,18 +96,66 @@
   }
 
   // ---------- 開戰 ----------
-  async function startBattle(scId, side, opts = {}) {
+  function startBattle(scId, side, opts = {}) { return enterBattle(R.newGame(scId, { player: side, seed: opts.seed }), side, true); }
+  // fresh：新開局（從第 1 回合開始）；否則是讀檔，接著目前輪到的部隊繼續
+  async function enterBattle(g, side, fresh) {
     show('scrBattle');
-    const sc = D.SCENARIOS.find(s => s.id === scId); $('#title').textContent = sc.name;
-    S.g = R.newGame(scId, { player: side, seed: opts.seed }); S.side = side; S.mode = 'main'; S.inspect = null; S.preview = null; S.pending = null;
+    const sc = g.sc; $('#title').textContent = sc.name;
+    S.g = g; S.side = side; S.mode = 'main'; S.inspect = null; S.preview = null; S.pending = null;
     root.G = S.g;
     if (!(await root.V3.init($('#stage')))) { $('#panel').innerHTML = '<p>這台裝置無法顯示 3D 畫面（不支援 WebGL）。</p>'; return; }
     root.V3.onTap = onTap;
-    root.V3.build(S.g); root.V3.syncUnits(S.g);
-    const myLead = S.g.units.find(u => u.side === side && u.gen === sc.sides[side].leader);
-    root.V3.focus(myLead.c, myLead.r, false);
-    R.startRound(S.g);
+    root.V3.build(g); root.V3.syncUnits(g); root.V3.ladderMarks(g);
+    const at = fresh ? g.units.find(u => u.side === side && u.gen === sc.sides[side].leader) : R.activeUnit(g) || g.units.find(u => u.alive && u.side === side);
+    root.V3.focus(at.c, at.r, false);
+    if (fresh) R.startRound(g); else { toast(`已讀取：第 ${g.round} 回合`); }
     await loop();
+  }
+
+  // ---------- 存檔 ----------
+  // localStorage「3kb-saves」＝{ auto: 自動存檔, slots: [手動存檔 ×3] }；每份存檔＝{ ver, time, scId, side, round, g }
+  // 只在輪到玩家部隊時存（畫面與規則都停在穩定狀態）；每次輪到玩家都會自動存檔，戰役結束後清掉自動存檔
+  const SAVE_KEY = '3kb-saves', SLOTS = 3;
+  function readSaves() {
+    try { const o = JSON.parse(localStorage.getItem(SAVE_KEY)); if (o && Array.isArray(o.slots)) return o; } catch (e) {}
+    return { auto: null, slots: Array(SLOTS).fill(null) };
+  }
+  function writeSaves(o) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(o)); return true; } catch (e) { return false; } }
+  const canSave = () => !!(S.g && !S.g.over && !S.auto && !S.busy && isMine(R.activeUnit(S.g)));
+  function makeSave() { const g = S.g; return { ver: typeof VERSION !== 'undefined' ? VERSION : '', time: Date.now(), scId: g.scId, side: S.side, round: g.round, g: R.serialize(g) }; }
+  function autoSave() { if (!canSave()) return; const o = readSaves(); o.auto = makeSave(); writeSaves(o); }
+  function clearAutoSave() { const o = readSaves(); if (o.auto) { o.auto = null; writeSaves(o); } }
+  function saveLabel(sv) {
+    const sc = D.SCENARIOS.find(x => x.id === sv.scId), d = new Date(sv.time), p2 = n => String(n).padStart(2, '0');
+    return `${sc ? sc.name : sv.scId}・${sv.side === 'att' ? '攻方' : '守方'}・第 ${sv.round} 回合　<small>${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}</small>`;
+  }
+  async function showSaveMenu() {
+    if (!canSave()) { modal('<h2>儲存</h2><p>輪到你的部隊行動時才能存檔。</p>', [['知道了', true]]); return; }
+    const o = readSaves();
+    const i = await modal('<h2>儲存</h2><p>選一個位置存檔（會蓋掉原本的）。每次輪到你的部隊時也會自動存檔。</p>',
+      [...o.slots.map((sv, i) => [`存檔 ${i + 1}：${sv ? saveLabel(sv) : '（空）'}`, i]), ['取消', -1]], { list: true });
+    if (i < 0) return;
+    o.slots[i] = makeSave();
+    toast(writeSaves(o) ? `已存到存檔 ${i + 1}` : '存檔失敗（瀏覽器空間不足或不允許儲存）');
+  }
+  async function showLoadMenu() {
+    if (S.g && !S.g.over && S.busy) { modal('<h2>讀取存檔</h2><p>敵軍行動中，輪到你的部隊時再讀取。</p>', [['知道了', true]]); return; }
+    const o = readSaves(), list = [];
+    if (o.auto) list.push([`自動存檔：${saveLabel(o.auto)}`, o.auto]);
+    o.slots.forEach((sv, i) => { if (sv) list.push([`存檔 ${i + 1}：${saveLabel(sv)}`, sv]); });
+    if (!list.length) { modal('<h2>讀取存檔</h2><p>還沒有存檔。開戰後輪到你的部隊時會自動存檔，也可以從 ☰ 選單手動儲存。</p>', [['知道了', true]]); return; }
+    const sv = await modal(`<h2>讀取存檔</h2>${S.g && !S.g.over ? '<p>目前戰役沒存的進度會遺失。</p>' : ''}`, [...list, ['取消', null]], { list: true });
+    if (sv) loadSave(sv);
+  }
+  function loadSave(sv) {
+    let g; try { g = R.restore(sv.g); } catch (e) { modal(`<h2>讀取失敗</h2><p>這份存檔無法讀取（可能是舊版本的存檔）：${esc(e.message)}</p>`, [['知道了', true]]); return; }
+    enterBattle(g, sv.side, false);
+  }
+  function renderSaveBar() {
+    const o = readSaves(), any = o.auto || o.slots.some(Boolean);
+    $('#saveBar').innerHTML = any ? `<div class="row">${o.auto ? `<button class="main" id="btnContinue">▶ 繼續上次戰役<br><small>${saveLabel(o.auto)}</small></button>` : ''}<button id="btnLoad">📂 讀取存檔</button></div>` : '';
+    if (o.auto) $('#btnContinue').onclick = () => loadSave(o.auto);
+    if (any) $('#btnLoad').onclick = showLoadMenu;
   }
   const isMine = u => u && !S.auto && u.side === S.side;
 
@@ -162,6 +211,7 @@
     S.busy = false; $('#busy').hidden = true; S.mode = 'main'; S.inspect = null; S.preview = null; S.pending = null;
     root.V3.focus(u.c, u.r);
     refresh();
+    autoSave();
   }
   function refresh() {
     const g = S.g, u = R.activeUnit(g);
@@ -371,10 +421,12 @@
   function toast(t) { const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 1400); }
 
   // ---------- 視窗 ----------
-  function modal(html, btns) {
+  // opts.list：按鈕一個一行（存檔清單用），不特別標出第一個
+  function modal(html, btns, opts = {}) {
     return new Promise(res => {
       $('#modalBody').innerHTML = html;
-      $('#modalBtns').innerHTML = btns.map(([t, v], i) => `<button data-i="${i}" class="${i === 0 ? 'main' : ''}">${t}</button>`).join('');
+      $('#modalBtns').className = 'row' + (opts.list ? ' list' : '');
+      $('#modalBtns').innerHTML = btns.map(([t, v], i) => `<button data-i="${i}" class="${i === 0 && !opts.list ? 'main' : ''}">${t}</button>`).join('');
       $('#modal').hidden = false;
       for (const b of document.querySelectorAll('#modalBtns button')) b.onclick = () => { $('#modal').hidden = true; res(btns[+b.dataset.i][1]); };
     });
@@ -399,15 +451,18 @@
     modal(`<h2>戰報</h2>${L.map(l => `<div class="logl ${l.kind === 'event' ? 'event' : l.side || ''}">第${l.round}回合　${esc(l.text)}</div>`).join('')}`, [['關閉', true]]);
   }
   async function showMenu() {
-    const r = await modal(`<h2>選單</h2><p>動畫速度：目前 ${S.speed}x</p>`, [['繼續', 0], ['動畫速度', 1], ['重新開始這一關', 2], ['回到選關', 3], ['更新內容', 4]]);
+    const r = await modal(`<h2>選單</h2><p>動畫速度：目前 ${S.speed}x</p>`, [['繼續', 0], ['💾 儲存', 5], ['📂 讀取存檔', 6], ['動畫速度', 1], ['重新開始這一關', 2], ['回到選關', 3], ['更新內容', 4]]);
     if (r === 1) { S.speed = S.speed >= 4 ? 1 : S.speed * 2; toast(`動畫速度 ${S.speed}x`); }
     if (r === 2 && S.g) startBattle(S.g.scId, S.side);
     if (r === 3) { S.g = null; renderSelect(); }
     if (r === 4 && root.UPDATE) root.UPDATE.showLog(true);
+    if (r === 5) showSaveMenu();
+    if (r === 6) showLoadMenu();
   }
   function showEnd() {
     const g = S.g; const o = g.over; const E = R.ENDINGS[g.scId][o.route]; const sc = g.sc;
     const win = o.winner === S.side;
+    clearAutoSave();
     const st = g.stats;
     root.V3.clearHighlights(); root.V3.showSides(null); root.V3.selectRing(null);
     $('#panel').innerHTML = `<div class="hint">戰役結束：${win ? '勝利' : '敗北'}</div><div class="acts"><button id="bEndShow">查看結局</button></div>`;
@@ -439,5 +494,5 @@
     if (q.get('sc')) startBattle(q.get('sc'), q.get('side') || 'att', { seed: q.get('seed') ? +q.get('seed') : undefined });
     else renderSelect();
   }
-  Object.assign(S, { init, renderSelect, showBrief, startBattle, onTap, refresh, showHelp, drain });
+  Object.assign(S, { init, renderSelect, showBrief, startBattle, showSaveMenu, showLoadMenu, readSaves, onTap, refresh, showHelp, drain });
 })(window);

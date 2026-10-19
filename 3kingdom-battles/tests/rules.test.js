@@ -144,4 +144,18 @@ module.exports = [
     });
     env.assert(r && r.winner, JSON.stringify(r));
   } },
+  { name: '存檔：中途存檔再讀取，接著打的結果和沒存檔時一模一樣', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const run = g => { let n = 0; while (!g.over && n++ < 3000) { AI.act(g, RULES.activeUnit(g)); if (!g.over) RULES.endActivation(g); } return JSON.stringify({ over: g.over, stats: g.stats, units: g.units.map(u => [u.c, u.r, u.troops, u.alive]) }); };
+      const g = RULES.newGame('xiapi', { seed: 5 }); RULES.startRound(g);
+      for (let i = 0; i < 120 && !g.over; i++) { AI.act(g, RULES.activeUnit(g)); if (!g.over) RULES.endActivation(g); }
+      const save = JSON.parse(JSON.stringify(RULES.serialize(g)));   // 模擬寫入 localStorage 再讀回
+      const g2 = RULES.restore(save);
+      return { round: g.round, city: g2.city instanceof Set && g2.city.size === g.city.size, a: run(g), b: run(g2) };
+    });
+    env.assert(r.round >= 2, '應該打到第 2 回合以後再存檔');
+    env.assert(r.city, '城內範圍要還原成 Set');
+    env.assert.strictEqual(r.b, r.a);
+  } },
 ];
