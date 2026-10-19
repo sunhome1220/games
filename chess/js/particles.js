@@ -67,6 +67,7 @@ function updateHeader() {
   if (face && turn === 0) cv.after(bar); else cv.before(bar);
   bar.classList.toggle('flip', face && turn === 1);
   if (state === 'pick') $('turn').textContent = '選擇強化卡';
+  if (typeof renderDrawIn === 'function') renderDrawIn();
   if (online() && !myTurn() && state === 'aim') setMsg('等待對手操作…');
 }
 

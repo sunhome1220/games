@@ -38,7 +38,7 @@ function fireAt(b) {
 cv.addEventListener('pointerdown', e => {
   const m = pos(e), near = (x, y, r = R + 6) => Math.hypot(x - m.x, y - m.y) < r;
   SFX.init();
-  if (state === 'over') { restart(); return; }
+  if (state === 'over') { $('lobby').hidden = false; return; }   // 一局結束後回到設定頁
   if (!myTurn()) { setMsg(mode === 'ai' ? '電腦思考中…' : '還沒輪到你，等待對手操作…'); return; }
   const own = alive().find(q => q.s === turn && near(q.x, q.y));
   if (state === 'target') {   // 移動後：點準星開火；點己方棋子＝取消移動並改選；或按「不射擊」

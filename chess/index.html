@@ -22,7 +22,7 @@
 </header>
 <div id="bar"><div id="info"></div><button id="fire" hidden>出發</button><button id="undo" hidden>↩ 取消移動</button><button id="skip" disabled>不射擊</button></div>
 <canvas id="cv"></canvas>
-<div id="perksBar"><button id="legendBtn" title="兵種操作說明">📖 兵種</button><button id="perkBtn" hidden>🃏 我的強化</button><span id="perks"></span></div>
+<div id="perksBar"><button id="legendBtn" title="兵種操作說明">📖 兵種</button><button id="perkBtn" hidden>🃏 我的強化</button><span id="drawIn" hidden></span><span id="perks"></span></div>
 <div id="legendOv" hidden><div class="pbox wide"><h2>📖 兵種操作說明</h2><div class="lgwrap"><table id="legend"></table></div><button id="legendClose" style="width:100%;margin-top:8px">關閉</button></div></div>
 <div id="toast"></div>
 <div id="cardPick" hidden><div class="pbox" id="cardBox"><h2 id="cardTitle"></h2><div class="sub" id="cardSub"></div><div id="cardList"></div></div></div>
@@ -42,7 +42,7 @@
   <div class="row lv">
     <button data-lv="1">1<br>新手</button><button data-lv="2">2<br>簡單</button><button data-lv="3">3<br>普通</button><button data-lv="4">4<br>困難</button><button data-lv="5">5<br>大師</button>
   </div>
-  <div class="row two"><button id="mRestart">↺ 重新開始</button><button id="mInstall">📲 加到主畫面</button></div>
+  <div class="row two"><button id="mRestart">↺ 重新開始</button><button id="mInstall">📲 加到主畫面</button><button id="mHelp">📖 說明</button></div>
   <details class="sec" id="secNet"><summary>🌐 兩台裝置連線</summary>
     <button id="mHost">建立房間（我執紅先手）</button>
     <div class="row"><input id="roomIn" inputmode="numeric" maxlength="4" placeholder="輸入 4 位數房號"><button id="mJoin">加入（執黑）</button></div>
@@ -64,26 +64,26 @@
     <div id="ver"></div>
   </details>
 </div></div>
-<script src="js/config.js?v=2026-10-19.15"></script>
-<script src="js/audio.js?v=2026-10-19.15"></script>
-<script src="js/particles.js?v=2026-10-19.15"></script>
-<script src="js/physics.js?v=2026-10-19.15"></script>
-<script src="js/movement.js?v=2026-10-19.15"></script>
-<script src="js/combat.js?v=2026-10-19.15"></script>
-<script src="js/turn.js?v=2026-10-19.15"></script>
-<script src="js/input.js?v=2026-10-19.15"></script>
-<script src="js/render.js?v=2026-10-19.15"></script>
-<script src="js/render3d.js?v=2026-10-19.15"></script>
-<script src="js/ultimate.js?v=2026-10-19.15"></script>
-<script src="js/view3d.js?v=2026-10-19.15"></script>
-<script src="js/ai.js?v=2026-10-19.15"></script>
-<script src="js/cards.js?v=2026-10-19.15"></script>
-<script src="js/changelog.js?v=2026-10-19.15"></script>
-<script src="js/version.js?v=2026-10-19.15"></script>
-<script src="js/update.js?v=2026-10-19.15"></script>
-<script src="js/pwa.js?v=2026-10-19.15"></script>
-<script src="js/tip.js?v=2026-10-19.15"></script>
-<script src="js/network.js?v=2026-10-19.15"></script>
-<script src="js/main.js?v=2026-10-19.15"></script>
+<script src="js/config.js?v=2026-10-19.16"></script>
+<script src="js/audio.js?v=2026-10-19.16"></script>
+<script src="js/particles.js?v=2026-10-19.16"></script>
+<script src="js/physics.js?v=2026-10-19.16"></script>
+<script src="js/movement.js?v=2026-10-19.16"></script>
+<script src="js/combat.js?v=2026-10-19.16"></script>
+<script src="js/turn.js?v=2026-10-19.16"></script>
+<script src="js/input.js?v=2026-10-19.16"></script>
+<script src="js/render.js?v=2026-10-19.16"></script>
+<script src="js/render3d.js?v=2026-10-19.16"></script>
+<script src="js/ultimate.js?v=2026-10-19.16"></script>
+<script src="js/view3d.js?v=2026-10-19.16"></script>
+<script src="js/ai.js?v=2026-10-19.16"></script>
+<script src="js/cards.js?v=2026-10-19.16"></script>
+<script src="js/changelog.js?v=2026-10-19.16"></script>
+<script src="js/version.js?v=2026-10-19.16"></script>
+<script src="js/update.js?v=2026-10-19.16"></script>
+<script src="js/pwa.js?v=2026-10-19.16"></script>
+<script src="js/tip.js?v=2026-10-19.16"></script>
+<script src="js/network.js?v=2026-10-19.16"></script>
+<script src="js/main.js?v=2026-10-19.16"></script>
 </body>
 </html>

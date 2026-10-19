@@ -395,7 +395,7 @@ function drawOver() {
       ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(ang);
       const dy = mode === 'face' ? 90 : 0;
       ctx.fillStyle = winner === 0 ? '#ff7b6b' : '#fff'; ctx.font = 'bold 44px sans-serif'; ctx.fillText(title, 0, dy - 10);
-      ctx.fillStyle = '#fff'; ctx.font = '18px sans-serif'; ctx.fillText('點擊棋盤重新開始', 0, dy + 34);
+      ctx.fillStyle = '#fff'; ctx.font = '18px sans-serif'; ctx.fillText('點擊棋盤回到設定頁', 0, dy + 34);
       ctx.restore();
     }
   }

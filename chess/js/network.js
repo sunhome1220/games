@@ -22,7 +22,7 @@ function applyEnd() {
   pieces.forEach((p, i) => { if (p.hp > before[i] && p.hp > 0) { healFX(p, p.hp - before[i]); healed = true; } });
   if (healed) SFX.play('heal');
   targets = []; moved = false; sel = null; setSkip(false);
-  if (winner !== null) { state = 'over'; SFX.play('win'); countGame(); }
+  if (winner !== null) { state = 'over'; SFX.play('win'); countGame(); gameOverToLobby(); }
   else { state = 'aim'; setMsg(myTurn() ? '輪到你了！拉動己方棋子移動，停下後點選要攻擊的敵人。' : '等待對手操作…'); }
   updateHeader();
   if (winner === null) maybeTurnPick();
@@ -128,6 +128,10 @@ function bcConnect(room, side) {
   ch.postMessage('hello');
 }
 
+// 一局結束：停一下讓玩家看結果，然後回到設定頁（對戰模式），由玩家選下一局怎麼玩
+function gameOverToLobby() { setTimeout(() => { if (state === 'over') $('lobby').hidden = false; }, 1400); }
+let helpFrom = null;   // 從設定頁開的說明，關掉後回到設定頁
+$('legendClose').addEventListener('click', () => { if (helpFrom === 'lobby') $('lobby').hidden = false; helpFrom = null; });
 $('menu').onclick = () => { SFX.init(); $('lobby').hidden = false; };
 $('mClose').onclick = () => $('lobby').hidden = true;
 $('mLocal').onclick = () => setMode('local');
@@ -139,5 +143,6 @@ document.querySelectorAll('#lobby .lv button').forEach(b => b.onclick = () => {
   aiLevel = +b.dataset.lv; setMode('ai');
   setMsg(`對電腦（${AI_LEVELS[aiLevel]}）：你執紅先手，點選棋子開始。`);
 });
+$('mHelp').onclick = () => { $('lobby').hidden = true; helpFrom = 'lobby'; $('legendOv').hidden = false; };
 $('mRestart').onclick = () => { restart(); $('lobby').hidden = true; };
 
