@@ -524,6 +524,11 @@
       }
       // 變換陣型
       if (FORM_ALLOWED[u.type]) add({ id: 'form', name: '變陣', desc: '變換陣型（花掉這次動作；貼著敵軍變陣會讓完整度 −15）。', need: 'form', targets: FORM_ALLOWED[u.type].filter(f => f !== u.form) });
+      // 救援合流：與相鄰的友軍合成一支部隊（其中一方是殘部時）
+      if (!isEngine(u)) {
+        const mates = H.neighbors(u.c, u.r).map(([c, r]) => unitAt(g, c, r)).filter(v => v && v !== u && v.side === u.side && !isEngine(v) && (isRemnant(v) || isRemnant(u)));
+        if (mates.length) add({ id: 'merge', name: '救援合流', desc: '與相鄰的友軍合為一支部隊（其中一方兵力剩三成五以下才能合流）：兵力相加，由主帥（或統率較高者）統領，站到兵力較多的那一格，士氣 +10。被圍的殘部可以這樣被救出來。', need: 'ally', targets: mates.map(v => v.id) });
+      }
       if (!isEngine(u)) add({ id: 'rally', name: '整隊', desc: `重整隊伍：完整度 +${Math.round(15 + gen(u).lead / 5)}、士氣 +5（被包圍時減半）。`, enabled: u.coh < 100 || u.mor < 100, why: '隊伍已經很整齊' });
       // 守城器具
       if (u.side === 'def' && onWall(g, u)) {
@@ -555,6 +560,7 @@
       if (adjEnemies(g, u).length) { u.coh = clamp(u.coh - 15, 0, 100); checkCollapse(g, u); }
       log(g, `${u.name}變陣為${FORMATIONS[target].name}`, u.side); g.fx.push({ t: 'form', id: u.id }); return true;
     }
+    if (id === 'merge') { if (!A.targets.includes(target)) return false; return merge(g, u, g.units[target]); }
     if (id === 'rally') {
       const half = encircled(g, u) ? 0.5 : 1;
       u.coh = clamp(u.coh + (15 + gen(u).lead / 5) * half, 0, 100); u.mor = clamp(u.mor + 5 * half, 0, 100); u.acted = true;
@@ -606,6 +612,29 @@
       log(g, `${u.name}施放火計，${D.name}陷入火海，損失 ${dmg}`, u.side);
       applyLoss(g, D, dmg, { extraCoh: 20, extraMor: 5 });
     }
+    checkVictory(g);
+    return true;
+  }
+  const isRemnant = u => u.troops <= u.max * 0.35;
+  // 兩軍合流：主帥（劇本的主將，否則統率較高者）那一支留下，另一支併入；位置取兵力較多的那一格（殘部因此脫離包圍）
+  function merge(g, u, v) {
+    const leader = g.sc.sides[u.side].leader;
+    const cmd = u.gen === leader ? u : v.gen === leader ? v : (gen(u).lead >= gen(v).lead ? u : v);
+    const other = cmd === u ? v : u, big = u.troops >= v.troops ? u : v, tot = u.troops + v.troops;
+    const coh = (u.coh * u.troops + v.coh * v.troops) / tot, mor = (u.mor * u.troops + v.mor * v.troops) / tot;
+    const from = [cmd.c, cmd.r];
+    cmd.c = big.c; cmd.r = big.r; cmd.face = big.face;
+    if (cmd !== big) { cmd.type = big.type; cmd.form = big.form; }
+    cmd.troops = tot; cmd.max = Math.max(u.max, v.max, tot);
+    cmd.coh = clamp(coh + 5, 0, 100); cmd.mor = clamp(mor + 10, 0, 100); cmd.broken = false;
+    cmd.joined = [...(cmd.joined || []), other.gen];
+    // 併入的部隊離開戰場（不算陣亡），也不再輪到行動
+    other.alive = false; other.merged = cmd.id; other.troops = 0;
+    for (const k in g.ladders) if (g.ladders[k] === other.id) delete g.ladders[k];
+    u.acted = true; u.moved = true; cmd.acted = true; cmd.moved = true;
+    g.order = g.order.filter((id, i) => i <= g.oi || id !== cmd.id);   // 合流後的部隊這回合已經行動過，不再輪到
+    log(g, `${other.name}與${cmd.name}兩軍合流！由${cmd.name}統領，兵力 ${tot}`, u.side, 'big');
+    g.fx.push({ t: 'merge', id: cmd.id, gone: other.id, from, path: [from, [cmd.c, cmd.r]] });
     checkVictory(g);
     return true;
   }

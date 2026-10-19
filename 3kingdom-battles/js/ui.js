@@ -200,6 +200,7 @@
       if (f.t === 'duel') duelCut(f);
       if (f.t === 'skill') { const u = g.units[f.id]; if (!R.isEngine(u)) cutIn([[u.gen, battleMood(u.gen, ['rage', 'laugh', 'plan', 'plot']), u.side]], `${u.name}【${f.name}】`); }
       if (f.t === 'over') continue;
+      if (f.t === 'merge') { const u = g.units[f.id]; if (!S.fast) cutIn([[u.gen, battleMood(u.gen, ['default']), u.side], ...(u.joined || []).slice(-1).map(gn => [gn, 'default', u.side])], '兩軍合流！'); }
       if (S.fast) { if (['move', 'warp', 'face', 'form', 'attack', 'dead', 'defect', 'struct', 'flood', 'recede', 'burn', 'ladder'].includes(f.t)) { if (f.t === 'flood' || f.t === 'recede') f.hexes.forEach(([c, r]) => root.V3.refreshHex(g, c, r)); if (f.t === 'struct' && f.broke) root.V3.refreshHex(g, f.c, f.r); if (f.t === 'burn') root.V3.refreshHex(g, f.c, f.r); if (f.t === 'ladder') root.V3.ladderMarks(g); } continue; }
       await root.V3.playFx(f, g, S.speed);
     }
@@ -312,7 +313,7 @@
     if (!a.enabled) { toast(a.why || '現在不能用'); return; }
     S.preview = null; S.inspect = null;
     if (a.id === 'form') { S.mode = 'form'; S.pending = a; refresh(); return; }
-    if (a.need === 'enemy' || a.need === 'hex') { S.mode = 'target'; S.pending = a; refresh(); return; }
+    if (a.need === 'enemy' || a.need === 'hex' || a.need === 'ally') { S.mode = 'target'; S.pending = a; refresh(); return; }
     act(a.id);
   }
   function endUnit() {

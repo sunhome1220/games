@@ -548,7 +548,7 @@
   function makeUnit(u, g) {
     const G = unitGeos(); const R = root.RULES; const col = sideColor(u.side);
     const grp = new T.Group(); const inner = new T.Group(); grp.add(inner);
-    const rec = { grp, inner, figs: [], side: u.side, form: null, n: 0 };
+    const rec = { grp, inner, figs: [], side: u.side, type: u.type, form: null, n: 0 };
     if (R.isEngine(u)) buildEngine(u, inner, col);
     else {
       const N = 16;
@@ -647,6 +647,7 @@
     for (const u of g.units) {
       let rec = V.units.get(u.id);
       if (!u.alive) { if (rec && !rec.dying) { V.scene.remove(rec.grp); V.units.delete(u.id); } continue; }
+      if (rec && rec.type !== u.type && !rec.dying) { V.scene.remove(rec.grp); V.units.delete(u.id); rec = null; }   // 合流後兵種改變：重建模型
       if (!rec) rec = makeUnit(u, g);
       if (rec.side !== u.side) { recolor(u, rec); }
       placeUnit(u, g, false);
@@ -903,6 +904,13 @@
     } else if (f.t === 'recede') { f.hexes.forEach(([c, r]) => refreshHex(g, c, r)); await sleep(ms(500)); syncUnits(g);
     } else if (f.t === 'burn') { await fire(f.c, f.r, ms(1300)); refreshHex(g, f.c, f.r); }
     else if (f.t === 'defect') { syncUnits(g); for (const id of f.ids) { const u = g.units[id]; floater(u.c, u.r, '倒戈！', 'big'); } await sleep(ms(900)); }
+    else if (f.t === 'merge') {
+      // 併入的部隊縮小消失；統帥的部隊換成合流後的兵種、移到新位置
+      const gone = V.units.get(f.gone); if (gone) { V.units.delete(f.gone); await tween(ms(400), t => gone.grp.scale.setScalar(1 - t * 0.95)); V.scene.remove(gone.grp); }
+      const rec = V.units.get(f.id); const u = g.units[f.id];
+      if (rec && rec.type !== u.type) { V.scene.remove(rec.grp); V.units.delete(f.id); }
+      syncUnits(g); floater(u.c, u.r, '兩軍合流！', 'big'); await sleep(ms(500));
+    }
     else if (f.t === 'dead') {
       const rec = V.units.get(f.id); if (rec) { rec.dying = true; await tween(ms(500), t => { rec.grp.scale.setScalar(1 - t * 0.9); rec.grp.position.y = rec.home[1] - t * 0.3; }); V.scene.remove(rec.grp); V.units.delete(f.id); }
     }

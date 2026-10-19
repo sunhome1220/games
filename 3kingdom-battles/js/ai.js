@@ -179,6 +179,12 @@
         opts.push({ score: need * 1.2, kind: 'act', id: a.id });
       }
       if (a.id === 'duel') for (const id of a.targets) { const T = g.units[id]; const diff = R.gen(u).war - R.gen(T).war; if (diff >= 8) opts.push({ score: 120 + diff * 6, kind: 'act', id: 'duel', t: id }); }
+      if (a.id === 'merge') for (const id of a.targets) {
+        const T = g.units[id], lead = g.sc.sides[u.side].leader, weak = x => x.troops <= x.max * 0.35;
+        const saveLeader = (T.gen === lead && weak(T)) || (u.gen === lead && weak(u));
+        const trapped = R.encircled(g, T) || R.adjEnemies(g, T).length >= 2;
+        if (saveLeader || trapped) opts.push({ score: saveLeader ? 900 : 160, kind: 'act', id: 'merge', t: id });   // 只在救主帥或救被圍的殘部時合流
+      }
       if (a.id === 'rally' && u.coh < 55) opts.push({ score: (65 - u.coh) * 4 + (R.encircled(g, u) ? 0 : 20), kind: 'act', id: 'rally' });
       if (a.id === 'form') {
         const want = wantForm(g, u);
