@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+<title>三國・名戰錄</title>
+<meta name="theme-color" content="#2b2118">
+<link rel="stylesheet" href="css/style.css?v=2026-10-19.01">
+</head>
+<body>
+<header>
+  <a id="btnBack" href="../index.html">← 遊戲列表</a>
+  <b id="title">三國・名戰錄</b>
+  <span class="hbtns"><button id="btnHelp" title="玩法說明">？</button><button id="btnMenu" title="選單">☰</button></span>
+</header>
+
+<!-- 選關 -->
+<section id="scrSelect" class="screen">
+  <div class="inner">
+    <h1>三國・名戰錄</h1>
+    <p class="lead">立體回合制攻守城戰。選一場歷史戰役，決定要當攻方還是守方——你可以重演歷史，也可以改寫它。</p>
+    <div id="scList"></div>
+    <p class="ver">版本 <span id="ver"></span></p>
+  </div>
+</section>
+
+<!-- 戰前說明 -->
+<section id="scrBrief" class="screen" hidden>
+  <div class="inner" id="briefBox"></div>
+</section>
+
+<!-- 戰場 -->
+<section id="scrBattle" class="screen battle" hidden>
+  <div id="hud">
+    <div id="hudTop"><span id="hRound"></span><span id="hVars"></span><button id="btnLog" class="mini">戰報</button></div>
+    <div id="order"></div>
+  </div>
+  <div id="stage">
+    <div id="camBtns"><button data-cam="rl" title="向左旋轉">⟲</button><button data-cam="rr" title="向右旋轉">⟳</button><button data-cam="zi" title="放大">＋</button><button data-cam="zo" title="縮小">－</button><button data-cam="fc" title="回到目前部隊">◎</button></div>
+    <div id="toast" hidden></div>
+    <div id="busy" hidden>敵軍行動中…</div>
+  </div>
+  <div id="panel"></div>
+</section>
+
+<!-- 通用視窗 -->
+<div id="modal" class="ov" hidden><div class="box"><div id="modalBody"></div><div id="modalBtns" class="row"></div></div></div>
+
+<script src="js/hex.js?v=2026-10-19.01"></script>
+<script src="js/data.js?v=2026-10-19.01"></script>
+<script src="js/rules.js?v=2026-10-19.01"></script>
+<script src="js/ai.js?v=2026-10-19.01"></script>
+<script src="js/render3d.js?v=2026-10-19.01"></script>
+<script src="js/ui.js?v=2026-10-19.01"></script>
+<script src="js/version.js?v=2026-10-19.01"></script>
+<script src="js/main.js?v=2026-10-19.01"></script>
+</body>
+</html>
