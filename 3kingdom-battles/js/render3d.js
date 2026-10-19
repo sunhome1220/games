@@ -188,14 +188,15 @@
   function labelTexture(u, g) {
     const cv = u._lcv || (u._lcv = document.createElement('canvas')); cv.width = 256; cv.height = 72; const x = cv.getContext('2d');
     x.clearRect(0, 0, 256, 72);
-    x.fillStyle = 'rgba(30,22,14,0.78)'; roundRect(x, 4, 4, 248, 64, 10); x.fill();
+    x.fillStyle = 'rgba(30,22,14,0.5)'; roundRect(x, 4, 4, 248, 64, 10); x.fill();
     x.fillStyle = u.side === 'att' ? '#8fb4ff' : '#ff9a8a'; x.font = 'bold 30px "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif'; x.textBaseline = 'top';
-    x.fillText(u.name, 14, 8);
-    x.fillStyle = '#f5e9d3'; x.font = 'bold 24px "Microsoft JhengHei","PingFang TC",sans-serif'; x.textAlign = 'right'; x.fillText(u.troops, 242, 10); x.textAlign = 'left';
+    x.lineJoin = 'round'; x.lineWidth = 6; x.strokeStyle = 'rgba(0,0,0,0.85)';   // 深色描邊：底色透明時字仍清楚
+    x.strokeText(u.name, 14, 8); x.fillText(u.name, 14, 8);
+    x.fillStyle = '#f5e9d3'; x.font = 'bold 24px "Microsoft JhengHei","PingFang TC",sans-serif'; x.textAlign = 'right'; x.strokeText(u.troops, 242, 10); x.fillText(u.troops, 242, 10); x.textAlign = 'left';
     // 兵力條與完整度條
     const R = root.RULES;
-    x.fillStyle = '#333'; x.fillRect(14, 42, 228, 8); x.fillStyle = u.side === 'att' ? '#5d8de0' : '#e0604f'; x.fillRect(14, 42, 228 * u.troops / u.max, 8);
-    if (!R.isEngine(u)) { x.fillStyle = '#333'; x.fillRect(14, 54, 228, 6); x.fillStyle = u.coh >= 70 ? '#7cc46a' : u.coh >= 40 ? '#e0b84a' : '#e05a3a'; x.fillRect(14, 54, 228 * u.coh / 100, 6); }
+    x.fillStyle = 'rgba(0,0,0,0.35)'; x.fillRect(14, 42, 228, 8); x.fillStyle = u.side === 'att' ? '#5d8de0' : '#e0604f'; x.fillRect(14, 42, 228 * u.troops / u.max, 8);
+    if (!R.isEngine(u)) { x.fillStyle = 'rgba(0,0,0,0.35)'; x.fillRect(14, 54, 228, 6); x.fillStyle = u.coh >= 70 ? '#7cc46a' : u.coh >= 40 ? '#e0b84a' : '#e05a3a'; x.fillRect(14, 54, 228 * u.coh / 100, 6); }
     return cv;
   }
   function roundRect(x, a, b, w, h, r) { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
@@ -251,7 +252,7 @@
     const arrow = new T.Mesh(G.arrowHead, new T.MeshBasicMaterial({ color: col })); arrow.position.set(0.82, 0.03, 0); arrow.scale.set(1, 0.15, 1); inner.add(arrow); rec.arrow = arrow;
     // 名牌
     const lcv = labelTexture(u, g); const ltex = new T.CanvasTexture(lcv); ltex.colorSpace = T.SRGBColorSpace;
-    const label = new T.Sprite(new T.SpriteMaterial({ map: ltex, depthTest: false, transparent: true })); label.scale.set(1.9, 0.53, 1); label.position.y = 1.55; label.renderOrder = 10;
+    const label = new T.Sprite(new T.SpriteMaterial({ map: ltex, depthTest: false, transparent: true, opacity: 0.92 })); label.scale.set(1.5, 0.42, 1); label.position.y = 1.45; label.renderOrder = 10;
     grp.add(label); rec.label = label; rec.ltex = ltex;
     V.scene.add(grp); V.units.set(u.id, rec);
     placeUnit(u, g, true);
