@@ -13,7 +13,7 @@
   function genSide(gen, sc) { const x = ((sc || (S.g && S.g.sc) || D.SCENARIOS[0]).units || []).find(v => v.gen === gen); return x ? x.side : null; }
   function face(gen, mood, opts = {}) {
     const M = P.MOODS[gen] && P.MOODS[gen][mood];
-    return `<figure class="pt ${opts.cls || ''}" ${opts.data ? `data-gen="${gen}"` : ''}>${P.svg(gen, mood, { side: opts.side || genSide(gen, opts.sc), name: D.GENERALS[gen].name })}${opts.caption ? `<figcaption>${esc(D.GENERALS[gen].name)}${M && mood !== 'default' ? `・${esc(M.name)}` : ''}</figcaption>` : ''}</figure>`;
+    return `<figure class="pt ${opts.cls || ''}" ${opts.data ? `data-gen="${gen}"` : ''}>${P.html(gen, mood, { side: opts.side || genSide(gen, opts.sc), name: D.GENERALS[gen].name })}${opts.caption ? `<figcaption>${esc(D.GENERALS[gen].name)}${M && mood !== 'default' ? `・${esc(M.name)}` : ''}</figcaption>` : ''}</figure>`;
   }
   const faces = (who, opts) => who && who.length ? `<div class="pts">${who.map(([gn, m]) => face(gn, m, { caption: true, ...opts })).join('')}</div>` : '';
   // 戰鬥中用的情緒：不用「被綁」的那幾張
@@ -272,7 +272,7 @@
     if (R.encircled(g, u)) tags.push('<span class="m-bad">被包圍</span>');
     if (R.onWall(g, u)) tags.push('城上');
     const t = R.terr(g, u.c, u.r); tags.push(t.name);
-    return `<div class="ucard">${eng ? `<div class="badge ${u.side}">${ty.icon}</div>` : `<div class="badge pt ${u.side}" data-gen="${u.gen}" title="看${esc(gn.name)}的武將錄">${P.svg(u.gen, 'default', { side: u.side, name: gn.name, frame: u.side === 'att' ? '#5d8de0' : '#e0604f' })}</div>`}<div class="uinfo">
+    return `<div class="ucard">${eng ? `<div class="badge ${u.side}">${ty.icon}</div>` : `<div class="badge pt ${u.side}" data-gen="${u.gen}" title="看${esc(gn.name)}的武將錄">${P.html(u.gen, 'default', { side: u.side, name: gn.name, frame: u.side === 'att' ? '#5d8de0' : '#e0604f' })}</div>`}<div class="uinfo">
       <div class="uname">${esc(u.name)}<small>${eng ? ty.name : `${ty.name}${u.label ? '・' + u.label : ''}　統${gn.lead} 武${gn.war} 智${gn.int}`}</small></div>
       <div class="usub">${tags.join('｜')}</div>
       <div class="bars"><span>兵力</span>${bar(u.troops, u.max, u.side === 'att' ? 'var(--att)' : 'var(--def)')}<span>${u.troops}</span>

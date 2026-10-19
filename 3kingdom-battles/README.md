@@ -23,6 +23,8 @@
 | `js/ai.js` | 電腦：每支部隊列出可到達位置 × 動作打分（戰果 − 風險 + 往目標的路程） |
 | `js/render3d.js` | Three.js 3D 畫面：地形、城池、陣型小兵、器械模型、方向弱點圈、動畫 |
 | `js/portraits.js` | 武將頭像：依《三國演義》外貌描寫用 SVG 繪製（`LOOKS`），以及演義中寫到的情緒（`MOODS`，附原文與回數）；戰前說明「登場武將」、部隊資訊、事件、單挑／技能特寫與結局會用到 |
+| `assets/portraits/` | 頭像美術規範 `ART_GUIDE.md`、人物清單與生成模板 `characters.js`、生成紀錄 `log.json`、提示詞 `prompts/`；PNG 審核通過後自動取代 SVG |
+| `tools/portraits.js` | 頭像工具：`prompts` 產生提示詞、`import` 入庫並記錄、`check` 檢查對應與規格、`sheet` 縮小辨識度對照表、`gen` 直接呼叫 OpenAI 圖片 API |
 | `js/ui.js`、`js/main.js` | 選關、戰前說明、戰場操作面板、結局 |
 | `js/version.js`、`tools/bump_version.py` | 版本號；改版時執行 `python3 3kingdom-battles/tools/bump_version.py 2026-xx-xx.nn` |
 | `vendor/three.min.js` | 只打包用到的 Three.js 類別；`render3d.js` 用到的類別有增減時執行 `bash 3kingdom-battles/tools/build_three.sh` |
@@ -32,7 +34,7 @@
 ## 測試
 ```bash
 npm i playwright                          # 第一次
-node 3kingdom-battles/tests/run.js        # 全部（規則 10 項＋介面 8 項）
+node 3kingdom-battles/tests/run.js        # 全部（規則 10 項＋頭像 2 項＋介面 8 項）
 node 3kingdom-battles/tests/run.js 攻城   # 名稱含「攻城」的
 ```
 網址參數：`?sc=xiapi&side=att|def` 直接開戰、`&seed=數字` 固定亂數、`&speed=2` 動畫速度、`&auto` 雙方都由電腦操作、`&fast` 跳過動畫。

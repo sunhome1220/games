@@ -379,5 +379,17 @@
   function moodsOf(genId) { const m = MOODS[genId] || { default: MOODS.caobu.default }; return Object.keys(m).map(k => ({ id: k, ...m[k] })); }
   function has(genId, moodId) { return !!(MOODS[genId] && MOODS[genId][moodId]); }
 
-  root.PORTRAITS = { LOOKS, MOODS, FACES, svg, moodsOf, has };
+  // 有審核通過的 PNG（assets/portraits/characters.js）就用圖片，否則用 SVG；圖片載入失敗也退回 SVG
+  function html(genId, moodId, opts = {}) {
+    const A = root.PORTRAIT_ART, file = A && A.approvedFile(genId, moodId || 'default');
+    if (!file) return svg(genId, moodId, opts);
+    const alt = (opts.name || '') + (moodId && moodId !== 'default' && MOODS[genId] && MOODS[genId][moodId] ? '・' + MOODS[genId][moodId].name : '');
+    const esc = v => String(v == null ? '' : v).replace(/"/g, '&quot;');
+    return `<img class="portrait" src="${A.DIR}${file}" alt="${esc(alt)}" draggable="false" data-gen="${genId}" data-mood="${esc(moodId || 'default')}" data-side="${esc(opts.side)}" data-name="${esc(opts.name)}" data-frame="${esc(opts.frame)}" onerror="PORTRAITS.fallback(this)">`;
+  }
+  function fallback(img) {
+    const d = img.dataset; img.outerHTML = svg(d.gen, d.mood, { side: d.side || null, name: d.name, frame: d.frame || undefined });
+  }
+
+  root.PORTRAITS = { LOOKS, MOODS, FACES, svg, html, fallback, moodsOf, has };
 })(typeof window !== 'undefined' ? window : globalThis);
