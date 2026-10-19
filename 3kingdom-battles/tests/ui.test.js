@@ -106,7 +106,7 @@ module.exports = [
     env.assert(await pg.isVisible('#btnContinue'), '選關畫面應出現繼續上次戰役');
     await pg.click('#btnContinue'); await env.myTurn(pg);
     env.assert.strictEqual(await pg.evaluate(snap), later);
-    env.assert(await pg.isVisible('#cv3'));
+    await pg.waitForSelector('#cv3', { timeout: 10000 });   // 3D 畫面是非同步載入的
     // 讀取存檔 2：回到手動存檔時的狀態
     await pg.click('#btnMenu'); await pg.click('#modalBtns button:has-text("讀取存檔")');
     await pg.click('#modalBtns button:has-text("存檔 2")'); await env.myTurn(pg);
