@@ -14,6 +14,39 @@ module.exports = [
     const pg = await t.open();
     t.assert.strictEqual(await pg.evaluate(() => CHANGELOG[0].v === VERSION), true);
   } },
+  { name: '加到主畫面：manifest 與圖示齊全（尺寸正確），index.html 有連結', async fn(t) {
+    const m = JSON.parse(fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8')), html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+    t.assert.strictEqual(m.name, '瘋狂象棋'); t.assert.ok(fs.existsSync(path.join(root, m.start_url)));
+    for (const ic of m.icons) {
+      const f = path.join(root, ic.src), b = fs.readFileSync(f), [w, h] = [b.readUInt32BE(16), b.readUInt32BE(20)];
+      t.assert.strictEqual(b.slice(1, 4).toString(), 'PNG'); t.assert.strictEqual(`${w}x${h}`, ic.sizes, ic.src + ' 尺寸與 manifest 不符');
+    }
+    t.assert.ok(m.icons.some(i => i.sizes === '192x192') && m.icons.some(i => i.sizes === '512x512'));
+    for (const must of ['rel="manifest"', 'rel="apple-touch-icon"', 'apple-mobile-web-app-capable']) t.assert.ok(html.includes(must), '缺 ' + must);
+    t.assert.ok(fs.existsSync(path.join(root, 'icons/apple-touch-icon.png')));
+  } },
+  { name: '全螢幕按鈕：點一下進入、再點離開', async fn(t) {
+    const pg = await t.open('', { mode: false });
+    t.assert.strictEqual(await pg.evaluate(() => $('fsBtn').hidden), false);
+    await pg.evaluate(() => { $('lobby').hidden = true; });
+    await pg.click('#fsBtn'); await pg.waitForFunction(() => !!document.fullscreenElement, null, { timeout: 5000 });
+    await pg.click('#fsBtn'); await pg.waitForFunction(() => !document.fullscreenElement, null, { timeout: 5000 });
+  } },
+  { name: '加到主畫面按鈕：跳出說明（含平台步驟與可複製的連結）', async fn(t) {
+    const pg = await t.open('', { mode: false });
+    await pg.click('#mInstall');
+    const r = await pg.evaluate(() => ({ open: !$('installOv').hidden, steps: $('instSteps').children.length, url: $('instUrl').textContent, expect: gameUrl() }));
+    t.assert.ok(r.open && r.steps >= 2); t.assert.strictEqual(r.url, r.expect); t.assert.ok(/\/chess\/$/.test(r.url), '連結應指向 chess/：' + r.url);
+    await pg.click('#instClose'); t.assert.strictEqual(await pg.evaluate(() => $('installOv').hidden), true);
+  } },
+  { name: '窄螢幕（360px）：上方按鈕列不會爆版（2D 與 3D）', async fn(t) {
+    for (const view of ['2d', '3d']) {
+      const pg = await t.ctx.newPage(); await pg.setViewportSize({ width: 360, height: 700 });
+      await pg.goto(`${t.base}/chess/index.html?nolog=1&cards=0&view=${view}`); await pg.waitForTimeout(view === '3d' ? 1500 : 300); await pg.click('#mLocal');
+      const r = await pg.evaluate(() => { const h = document.querySelector('header'); return { over: document.documentElement.scrollWidth - window.innerWidth, hdr: h.scrollWidth - h.clientWidth }; });
+      t.assert.ok(r.over <= 0 && r.hdr <= 0, `${view} 版面溢出：${JSON.stringify(r)}`); await pg.close();
+    }
+  } },
   { name: '舊網址 proto-b.html 會轉址到 chess/（保留參數）', async fn(t) {
     const pg = await t.ctx.newPage(); await pg.goto(`${t.base}/proto-b.html?room=1234`); await pg.waitForURL(/chess\/index\.html\?room=1234/, { timeout: 5000 }); await pg.close();
   } },

@@ -1,0 +1,16 @@
+{
+  "name": "瘋狂象棋",
+  "short_name": "瘋狂象棋",
+  "description": "回合制戰術象棋：載具、武器、空投、立體 3D 畫面，可同機、連線或對電腦",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#2b2118",
+  "theme_color": "#2b2118",
+  "lang": "zh-Hant",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
