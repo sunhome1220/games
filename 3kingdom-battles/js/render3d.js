@@ -9,7 +9,7 @@
   const V = { ready: false, units: new Map(), hl: [], anims: [], floaters: [], dirty: true };
   root.V3 = V;
 
-  const TOP = { '.': 0.2, ',': 0.2, 'f': 0.22, 'h': 0.75, '~': -0.15, '=': -0.12, 'd': 0.45, 'l': 0.12, 'w': -0.08, 'W': 1.5, 'T': 1.5, 'G': 1.5, 'o': 0.22, 'r': 0.4, 'c': 0.3, 'P': 0.3, 'S': 0.2 };
+  const TOP = { '.': 0.2, ',': 0.2, 'f': 0.22, 'h': 0.75, '~': -0.15, '=': -0.12, 'd': 0.45, 'l': 0.12, 'w': -0.08, 'm': 0.1, 'W': 1.5, 'T': 1.5, 'G': 1.5, 'o': 0.22, 'r': 0.4, 'c': 0.3, 'P': 0.3, 'S': 0.2 };
   const standY = (ch) => (ch === '=' ? 0.22 : TOP[ch] != null ? Math.max(TOP[ch], 0) : 0.2);
 
   // ---------- 初始化 ----------
@@ -83,6 +83,7 @@
     if (V.world) { V.scene.remove(V.world); }
     V.units.forEach(u => V.scene.remove(u.grp)); V.units.clear();
     V.g = g; V.world = new T.Group(); V.scene.add(V.world);
+    if (V.digGrp) { V.scene.remove(V.digGrp); V.digGrp = null; } V.digSig = null;
     const [mx, mz] = HX.center(g.W - 1, g.Hh - 1); V.ox = (mx + HX.S3 * 0.5) / 2; V.oz = mz / 2;
     computeSnap(g);
     V.cam3.tx = 0; V.cam3.tz = 0;
@@ -115,8 +116,8 @@
   // ---------- 連續地表 ----------
   // 整片地面是一張連續網格：高度依所在的六角格平滑過渡；顏色畫在一張貼圖上
   // （先用低解析度上色再放大＝地形邊界自然暈開，再疊色塊、筆觸與淡淡的格線）
-  const GH = { '.': 0.2, ',': 0.19, 'f': 0.22, 'h': 0.75, '~': -0.3, '=': -0.3, 'd': 0.45, 'l': 0.12, 'w': -0.25, 'o': 0.22, 'r': 0.35, 'c': 0.28, 'P': 0.3, 'S': 0.2 };
-  const GC = { '.': 0x7a8749, ',': 0xa68f60, 'f': 0x55663a, 'h': 0x948660, '~': 0x23463f, '=': 0x23463f, 'd': 0x86744d, 'l': 0x849056, 'w': 0x2a4d48, 'o': 0x6c604f, 'r': 0x7a6f61, 'c': 0x8b7b5f, 'P': 0x948469, 'S': 0x8c7853 };
+  const GH = { '.': 0.2, ',': 0.19, 'f': 0.22, 'h': 0.75, '~': -0.3, '=': -0.3, 'd': 0.45, 'l': 0.12, 'w': -0.25, 'm': 0.08, 'o': 0.22, 'r': 0.35, 'c': 0.28, 'P': 0.3, 'S': 0.2 };
+  const GC = { '.': 0x7a8749, ',': 0xa68f60, 'f': 0x55663a, 'h': 0x948660, '~': 0x23463f, '=': 0x23463f, 'd': 0x86744d, 'l': 0x849056, 'w': 0x2a4d48, 'm': 0x5e5038, 'o': 0x6c604f, 'r': 0x7a6f61, 'c': 0x8b7b5f, 'P': 0x948469, 'S': 0x8c7853 };
   // 六角格座標（未扣 ox/oz）→ [c, r]
   function hexAtPx(px, pz) {
     const x = px / HX.S3 - pz / 3, z = 2 / 3 * pz, y = -x - z;
@@ -689,6 +690,24 @@
     o.rotation.x = -Math.PI / 2; const [x, z] = wpos(u.c, u.r); o.position.set(x, topAt(V.g, u.c, u.r) + 0.06, z); o.renderOrder = 4;
     V.scene.add(o); V.sel = o; V.selU = u.id; V.dirty = true;
   }
+  // 河堤標記：可以掘堤時，在河堤上方浮一個「⛏ 掘堤」牌子
+  function digMarks(g, list) {
+    const sig = list.map(p => p.join(',')).join(';');
+    if (V.digSig === sig && V.digGrp) return; V.digSig = sig;
+    if (V.digGrp) V.scene.remove(V.digGrp); V.digGrp = null; if (!list.length) { V.dirty = true; return; }
+    if (!V.digTex) {
+      const cv = document.createElement('canvas'); cv.width = 160; cv.height = 64; const x = cv.getContext('2d');
+      x.fillStyle = 'rgba(20,40,55,0.85)'; roundRect(x, 4, 4, 152, 56, 14); x.fill(); x.lineWidth = 3; x.strokeStyle = '#7fd3ff'; x.stroke();
+      x.fillStyle = '#e6f7ff'; x.font = 'bold 30px "Microsoft JhengHei","PingFang TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('⛏ 掘堤', 80, 34);
+      V.digTex = new T.CanvasTexture(cv); V.digTex.colorSpace = T.SRGBColorSpace;
+    }
+    V.digGrp = new T.Group();
+    for (const [c, r] of list) {
+      const sp = new T.Sprite(new T.SpriteMaterial({ map: V.digTex, depthTest: false, transparent: true })); sp.scale.set(1.0, 0.4, 1); sp.renderOrder = 9; sp.raycast = () => {};
+      const [x, z] = wpos(c, r); sp.position.set(x, topAt(g, c, r) + 0.9, z); V.digGrp.add(sp);
+    }
+    V.scene.add(V.digGrp); V.dirty = true;
+  }
   function ladderMarks(g) {
     if (V.lads) V.scene.remove(V.lads);
     V.lads = new T.Group();
@@ -857,6 +876,7 @@
       await tween(ms(1600), t => { V.waterBoost = Math.sin(Math.min(1, t * 1.4) * Math.PI / 2) * 0.32 * (1 - Math.max(0, t - 0.7) / 0.3); });
       V.waterBoost = 0;
       hexes.forEach(([c, r]) => refreshHex(g, c, r)); syncUnits(g);
+    } else if (f.t === 'recede') { f.hexes.forEach(([c, r]) => refreshHex(g, c, r)); await sleep(ms(500)); syncUnits(g);
     } else if (f.t === 'burn') { await fire(f.c, f.r, ms(1300)); refreshHex(g, f.c, f.r); }
     else if (f.t === 'defect') { syncUnits(g); for (const id of f.ids) { const u = g.units[id]; floater(u.c, u.r, '倒戈！', 'big'); } await sleep(ms(900)); }
     else if (f.t === 'dead') {
@@ -902,5 +922,5 @@
     V.r.render(V.scene, V.cam);
   }
 
-  Object.assign(V, { init, build, syncUnits, playFx, highlight, clearHighlights, showSides, selectRing, focus, rotate, zoom, refreshHex, ladderMarks, wpos });
+  Object.assign(V, { init, build, syncUnits, playFx, highlight, clearHighlights, showSides, selectRing, focus, rotate, zoom, refreshHex, ladderMarks, digMarks, wpos });
 })(window);

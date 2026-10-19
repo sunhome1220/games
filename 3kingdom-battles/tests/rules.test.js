@@ -158,4 +158,41 @@ module.exports = [
     env.assert(r.city, '城內範圍要還原成 Set');
     env.assert.strictEqual(r.b, r.a);
   } },
+  { name: '城門：守軍只能從城門進出城，不能從城外直接上城牆', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = T.setup([{ gen: 'zhangliao', side: 'def', c: 14, r: 7 }, { gen: 'songxian', side: 'def', c: 15, r: 7 }]);
+      const zl = T.u('zhangliao'), sx = T.u('songxian');
+      const wallFromOut = RULES.moveCost(g, zl, 15, 6, 14, 7);       // 城外 → 城牆
+      const gateFromOut = RULES.moveCost(g, zl, 15, 9, 14, 9);       // 城外 → 城門
+      const jumpDown = RULES.moveCost(g, sx, 14, 7, 15, 7);          // 城牆 → 城外
+      const gateOut = RULES.moveCost(g, sx, 14, 9, 15, 9);           // 城門 → 城外
+      const wallToCity = RULES.moveCost(g, sx, 16, 7, 15, 7);        // 城牆 → 城內
+      zl.c = 13; zl.r = 6; const reach = RULES.reachable(g, zl);
+      // 能走到的城牆格，路線一定經過城門
+      const viaGate = [...reach.keys()].filter(k => { const [c, r] = HEX.unkey(k); return RULES.terr(g, c, r).wall && !RULES.terr(g, c, r).gate; })
+        .every(k => RULES.pathTo(reach, k).some(([c, r]) => RULES.terr(g, c, r).gate));
+      return { wallFromOut, gateFromOut, jumpDown, gateOut, wallToCity, viaGate };
+    });
+    env.assert(!isFinite(r.wallFromOut) && !isFinite(r.jumpDown), '不能從城外直接上城牆、也不能從城牆跳下城外：' + JSON.stringify(r));
+    env.assert(isFinite(r.gateFromOut) && isFinite(r.gateOut) && isFinite(r.wallToCity), '城門可以進出、城牆可以下到城內：' + JSON.stringify(r));
+    env.assert(r.viaGate, '城外部隊要上城牆一定要經過城門');
+  } },
+  { name: '水淹：大水可以涉水（器械不行），3 回合後退成泥濘', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = RULES.newGame('xiapi', { seed: 2 }); g.round = 7;
+      const inf = g.units.find(u => u.side === 'att' && u.type === 'inf' && u.alive), eng = g.units.find(u => u.type === 'ram');
+      let lw = null; for (let r = 0; r < g.Hh && !lw; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'l' && !RULES.unitAt(g, c, r)) { lw = [c, r]; break; }
+      g.vars.digOpen = true; g.vars.dig = 3; inf.c = 12; inf.r = 1;   // 站在河堤上
+      RULES.doAction(g, inf, 'dig');
+      const flooded = g.vars.flooded && g.map[lw[1]][lw[0]] === 'w';
+      const wadeInf = RULES.moveCost(g, inf, lw[0], lw[1], lw[0] - 1, lw[1]), wadeEng = RULES.moveCost(g, eng, lw[0], lw[1], lw[0] - 1, lw[1]);
+      g.order = []; g.oi = 0; for (let i = 0; i < 3; i++) RULES.startRound(g);
+      return { flooded, wadeInf, wadeEng, after: g.map[lw[1]][lw[0]], receded: g.vars.receded, engAfter: RULES.moveCost(g, eng, lw[0], lw[1], lw[0] - 1, lw[1]) };
+    });
+    env.assert(r.flooded, '掘滿應該水淹：' + JSON.stringify(r));
+    env.assert(isFinite(r.wadeInf) && !isFinite(r.wadeEng), '步兵可以涉水、器械不行：' + JSON.stringify(r));
+    env.assert(r.receded && r.after === 'm' && isFinite(r.engAfter), '3 回合後應退成泥濘、器械可以通過：' + JSON.stringify(r));
+  } },
 ];

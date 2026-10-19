@@ -163,3 +163,4 @@ table.ft th { color: var(--gold); font-weight: normal; }
 /* 戰場四周暗角 */
 #stage::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 55%, rgba(12, 9, 5, 0.55) 100%); }
 #floaters, #busy { z-index: 2; }
+.hudlink { background: rgba(127, 211, 255, 0.15); border: 1px solid #7fd3ff; color: #bfe9ff; border-radius: 10px; padding: 0 6px; font-size: 12px; }
