@@ -24,7 +24,7 @@ const TYPES = {
   // 仕／士：護衛，近距離手槍；限九宮斜走一格；帥被直接攻擊時，相鄰的士衝出來替帥擋下
   G: { n: ['仕', '士'], hp: 3, dist: 1.5 * C, range: 1.5 * C, min: 0,     dmg: 1, mass: 1.5, w: '手槍', snd: 'pistol', proj: 'bullet', palace: true, guard: true },   // 近距離（相鄰與斜角）手槍 1 心
   E: { n: ['相', '象'], hp: 3, dist: 3 * C,   range: 3 * C,   melee: 1.5 * C, tian: true, min: 0,     dmg: 1, mass: 1.5, w: '手槍',   snd: 'pistol', proj: 'bullet', aa: 2.5 * C, reload: 1 },
-  P: { n: ['兵', '卒'], hp: 2, dist: 1 * C,   range: 1.8 * C, min: 0,     dmg: 1, mass: 1,   w: '步槍',   snd: 'rifle',  proj: 'bullet', tag: '（未過河）', locked: true },
+  P: { n: ['兵', '卒'], hp: 2, dist: 1 * C,   range: 1 * C,   min: 0,     dmg: 1, mass: 1,   w: '步槍',   snd: 'rifle',  proj: 'bullet', tag: '（未過河）', locked: true },   // 射程 1 格：只打上下左右相鄰的敵人；斜角（約 1.41 格）要射程 1.5 格以上才打得到
   // 士官長（兵過河後空投補給升官）：自由移動（每次最多 2 格），血量 2 → 3，強化霰彈槍 9 發彈丸呈扇形，越近命中越多（傷害與命中數成正比，全中 2.5 心）
   P2: { n: ['士官長', '士官長'], face: ['兵', '卒'], hp: 3, dist: 2 * C, range: 3 * C, min: 0,    dmg: 2.5, mass: 1,   w: '強化霰彈槍', snd: 'shotgun', proj: 'pellets', tag: '（過河升官）',
         pellets: 9, cone: 30 * Math.PI / 180 },
