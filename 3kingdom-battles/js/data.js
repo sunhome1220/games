@@ -21,6 +21,7 @@
     'r': { name: '城牆缺口', desc: '城牆被打塌的缺口，可以從這裡進城。', cost: [2, 2, Infinity], dmg: 0.95, h: 0 },
     'c': { name: '城內', desc: '城裡的街道。', cost: [1, 1, 1], dmg: 1.0, h: 0, city: true },
     'P': { name: '府衙', desc: '城中央。曹軍佔領這裡就獲勝。', cost: [1, 1, 1], dmg: 0.9, h: 0, city: true, palace: true },
+    'b': { name: '斷橋', desc: '橋板被拆掉了，部隊過不去；只有孫權能「躍馬」跳過。', cost: [Infinity, Infinity, Infinity], dmg: 1.0, h: -1, broken: true },
     'S': { name: '糧營', desc: '曹軍的糧草營；呂布軍突入會燒掉糧草。', cost: [1, 1, 1], dmg: 1.0, h: 0, depot: true },
   };
 
@@ -72,6 +73,8 @@
     feijiang: { name: '飛將', kind: 'active', cd: 3, target: 'self', desc: '本次行動移動 +2、無視敵軍阻擋，下一次攻擊 ×1.4 並額外打亂陣型。' },
     tuxi: { name: '突襲', kind: 'active', cd: 3, target: 'self', desc: '本次行動移動 +3、無視敵軍阻擋，衝鋒加成再提高。' },
     xianzhen: { name: '陷陣', kind: 'passive', desc: '攻擊 +15%；陣型被打亂的程度減半，永不就地解散。' },
+    liaolai: { name: '遼來', kind: 'passive', desc: '「遼來遼來」：攻擊 +20%；每回合結束時，2 格內的敵軍士氣 −4。' },
+    duanhou: { name: '斷後', kind: 'passive', desc: '友軍撤退時拚死斷後：受到的傷害 −25%，陣型被打亂的程度減半，不會潰逃。' },
     huoji: { name: '火計', kind: 'active', cd: 3, target: 'enemy', rng: 3, desc: '3 格內放火：兵力 −8%、完整度 −20；對攻城器械 ×3，在樹林中 ×1.5。' },
   };
 
@@ -87,10 +90,21 @@
     gongbing: { name: '工兵隊', mark: '工', lead: 40, war: 20, int: 30, skills: [], bio: '操作攻城器械的工兵。' },
     lubu: { name: '呂布', mark: '呂', lead: 88, war: 100, int: 26, skills: ['wushuang', 'feijiang'], bio: '「人中呂布，馬中赤兔」，天下無雙的猛將。' },
     zhangliao: { name: '張遼', mark: '張', lead: 90, war: 92, int: 78, skills: ['tuxi', 'heji'], bio: '呂布麾下騎將，日後的合肥守將。' },
+
     gaoshun: { name: '高順', mark: '高', lead: 86, war: 85, int: 60, skills: ['xianzhen'], bio: '統領「陷陣營」，所攻無不破者。' },
     chengong: { name: '陳宮', mark: '陳', lead: 70, war: 55, int: 92, skills: ['huoji'], bio: '呂布的謀主，屢獻良策卻不被採用。' },
     houcheng: { name: '侯成', mark: '侯', lead: 46, war: 65, int: 40, loyal: 30, skills: [], bio: '呂布部將，曾因私釀酒被呂布責罵。' },
     songxian: { name: '宋憲', mark: '宋', lead: 42, war: 60, int: 38, loyal: 35, skills: [], bio: '呂布部將。' },
+    sunquan: { name: '孫權', mark: '孫', lead: 80, war: 67, int: 80, skills: ['jili'], bio: '吳侯，趁曹操西征漢中，親率十萬大軍北攻合肥。' },
+    lumeng: { name: '呂蒙', mark: '蒙', lead: 86, war: 80, int: 88, skills: ['heji'], bio: '吳下阿蒙已非昔日，督軍攻城。' },
+    ganning: { name: '甘寧', mark: '甘', lead: 84, war: 92, int: 68, skills: ['tuxi'], bio: '錦帆賊出身的猛將，曾以百騎夜襲曹營。' },
+    lingtong: { name: '凌統', mark: '凌', lead: 78, war: 86, int: 62, skills: ['duanhou'], bio: '吳軍勇將，逍遙津之戰率親兵拚死護送孫權。' },
+    jiangqin: { name: '蔣欽', mark: '蔣', lead: 74, war: 72, int: 60, skills: [], bio: '吳軍宿將，率弓弩隊。' },
+    chenwu: { name: '陳武', mark: '陳', lead: 72, war: 84, int: 50, skills: [], bio: '吳軍騎將，在合肥之戰中力戰而死。' },
+    wubu: { name: '吳軍部將', mark: '吳', lead: 55, war: 52, int: 40, skills: [], bio: '吳軍弓弩隊。' },
+    lidian: { name: '李典', mark: '李', lead: 78, war: 75, int: 72, skills: ['heji'], bio: '與張遼素來不和，國難當前仍慨然隨張遼出戰。' },
+    yuejin: { name: '樂進', mark: '樂', lead: 80, war: 82, int: 55, skills: ['xianzhen'], bio: '曹操密函指定「樂將軍守護軍，勿得與戰」。' },
+    xueti: { name: '薛悌', mark: '薛', lead: 60, war: 35, int: 75, skills: [], bio: '護軍，帶來曹操「賊至乃發」的密函。' },
     weixu: { name: '魏續', mark: '魏', lead: 44, war: 62, int: 35, loyal: 35, skills: [], bio: '呂布部將。' },
   };
 
@@ -117,14 +131,37 @@
     'hh..........~....ff.....',
   ];
 
+  // 合肥：城在北，淝水在東，逍遙津橋在城東南；吳軍從南邊來
+  const HEFEI_MAP = [
+    'hh..................~.hh',
+    'h.......TWWWWWT.ff..~..h',
+    '........WcccccW..f..~...',
+    '..ff.h..WcccccW.....~...',
+    '...f.h..WccPccG,....~.f.',
+    '........WcccccW,....~.f.',
+    '........WcccccW.,..~~...',
+    '........TWWGWWT.,.l~....',
+    '...........,.....,l~....',
+    '....f......,.....,l~....',
+    '....ff.....,......,=,,,,',
+    '...........,......l~....',
+    '...........,......l~....',
+    '..ff.......,......l~~ff.',
+    '...........,hh..f...~...',
+    '.........S.,....ff..~.h.',
+    'h.....ff...,........~..h',
+    'hh..................~..h',
+  ];
+
   const SCENARIOS = [
     {
       id: 'xiapi', no: 1, name: '下邳之戰', year: '198 年（建安三年）冬', diff: '易', playable: true,
       map: XIAPI_MAP,
       sides: {
-        att: { name: '曹操軍', short: '曹', color: '#3b6fc4', leader: 'caocao' },
-        def: { name: '呂布軍', short: '呂', color: '#c8463a', leader: 'lubu' },
+        att: { name: '曹操軍', short: '曹', color: '#3b6fc4', tone: 'blue', leader: 'caocao' },
+        def: { name: '呂布軍', short: '呂', color: '#c8463a', tone: 'red', leader: 'lubu' },
       },
+      blurb: { att: '野戰擊破呂布，渡河圍城、水攻下邳', def: '以寡敵眾，守住下邳直到曹軍糧盡' },
       units: [
         // 攻方（曹）
         { gen: 'caocao', side: 'att', type: 'inf', troops: 5000, c: 3, r: 9, face: 0, form: 'yulin' },
@@ -190,16 +227,75 @@
       },
     },
     {
-      id: 'hefei', no: 2, name: '合肥之戰', year: '215 年（建安二十年）', diff: '中', playable: false,
-      sides: { att: { name: '孫權軍', short: '吳', color: '#c8463a', leader: 'sunquan' }, def: { name: '張遼軍', short: '魏', color: '#3b6fc4', leader: 'zhangliao' } },
+      id: 'hefei', no: 2, name: '合肥之戰', year: '215 年（建安二十年）', diff: '中', playable: true,
+      map: HEFEI_MAP,
+      sides: {
+        att: { name: '孫權軍', short: '吳', color: '#c8463a', tone: 'red', leader: 'sunquan' },
+        def: { name: '張遼軍', short: '魏', color: '#3b6fc4', tone: 'blue', leader: 'zhangliao' },
+      },
+      blurb: { att: '十萬大軍圍攻合肥，趕在疫病蔓延前破城', def: '八百敢死突襲吳營，守住合肥、逍遙津追擊' },
+      // 劇本裡的武將能力調整（覆蓋 GENERALS）
+      genMod: { zhangliao: { lead: 94, war: 95, skills: ['tuxi', 'liaolai'], bio: '曹魏名將，合肥守將。' } },
+      units: [
+        // 攻方（吳）
+        { gen: 'sunquan', side: 'att', type: 'inf', troops: 4000, c: 12, r: 14, face: 2, form: 'yulin' },
+        { gen: 'lumeng', side: 'att', type: 'inf', troops: 3500, c: 9, r: 12, face: 2, form: 'yulin' },
+        { gen: 'ganning', side: 'att', type: 'cav', troops: 2500, c: 14, r: 12, face: 2, form: 'fengshi' },
+        { gen: 'lingtong', side: 'att', type: 'inf', troops: 2500, c: 10, r: 14, face: 2, form: 'yulin' },
+        { gen: 'jiangqin', side: 'att', type: 'arc', troops: 3000, c: 13, r: 15, face: 2, form: 'yanxing' },
+        { gen: 'chenwu', side: 'att', type: 'cav', troops: 2000, c: 7, r: 12, face: 1, form: 'fengshi' },
+        { gen: 'wubu', side: 'att', type: 'arc', troops: 3000, c: 11, r: 15, face: 2, form: 'yanxing' },
+        { gen: 'gongbing', side: 'att', type: 'ram', troops: 600, c: 11, r: 16, face: 2, label: '衝車' },
+        { gen: 'gongbing', side: 'att', type: 'ladder', troops: 600, c: 9, r: 16, face: 2, label: '雲梯甲' },
+        { gen: 'gongbing', side: 'att', type: 'ladder', troops: 600, c: 14, r: 16, face: 2, label: '雲梯乙' },
+        // 守方（魏）：出城突擊的部隊
+        { gen: 'zhangliao', side: 'def', type: 'cav', troops: 2000, c: 11, r: 9, face: 5, form: 'fengshi', label: '八百敢死' },
+        { gen: 'lidian', side: 'def', type: 'inf', troops: 2000, c: 10, r: 8, face: 5, form: 'yulin' },
+        // 守方：城內
+        { gen: 'yuejin', side: 'def', type: 'inf', troops: 2000, c: 11, r: 5, face: 5, form: 'yulin' },
+        { gen: 'xueti', side: 'def', type: 'arc', troops: 1500, c: 10, r: 7, face: 5, form: 'yanxing' },
+        { gen: 'caobu', side: 'def', type: 'arc', troops: 1500, c: 12, r: 7, face: 5, form: 'yanxing' },
+        { gen: 'caobu', side: 'def', type: 'inf', troops: 1500, c: 10, r: 5, face: 5, form: 'yulin' },
+      ],
+      hp: { G: 140, W: 80 },   // 合肥城小而堅（張遼事先加固城防）
+      vars: { plague: false, plagueRound: 4, retreatRound: 9, retreating: false, retreatStart: 0, bridgeBroken: false, campBurnt: false, rocks: 6, oil: 3 },
+      retreat: { att: [23, 10], def: [11, 3] },
+      escape: [[22, 9], [23, 9], [22, 10], [23, 10], [22, 11], [23, 11], [21, 10], [21, 9], [21, 11]],
       brief: {
-        background: '孫權趁曹操西征漢中，率十萬大軍進攻合肥。城中只有張遼、李典、樂進約七千人。曹操事先留下密函：「若孫權至者，張、李將軍出戰；樂將軍守護軍，勿得與戰。」',
-        history: [
-          '張遼挑選八百名敢死之士，天亮時突襲吳軍大營，一路殺到孫權帥旗下，孫權退到小土丘上用長戟自守。',
-          '吳軍圍城十幾天攻不下，軍中又發生疫病，只好撤退。',
-          '撤到逍遙津北岸時，張遼率軍追擊。凌統拚死斷後，孫權躍馬跳過斷橋才逃脫。張遼從此威震江東。',
+        background: '孫權趁曹操西征漢中，率十萬大軍進攻合肥。城中只有張遼、李典、樂進約七千人。護軍薛悌帶來曹操事先寫好的密函：「若孫權至者，張、李將軍出戰；樂將軍守護軍，勿得與戰。」',
+        forces: {
+          att: '孫權、呂蒙、甘寧、凌統、蔣欽、陳武等約 2 萬人（遊戲比例），另有衝車、雲梯兩架。',
+          def: '城外：張遼「八百敢死」與李典準備天亮出擊；城內：樂進、薛悌與守軍約 6 千 5 百人。城門、城牆比一般城池堅固。',
+        },
+        goal: {
+          att: ['攻下合肥府衙（城中央）或全滅魏軍即勝利', '第 4 回合起軍中疫病蔓延，第 9 回合（或兵力折損過半）必須撤軍', '撤軍時孫權過了逍遙津橋、退到東邊就算安全撤回；孫權被擊潰則大敗'],
+          def: ['守住合肥，撐到吳軍撤退，並讓孫權退過逍遙津（史實）', '擊潰孫權部隊：生擒孫權（逆轉歷史）', '府衙被佔領或全軍覆沒則失敗'],
+        },
+        siege: [
+          '第 1 回合天亮：張遼與李典已在南門外列陣，吳軍營寨還沒整好（陣型鬆散）。這是突襲孫權本陣的最好機會。',
+          '張遼「遼來」：攻擊 +20%，每回合讓身邊 2 格內的吳軍士氣下降。',
+          '進出城只能走城門（南門、東門）。突擊完要記得從城門退回城裡。',
+          '吳軍要上城：雲梯架在城牆旁，步兵、弓兵才能攀城；衝車撞南門。城上守軍可用滾木礌石、火油，四角箭樓會自動放箭。',
+          '吳軍大營在西南：魏軍部隊衝進大營會放火，吳軍全軍士氣 −10。',
+          '第 4 回合起吳軍疫病蔓延：每回合兵力 −3%、士氣 −3。第 9 回合或兵力折損過半，孫權下令撤軍。',
+          '撤軍後：吳軍要從東邊的逍遙津橋過淝水撤走。撤軍 2 回合後橋板被魏軍拆掉，只有孫權能「躍馬」跳過斷橋，其他人要靠凌統斷後。',
         ],
-        teaser: '以寡擊眾、出城突擊、逍遙津追擊戰（製作中）',
+        history: [
+          '張遼挑選八百名敢死之士，天亮時披甲持戟，率先衝陣，殺了數十人、斬二將，一路殺到孫權帥旗下，孫權大驚，退到小土丘上用長戟自守。',
+          '張遼叱孫權下來決戰，孫權不敢動。吳軍重重包圍，張遼左衝右突，帶著部下突圍而出，又回頭救出被圍的部眾，吳軍士氣大挫。',
+          '吳軍圍城十幾天攻不下，軍中又發生疫病，只好撤退。',
+          '撤到逍遙津北岸時，張遼率步騎追擊。凌統率親兵三百拚死斷後，孫權躍馬跳過被拆斷的橋才逃脫。張遼從此威震江東，「遼來遼來」，小兒不敢夜啼。',
+        ],
+        paths: {
+          att: {
+            respect: '吳軍攻城不下、疫病蔓延而撤退，孫權在凌統掩護下躍馬過橋逃回江東。',
+            reverse: '頂住張遼的晨襲，在疫病擴散前用雲梯、衝車強攻破城，拿下合肥。',
+          },
+          def: {
+            respect: '張遼晨襲挫敵銳氣，堅守合肥直到吳軍撤退，再於逍遙津追擊。',
+            reverse: '在晨襲或逍遙津追擊時擊潰孫權本陣，生擒孫權。',
+          },
+        },
       },
     },
     {

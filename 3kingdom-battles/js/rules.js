@@ -3,6 +3,9 @@
 // 畫面層透過 g.fx（特效佇列）與 g.log（戰報）得知發生了什麼。
 (function (root) {
   const { TERRAIN, UNIT_TYPES, COUNTER, BASE_DEF, FORMATIONS, DISORDER, FORM_ALLOWED, SIDE_NAME, SKILLS, GENERALS, SCENARIOS } = root.DATA;
+  // 劇本的武將能力調整：GEN_MOD[劇本][武將] = 合併後的武將資料；部隊的 gk 記住用哪個劇本的版本
+  const GEN_MOD = {};
+  for (const sc of SCENARIOS) if (sc.genMod) { GEN_MOD[sc.id] = {}; for (const k in sc.genMod) GEN_MOD[sc.id][k] = Object.assign({}, GENERALS[k], sc.genMod[k]); }
   const H = root.HEX;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const other = s => (s === 'att' ? 'def' : 'att');
@@ -26,7 +29,7 @@
     };
     g.rnd = rngOf(g);
     for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
-      const t = TERRAIN[g.map[r][c]]; if (t.hp) g.hp[H.key(c, r)] = t.hp;
+      const t = TERRAIN[g.map[r][c]]; if (t.hp) g.hp[H.key(c, r)] = (sc.hp && sc.hp[g.map[r][c]]) || t.hp;   // 劇本可調整城防耐久
     }
     // 城內範圍：從府衙往外填，碰到城牆為止
     g.city = new Set();
@@ -35,7 +38,7 @@
     sc.units.forEach((d, i) => {
       const gen = GENERALS[d.gen], ty = UNIT_TYPES[d.type];
       g.units.push({
-        id: i, gen: d.gen, name: d.label ? (ty.engine ? d.label : gen.name) : gen.name, label: d.label || '', side: d.side, type: d.type,
+        id: i, gen: d.gen, gk: GEN_MOD[scId] && GEN_MOD[scId][d.gen] ? scId : undefined, name: d.label ? (ty.engine ? d.label : gen.name) : gen.name, label: d.label || '', side: d.side, type: d.type,
         troops: d.troops, max: d.troops, c: d.c, r: d.r, face: d.face, form: d.form || null,
         coh: 100, mor: 80, cd: {}, alive: true, dueled: false,
         moved: false, acted: false, attacked: false, mpBonus: 0, ignoreZOC: false, buff: {},
@@ -76,7 +79,7 @@
     if (!o.length) return true;
     return o.length === 1 && o[0].side === u.side && (isEngine(u) || isEngine(o[0]));
   }
-  const gen = u => GENERALS[u.gen];
+  const gen = u => (u.gk ? GEN_MOD[u.gk][u.gen] : GENERALS[u.gen]);
   const ty = u => UNIT_TYPES[u.type];
   const isEngine = u => !!ty(u).engine;
   const has = (u, sk) => gen(u).skills.includes(sk) && !isEngine(u);
@@ -117,6 +120,7 @@
   function moveCost(g, u, c, r, fromC, fromR) {
     if (!inMap(g, c, r)) return Infinity;
     const t = terr(g, c, r), mv = ty(u).mv;
+    if (t.broken) return u.gen === 'sunquan' ? 3 : Infinity;   // 斷橋：只有孫權能躍馬跳過
     let cost = t.cost[mv]; if (!isFinite(cost)) return Infinity;
     const fromT = terr(g, fromC, fromR);
     const inside = fromT.wall || g.city.has(H.key(fromC, fromR));
@@ -179,7 +183,7 @@
     g.order = alive(g).sort((a, b) => b.spdRoll - a.spdRoll).map(u => u.id);
     g.oi = -1;
     g.fx.push({ t: 'round', n: g.round });
-    if (g.sc.id === 'xiapi') XIAPI.onRoundStart(g);
+    const SR = SC_RULES[g.sc.id]; if (SR) SR.onRoundStart(g);
     nextActivation(g);
   }
   function nextActivation(g) {
@@ -275,6 +279,8 @@
     if (has(A, 'wushuang')) P('無雙', 1.3);
     if (has(A, 'wusheng')) P('武聖', 1.2);
     if (has(A, 'xianzhen')) P('陷陣', 1.15);
+    if (has(A, 'liaolai')) P('遼來', 1.2);
+    if (has(D, 'duanhou') && g.vars.retreating) P('斷後', 0.75);
     if (A.buff.feijiang && !opts.counter) P('飛將', 1.4);
     if (opts.weizhen) P('威震', 1.3);
     // 兵種相剋
@@ -342,7 +348,7 @@
     const pct = dmg / Math.max(1, before) * 100;
     let coh = pct * 2.0 + (info.side >= 0 ? [0, 6, 12, 18][info.side] : 0) + (info.charge ? 8 : 0) + (info.joint || 0) * 4 + (info.extraCoh || 0);
     coh *= 1 - gen(D).lead / 200;
-    if (has(D, 'xianzhen')) coh *= 0.5;
+    if (has(D, 'xianzhen') || (has(D, 'duanhou') && g.vars.retreating)) coh *= 0.5;
     if (info.ranged) coh *= 0.7;
     D.coh = clamp(D.coh - Math.max(2, coh), 0, 100);
     D.mor = clamp(D.mor - (pct * 0.9 + (info.side === 3 ? 5 : 0) + (info.extraMor || 0)), 0, 100);
@@ -354,7 +360,7 @@
     if (isEngine(u)) return;
     const lead = gen(u).lead;
     // 兵力折損到兩成五以下：殘部潰逃（陷陣營除外，每支部隊只觸發一次）
-    if (u.troops < u.max * 0.25 && !u.broken && !has(u, 'xianzhen')) { u.broken = true; rout(g, u); return; }
+    if (u.troops < u.max * 0.25 && !u.broken && !has(u, 'xianzhen') && !(has(u, 'duanhou') && g.vars.retreating)) { u.broken = true; rout(g, u); return; }
     if (u.coh < 15 || u.mor <= 5) {
       if (has(u, 'xianzhen') || lead >= 70) {
         if (u.coh < 15) { u.coh = 15; u.mor = clamp(u.mor - 8, 0, 100); }
@@ -513,7 +519,7 @@
       }
       // 單挑
       if (!isEngine(u) && gen(u).war >= 60 && !u.dueled) {
-        const ts = adjEnemies(g, u).filter(v => !['caobu', 'gongbing'].includes(v.gen) && !v.dueled).map(v => v.id);
+        const ts = adjEnemies(g, u).filter(v => !['caobu', 'gongbing', 'wubu'].includes(v.gen) && !v.dueled).map(v => v.id);
         if (ts.length) add({ id: 'duel', name: '單挑', desc: '向相鄰敵將挑戰（每位武將限一次）。勝者部隊士氣大振，敗者部隊士氣與陣型大亂；實力差太多時對方會避戰。', need: 'enemy', targets: ts });
       }
       // 變換陣型
@@ -534,7 +540,7 @@
       const st = structTargets(g, u);
       if (st.length) add({ id: 'struct', name: u.type === 'ram' ? '撞門' : u.type === 'cata' ? '轟擊城防' : '攻門', desc: u.type === 'ram' ? '用衝車撞擊城門。' : u.type === 'cata' ? '投石轟擊城牆、城門或箭樓，耐久歸零就會出現缺口。' : '用步兵硬撞城門（效果很差，最好用衝車）。', need: 'hex', targets: st });
       // 劇本專屬
-      if (g.sc.id === 'xiapi') XIAPI.actions(g, u, add);
+      const SR = SC_RULES[g.sc.id]; if (SR && SR.actions) SR.actions(g, u, add);
     }
     return L;
   }
@@ -574,7 +580,7 @@
       const tg = A.targets.find(x => x.k === target); if (!tg) return false;
       return attackStruct(g, u, tg.c, tg.r);
     }
-    if (g.sc.id === 'xiapi') return XIAPI.doAction(g, u, id, target);
+    const SR = SC_RULES[g.sc.id]; if (SR && SR.doAction) return SR.doAction(g, u, id, target);
     return false;
   }
   function useSkill(g, u, sk, target) {
@@ -651,7 +657,7 @@
       g.fx.push({ t: 'tower', c, r, d: tg.id, dmg });
       applyLoss(g, tg, Math.min(dmg, tg.troops), { ranged: true });
     }
-    if (g.sc.id === 'xiapi') XIAPI.onRoundEnd(g);
+    if (SC_RULES[g.sc.id]) SC_RULES[g.sc.id].onRoundEnd(g);
     checkVictory(g, true);
   }
 
@@ -659,7 +665,7 @@
   function checkVictory(g, roundEnd) {
     if (g.over) return;
     let r = null;
-    if (g.sc.id === 'xiapi') r = XIAPI.victory(g, roundEnd);
+    if (SC_RULES[g.sc.id]) r = SC_RULES[g.sc.id].victory(g, roundEnd);
     if (r) { g.over = r; g.active = null; g.fx.push({ t: 'over' }); }
   }
 
@@ -777,6 +783,75 @@
   // 戰報只記第一段；視窗顯示全文（空一行之後是操作說明）
   function msg(g, title, text, side, who) { g.log.push({ round: g.round, text: `【${title}】${text.split('\n\n')[0]}`, side: side || null, kind: 'event' }); g.fx.push({ t: 'msg', title, text, side, who }); }
 
+  // ---------- 合肥之戰專屬規則 ----------
+  const sunOf = g => g.units.find(u => u.gen === 'sunquan');
+  const escaped = (g, u) => g.sc.escape.some(([c, r]) => c === u.c && r === u.r);
+  const HEFEI = {
+    onRoundStart(g) {
+      const v = g.vars;
+      if (g.round === 1) {
+        // 天亮突襲：吳軍營寨未整
+        for (const u of g.units) if (u.side === 'att' && !isEngine(u)) { u.coh = 55; u.mor = 70; }
+        for (const u of g.units) if (u.gen === 'zhangliao' || u.gen === 'lidian') u.mor = 100;
+        // 天亮出擊：第 1 回合魏軍全部先動，吳軍才醒過來
+        g.order = [...g.order.filter(id => g.units[id].side === 'def'), ...g.order.filter(id => g.units[id].side === 'att')];
+        msg(g, '合肥之戰', '孫權率十萬大軍圍合肥。張遼、李典、樂進打開曹操的密函：「若孫權至者，張、李將軍出戰；樂將軍守護軍，勿得與戰。」張遼連夜募得敢死之士八百人，殺牛犒軍，準備天亮出擊。\n\n【晨襲】\n・天亮出擊：第 1 回合魏軍全部先行動；吳軍營寨還沒整好，各部陣型鬆散（完整度 55）\n・張遼「遼來」：攻擊 +20%，每回合讓身邊 2 格的吳軍士氣下降\n・孫權在南邊的小土丘上；吳軍大營在西南，衝進去可以放火\n・突擊完要從南門或東門退回城裡', null, [['zhangliao', 'charge'], ['lidian', 'resolve'], ['yuejin', 'default']]);
+      }
+      if (g.round === v.plagueRound && !v.plague && !v.retreating) {
+        v.plague = true;
+        msg(g, '吳軍疫病', `吳軍久屯城下，軍中疫病流行。\n\n【疫病】每回合結束時，吳軍各部兵力 −3%、士氣 −3。第 ${v.retreatRound} 回合（或兵力折損過半）孫權就會下令撤軍。`, null, [['sunquan', 'worry']]);
+      }
+      if (!v.retreating) {
+        const att = g.units.filter(u => u.side === 'att' && !isEngine(u));
+        const now = att.filter(u => u.alive).reduce((s, u) => s + u.troops, 0), all = att.reduce((s, u) => s + u.max, 0);
+        if (g.round >= v.retreatRound || now < all * 0.5) HEFEI.retreat(g);
+      } else if (!v.bridgeBroken && g.round >= v.retreatStart + 2) {
+        v.bridgeBroken = true;
+        for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === '=') { g.map[r][c] = 'b'; g.fx.push({ t: 'burn', c, r }); }
+        const sun = sunOf(g);
+        msg(g, '逍遙津斷橋', '魏軍拆掉了逍遙津橋的橋板！\n\n【斷橋】除了孫權能「躍馬」跳過斷橋，其他吳軍都過不去了。凌統「斷後」：撤軍時受傷 −25%、不會潰逃。', 'def', [[sun && sun.alive ? 'sunquan' : 'zhangliao', sun && sun.alive ? 'leap' : 'charge'], ['lingtong', 'guard']]);
+      }
+    },
+    retreat(g) {
+      const v = g.vars; v.retreating = true; v.retreatStart = g.round;
+      msg(g, '孫權撤軍', '合肥久攻不下，疫病蔓延，孫權下令撤軍。大軍先行，孫權與凌統、甘寧等殿後，走到逍遙津北岸……\n\n【撤軍】\n・吳軍要讓孫權從東邊的逍遙津橋過淝水，退到地圖東緣的撤退區就安全了（其他部隊到了撤退區也會撤離戰場）\n・2 回合後魏軍會拆掉橋板，之後只有孫權能躍馬跳過\n・魏軍：追擊！擊潰孫權部隊就能生擒孫權', 'att', [['sunquan', 'worry'], ['zhangliao', 'charge']]);
+    },
+    onRoundEnd(g) {
+      const v = g.vars;
+      if (v.plague && !v.retreating) {
+        for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) { u.troops = Math.max(1, Math.round(u.troops * 0.97)); u.mor = clamp(u.mor - 3, 0, 100); }
+        log(g, '吳軍疫病蔓延，各部兵力 −3%、士氣 −3', 'att', 'bad');
+      }
+      // 遼來：張遼身邊的敵軍士氣下降
+      for (const z of alive(g)) if (has(z, 'liaolai')) for (const u of alive(g)) if (u.side !== z.side && !isEngine(u) && H.dist(u.c, u.r, z.c, z.r) <= 2) { u.mor = clamp(u.mor - 4, 0, 100); checkCollapse(g, u); }
+      // 火燒吳軍大營
+      if (!v.campBurnt) for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'S') {
+        const on = unitAt(g, c, r);
+        if (on && on.side === 'def') {
+          v.campBurnt = true; g.map[r][c] = '.'; g.fx.push({ t: 'burn', c, r });
+          for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) u.mor = clamp(u.mor - 10, 0, 100);
+          msg(g, '火燒吳營', `${on.name}衝進吳軍大營放火！吳軍全軍士氣 −10。`, 'def', [[on.gen, on.gen === 'zhangliao' ? 'charge' : 'default']]);
+        }
+      }
+      // 撤退區：過了橋的吳軍部隊撤離戰場（孫權到了就結束）
+      if (v.retreating) for (const u of alive(g)) if (u.side === 'att' && u.gen !== 'sunquan' && escaped(g, u)) { u.alive = false; u.escaped = true; log(g, `${u.name}部撤過淝水`, 'att'); g.fx.push({ t: 'dead', id: u.id }); }
+    },
+    victory(g, roundEnd) {
+      const v = g.vars, sun = sunOf(g);
+      const end = (winner, route) => ({ winner, route, round: g.round });
+      if (!sun.alive) return end('def', v.retreating ? 'capture' : 'raid');
+      if (v.retreating && escaped(g, sun)) return end('def', 'history');
+      if (!alive(g).some(u => u.side === 'def' && !isEngine(u))) return end('att', 'storm');
+      if (!alive(g).some(u => u.side === 'att' && !isEngine(u))) return end('def', v.retreating ? 'capture' : 'rout');
+      if (roundEnd) {
+        if (g.units.some(u => u.alive && u.side === 'att' && g.map[u.r][u.c] === 'P')) return end('att', 'storm');
+        if (g.round >= 18) return end('def', 'history');
+      }
+      return null;
+    },
+  };
+  const SC_RULES = { xiapi: XIAPI, hefei: HEFEI };
+
   // ---------- 結局文字 ----------
   const ENDINGS = {
     xiapi: {
@@ -788,6 +863,14 @@
       caodown: { title: '曹操兵敗下邳', tag: '逆轉歷史', text: '曹操本陣被呂布軍擊潰，曹軍大亂退走。少了曹操的中原，歷史將走向完全不同的方向。', who: [['lubu', 'default'], ['caocao', 'default']] },
       rout: { title: '曹軍全面潰敗', tag: '逆轉歷史', text: '曹軍各部相繼潰散，東征以慘敗收場。', who: [['lubu', 'default']] },
     },
+    hefei: {
+      history: { title: '威震逍遙津', tag: '尊重歷史', text: '吳軍久攻合肥不下，疫病蔓延，只得撤退。張遼在逍遙津追擊，凌統拚死斷後，孫權躍馬跳過斷橋才逃出生天。從此「遼來遼來」，江東小兒聞之不敢夜啼。', who: [['zhangliao', 'charge'], ['sunquan', 'leap'], ['lingtong', 'guard']] },
+      raid: { title: '八百破十萬', tag: '逆轉歷史', text: '張遼的晨襲一路殺到孫權帥旗下，這一次孫權沒能退上土丘——吳軍主帥被擒，十萬大軍不戰自潰。', who: [['zhangliao', 'charge'], ['sunquan', 'worry']] },
+      capture: { title: '生擒孫權', tag: '逆轉歷史', text: '逍遙津橋斷，凌統沒能擋住追兵，孫權被張遼生擒。江東群龍無首，三國的局勢從此改寫。', who: [['zhangliao', 'charge'], ['sunquan', 'worry']] },
+      storm: { title: '攻陷合肥', tag: '逆轉歷史', text: '吳軍頂住了張遼的突襲，趕在疫病擴散前攻破合肥。江淮門戶落入東吳手中，曹魏的東南防線大為動搖。', who: [['sunquan', 'default'], ['lumeng', 'default'], ['ganning', 'default']] },
+      rout: { title: '吳軍潰敗', tag: '逆轉歷史', text: '吳軍各部在合肥城下相繼潰散，北伐以慘敗收場。', who: [['zhangliao', 'charge']] },
+    },
+
   };
 
   // ---------- 匯出 ----------

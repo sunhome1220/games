@@ -13,11 +13,11 @@ module.exports = [
     env.assert.strictEqual(await pg.evaluate(() => localStorage.getItem('3kb-seen')), await pg.evaluate(() => VERSION));
     await pg.click('#btnChangelog'); env.assert(await pg.isVisible('#logOv'), '選關畫面可隨時查看更新內容');
   } },
-  { name: '選關：三關都在，第 2、3 關製作中', async fn(env) {
+  { name: '選關：三關都在，第 3 關製作中', async fn(env) {
     const pg = await env.open();
     const n = await pg.$$eval('#scList .sc', e => e.length);
     const locked = await pg.$$eval('#scList .sc.lock', e => e.length);
-    env.assert.strictEqual(n, 3); env.assert.strictEqual(locked, 2);
+    env.assert.strictEqual(n, 3); env.assert.strictEqual(locked, 1);
     const w = await pg.evaluate(() => document.documentElement.scrollWidth);
     env.assert(w <= 420, '手機寬度不應水平捲動：' + w);
   } },
@@ -134,5 +134,13 @@ module.exports = [
       return document.querySelector('#panel .hint.siege')?.textContent || '';
     });
     env.assert(hint.includes('雲梯'), '應提示需要雲梯：' + hint);
+  } },
+  { name: '合肥之戰：選守方開戰，操作張遼；攻方吳軍是紅色', async fn(env) {
+    const pg = await env.open('sc=hefei&side=def&seed=3&fast');
+    await env.myTurn(pg);
+    const r = await pg.evaluate(() => ({ side: RULES.activeUnit(G).side, tone: window.SIDE_TONE, swap: document.body.classList.contains('swap'), hud: document.querySelector('#hVars').textContent }));
+    env.assert.strictEqual(r.side, 'def'); env.assert.deepStrictEqual(r.tone, { att: 'red', def: 'blue' }); env.assert(r.swap);
+    env.assert(r.hud.includes('撤軍'), r.hud);
+    await pg.click('#btnGoal'); env.assert((await pg.textContent('#modalBody')).includes('逍遙津'));
   } },
 ];

@@ -217,4 +217,27 @@ module.exports = [
     env.assert(r.engWithInf && !r.cavWithInf && !r.third && r.top, '同格規則：' + JSON.stringify(r));
     env.assert(r.ok && r.nowActive && r.curNext && r.curAfter, '改派順序：' + JSON.stringify(r));
   } },
+  { name: '合肥：晨襲陣型鬆散、疫病後撤軍、斷橋只有孫權跳得過、AI 對 AI 分出勝負', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = RULES.newGame('hefei', { seed: 4 }); RULES.startRound(g);
+      const wuCoh = g.units.filter(u => u.side === 'att' && !RULES.isEngine(u)).every(u => u.coh === 55);
+      const liao = RULES.gen(g.units.find(u => u.gen === 'zhangliao')).skills.includes('liaolai');
+      // 直接跳到撤軍
+      g.order = []; g.oi = 0; g.round = g.vars.retreatRound - 1; RULES.nextActivation(g);
+      const retreating = g.vars.retreating;
+      RULES.nextActivation(g); g.order = []; g.oi = 0; RULES.nextActivation(g); g.order = []; g.oi = 0; RULES.nextActivation(g);
+      const broken = g.map[10][19] === 'b';
+      const sun = g.units.find(u => u.gen === 'sunquan'), ling = g.units.find(u => u.gen === 'lingtong');
+      const leap = RULES.moveCost(g, sun, 19, 10, 18, 10), noLeap = RULES.moveCost(g, ling, 19, 10, 18, 10);
+      // AI 對 AI
+      const g2 = RULES.newGame('hefei', { seed: 9 }); RULES.startRound(g2);
+      let n = 0; while (!g2.over && n++ < 4000) { AI.act(g2, RULES.activeUnit(g2)); if (!g2.over) RULES.endActivation(g2); }
+      return { wuCoh, liao, retreating, broken, leap, noLeap, over: g2.over };
+    });
+    env.assert(r.wuCoh && r.liao, '晨襲：' + JSON.stringify(r));
+    env.assert(r.retreating && r.broken, '撤軍與斷橋：' + JSON.stringify(r));
+    env.assert(isFinite(r.leap) && !isFinite(r.noLeap), '只有孫權能躍馬：' + JSON.stringify(r));
+    env.assert(r.over && r.over.winner, 'AI 對 AI 應分出勝負：' + JSON.stringify(r.over));
+  } },
 ];

@@ -37,26 +37,32 @@
       <div class="gal">${ms.map(m => `<div class="gm">${face(gen, m.id, { sc, cls: 'lg' })}<b>${esc(m.name)}</b>${m.quote ? `<small>${esc(m.quote)}${m.src ? `（${esc(m.src)}）` : ''}</small>` : ''}</div>`).join('')}</div>`, [['關閉', true]]);
   }
 
+  // 陣營色調：劇本決定攻守方是藍是紅（下邳：曹藍呂紅；合肥：吳紅魏藍）
+  function setTone(sc) {
+    const T = sc ? { att: sc.sides.att.tone || 'blue', def: sc.sides.def.tone || 'red' } : { att: 'blue', def: 'red' };
+    root.SIDE_TONE = T; document.body.classList.toggle('swap', T.att === 'red');
+  }
+
   // ---------- 畫面切換 ----------
   function show(id) { for (const el of document.querySelectorAll('.screen')) el.hidden = el.id !== id; }
 
   // ---------- 選關 ----------
   function renderSelect() {
-    show('scrSelect'); $('#title').textContent = '三國・名戰錄';
+    show('scrSelect'); $('#title').textContent = '三國・名戰錄'; setTone(null);
     renderSaveBar();
     $('#scList').innerHTML = D.SCENARIOS.map(sc => `
       <div class="sc ${sc.playable ? '' : 'lock'}">
         <div><span class="no">第 ${sc.no} 關</span><b>${sc.name}</b><span class="diff">${sc.year}・難度 ${sc.diff}${sc.playable ? '' : '・製作中'}</span></div>
         <p>${esc(sc.brief.background)}</p>
         ${sc.playable ? `<div class="sides">
-          <button class="att" data-sc="${sc.id}" data-side="att"><b style="color:var(--att)">攻方・${sc.sides.att.name}</b><small>${sideBlurb(sc, 'att')}</small></button>
-          <button class="def" data-sc="${sc.id}" data-side="def"><b style="color:var(--def)">守方・${sc.sides.def.name}</b><small>${sideBlurb(sc, 'def')}</small></button>
+          <button class="att" data-sc="${sc.id}" data-side="att"><b style="color:${sc.sides.att.color}">攻方・${sc.sides.att.name}</b><small>${sideBlurb(sc, 'att')}</small></button>
+          <button class="def" data-sc="${sc.id}" data-side="def"><b style="color:${sc.sides.def.color}">守方・${sc.sides.def.name}</b><small>${sideBlurb(sc, 'def')}</small></button>
         </div>` : `<p class="lead">${esc(sc.brief.teaser)}</p><div class="sides"><button data-peek="${sc.id}" class="btn ghost">📜 看戰役簡介</button></div>`}
       </div>`).join('');
     for (const b of document.querySelectorAll('#scList [data-sc]')) b.onclick = () => showBrief(b.dataset.sc, b.dataset.side);
     for (const b of document.querySelectorAll('#scList [data-peek]')) b.onclick = () => peek(b.dataset.peek);
   }
-  function sideBlurb(sc, side) { return side === 'att' ? '野戰擊破呂布，渡河圍城、水攻下邳' : '以寡敵眾，守住下邳直到曹軍糧盡'; }
+  function sideBlurb(sc, side) { return (sc.blurb && sc.blurb[side]) || ''; }
   function peek(id) {
     const sc = D.SCENARIOS.find(s => s.id === id);
     modal(`<h2>${sc.name}（${sc.year}）</h2><p>${esc(sc.brief.background)}</p><h3>史實經過</h3><ul>${sc.brief.history.map(h => `<li>${esc(h)}</li>`).join('')}</ul><p class="lead">本關製作中，先完成第 1 關的試玩回饋後再開發。</p>`, [['知道了', true]]);
@@ -65,7 +71,7 @@
   // ---------- 戰前說明 ----------
   function showBrief(scId, side) {
     const sc = D.SCENARIOS.find(s => s.id === scId); const B = sc.brief; const me = sc.sides[side], foe = sc.sides[R.other(side)];
-    show('scrBrief'); $('#title').textContent = sc.name;
+    show('scrBrief'); $('#title').textContent = sc.name; setTone(sc);
     $('#briefBox').innerHTML = `<div class="brief">
       <h1>第 ${sc.no} 關・${sc.name}</h1>
       <p class="lead">${sc.year}｜你扮演 <b class="${side}">${me.name}</b>（${side === 'att' ? '攻方' : '守方'}），對手是電腦操控的${foe.name}。</p>
@@ -100,7 +106,7 @@
   // fresh：新開局（從第 1 回合開始）；否則是讀檔，接著目前輪到的部隊繼續
   async function enterBattle(g, side, fresh) {
     show('scrBattle');
-    const sc = g.sc; $('#title').textContent = sc.name;
+    const sc = g.sc; $('#title').textContent = sc.name; setTone(sc);
     S.g = g; S.side = side; S.skipRound = null; S.mode = 'main'; S.inspect = null; S.preview = null; S.pending = null;
     root.G = S.g;
     if (!(await root.V3.init($('#stage')))) { $('#panel').innerHTML = '<p>這台裝置無法顯示 3D 畫面（不支援 WebGL）。</p>'; return; }
@@ -241,6 +247,7 @@
       }
     }
     if (S.mode === 'main' && g.vars.digOpen && !g.vars.flooded) for (const [c, r] of digHexes(g)) L.push({ c, r, edge: 0x7fd3ff, edgeOpacity: 0.85 });
+    if (S.mode === 'main' && g.sc.escape && g.vars.retreating) for (const [c, r] of g.sc.escape) L.push({ c, r, edge: 0x9cf09c, edgeOpacity: 0.8 });
     if (S.preview) { const p = S.preview; L.push({ c: p.c, r: p.r, color: 0xffffff, opacity: 0.5, scale: 0.6 }); }
     root.V3.highlight(L);
   }
@@ -337,18 +344,23 @@
     const g = S.g; if (!g) return;
     const sc = g.sc, v = g.vars, side = S.side;
     const gates = [], breaches = [];
+    let pc = [0, 0]; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'P') pc = [c, r];
+    // 城門方位：看在府衙的哪一邊
+    const dirName = (c, r) => Math.abs(c - pc[0]) >= Math.abs(r - pc[1]) ? (c < pc[0] ? '西' : '東') : (r < pc[1] ? '北' : '南');
     for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
       const ch = g.map[r][c], k = H.key(c, r);
-      if (ch === 'G') gates.push(`${c < 18 ? '西' : '東'}門耐久 ${g.hp[k]}`);
-      if (ch === 'o') gates.push(`${c < 18 ? '西' : '東'}門已破`);
+      if (ch === 'G') gates.push(`${dirName(c, r)}門耐久 ${g.hp[k]}`);
+      if (ch === 'o') gates.push(`${dirName(c, r)}門已破`);
       if (ch === 'r') breaches.push(k);
     }
     const lad = Object.keys(g.ladders).length;
     const cityDef = g.units.filter(u => u.alive && u.side === 'def' && R.inCity(g, u) && !R.isEngine(u));
     const mor = cityDef.length ? Math.round(cityDef.reduce((s2, u) => s2 + u.mor, 0) / cityDef.length) : 0;
+    const common = `<li>${gates.join('、')}</li>
+      <li>城牆缺口：${breaches.length ? breaches.length + ' 處' : '沒有'}；雲梯已架：${lad ? lad + ' 處' : '沒有'}</li>`;
+    if (g.scId === 'hefei') return showGoalsHefei(g, common);
     const status = `<ul class="goalst">
-      <li>${gates.join('、')}</li>
-      <li>城牆缺口：${breaches.length ? breaches.length + ' 處' : '沒有'}；雲梯已架：${lad ? lad + ' 處' : '沒有'}</li>
+      ${common}
       <li>水淹：${v.flooded ? (v.receded ? '已水淹，城外泥濘' : '已水淹') : v.digOpen ? `掘堤 ${v.dig}/${v.digNeed}` : `第 ${v.digUnlock} 回合起可掘堤`}</li>
       <li>城內守軍平均士氣 ${mor}${v.betrayed ? '（已有將領倒戈）' : mor < 55 ? '（人心浮動，可能倒戈）' : ''}；城中糧 ${v.food}；曹軍糧草 ${Math.max(0, v.supply)}</li></ul>`;
     const how = side === 'att' ? `<h3>怎麼打進城</h3><ol>
@@ -362,6 +374,24 @@
       <li>用「滾木礌石」「火油」打城下敵軍，四角箭樓會自動放箭；可從城門出城突擊，但回城也要走城門。</li>
       <li>派兵守住城北河堤，阻止曹軍掘堤水攻；派騎兵襲擾、火燒曹軍糧營，讓曹軍糧盡退兵。</li>
       <li>維持城內士氣，避免將領倒戈。</li></ol>`;
+    modal(`<h2>🎯 ${esc(sc.name)}：${side === 'att' ? '攻方' : '守方'}目標</h2><ul>${sc.brief.goal[side].map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+      <h3>目前戰況</h3>${status}${how}`, [['知道了', true]]);
+  }
+  function showGoalsHefei(g, common) {
+    const sc = g.sc, v = g.vars, side = S.side;
+    const sun = g.units.find(u => u.gen === 'sunquan'), liao = g.units.find(u => u.gen === 'zhangliao');
+    const att = g.units.filter(u => u.side === 'att' && !R.isEngine(u)), now = att.filter(u => u.alive).reduce((s2, u) => s2 + u.troops, 0), all = att.reduce((s2, u) => s2 + u.max, 0);
+    const status = `<ul class="goalst">${common}
+      <li>吳軍兵力 ${Math.round(now / all * 100)}%（低於 50% 就撤軍）；${v.retreating ? `已撤軍（第 ${v.retreatStart} 回合起）${v.bridgeBroken ? '，逍遙津橋已斷' : `，第 ${v.retreatStart + 2} 回合斷橋`}` : v.plague ? `疫病中，第 ${v.retreatRound} 回合撤軍` : `第 ${v.plagueRound} 回合起疫病、第 ${v.retreatRound} 回合撤軍`}</li>
+      <li>孫權：${sun.alive ? `兵力 ${sun.troops}` : '已被擊潰'}；張遼：${liao.alive ? `兵力 ${liao.troops}${R.inCity(g, liao) || R.onWall(g, liao) ? '（城內）' : '（城外）'}` : '已陣亡'}${v.campBurnt ? '；吳營已被燒' : ''}</li></ul>`;
+    const how = side === 'att' ? `<h3>吳軍怎麼打</h3><ol>
+      <li><b>頂住晨襲</b>：第 1 回合張遼、李典會直撲孫權。讓孫權待在小土丘上（居高臨下），叫甘寧、陳武的騎兵從側面夾擊張遼。</li>
+      <li><b>趕在疫病前破城</b>：衝車沿大路撞南門；雲梯架在南牆，步兵、弓兵攀城。南門破了就衝向府衙，回合結束時站在府衙上就獲勝。</li>
+      <li><b>撤軍時</b>：孫權往東過逍遙津橋，退到東邊撤退區（綠框）就安全。凌統「斷後」很耐打，讓他擋在橋頭。斷橋後只有孫權能躍馬跳過。</li></ol>`
+      : `<h3>魏軍怎麼守</h3><ol>
+      <li><b>晨襲</b>：第 1、2 回合吳軍陣型鬆散，張遼、李典直衝孫權所在的小土丘；也可以衝進西南的吳軍大營放火（吳軍士氣 −10）。打完記得從南門或東門回城。</li>
+      <li><b>守城</b>：樂進守在城裡別出戰；城上弓兵用滾木礌石、火油打雲梯和衝車。撐到疫病、撤軍。</li>
+      <li><b>逍遙津追擊</b>：吳軍撤退時，騎兵從東門出去搶佔逍遙津橋，攔住孫權；擊潰孫權部隊就能生擒孫權（逆轉歷史）。</li></ol>`;
     modal(`<h2>🎯 ${esc(sc.name)}：${side === 'att' ? '攻方' : '守方'}目標</h2><ul>${sc.brief.goal[side].map(x => `<li>${esc(x)}</li>`).join('')}</ul>
       <h3>目前戰況</h3>${status}${how}`, [['知道了', true]]);
   }
@@ -480,6 +510,12 @@
       if (v.betrayed) bits.push('西門已開');
       else if (v.unrest) bits.push('<span class="warn">⚠ 城內人心浮動</span>');
     }
+    if (g.scId === 'hefei') {
+      if (v.retreating) bits.push(v.bridgeBroken ? '<span class="warn" title="只有孫權能躍馬跳過">🌉 逍遙津橋已斷</span>' : `<span class="warn" title="第 ${v.retreatStart + 2} 回合魏軍拆橋">🏃 吳軍撤退（第 ${v.retreatStart + 2} 回合斷橋）</span>`);
+      else if (v.plague) bits.push(`<span class="warn" title="每回合吳軍兵力 −3%、士氣 −3">🦠 疫病（第 ${v.retreatRound} 回合撤軍）</span>`);
+      else bits.push(`<span title="第 ${v.plagueRound} 回合起吳軍疫病">吳軍撤軍：第 ${v.retreatRound} 回合</span>`);
+      if (v.campBurnt) bits.push('吳營已燒');
+    }
     $('#hVars').innerHTML = bits.join('｜');
     const dig = $('#hDig'); if (dig) dig.onclick = () => { const d = digHexes(g)[0]; if (d) { root.V3.focus(d[0], d[1]); toast('⛏ 河堤：曹軍步兵或弓兵站上來就能「掘堤」', 2600); } };
     root.V3.digMarks && root.V3.digMarks(g, v.digOpen && !v.flooded ? digHexes(g).filter(([c, r]) => !R.unitAt(g, c, r)) : []);
@@ -538,6 +574,12 @@
     if (r === 5) showSaveMenu();
     if (r === 6) showLoadMenu();
   }
+  function endNotes(g) {
+    const v = g.vars;
+    if (g.scId === 'xiapi') return `${v.flooded ? '有水淹下邳。' : '沒有水淹。'}${v.betrayed ? '城內將領倒戈。' : '沒有人倒戈。'}${v.depotBurnt ? '曹軍糧營被燒。' : ''}`;
+    if (g.scId === 'hefei') { const liao = g.units.find(u => u.gen === 'zhangliao'); return `${v.campBurnt ? '吳軍大營被燒。' : ''}${v.retreating ? `吳軍第 ${v.retreatStart} 回合撤軍。` : '吳軍沒有撤軍。'}${liao.alive ? '張遼活了下來。' : '張遼戰死。'}`; }
+    return '';
+  }
   function showEnd() {
     const g = S.g; const o = g.over; const E = R.ENDINGS[g.scId][o.route]; const sc = g.sc;
     const win = o.winner === S.side;
@@ -550,7 +592,7 @@
       <p><span class="tag ${E.tag === '尊重歷史' ? 'h' : 'r'}">${E.tag}</span>${sc.sides[o.winner].name}獲勝（第 ${o.round} 回合）</p>
       ${faces(E.who)}
       <p>${esc(E.text)}</p>${E.who && E.who.some(([gn, m]) => P.MOODS[gn][m] && P.MOODS[gn][m].quote && P.MOODS[gn][m].src === '第 19 回') ? `<h3>演義・白門樓</h3><ul class="quotes">${E.who.map(([gn, m]) => P.MOODS[gn][m]).filter(M => M && M.quote && M.src === '第 19 回').map(M => `<li>${esc(M.quote)}</li>`).join('')}</ul>` : ''}
-      <h3>你的戰果</h3><p>${sc.sides.att.name}損失 ${st.att.lost} 人；${sc.sides.def.name}損失 ${st.def.lost} 人。${g.vars.flooded ? '有水淹下邳。' : '沒有水淹。'}${g.vars.betrayed ? '城內將領倒戈。' : '沒有人倒戈。'}${g.vars.depotBurnt ? '曹軍糧營被燒。' : ''}</p>
+      <h3>你的戰果</h3><p>${sc.sides.att.name}損失 ${st.att.lost} 人；${sc.sides.def.name}損失 ${st.def.lost} 人。${endNotes(g)}</p>
       <h3>史實經過</h3><ul>${sc.brief.history.map(h => `<li>${esc(h)}</li>`).join('')}</ul>`,
       [['再玩一次', 'again'], ['換另一邊玩', 'swap'], ['回到選關', 'menu'], ['看戰場', 'stay']]).then(r => {
         if (r === 'again') startBattle(g.scId, S.side);

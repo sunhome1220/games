@@ -9,7 +9,7 @@
   const V = { ready: false, units: new Map(), hl: [], anims: [], floaters: [], dirty: true };
   root.V3 = V;
 
-  const TOP = { '.': 0.2, ',': 0.2, 'f': 0.22, 'h': 0.75, '~': -0.15, '=': -0.12, 'd': 0.45, 'l': 0.12, 'w': -0.08, 'm': 0.1, 'W': 1.5, 'T': 1.5, 'G': 1.5, 'o': 0.22, 'r': 0.4, 'c': 0.3, 'P': 0.3, 'S': 0.2 };
+  const TOP = { '.': 0.2, ',': 0.2, 'f': 0.22, 'h': 0.75, '~': -0.15, '=': -0.12, 'd': 0.45, 'l': 0.12, 'w': -0.08, 'm': 0.1, 'W': 1.5, 'T': 1.5, 'G': 1.5, 'o': 0.22, 'b': -0.12, 'r': 0.4, 'c': 0.3, 'P': 0.3, 'S': 0.2 };
   const standY = (ch) => (ch === '=' ? 0.22 : TOP[ch] != null ? Math.max(TOP[ch], 0) : 0.2);
 
   // ---------- 初始化 ----------
@@ -102,7 +102,7 @@
     buildProps(g);
     V.dirty = true;
   }
-  const isWet = ch => ch === '~' || ch === '=' || ch === 'w';
+  const isWet = ch => ch === '~' || ch === '=' || ch === 'w' || ch === 'b';
   // 城牆格的地面：牆體只蓋住格子中間，露出來的部分用旁邊（城外或城內）地面的顏色與高度，城牆邊緣才會是直線
   function wallGround(g, c, r) {
     const k = HX.key(c, r), [tx] = HX.center(c, r);
@@ -116,8 +116,8 @@
   // ---------- 連續地表 ----------
   // 整片地面是一張連續網格：高度依所在的六角格平滑過渡；顏色畫在一張貼圖上
   // （先用低解析度上色再放大＝地形邊界自然暈開，再疊色塊、筆觸與淡淡的格線）
-  const GH = { '.': 0.2, ',': 0.19, 'f': 0.22, 'h': 0.75, '~': -0.3, '=': -0.3, 'd': 0.45, 'l': 0.12, 'w': -0.25, 'm': 0.08, 'o': 0.22, 'r': 0.35, 'c': 0.28, 'P': 0.3, 'S': 0.2 };
-  const GC = { '.': 0x7a8749, ',': 0x8c7f55, 'f': 0x55663a, 'h': 0x948660, '~': 0x23463f, '=': 0x23463f, 'd': 0x86744d, 'l': 0x849056, 'w': 0x2a4d48, 'm': 0x5e5038, 'o': 0x6c604f, 'r': 0x7a6f61, 'c': 0x8b7b5f, 'P': 0x948469, 'S': 0x8c7853 };
+  const GH = { '.': 0.2, ',': 0.19, 'f': 0.22, 'h': 0.75, '~': -0.3, '=': -0.3, 'd': 0.45, 'l': 0.12, 'w': -0.25, 'm': 0.08, 'b': -0.3, 'o': 0.22, 'r': 0.35, 'c': 0.28, 'P': 0.3, 'S': 0.2 };
+  const GC = { '.': 0x7a8749, ',': 0x8c7f55, 'f': 0x55663a, 'h': 0x948660, '~': 0x23463f, '=': 0x23463f, 'd': 0x86744d, 'l': 0x849056, 'w': 0x2a4d48, 'm': 0x5e5038, 'b': 0x23463f, 'o': 0x6c604f, 'r': 0x7a6f61, 'c': 0x8b7b5f, 'P': 0x948469, 'S': 0x8c7853 };
   // 六角格座標（未扣 ox/oz）→ [c, r]
   function hexAtPx(px, pz) {
     const x = px / HX.S3 - pz / 3, z = 2 / 3 * pz, y = -x - z;
@@ -301,6 +301,10 @@
       const p = mesh(G.plank, mat(0x8a6236)); p.position.y = 0.3; grp.add(p);
       for (const s of [-1, 1]) { const rl = mesh(G.rail, mat(0x6b4a2b)); rl.position.set(0, 0.42, s * 0.48); grp.add(rl); }
       grp.position.y = 0;
+    } else if (ch === 'b') {   // 斷橋：只剩兩頭的橋板與橋柱
+      for (const sx of [-1, 1]) { const p = mesh(new T.BoxGeometry(0.5, 0.08, 1.0), mat(0x6e4e2c)); p.position.set(sx * 0.62, 0.3, 0); p.rotation.z = sx * 0.12; grp.add(p); }
+      for (const sx of [-0.3, 0.3]) for (const sz of [-0.42, 0.42]) { const q = mesh(new T.CylinderGeometry(0.05, 0.06, 0.6, 5), mat(0x4a3523)); q.position.set(sx, 0.0, sz); grp.add(q); }
+      grp.position.y = 0;
     } else if (ch === 'd') {
       const o = mesh(new T.BoxGeometry(1.5, 0.18, 0.5), mat(0x7a6446)); o.position.y = 0.09; o.rotation.y = 1.05; grp.add(o);
     } else if (ch === 'S') {
@@ -451,7 +455,8 @@
   }
 
   // ---------- 部隊模型 ----------
-  function sideColor(side) { return side === 'att' ? 0x3b6fc4 : 0xc8463a; }
+  const toneOf = side => (root.SIDE_TONE || { att: 'blue', def: 'red' })[side];
+  function sideColor(side) { return toneOf(side) === 'blue' ? 0x3b6fc4 : 0xc8463a; }
   function flagTexture(text, color) {
     const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64; const x = cv.getContext('2d');
     x.fillStyle = '#' + color.toString(16).padStart(6, '0'); x.fillRect(0, 0, 64, 64);
@@ -462,7 +467,7 @@
   // 部隊頭上的徽章：圓形武將頭像（器械用兵種字）、兵力點數（5 格）、完整度細條、兵力數字
   const faceImgs = {};
   function faceImg(u) {
-    const k = u.gen + '|' + u.side; if (faceImgs[k]) return faceImgs[k];
+    const k = u.gen + '|' + toneOf(u.side); if (faceImgs[k]) return faceImgs[k];
     const img = new Image(); faceImgs[k] = img; img.ok = false;
     const A = root.PORTRAIT_ART, file = A && A.approvedFile && A.approvedFile(u.gen, 'default');
     const svgUrl = () => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(root.PORTRAITS.svg(u.gen, 'default', { side: u.side }));
@@ -479,7 +484,7 @@
     const R = root.RULES;
     const cv = u._lcv || (u._lcv = document.createElement('canvas')); cv.width = 128; cv.height = 168; const x = cv.getContext('2d');
     x.clearRect(0, 0, 128, 168);
-    const sideC = u.side === 'att' ? '#3b6fc4' : '#c8463a';
+    const sideC = toneOf(u.side) === 'blue' ? '#3b6fc4' : '#c8463a';
     const cx = 64, cy = 54, rad = 44;
     x.save(); x.beginPath(); x.arc(cx, cy, rad, 0, Math.PI * 2); x.closePath(); x.fillStyle = '#1d1712'; x.fill(); x.clip();
     const img = !R.isEngine(u) && root.PORTRAITS ? faceImg(u) : null;
