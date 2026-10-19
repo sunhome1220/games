@@ -15,7 +15,7 @@ module.exports = [
     t.assert.strictEqual(await finishGame(pg), 'over');
     t.assert.strictEqual(await pg.evaluate(() => $('tipCard').hidden), true, '延遲前不該出現');
     await pg.waitForFunction(() => !$('tipCard').hidden, null, { timeout: 4000 });
-    const r = await pg.evaluate(() => ({ txt: $('tipTxt').textContent, go: $('tipGo').textContent, href: $('tipGo').href.startsWith('https://service.jkopay.com/'), n: localStorage.getItem('rc-games') }));
+    const r = await pg.evaluate(() => ({ txt: $('tipTxt').textContent, go: $('tipGo').textContent, href: new URL($('tipGo').href).searchParams.get('amount') === '50', n: localStorage.getItem('rc-games') }));
     t.assert.ok(/20 場/.test(r.txt) && /滷肉飯/.test(r.txt) && /關掉照樣能玩/.test(r.txt) && r.href && r.n === '20', JSON.stringify(r));
     await pg.click('#tipNo'); t.assert.strictEqual(await pg.evaluate(() => $('tipCard').hidden), true);
     await pg.evaluate(() => reset(true)); await finishGame(pg); await pg.waitForTimeout(2000);   // 第 21 場
