@@ -177,7 +177,8 @@ function drawHud() {
         ctx.beginPath(); ctx.arc(bx, by, 12, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2); ctx.strokeStyle = '#ffd400'; ctx.lineWidth = 3; ctx.stroke();
         ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(p.cd, bx, by + 1);
       } else if (p.T.reload && !p.drop) { circle(R - 2, -R - 6, 5); ctx.fillStyle = '#2ecc71'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); }
-      if (p.T.id === 'P2' && !p.drop) { ctx.fillStyle = '#e0a800'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('★', -R + 2, -R - 6); }
+      if (immune[p.s] > 0) { const [ax, ay] = P3(visX(p), 10, visY(p)); ctx.setTransform(k * s, 0, 0, k * s * (0.6 + 0.4 * Math.sin(V3.tilt * Math.PI / 180)), k * ax, k * ay); drawShieldAura(p); }   // 神之護盾的光罩
+      if (p.T.id === 'P2' && !p.drop) { ctx.setTransform(k * s, 0, 0, k * s, k * tx, k * ty); ctx.fillStyle = '#e0a800'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('★', -R + 2, -R - 6); }
     }
     for (const f of fx) if (f.k !== 'txt') drawProj3D(f);
     // 粒子：每顆用貼地的局部仿射變換（圓形壓成橢圓，透視感自然）
@@ -194,14 +195,19 @@ function drawHud() {
       ctx.setTransform(k, 0, 0, k, 0, 0); ctx.globalAlpha = Math.min(1, a * 2); ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
       ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.strokeText(f.txt, sx, sy - (1 - a) * 30); ctx.fillStyle = f.col || '#e00'; ctx.fillText(f.txt, sx, sy - (1 - a) * 30); ctx.globalAlpha = 1;
     }
-    // 結束畫面：座標系直接用原本的 W×H
+    // 終極魔法的全畫面演出與結束畫面：座標系直接用原本的 W×H
+    ctx.setTransform(k * V3.w / W, 0, 0, k * V3.h / H, 0, 0); for (const f of fx) if (f.k === 'ult') drawUltScreen(f);
     ctx.setTransform(k * V3.w / W, 0, 0, k * V3.h / H, 0, 0); drawOver();
     // 目前這一方的提示（面對面時文字方向）交給 drawOver 處理
   });
 }
 // 彈體（螢幕空間畫法，沿用 2D 的配色與形狀）
+// 終極魔法：2D 的畫法借 3D 投影（P3S 回傳 [螢幕x, 螢幕y, 縮放]）
+const P3S = (x, h, y) => { const p = P3(x, h, y); return [p[0], p[1], S3(x, h, y)]; };
+Object.defineProperty(P3S, 'flat', { get: () => Math.sin(V3.tilt * Math.PI / 180) });
 function drawProj3D(f) {
   if (f.delay > 0) return;
+  if (f.k === 'ult') { ctx.setTransform(V3.dpr, 0, 0, V3.dpr, 0, 0); drawUltWorld(f, P3S); return; }
   const k = V3.dpr, [x, sy, gx, gy, kk] = projPos(f), H0 = 16;
   if (f.k === 'drop') return;   // 空投是 3D 模型，見 syncDrops()
   const dirx = Math.cos(f.dir || 0), diry = Math.sin(f.dir || 0);
