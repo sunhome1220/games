@@ -95,7 +95,8 @@ module.exports = [
   { name: '遊戲列表：主卡片（瘋狂象棋、三國）在前，早期原型預設收合', async fn(t) {
     const pg = await t.ctx.newPage(); await pg.goto(`${t.base}/index.html`);
     const r = await pg.evaluate(() => ({ feat: document.querySelector('a.feat').getAttribute('href'), old: document.querySelector('details.old').open, oldLinks: [...document.querySelectorAll('details.old a')].map(a => a.getAttribute('href')), visibleCards: [...document.querySelectorAll('a.card')].filter(a => a.checkVisibility()).length }));
-    t.assert.deepStrictEqual(r, { feat: 'chess/index.html', old: false, oldLinks: ['proto-a.html', 'proto-c.html'], visibleCards: 2 });   // 瘋狂象棋＋三國 await pg.close();
+    t.assert.deepStrictEqual(r, { feat: 'chess/index.html', old: false, oldLinks: ['proto-a.html', 'proto-c.html'], visibleCards: 3 });   // 瘋狂象棋＋三國・名戰錄＋三國・攻城守城
+    await pg.close();
   } },
   { name: '舊網址 proto-b.html 會轉址到 chess/（保留參數）', async fn(t) {
     const pg = await t.ctx.newPage(); await pg.goto(`${t.base}/proto-b.html?room=1234`); await pg.waitForURL(/chess\/index\.html\?room=1234/, { timeout: 5000 }); await pg.close();

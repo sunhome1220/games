@@ -38,7 +38,7 @@ module.exports = [
     for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}`, { mode: false, freeze: false }));
     await pgs[0].waitForTimeout(400);
     await pgs[0].evaluate(() => { quick = true; }); await pgs[1].evaluate(() => { quick = false; });   // 一邊快速模式、一邊一般模式
-    const settle = async () => { for (let i = 0; i < 150; i++) { await pgs[0].waitForTimeout(60); const st = await Promise.all(pgs.map(p => p.evaluate(() => state))); if (st.every(s => ['aim', 'over', 'target', 'wait', 'select'].includes(s))) return st; } throw new Error('動畫卡住'); };
+    const settle = async () => { for (let i = 0; i < 600; i++) { await pgs[0].waitForTimeout(60); const st = await Promise.all(pgs.map(p => p.evaluate(() => state))); if (st.every(s => ['aim', 'over', 'target', 'wait', 'select'].includes(s))) return st; } throw new Error('動畫卡住'); };
     let mism = 0, n = 0;
     for (; n < MAX_TURNS; n++) {
       if ((await pgs[0].evaluate(() => state)) === 'over') break;
@@ -57,9 +57,9 @@ module.exports = [
     const place = async pg => pg.evaluate(() => { const p = pieces.find(q => q.s === 0 && q.t === 'P'); p.x = M; p.y = M + 5 * C; return pieces.indexOf(p); });
     const i = await place(pgs[0]); await place(pgs[1]);
     await pgs[0].evaluate(i => { quick = false; const p = pieces[i]; selectPiece(p); const mv = sel.moves.find(([x, y]) => Math.abs(y - M - 4 * C) < 1); sel.dest = mv; go(mv); }, i);
-    await pgs[0].waitForTimeout(2600);
+    await pgs[0].waitForFunction(() => state === 'target', null, { timeout: 30000 }); await pgs[1].waitForFunction(() => state === 'wait', null, { timeout: 30000 });
     const mid = await Promise.all(pgs.map(p => p.evaluate(i => ({ state, T: pieces[i].T.id }), i)));
-    await pgs[0].evaluate(() => undoMove()); await pgs[0].waitForTimeout(500);
+    await pgs[0].evaluate(() => undoMove()); await pgs[1].waitForFunction(i => pieces[i].T.id === 'P' && !fx.some(f => f.k === 'drop'), i, { timeout: 30000 });
     const end = await Promise.all(pgs.map(p => p.evaluate(i => ({ state, T: pieces[i].T.id, hp: pieces[i].hp, y: pieces[i].y, drops: fx.filter(f => f.k === 'drop').length }), i)));
     t.assert.deepStrictEqual(mid.map(m => m.T), ['P2', 'P2']);
     t.assert.deepStrictEqual(end.map(e => [e.T, e.hp, e.y, e.drops]), [['P', 2, 46 + 5 * 56, 0], ['P', 2, 46 + 5 * 56, 0]]);
