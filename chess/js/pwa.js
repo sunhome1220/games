@@ -16,20 +16,36 @@ $('fsBtn').onclick = () => {
 };
 document.addEventListener('fullscreenchange', showFs); document.addEventListener('webkitfullscreenchange', showFs); showFs();
 
-// --- 加到主畫面 ---
-function showInstall() {
+// --- 加到主畫面（依裝置／瀏覽器給不同做法） ---
+function envInfo() {
   const ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), android = /Android/.test(ua);
-  $('instSteps').innerHTML = (ios ? '<li><b>iPhone／iPad（用 Safari 開啟）</b>：點下方工具列的「分享」圖示 ⬆️ → 往下滑，選「加入主畫面」→ 右上角「新增」</li>'
-    : android ? '<li><b>Android（Chrome）</b>：點右上角「⋮」→「加到主畫面」或「安裝應用程式」</li>'
-    : '<li><b>電腦（Chrome／Edge）</b>：網址列最右邊的「安裝」圖示 ⊕，或選單 →「安裝瘋狂象棋」</li>')
-    + (ios || android ? '' : '<li>手機：iPhone 用 Safari 點「分享」→「加入主畫面」；Android 用 Chrome 點「⋮」→「加到主畫面」</li>')
-    + '<li>加入後從主畫面圖示開啟，就是沒有網址列的全螢幕，之後點一下就能玩。</li>';
+  const inApp = /Line\/|FBAN|FBAV|Instagram|MicroMessenger|; wv\)|Messenger|Twitter|TikTok|Snapchat/i.test(ua);
+  const alt = /CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(ua);
+  return { ios, android, inApp, iosSafari: ios && !alt && !inApp, iosOther: ios && alt && !inApp, samsung: /SamsungBrowser/.test(ua), firefox: /Firefox|FxiOS/.test(ua), edge: /Edg\//.test(ua),
+    safariMac: !ios && !android && /^((?!chrome|android|crios|edg).)*safari/i.test(ua) };
+}
+function installLabel() { const e = envInfo(); return installEvt ? '📲 安裝遊戲' : e.inApp ? '📲 用瀏覽器開啟' : '📲 加到主畫面'; }
+function showInstall() {
+  const e = envInfo(), steps = [];
+  if (e.inApp) steps.push('<li><b>你現在是在 App 內建的瀏覽器</b>（LINE、Facebook、Instagram 等），不能直接加到主畫面。請點「複製遊戲連結」，再貼到 ' + (e.ios ? 'Safari' : 'Chrome') + ' 開啟，然後再按一次這個按鈕。</li>');
+  else if (e.iosSafari) steps.push('<li><b>iPhone／iPad（Safari）</b>：點下方工具列的「分享」圖示 ⬆️ → 往下滑，選「加入主畫面」→ 右上角「新增」</li>');
+  else if (e.iosOther) steps.push('<li><b>iPhone／iPad</b>：這個瀏覽器可能沒有「加入主畫面」。建議複製連結，用 Safari 開啟後點「分享」⬆️ →「加入主畫面」；較新的 iOS 在 Chrome／Edge 的「分享」選單裡也有。</li>');
+  else if (e.android && e.samsung) steps.push('<li><b>Android（Samsung Internet）</b>：點右下角選單「≡」→「新增頁面至」→「主螢幕」</li>');
+  else if (e.android && e.firefox) steps.push('<li><b>Android（Firefox）</b>：點右上角「⋮」→「安裝」或「加到主畫面」</li>');
+  else if (e.android) steps.push('<li><b>Android（Chrome）</b>：點右上角「⋮」→「加到主畫面」或「安裝應用程式」</li>');
+  else if (e.safariMac) steps.push('<li><b>Mac（Safari）</b>：選單列「檔案」→「加入 Dock」</li>');
+  else if (e.firefox) steps.push('<li><b>電腦（Firefox）</b>：Firefox 不支援安裝網頁，建議把網頁加入書籤，或改用 Chrome／Edge。</li>');
+  else steps.push('<li><b>電腦（Chrome／Edge）</b>：網址列最右邊的「安裝」圖示 ⊕，或選單 →「安裝瘋狂象棋」</li>');
+  if (!e.inApp) steps.push('<li>加入後從主畫面圖示開啟，就是沒有網址列的全螢幕，之後點一下就能玩。</li>');
+  $('instSteps').innerHTML = steps.join('');
   $('instUrl').textContent = gameUrl();
   $('installOv').hidden = false;
 }
 $('mInstall').hidden = isStandalone();
+$('mInstall').textContent = installLabel();
+addEventListener('beforeinstallprompt', () => { $('mInstall').textContent = installLabel(); });
 $('mInstall').onclick = async () => {
-  if (installEvt) { installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; return; }   // Android／電腦：直接跳出安裝視窗
+  if (installEvt) { installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; $('mInstall').textContent = installLabel(); return; }   // Android／電腦：直接跳出安裝視窗
   showInstall();
 };
 $('instClose').onclick = () => { $('installOv').hidden = true; };

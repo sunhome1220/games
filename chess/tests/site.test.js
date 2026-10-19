@@ -35,8 +35,8 @@ module.exports = [
   } },
   { name: '加到主畫面按鈕：跳出說明（含平台步驟與可複製的連結）', async fn(t) {
     const pg = await t.open('', { mode: false });
-    t.assert.strictEqual(await pg.evaluate(() => $('secMore').open), false);   // 預設收合
-    await pg.click('#secMore > summary'); await pg.click('#mInstall');
+    t.assert.strictEqual(await pg.evaluate(() => $('mInstall').offsetParent !== null), true);   // 在開始畫面最上層，不用展開選單
+    await pg.click('#mInstall');
     const r = await pg.evaluate(() => ({ open: !$('installOv').hidden, steps: $('instSteps').children.length, url: $('instUrl').textContent, expect: gameUrl() }));
     t.assert.ok(r.open && r.steps >= 2); t.assert.strictEqual(r.url, r.expect); t.assert.ok(/\/chess\/$/.test(r.url), '連結應指向 chess/：' + r.url);
     await pg.click('#instClose'); t.assert.strictEqual(await pg.evaluate(() => $('installOv').hidden), true);
@@ -109,5 +109,25 @@ module.exports = [
     await pg.mouse.click(...await cl(mx, my)); await pg.click('#fire');
     for (let i = 0; i < 100 && (await pg.evaluate(() => turn)) === 0; i++) { await pg.waitForTimeout(60); if ((await pg.evaluate(() => state)) === 'target') await pg.click('#skip'); }
     t.assert.strictEqual(await pg.evaluate(() => turn), 1);
+  } },
+  { name: '版面：整頁滿版不捲動（手機直立與橫放）；兵種說明預設隱藏，點按鈕才開', async fn(t) {
+    for (const [w, h] of [[390, 700], [360, 640], [800, 420]]) {
+      const pg = await t.ctx.newPage(); await pg.setViewportSize({ width: w, height: h });
+      await pg.goto(`${t.base}/chess/index.html?nolog=1&cards=0&view=2d`); await pg.waitForTimeout(300); await pg.click('#mLocal');
+      const r = await pg.evaluate(() => ({ sh: document.documentElement.scrollHeight - innerHeight, bh: document.body.scrollHeight - innerHeight, cvBottom: document.getElementById('cv').getBoundingClientRect().bottom - innerHeight, legend: $('legendOv').hidden }));
+      t.assert.ok(r.sh <= 0 && r.bh <= 0 && r.legend, `${w}x${h} 版面：${JSON.stringify(r)}`);
+      await pg.click('#legendBtn'); t.assert.strictEqual(await pg.evaluate(() => [$('legendOv').hidden, $('legend').rows.length > 5].join()), 'false,true');
+      await pg.click('#legendClose'); t.assert.strictEqual(await pg.evaluate(() => $('legendOv').hidden), true); await pg.close();
+    }
+  } },
+  { name: '加到主畫面：依裝置給不同說明（iOS Safari／其他 iOS 瀏覽器／App 內瀏覽器／Android／電腦）', async fn(t) {
+    const uas = { 'iosSafari': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1', 'iosOther': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 CriOS/120.0 Mobile/15E148 Safari/604.1', 'line': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Line/13.0.0', 'android': 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36' };
+    const want = { iosSafari: /分享/, iosOther: /Safari/, line: /App 內建/, android: /Android（Chrome）/ };
+    for (const k in uas) {
+      const ctx = await t.browser.newContext({ userAgent: uas[k] }), pg = await ctx.newPage();
+      await pg.goto(`${t.base}/chess/index.html?nolog=1&cards=0&view=2d`); await pg.waitForTimeout(300);
+      const r = await pg.evaluate(() => { showInstall(); return $('instSteps').textContent; });
+      t.assert.ok(want[k].test(r), k + '：' + r); await ctx.close();
+    }
   } },
 ];
