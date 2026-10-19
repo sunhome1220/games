@@ -150,15 +150,23 @@ function intercept(a, b, aim, f) {
   };
   return f;
 }
+// 實際受到的傷害：神之護盾期間免疫；有減傷（armor）時每次少受一點，但至少 ¼ 心
+function effDmg(b, d) {
+  if (!(d > 0)) return d;
+  if (immune[b.s] > 0) return 0;
+  const ar = b.T.armor || 0;
+  return ar ? Math.max(0.25, quarter(d - ar)) : d;
+}
 function impact(a, b, dmg = (a.fireT || a.T).dmg, note = '') {
   const T = a.fireT || a.T, heavy = T.proj === 'rocket' || T.proj === 'shell';
   const bx = visX(b), by = visY(b);
+  dmg = effDmg(b, dmg);
   b.hp = Math.max(0, b.hp - dmg); b.flash = 0.35;
-  fx.push({ k: 'txt', x: bx, y: by - R, txt: '-' + hearts(dmg), t: 1, T: 1, side: b.s });
+  fx.push({ k: 'txt', x: bx, y: by - R, txt: dmg > 0 ? '-' + hearts(dmg) : '免疫', t: 1, T: 1, side: b.s, col: dmg > 0 ? undefined : '#2f6fb5' });
   if (b.hp <= 0) { explode(bx, by, true); SFX.play('boom', true); }
   else if (heavy) { explode(bx, by, false); SFX.play('boom', false); }
   else { emit(bx, by, 10, { k: 'spark', sp: 220, life: 0.3, size: 2.5, col: '#ffe066' }); flashAt(bx, by, 18); SFX.play('hit'); shake = Math.max(shake, 2); }
-  const res = `${b.T.n[b.s]}${note}，打掉 ${hearts(dmg)}` + (b.hp <= 0 ? '，擊毀！' : `（剩 ${hearts(b.hp)}）`);
+  const res = `${b.T.n[b.s]}${note}，` + (dmg > 0 ? `打掉 ${hearts(dmg)}` : '被神之護盾擋下') + (b.hp <= 0 ? '，擊毀！' : `（剩 ${hearts(b.hp)}）`);
   const all = [res];
   if (T.splash && !note.includes('波及')) {   // 炮：落點上下左右相鄰受 1/2 傷害、斜角受 1/4，敵我不分
     parts.push({ x: bx, y: by, vx: 0, vy: 0, t: 0.45, L: 0.45, size: T.splash, k: 'ring', drag: 0 });
@@ -196,6 +204,12 @@ function endTurn() {
   pieces.forEach(p => { p.cdFresh = false; });
   firedPiece = null;
   turnsPlayed[turn]++;
+  immune[1 - turn] = Math.max(0, immune[1 - turn] - 1);   // 神之護盾：對手這個回合打完就失效
+  if (extraTurn[turn] > 0) {   // 時間暫停：換自己再走一回合（回合不換邊）
+    extraTurn[turn]--; state = 'aim'; targets = []; moved = false; setSkip(false);
+    healPhase(turn); updateHeader(); setMsg('⏳ 時間暫停！你再行動一次。');
+    send({ t: 'end', snap: snapshot() }); maybeTurnPick(); return;
+  }
   turn = 1 - turn; state = 'aim'; targets = []; moved = false; setSkip(false);
   healPhase(turn);
   updateHeader();

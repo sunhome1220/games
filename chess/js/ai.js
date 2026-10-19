@@ -14,7 +14,7 @@ const VALUE = { K: 30, R: 9, N: 7, C: 7, E: 5, G: 4, P: 2 };
 const unitValue = p => p.T.id === 'P2' ? 6 : VALUE[p.t];
 // a 位於 (x,y)、用武器 T 攻擊 b 時，各棋子會受到多少傷害
 function predictAttack(a, x, y, T, b) {
-  const dm = new Map(), add = (p, d) => { if (d > 0) dm.set(p, (dm.get(p) || 0) + d); }, from = { x, y };
+  const dm = new Map(), add = (p, d) => { d = effDmg(p, d); if (d > 0) dm.set(p, (dm.get(p) || 0) + d); }, from = { x, y };
   if (T.pellets) {
     const bl = guardBlock(b, from, T), gx = bl && bl.g.x, gy = bl && bl.g.y;
     if (bl) { bl.g.x = bl.x; bl.g.y = bl.y; }   // 仕先走到射線上再算彈丸

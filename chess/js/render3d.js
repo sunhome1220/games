@@ -189,7 +189,7 @@ function drawHud() {
     }
     ctx.globalAlpha = 1;
     // 飄字
-    for (const f of fx) if (f.k === 'txt') {
+    for (const f of fx) if (f.k === 'txt' && !(f.delay > 0)) {
       const a = f.t / f.T, [sx, sy] = P3(Math.min(W - 40, Math.max(40, f.x)), 34, f.y);
       ctx.setTransform(k, 0, 0, k, 0, 0); ctx.globalAlpha = Math.min(1, a * 2); ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
       ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.strokeText(f.txt, sx, sy - (1 - a) * 30); ctx.fillStyle = f.col || '#e00'; ctx.fillText(f.txt, sx, sy - (1 - a) * 30); ctx.globalAlpha = 1;

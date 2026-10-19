@@ -41,6 +41,12 @@ function buildTypes(side) {
     for (const [st, v] of Object.entries(m)) T[st] = (T[st] || 0) + v;
     if (T.reload !== undefined) T.reload = Math.max(0, T.reload);
     if (T.min !== undefined) T.min = Math.max(0, T.min);
+    // 敵方減益卡可能把數值壓得很低，這裡設下限讓棋子仍然能玩
+    if (T.dmg > 0 || m.dmg) T.dmg = Math.max(TYPES[k].dmg > 0 ? 0.25 : 0, T.dmg);
+    if (m.range && T.range) T.range = Math.max(Math.min(TYPES[k].range, C), T.range);
+    if (m.hp) T.hp = Math.max(1, T.hp);
+    if (m.aa && T.aa) T.aa = Math.max(0.5 * C, T.aa);
+    if (m.armor) T.armor = Math.max(0, T.armor);
     delete T.alt; if (T.backup) T.alt = { ...T, ...RIFLE };
     TT[side][k] = T;
   }

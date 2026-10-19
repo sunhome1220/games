@@ -55,7 +55,7 @@ module.exports = [
       await pg.goto(`${t.base}/chess/index.html?nolog=1&cards=0&view=2d`); await pg.waitForTimeout(300);
       const r = await pg.evaluate(() => {
         const box = document.querySelector('#lobby .box'), vh = innerHeight, inView = id => { const b = $(id).getBoundingClientRect(); return b.top >= 0 && b.bottom <= vh; };
-        return { closed: ['secNet', 'secView', 'secMore'].every(id => !$(id).open), main: ['mCards', 'mLocal', 'mFace', 'mRestart', 'mClose'].every(inView), lv: [...document.querySelectorAll('[data-lv]')].every(b => { const r = b.getBoundingClientRect(); return r.bottom <= vh; }), fit: box.scrollHeight <= box.clientHeight };
+        return { closed: ['secNet', 'secCards', 'secView', 'secMore'].every(id => !$(id).open), main: ['mCards', 'mLocal', 'mFace', 'mRestart', 'mClose'].every(inView), lv: [...document.querySelectorAll('[data-lv]')].every(b => { const r = b.getBoundingClientRect(); return r.bottom <= vh; }), fit: box.scrollHeight <= box.clientHeight };
       });
       t.assert.deepStrictEqual(r, { closed: true, main: true, lv: true, fit: true }, `${w}x${h} ` + JSON.stringify(r)); await pg.close();
     }

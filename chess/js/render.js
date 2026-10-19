@@ -375,6 +375,7 @@ function draw() {
   drawOver();
 }
 function drawTxtFx(f) {
+  if (f.delay > 0) return;   // 還沒到出現時間
   const a = f.t / f.T;
   ctx.globalAlpha = Math.min(1, a * 2); ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center';
   ctx.lineWidth = 3; textAt(f.txt, Math.min(W - 70, Math.max(70, f.x)), f.y, -(1 - a) * 30, textAng(f.side ?? turn), f.col || '#e00', '#fff');
