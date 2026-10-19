@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>三國・攻城守城</title>
+<link rel="stylesheet" href="css/style.css">
+<meta name="theme-color" content="#2b2118">
+</head>
+<body>
+<header>
+  <a href="../index.html">← 遊戲列表</a>
+  <b id="title">三國・攻城守城</b>
+  <span><button id="btnHelp" title="玩法說明">？</button> <button id="btnNew" title="重新開始">↺</button></span>
+</header>
+<div id="hud">
+  <span id="hTurn"></span><span id="hGold"></span><span id="hFac"></span>
+  <button id="btnEnd">結束回合 ▶</button>
+</div>
+<div id="stage"><canvas id="map" width="800" height="520"></canvas></div>
+<div id="panel"></div>
+<div id="logBar"><div id="logTxt"></div></div>
+
+<div id="startOv" class="ov"><div class="box">
+  <h2>三國・攻城守城</h2>
+  <p class="sub">在地圖上調兵遣將：派兵行軍、兵臨城下，攻城時猜對方的戰術，攻下兩國都城即可一統天下。</p>
+  <button class="pick" data-f="shu"><b style="color:#2e9e5b">蜀</b>　成都　<small>劉備・諸葛亮　據守西南，易守難攻</small></button>
+  <button class="pick" data-f="wei"><b style="color:#3b6fc4">魏</b>　洛陽　<small>曹操・司馬懿　位居中原，四面受敵</small></button>
+  <button class="pick" data-f="wu"><b style="color:#d0453a">吳</b>　建業　<small>孫權・周瑜　長江天險，進可攻退可守</small></button>
+  <button id="btnHelp2" class="ghost">📖 玩法說明</button>
+</div></div>
+
+<div id="sendOv" class="ov" hidden><div class="box">
+  <h2 id="sendTitle"></h2><div class="sub" id="sendSub"></div>
+  <input id="sendRange" type="range" min="30" max="100" step="10" value="70"><div id="sendNum"></div>
+  <div class="row"><button id="sendOk">出兵！</button><button id="sendNo" class="ghost">取消</button></div>
+</div></div>
+
+<div id="siegeOv" class="ov" hidden><div class="box wide">
+  <h2 id="sgTitle"></h2>
+  <canvas id="sgCv" width="480" height="230"></canvas>
+  <div id="sgBars"></div>
+  <div id="sgInfo" class="sub"></div>
+  <div id="sgBtns"></div>
+</div></div>
+
+<div id="helpOv" class="ov" hidden><div class="box wide" id="helpBox"></div></div>
+<div id="endOv" class="ov" hidden><div class="box"><h2 id="endTitle"></h2><div class="sub" id="endSub"></div><button id="endAgain">再玩一局</button></div></div>
+
+<script src="js/data.js?v=2026-10-19.01"></script>
+<script src="js/game.js?v=2026-10-19.01"></script>
+<script src="js/ai.js?v=2026-10-19.01"></script>
+<script src="js/turn.js?v=2026-10-19.01"></script>
+<script src="js/render.js?v=2026-10-19.01"></script>
+<script src="js/ui.js?v=2026-10-19.01"></script>
+<script src="js/version.js?v=2026-10-19.01"></script>
+<script src="js/main.js?v=2026-10-19.01"></script>
+</body>
+</html>

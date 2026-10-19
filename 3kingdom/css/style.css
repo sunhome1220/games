@@ -1,0 +1,43 @@
+* { box-sizing:border-box; }
+html, body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
+button { touch-action:manipulation; }
+body { margin:0; background:#241b13; color:#f3e7cf; font:15px/1.5 "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif; height:100vh; height:100dvh; display:flex; flex-direction:column; align-items:center; overflow:hidden; }
+header { width:100%; max-width:860px; padding:6px 12px; display:flex; gap:8px; align-items:center; justify-content:space-between; white-space:nowrap; }
+header a { color:#e8c88a; text-decoration:none; }
+header b { color:#f0d9a8; font-size:17px; }
+button { background:#e8c88a; color:#2b2118; border:0; border-radius:5px; padding:6px 12px; font:inherit; cursor:pointer; }
+button:disabled { opacity:.4; cursor:default; }
+button.ghost { background:#4a3a28; color:#e8c88a; }
+#hud { width:100%; max-width:860px; padding:0 12px 6px; display:flex; gap:12px; align-items:center; font-size:14px; flex-wrap:wrap; }
+#hud #btnEnd { margin-left:auto; background:#c0392b; color:#fff; font-weight:700; }
+#hFac span { margin-right:8px; white-space:nowrap; }
+#stage { flex:0 0 auto; width:100%; max-width:860px; display:flex; justify-content:center; padding:0 6px; }
+#map { width:min(100%, calc(60vh * 800 / 520)); width:min(100%, calc(60dvh * 800 / 520)); height:auto; aspect-ratio:800 / 520; border-radius:8px; box-shadow:0 4px 18px #000a; touch-action:manipulation; }
+#panel { width:100%; max-width:860px; flex:1 1 auto; min-height:80px; overflow-y:auto; margin-top:6px; padding:8px 12px; background:#2f2418; border-top:1px solid #5a4632; font-size:14px; }
+#panel h3 { margin:0 0 4px; font-size:16px; color:#f0d9a8; }
+#panel .st { color:#cdbb98; margin-bottom:6px; }
+#panel .row { display:flex; gap:6px; flex-wrap:wrap; margin:4px 0; }
+#panel .go { display:flex; align-items:center; gap:8px; background:#3b2d1e; border-radius:6px; padding:5px 8px; margin:4px 0; }
+#panel .go span { flex:1; font-size:13px; }
+#panel .hint { color:#a99674; font-size:13px; }
+#logBar { width:100%; max-width:860px; flex:0 0 auto; padding:3px 12px 8px; font-size:12.5px; color:#bfae8b; min-height:2.6em; background:#2f2418; }
+#logTxt div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#logTxt .war { color:#ffb26b; } #logTxt .good { color:#8be0a0; } #logTxt .bad { color:#ff8a80; }
+.ov { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:20; padding:14px; overflow:auto; }
+.ov[hidden] { display:none; }
+.box { background:#33271a; border:1px solid #8a6a3a; border-radius:12px; padding:16px; width:100%; max-width:420px; }
+.box.wide { max-width:560px; }
+.box h2 { margin:0 0 4px; text-align:center; color:#f0d9a8; }
+.sub { color:#c9b68e; font-size:13.5px; margin-bottom:10px; text-align:center; }
+.box .pick { display:block; width:100%; margin:8px 0; text-align:left; padding:10px 12px; font-size:16px; }
+.box .pick small { display:block; color:#6b5a3a; }
+.box .row { display:flex; gap:8px; margin-top:10px; } .box .row button { flex:1; }
+#sendRange { width:100%; margin-top:6px; } #sendNum { text-align:center; font-size:17px; margin:4px 0; color:#ffd98a; }
+#sgCv { width:100%; background:#8fb06a; border-radius:8px; display:block; }
+#sgBars { display:grid; grid-template-columns:auto 1fr auto; gap:3px 8px; align-items:center; font-size:13px; margin:8px 0; }
+#sgBars .bar { height:9px; border-radius:5px; background:#0005; overflow:hidden; } #sgBars .bar i { display:block; height:100%; }
+#sgBtns { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+#sgBtns button { text-align:left; padding:8px 10px; } #sgBtns button small { display:block; color:#6b5a3a; font-size:12px; line-height:1.3; }
+#helpBox { max-height:88vh; overflow:auto; font-size:14px; line-height:1.6; -webkit-user-select:text; user-select:text; }
+#helpBox h3 { margin:12px 0 4px; color:#f0d9a8; } #helpBox table { border-collapse:collapse; margin:6px auto; font-size:13px; } #helpBox td, #helpBox th { border:1px solid #6b5230; padding:3px 8px; text-align:center; }
+#helpBox td.k { background:#5c2f2a; } #helpBox td.g { background:#2f5a35; }
