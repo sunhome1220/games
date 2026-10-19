@@ -5,7 +5,7 @@
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const S = { g: null, side: null, speed: 1, mode: 'main', inspect: null, pending: null, preview: null, busy: false, fast: false, auto: false };
   root.UI = S;
-  const COL = { move: 0x00e5ff, moveEdge: 0xe8fdff, attack: 0xff4d3d, struct: 0xff9a3a, target: 0xc77dff, face: 0xffe08a };
+  const COL = { moveEdge: 0xffffff, attack: 0xff4d3d, struct: 0xff9a3a, target: 0xc77dff, face: 0xffe08a };
 
   // ---------- 武將頭像 ----------
   const P = root.PORTRAITS;
@@ -82,7 +82,7 @@
       <p class="lead">真實的歷史經過，會在戰役結束後揭曉並和你的戰果對照。</p>
       <h2>基本操作</h2>
       <ul>
-        <li>輪到你的部隊時：點<b style="color:#4fc3f7">藍色格子</b>移動，點<b style="color:#ff4d3d">紅色敵軍</b>預覽攻擊（再按確認），下方按鈕可變陣、整隊、使用技能。</li>
+        <li>輪到你的部隊時：點<b>白框格子</b>移動，點<b style="color:#ff4d3d">紅色敵軍</b>預覽攻擊（再按確認），下方按鈕可變陣、整隊、使用技能。</li>
         <li>沒有攻擊的話，結束前要選<b>朝向</b>——部隊周圍的彩色圈是方向弱點：<span class="m-good">綠＝強</span>、<span class="m-warn">黃</span>、<span class="m-bad">紅＝弱</span>。</li>
         <li>單指拖曳移動地圖、雙指縮放旋轉（滑鼠：右鍵拖曳旋轉、滾輪縮放）。右上角按鈕也可以轉視角。</li>
       </ul>
@@ -101,7 +101,7 @@
   async function enterBattle(g, side, fresh) {
     show('scrBattle');
     const sc = g.sc; $('#title').textContent = sc.name;
-    S.g = g; S.side = side; S.mode = 'main'; S.inspect = null; S.preview = null; S.pending = null;
+    S.g = g; S.side = side; S.skipRound = null; S.mode = 'main'; S.inspect = null; S.preview = null; S.pending = null;
     root.G = S.g;
     if (!(await root.V3.init($('#stage')))) { $('#panel').innerHTML = '<p>這台裝置無法顯示 3D 畫面（不支援 WebGL）。</p>'; return; }
     root.V3.onTap = onTap;
@@ -166,7 +166,10 @@
       if (g.over) break;
       const u = R.activeUnit(g); if (!u) break;
       renderHUD();
-      if (isMine(u)) { beginPlayer(u); return; }
+      if (isMine(u)) {
+        if (S.skipRound === g.round) { R.endActivation(g); continue; }   // 「結束本回合」：其餘己方部隊原地待命
+        beginPlayer(u); return;
+      }
       S.busy = true; $('#busy').hidden = false; renderPanelEnemy(u);
       if (!S.fast) { root.V3.focus(u.c, u.r); await wait(260 / S.speed); }
       AI.act(g, u);
@@ -190,7 +193,7 @@
       if (f.t === 'duel') duelCut(f);
       if (f.t === 'skill') { const u = g.units[f.id]; if (!R.isEngine(u)) cutIn([[u.gen, battleMood(u.gen, ['rage', 'laugh', 'plan', 'plot']), u.side]], `${u.name}【${f.name}】`); }
       if (f.t === 'over') continue;
-      if (S.fast) { if (['move', 'warp', 'face', 'form', 'attack', 'dead', 'defect', 'struct', 'flood', 'burn', 'ladder'].includes(f.t)) { if (f.t === 'flood') f.hexes.forEach(([c, r]) => root.V3.refreshHex(g, c, r)); if (f.t === 'struct' && f.broke) root.V3.refreshHex(g, f.c, f.r); if (f.t === 'burn') root.V3.refreshHex(g, f.c, f.r); if (f.t === 'ladder') root.V3.ladderMarks(g); } continue; }
+      if (S.fast) { if (['move', 'warp', 'face', 'form', 'attack', 'dead', 'defect', 'struct', 'flood', 'recede', 'burn', 'ladder'].includes(f.t)) { if (f.t === 'flood' || f.t === 'recede') f.hexes.forEach(([c, r]) => root.V3.refreshHex(g, c, r)); if (f.t === 'struct' && f.broke) root.V3.refreshHex(g, f.c, f.r); if (f.t === 'burn') root.V3.refreshHex(g, f.c, f.r); if (f.t === 'ladder') root.V3.ladderMarks(g); } continue; }
       await root.V3.playFx(f, g, S.speed);
     }
     root.V3.syncUnits(g);
@@ -231,12 +234,13 @@
     } else if (S.mode === 'target' && S.pending) {
       for (const t of S.pending.targets) { const [c, r] = typeof t === 'object' ? [t.c, t.r] : [g.units[t].c, g.units[t].r]; L.push({ c, r, color: COL.target, opacity: 0.6 }); }
     } else if (S.mode === 'main') {
-      if (!u.moved) for (const [k, v] of R.reachable(g, u)) if (!v.blocked && v.cost > 0) L.push({ c: v.c, r: v.r, color: COL.move, opacity: 0.55, edge: COL.moveEdge });
+      if (!u.moved) for (const [k, v] of R.reachable(g, u)) if (!v.blocked && v.cost > 0) L.push({ c: v.c, r: v.r, edge: COL.moveEdge, edgeOpacity: 0.5 });
       if (!u.acted) {
         for (const t of R.attackTargets(g, u)) L.push({ c: t.c, r: t.r, color: COL.attack, opacity: 0.6 });
         for (const s of R.structTargets(g, u)) L.push({ c: s.c, r: s.r, color: COL.struct, opacity: 0.6 });
       }
     }
+    if (S.mode === 'main' && g.vars.digOpen && !g.vars.flooded) for (const [c, r] of digHexes(g)) L.push({ c, r, edge: 0x7fd3ff, edgeOpacity: 0.85 });
     if (S.preview) { const p = S.preview; L.push({ c: p.c, r: p.r, color: 0xffffff, opacity: 0.5, scale: 0.6 }); }
     root.V3.highlight(L);
   }
@@ -244,7 +248,7 @@
   function onTap(c, r) {
     const g = S.g; if (!g || g.over) return;
     const u = R.activeUnit(g); const t = R.unitAt(g, c, r);
-    if (S.busy || !isMine(u)) { if (t) { S.inspect = t.id; renderPanelEnemy(u, t); root.V3.showSides(R.isEngine(t) || R.onWall(g, t) ? null : t, (R.formOf(t) || { def: D.BASE_DEF }).def); } return; }
+    if (S.busy || !isMine(u)) { if (t) { S.inspect = t.id; renderPanelEnemy(u, t); root.V3.showSides(R.isEngine(t) || R.onWall(g, t) ? null : t, (R.formOf(t) || { def: D.BASE_DEF }).def); } else terrainTip(g, c, r); return; }
     if (S.mode === 'face') {
       const d = H.neighbors(u.c, u.r).findIndex(([cc, rr]) => cc === c && rr === r);
       if (d >= 0) { R.setFacing(g, u, d); drain().then(refresh); }
@@ -265,12 +269,16 @@
     if (t && t.side !== u.side && R.attackTargets(g, u).includes(t)) { S.preview = { unit: t.id, c, r }; S.inspect = null; refresh(); return; }
     const st = R.structTargets(g, u).find(s => s.c === c && s.r === r);
     if (st && !t) { S.preview = { struct: st.k, c, r }; refresh(); return; }
+    if (t && t.side === u.side && t !== u && R.canChoose(g, t.id)) { S.preview = null; S.inspect = null; switchTo(t.id); return; }
+    // 同格的器械：點第二次換成器械
+    if (t && t === u) { const o = R.unitsAt(g, c, r).find(v => v !== u && R.canChoose(g, v.id)); if (o) { switchTo(o.id); return; } }
     if (t) { S.preview = null; S.inspect = t === u ? null : t.id; refresh(); return; }
     if (!u.moved) {
       const reach = R.reachable(g, u); const v = reach.get(H.key(c, r));
       if (v && !v.blocked && v.cost > 0) { S.preview = null; S.inspect = null; R.moveUnit(g, u, c, r); S.busy = true; drain().then(() => { S.busy = false; root.V3.focus(u.c, u.r); refresh(); }); return; }
     }
     S.preview = null; S.inspect = null; refresh();
+    terrainTip(g, c, r);
   }
   function confirmPreview() {
     const g = S.g, u = R.activeUnit(g), p = S.preview; S.preview = null;
@@ -301,8 +309,19 @@
   }
   function endUnit() {
     const g = S.g, u = R.activeUnit(g);
-    if (!u.attacked && S.mode !== 'face') { S.mode = 'face'; S.preview = null; S.inspect = null; root.V3.focus(u.c, u.r); refresh(); return; }
+    if (!u.attacked && !R.isEngine(u) && S.mode !== 'face') { S.mode = 'face'; S.preview = null; S.inspect = null; root.V3.focus(u.c, u.r); refresh(); return; }
     finishUnit();
+  }
+  async function endRound() {
+    const g = S.g, n = R.upcoming(g, 99).filter(id => g.units[id].side === S.side).length;
+    const ok = await modal(`<h2>結束本回合</h2><p>這支部隊和其餘 ${Math.max(0, n - 1)} 支還沒行動的己方部隊，這回合都原地待命（保持目前朝向）。</p>`, [['結束本回合', true], ['取消', false]]);
+    if (!ok || S.g !== g) return;
+    S.skipRound = g.round; finishUnit();
+  }
+  // 改派另一支己方部隊先行動
+  function switchTo(id) {
+    const g = S.g; if (!R.chooseActive(g, id)) return false;
+    const u = R.activeUnit(g); toast(`改由 ${u.name} 先行動`); beginPlayer(u); return true;
   }
   function finishUnit() {
     const g = S.g; S.mode = 'main'; root.V3.clearHighlights(); root.V3.showSides(null); root.V3.selectRing(null);
@@ -355,12 +374,12 @@
       h += `<div class="hint">【${esc(S.pending.name)}】點選紫色的目標。${esc(S.pending.desc || '')}</div><div class="acts"><button id="bTgBack">↩ 取消</button></div>`;
     } else {
       if (S.preview) h += previewHTML(u);
-      else h += `<div class="hint">${!u.moved ? '點藍色格子移動；' : ''}${!u.acted ? '點紅色敵軍預覽攻擊；也可以用下面的按鈕。' : '動作已用完，按「結束行動」選朝向。'}</div>`;
+      else h += `<div class="hint">${!u.moved ? '點白框格子移動；' : ''}${!u.acted ? '點紅色敵軍預覽攻擊；也可以用下面的按鈕。' : R.isEngine(u) ? '動作已用完，按「結束行動」。' : '動作已用完，按「結束行動」選朝向。'}${!u.moved && !u.acted ? '<br><small>想先動別的部隊：點地圖上或上方順序列中自己的部隊。</small>' : ''}</div>`;
       const acts = R.actionsFor(g, u).filter(a => !(a.pre && u.moved));
       h += '<div class="acts">';
       acts.forEach((a, i) => { h += `<button data-a="${i}" class="${a.skill ? 'skill' : ''}" ${a.enabled ? '' : 'style="opacity:.45"'} title="${esc(a.desc || '')}">${esc(a.name)}</button>`; });
       if (u.moved && !u.acted) h += `<button id="bUndo">↶ 取消移動</button>`;
-      h += `<button class="end" id="bEnd">${u.attacked ? '✔ 結束行動' : '結束行動 ▶'}</button></div>`;
+      h += `<button class="end" id="bEnd">${u.attacked || R.isEngine(u) ? '✔ 結束行動' : '結束行動 ▶'}</button><button id="bEndRound" title="其餘還沒行動的己方部隊這回合都原地待命">⏭ 結束本回合</button></div>`;
       S._acts = acts;
     }
     h += lastLogHTML();
@@ -368,7 +387,7 @@
     for (const b of document.querySelectorAll('#panel [data-a]')) b.onclick = () => onAction(S._acts[+b.dataset.a]);
     for (const b of document.querySelectorAll('#panel [data-f]')) b.onclick = () => act('form', b.dataset.f);
     const on = (id, fn) => { const e = $(id); if (e) e.onclick = fn; };
-    on('#bEnd', endUnit); on('#bFaceOk', finishUnit); on('#bFaceBack', () => { S.mode = 'main'; refresh(); });
+    on('#bEnd', endUnit); on('#bFaceOk', finishUnit); on('#bEndRound', endRound); on('#bFaceBack', () => { S.mode = 'main'; refresh(); });
     on('#bFormBack', () => { S.mode = 'main'; S.pending = null; refresh(); }); on('#bTgBack', () => { S.mode = 'main'; S.pending = null; refresh(); });
     on('#bUndo', () => { R.undoMove(g, u); drain().then(refresh); });
     hookFaces(); on('#bPvOk', confirmPreview); on('#bPvNo', () => { S.preview = null; refresh(); });
@@ -408,17 +427,30 @@
     if (g.scId === 'xiapi') {
       bits.push(`曹軍糧草 <b>${Math.max(0, v.supply)}</b>`);
       bits.push(`城中糧 <b>${v.food}</b>`);
-      if (v.digOpen && !v.flooded) bits.push(`掘堤 ${v.dig}/${v.digNeed}`);
-      if (v.flooded) bits.push('已水淹');
+      if (v.digOpen && !v.flooded) bits.push(`<button class="hudlink" id="hDig" title="點一下看河堤在哪裡">⛏ 掘堤 ${v.dig}/${v.digNeed}</button>`);
+      if (v.flooded && !v.receded) bits.push(`<span title="城外低地是大水；城內每回合糧 −3、士氣 −4">🌊 水淹（第 ${v.floodRound + 3} 回合退）</span>`);
+      else if (v.flooded) bits.push('<span title="城外泥濘；城內每回合糧 −3、士氣 −4">🟫 水退・泥濘</span>');
       if (v.betrayed) bits.push('西門已開');
       else if (v.unrest) bits.push('<span class="warn">⚠ 城內人心浮動</span>');
     }
     $('#hVars').innerHTML = bits.join('｜');
+    const dig = $('#hDig'); if (dig) dig.onclick = () => { const d = digHexes(g)[0]; if (d) { root.V3.focus(d[0], d[1]); toast('⛏ 河堤：曹軍步兵或弓兵站上來就能「掘堤」', 2600); } };
+    root.V3.digMarks && root.V3.digMarks(g, v.digOpen && !v.flooded ? digHexes(g).filter(([c, r]) => !R.unitAt(g, c, r)) : []);
     const ids = R.upcoming(g, 14);
-    $('#order').innerHTML = ids.map((id, i) => { const u = g.units[id]; const e = R.isEngine(u); return `<div class="chip ${u.side} ${i === 0 ? 'now' : ''} ${e ? 'eng' : ''}" title="${esc(u.name)}">${e ? R.ty(u).icon : R.gen(u).mark}</div>`; }).join('');
+    $('#order').innerHTML = ids.map((id, i) => { const u = g.units[id]; const e = R.isEngine(u); return `<div class="chip ${u.side} ${i === 0 ? 'now' : ''} ${e ? 'eng' : ''} ${R.canChoose(g, id) && isMine(R.activeUnit(g)) && !S.busy ? 'pick' : ''}" data-id="${id}" title="${esc(u.name)}">${e ? R.ty(u).icon : R.gen(u).mark}</div>`; }).join('');
+    for (const el of document.querySelectorAll('#order .chip')) el.onclick = () => {
+      const id = +el.dataset.id, v = g.units[id];
+      if (!S.busy && isMine(R.activeUnit(g)) && S.mode === 'main' && R.canChoose(g, id)) switchTo(id); else root.V3.focus(v.c, v.r);
+    };
   }
+  const digHexes = g => { const L = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') L.push([c, r]); return L; };
   let toastT = null;
-  function toast(t) { const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 1400); }
+  function toast(t, ms = 1400) { const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), ms); }
+  // 點空格子：顯示地形說明
+  function terrainTip(g, c, r) {
+    const t = R.terr(g, c, r); if (!t) return;
+    toast(`${t.name}：${t.desc || ''}`, 2600);
+  }
 
   // ---------- 視窗 ----------
   // opts.list：按鈕一個一行（存檔清單用），不特別標出第一個
@@ -443,7 +475,7 @@
       <h3>完整度（陣型被衝亂）</h3><p>70 以上完整；40～70 動搖（陣型效果減半）；15～40 混亂；低於 15 潰散：統率 70 以上勉強穩住，45～69 潰逃，45 以下<b>就地解散</b>。側擊、背襲、衝鋒、合擊、被包圍都會大幅打亂陣型；用「整隊」恢復，遠離敵軍也會慢慢恢復。兵力剩兩成五以下的部隊會潰逃一次。</p>
       <h3>深入敵陣：包圍與合擊</h3><p>相鄰有 3 支敵軍，或兩支敵軍從正對面夾擊，就是<b>被包圍</b>：受傷 ×1.15，每回合士氣、完整度下降。攻擊時，目標旁邊每多一支我方部隊就有<b>合擊</b>加成（統率越高越多；有「合擊」技能或鶴翼陣翻倍）。反過來說，突破敵陣的一方如果敵將統率低、沒有合擊能力，就能從側背痛擊對方。</p>
       <h3>衝鋒、反擊、地形</h3><p>騎兵移動 2 格以上再攻擊就是衝鋒（樹林、丘陵、城牆擋住衝鋒）。近戰從正面或前側攻擊會被反擊。居高臨下 ×1.15；樹林、丘陵受傷較少；進入敵軍相鄰格（控制區）會停下來。</p>
-      <h3>攻城</h3><p>城牆上的守軍：近戰要先用雲梯「架梯」，步兵、弓兵才能爬上去；弓箭仰攻 ×0.6（井闌旁 ×0.8）。衝車撞門、投石車打城牆，耐久歸零出現缺口。守方可用滾木礌石、火油，四角箭樓每回合自動放箭；從城門出城後攻擊有「出城突擊」加成。</p>
+      <h3>攻城</h3><p><b>進出城只能走城門</b>：守軍回城、出城都要經過城門；攻方步兵要先用雲梯攀城，或等城門被撞破、城牆被打出缺口。城牆上的守軍：近戰要先用雲梯「架梯」，步兵、弓兵才能爬上去；弓箭仰攻 ×0.6（井闌旁 ×0.8）。衝車撞門、投石車打城牆，耐久歸零出現缺口。守方可用滾木礌石、火油，四角箭樓每回合自動放箭；從城門出城後攻擊有「出城突擊」加成。</p>
       <h3>單挑與計策</h3><p>武力 60 以上的武將可以向相鄰敵將單挑；實力差太多對方會避戰（士氣下降）。各武將的技能在部隊資訊裡可以看到。</p>`, [['關閉', true]]);
   }
   function showLog() {

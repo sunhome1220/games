@@ -63,7 +63,19 @@
   // ---------- 查詢 ----------
   const tAt = (g, c, r) => (r >= 0 && r < g.Hh && c >= 0 && c < g.W ? g.map[r][c] : null);
   const terr = (g, c, r) => TERRAIN[tAt(g, c, r)];
-  const unitAt = (g, c, r) => g.units.find(u => u.alive && u.c === c && u.r === r) || null;
+  // 一格最多兩支部隊：器械可以和一支友軍同格（避免器械塞住路口）。unitAt 優先回傳作戰部隊
+  function unitAt(g, c, r) {
+    let eng = null;
+    for (const u of g.units) if (u.alive && u.c === c && u.r === r) { if (!ty(u).engine) return u; eng = eng || u; }
+    return eng;
+  }
+  const unitsAt = (g, c, r) => g.units.filter(u => u.alive && u.c === c && u.r === r);
+  // u 能不能停在這一格
+  function canStop(g, u, c, r) {
+    const o = unitsAt(g, c, r).filter(v => v !== u);
+    if (!o.length) return true;
+    return o.length === 1 && o[0].side === u.side && (isEngine(u) || isEngine(o[0]));
+  }
   const gen = u => GENERALS[u.gen];
   const ty = u => UNIT_TYPES[u.type];
   const isEngine = u => !!ty(u).engine;
@@ -110,11 +122,14 @@
     const inside = fromT.wall || g.city.has(H.key(fromC, fromR));
     if (t.wall) {
       if (isEngine(u)) return Infinity;
-      if (u.side === 'def' || inside) return cost;
-      if (t.gate) return Infinity;
-      if (g.ladders[H.key(c, r)] != null && mv === 0) return 2; // 爬雲梯
+      if (inside) return cost;   // 城內、城牆上走動
+      // 從城外上城：守軍只能走城門；攻方步兵要爬雲梯
+      if (t.gate) return u.side === 'def' ? cost : Infinity;
+      if (u.side === 'att' && g.ladders[H.key(c, r)] != null && mv === 0) return 2; // 爬雲梯
       return Infinity;
     }
+    // 從城牆上下到城外：只能走城門（攻方可以沿自己的雲梯爬下去）；城牆缺口、破城門照常通行
+    if (fromT.wall && !fromT.gate && !g.city.has(H.key(c, r)) && !(g.ladders[H.key(fromC, fromR)] != null && u.side === 'att')) return Infinity;
     return cost;
   }
   function maxMP(g, u) {
@@ -145,8 +160,8 @@
         open.push([nc2, nc, nr]);
       }
     }
-    // 不能停在友軍所在的格子
-    for (const [k, v] of res) if (k !== start && unitAt(g, v.c, v.r)) v.blocked = true;
+    // 不能停在友軍所在的格子（器械可以和一支友軍同格）
+    for (const [k, v] of res) if (k !== start && !canStop(g, u, v.c, v.r)) v.blocked = true;
     return res;
   }
   function pathTo(reach, k) { const p = []; let cur = k; while (cur) { const v = reach.get(cur); p.unshift([v.c, v.r]); cur = v.prev; } return p; }
@@ -181,6 +196,19 @@
     Object.assign(u, { moved: false, acted: false, attacked: false, mpBonus: 0, ignoreZOC: false, buff: {}, sortie: false, moveLen: 0, from: [u.c, u.r, u.face] });
   }
   const activeUnit = g => (g.active == null ? null : g.units[g.active]);
+  // 不必照順序：輪到己方時（目前的部隊還沒移動、沒動作），可以改派本回合還沒行動的其他己方部隊先動
+  function canChoose(g, id) {
+    const cur = activeUnit(g), u = g.units[id];
+    if (!cur || !u || !u.alive || u === cur || u.side !== cur.side || cur.moved || cur.acted) return false;
+    return g.order.indexOf(id) > g.oi;
+  }
+  function chooseActive(g, id) {
+    if (!canChoose(g, id)) return false;
+    const cur = activeUnit(g);
+    Object.assign(cur, { moved: false, acted: false });
+    g.order.splice(g.order.indexOf(id), 1); g.order.splice(g.oi, 0, id);   // 選中的插到現在，原本輪到的順延一位
+    beginActivation(g, g.units[id]); return true;
+  }
   function endActivation(g) {
     const u = activeUnit(g); if (u) { u.moved = u.acted = true; }
     nextActivation(g);
@@ -390,6 +418,7 @@
     const t = ty(u); if (t.atk <= 0 || u.acted) return [];
     const res = [];
     for (const v of enemiesOf(g, u)) {
+      if (isEngine(v) && unitAt(g, v.c, v.r) !== v) continue;   // 和作戰部隊同格的器械受到掩護，要先打作戰部隊
       const d = H.dist(u.c, u.r, v.c, v.r);
       if (t.ranged) { if (d <= rangeOf(g, u) && d >= (t.minRng || 1)) res.push(v); }
       else if (u.type === 'ram') { /* 衝車只撞門 */ }
@@ -641,10 +670,11 @@
       if (g.round === 1) {
         msg(g, '下邳之戰', '曹操大軍東征，呂布在泗水西岸列陣迎擊。陳宮建議：「將軍若引兵屯於城外，宮守城於內，曹軍攻城則將軍擊其背，攻將軍則宮出兵救之，此掎角之勢也。」', null, [['chengong', 'default']]);
       }
+      if (v.flooded && !v.receded && g.round >= v.floodRound + 3) XIAPI.recede(g);
       if (g.round === v.digUnlock && !v.flooded) {
         v.digOpen = true;
         const xun = g.units.find(u => u.gen === 'xunyou' && u.alive && u.side === 'att');
-        msg(g, '荀攸、郭嘉獻策', `${xun ? '荀攸' : '郭嘉'}進言：「呂布勇而無謀，今三戰皆北，其銳氣衰矣。」建議掘開泗水、沂水灌城。\n【可以掘堤了】派步兵或弓兵到城北的「河堤」上執行「掘堤」，累計 ${v.digNeed} 次就能水淹下邳。${xun ? '荀攸親自督工效率加倍。' : ''}`, 'att', [[xun ? 'xunyou' : 'caocao', xun ? 'plan' : 'default']]);
+        msg(g, '荀攸、郭嘉獻策', `${xun ? '荀攸' : '郭嘉'}進言：「呂布勇而無謀，今三戰皆北，其銳氣衰矣。」建議掘開泗水、沂水灌城。\n\n【可以掘堤了】\n・河堤在城北泗水邊（地圖上標著 ⛏ 的格子，上方「掘堤」數字可以點一下帶你過去）\n・派步兵或弓兵站上河堤，執行「掘堤」，累計 ${v.digNeed} 次就水淹下邳${xun ? '\n・荀攸親自督工，一次算兩次' : ''}\n・呂布軍可以派兵佔住河堤阻止掘堤`, 'att', [[xun ? 'xunyou' : 'caocao', xun ? 'plan' : 'default']]);
       }
     },
     actions(g, u, add) {
@@ -666,12 +696,18 @@
       const hexes = [];
       for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'l') { g.map[r][c] = 'w'; hexes.push([c, r]); }
       g.fx.push({ t: 'flood', hexes });
-      msg(g, '水淹下邳', '泗水、沂水決堤，大水灌入下邳城下。城外一片汪洋，城內糧草漸絕、人心惶惶。', 'att', [['lubu', 'haggard']]);
+      msg(g, '水淹下邳', '泗水、沂水決堤，大水灌入下邳城下。城外一片汪洋，城內糧草漸絕、人心惶惶。\n\n【水淹後】\n・城外低地變成大水：步兵、騎兵可以涉水，但走得慢、受傷多一成；器械過不去，原本在低地上的器械被沖走\n・通往城門的大路沒有淹，可以沿路進逼城門\n・城內每回合糧食 −3、守軍士氣 −4，城牆耐久慢慢下降；士氣太低時可能有人倒戈\n・3 回合後大水會退成泥濘，器械也能慢慢通過', 'att', [['lubu', 'haggard']]);
       for (const u of alive(g)) if (g.map[u.r][u.c] === 'w') {
         if (isEngine(u)) { log(g, `${u.name}被大水沖走`, u.side, 'bad'); destroy(g, u, '被大水沖毀'); continue; }
         u.coh = clamp(u.coh - 25, 0, 100); applyLoss(g, u, Math.round(u.troops * 0.08), {});
       }
       for (const k in g.hp) { const [c, r] = H.unkey(k); if (g.hp[k] > 0) damageStruct(g, c, r, 8, null); }
+    },
+    recede(g) {
+      const v = g.vars; v.receded = true; const hexes = [];
+      for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'w') { g.map[r][c] = 'm'; hexes.push([c, r]); }
+      g.fx.push({ t: 'recede', hexes });
+      msg(g, '大水退去', '城外的大水退成泥濘：步兵、騎兵移動仍然較慢，器械也能緩慢通過了。城內依然缺糧，守軍士氣持續下降。', null, []);
     },
     onRoundEnd(g) {
       const v = g.vars;
@@ -738,7 +774,8 @@
     },
   };
   // who：事件頭像 [[武將, 情緒], …]
-  function msg(g, title, text, side, who) { g.log.push({ round: g.round, text: `【${title}】${text}`, side: side || null, kind: 'event' }); g.fx.push({ t: 'msg', title, text, side, who }); }
+  // 戰報只記第一段；視窗顯示全文（空一行之後是操作說明）
+  function msg(g, title, text, side, who) { g.log.push({ round: g.round, text: `【${title}】${text.split('\n\n')[0]}`, side: side || null, kind: 'event' }); g.fx.push({ t: 'msg', title, text, side, who }); }
 
   // ---------- 結局文字 ----------
   const ENDINGS = {
@@ -756,7 +793,7 @@
   // ---------- 匯出 ----------
   root.RULES = {
     newGame, serialize, restore, startRound, nextActivation, endActivation, activeUnit, upcoming,
-    reachable, pathTo, moveUnit, undoMove, setFacing, maxMP,
+    reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
     attackTargets, structTargets, attack, calcDamage, canCounter, actionsFor, doAction,
     unitAt, terr, tAt, state, STATE_NAME, formOf, encircled, adjEnemies, sideHit, inCity, onWall, isEngine, gen, ty, has, alive, enemiesOf, friendsOf,
     rangeOf, canMeleeReach, ENDINGS, other, clamp, inZOC, moveCost,
