@@ -42,7 +42,7 @@
       desc: '頭戴三叉束髮紫金冠，體掛西川紅錦百花袍，身披獸面吞頭連環鎧，腰繫勒甲玲瓏獅蠻帶。', src: '第 5 回',
     },
     zhangliao: {
-      skin: '#e2b893', build: 'normal', eye: 'sharp', brow: 'sword', beard: ['short', '#1d150f'], stache: true, hat: 'helmet', hatColor: '#7a2a24', robe: '#8a2c24', armor: '#6f6050',
+      skin: '#e2b893', build: 'normal', eye: 'sharp', brow: 'sword', beard: ['short', '#1d150f'], stache: true, hat: 'helmet', hatColor: '#4a4a52', robe: '#4a3a36', armor: '#6f6a60',
       desc: '演義沒有描寫外貌，依騎將形象繪製。', src: '—',
     },
     gaoshun: {
@@ -64,6 +64,47 @@
     weixu: {
       skin: '#d6a47c', build: 'cute', eye: 'cute', brow: 'sword', beard: ['short', '#21170f'], hat: 'helmet', hatColor: '#4a2e26', robe: '#5e2a22', armor: '#58493e',
       desc: '演義沒有描寫外貌。', src: '—',
+    },
+    // ---- 合肥之戰 ----
+    sunquan: {
+      skin: '#ecd2b0', build: 'strong', eye: 'sharp', brow: 'sword', iris: '#3f7a5a', beard: ['full', '#5a2a5e'], stache: true, hat: 'guan', hatColor: '#3a1e14', robe: '#8a2a22', trim: '#d6b04a', armor: null, hair: '#3a1f36',
+      desc: '方頤大口，碧眼紫髯。', src: '第 29 回',
+    },
+    lumeng: {
+      skin: '#e2bc94', build: 'normal', eye: 'sharp', brow: 'sword', beard: ['short', '#1d150f'], stache: true, hat: 'helmet', hatColor: '#7a2a24', robe: '#7a2c26', armor: '#6a5848',
+      desc: '演義沒有描寫外貌。「士別三日，即更刮目相待」。', src: '—',
+    },
+    ganning: {
+      skin: '#d8a880', build: 'strong', eye: 'round', brow: 'sword', beard: ['short', '#1a120c'], stache: true, hat: 'scarf', hatColor: '#b33a2a', robe: '#a83a2a', trim: '#e0b850', armor: '#5e4a3a', scar: true,
+      desc: '少年時好遊俠，腰懸銅鈴、以錦帆為號，人稱「錦帆賊」。', src: '第 38 回',
+    },
+    lingtong: {
+      skin: '#eccaa6', build: 'slim', eye: 'sharp', brow: 'sword', beard: ['none'], hat: 'helmet', hatColor: '#8a2e26', robe: '#8a3028', armor: '#7a6a58',
+      desc: '演義沒有描寫外貌，依年輕勇將形象繪製。', src: '—',
+    },
+    jiangqin: {
+      skin: '#dcb08a', build: 'normal', eye: 'normal', brow: 'thin', beard: ['goatee', '#2a1e14'], stache: true, hat: 'helmet', hatColor: '#6a2a24', robe: '#6e2e28', armor: '#5a4c40', age: 1,
+      desc: '演義沒有描寫外貌。', src: '—',
+    },
+    chenwu: {
+      skin: '#d4a07a', build: 'strong', eye: 'round', brow: 'sword', beard: ['full', '#1a120c'], stache: true, hat: 'helmet', hatColor: '#5a2420', robe: '#7a2a24', armor: '#4e4038',
+      desc: '演義沒有描寫外貌。', src: '—',
+    },
+    wubu: {
+      skin: '#e0b48c', build: 'cute', eye: 'cute', brow: 'thin', beard: ['none'], hat: 'helmet', hatColor: '#7a2e26', robe: '#7a3028', armor: '#5e4a3e',
+      desc: '吳軍弓弩隊的部將。', src: '—',
+    },
+    lidian: {
+      skin: '#eacaa4', build: 'slim', eye: 'normal', brow: 'thin', beard: ['goatee', '#2a2018'], stache: true, hat: 'helmet', hatColor: '#3d5a86', robe: '#2b3f63', armor: '#5d6d86',
+      desc: '演義沒有描寫外貌。好學問、敬賢士，有長者之風。', src: '—',
+    },
+    yuejin: {
+      skin: '#d8a882', build: 'strong', eye: 'sharp', brow: 'sword', beard: ['full', '#1a120c'], stache: true, hat: 'helmet', hatColor: '#34507a', robe: '#2b3f63', armor: '#56688a',
+      desc: '演義沒有描寫外貌。身材短小而膽烈，每戰常先登。', src: '—',
+    },
+    xueti: {
+      skin: '#ecd0ae', build: 'slim', eye: 'narrow', brow: 'thin', beard: ['goatee', '#3a3028'], stache: true, hat: 'guan', hatColor: '#1e1e24', robe: '#3a4a66', trim: '#ddd5c2', armor: null, age: 1,
+      desc: '演義沒有描寫外貌，依護軍文官形象繪製。', src: '—',
     },
   };
 
@@ -103,6 +144,7 @@
     zhangliao: {
       default: { name: '平常', face: 'stern' },
       defy: { name: '白門樓怒罵', face: 'shout', bound: true, quote: '遼曰：「可惜當日火不大，不曾燒死你這國賊！」', src: '第 19 回' },
+      charge: { name: '威震逍遙津', face: 'shout', quote: '張遼大呼：「張遼在此！」江南人人害怕，聞張遼大名，小兒也不敢夜啼。', src: '第 67 回' },
     },
     gaoshun: {
       default: { name: '平常', face: 'stern' },
@@ -121,6 +163,29 @@
       default: { name: '平常', face: 'neutral' },
       plot: { name: '密謀', face: 'sly', quote: '宋憲、魏續趁呂布困睡，盜去方天畫戟，將他綁縛。', src: '第 19 回' },
     },
+    sunquan: {
+      default: { name: '平常', face: 'stern' },
+      worry: { name: '大驚', face: 'fear', quote: '張遼直衝到孫權麾下，權大驚，走登小丘，以長戟自守。', src: '三國志・張遼傳' },
+      leap: { name: '躍馬過橋', face: 'shout', quote: '橋南已折丈餘，並無一片板。權驚得手足無措。牙將谷利大呼曰：「主公可約馬退後，再放馬向前，跳過橋去。」權收回馬來有三丈餘遠，然後縱轡加鞭，那馬一跳飛過橋南。', src: '第 67 回' },
+    },
+    lumeng: { default: { name: '平常', face: 'calm' } },
+    ganning: {
+      default: { name: '平常', face: 'proud' },
+      raid: { name: '百騎劫營', face: 'laugh', quote: '甘寧引百騎劫曹營，「吾今夜不損一人一騎！」至曹營，拔鹿角，殺入寨中。', src: '第 68 回' },
+    },
+    lingtong: {
+      default: { name: '平常', face: 'stern' },
+      guard: { name: '拚死斷後', face: 'angry', quote: '凌統引三百餘騎，死保孫權過橋。統身被數槍，殺到橋邊，橋已折斷，繞河而逃。', src: '第 67 回' },
+    },
+    jiangqin: { default: { name: '平常', face: 'neutral' } },
+    chenwu: { default: { name: '平常', face: 'stern' } },
+    wubu: { default: { name: '平常', face: 'stern' } },
+    lidian: {
+      default: { name: '平常', face: 'calm' },
+      resolve: { name: '公而忘私', face: 'serene', quote: '典慨然曰：「此國家大事，顧君計何如耳，吾可以私憾而忘公義乎？請從君而出。」', src: '三國志・張遼傳' },
+    },
+    yuejin: { default: { name: '平常', face: 'stern' } },
+    xueti: { default: { name: '平常', face: 'neutral' } },
     weixu: {
       default: { name: '平常', face: 'neutral' },
       plot: { name: '密謀', face: 'sly', quote: '宋憲、魏續趁呂布困睡，盜去方天畫戟，將他綁縛。', src: '第 19 回' },
@@ -188,8 +253,10 @@
     const B = BUILD[L.build] || BUILD.normal;
     const id = 'pt' + (++uid);
     const side = opts.side === 'def' ? 'def' : opts.side === 'att' ? 'att' : null;
-    const bgA = side === 'def' ? '#7a3328' : side === 'att' ? '#2c4c80' : '#5a4630';
-    const bgB = side === 'def' ? '#24100c' : side === 'att' ? '#0e1a2e' : '#221a12';
+    // 底色依陣營色調（劇本決定攻守方是藍還是紅，見 SIDE_TONE）
+    const tone = side ? ((root.SIDE_TONE || { att: 'blue', def: 'red' })[side]) : null;
+    const bgA = tone === 'red' ? '#7a3328' : tone === 'blue' ? '#2c4c80' : '#5a4630';
+    const bgB = tone === 'red' ? '#24100c' : tone === 'blue' ? '#0e1a2e' : '#221a12';
     let skin = L.skin; if (F.pale) skin = mix(skin, '#d8dde4', 0.25);
     const skinL = shade(skin, 0.12), skinD = shade(skin, -0.14), skinDD = shade(skin, -0.3);
     const hair = L.hair || '#17110c';
@@ -202,7 +269,7 @@
       <radialGradient id="${id}s" cx="38%" cy="34%" r="78%"><stop offset="0" stop-color="${skinL}"/><stop offset=".55" stop-color="${skin}"/><stop offset="1" stop-color="${skinD}"/></radialGradient>
       <linearGradient id="${id}r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(L.robe, 0.12)}"/><stop offset="1" stop-color="${shade(L.robe, -0.35)}"/></linearGradient>
       <linearGradient id="${id}h" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${shade(hair, 0.22)}"/><stop offset="1" stop-color="${hair}"/></linearGradient>
-      <radialGradient id="${id}i" cx="45%" cy="35%" r="70%"><stop offset="0" stop-color="#8a5a32"/><stop offset=".6" stop-color="#4a2c16"/><stop offset="1" stop-color="#1c0f06"/></radialGradient>
+      <radialGradient id="${id}i" cx="45%" cy="35%" r="70%"><stop offset="0" stop-color="${L.iris ? shade(L.iris, 0.25) : '#8a5a32'}"/><stop offset=".6" stop-color="${L.iris || '#4a2c16'}"/><stop offset="1" stop-color="#1c0f06"/></radialGradient>
       <clipPath id="${id}c"><rect width="120" height="120" rx="10"/></clipPath>
       <clipPath id="${id}f"><path d="${B.face}"/></clipPath>
     </defs>`);

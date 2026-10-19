@@ -168,3 +168,8 @@ table.ft th { color: var(--gold); font-weight: normal; }
 .hint.siege { color: #bfe3ff; background: rgba(127, 211, 255, 0.08); border-left: 3px solid #7fd3ff; padding: 4px 8px; border-radius: 4px; }
 .goalst li { margin: 2px 0; }
 #hudTop .mini + .mini { margin-left: 4px; }
+
+/* 劇本攻守方顏色對調（合肥：攻方吳紅、守方魏藍） */
+body.swap { --att: #e0604f; --def: #5d8de0; }
+body.swap .chip.att, body.swap .badge.att { background: #a8382c; } body.swap .chip.def, body.swap .badge.def { background: #2f5aa8; }
+body.swap .logl.att { color: #f3c0b6; } body.swap .logl.def { color: #b7cdf5; }

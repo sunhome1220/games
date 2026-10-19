@@ -6,10 +6,41 @@
   const PAL = [18, 9], GATE_W = [15, 9];
 
   function mean(g, A, T, extra) { return R.calcDamage(g, A, T, Object.assign({ mean: true }, extra || {})); }
-  const val = (g, u) => (R.isEngine(u) ? 1.2 : 1) * (u.gen === 'lubu' || u.gen === 'caocao' ? 1.4 : 1);
+  const val = (g, u) => (R.isEngine(u) ? 1.2 : 1) * (u.gen === g.sc.sides.att.leader || u.gen === g.sc.sides.def.leader ? (g.sc.id === 'hefei' && u.gen === 'sunquan' ? 1.8 : 1.4) : 1);
 
   // ---- 目標位置（依劇本與戰況） ----
-  function goalOf(g, u) {
+  function goalOf(g, u) { return g.sc.id === 'hefei' ? hefeiGoal(g, u) : xiapiGoal(g, u); }
+  // 合肥：吳軍先圍城（衝車撞南門、雲梯架南牆），撤軍時往東過逍遙津橋；魏軍張遼、李典天亮突擊孫權，累了就從南門回城，吳軍撤退時追擊孫權
+  function hefeiGoal(g, u) {
+    const v = g.vars, breach = findBreach(g), pal = findCh(g, 'P') || [11, 4];
+    const sun = g.units.find(x => x.gen === 'sunquan');
+    if (u.side === 'att') {
+      if (v.retreating) return u.gen === 'lingtong' && sun.alive && sun.c < 19 ? [18, 10] : [22, 10];
+      if (u.type === 'ram') return [11, 8];
+      if (u.type === 'ladder') return u.label.includes('甲') ? [9, 8] : [13, 8];
+      if (breach) return pal;
+      const field = R.alive(g).filter(x => x.side === 'def' && !R.inCity(g, x) && !R.onWall(g, x) && !R.isEngine(x));
+      if (field.length && u.gen !== 'sunquan') return nearest(u, field);
+      if (u.gen === 'sunquan') return [12, 12];
+      if (u.type === 'arc') return [10 + (u.id % 2) * 2, 9];
+      return [[9, 8], [13, 8], [10, 8], [12, 8]][u.id % 4];
+    }
+    if (breach) {
+      const intruders = R.alive(g).filter(x => x.side === 'att' && R.inCity(g, x));
+      if (intruders.length) return nearest(u, intruders);
+      if (!R.onWall(g, u) || u.type !== 'arc') return breach;
+    }
+    if (R.onWall(g, u) && u.type === 'arc') return [u.c, u.r];
+    if (u.gen === 'yuejin') return [11, 6];   // 樂將軍守護軍，勿得與戰
+    if (v.retreating && sun.alive) { u.retreating = false; return sun.c < 19 && u.type === 'cav' ? [19, 10] : [sun.c, sun.r]; }   // 追擊：騎兵搶佔逍遙津橋，其餘直撲孫權
+    const out = !R.inCity(g, u) && !R.onWall(g, u);
+    const tired = u.troops < u.max * 0.55 || u.coh < 40 || u.retreating;
+    if (g.round <= 3 && !tired && sun.alive) return [sun.c, sun.r];
+    if (out) { u.retreating = true; return [11, 5]; }
+    return [11, 6];
+  }
+  function findCh(g, ch) { for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === ch) return [c, r]; return null; }
+  function xiapiGoal(g, u) {
     const v = g.vars;
     const defField = R.alive(g).filter(x => x.side === 'def' && !R.inCity(g, x) && !R.isEngine(x));
     const breach = findBreach(g);
