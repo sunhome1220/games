@@ -117,7 +117,7 @@
   // 整片地面是一張連續網格：高度依所在的六角格平滑過渡；顏色畫在一張貼圖上
   // （先用低解析度上色再放大＝地形邊界自然暈開，再疊色塊、筆觸與淡淡的格線）
   const GH = { '.': 0.2, ',': 0.19, 'f': 0.22, 'h': 0.75, '~': -0.3, '=': -0.3, 'd': 0.45, 'l': 0.12, 'w': -0.25, 'm': 0.08, 'o': 0.22, 'r': 0.35, 'c': 0.28, 'P': 0.3, 'S': 0.2 };
-  const GC = { '.': 0x7a8749, ',': 0xa68f60, 'f': 0x55663a, 'h': 0x948660, '~': 0x23463f, '=': 0x23463f, 'd': 0x86744d, 'l': 0x849056, 'w': 0x2a4d48, 'm': 0x5e5038, 'o': 0x6c604f, 'r': 0x7a6f61, 'c': 0x8b7b5f, 'P': 0x948469, 'S': 0x8c7853 };
+  const GC = { '.': 0x7a8749, ',': 0x8c7f55, 'f': 0x55663a, 'h': 0x948660, '~': 0x23463f, '=': 0x23463f, 'd': 0x86744d, 'l': 0x849056, 'w': 0x2a4d48, 'm': 0x5e5038, 'o': 0x6c604f, 'r': 0x7a6f61, 'c': 0x8b7b5f, 'P': 0x948469, 'S': 0x8c7853 };
   // 六角格座標（未扣 ox/oz）→ [c, r]
   function hexAtPx(px, pz) {
     const x = px / HX.S3 - pz / 3, z = 2 / 3 * pz, y = -x - z;
@@ -203,6 +203,25 @@
       x.strokeStyle = rnd() < 0.55 ? 'rgba(25,22,10,0.14)' : 'rgba(235,225,170,0.10)'; x.lineWidth = 1 + rnd();
       x.beginPath(); x.moveTo(px, py); x.lineTo(px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke();
     }
+    // 古道：夯土路面連到相鄰的道路、渡口、城門，邊緣自然暈開，上面有淡淡的車轍和碎石
+    const isRoad = ch => ch === ',' || ch === '=' || ch === 'G' || ch === 'o';
+    const segs = [];
+    for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
+      if (g.map[r][c] !== ',') continue;
+      for (const [nc, nr] of HX.neighbors(c, r)) if (g.map[nr] && isRoad(g.map[nr][nc]) && (g.map[nr][nc] !== ',' || nr * g.W + nc > r * g.W + c)) segs.push([c, r, nc, nr]);
+    }
+    const toPx = (c, r) => { const [hx, hz] = wpos(c, r); return [(hx - V.gx0) * TPX, (hz - V.gz0) * TPX]; };
+    x.lineCap = 'round'; x.lineJoin = 'round';
+    for (const [w, col] of [[1.05, 'rgba(120,98,62,0.22)'], [0.78, 'rgba(146,120,78,0.5)'], [0.6, 'rgba(160,134,92,0.45)']]) {
+      x.lineWidth = w * TPX; x.strokeStyle = col;
+      for (const [c0, r0, c1, r1] of segs) { const [a0, b0] = toPx(c0, r0), [a1, b1] = toPx(c1, r1); x.beginPath(); x.moveTo(a0, b0); x.lineTo(a1, b1); x.stroke(); }
+    }
+    x.lineWidth = 1.6; x.strokeStyle = 'rgba(70,52,30,0.22)';
+    for (const [c0, r0, c1, r1] of segs) {
+      const [a0, b0] = toPx(c0, r0), [a1, b1] = toPx(c1, r1), L = Math.hypot(a1 - a0, b1 - b0) || 1, nx = -(b1 - b0) / L * 0.15 * TPX, nz = (a1 - a0) / L * 0.15 * TPX;
+      for (const sg of [-1, 1]) { x.beginPath(); x.moveTo(a0 + nx * sg, b0 + nz * sg); x.lineTo(a1 + nx * sg, b1 + nz * sg); x.stroke(); }
+      for (let i = 0; i < 10; i++) { const t = rnd(), px = a0 + (a1 - a0) * t + (rnd() - 0.5) * 0.6 * TPX, py = b0 + (b1 - b0) * t + (rnd() - 0.5) * 0.6 * TPX; x.fillStyle = rnd() < 0.5 ? 'rgba(90,80,64,0.35)' : 'rgba(200,184,150,0.3)'; x.beginPath(); x.arc(px, py, 1 + rnd() * 1.6, 0, Math.PI * 2); x.fill(); }
+    }
     // 淡淡的格線（水面、城牆不畫）
     x.strokeStyle = 'rgba(240,228,190,0.17)'; x.lineWidth = 1.3;
     for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
@@ -229,7 +248,7 @@
       cone: new T.ConeGeometry(0.28, 0.7, 6), trunk: new T.CylinderGeometry(0.05, 0.06, 0.2, 5),
       merlon: new T.BoxGeometry(0.22, 0.22, 0.22), rock: new T.DodecahedronGeometry(0.22, 0),
       house: new T.BoxGeometry(0.42, 0.28, 0.32), roof4: new T.ConeGeometry(0.36, 0.22, 4),
-      crown: new T.DodecahedronGeometry(0.32, 0), bush: new T.DodecahedronGeometry(0.16, 0), rut: new T.BoxGeometry(1.7, 0.012, 0.1), reed: new T.ConeGeometry(0.03, 0.32, 4),
+      crown: new T.DodecahedronGeometry(0.32, 0), bush: new T.DodecahedronGeometry(0.16, 0), reed: new T.ConeGeometry(0.03, 0.32, 4),
       plank: new T.BoxGeometry(1.75, 0.08, 1.0), rail: new T.BoxGeometry(1.75, 0.12, 0.06), tent: new T.ConeGeometry(0.3, 0.45, 6),
     };
     for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) decoAt(g, c, r);
@@ -254,9 +273,6 @@
         const tr = mesh(G.trunk, mat(0x6b4a2b)); tr.position.set(px, 0.1, pz); grp.add(tr);
       }
       for (let i = 0; i < 2; i++) { const b = mesh(G.bush, mat(0x34492a)); b.position.set((rnd() - 0.5) * 1.1, 0.06, (rnd() - 0.5) * 1.1); b.scale.set(1.2, 0.7, 1.2); grp.add(b); }
-    } else if (ch === ',') {
-      // 車轍
-      for (const s of [-1, 1]) { const o = mesh(G.rut, mat(0xa58f62), false, true); o.position.set(0, 0.006, s * 0.16); grp.add(o); }
     } else if (ch === 'l') {
       if (rnd() < 0.45) for (let i = 0; i < 3; i++) { const o = mesh(G.reed, mat(i % 2 ? 0x8fa35a : 0xa3ad62), false); o.position.set((rnd() - 0.5) * 1.1, 0.12, (rnd() - 0.5) * 1.1); o.rotation.z = (rnd() - 0.5) * 0.4; grp.add(o); }
     } else if (ch === 'h') {
