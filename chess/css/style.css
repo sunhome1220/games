@@ -93,3 +93,5 @@ label.tilt input { flex:1; }
 #lobby details.sec > summary::-webkit-details-marker { display:none; }
 #lobby details.sec > summary::after { content:'▸'; color:#8fa595; transition:transform .15s; }
 #lobby details.sec[open] > summary::after { transform:rotate(90deg); }
+#lobby a.btnlink { display:block; margin:4px 0; padding:6px 12px; border-radius:4px; background:#e8c88a; color:#2b2118; text-decoration:none; }
+#lobby a.btnlink small { color:#6b5a3a; }

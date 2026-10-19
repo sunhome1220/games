@@ -72,6 +72,11 @@ module.exports = [
     const pg = await t.ctx.newPage(); await pg.goto(`${t.base}/chess/index.html?nolog=1&cards=0&view=2d&room=1234`); await pg.waitForTimeout(400);
     t.assert.strictEqual(await pg.evaluate(() => $('secNet').open), true); await pg.close();
   } },
+  { name: '趣味贊助按鈕：在「更多」裡、新分頁開啟、帶 noopener，且不在常用區', async fn(t) {
+    const pg = await t.open('', { mode: false });
+    const r = await pg.evaluate(() => { const a = $('mTip'); return { inMore: !!a.closest('#secMore'), target: a.target, rel: a.rel, https: a.href.startsWith('https://service.jkopay.com/'), hiddenByDefault: !$('secMore').open }; });
+    t.assert.deepStrictEqual(r, { inMore: true, target: '_blank', rel: 'noopener noreferrer', https: true, hiddenByDefault: true });
+  } },
   { name: '舊網址 proto-b.html 會轉址到 chess/（保留參數）', async fn(t) {
     const pg = await t.ctx.newPage(); await pg.goto(`${t.base}/proto-b.html?room=1234`); await pg.waitForURL(/chess\/index\.html\?room=1234/, { timeout: 5000 }); await pg.close();
   } },
