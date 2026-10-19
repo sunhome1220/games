@@ -120,4 +120,19 @@ module.exports = [
     await env.myTurn(pg);
     env.assert.strictEqual(await pg.evaluate(() => G.round), round + 1);
   } },
+  { name: '目標說明與攻城提示：🎯 目標顯示勝利條件與戰況；步兵靠城牆時提示要雲梯', async fn(env) {
+    const pg = await env.open('sc=xiapi&side=att&seed=4&fast');
+    await env.myTurn(pg);
+    await pg.click('#btnGoal');
+    const txt = await pg.textContent('#modalBody');
+    env.assert(txt.includes('府衙') && txt.includes('西門耐久') && txt.includes('雲梯'), txt.slice(0, 200));
+    await pg.click('#modalBtns button');
+    const hint = await pg.evaluate(() => {
+      const inf = G.units.find(x => x.side === 'att' && x.type === 'inf' && x.alive);
+      RULES.chooseActive(G, inf.id);
+      const a = RULES.activeUnit(G); a.c = 14; a.r = 7; V3.syncUnits(G); UI.refresh();
+      return document.querySelector('#panel .hint.siege')?.textContent || '';
+    });
+    env.assert(hint.includes('雲梯'), '應提示需要雲梯：' + hint);
+  } },
 ];

@@ -517,6 +517,7 @@
     else if (form === 'hexi') { P.push([-0.25, 0]); let i = 1; while (P.length < n) { const s = i % 2 ? 1 : -1, k = Math.ceil(i / 2); P.push([-0.25 + k * 0.12, s * k * 0.15]); i++; } }
     else if (form === 'yanxing') { const half = Math.ceil(n / 2); for (let i = 0; i < n; i++) { const back = i >= half; const j = back ? i - half : i; const w = back ? n - half : half; P.push([back ? -0.2 : 0.15, (j - (w - 1) / 2) * 0.22 + (back ? 0.11 : 0)]); } }
     else if (form === 'changshe') { const cols = n > 8 ? 2 : 1; for (let i = 0; i < n; i++) { const col = i % cols, row = Math.floor(i / cols); const rowsN = Math.ceil(n / cols); P.push([0.75 - row * (1.5 / Math.max(1, rowsN - 1)), cols === 2 ? (col - 0.5) * 0.18 : 0]); } }
+    else if (form === 'wall') { const half = Math.ceil(n / 2); for (let i = 0; i < n; i++) { const back = i >= half, j = back ? i - half : i, w = back ? n - half : half; P.push([back ? -0.12 : 0.18, (j - (w - 1) / 2) * (1.3 / Math.max(1, w - 1)) * 0.9]); } return P; }   // 城牆上：沿著城牆排成兩列
     else if (form === 'fangyuan') { const ring = Math.min(n, n > 6 ? n - 2 : n); for (let i = 0; i < ring; i++) { const a = i / ring * Math.PI * 2; P.push([Math.cos(a) * 0.48, Math.sin(a) * 0.48]); } for (let i = ring; i < n; i++) P.push([(i - ring - 0.5) * 0.15, 0]); }
     else { for (let i = 0; i < n; i++) { const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * 0.7; P.push([Math.cos(a) * d, Math.sin(a) * d]); } }
     return P.map(([a, b]) => [a * 1.15, b * 1.2]);
@@ -592,7 +593,7 @@
   function updateFigures(u, rec, instant) {
     const R = root.RULES;
     if (!rec.ims) return;
-    const st = R.state(u); const form = st === 'disorder' ? 'chaos' : u.form;
+    const st = R.state(u); const form = V.g && R.onWall(V.g, u) ? 'wall' : st === 'disorder' ? 'chaos' : u.form;
     const n = figureCount(u);
     if (form !== rec.form || n !== rec.n) {
       rec.form = form; rec.n = n;
@@ -725,7 +726,7 @@
   // ---------- 相機 ----------
   function focus(c, r, smooth = true) {
     const [x, z] = wpos(c, r);
-    if (!smooth) { V.cam3.tx = x; V.cam3.tz = z; V.dirty = true; return; }
+    if (!smooth) { V.camTo = null; V.cam3.tx = x; V.cam3.tz = z; V.dirty = true; return; }
     V.camTo = { x, z, t: 0, fx: V.cam3.tx, fz: V.cam3.tz };
   }
   function bindPointer() {

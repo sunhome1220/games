@@ -318,6 +318,53 @@
     if (!ok || S.g !== g) return;
     S.skipRound = g.round; finishUnit();
   }
+  // 攻方部隊靠近城牆時的提示：怎麼上城
+  function siegeHint(g, u) {
+    if (u.side !== 'att' || u.acted) return '';
+    const nb = H.neighbors(u.c, u.r).filter(([c, r]) => { const t = R.terr(g, c, r); return t && t.wall; });
+    if (!nb.length || R.inCity(g, u)) return '';
+    const laddered = nb.some(([c, r]) => g.ladders[H.key(c, r)] != null);
+    let t = '';
+    if (u.type === 'ladder') t = '旁邊就是城牆：按「架梯」把雲梯架上去，步兵、弓兵就能從這格攀上城頭。';
+    else if (u.type === 'ram') t = nb.some(([c, r]) => R.terr(g, c, r).gate) ? '點城門（或按「撞門」）用衝車撞門，城門耐久歸零就能進城。' : '衝車只能撞城門：沿大路推到城門旁。';
+    else if (R.isEngine(u)) return '';
+    else if (u.type === 'cav') t = '騎兵不能攀城：等衝車撞破城門、投石車打出缺口，或城內倒戈開門，再從那裡衝進去。';
+    else t = laddered ? '旁邊城牆架了雲梯：點有雲梯的城牆格就能攀上去（城上有敵軍時改為攻擊）。' : '要上城牆得先有雲梯：叫雲梯部隊到這段城牆旁「架梯」，步兵、弓兵才能攀上去。也可以等城門被撞破或城牆被打出缺口。';
+    return `<div class="hint siege">🏯 ${t}</div>`;
+  }
+  // 勝利條件與攻城指南（含目前狀態）
+  function showGoals() {
+    const g = S.g; if (!g) return;
+    const sc = g.sc, v = g.vars, side = S.side;
+    const gates = [], breaches = [];
+    for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
+      const ch = g.map[r][c], k = H.key(c, r);
+      if (ch === 'G') gates.push(`${c < 18 ? '西' : '東'}門耐久 ${g.hp[k]}`);
+      if (ch === 'o') gates.push(`${c < 18 ? '西' : '東'}門已破`);
+      if (ch === 'r') breaches.push(k);
+    }
+    const lad = Object.keys(g.ladders).length;
+    const cityDef = g.units.filter(u => u.alive && u.side === 'def' && R.inCity(g, u) && !R.isEngine(u));
+    const mor = cityDef.length ? Math.round(cityDef.reduce((s2, u) => s2 + u.mor, 0) / cityDef.length) : 0;
+    const status = `<ul class="goalst">
+      <li>${gates.join('、')}</li>
+      <li>城牆缺口：${breaches.length ? breaches.length + ' 處' : '沒有'}；雲梯已架：${lad ? lad + ' 處' : '沒有'}</li>
+      <li>水淹：${v.flooded ? (v.receded ? '已水淹，城外泥濘' : '已水淹') : v.digOpen ? `掘堤 ${v.dig}/${v.digNeed}` : `第 ${v.digUnlock} 回合起可掘堤`}</li>
+      <li>城內守軍平均士氣 ${mor}${v.betrayed ? '（已有將領倒戈）' : mor < 55 ? '（人心浮動，可能倒戈）' : ''}；城中糧 ${v.food}；曹軍糧草 ${Math.max(0, v.supply)}</li></ul>`;
+    const how = side === 'att' ? `<h3>怎麼打進城</h3><ol>
+      <li><b>雲梯攀城</b>：雲梯部隊推到城牆旁按「架梯」，步兵、弓兵就能從那格攀上城頭（城上有守軍就先攻擊他）。騎兵不能攀城。</li>
+      <li><b>衝車撞門</b>：沿中間的大路把衝車推到城門旁撞門，城門破了全軍都能進城。</li>
+      <li><b>投石車開缺口</b>：投石車在 2～4 格外打城牆，耐久歸零就出現缺口。</li>
+      <li><b>水淹＋倒戈</b>：第 ${v.digUnlock} 回合起到城北河堤「掘堤」，水淹後城內士氣一直掉，侯成等人可能綁了陳宮開西門投降（史實）。</li>
+      <li>進城後把部隊開到中央的<b>府衙</b>，回合結束時還站著就獲勝；或直接擊敗、擒獲呂布。</li></ol>`
+      : `<h3>怎麼守住</h3><ol>
+      <li>城牆上的守軍很難被打：敵軍要先架雲梯才能近戰。優先打掉雲梯、衝車。</li>
+      <li>用「滾木礌石」「火油」打城下敵軍，四角箭樓會自動放箭；可從城門出城突擊，但回城也要走城門。</li>
+      <li>派兵守住城北河堤，阻止曹軍掘堤水攻；派騎兵襲擾、火燒曹軍糧營，讓曹軍糧盡退兵。</li>
+      <li>維持城內士氣，避免將領倒戈。</li></ol>`;
+    modal(`<h2>🎯 ${esc(sc.name)}：${side === 'att' ? '攻方' : '守方'}目標</h2><ul>${sc.brief.goal[side].map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+      <h3>目前戰況</h3>${status}${how}`, [['知道了', true]]);
+  }
   // 改派另一支己方部隊先行動
   function switchTo(id) {
     const g = S.g; if (!R.chooseActive(g, id)) return false;
@@ -374,7 +421,7 @@
       h += `<div class="hint">【${esc(S.pending.name)}】點選紫色的目標。${esc(S.pending.desc || '')}</div><div class="acts"><button id="bTgBack">↩ 取消</button></div>`;
     } else {
       if (S.preview) h += previewHTML(u);
-      else h += `<div class="hint">${!u.moved ? '點白框格子移動；' : ''}${!u.acted ? '點紅色敵軍預覽攻擊；也可以用下面的按鈕。' : R.isEngine(u) ? '動作已用完，按「結束行動」。' : '動作已用完，按「結束行動」選朝向。'}${!u.moved && !u.acted ? '<br><small>想先動別的部隊：點地圖上或上方順序列中自己的部隊。</small>' : ''}</div>`;
+      else h += siegeHint(g, u) + `<div class="hint">${!u.moved ? '點白框格子移動；' : ''}${!u.acted ? '點紅色敵軍預覽攻擊；也可以用下面的按鈕。' : R.isEngine(u) ? '動作已用完，按「結束行動」。' : '動作已用完，按「結束行動」選朝向。'}${!u.moved && !u.acted ? '<br><small>想先動別的部隊：點地圖上或上方順序列中自己的部隊。</small>' : ''}</div>`;
       const acts = R.actionsFor(g, u).filter(a => !(a.pre && u.moved));
       h += '<div class="acts">';
       acts.forEach((a, i) => { h += `<button data-a="${i}" class="${a.skill ? 'skill' : ''}" ${a.enabled ? '' : 'style="opacity:.45"'} title="${esc(a.desc || '')}">${esc(a.name)}</button>`; });
@@ -515,7 +562,7 @@
   // ---------- 啟動 ----------
   function init() {
     $('#btnHelp').onclick = showHelp; $('#btnMenu').onclick = () => (S.g ? showMenu() : renderSelect());
-    $('#btnLog').onclick = showLog;
+    $('#btnLog').onclick = showLog; $('#btnGoal').onclick = showGoals;
     for (const b of document.querySelectorAll('#camBtns button')) b.onclick = () => {
       const k = b.dataset.cam, V = root.V3;
       if (k === 'rl') V.rotate(-45); if (k === 'rr') V.rotate(45); if (k === 'zi') V.zoom(0.8); if (k === 'zo') V.zoom(1.25);
@@ -526,5 +573,5 @@
     if (q.get('sc')) startBattle(q.get('sc'), q.get('side') || 'att', { seed: q.get('seed') ? +q.get('seed') : undefined });
     else renderSelect();
   }
-  Object.assign(S, { init, renderSelect, showBrief, startBattle, showSaveMenu, showLoadMenu, readSaves, onTap, refresh, showHelp, drain });
+  Object.assign(S, { init, showGoals, renderSelect, showBrief, startBattle, showSaveMenu, showLoadMenu, readSaves, onTap, refresh, showHelp, drain });
 })(window);

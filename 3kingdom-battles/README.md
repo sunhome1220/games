@@ -42,7 +42,7 @@
 ## 測試
 ```bash
 npm i playwright                          # 第一次
-node 3kingdom-battles/tests/run.js        # 全部（規則 14 項＋頭像 2 項＋介面 11 項）
+node 3kingdom-battles/tests/run.js        # 全部（規則 14 項＋頭像 2 項＋介面 12 項）
 node 3kingdom-battles/tests/run.js 攻城   # 名稱含「攻城」的
 ```
 網址參數：`?sc=xiapi&side=att|def` 直接開戰、`&seed=數字` 固定亂數、`&speed=2` 動畫速度、`&auto` 雙方都由電腦操作、`&fast` 跳過動畫。
