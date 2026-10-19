@@ -176,6 +176,8 @@ function applyCard(side, id) {
     else if (p.hp > p.T.hp) p.hp = p.T.hp;   // 敵方血量上限被削：現有血量不能超過新上限
   }
   if (c.instant) c.instant(side);
+  if (tierOf(c) >= 3) gainFlash(tierOf(c));
+  if (tierOf(c) === 3) bigText(`${c.ic} ${c.name.split('・')[1] || c.name}！`, '#8e3fb8');
   SFX.play(tierOf(c) >= 4 ? 'win' : 'card'); toast(`${SIDE[side].name}獲得${tierOf(c) >= 4 ? '' : '強化'}：${c.ic} ${c.name}`); renderPerks();
 }
 // 戰地醫療：side 方回合開始時，只替「象 2.5 格內、血量最少」的一位友軍回復（多隻象取最大回復量）
@@ -197,7 +199,25 @@ function healFX(q, amt) {
 }
 let toastTimer = 0;
 function toast(t) { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove('on'), 2600); }
+// 特別卡的動畫：瘋狂（3）紫色閃電、終極魔法（4）金色光芒；選牌畫面依這次最高等級播開場動畫，拿到卡時再播一次全螢幕閃光
+const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function gainFlash(tier) {
+  if (reduceMotion()) return;
+  const e = document.createElement('div'); e.className = 'gainFlash t' + tier; document.body.appendChild(e);
+  setTimeout(() => e.remove(), 1500);
+}
+// 距離下次選牌還要下完幾個回合（和「我的強化」清單同一算法）
+const drawLeft = side => cardEvery - (turnsPlayed[side] % cardEvery);
+function renderDrawIn() {
+  const e = $('drawIn'); if (!e) return;
+  e.hidden = !cardsOn;
+  if (!cardsOn) return;
+  const solo = mode === 'ai' || online(), sides = solo ? [mySide] : [0, 1];
+  e.innerHTML = '🎴 ' + sides.map(s => { const n = drawLeft(s); return `${solo ? '' : SIDE[s].name + ' '}<b class="${n === 1 ? 'soon' : ''}">${n === 1 ? '下回合抽卡' : '再 ' + n + ' 回合抽卡'}</b>`; }).join('　');
+  e.title = `每 ${cardEvery} 回合抽一次強化卡`;
+}
 function renderPerks() {
+  renderDrawIn();
   const part = s => { const l = Object.entries(cardCount[s]).filter(([id]) => cardOf(id)).map(([id, n]) => `${cardOf(id).ic}${cardOf(id).name.split('・')[1] || cardOf(id).name}${n > 1 ? '×' + n : ''}`); return l.length ? `<b>${SIDE[s].name}</b> ${l.join('、')}` : ''; };
   $('perks').innerHTML = [part(0), part(1)].filter(Boolean).join('　｜　');
   const total = cardCount[0] && Object.values(cardCount[mode === 'ai' || online() ? mySide : 0]).reduce((a, b) => a + b, 0);
@@ -251,13 +271,17 @@ function showCards(side) {
   $('cardSub').textContent = `三選一，效果立刻生效；之後每 ${cardEvery} 回合再選一次（越後面的卡越瘋狂）`;
   $('cardBox').classList.toggle('flip', mode === 'face' && side === 1);   // 面對面：黑方這邊的畫面倒轉
   const list = $('cardList'); list.innerHTML = '';
-  for (const c of offers) {
-    const b = document.createElement('button'); b.className = 'cbtn t' + tierOf(c);
+  const top = Math.max(...offers.map(tierOf)), box = $('cardBox');
+  box.classList.remove('top2', 'top3', 'top4'); void box.offsetWidth; if (top >= 2) box.classList.add('top' + top);
+  $('cardTitle').textContent += top >= 4 ? ' ✨終極降臨！' : top === 3 ? ' ⚡瘋狂！' : '';
+  if (top >= 3) { gainFlash(top); SFX.play(top >= 4 ? 'win' : 'card'); }
+  offers.forEach((c, i) => {
+    const b = document.createElement('button'); b.className = 'cbtn t' + tierOf(c); b.style.setProperty('--d', (i * 0.18) + 's');
     const n = cardCount[side][c.id] || 0;
     b.innerHTML = `<div class="ic">${c.ic}</div><div>${tierBadge(c)}<b>${c.name}</b><span>${cardDesc(c)}</span>${n ? `<br><em>已持有 ${n} 張，效果疊加</em>` : ''}</div>`;
     b.onclick = () => chooseCard(side, c.id);
     list.appendChild(b);
-  }
+  });
   $('cardPick').hidden = false; setMsg('請選擇強化卡。');
 }
 function chooseCard(side, id) {

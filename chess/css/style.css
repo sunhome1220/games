@@ -52,6 +52,9 @@
   #perksBar { width:100%; max-width:560px; padding:0 14px; display:flex; gap:8px; align-items:center; }
   #perksBar button { flex:none; padding:4px 10px; font-size:13px; }
   #perksBar #perks { padding:0; flex:1; }
+  #perksBar { flex-wrap:wrap; }
+  #drawIn { flex:none; font-size:12px; color:#ffd166; background:#0003; border:1px solid #ffd16655; border-radius:12px; padding:2px 9px; }
+  #drawIn b.soon { color:#fff; animation:soonPulse .9s ease-in-out infinite alternate; }
   #perkOv { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:16; padding:14px; overflow:auto; }
   #perkOv[hidden] { display:none; }
   #perkOv .tabs { display:flex; gap:6px; margin:6px 0 8px; }
@@ -110,3 +113,28 @@ i.tier.t2 { background:#2f6fb5; } i.tier.t3 { background:#8e3fb8; } i.tier.t4 { 
 @keyframes ultGlow { from { box-shadow:0 0 8px #ffb40088; } to { box-shadow:0 0 22px #ffb400; } }
 .pitem .tier { margin-bottom:2px; }
 #lobby .note { font-size:12.5px; color:#a9bcaf; line-height:1.5; padding:2px 4px 8px; }
+
+/* 抽卡動畫：每張卡依序翻入；稀有以上有流光、瘋狂會震動、終極魔法有金色光芒 */
+.cbtn { animation:cardIn .5s cubic-bezier(.2,.9,.3,1.2) both; animation-delay:var(--d,0s); position:relative; overflow:hidden; }
+.cbtn.t2::after, .cbtn.t3::after, .cbtn.t4::after { content:''; position:absolute; top:0; bottom:0; width:40%; left:-60%; background:linear-gradient(100deg,transparent,#fff9,transparent); transform:skewX(-20deg); animation:cardShine 1.1s ease-out both; animation-delay:calc(var(--d,0s) + .45s); pointer-events:none; }
+.cbtn.t3 { animation:cardIn .5s cubic-bezier(.2,.9,.3,1.2) both, cardShake .5s linear both, purpleGlow 1.2s ease-in-out infinite alternate; animation-delay:var(--d,0s), calc(var(--d,0s) + .5s), 0s; }
+.cbtn.t4 { animation:cardIn .6s cubic-bezier(.2,.9,.3,1.2) both, ultGlow 1.4s ease-in-out infinite alternate; animation-delay:var(--d,0s), 0s; }
+#cardBox { position:relative; }
+#cardBox.top3::before, #cardBox.top4::before { content:''; position:absolute; inset:-40px; z-index:-1; pointer-events:none; border-radius:50%; animation:rays 8s linear infinite; }
+#cardBox.top3::before { background:repeating-conic-gradient(#b04bd633 0 8deg, transparent 8deg 24deg); }
+#cardBox.top4::before { background:repeating-conic-gradient(#ffcf4aaa 0 8deg, transparent 8deg 24deg); }
+#cardBox.top4 h2 { animation:titlePop .8s ease-out both; text-shadow:0 0 12px #ffb400; }
+#cardBox.top3 h2 { animation:titlePop .6s ease-out both; text-shadow:0 0 10px #b04bd6; }
+.gainFlash { position:fixed; inset:0; z-index:30; pointer-events:none; animation:gainFlash 1.3s ease-out both; }
+.gainFlash.t3 { background:radial-gradient(circle,#e3b7ff 0%,#8e3fb8aa 40%,transparent 75%); }
+.gainFlash.t4 { background:radial-gradient(circle,#fff 0%,#ffd36bcc 35%,#ffb40055 60%,transparent 80%); }
+@keyframes cardIn { from { opacity:0; transform:translateY(40px) rotateX(80deg) scale(.7); } to { opacity:1; transform:none; } }
+@keyframes cardShine { from { left:-60%; } to { left:130%; } }
+@keyframes cardShake { 0%,100% { transform:none; } 20% { transform:translateX(-5px) rotate(-1deg); } 40% { transform:translateX(5px) rotate(1deg); } 60% { transform:translateX(-3px); } 80% { transform:translateX(3px); } }
+@keyframes purpleGlow { from { box-shadow:0 0 6px #b04bd688; } to { box-shadow:0 0 20px #d38cff; } }
+@keyframes rays { to { transform:rotate(360deg); } }
+@keyframes titlePop { 0% { transform:scale(.4); opacity:0; } 60% { transform:scale(1.25); opacity:1; } 100% { transform:scale(1); } }
+@keyframes gainFlash { 0% { opacity:0; transform:scale(.6); } 20% { opacity:1; } 100% { opacity:0; transform:scale(1.6); } }
+@keyframes soonPulse { from { opacity:.6; } to { opacity:1; text-shadow:0 0 8px #ffd166; } }
+@media (prefers-reduced-motion: reduce) { .cbtn, .cbtn::after, #cardBox::before, #cardBox h2, #drawIn b.soon { animation:none !important; } }
+#cardPick { overflow-x:hidden; }
