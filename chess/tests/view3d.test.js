@@ -15,6 +15,12 @@ module.exports = [
     t.assert.strictEqual(r.models, 32); t.assert.ok(r.tris > 2000, '三角形數太少：' + r.tris);
     t.assert.deepStrictEqual([r.cv2d, r.stage, r.tilt, r.rot], ['none', true, 45, true]);
   } },
+  { name: '輪子：只有俥、炮、傌、相有（3D 模型的底盤零件數）', async fn(t) {
+    const pg = await open3d(t);
+    const r = await pg.evaluate(() => { const o = {}; for (const [p, m] of V3.pieces) { const k = (p.T.id === 'P2' ? 'P2' : p.t), n = m.chassis.children.length; (o[k] = o[k] || new Set()).add(n); } return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, [...v].join()])); });
+    t.assert.deepStrictEqual(r, { K: '1', G: '1', P: '1', R: '5', N: '5', C: '5', E: '5' });   // 5 = 4 個輪子 + 車頭箭頭；1 = 只有車頭箭頭
+    t.assert.deepStrictEqual(await pg.evaluate(() => WHEELED), ['R', 'C', 'N', 'E']);
+  } },
   { name: '3D 點選：點棋子頂部選取、點綠點設目的地', async fn(t) {
     const pg = await open3d(t, 'view=3d');
     const p = await pg.evaluate(() => { const p = pieces.find(q => q.s === 0 && q.t === 'N'); return { x: p.x, y: p.y }; });

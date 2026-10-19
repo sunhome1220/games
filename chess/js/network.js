@@ -22,7 +22,7 @@ function applyEnd() {
   pieces.forEach((p, i) => { if (p.hp > before[i] && p.hp > 0) { healFX(p, p.hp - before[i]); healed = true; } });
   if (healed) SFX.play('heal');
   targets = []; moved = false; sel = null; setSkip(false);
-  if (winner !== null) { state = 'over'; SFX.play('win'); }
+  if (winner !== null) { state = 'over'; SFX.play('win'); countGame(); }
   else { state = 'aim'; setMsg(myTurn() ? '輪到你了！拉動己方棋子移動，停下後點選要攻擊的敵人。' : '等待對手操作…'); }
   updateHeader();
   if (winner === null) maybeTurnPick();

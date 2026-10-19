@@ -95,3 +95,9 @@ label.tilt input { flex:1; }
 #lobby details.sec[open] > summary::after { transform:rotate(90deg); }
 #lobby a.btnlink { display:block; margin:4px 0; padding:6px 12px; border-radius:4px; background:#e8c88a; color:#2b2118; text-decoration:none; }
 #lobby a.btnlink small { color:#6b5a3a; }
+#tipCard { position:fixed; left:50%; bottom:12px; transform:translateX(-50%); width:min(92vw, 400px); z-index:12; background:#2b3a31; border:1px solid #e8c88a; border-radius:12px; padding:12px 14px; box-shadow:0 6px 22px #000a; font-size:14px; line-height:1.55; color:#f1f5ee; text-align:center; }
+#tipCard[hidden] { display:none; }
+#tipCard small { color:#a9bcaf; }
+#tipCard .tipRow { display:flex; gap:8px; margin-top:8px; }
+#tipCard .tipRow > * { flex:1; text-align:center; padding:8px 4px; margin:0; }
+#tipCard a.btnlink { display:block; border-radius:4px; background:#e8c88a; color:#2b2118; text-decoration:none; font-weight:700; }

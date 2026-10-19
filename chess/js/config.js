@@ -3,6 +3,7 @@
 // 直射武器會被中間的棋子擋住；炮為曲射可越過棋子但有最小射程。
 // 河道泥濘（摩擦加倍），帥/將被限制在九宮內。
 const C = 56, M = 46, W = C * 8 + M * 2, H = C * 9 + M * 2, R = 21;
+const WHEELED = ['R', 'C', 'N', 'E'];   // 只有俥、炮、傌、相是有輪子的車；帥、仕、兵（含士官長）沒有
 const FR = 900, RIVER_FR = 2.6, MAXPULL = 120, E = 0.85, DPR = 2;
 const cv = document.getElementById('cv');
 let ctx = cv.getContext('2d');   // 立體模式會暫時換成離屏畫布（見 render3d.js 的 withCtx）
