@@ -120,6 +120,15 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, { fwd: '2,5', promoted: true, hp: 3, weapon: '強化霰彈槍', noBack: true, max: 2 });
   } },
+  { name: '兵：未過河射程 1 格，只能打上下左右相鄰的敵人，斜角打不到；射程加到 1.5 格以上才打得到斜角', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const [p, up, diag, far] = T_.place([{ s: 0, t: 'P', c: 4, r: 6 }, { s: 1, t: 'N', c: 4, r: 5 }, { s: 1, t: 'R', c: 5, r: 5 }, { s: 1, t: 'C', c: 4, r: 4 }]);
+      const sc = q => scan(p).find(x => x.p === q), o = { range: p.T.range / C, adj: !!sc(up) && sc(up).ok, diag: !!sc(diag), far: !!sc(far) };
+      cardCount = [{}, {}]; mods = [{}, {}]; rebuildAll(); applyCard(0, 'all_rng'); o.rangeCard = p.T.range / C; o.diagWithCard = !!sc(diag) && sc(diag).ok; return o;
+    });
+    t.assert.deepStrictEqual(r, { range: 1, adj: true, diag: false, far: false, rangeCard: 1.5, diagWithCard: true });
+  } },
   { name: '士官長霰彈槍：越近越痛（近距離全中 2.5 心）', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
