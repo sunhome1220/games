@@ -16,10 +16,10 @@ b.strokeStyle = '#6b442388'; b.lineWidth = 5; for (let i = -2; i <= 10; i++) { b
 b.beginPath(); b.moveTo(256, 256); b.lineTo(640, 640); b.moveTo(640, 256); b.lineTo(256, 640); b.stroke();
 const bt = new T.CanvasTexture(bc); bt.colorSpace = T.SRGBColorSpace; bt.wrapS = bt.wrapT = 1000; bt.repeat.set(4, 4);   // 1000 = RepeatWrapping
 const ground = new T.Mesh(new T.PlaneGeometry(36, 36), new T.MeshStandardMaterial({ map: bt, roughness: 0.9 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
-// 棋子（車形圓盤）：頂面「瘋」字、紅色外環
+// 棋子（車形圓盤）：頂面「炮」字、紅色外環
 const fc = document.createElement('canvas'); fc.width = fc.height = 512; const f = fc.getContext('2d');
 f.fillStyle = '#f6e3b8'; f.fillRect(0, 0, 512, 512); f.strokeStyle = '#c0392b'; f.lineWidth = 26; f.beginPath(); f.arc(256, 256, 236, 0, 7); f.stroke(); f.lineWidth = 8; f.beginPath(); f.arc(256, 256, 198, 0, 7); f.stroke();
-f.fillStyle = '#c0392b'; f.font = 'bold 290px "Noto Serif CJK TC","Noto Sans CJK TC",serif'; f.textAlign = 'center'; f.textBaseline = 'middle'; f.fillText('瘋', 256, 272);
+f.fillStyle = '#c0392b'; f.font = 'bold 290px "Noto Serif CJK TC","Noto Sans CJK TC",serif'; f.textAlign = 'center'; f.textBaseline = 'middle'; f.fillText('炮', 256, 272);
 const ft = new T.CanvasTexture(fc); ft.colorSpace = T.SRGBColorSpace; ft.anisotropy = 8; ft.center.set(0.5, 0.5); ft.rotation = Math.PI / 2;
 const piece = new T.Group(); scene.add(piece);
 const side = new T.MeshStandardMaterial({ color: 0xe9d2a0, roughness: 0.45 }), rim = new T.MeshStandardMaterial({ color: 0xc0392b, roughness: 0.4, metalness: 0.2 });
