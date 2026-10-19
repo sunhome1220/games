@@ -87,7 +87,7 @@ function drawPiece(p) {
   ctx.translate(visX(p) + (p.flash ? rnd(3) : 0) - Math.cos(p.hd) * p.recoil * 5, visY(p) + (p.flash ? rnd(3) : 0) - Math.sin(p.hd) * p.recoil * 5);
   ctx.rotate(p.hd);
   ctx.fillStyle = '#333';
-  for (const [x, y] of [[-11, -R], [11, -R], [-11, R], [11, R]]) ctx.fillRect(x - 5, y - 3, 10, 6);
+  if (WHEELED.includes(p.t)) for (const [x, y] of [[-11, -R], [11, -R], [-11, R], [11, R]]) ctx.fillRect(x - 5, y - 3, 10, 6);   // 只有俥、炮、傌、相有輪子
   ctx.fillStyle = SIDE[p.s].col; ctx.beginPath(); ctx.moveTo(R + 7, 0); ctx.lineTo(R - 1, -5); ctx.lineTo(R - 1, 5); ctx.fill();
   ctx.rotate(-p.hd + textAng(p.s));   // 棋子文字、愛心朝向自己的玩家
   circle(0, 0, R); ctx.fillStyle = '#f6e3b8'; ctx.fill();

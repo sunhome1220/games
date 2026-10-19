@@ -123,7 +123,7 @@ function makePiece(p) {
   const disc = new T.Mesh(new T.CylinderGeometry(R, R, 9, 40), [sideMat, topMat, sideMat]); disc.position.y = 7.5; disc.castShadow = disc.receiveShadow = true;
   const face = new T.Group(); face.add(disc); root.add(face);   // 圓盤固定朝向（文字不跟車頭轉）
   const chassis = new T.Group();   // 車輪＋車頭箭頭，隨車頭轉
-  for (const sx of [-11, 11]) for (const sz of [-R, R]) box(11, 6, 7, 0x333333, sx, 4, sz * 1.02, chassis);
+  if (WHEELED.includes(p.t)) for (const sx of [-11, 11]) for (const sz of [-R, R]) box(11, 6, 7, 0x333333, sx, 4, sz * 1.02, chassis);   // 只有俥、炮、傌、相有輪子
   const arrow = new T.Mesh(new T.ConeGeometry(5.5, 9, 3), mat(parseInt(SIDE[p.s].col.slice(1), 16))); arrow.rotation.z = -Math.PI / 2; arrow.position.set(R + 3, 5, 0); arrow.castShadow = true; chassis.add(arrow);
   root.add(chassis);
   const w = buildWeapon(p.T.id === 'P2' ? 'P2' : p.t); root.add(w.g);
