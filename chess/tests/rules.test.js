@@ -152,13 +152,16 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, { draw: 2, pawn: null });
   } },
-  { name: '戰地醫療：每回合只治療範圍內血量最少的一位', async fn(t) {
+  { name: '戰地醫療：每回合只替範圍內受傷最重（缺血最多）的一位回復 1 心，不超過上限', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
-      const [e, g, p] = T_.place([{ s: 0, t: 'E', c: 2, r: 9 }, { s: 0, t: 'G', c: 3, r: 9, hp: 2 }, { s: 0, t: 'P', c: 1, r: 9, hp: 1 }]);
-      applyCard(0, 'e_heal'); healPhase(0); return { g: g.hp, p: p.hp };
+      const o = {};
+      const [e, g, p] = T_.place([{ s: 0, t: 'E', c: 2, r: 9 }, { s: 0, t: 'G', c: 3, r: 9, hp: 1.5 }, { s: 0, t: 'P', c: 1, r: 9, hp: 1 }]);   // 仕缺 1.5 心、兵缺 1 心（兵血量較少，但仕受傷更重）
+      applyCard(0, 'e_heal'); healPhase(0); o.heavy = { g: g.hp, p: p.hp };
+      p.hp = p.T.hp; g.hp = g.T.hp - 0.5; healPhase(0); o.cap = g.hp - g.T.hp;   // 只缺 ½ 心：補到滿血，不會超過上限
+      return o;
     });
-    t.assert.deepStrictEqual(r, { g: 2, p: 1.5 });
+    t.assert.deepStrictEqual(r, { heavy: { g: 2.5, p: 1 }, cap: 0 });
   } },
   { name: '強化卡牌：不可疊加、只影響自己這一方、卡表格式正確', async fn(t) {
     const pg = await t.open();

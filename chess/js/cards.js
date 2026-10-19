@@ -88,7 +88,7 @@ const CARDS = validateCards([
   { id: 'n_rel', tier: 2, ic: '⚙️', name: '傌・自動裝填', desc: '傌的火箭冷卻 −1 回合（可降到無冷卻）', need: 'N', max: 1, fx: { N: { reload: -1 } }, cond: s => TT[s].N.reload > 0 },
   { id: 'n_spl', tier: 2, ic: '🎆', name: '傌・破片彈頭', desc: '傌的火箭也有範圍傷害（相鄰 1/2、斜角 1/4）', need: 'N', max: 1, fx: { N: { splash: 1.5 * C } } },
   { id: 'e_aa',  ic: '📶', name: '象・擴大雷達', desc: '象的防空範圍 +1 格', need: 'E', max: 3, fx: { E: { aa: C } } },
-  { id: 'e_heal', tier: 2, ic: '💚', name: '象・戰地醫療', desc: '象每回合開始替 2.5 格內血量最少的一位友軍回復 ½ 心', need: 'E', max: 3, fx: { E: { healAmt: 0.5 } } },
+  { id: 'e_heal', tier: 2, ic: '💚', name: '象・戰地醫療', desc: '象每回合開始替 2.5 格內受傷最重（缺血最多）的一位友軍回復 1 心', need: 'E', max: 3, fx: { E: { healAmt: 1 } } },
   { id: 'e_rel', tier: 2, ic: '⚡', name: '象・快速冷卻', desc: '象攔截後不再冷卻', need: 'E', max: 1, fx: { E: { reload: -1 } }, cond: s => TT[s].E.reload > 0 },
   { id: 'e_dmg', tier: 2, ic: '🔫', name: '象・加強手槍', desc: '象的手槍威力 +1 心', need: 'E', max: 2, fx: { E: { dmg: 1 } } },
   { id: 'g_hp',  ic: '⛑️', name: '仕・防彈鋼盔', desc: '仕的血量上限 +1 心，並回復 1 心', need: 'G', max: 2, fx: { G: { hp: 1 } } },
@@ -113,7 +113,7 @@ const CARDS = validateCards([
   { id: 'armor2', tier: 3, ic: '🧱', name: '全軍・鈦合金裝甲', desc: '己方所有棋子再減傷 ¼ 心（和防彈衣疊加後每次少受 ½ 心）', max: 1, fx: allFx('armor', 0.25) },
   { id: 'c_super', tier: 3, ic: '🛰️', name: '炮・戰略迫擊砲彈', desc: '炮的威力 +1 心、射程 +1 格、波及範圍 +0.5 格', need: 'C', max: 1, fx: { C: { dmg: 1, range: C, splash: 0.5 * C } } },
   { id: 'k_god', tier: 3, ic: '👑', name: '帥・天命所歸', desc: '帥／將的血量上限 +2 心並回復 2 心，手槍威力 +1 心', need: 'K', max: 1, fx: { K: { hp: 2, dmg: 1 } } },
-  { id: 'heal_all', tier: 3, ic: '💞', name: '象・生生不息', desc: '象的戰地醫療每回合再多回復 1 心', need: 'E', max: 1, fx: { E: { healAmt: 1 } } },
+  { id: 'heal_all', tier: 3, ic: '💞', name: '象・生生不息', desc: '象的戰地醫療每回合再多回復 1 心', need: 'E', max: 1, fx: { E: { healAmt: 1 } }, off: true },   // 暫時停用：戰地醫療改為每回合固定補 1 心，不再有額外加量
   { id: 'foe_dmg', tier: 3, ic: '🧪', name: '敵方・彈藥受潮', desc: '敵方所有武器威力 −0.5 心（最低 ¼ 心）', max: 1, foe: allFx('dmg', -0.5) },
   { id: 'foe_hp', tier: 3, ic: '🦠', name: '敵方・疾病蔓延', desc: '敵方所有棋子血量上限 −1 心（現有血量超過上限的會被削掉，最低 1 心）', max: 1, foe: allFx('hp', -1) },
   { id: 'foe_reload', tier: 3, ic: '⛓️', name: '敵方・全面卡彈', desc: '敵方俥、傌、炮、象的冷卻都 +1 回合', max: 1, foe: { R: { reload: 1 }, N: { reload: 1 }, C: { reload: 1 }, E: { reload: 1 } } },
@@ -183,14 +183,15 @@ function applyCard(side, id) {
   if (tierOf(c) < 4) SFX.play('card');   // 終極魔法有自己的聲音（見 ultimate.js）
   toast(`${SIDE[side].name}獲得${tierOf(c) >= 4 ? '' : '強化'}：${c.ic} ${c.name}`); renderPerks();
 }
-// 戰地醫療：side 方回合開始時，只替「象 2.5 格內、血量最少」的一位友軍回復（多隻象取最大回復量）
+// 戰地醫療：side 方回合開始時，只替「象 2.5 格內、受傷最重（缺血最多，同樣多時取現有血量較少者）」的一位友軍回復（多隻象取最大回復量）
 function healPhase(side) {
   const hs = alive().filter(p => p.s === side && p.T.healAmt > 0);
   if (!hs.length) return;
   let best = null, amt = 0;
   for (const q of alive()) if (q.s === side && q.hp < q.T.hp) {
     const a = Math.max(0, ...hs.filter(h => Math.hypot(h.x - q.x, h.y - q.y) <= 2.5 * C + 1).map(h => h.T.healAmt));
-    if (a > 0 && (!best || q.hp < best.hp)) { best = q; amt = a; }
+    const miss = q.T.hp - q.hp;
+    if (a > 0 && (!best || miss > best.T.hp - best.hp || (miss === best.T.hp - best.hp && q.hp < best.hp))) { best = q; amt = a; }
   }
   if (!best) return;
   const h = Math.min(amt, best.T.hp - best.hp); best.hp += h; healFX(best, h);

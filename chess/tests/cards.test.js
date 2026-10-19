@@ -4,7 +4,7 @@ module.exports = [
   { name: '卡牌表：四個等級都有牌；敵方減益卡都有說明；終極魔法都是即時效果', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => ({ tiers: [1, 2, 3, 4].map(n => CARDS.filter(c => tierOf(c) === n).length), foeNoDesc: CARDS.filter(c => c.foe && !c.desc).length, ultNotInstant: CARDS.filter(c => tierOf(c) === 4 && !c.instant).length, total: CARDS.length }));
-    t.assert.ok(r.tiers.every(n => n >= 4), '每個等級至少 4 張：' + r.tiers); t.assert.deepStrictEqual([r.foeNoDesc, r.ultNotInstant], [0, 0]); t.assert.ok(r.total >= 45);
+    t.assert.ok(r.tiers.every(n => n >= 4), '每個等級至少 4 張：' + r.tiers); t.assert.deepStrictEqual([r.foeNoDesc, r.ultNotInstant], [0, 0]); t.assert.ok(r.total >= 44);   // 45 張，扣掉暫時停用的「象・生生不息」
   } },
   { name: '選牌等級：第 1 次只有普通卡；越後面越瘋狂，終極魔法一次最多一張、三張不重複', async fn(t) {
     const pg = await t.open();
