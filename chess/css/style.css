@@ -72,3 +72,13 @@
   #netStatus { margin-top:10px; min-height:1.5em; color:#ffd166; font-size:14px; word-break:break-all; }
   table { margin:10px 0 20px; border-collapse:collapse; font-size:13px; }
   td, th { padding:3px 8px; border-bottom:1px solid #3d4f44; text-align:center; }
+
+/* 立體（3D）畫面：與 2D 畫布同大小，上層 HUD 畫布疊在 WebGL 畫布上 */
+#stage3 { width:min(96vw, 560px, calc((100vh - 140px) * 540 / 596)); aspect-ratio:540 / 596; position:relative; border-radius:6px; overflow:hidden; box-shadow:0 4px 18px #0008; background:radial-gradient(ellipse at 50% 35%, #5a4430, #2b2118); }
+#stage3[hidden] { display:none; }
+#stage3 canvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; box-shadow:none; border-radius:0; }
+#hud3 { pointer-events:none; }
+label.tilt { flex:1; display:flex; align-items:center; gap:8px; }
+label.tilt input { flex:1; }
+#v3d.on, #v2d.on { background:#f1c40f; font-weight:700; }
+#lobby .row #v3d, #lobby .row #v2d { flex:1; text-align:center; }

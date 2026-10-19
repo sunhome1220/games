@@ -226,29 +226,27 @@ function drawDecals() {   // 地上的焦痕
     circle(d.x, d.y, d.r); ctx.fillStyle = g; ctx.fill();
   }
 }
-function drawParts() {
-  for (const p of parts) {
-    const a = p.t / p.L, k = 1 - a;
-    ctx.globalAlpha = Math.min(1, a * 1.5);
-    if (p.k === 'spark') {
-      ctx.strokeStyle = p.col; ctx.lineWidth = p.size;
-      line(p.x, p.y, p.x - p.vx * 0.03, p.y - p.vy * 0.03);
-    } else if (p.k === 'fire') {
-      circle(p.x, p.y, p.size * (0.5 + k * 0.8)); ctx.fillStyle = a > 0.5 ? '#ffd166' : p.col; ctx.fill();
-    } else if (p.k === 'smoke') {
-      ctx.globalAlpha = 0.45 * a; circle(p.x, p.y, p.size * (0.6 + k * 1.4)); ctx.fillStyle = p.col; ctx.fill();
-    } else if (p.k === 'debris') {
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot + k * 10); ctx.fillStyle = p.col;
-      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6); ctx.restore();
-    } else if (p.k === 'ring') {
-      circle(p.x, p.y, 6 + p.size * k); ctx.strokeStyle = '#fff4d0'; ctx.lineWidth = 5 * a; ctx.stroke();
-    } else if (p.k === 'flash') {
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
-      g.addColorStop(0, '#ffffff'); g.addColorStop(0.35, '#fff1a8'); g.addColorStop(1, '#ffb43000');
-      circle(p.x, p.y, p.size); ctx.fillStyle = g; ctx.fill();
-    }
+function drawParts() { for (const p of parts) drawPart(p); ctx.globalAlpha = 1; }
+function drawPart(p) {
+  const a = p.t / p.L, k = 1 - a;
+  ctx.globalAlpha = Math.min(1, a * 1.5);
+  if (p.k === 'spark') {
+    ctx.strokeStyle = p.col; ctx.lineWidth = p.size;
+    line(p.x, p.y, p.x - p.vx * 0.03, p.y - p.vy * 0.03);
+  } else if (p.k === 'fire') {
+    circle(p.x, p.y, p.size * (0.5 + k * 0.8)); ctx.fillStyle = a > 0.5 ? '#ffd166' : p.col; ctx.fill();
+  } else if (p.k === 'smoke') {
+    ctx.globalAlpha = 0.45 * a; circle(p.x, p.y, p.size * (0.6 + k * 1.4)); ctx.fillStyle = p.col; ctx.fill();
+  } else if (p.k === 'debris') {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot + k * 10); ctx.fillStyle = p.col;
+    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6); ctx.restore();
+  } else if (p.k === 'ring') {
+    circle(p.x, p.y, 6 + p.size * k); ctx.strokeStyle = '#fff4d0'; ctx.lineWidth = 5 * a; ctx.stroke();
+  } else if (p.k === 'flash') {
+    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(0.35, '#fff1a8'); g.addColorStop(1, '#ffb43000');
+    circle(p.x, p.y, p.size); ctx.fillStyle = g; ctx.fill();
   }
-  ctx.globalAlpha = 1;
 }
 // 空投：運輸機由左飛向右 → 在目標上方投下降落傘補給箱 → 緩降落地
 function drawDrop(f) {
@@ -321,10 +319,8 @@ function drawProj(f) {
     ctx.restore();
   }
 }
-function draw() {
-  ctx.save();
-  if (viewFlip()) { ctx.translate(W, H); ctx.rotate(Math.PI); }
-  if (shake) ctx.translate(rnd(shake), rnd(shake));
+// 地面層：棋盤、焦痕、交叉點、雷達、選取與範圍提示（立體模式把它畫成貼在棋盤上的貼圖）
+function drawGround() {
   drawBoard();
   drawDecals();
   // 交叉點標記（可停的定點）與相的防空範圍（冷卻中變灰）
@@ -363,17 +359,29 @@ function draw() {
     rangeRing(mover, mover.x, mover.y);
     if (!moved) { circle(mover.x, mover.y, R + 6); ctx.strokeStyle = '#ffd400'; ctx.lineWidth = 3; ctx.setLineDash([5, 4]); ctx.stroke(); ctx.setLineDash([]); }
   }
+  return { preview, markT, ghost };
+}
+function draw() {
+  ctx.save();
+  if (viewFlip()) { ctx.translate(W, H); ctx.rotate(Math.PI); }
+  if (shake) ctx.translate(rnd(shake), rnd(shake));
+  const { preview, markT, ghost } = drawGround();
   for (const p of alive()) drawPiece(p);
   marks(state === 'target' ? targets : preview, markT, ghost);
   for (const f of fx) if (f.k !== 'txt') drawProj(f);
   drawParts();
-  for (const f of fx) if (f.k === 'txt') {
-    const a = f.t / f.T;
-    ctx.globalAlpha = Math.min(1, a * 2); ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center';
-    ctx.lineWidth = 3; textAt(f.txt, Math.min(W - 70, Math.max(70, f.x)), f.y, -(1 - a) * 30, textAng(f.side ?? turn), f.col || '#e00', '#fff');
-    ctx.globalAlpha = 1;
-  }
+  for (const f of fx) if (f.k === 'txt') drawTxtFx(f);
   ctx.restore();
+  drawOver();
+}
+function drawTxtFx(f) {
+  const a = f.t / f.T;
+  ctx.globalAlpha = Math.min(1, a * 2); ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center';
+  ctx.lineWidth = 3; textAt(f.txt, Math.min(W - 70, Math.max(70, f.x)), f.y, -(1 - a) * 30, textAng(f.side ?? turn), f.col || '#e00', '#fff');
+  ctx.globalAlpha = 1;
+}
+// 結束畫面（勝負／和局）
+function drawOver() {
   if (state === 'over') {
     ctx.fillStyle = '#000a'; ctx.fillRect(0, 0, W, H);
     ctx.textAlign = 'center';
