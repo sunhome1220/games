@@ -1,5 +1,18 @@
 // 介面測試
 module.exports = [
+  { name: '更新通知：有新版本時出現更新按鈕；改版後第一次開啟彈出更新內容', async fn(env) {
+    await env.ctx.route(/js\/version\.js\?check=/, r => r.fulfill({ contentType: 'text/javascript', body: "const VERSION = '2099-01-01.01';" }));
+    const pg = await env.open();
+    await pg.waitForSelector('#newver:not([hidden])', { timeout: 5000 });
+    env.assert(!(await pg.isVisible('#logOv')), '第一次玩不應彈出更新內容');
+    await pg.evaluate(() => localStorage.setItem('3kb-seen', '2000-01-01.01'));
+    await pg.reload(); await pg.waitForTimeout(300);
+    env.assert(await pg.isVisible('#logOv'), '改版後應彈出更新內容');
+    env.assert((await pg.textContent('#logBody')).includes(await pg.evaluate(() => VERSION)));
+    await pg.click('#logClose');
+    env.assert.strictEqual(await pg.evaluate(() => localStorage.getItem('3kb-seen')), await pg.evaluate(() => VERSION));
+    await pg.click('#btnChangelog'); env.assert(await pg.isVisible('#logOv'), '選關畫面可隨時查看更新內容');
+  } },
   { name: '選關：三關都在，第 2、3 關製作中', async fn(env) {
     const pg = await env.open();
     const n = await pg.$$eval('#scList .sc', e => e.length);
