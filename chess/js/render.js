@@ -385,18 +385,31 @@ function drawTxtFx(f) {
   ctx.lineWidth = 3; textAt(f.txt, Math.min(W - 70, Math.max(70, f.x)), f.y, -(1 - a) * 30, textAng(f.side ?? turn), f.col || '#e00', '#fff');
   ctx.globalAlpha = 1;
 }
-// 犄角：輪到的這一方，陣亡兄弟的位置畫一圈紅色虛線，提示「走到這裡可以殺回」
+// 犄角：還能殺回的仕／象畫一條紅色虛線箭頭指向陣亡位置（走法本來就走得到，路徑上不會有棋子），陣亡位置畫紅色虛線圈「殺回」；
+// 整體微微閃動。雙方都看得到（殺回機會從兄弟陣亡起，到下一個自己回合結束為止）。回傳畫了幾支箭頭
 function drawRevenge() {
-  if (!['aim', 'select', 'target'].includes(state) || (online() && !myTurn())) return;
-  const seen = new Set();
+  if (state === 'over' || state === 'pick' || winner !== null) return 0;
+  const seen = new Set(), pulse = 0.65 + 0.35 * Math.sin(performance.now() / 220);
+  let n = 0;
+  ctx.save(); ctx.globalAlpha = pulse;
   for (const p of alive()) {
-    const tok = p.s === turn && p.rv;
-    if (!tok || seen.has(tok) || !revengeOk(tok)) continue;
-    seen.add(tok);
-    ctx.save(); ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 3; ctx.setLineDash([6, 5]);
-    circle(tok.x, tok.y, R + 6 + Math.sin(performance.now() / 200) * 2); ctx.stroke(); ctx.restore();
-    ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; textAt('殺回', tok.x, tok.y, R + 22, textAng(turn), '#c0392b', '#fff');
+    const tok = p.rv;
+    if (!tok || !revengeOk(tok)) continue;
+    if (!seen.has(tok)) {
+      seen.add(tok);
+      ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 3; ctx.setLineDash([6, 5]);
+      circle(tok.x, tok.y, R + 6 + Math.sin(performance.now() / 200) * 2); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; textAt('殺回', tok.x, tok.y, R + 22, textAng(tok.side), '#c0392b', '#fff');
+    }
+    const dx = tok.x - p.x, dy = tok.y - p.y, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+    const x1 = p.x + ux * (R + 3), y1 = p.y + uy * (R + 3), x2 = tok.x - ux * (R + 9), y2 = tok.y - uy * (R + 9);
+    ctx.strokeStyle = ctx.fillStyle = '#c0392b'; ctx.lineWidth = 3; ctx.setLineDash([7, 5]);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * 8, y2 - uy * 8); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - ux * 14 - uy * 7, y2 - uy * 14 + ux * 7); ctx.lineTo(x2 - ux * 14 + uy * 7, y2 - uy * 14 - ux * 7); ctx.closePath(); ctx.fill();
+    n++;
   }
+  ctx.restore();
+  return n;
 }
 // 結束畫面（勝負／和局）
 function drawOver() {

@@ -269,6 +269,19 @@ module.exports = [
       token: [true, true, true], offer: [1, 0], go: 'target', hit: [2, true], expired: [false, 0], noReach: true, far: [true, 0], chain: [true, true], notCover: true,
     });
   } },
+  { name: '犄角箭頭：還能殺回的仕／象各畫一支箭頭，雙方（不論輪到誰）都看得到；過期或打完後消失', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const o = {}; turnsPlayed = [0, 0];
+      const [g, e, e2, k] = T_.place([{ s: 0, t: 'G', c: 4, r: 7, hp: 0.5 }, { s: 0, t: 'E', c: 2, r: 9 }, { s: 0, t: 'E', c: 6, r: 9 }, { s: 1, t: 'R', c: 4, r: 4 }]);
+      o.none = drawRevenge();
+      T_.fire(k, g);
+      for (const tn of [0, 1]) { turn = tn; state = 'aim'; o['turn' + tn] = drawRevenge(); }   // 紅、黑方的回合都畫得出來
+      turnsPlayed[0]++; o.expired = drawRevenge();
+      return o;
+    });
+    t.assert.deepStrictEqual(r, { none: 0, turn0: 2, turn1: 2, expired: 0 });
+  } },
   { name: '強化卡牌：不可疊加、只影響自己這一方、卡表格式正確', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
