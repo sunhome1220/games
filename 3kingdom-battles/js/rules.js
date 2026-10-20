@@ -565,6 +565,9 @@
         const mates = H.neighbors(u.c, u.r).map(([c, r]) => unitAt(g, c, r)).filter(v => v && v !== u && v.side === u.side && !isEngine(v) && (isRemnant(v) || isRemnant(u)));
         if (mates.length) add({ id: 'merge', name: '救援合流', desc: '與相鄰的友軍合為一支部隊（其中一方兵力剩三成五以下才能合流）：兵力相加，由主帥（或統率較高者）統領，站到兵力較多的那一格，士氣 +10。被圍的殘部可以這樣被救出來。', need: 'ally', targets: mates.map(v => v.id) });
       }
+      // 放火燒糧營：相鄰就地放火；2～3 格外射火箭（弓兵、呂布一箭就燃，步騎要射兩箭）
+      const bt = depotTargets(g, u);
+      if (bt.length) add({ id: 'burn', name: bt.some(t => t.dist <= 1) ? '放火燒營' : '火箭燒營', desc: '糧營放火：相鄰（含同格）直接點燃，馬上燒光；2 格以外可以射火箭（弓兵、呂布「騎射」一箭就燃，步兵、騎兵要射 2 箭，火勢會累積）。燒掉的糧營，存糧就沒了。', need: 'hex', targets: bt });
       if (!isEngine(u)) add({ id: 'rally', name: '整隊', desc: `重整隊伍：陣勢 +${Math.round(15 + gen(u).lead / 5)}、士氣 +5（被包圍時減半）。`, enabled: u.coh < 100 || u.mor < 100, why: '隊伍已經很整齊' });
       // 守城器具
       if (u.side === 'def' && onWall(g, u)) {
@@ -597,6 +600,7 @@
       log(g, `${u.name}變陣為${FORMATIONS[target].name}`, u.side); g.fx.push({ t: 'form', id: u.id }); return true;
     }
     if (id === 'shoot') { if (!A.targets.includes(target)) return false; attack(g, u, g.units[target], { shoot: true }); return true; }
+    if (id === 'burn') { const t = A.targets.find(x => x.k === target); if (!t) return false; return igniteDepot(g, u, t); }
     if (id === 'merge') { if (!A.targets.includes(target)) return false; return merge(g, u, g.units[target]); }
     if (id === 'rally') {
       const half = encircled(g, u) ? 0.5 : 1;
@@ -654,6 +658,34 @@
     return true;
   }
   const isRemnant = u => u.troops <= u.max * 0.35;
+  // ---------- 糧營放火 ----------
+  // 糧營是地圖上的「S」；被糧營守護的那一方是 sc.depotOwner（預設攻方），另一方的非器械部隊才能放火
+  const depotOwner = g => g.sc.depotOwner || 'att';
+  function depotTargets(g, u) {
+    if (isEngine(u) || u.acted || u.side === depotOwner(g) || state(u) === 'disorder') return [];
+    const res = [], arc = !!ty(u).ranged, R = arc ? rangeOf(g, u) : (state(u) === 'disorder' ? 0 : shootRange(g, u));
+    for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
+      if (g.map[r][c] !== 'S') continue;
+      const d = H.dist(u.c, u.r, c, r); if (d > R && d > 1) continue;
+      res.push({ c, r, k: H.key(c, r), dist: d });
+    }
+    return res;
+  }
+  function igniteDepot(g, u, t) {
+    const near = t.dist <= 1; u.acted = true;
+    if (!near) u.face = H.dirTo(u.c, u.r, t.c, t.r);
+    g.vars.fire = g.vars.fire || {};
+    const power = near ? 2 : (ty(u).ranged || has(u, 'qishe')) ? 2 : 1;
+    g.vars.fire[t.k] = (g.vars.fire[t.k] || 0) + power;
+    if (g.vars.fire[t.k] >= 2) { g.fx.push({ t: 'flame', a: u.id, c: t.c, r: t.r, ranged: !near, n: 2 }); burnDepot(g, u, t.c, t.r); }
+    else { log(g, `${u.name}向糧營射出火箭，火勢漸起（1/2）`, u.side); g.fx.push({ t: 'flame', a: u.id, c: t.c, r: t.r, ranged: !near, n: 1 }); }
+    return true;
+  }
+  function burnDepot(g, u, c, r) {
+    g.map[r][c] = '.'; delete g.vars.fire[H.key(c, r)];
+    g.fx.push({ t: 'burn', c, r });
+    const SR = SC_RULES[g.sc.id]; if (SR && SR.onDepotBurn) SR.onDepotBurn(g, u, c, r);
+  }
   // 步騎射箭：一般步兵 3 成、騎兵 3 成 5 的攻擊力；「騎射」的呂布接近精銳弓兵
   function shootPower(u) { return has(u, 'qishe') ? 0.6 : u.type === 'cav' ? 0.22 : 0.18; }
   const shootRange = (g, u) => (has(u, 'qishe') ? 3 : 2) + (terr(g, u.c, u.r).h >= 1 ? 1 : 0);
@@ -794,6 +826,13 @@
       g.fx.push({ t: 'recede', hexes });
       msg(g, '大水退去', '城外的大水退成泥濘：步兵、騎兵移動仍然較慢，器械也能緩慢通過了。城內依然缺糧，守軍士氣持續下降。', null, []);
     },
+    onDepotBurn(g, on, c, r) {
+      const v = g.vars, d = v.depots.find(x => x.c === c && x.r === r); if (!d || d.burnt) return;
+      d.burnt = true; v.supply -= d.s; v.depotBurnt = v.depots.every(x => x.burnt);
+      for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) u.mor = clamp(u.mor - 4, 0, 100);
+      const left = v.depots.filter(x => !x.burnt).length;
+      msg(g, '火燒糧營', `${on.name}放火燒了曹軍的${d.name}！曹軍糧草 −${d.s}，全軍士氣 −4。${left ? `曹軍還剩 ${left} 座糧營。` : '曹軍的糧營全被燒光了！'}`, 'def', [[on.gen, 'default']]);
+    },
     onRoundEnd(g) {
       const v = g.vars;
       v.supply -= 1;
@@ -801,15 +840,7 @@
       let harass = false;
       for (const d of v.depots) {
         if (d.burnt) continue;
-        const on = unitAt(g, d.c, d.r);
-        if (on && on.side === 'def' && !isEngine(on)) {
-          d.burnt = true; v.supply -= d.s; g.map[d.r][d.c] = '.';
-          v.depotBurnt = v.depots.every(x => x.burnt);
-          g.fx.push({ t: 'burn', c: d.c, r: d.r });
-          for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) u.mor = clamp(u.mor - 4, 0, 100);
-          const left = v.depots.filter(x => !x.burnt).length;
-          msg(g, '火燒糧營', `${on.name}突入曹軍的${d.name}放火！曹軍糧草 −${d.s}，全軍士氣 −4。${left ? `曹軍還剩 ${left} 座糧營。` : '曹軍的糧營全被燒光了！'}`, 'def', [[on.gen, 'default']]);
-        } else if (g.units.some(u => u.alive && u.side === 'def' && !isEngine(u) && H.dist(u.c, u.r, d.c, d.r) <= 2)) harass = true;
+        if (g.units.some(u => u.alive && u.side === 'def' && !isEngine(u) && H.dist(u.c, u.r, d.c, d.r) <= 2)) harass = true;
       }
       if (harass && v.supply > 0) { v.supply -= 1; log(g, '呂布軍襲擾曹軍糧道，糧草 −1', 'def', 'big'); }
       // 缺糧：曹軍軍心天天下降，撐不了幾天就得退兵
@@ -877,6 +908,11 @@
   const sunOf = g => g.units.find(u => u.gen === 'sunquan');
   const escaped = (g, u) => g.sc.escape.some(([c, r]) => c === u.c && r === u.r);
   const HEFEI = {
+    onDepotBurn(g, on) {
+      const v = g.vars; v.campBurnt = true;
+      for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) u.mor = clamp(u.mor - 10, 0, 100);
+      msg(g, '火燒吳營', `${on.name}放火燒了吳軍大營！吳軍全軍士氣 −10。`, 'def', [[on.gen, on.gen === 'zhangliao' ? 'charge' : 'default']]);
+    },
     onRoundStart(g) {
       const v = g.vars;
       if (g.round === 1) {
@@ -885,7 +921,7 @@
         for (const u of g.units) if (u.gen === 'zhangliao' || u.gen === 'lidian') u.mor = 100;
         // 天亮出擊：第 1 回合魏軍全部先動，吳軍才醒過來
         g.order = [...g.order.filter(id => g.units[id].side === 'def'), ...g.order.filter(id => g.units[id].side === 'att')];
-        msg(g, '合肥之戰', '孫權率十萬大軍圍合肥。張遼、李典、樂進打開曹操的密函：「若孫權至者，張、李將軍出戰；樂將軍守護軍，勿得與戰。」張遼連夜募得敢死之士八百人，殺牛犒軍，準備天亮出擊。\n\n【晨襲】\n・天亮出擊：第 1 回合魏軍全部先行動；吳軍營寨還沒整好，各部陣型鬆散（陣勢 55），第 1、2 回合攻擊力 ×0.7（倉促應戰）\n・張遼「遼來」：攻擊 +20%，每回合讓身邊 2 格的吳軍士氣下降\n・孫權在南邊的小土丘上；吳軍大營在西南，衝進去可以放火\n・突擊完要從南門或東門退回城裡', null, [['zhangliao', 'charge'], ['lidian', 'resolve'], ['yuejin', 'default']]);
+        msg(g, '合肥之戰', '孫權率十萬大軍圍合肥。張遼、李典、樂進打開曹操的密函：「若孫權至者，張、李將軍出戰；樂將軍守護軍，勿得與戰。」張遼連夜募得敢死之士八百人，殺牛犒軍，準備天亮出擊。\n\n【晨襲】\n・天亮出擊：第 1 回合魏軍全部先行動；吳軍營寨還沒整好，各部陣型鬆散（陣勢 55），第 1、2 回合攻擊力 ×0.7（倉促應戰）\n・張遼「遼來」：攻擊 +20%，每回合讓身邊 2 格的吳軍士氣下降\n・孫權在南邊的小土丘上；吳軍大營在西南，走到旁邊按「放火燒營」（或射火箭）就能燒掉，吳軍全軍士氣 −10\n・突擊完要從南門或東門退回城裡', null, [['zhangliao', 'charge'], ['lidian', 'resolve'], ['yuejin', 'default']]);
       }
       if (g.round === v.plagueRound && !v.plague && !v.retreating) {
         v.plague = true;
@@ -914,15 +950,6 @@
       }
       // 遼來：張遼身邊的敵軍士氣下降
       for (const z of alive(g)) if (has(z, 'liaolai')) for (const u of alive(g)) if (u.side !== z.side && !isEngine(u) && H.dist(u.c, u.r, z.c, z.r) <= 2) { u.mor = clamp(u.mor - 4, 0, 100); checkCollapse(g, u); }
-      // 火燒吳軍大營
-      if (!v.campBurnt) for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'S') {
-        const on = unitAt(g, c, r);
-        if (on && on.side === 'def') {
-          v.campBurnt = true; g.map[r][c] = '.'; g.fx.push({ t: 'burn', c, r });
-          for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) u.mor = clamp(u.mor - 10, 0, 100);
-          msg(g, '火燒吳營', `${on.name}衝進吳軍大營放火！吳軍全軍士氣 −10。`, 'def', [[on.gen, on.gen === 'zhangliao' ? 'charge' : 'default']]);
-        }
-      }
       // 撤退區：過了橋的吳軍部隊撤離戰場（孫權到了就結束）
       if (v.retreating) for (const u of alive(g)) if (u.side === 'att' && u.gen !== 'sunquan' && escaped(g, u)) { u.alive = false; u.escaped = true; log(g, `${u.name}部撤過淝水`, 'att'); g.fx.push({ t: 'dead', id: u.id }); }
     },
@@ -966,7 +993,7 @@
   // ---------- 匯出 ----------
   root.RULES = {
     newGame, serialize, restore, startRound, nextActivation, endActivation, activeUnit, upcoming,
-    steady, shootTargets, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
+    steady, shootTargets, depotTargets, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
     attackTargets, structTargets, attack, calcDamage, canCounter, actionsFor, doAction,
     unitAt, terr, tAt, state, STATE_NAME, formOf, encircled, adjEnemies, sideHit, inCity, onWall, isEngine, gen, ty, has, alive, enemiesOf, friendsOf,
     rangeOf, canMeleeReach, ENDINGS, other, clamp, inZOC, moveCost,

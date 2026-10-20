@@ -921,6 +921,13 @@
     } else if (f.t === 'recede') { f.hexes.forEach(([c, r]) => refreshHex(g, c, r)); await sleep(ms(500)); syncUnits(g);
     } else if (f.t === 'burn') { await fire(f.c, f.r, ms(1300)); refreshHex(g, f.c, f.r); }
     else if (f.t === 'defect') { syncUnits(g); for (const id of f.ids) { const u = g.units[id]; floater(u.c, u.r, '倒戈！', 'big'); } await sleep(ms(900)); }
+    else if (f.t === 'flame') {
+      const A = g.units[f.a], ra = V.units.get(f.a);
+      if (ra) ra.targetYaw = HX.angleOf(HX.dirTo(A.c, A.r, f.c, f.r)) * Math.PI / 180;
+      if (f.ranged) await projectile([A.c, A.r], [f.c, f.r], 'arrow');
+      if (f.n < 2) await fire(f.c, f.r, ms(500));   // 燃起來之後的大火由 burn 特效接著播
+      floater(f.c, f.r, f.n >= 2 ? '糧營起火！' : '火勢 1/2', f.n >= 2 ? 'big' : 'small'); syncUnits(g);
+    }
     else if (f.t === 'merge') {
       // 併入的部隊縮小消失；統帥的部隊換成合流後的兵種、移到新位置
       const gone = V.units.get(f.gone); if (gone) { V.units.delete(f.gone); await tween(ms(400), t => gone.grp.scale.setScalar(1 - t * 0.95)); V.scene.remove(gone.grp); }
