@@ -34,8 +34,8 @@
     if (u.gen === 'yuejin') return [11, 6];   // 樂將軍守護軍，勿得與戰
     if (v.retreating && sun.alive) { u.retreating = false; return sun.c < 19 && u.type === 'cav' ? [19, 10] : [sun.c, sun.r]; }   // 追擊：騎兵搶佔逍遙津橋，其餘直撲孫權
     const out = !R.inCity(g, u) && !R.onWall(g, u);
-    const tired = u.troops < u.max * 0.55 || u.coh < 40 || u.retreating;
-    if (g.round <= 3 && !tired && sun.alive) return [sun.c, sun.r];
+    const tired = u.troops < u.max * 0.65 || u.coh < 45 || u.retreating;
+    if (g.round <= 2 && !tired && sun.alive) return [sun.c, sun.r];   // 晨襲只打前兩回合，見好就收
     if (out) { u.retreating = true; return [11, 5]; }
     return [11, 6];
   }

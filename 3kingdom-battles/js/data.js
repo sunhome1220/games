@@ -258,7 +258,7 @@
         { gen: 'caobu', side: 'def', type: 'inf', troops: 1500, c: 10, r: 5, face: 5, form: 'yulin' },
       ],
       hp: { G: 140, W: 80 },   // 合肥城小而堅（張遼事先加固城防）
-      vars: { plague: false, plagueRound: 4, retreatRound: 9, retreating: false, retreatStart: 0, bridgeBroken: false, campBurnt: false, rocks: 6, oil: 3 },
+      vars: { surpriseSide: 'att', surpriseUntil: 2, plague: false, plagueRound: 4, retreatRound: 9, retreating: false, retreatStart: 0, bridgeBroken: false, campBurnt: false, rocks: 6, oil: 3 },
       retreat: { att: [23, 10], def: [11, 3] },
       escape: [[22, 9], [23, 9], [22, 10], [23, 10], [22, 11], [23, 11], [21, 10], [21, 9], [21, 11]],
       brief: {
@@ -272,7 +272,7 @@
           def: ['守住合肥，撐到吳軍撤退，並讓孫權退過逍遙津（史實）', '擊潰孫權部隊：生擒孫權（逆轉歷史）', '府衙被佔領或全軍覆沒則失敗'],
         },
         siege: [
-          '第 1 回合天亮：張遼與李典已在南門外列陣，吳軍營寨還沒整好（陣型鬆散）。這是突襲孫權本陣的最好機會。',
+          '第 1 回合天亮：張遼與李典已在南門外列陣，吳軍營寨還沒整好（陣型鬆散，第 1、2 回合吳軍攻擊力 ×0.7「倉促應戰」）。這是突襲孫權本陣的最好機會。',
           '張遼「遼來」：攻擊 +20%，每回合讓身邊 2 格內的吳軍士氣下降。',
           '進出城只能走城門（南門、東門）。突擊完要記得從城門退回城裡。',
           '吳軍要上城：雲梯架在城牆旁，步兵、弓兵才能攀城；衝車撞南門。城上守軍可用滾木礌石、火油，四角箭樓會自動放箭。',
