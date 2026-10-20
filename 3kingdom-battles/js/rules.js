@@ -859,7 +859,8 @@
       if (g.round === 1) {
         msg(g, '下邳之戰', '曹操大軍東征，呂布在泗水西岸列陣迎擊。陳宮建議：「將軍若引兵屯於城外，宮守城於內，曹軍攻城則將軍擊其背，攻將軍則宮出兵救之，此掎角之勢也。」', null, [['chengong', 'default']]);
       }
-      if (v.flooded && !v.receded && g.round >= v.floodRound + 3) XIAPI.recede(g);
+      if (v.flooded && !v.receded && v.floodStage < 3 && g.round >= v.floodRound + v.floodStage) XIAPI.floodStep(g, v.floodStage + 1);
+      if (v.flooded && !v.receded && g.round >= v.floodRound + 4) XIAPI.recede(g);
       if (g.round === v.digUnlock && !v.flooded) {
         v.digOpen = true;
         const xun = g.units.find(u => u.gen === 'xunyou' && u.alive && u.side === 'att');
@@ -881,16 +882,26 @@
       return true;
     },
     flood(g) {
-      const v = g.vars; v.flooded = true; v.floodRound = g.round;
-      const hexes = [];
-      for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'l') { g.map[r][c] = 'w'; hexes.push([c, r]); }
-      g.fx.push({ t: 'flood', hexes });
-      msg(g, '水淹下邳', '泗水、沂水決堤，大水灌入下邳城下。城外一片汪洋，城內糧草漸絕、人心惶惶。\n\n【水淹後】\n・城外低地變成大水：步兵、騎兵可以涉水，但走得慢、受傷多一成；器械過不去，原本在低地上的器械被沖走\n・通往城門的大路沒有淹，可以沿路進逼城門\n・城內每回合糧食 −3、守軍士氣 −4，城牆耐久慢慢下降；士氣太低時可能有人倒戈\n・3 回合後大水會退成泥濘，器械也能慢慢通過', 'att', [['lubu', 'haggard']]);
-      for (const u of alive(g)) if (g.map[u.r][u.c] === 'w') {
+      const v = g.vars; v.flooded = true; v.floodRound = g.round; v.floodStage = 0;
+      // 低地依離河堤的遠近分三波淹：近的先淹，之後每回合再漫開一圈
+      const dikes = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') dikes.push([c, r]);
+      const lows = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'l') lows.push([c, r, Math.min(...dikes.map(([dc, dr]) => H.dist(c, r, dc, dr)))]);
+      lows.sort((x, y) => x[2] - y[2] || x[1] - y[1] || x[0] - y[0]);
+      const per = Math.ceil(lows.length / 3); v.floodWaves = [0, 1, 2].map(i => lows.slice(i * per, (i + 1) * per).map(([c, r]) => [c, r]));
+      XIAPI.floodStep(g, 1);
+      msg(g, '水淹下邳', '泗水、沂水決堤，大水灌入下邳城下。城外一片汪洋，城內糧草漸絕、人心惶惶。\n\n【水淹後】\n・大水分三回合越漲越高：先淹靠河堤的低地，下回合、再下回合漸漸漫到城下各處（第 3 回合淹到最高）\n・淹到的低地變成大水：步兵、騎兵可以涉水，但走得慢、受傷多一成；器械過不去，原本在低地上的器械被沖走\n・通往城門的大路沒有淹，可以沿路進逼城門\n・城內每回合糧食 −3、守軍士氣 −4，城牆耐久慢慢下降；士氣太低時可能有人倒戈\n・掘堤後第 4 回合大水會退成泥濘，器械也能慢慢通過', 'att', [['lubu', 'haggard']]);
+      for (const k in g.hp) { const [c, r] = H.unkey(k); if (g.hp[k] > 0) damageStruct(g, c, r, 8, null); }
+    },
+    // 第 n 波大水（1～3）：這一波的低地變成大水，站在上面的人受損、器械被沖毀
+    floodStep(g, n) {
+      const v = g.vars, hexes = v.floodWaves[n - 1] || []; v.floodStage = n;
+      for (const [c, r] of hexes) if (g.map[r][c] === 'l') g.map[r][c] = 'w';
+      g.fx.push({ t: 'flood', hexes, stage: n });
+      if (n > 1) log(g, n === 3 ? '大水漲到最高，城下一片汪洋' : '大水又漫開一圈', 'att');
+      for (const u of alive(g)) if (g.map[u.r][u.c] === 'w' && hexes.some(([c, r]) => c === u.c && r === u.r)) {
         if (isEngine(u)) { log(g, `${u.name}被大水沖走`, u.side, 'bad'); destroy(g, u, '被大水沖毀'); continue; }
         u.coh = clamp(u.coh - 25, 0, 100); applyLoss(g, u, Math.round(u.troops * 0.08), {});
       }
-      for (const k in g.hp) { const [c, r] = H.unkey(k); if (g.hp[k] > 0) damageStruct(g, c, r, 8, null); }
     },
     recede(g) {
       const v = g.vars; v.receded = true; const hexes = [];
