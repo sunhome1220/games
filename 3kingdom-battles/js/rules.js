@@ -465,6 +465,7 @@
     for (const v of enemiesOf(g, u)) {
       if (isEngine(v) && unitAt(g, v.c, v.r) !== v) continue;   // 和作戰部隊同格的器械受到掩護，要先打作戰部隊
       const d = H.dist(u.c, u.r, v.c, v.r);
+      if (t.engine && !(inCity(g, v) || onWall(g, v))) continue;   // 攻城器械打不到野外移動的部隊，只能轟城上、城內的守軍與城防
       if (t.ranged) { if (d <= rangeOf(g, u) && d >= (t.minRng || 1)) res.push(v); }
       else if (u.type === 'ram') { /* 衝車只撞門 */ }
       else if (canMeleeReach(g, u, v)) res.push(v);

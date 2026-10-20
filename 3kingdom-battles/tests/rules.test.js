@@ -421,4 +421,17 @@ module.exports = [
     env.assert(!r.near, '2 格內現形：' + JSON.stringify(r));
     env.assert(r.amb > r.plain * 1.25, '伏擊加成：' + JSON.stringify(r));
   } },
+  { name: '攻城器械只轟城防：投石車打不到城外野戰部隊，打得到城內守軍', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = T.setup([{ gen: 'zhangliao', c: 9, r: 8 }, { gen: 'chengong', c: 15, r: 8 }]);
+      const cata = g.units.find(u => u.type === 'cata'); Object.assign(cata, { alive: true, c: 11, r: 8, troops: 600 }); g.active = cata.id; cata.acted = false;
+      const field = RULES.attackTargets(g, cata).map(u => u.gen);
+      T.u('zhangliao').c = 22; T.u('zhangliao').r = 1; cata.c = 12; cata.r = 8;
+      const inCity = RULES.attackTargets(g, cata).map(u => u.gen);
+      return { field, inCity, cityCheng: RULES.inCity(g, T.u('chengong')) };
+    });
+    env.assert(!r.field.includes('zhangliao'), '野戰部隊不該被轟：' + JSON.stringify(r));
+    env.assert(r.cityCheng && r.inCity.includes('chengong'), '城內守軍應打得到：' + JSON.stringify(r));
+  } },
 ];
