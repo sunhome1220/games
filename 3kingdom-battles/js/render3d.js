@@ -85,7 +85,7 @@
     V.g = g; V.world = new T.Group(); V.scene.add(V.world);
     if (V.digGrp) { V.scene.remove(V.digGrp); V.digGrp = null; } V.digSig = null; V.depSig = null; if (V.depGrp) { V.scene.remove(V.depGrp); V.depGrp = null; } V.levSig = null; if (V.levGrp) { V.scene.remove(V.levGrp); V.levGrp = null; }
     const [mx, mz] = HX.center(g.W - 1, g.Hh - 1); V.ox = (mx + HX.S3 * 0.5) / 2; V.oz = mz / 2;
-    computeSnap(g);
+    computeSnap(g); computeLev(g);
     V.cam3.tx = 0; V.cam3.tz = 0;
     // 底座
     const PAD = 2.6;
@@ -151,8 +151,26 @@
   }
   function hexHeight(g, c, r) { const ch = groundCh(g, c, r); return GH[ch] != null ? GH[ch] : 0.2; }
   const RING = [[0, 0], ...Array.from({ length: 6 }, (_, i) => [Math.cos(i * Math.PI / 3) * 0.42, Math.sin(i * Math.PI / 3) * 0.42])];
+  // 長堤與河流：堤畫成一道筆直的線，河流在堤的西側緊貼著堤、順著堤拉直（不照六角格鋸齒走）
+  function computeLev(g) {
+    V.lev = null; const pts = [];
+    for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') pts.push(wpos(c, r));
+    if (!pts.length) return;
+    const xs = pts.map(p => p[0]), zs = pts.map(p => p[1]);
+    V.lev = { xl: xs.reduce((a, b) => a + b, 0) / xs.length, z0: Math.min(...zs) - 1.0, z1: Math.max(...zs) + 1.0 };
+  }
+  // 這個位置若在長堤一帶，回傳覆蓋的地形字元（'~' 河、'd' 堤、'.' 堤東的平地）；否則 null（照六角格）
+  function leveeCh(g, wx, wz) {
+    const L = V.lev; if (!L || wz < L.z0 - 3 || wz > L.z1 + 0.9) return null;
+    const dx = wx - L.xl, inZone = wz >= L.z0;
+    if (!inZone) return null;
+    if (dx > -0.5 - 1.9 && dx < -0.5) return '~';
+    if (Math.abs(dx) <= 0.5) return 'd';
+    if (dx > 0.5 || dx <= -0.5 - 1.9) { const [c, r] = clampHex(g, hexAtWorld(wx, wz)); const ch = g.map[r][c]; return ch === '~' || ch === 'd' ? '.' : null; }
+    return null;
+  }
   function groundHeight(g, wx, wz) {
-    let s = 0; for (const [ax, az] of RING) { const [c, r] = clampHex(g, hexAtWorld(wx + ax, wz + az)); s += hexHeight(g, c, r); }
+    let s = 0; for (const [ax, az] of RING) { const ov = leveeCh(g, wx + ax, wz + az); if (ov) { s += GH[ov]; continue; } const [c, r] = clampHex(g, hexAtWorld(wx + ax, wz + az)); s += hexHeight(g, c, r); }
     return s / RING.length;
   }
   const TPX = 28;   // 貼圖每單位像素
@@ -183,8 +201,9 @@
     const low = document.createElement('canvas'); low.width = lw; low.height = lh; const lx = low.getContext('2d');
     const img = lx.createImageData(lw, lh); const cache = {};
     for (let py = 0; py < lh; py++) for (let px = 0; px < lw; px++) {
-      const [c, r] = clampHex(g, hexAtWorld(V.gx0 + (px + 0.5) / LP, V.gz0 + (py + 0.5) / LP)); const k = c + ',' + r;
-      const col = cache[k] || (cache[k] = hexColor(g, c, r)); const o = (py * lw + px) * 4;
+      const wx = V.gx0 + (px + 0.5) / LP, wz = V.gz0 + (py + 0.5) / LP, ov = leveeCh(g, wx, wz);
+      const [c, r] = clampHex(g, hexAtWorld(wx, wz)); const k = ov ? 'ov' + ov : c + ',' + r;
+      const col = cache[k] || (cache[k] = ov ? new T.Color(GC[ov]) : hexColor(g, c, r)); const o = (py * lw + px) * 4;
       img.data[o] = col.r * 255; img.data[o + 1] = col.g * 255; img.data[o + 2] = col.b * 255; img.data[o + 3] = 255;
     }
     lx.putImageData(img, 0, 0);
@@ -797,32 +816,22 @@
   // 河堤：把相連的 'd' 格連成一道窄窄的竹籠石堤（像城牆一樣連續）：堤心夯土、兩側竹籠裝石、河側木樁護岸、堤頂木欄
   function buildLevee(g) {
     if (V.levee) V.world.remove(V.levee); V.levee = null;
-    const pts = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') pts.push(wpos(c, r));
-    if (!pts.length) return;
-    pts.sort((a, b) => a[1] - b[1]);
+    const L = V.lev; if (!L) return;
     const grp = new T.Group(), earth = mat(0x8b7a55), cageA = mat(0xa88a52), cageB = mat(0x967a45), pile = mat(0x5a4328), rail = mat(0x6b4a2b);
-    const Y0 = 0.45;
-    for (let i = 0; i < pts.length; i++) {
-      const [x, z] = pts[i], prev = pts[i - 1], next = pts[i + 1];
-      // 每一格畫「走向下一格」的一段；最後一格往前一格的方向收尾
-      const [ex, ez] = next || [x + (x - prev[0]), z + (z - prev[1])];
-      const dx = ex - x, dz = ez - z, len = Math.hypot(dx, dz), ang = Math.atan2(dx, dz);
-      const seg = new T.Group(); seg.position.set((x + (next ? ex : x)) / 2, Y0, (z + (next ? ez : z)) / 2); seg.rotation.y = ang;
-      const L = next ? len + 0.12 : 0.9;
-      if (!next) seg.position.set(x + dx * 0.25, Y0, z + dz * 0.25);
-      const core = mesh(new T.BoxGeometry(0.46, 0.34, L), earth); core.position.y = 0.1; seg.add(core);
-      const n = Math.max(2, Math.round(L / 0.42));
-      for (let k = 0; k < n; k++) for (const sx of [-1, 1]) {
-        const cage = mesh(new T.CylinderGeometry(0.15, 0.15, L / n * 0.98, 7), (k + (sx > 0 ? 1 : 0)) % 2 ? cageA : cageB); cage.rotation.x = Math.PI / 2;
-        cage.position.set(sx * 0.31, 0.02, -L / 2 + (k + 0.5) * L / n); cage.scale.set(1, 1, 1); seg.add(cage);
-      }
-      const ns = Math.max(3, Math.round(L / 0.2));
-      for (let k = 0; k < ns; k++) { const st = mesh(new T.CylinderGeometry(0.03, 0.04, 0.5, 5), pile); st.position.set(-0.5, 0.05, -L / 2 + (k + 0.5) * L / ns); st.rotation.z = 0.1; seg.add(st); }
-      for (const sx of [-0.18, 0.18]) { const rl = mesh(new T.BoxGeometry(0.035, 0.04, L), rail, false); rl.position.set(sx, 0.4, 0); seg.add(rl); }
-      for (let k = 0; k <= 2; k++) for (const sx of [-0.18, 0.18]) { const p = mesh(new T.BoxGeometry(0.04, 0.2, 0.04), rail, false); p.position.set(sx, 0.3, -L / 2 + 0.05 + k * (L - 0.1) / 2); seg.add(p); }
-      grp.add(seg);
+    const Y0 = 0.45, zA = L.z0 + 0.55, zB = L.z1 - 0.55, len = zB - zA, zc = (zA + zB) / 2;   // 筆直的一道堤，沿南北走向
+    const seg = new T.Group(); seg.position.set(L.xl, Y0, zc);
+    const core = mesh(new T.BoxGeometry(0.46, 0.34, len), earth); core.position.y = 0.1; seg.add(core);
+    const n = Math.max(2, Math.round(len / 0.42));
+    for (let k = 0; k < n; k++) for (const sx of [-1, 1]) {
+      const cage = mesh(new T.CylinderGeometry(0.15, 0.15, len / n * 0.98, 7), (k + (sx > 0 ? 1 : 0)) % 2 ? cageA : cageB); cage.rotation.x = Math.PI / 2;
+      cage.position.set(sx * 0.31, 0.02, -len / 2 + (k + 0.5) * len / n); seg.add(cage);
     }
-    V.levee = grp; V.world.add(grp);
+    const ns = Math.max(3, Math.round(len / 0.2));
+    for (let k = 0; k < ns; k++) { const st = mesh(new T.CylinderGeometry(0.03, 0.04, 0.5, 5), pile); st.position.set(-0.5, 0.05, -len / 2 + (k + 0.5) * len / ns); st.rotation.z = 0.1; seg.add(st); }   // 河側木樁護岸
+    for (const sx of [-0.18, 0.18]) { const rl = mesh(new T.BoxGeometry(0.035, 0.04, len), rail, false); rl.position.set(sx, 0.4, 0); seg.add(rl); }
+    const np = Math.max(3, Math.round(len / 1.0));
+    for (let k = 0; k <= np; k++) for (const sx of [-0.18, 0.18]) { const p = mesh(new T.BoxGeometry(0.04, 0.2, 0.04), rail, false); p.position.set(sx, 0.3, -len / 2 + 0.05 + k * (len - 0.1) / np); seg.add(p); }
+    grp.add(seg); V.levee = grp; V.world.add(grp);
   }
   // 河堤破口：每掘一次堤上多一處缺口（越掘越大），大水決堤後缺口湧出水柱；另調整水位（三波漲高、退水時回落）
   function leveeMarks(g) {
@@ -837,7 +846,7 @@
     if (!marks.length) { V.dirty = true; return; }
     V.levGrp = new T.Group();
     for (const [c, r] of marks) {
-      const p = Math.min(seg[c + ',' + r], v.digNeed || 6), [x, z] = wpos(c, r), y = topAt(g, c, r);
+      const p = Math.min(seg[c + ',' + r], v.digNeed || 6), [x0, z] = wpos(c, r), x = V.lev ? V.lev.xl : x0, y = topAt(g, c, r);
       const burst = v.flooded && v.floodAt && v.floodAt[0] === c && v.floodAt[1] === r;
       const w = 0.25 + p * 0.07 + (burst ? 0.5 : 0);
       const gap = mesh(new T.BoxGeometry(1.05, 0.28 + (burst ? 0.12 : 0), w), mat(0x3a2c1a), false); gap.position.set(x, y + 0.2, z); gap.raycast = () => {}; V.levGrp.add(gap);
