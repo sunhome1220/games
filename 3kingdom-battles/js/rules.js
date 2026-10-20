@@ -737,6 +737,25 @@
       g.vars.fire = {};
     }
     if (prev !== w) log(g, `第 ${g.round} 回合：${WEATHER_ICON[w]} ${w}`, null);
+    forecast(g);
+  }
+  // 智力 90 以上的人物（陣中存活）能看出未來兩回合的天氣轉變：開始下雨、或雨停放晴
+  const seer = (g, side) => alive(g).filter(u => u.side === side && !isEngine(u) && gen(u).int >= 90).sort((a, b) => gen(b).int - gen(a).int)[0] || null;
+  function forecast(g) {
+    const v = g.vars; v.fcAnn = v.fcAnn || {};
+    let prev = g.vars.weather;
+    for (let d = 1; d <= 2; d++) {
+      const w = weatherAt(g, g.round + d);
+      if (w !== prev && (w === '雨' || prev === '雨')) {
+        for (const side of ['att', 'def']) {
+          const s = seer(g, side), key = side + ':' + (g.round + d); if (!s || v.fcAnn[key]) continue; v.fcAnn[key] = 1;
+          const when = d === 1 ? '明天' : '後天', text = w === '雨' ? `${when}（第 ${g.round + d} 回合）怕是要下雨了，糧營的火勢會被澆熄，也點不起火。` : `${when}（第 ${g.round + d} 回合）雨就要停了，天要放晴，火勢不會再被雨澆熄。`;
+          log(g, `${s.name}觀天象：${text}`, side);
+          g.fx.push({ t: 'forecast', side, gen: s.gen, name: s.name, text });
+        }
+      }
+      prev = w;
+    }
   }
   // 步騎射箭：一般步兵 3 成、騎兵 3 成 5 的攻擊力；「騎射」的呂布接近精銳弓兵
   function shootPower(u) { return has(u, 'qishe') ? 0.6 : u.type === 'cav' ? 0.22 : 0.18; }
@@ -1054,7 +1073,7 @@
   // ---------- 匯出 ----------
   root.RULES = {
     newGame, serialize, restore, startRound, nextActivation, endActivation, activeUnit, upcoming,
-    steady, shootTargets, depotTargets, douseTargets, WEATHER_ICON, weatherAt, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
+    steady, seer, shootTargets, depotTargets, douseTargets, WEATHER_ICON, weatherAt, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
     attackTargets, structTargets, attack, calcDamage, canCounter, actionsFor, doAction,
     unitAt, terr, tAt, state, STATE_NAME, formOf, encircled, adjEnemies, sideHit, inCity, onWall, isEngine, gen, ty, has, alive, enemiesOf, friendsOf,
     rangeOf, canMeleeReach, ENDINGS, other, clamp, inZOC, moveCost,

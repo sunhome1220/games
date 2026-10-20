@@ -197,6 +197,7 @@
       if (f.t === 'log') { renderLastLog(); continue; }
       if (f.t === 'round') { renderHUD(); toast(`第 ${f.n} 回合`); continue; }
       if (f.t === 'msg') { renderHUD(); if (!S.fast) await modal(`${art(root.SCENES && root.SCENES.forEvent(g.scId, f.title))}<h2>${esc(f.title)}</h2>${faces(f.who)}<p style="white-space:pre-line">${esc(f.text)}</p>`, [['繼續', true]], { wide: true }); continue; }
+      if (f.t === 'forecast') { if (!S.fast && f.side === S.side && !S.auto) await modal(`<h2>${esc(f.name)}觀天象</h2>${faces([[f.gen, 'default']])}<p>${esc(f.text)}</p>`, [['知道了', true]]); continue; }
       if (f.t === 'duel') duelCut(f);
       if (f.t === 'skill') { const u = g.units[f.id]; if (!R.isEngine(u)) cutIn([[u.gen, battleMood(u.gen, ['rage', 'laugh', 'plan', 'plot']), u.side]], `${u.name}【${f.name}】`); }
       if (f.t === 'over') continue;
@@ -506,7 +507,7 @@
     const g = S.g; if (!g) return;
     $('#hRound').textContent = `第 ${g.round} 回合`;
     const v = g.vars; const bits = [];
-    if (R.weatherAt) { const nx = R.weatherAt(g, g.round + 1); bits.push(`<span title="下雨時糧營點不著火、已起的火也會熄。明天：${nx}">${R.WEATHER_ICON[v.weather || '晴']} ${v.weather || '晴'}<small>（明：${R.WEATHER_ICON[nx]}）</small></span>`); }
+    if (R.weatherAt) { const sr = R.seer(g, S.side), n1 = R.weatherAt(g, g.round + 1), n2 = R.weatherAt(g, g.round + 2); bits.push(`<span title="下雨時糧營點不著火、已起的火也會熄。${sr ? `${sr.name}預測：明天${n1}、後天${n2}` : '陣中沒有智力 90 以上的人物，看不出明後天的天氣'}">${R.WEATHER_ICON[v.weather || '晴']} ${v.weather || '晴'}<small>${sr ? `（${R.WEATHER_ICON[n1]}${R.WEATHER_ICON[n2]}）` : '（？）'}</small></span>`); }
     const burning = Object.keys(v.burning || {});
     if (burning.length) bits.push(`<span class="warn" title="糧營正在燒；沒下雨就會繼續燒，守營方部隊在旁邊可以「滅火」">🔥 糧營燃燒中 ×${burning.length}</span>`);
     if (g.scId === 'xiapi') {
