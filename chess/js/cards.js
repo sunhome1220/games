@@ -119,11 +119,12 @@ const CARDS = validateCards([
   { id: 'foe_reload', tier: 3, ic: '⛓️', name: '敵方・全面卡彈', desc: '敵方俥、傌、炮、象的冷卻都 +1 回合', max: 1, foe: { R: { reload: 1 }, N: { reload: 1 }, C: { reload: 1 }, E: { reload: 1 } } },
   { id: 'foe_aa', tier: 3, ic: '📵', name: '敵方・雷達失靈', desc: '敵方象的防空範圍 −1.5 格（最低 ½ 格）', max: 1, foe: { E: { aa: -1.5 * C } } },
   // ── 終極魔法（✨，只在後期選牌才可能出現，每次三選一最多出現一張）──
-  { id: 'ult_meteor', tier: 4, ic: '☄️', name: '終極魔法・隕石雨', desc: '敵方所有棋子各受 1 心傷害（帥／將不會被打死，最少剩 ¼ 心）', max: 1,
-    instant: s => {
-      const foes = alive().filter(p => p.s === 1 - s), at = i => 0.5 + i * 0.12;   // 每顆隕石依序落下，at＝落地時間（和傷害的 delay 對齊）
-      ultCast('meteor', s, foes.map((p, i) => ({ x: p.x, y: p.y, at: at(i) })));
-      foes.forEach((p, i) => spellHit(p, 1, at(i), p.t === 'K')); checkWin();
+  { id: 'ult_meteor', tier: 4, ic: '☄️', name: '終極魔法・隕石雨', desc: '指定一個直徑 4 格的圓形範圍，範圍內所有棋子（敵我不分，帥／將也會）各受 1 心傷害', max: 1, area: true,
+    instant: (s, at) => {
+      const c = at || aiMeteorCenter(s), hit = meteorHits(c.x, c.y), when = i => 0.5 + i * 0.12;   // 每顆隕石依序落下，when＝落地時間（和傷害的 delay 對齊）
+      const extra = Array.from({ length: 5 }, (_, i) => { const a = Math.random() * 7, r = Math.sqrt(Math.random()) * METEOR_R; return { x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r, at: 0.45 + i * 0.17 }; });   // 範圍內多幾顆純視覺的隕石
+      ultCast('meteor', s, [...hit.map((p, i) => ({ x: p.x, y: p.y, at: when(i) })), ...extra].sort((a, b) => a.at - b.at));
+      hit.forEach((p, i) => spellHit(p, 1, when(i), false)); checkWin();
     } },
   { id: 'ult_revive', tier: 4, ic: '😇', name: '終極魔法・起死回生', desc: '復活最多 2 顆己方陣亡的棋子（優先價值高的，帥除外），滿血回到出生點', max: 1, cond: s => deadOf(s).length > 0,
     instant: s => {
@@ -144,6 +145,20 @@ const CARDS = validateCards([
     instant: s => { const ps = alive().filter(q => q.s === 1 - s && q.T.reload > 0); for (const p of ps) p.cd = Math.max(p.cd || 0, 2); ultCast('freeze', s, ps.map(p => ({ x: p.x, y: p.y, at: 0.45 }))); } },
 ]);
 const cardOf = id => CARDS.find(c => c.id === id);
+// 隕石雨：落點是圓心，半徑 2 格（直徑 4 格）；範圍內敵我不分
+const METEOR_R = 2 * C;
+const meteorHits = (x, y) => alive().filter(p => Math.hypot(p.x - x, p.y - y) <= METEOR_R + 1);
+// 電腦選落點：掃過所有交叉點，挑「對自己最有利」的圓心（打到敵人加分、誤傷自己扣分，打死自己的帥是大扣分）
+function aiMeteorCenter(side) {
+  let best = null;
+  for (let c = 0; c <= 8; c++) for (let r = 0; r <= 9; r++) {
+    const x = M + c * C, y = M + r * C, dm = new Map();
+    for (const p of meteorHits(x, y)) { const d = effDmg(p, 1); if (d > 0) dm.set(p, d); }
+    const v = dmgValue(dm, side) + Math.random() * 0.01;
+    if (!best || v > best.v) best = { x, y, v };
+  }
+  return best;
+}
 let pickQ = [], pickSide = null, waitingFor = null, incoming = [];
 const CARD_STACK = false;   // 是否允許同一張卡重複拿來疊加（false＝每張卡只能拿一次；max 仍保留，改成 true 即恢復疊加）
 function cardOk(c, side) {
@@ -167,7 +182,7 @@ function drawOffers(side, rand = Math.random) {
   }
   return out;
 }
-function applyCard(side, id) {
+function applyCard(side, id, at) {
   const c = cardOf(id); if (!c) return;
   cardCount[side][id] = (cardCount[side][id] || 0) + 1;
   const add = (who, grp) => { for (const [k, st] of Object.entries(grp || {})) { mods[who][k] = mods[who][k] || {}; for (const [stat, v] of Object.entries(st)) mods[who][k][stat] = (mods[who][k][stat] || 0) + v; } };
@@ -178,7 +193,7 @@ function applyCard(side, id) {
     if (p.s === side) { const bonus = c.fx && c.fx[p.T.id] && c.fx[p.T.id].hp; if (bonus && p.hp > 0) p.hp = Math.min(p.T.hp, p.hp + bonus); }
     else if (p.hp > p.T.hp) p.hp = p.T.hp;   // 敵方血量上限被削：現有血量不能超過新上限
   }
-  if (c.instant) c.instant(side);
+  if (c.instant) c.instant(side, at);
   if (tierOf(c) === 3) gainFlash(3);   // 瘋狂卡：全螢幕紫光（終極魔法有自己的動畫，見 ultimate.js）
   if (tierOf(c) < 4) SFX.play('card');   // 終極魔法有自己的聲音（見 ultimate.js）
   toast(`${SIDE[side].name}獲得${tierOf(c) >= 4 ? '' : '強化'}：${c.ic} ${c.name}`); renderPerks();
@@ -291,15 +306,50 @@ function showCards(side) {
 function chooseCard(side, id) {
   if (pickSide !== side) return;
   $('cardPick').hidden = true;
+  const c = cardOf(id);
+  if (c && c.area && !(mode === 'ai' && side === aiSide())) { beginAreaPick(side, c); return; }   // 要選範圍的卡：先讓玩家點落點、按「降下」才生效
   applyCard(side, id); send({ t: 'card', side, id });
   nextPick();
+}
+// ---- 選範圍（隕石雨）：點棋盤放圓圈（吸附到交叉點）、預覽範圍內的棋子，按「降下」確認 ----
+let spell = null;   // { side, id, x, y }；x、y 為 null＝還沒點
+function beginAreaPick(side, c) {
+  spell = { side, id: c.id, x: null, y: null }; state = 'spell'; sel = null; targets = []; setSkip(false);
+  $('spellTxt').textContent = `${c.ic} ${c.name}：點棋盤選擇落點（直徑 4 格的圓，敵我不分）`; $('spellGo').disabled = true;
+  $('spellBox').hidden = false; $('spellBox').classList.toggle('flip', mode === 'face' && side === 1);
+  updateHeader(); setMsg('☄️ 點棋盤選擇隕石落點，可重新點選；按「降下」確認。');
+}
+function spellTap(m) {
+  if (!spell) return;
+  const cx = Math.max(0, Math.min(8, Math.round((m.x - M) / C))), cy = Math.max(0, Math.min(9, Math.round((m.y - M) / C)));
+  spell.x = M + cx * C; spell.y = M + cy * C;
+  const hit = meteorHits(spell.x, spell.y), foe = hit.filter(p => p.s !== spell.side), me = hit.filter(p => p.s === spell.side);
+  $('spellTxt').textContent = `範圍內：敵 ${foe.length} 顆、我 ${me.length} 顆` + (me.some(p => p.t === 'K') ? '　⚠️ 我方帥在範圍內！' : '') + (foe.some(p => p.t === 'K') ? '　敵方帥在範圍內' : '');
+  $('spellGo').disabled = false; SFX.play('click');
+}
+$('spellGo').onclick = () => {
+  if (!spell || spell.x === null) return;
+  const { side, id, x, y } = spell; spell = null; $('spellBox').hidden = true; state = 'pick';
+  applyCard(side, id, { x, y }); send({ t: 'card', side, id, x, y });
+  nextPick();
+};
+// 預覽：圓圈＋範圍內的棋子（敵方紅、我方藍）。畫在棋盤座標上，2D 與 3D 的地面都用得到
+function drawSpellPreview() {
+  if (state !== 'spell' || !spell || spell.x === null) return;
+  const pulse = 0.7 + 0.3 * Math.sin(performance.now() / 180);
+  ctx.save();
+  ctx.fillStyle = '#ff7a1a33'; ctx.beginPath(); ctx.arc(spell.x, spell.y, METEOR_R, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#ff7a1a'; ctx.lineWidth = 3; ctx.setLineDash([9, 6]); ctx.globalAlpha = pulse; ctx.beginPath(); ctx.arc(spell.x, spell.y, METEOR_R, 0, 7); ctx.stroke();
+  ctx.setLineDash([]); ctx.lineWidth = 4;
+  for (const p of meteorHits(spell.x, spell.y)) { ctx.strokeStyle = p.s === spell.side ? '#2f6fb5' : '#e8202a'; ctx.beginPath(); ctx.arc(p.x, p.y, R + 5, 0, 7); ctx.stroke(); }
+  ctx.restore();
 }
 function drainIncoming() {
   if (waitingFor === null) return;
   const i = incoming.findIndex(m => m.side === waitingFor);
   if (i < 0) return;
   const [m] = incoming.splice(i, 1); waitingFor = null;
-  applyCard(m.side, m.id); nextPick();
+  applyCard(m.side, m.id, m.x !== undefined ? { x: m.x, y: m.y } : undefined); nextPick();
 }
 // 每方自己的第 N、2N、3N… 個回合開始前選牌（N = cardEvery）
 function maybeTurnPick() {

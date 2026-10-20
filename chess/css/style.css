@@ -159,3 +159,8 @@ i.tier.t2 { background:#2f6fb5; } i.tier.t3 { background:#8e3fb8; } i.tier.t4 { 
 #msgOv { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:16; padding:14px; }
 #msgOv[hidden] { display:none; }
 #msgFull { font-size:15px; line-height:1.6; color:#f3e2bd; margin:6px 0 8px; }
+#spellBox { position:fixed; left:50%; bottom:14px; transform:translateX(-50%); z-index:11; width:min(92vw, 380px); background:#2b3a31; border:2px solid #ff7a1a; border-radius:12px; padding:10px 12px; box-shadow:0 4px 14px #000a; text-align:center; }
+#spellBox[hidden] { display:none; }
+#spellBox.flip { bottom:auto; top:64px; transform:translateX(-50%) rotate(180deg); }
+#spellBox .sub { color:#f3e2bd; font-size:14px; margin-bottom:8px; line-height:1.5; }
+#spellBox button { width:100%; background:#ff7a1a; color:#fff; font-weight:700; font-size:16px; padding:10px; }

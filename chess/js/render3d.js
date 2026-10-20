@@ -324,6 +324,7 @@ function draw3D() {
     ctx.save(); ctx.clearRect(0, 0, W, H);
     const { preview, markT, ghost } = drawGround();
     marks(state === 'target' ? targets : preview, markT, ghost);
+    drawSpellPreview();
     ctx.restore();
   });
   V3.flatTex.needsUpdate = true;

@@ -48,16 +48,60 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, { one: 1.75, min: 0.25, two: 1.5, real: 1.5, shield: 0, imm: '1,0', after: '0,0' });
   } },
-  { name: '終極魔法：隕石雨（帥不會被打死）、天雷審判、冰封世界', async fn(t) {
+  { name: '終極魔法：天雷審判（帥不會被直接打死）、冰封世界', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
       const o = {}; const setup = () => { const ps = T_.place([{ s: 1, t: 'K', c: 4, r: 0, hp: 1 }, { s: 1, t: 'R', c: 0, r: 0 }, { s: 1, t: 'P', c: 0, r: 3, hp: 1 }, { s: 1, t: 'N', c: 1, r: 0 }, { s: 1, t: 'E', c: 2, r: 0 }, { s: 0, t: 'K', c: 4, r: 9 }]); cardCount = [{}, {}]; mods = [{}, {}]; rebuildAll(); immune = [0, 0]; return ps; };
-      let [K, R, P] = setup(); applyCard(0, 'ult_meteor'); o.meteor = [K.hp, R.hp, P.hp, winner];
-      [K] = setup(); K.hp = 3; applyCard(0, 'ult_judge'); o.judge = K.hp; K.hp = 1; applyCard(0, 'ult_judge'); o.judgeLow = [K.hp, winner];
+      let [K] = setup(); K.hp = 3; applyCard(0, 'ult_judge'); o.judge = K.hp; K.hp = 1; applyCard(0, 'ult_judge'); o.judgeLow = [K.hp, winner];
       const ps = setup(); applyCard(0, 'ult_freeze'); o.freeze = ps.slice(0, 5).map(p => p.cd).join();   // K R P N E
       return o;
     });
-    t.assert.deepStrictEqual(r, { meteor: [0.25, 3, 0, null], judge: 1.5, judgeLow: [0.25, null], freeze: '0,2,0,2,2' });
+    t.assert.deepStrictEqual(r, { judge: 1.5, judgeLow: [0.25, null], freeze: '0,2,0,2,2' });
+  } },
+  { name: '隕石雨：選直徑 4 格的圓形範圍，範圍內敵我不分各受 1 心（帥也會死；雙帥同死和局）；電腦自動選落點；點棋盤選落點、按「降下」才生效', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const o = {}, land = () => { for (let i = 0; i < 200; i++) update(0.03); };
+      let [bk, br, bp, rr] = T_.place([{ s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'R', c: 0, r: 0 }, { s: 1, t: 'P', c: 0, r: 3, hp: 1 }, { s: 0, t: 'R', c: 1, r: 1 }]);
+      applyCard(0, 'ult_meteor', { x: T_.X(0), y: T_.Y(1) }); land();   // 圓心 (0,1)，半徑 2 格：黑俥、黑兵、紅俥在範圍內，黑帥在範圍外
+      o.area = [br.hp, bp.hp, rr.hp, bk.hp, winner];
+      [bk, br, bp, rr] = T_.place([{ s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'R', c: 0, r: 0 }, { s: 1, t: 'P', c: 0, r: 3, hp: 1 }, { s: 0, t: 'R', c: 1, r: 1 }]); immune = [1, 0];
+      applyCard(0, 'ult_meteor', { x: T_.X(0), y: T_.Y(1) }); land(); o.shield = [br.hp, rr.hp]; immune = [0, 0];   // 我方有護盾：只傷到敵人（我方紅俥維持 4 心）
+      let [rk, k2] = T_.place([{ s: 0, t: 'K', c: 4, r: 9, hp: 1 }, { s: 1, t: 'K', c: 4, r: 8, hp: 1 }, { s: 1, t: 'R', c: 0, r: 0 }]);
+      applyCard(0, 'ult_meteor', { x: T_.X(4), y: T_.Y(9) }); land(); o.bothKings = winner;   // 雙帥同死：和局
+      [rk, k2] = T_.place([{ s: 0, t: 'K', c: 4, r: 9 }, { s: 1, t: 'K', c: 4, r: 0, hp: 1 }]);
+      applyCard(0, 'ult_meteor', { x: T_.X(4), y: T_.Y(0) }); land(); o.enemyKing = winner;   // 只打死敵帥：我方獲勝
+      T_.place([{ s: 0, t: 'K', c: 4, r: 9 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'R', c: 0, r: 2 }, { s: 1, t: 'N', c: 1, r: 2 }]);
+      const c = aiMeteorCenter(0); o.ai = meteorHits(c.x, c.y).map(p => p.s + p.t).sort().join();   // 電腦選的圓心罩住價值最高的敵方帥（比俥＋傌更划算）、不傷自己
+      // 玩家操作：選到卡 → 點棋盤 → 按「降下」
+      [bk, br, bp, rr] = T_.place([{ s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'R', c: 0, r: 0 }, { s: 1, t: 'P', c: 0, r: 3, hp: 1 }, { s: 0, t: 'R', c: 1, r: 1 }]);
+      mode = 'local'; pickSide = 0; pickQ = []; chooseCard(0, 'ult_meteor');
+      o.ui1 = [state, !$('spellBox').hidden, $('spellGo').disabled, br.hp];
+      spellTap({ x: T_.X(0) + 5, y: T_.Y(1) - 4 }); o.ui2 = [spell.x === T_.X(0), spell.y === T_.Y(1), $('spellGo').disabled, $('spellTxt').textContent];
+      $('spellGo').click(); o.ui3 = [state !== 'spell', $('spellBox').hidden, br.hp]; land(); o.ui4 = [br.hp, bp.hp, rr.hp];
+      return o;
+    });
+    t.assert.deepStrictEqual(r, {
+      area: [3, 0, 3, 3, null], shield: [3, 4], bothKings: 2, enemyKing: 0, ai: '1K',
+      ui1: ['spell', true, true, 4], ui2: [true, true, false, '範圍內：敵 2 顆、我 1 顆'], ui3: [true, true, 3], ui4: [3, 0, 3],
+    });
+  } },
+  { name: '隕石雨：連線時對手收到的落點座標一起套用；選落點時 2D、3D 預覽繪製不出錯', async fn(t) {
+    const pg = await t.open('view=3d'), errs = [];
+    pg.on('pageerror', e => errs.push(String(e)));
+    const r = await pg.evaluate(() => {
+      const o = {}, land = () => { for (let i = 0; i < 200; i++) update(0.03); };
+      let [bk, br, bp, rr] = T_.place([{ s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'R', c: 0, r: 0 }, { s: 1, t: 'P', c: 0, r: 3, hp: 1 }, { s: 0, t: 'R', c: 1, r: 1 }]);
+      mode = 'online'; mySide = 1; pickSide = null; pickQ = []; waitingFor = 0; incoming = [];   // 我是黑方，等紅方選牌
+      onNet({ t: 'card', side: 0, id: 'ult_meteor', x: T_.X(0), y: T_.Y(1) }); land();
+      o.remote = [br.hp, bp.hp, rr.hp];
+      [bk, br, bp, rr] = T_.place([{ s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'R', c: 0, r: 0 }, { s: 0, t: 'R', c: 1, r: 1 }]);
+      mode = 'local'; pickSide = 0; pickQ = []; chooseCard(0, 'ult_meteor'); spellTap({ x: T_.X(0), y: T_.Y(1) });
+      try { for (let i = 0; i < 5; i++) draw(); o.draw3d = 'ok'; } catch (e) { o.draw3d = 'ERR ' + e.message; }
+      return o;
+    });
+    t.assert.deepStrictEqual(r, { remote: [3, 0, 3], draw3d: 'ok' });
+    t.assert.deepStrictEqual(errs, []);
   } },
   { name: '終極魔法：起死回生（只在有陣亡棋子時出現、回到出生點）、時間暫停（再走一回合）', async fn(t) {
     const pg = await t.open();
