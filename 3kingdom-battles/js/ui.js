@@ -374,7 +374,7 @@
       : `<h3>怎麼守住</h3><ol>
       <li>城牆上的守軍很難被打：敵軍要先架雲梯才能近戰。優先打掉雲梯、衝車。</li>
       <li>用「滾木礌石」「火油」打城下敵軍，四角箭樓會自動放箭；可從城門出城突擊，但回城也要走城門。</li>
-      <li>曹軍有<b>三座糧營</b>（西邊：中軍、北營、南營）：走到<b>糧營旁邊</b>按「放火燒營」馬上燒光；也可以在 2～3 格外射<b>火箭</b>（弓兵、呂布一箭就燃，步騎要射 2 箭，火勢會累積）。三座燒光曹軍就缺糧，軍心天天下降，撐 3 天就退兵。</li>
+      <li>曹軍有<b>三座糧營</b>（西邊：中軍、北營、南營）：走到<b>糧營旁邊</b>按「放火燒營」；也可以在 2～3 格外射<b>火箭</b>（弓兵、呂布一箭就燃，步騎要射 2 箭）。起火後<b>看天氣</b>：沒下雨就連燒三回合（糧 −15%、−30%、−55%），曹軍在旁邊會「滅火」，下雨火會熄。三座燒光曹軍就缺糧，軍心天天下降，撐 3 天就退兵。</li>
       <li>派兵守住城北河堤，阻止曹軍掘堤水攻。</li>
       <li><b>呂布第一次被打光時會單騎殺出重圍</b>（只剩殘部），讓高順等友軍趕去「救援合流」；但別再讓他陷進包圍。</li>
       <li>維持城內士氣，避免將領倒戈。</li></ol>`;
@@ -497,8 +497,8 @@
     hookFaces();
   }
   function lastLogHTML() {
-    const L = S.g.log.slice(-3).reverse();
-    return `<div class="lastlog">${L.map(l => `<div class="${l.side || ''}">${esc(l.text)}</div>`).join('')}</div>`;
+    const L = S.g.log.slice(-2).reverse();
+    return `<div class="lastlog" title="點一下看完整戰報">${L.map(l => `<div class="${l.side || ''}">${esc(l.text)}</div>`).join('')}<div class="more">▾ 點這裡看完整戰報</div></div>`;
   }
   function renderLastLog() { const el = document.querySelector('#panel .lastlog'); if (el) el.outerHTML = lastLogHTML(); }
 
@@ -506,6 +506,9 @@
     const g = S.g; if (!g) return;
     $('#hRound').textContent = `第 ${g.round} 回合`;
     const v = g.vars; const bits = [];
+    if (R.weatherAt) { const nx = R.weatherAt(g, g.round + 1); bits.push(`<span title="下雨時糧營點不著火、已起的火也會熄。明天：${nx}">${R.WEATHER_ICON[v.weather || '晴']} ${v.weather || '晴'}<small>（明：${R.WEATHER_ICON[nx]}）</small></span>`); }
+    const burning = Object.keys(v.burning || {});
+    if (burning.length) bits.push(`<span class="warn" title="糧營正在燒；沒下雨就會繼續燒，守營方部隊在旁邊可以「滅火」">🔥 糧營燃燒中 ×${burning.length}</span>`);
     if (g.scId === 'xiapi') {
       bits.push(`曹軍糧草 <b>${Math.max(0, v.supply)}</b>${v.depots ? `（糧營 ${v.depots.filter(d => !d.burnt).length}/${v.depots.length}）` : ''}${v.supply <= 0 ? `<span class="warn"> 缺糧 ${v.starve}/${v.starveLimit}</span>` : ''}`);
       bits.push(`城中糧 <b>${v.food}</b>`);
@@ -523,6 +526,7 @@
     }
     $('#hVars').innerHTML = bits.join('｜');
     const dig = $('#hDig'); if (dig) dig.onclick = () => { const d = digHexes(g)[0]; if (d) { root.V3.focus(d[0], d[1]); toast('⛏ 河堤：曹軍步兵或弓兵站上來就能「掘堤」', 2600); } };
+    root.V3.fireMarks && root.V3.fireMarks(g, burning.map(k => k.split(',').map(Number)));
     root.V3.digMarks && root.V3.digMarks(g, v.digOpen && !v.flooded ? digHexes(g).filter(([c, r]) => !R.unitAt(g, c, r)) : []);
     const ids = R.upcoming(g, 14);
     $('#order').innerHTML = ids.map((id, i) => { const u = g.units[id]; const e = R.isEngine(u); return `<div class="chip ${u.side} ${i === 0 ? 'now' : ''} ${e ? 'eng' : ''} ${R.canChoose(g, id) && isMine(R.activeUnit(g)) && !S.busy ? 'pick' : ''}" data-id="${id}" title="${esc(u.name)}">${e ? R.ty(u).icon : R.gen(u).mark}</div>`; }).join('');
@@ -620,10 +624,12 @@
   // ---------- 啟動 ----------
   function init() {
     $('#btnHelp').onclick = showHelp; $('#btnMenu').onclick = () => (S.g ? showMenu() : renderSelect());
+    $('#panel').addEventListener('click', e => { if (e.target.closest('.lastlog')) showLog(); });
     $('#btnLog').onclick = showLog; $('#btnGoal').onclick = showGoals;
     for (const b of document.querySelectorAll('#camBtns button')) b.onclick = () => {
       const k = b.dataset.cam, V = root.V3;
       if (k === 'rl') V.rotate(-45); if (k === 'rr') V.rotate(45); if (k === 'zi') V.zoom(0.8); if (k === 'zo') V.zoom(1.25);
+      if (k === 'info') document.body.classList.toggle('pshow');
       if (k === 'fc' && S.g) { const u = R.activeUnit(S.g); if (u) V.focus(u.c, u.r); }
     };
     const q = new URLSearchParams(location.search);

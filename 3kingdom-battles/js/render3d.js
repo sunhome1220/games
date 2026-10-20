@@ -749,6 +749,18 @@
     }
     V.scene.add(V.digGrp); V.dirty = true;
   }
+  // 燃燒中的糧營：持續搖曳的火苗（在 loop 裡動畫）
+  function fireMarks(g, list) {
+    const sig = list.map(p => p.join(',')).join(';');
+    if (V.fireSig === sig && V.fireGrp) return; V.fireSig = sig;
+    if (V.fireGrp) V.scene.remove(V.fireGrp); V.fireGrp = null; if (!list.length) { V.dirty = true; return; }
+    V.fireGrp = new T.Group(); V.fireCones = [];
+    for (const [c, r] of list) {
+      const [x, z] = wpos(c, r), y = topAt(g, c, r);
+      for (let i = 0; i < 6; i++) { const o = new T.Mesh(new T.ConeGeometry(0.17, 0.55, 5), new T.MeshBasicMaterial({ color: i % 2 ? 0xff7a14 : 0xffd04a, transparent: true, opacity: 0.88 })); o.position.set(x + (Math.random() - 0.5) * 1.0, y + 0.3, z + (Math.random() - 0.5) * 1.0); o.raycast = () => {}; o.userData.ph = Math.random() * 6; V.fireGrp.add(o); V.fireCones.push(o); }
+    }
+    V.scene.add(V.fireGrp); V.dirty = true;
+  }
   function ladderMarks(g) {
     if (V.lads) V.scene.remove(V.lads);
     V.lads = new T.Group();
@@ -919,14 +931,16 @@
       V.waterBoost = 0;
       hexes.forEach(([c, r]) => refreshHex(g, c, r)); syncUnits(g);
     } else if (f.t === 'recede') { f.hexes.forEach(([c, r]) => refreshHex(g, c, r)); await sleep(ms(500)); syncUnits(g);
-    } else if (f.t === 'burn') { await fire(f.c, f.r, ms(1300)); refreshHex(g, f.c, f.r); }
+    } else if (f.t === 'burn') { if (f.start) { floater(f.c, f.r, '糧營起火！', 'big'); await fire(f.c, f.r, ms(700)); } else { await fire(f.c, f.r, ms(1300)); refreshHex(g, f.c, f.r); } }
+    else if (f.t === 'douse') { const A = g.units[f.a]; if (A) floater(A.c, A.r, '滅火', 'skill'); dust(f.c, f.r); floater(f.c, f.r, '火勢已止', 'small'); await sleep(ms(600)); }
+    else if (f.t === 'rain') { await sleep(ms(400)); }
     else if (f.t === 'defect') { syncUnits(g); for (const id of f.ids) { const u = g.units[id]; floater(u.c, u.r, '倒戈！', 'big'); } await sleep(ms(900)); }
     else if (f.t === 'flame') {
       const A = g.units[f.a], ra = V.units.get(f.a);
       if (ra) ra.targetYaw = HX.angleOf(HX.dirTo(A.c, A.r, f.c, f.r)) * Math.PI / 180;
       if (f.ranged) await projectile([A.c, A.r], [f.c, f.r], 'arrow');
       if (f.n < 2) await fire(f.c, f.r, ms(500));   // 燃起來之後的大火由 burn 特效接著播
-      floater(f.c, f.r, f.n >= 2 ? '糧營起火！' : '火勢 1/2', f.n >= 2 ? 'big' : 'small'); syncUnits(g);
+      if (f.n < 2) floater(f.c, f.r, '火勢 1/2', 'small'); syncUnits(g);
     }
     else if (f.t === 'merge') {
       // 併入的部隊縮小消失；統帥的部隊換成合流後的兵種、移到新位置
@@ -950,6 +964,7 @@
       const c = V.camTo; c.t = Math.min(1, c.t + dt * 2.5); const k = ease(c.t);
       V.cam3.tx = c.fx + (c.x - c.fx) * k; V.cam3.tz = c.fz + (c.z - c.fz) * k; busy = true; if (c.t >= 1) V.camTo = null;
     }
+    if (V.fireGrp) { busy = true; for (const o of V.fireCones) o.scale.y = 0.7 + Math.abs(Math.sin(now / 130 + o.userData.ph)) * 0.9; }
     if (V.anims.length) {
       busy = true;
       V.anims = V.anims.filter(a => { const t = Math.min(1, (now - a.t0) / a.ms); a.fn(t); if (t >= 1) { a.res(); return false; } return true; });
@@ -978,5 +993,5 @@
     V.r.render(V.scene, V.cam);
   }
 
-  Object.assign(V, { init, build, syncUnits, playFx, highlight, clearHighlights, showSides, selectRing, focus, rotate, zoom, refreshHex, ladderMarks, digMarks, wpos });
+  Object.assign(V, { init, build, syncUnits, playFx, highlight, clearHighlights, showSides, selectRing, focus, rotate, zoom, refreshHex, ladderMarks, digMarks, fireMarks, wpos });
 })(window);

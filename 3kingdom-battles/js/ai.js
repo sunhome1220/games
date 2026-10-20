@@ -180,6 +180,7 @@
       }
       if (a.id === 'duel') for (const id of a.targets) { const T = g.units[id]; const diff = R.gen(u).war - R.gen(T).war; if (diff >= 8) opts.push({ score: 120 + diff * 6, kind: 'act', id: 'duel', t: id }); }
       if (a.id === 'shoot') for (const id of a.targets) { const T = g.units[id], r1 = mean(g, u, T, { shoot: true }); opts.push({ score: r1.dmg * val(g, T) * (r1.dmg >= T.troops ? 3 : 1) * 0.5, kind: 'act', id: 'shoot', t: id }); }   // 射箭只是補刀：分數打折，免得為了射箭衝進敵陣
+      if (a.id === 'douse') for (const t of a.targets) opts.push({ score: 330, kind: 'act', id: 'douse', t: t.k });
       if (a.id === 'burn') for (const t of a.targets) opts.push({ score: 260 + (u.type === 'arc' || t.dist <= 1 ? 140 : 40), kind: 'act', id: 'burn', t: t.k });   // 放火燒糧營：值錢，但別為了它送死
       if (a.id === 'merge') for (const id of a.targets) {
         const T = g.units[id], lead = g.sc.sides[u.side].leader, weak = x => x.troops <= x.max * 0.35;
