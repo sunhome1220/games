@@ -183,6 +183,7 @@
     g.order = alive(g).sort((a, b) => b.spdRoll - a.spdRoll).map(u => u.id);
     g.oi = -1;
     g.fx.push({ t: 'round', n: g.round });
+    startWeather(g);
     const SR = SC_RULES[g.sc.id]; if (SR) SR.onRoundStart(g);
     nextActivation(g);
   }
@@ -567,7 +568,9 @@
       }
       // 放火燒糧營：相鄰就地放火；2～3 格外射火箭（弓兵、呂布一箭就燃，步騎要射兩箭）
       const bt = depotTargets(g, u);
-      if (bt.length) add({ id: 'burn', name: bt.some(t => t.dist <= 1) ? '放火燒營' : '火箭燒營', desc: '糧營放火：相鄰（含同格）直接點燃，馬上燒光；2 格以外可以射火箭（弓兵、呂布「騎射」一箭就燃，步兵、騎兵要射 2 箭，火勢會累積）。燒掉的糧營，存糧就沒了。', need: 'hex', targets: bt });
+      if (bt.length) add({ id: 'burn', name: bt.some(t => t.dist <= 1) ? '放火燒營' : '火箭燒營', desc: '糧營放火：相鄰（含同格）直接點燃；2 格以外可以射火箭（弓兵、呂布「騎射」一箭就燃，步兵、騎兵要射 2 箭）。點燃當下存糧 −15%，沒下雨又沒人撲滅，下一、再下一回合結束再損 30%、55%（燒光）。下雨時點不著。', need: 'hex', targets: bt });
+      const dt = douseTargets(g, u);
+      if (dt.length) add({ id: 'douse', name: '滅火', desc: '撲滅相鄰（含同格）糧營的大火：火停了，已經燒掉的不會回來，剩下的保住。', need: 'hex', targets: dt });
       if (!isEngine(u)) add({ id: 'rally', name: '整隊', desc: `重整隊伍：陣勢 +${Math.round(15 + gen(u).lead / 5)}、士氣 +5（被包圍時減半）。`, enabled: u.coh < 100 || u.mor < 100, why: '隊伍已經很整齊' });
       // 守城器具
       if (u.side === 'def' && onWall(g, u)) {
@@ -601,6 +604,7 @@
     }
     if (id === 'shoot') { if (!A.targets.includes(target)) return false; attack(g, u, g.units[target], { shoot: true }); return true; }
     if (id === 'burn') { const t = A.targets.find(x => x.k === target); if (!t) return false; return igniteDepot(g, u, t); }
+    if (id === 'douse') { const t = A.targets.find(x => x.k === target); if (!t) return false; return douse(g, u, t); }
     if (id === 'merge') { if (!A.targets.includes(target)) return false; return merge(g, u, g.units[target]); }
     if (id === 'rally') {
       const half = encircled(g, u) ? 0.5 : 1;
@@ -658,17 +662,32 @@
     return true;
   }
   const isRemnant = u => u.troops <= u.max * 0.35;
-  // ---------- 糧營放火 ----------
+  // ---------- 糧營放火與火勢 ----------
   // 糧營是地圖上的「S」；被糧營守護的那一方是 sc.depotOwner（預設攻方），另一方的非器械部隊才能放火
+  // 火勢：點燃當下馬上損 15%；之後每回合結束（點燃的下一、下下回合）再損 30%、55%，第三次燒光（以原存量計）。
+  //   下雨會澆熄所有火勢、下雨天也點不起火；糧營方部隊相鄰可以「滅火」。熄火後損失保留；再點燃就接著下一階段。
+  //   進度存在 vars.dstage[位置]＝已經燒了幾個階段（0～3）、vars.burning[位置]＝{ since: 點燃的回合 }（正在燒）
+  const FIRE_CUM = [0, 0.15, 0.45, 1];
+  const WEATHER_ICON = { 晴: '☀️', 陰: '☁️', 雨: '🌧' };
   const depotOwner = g => g.sc.depotOwner || 'att';
+  const weatherAt = (g, round) => { const w = g.sc.weather; return w && w.length ? w[(round - 1) % w.length] : '晴'; };
+  const isRaining = g => g.vars.weather === '雨';
+  const burningAt = (g, c, r) => !!(g.vars.burning && g.vars.burning[H.key(c, r)]);
   function depotTargets(g, u) {
-    if (isEngine(u) || u.acted || u.side === depotOwner(g) || state(u) === 'disorder') return [];
-    const res = [], arc = !!ty(u).ranged, R = arc ? rangeOf(g, u) : (state(u) === 'disorder' ? 0 : shootRange(g, u));
+    if (isEngine(u) || u.acted || u.side === depotOwner(g) || state(u) === 'disorder' || isRaining(g)) return [];
+    const res = [], arc = !!ty(u).ranged, R = arc ? rangeOf(g, u) : shootRange(g, u);
     for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
-      if (g.map[r][c] !== 'S') continue;
+      if (g.map[r][c] !== 'S' || burningAt(g, c, r)) continue;
       const d = H.dist(u.c, u.r, c, r); if (d > R && d > 1) continue;
       res.push({ c, r, k: H.key(c, r), dist: d });
     }
+    return res;
+  }
+  // 糧營方的部隊：相鄰（含同格）正在燒的糧營可以滅火
+  function douseTargets(g, u) {
+    if (isEngine(u) || u.acted || u.side !== depotOwner(g)) return [];
+    const res = [];
+    for (const k in (g.vars.burning || {})) { const [c, r] = H.unkey(k); const d = H.dist(u.c, u.r, c, r); if (d <= 1) res.push({ c, r, k, dist: d }); }
     return res;
   }
   function igniteDepot(g, u, t) {
@@ -677,14 +696,47 @@
     g.vars.fire = g.vars.fire || {};
     const power = near ? 2 : (ty(u).ranged || has(u, 'qishe')) ? 2 : 1;
     g.vars.fire[t.k] = (g.vars.fire[t.k] || 0) + power;
-    if (g.vars.fire[t.k] >= 2) { g.fx.push({ t: 'flame', a: u.id, c: t.c, r: t.r, ranged: !near, n: 2 }); burnDepot(g, u, t.c, t.r); }
-    else { log(g, `${u.name}向糧營射出火箭，火勢漸起（1/2）`, u.side); g.fx.push({ t: 'flame', a: u.id, c: t.c, r: t.r, ranged: !near, n: 1 }); }
+    if (g.vars.fire[t.k] >= 2) {
+      delete g.vars.fire[t.k];
+      g.fx.push({ t: 'flame', a: u.id, c: t.c, r: t.r, ranged: !near, n: 2 });
+      startFire(g, u, t.c, t.r);
+    } else { log(g, `${u.name}向糧營射出火箭，火勢漸起（1/2）`, u.side); g.fx.push({ t: 'flame', a: u.id, c: t.c, r: t.r, ranged: !near, n: 1 }); }
     return true;
   }
-  function burnDepot(g, u, c, r) {
-    g.map[r][c] = '.'; delete g.vars.fire[H.key(c, r)];
-    g.fx.push({ t: 'burn', c, r });
-    const SR = SC_RULES[g.sc.id]; if (SR && SR.onDepotBurn) SR.onDepotBurn(g, u, c, r);
+  function startFire(g, u, c, r) {
+    g.vars.burning = g.vars.burning || {}; g.vars.dstage = g.vars.dstage || {};
+    g.vars.burning[H.key(c, r)] = { since: g.round, by: u.gen };
+    g.fx.push({ t: 'burn', c, r, start: true });
+    advanceFire(g, u, c, r);   // 點燃當下馬上損第一段
+  }
+  function advanceFire(g, u, c, r) {
+    const k = H.key(c, r), n = Math.min(3, (g.vars.dstage[k] || 0) + 1); g.vars.dstage[k] = n;
+    const SR = SC_RULES[g.sc.id], from = FIRE_CUM[n - 1], to = FIRE_CUM[n];
+    if (SR && SR.onDepotDamage) SR.onDepotDamage(g, u, c, r, { n, from, to });
+    if (n >= 3) { g.map[r][c] = '.'; delete g.vars.burning[k]; g.fx.push({ t: 'burn', c, r }); }
+  }
+  function douse(g, u, t) {
+    u.acted = true; delete g.vars.burning[t.k];
+    const left = Math.round((1 - FIRE_CUM[g.vars.dstage[t.k] || 0]) * 100);
+    log(g, `${u.name}率人撲滅糧營的大火，還剩 ${left}% 存糧`, u.side, 'big');
+    g.fx.push({ t: 'douse', a: u.id, c: t.c, r: t.r });
+    return true;
+  }
+  // 每回合結束：還在燒的糧營（不是這回合才點燃的）再燒一段；每回合開始：決定天氣，下雨就澆熄所有火
+  function tickFires(g) {
+    for (const k of Object.keys(g.vars.burning || {})) {
+      const f = g.vars.burning[k]; if (g.round <= f.since) continue;
+      const [c, r] = H.unkey(k); const by = g.units.find(x => x.gen === f.by) || g.units[0];
+      advanceFire(g, by, c, r);
+    }
+  }
+  function startWeather(g) {
+    const w = weatherAt(g, g.round), prev = g.vars.weather; g.vars.weather = w;
+    if (w === '雨') {
+      if (g.vars.burning && Object.keys(g.vars.burning).length) { g.vars.burning = {}; g.fx.push({ t: 'rain' }); log(g, '大雨澆熄了糧營的火勢', null, 'big'); }
+      g.vars.fire = {};
+    }
+    if (prev !== w) log(g, `第 ${g.round} 回合：${WEATHER_ICON[w]} ${w}`, null);
   }
   // 步騎射箭：一般步兵 3 成、騎兵 3 成 5 的攻擊力；「騎射」的呂布接近精銳弓兵
   function shootPower(u) { return has(u, 'qishe') ? 0.6 : u.type === 'cav' ? 0.22 : 0.18; }
@@ -768,6 +820,7 @@
       g.fx.push({ t: 'tower', c, r, d: tg.id, dmg });
       applyLoss(g, tg, Math.min(dmg, tg.troops), { ranged: true });
     }
+    tickFires(g);
     if (SC_RULES[g.sc.id]) SC_RULES[g.sc.id].onRoundEnd(g);
     checkVictory(g, true);
   }
@@ -826,12 +879,17 @@
       g.fx.push({ t: 'recede', hexes });
       msg(g, '大水退去', '城外的大水退成泥濘：步兵、騎兵移動仍然較慢，器械也能緩慢通過了。城內依然缺糧，守軍士氣持續下降。', null, []);
     },
-    onDepotBurn(g, on, c, r) {
+    // 糧營被燒：每一段損失＝原存量 × (累計比例 ← 前累計比例)，四捨五入不丟失；士氣也依同樣比例扣（合計 −4）
+    onDepotDamage(g, on, c, r, { n, from, to }) {
       const v = g.vars, d = v.depots.find(x => x.c === c && x.r === r); if (!d || d.burnt) return;
-      d.burnt = true; v.supply -= d.s; v.depotBurnt = v.depots.every(x => x.burnt);
-      for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) u.mor = clamp(u.mor - 4, 0, 100);
+      const loss = Math.round(d.s * to) - Math.round(d.s * from), mor = Math.round(4 * to) - Math.round(4 * from);
+      v.supply -= loss; d.lost = (d.lost || 0) + loss;
+      for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) u.mor = clamp(u.mor - mor, 0, 100);
+      if (n >= 3) { d.burnt = true; v.depotBurnt = v.depots.every(x => x.burnt); }
       const left = v.depots.filter(x => !x.burnt).length;
-      msg(g, '火燒糧營', `${on.name}放火燒了曹軍的${d.name}！曹軍糧草 −${d.s}，全軍士氣 −4。${left ? `曹軍還剩 ${left} 座糧營。` : '曹軍的糧營全被燒光了！'}`, 'def', [[on.gen, 'default']]);
+      if (n === 1) msg(g, '火燒糧營', `${on.name}放火燒了曹軍的${d.name}！第一段燒掉 ${loss} 糧；不撲滅的話，之後每回合結束會再燒 30%、55%（共 ${d.s} 糧）。下雨或曹軍滅火才會停。`, 'def', [[on.gen, 'default']]);
+      else if (n === 2) log(g, `${d.name}大火蔓延，又燒掉 ${loss} 糧`, 'def', 'big');
+      else msg(g, '糧營燒光', `${d.name}被燒光了（共 ${d.s} 糧）！曹軍糧草 −${loss}。${left ? `曹軍還剩 ${left} 座糧營。` : '曹軍的糧營全被燒光了！'}`, 'def', [[on.gen, 'default']]);
     },
     onRoundEnd(g) {
       const v = g.vars;
@@ -908,10 +966,13 @@
   const sunOf = g => g.units.find(u => u.gen === 'sunquan');
   const escaped = (g, u) => g.sc.escape.some(([c, r]) => c === u.c && r === u.r);
   const HEFEI = {
-    onDepotBurn(g, on) {
+    // 吳營被燒：全軍士氣合計 −10，依 15%／30%／55% 分三段扣
+    onDepotDamage(g, on, c, r, { n, from, to }) {
       const v = g.vars; v.campBurnt = true;
-      for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) u.mor = clamp(u.mor - 10, 0, 100);
-      msg(g, '火燒吳營', `${on.name}放火燒了吳軍大營！吳軍全軍士氣 −10。`, 'def', [[on.gen, on.gen === 'zhangliao' ? 'charge' : 'default']]);
+      const mor = Math.round(10 * to) - Math.round(10 * from);
+      for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) u.mor = clamp(u.mor - mor, 0, 100);
+      if (n === 1) msg(g, '火燒吳營', `${on.name}放火燒了吳軍大營！吳軍全軍士氣 −${mor}；不撲滅的話，之後每回合結束會再燒 30%、55%（士氣合計 −10）。下雨或吳軍滅火才會停。`, 'def', [[on.gen, on.gen === 'zhangliao' ? 'charge' : 'default']]);
+      else log(g, `吳軍大營${n >= 3 ? '被燒光了' : '大火蔓延'}，全軍士氣 −${mor}`, 'def', 'big');
     },
     onRoundStart(g) {
       const v = g.vars;
@@ -993,7 +1054,7 @@
   // ---------- 匯出 ----------
   root.RULES = {
     newGame, serialize, restore, startRound, nextActivation, endActivation, activeUnit, upcoming,
-    steady, shootTargets, depotTargets, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
+    steady, shootTargets, depotTargets, douseTargets, WEATHER_ICON, weatherAt, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
     attackTargets, structTargets, attack, calcDamage, canCounter, actionsFor, doAction,
     unitAt, terr, tAt, state, STATE_NAME, formOf, encircled, adjEnemies, sideHit, inCity, onWall, isEngine, gen, ty, has, alive, enemiesOf, friendsOf,
     rangeOf, canMeleeReach, ENDINGS, other, clamp, inZOC, moveCost,
