@@ -179,6 +179,7 @@
         opts.push({ score: need * 1.2, kind: 'act', id: a.id });
       }
       if (a.id === 'duel') for (const id of a.targets) { const T = g.units[id]; const diff = R.gen(u).war - R.gen(T).war; if (diff >= 8) opts.push({ score: 120 + diff * 6, kind: 'act', id: 'duel', t: id }); }
+      if (a.id === 'shoot') for (const id of a.targets) { const T = g.units[id], r1 = mean(g, u, T, { shoot: true }); opts.push({ score: r1.dmg * val(g, T) * (r1.dmg >= T.troops ? 3 : 1) * 0.5, kind: 'act', id: 'shoot', t: id }); }   // 射箭只是補刀：分數打折，免得為了射箭衝進敵陣
       if (a.id === 'merge') for (const id of a.targets) {
         const T = g.units[id], lead = g.sc.sides[u.side].leader, weak = x => x.troops <= x.max * 0.35;
         const saveLeader = (T.gen === lead && weak(T)) || (u.gen === lead && weak(u));

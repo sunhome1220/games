@@ -256,4 +256,21 @@ module.exports = [
     env.assert(r.has && r.ok, JSON.stringify(r));
     env.assert(r.luAlive && !r.gaoAlive && r.at[0] === 5 && r.at[1] === 8 && r.troops === 2550 && r.type === 'inf' && !r.over, JSON.stringify(r));
   } },
+  { name: '射箭：步騎也能向 2 格外放箭（不被反擊）；呂布騎射射程 3、威力勝過一般弓兵', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = T.setup([{ gen: 'lubu', c: 8, r: 8 }, { gen: 'zhangliao', c: 7, r: 7 }, { gen: 'caocao', c: 5, r: 8 }, { gen: 'caobu', c: 7, r: 9 }]);
+      const lu = T.u('lubu'), zl = T.u('zhangliao'), cao = T.u('caocao'), arc = T.u('caobu');
+      const luT = RULES.shootTargets(g, lu).includes(cao);
+      zl.c = 7; zl.r = 8; const zlT = RULES.shootTargets(g, zl).includes(cao); zl.c = 9; zl.r = 6;
+      lu.c = 7; lu.r = 8;
+      const lubu = RULES.calcDamage(g, lu, cao, { mean: true, shoot: true }).dmg, archer = RULES.calcDamage(g, arc, cao, { mean: true }).dmg;
+      zl.c = 7; zl.r = 7; const liao = RULES.calcDamage(g, zl, cao, { mean: true, shoot: true }).dmg;
+      const before = lu.troops; g.active = lu.id; RULES.doAction(g, lu, 'shoot', cao.id);
+      return { luT, zlT, lubu, archer, liao, noCounter: lu.troops === before, hit: cao.troops < cao.max };
+    });
+    env.assert(r.luT && r.zlT, '射程：' + JSON.stringify(r));
+    env.assert(r.lubu > r.archer && r.archer > r.liao && r.liao > 0, '威力：' + JSON.stringify(r));
+    env.assert(r.noCounter && r.hit, '射箭不被反擊：' + JSON.stringify(r));
+  } },
 ];
