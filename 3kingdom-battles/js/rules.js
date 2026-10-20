@@ -278,7 +278,9 @@
     if (ranged && dist === 1 && !ta.engine) P('近距離射擊', 0.8);
     if (has(A, 'wushuang')) P('無雙', 1.3);
     if (has(A, 'wusheng')) P('武聖', 1.2);
-    if (has(A, 'xianzhen')) P('陷陣', 1.15);
+    if (has(A, 'xianzhen')) P('陷陣', 1.35);
+    if (has(A, 'xiandeng')) P('先登', 1.15);
+    if (has(D, 'xianzhen')) P('陷陣營精甲', 0.8);
     if (has(A, 'liaolai')) P('遼來', 1.2);
     if (g.vars.surpriseSide === A.side && g.round <= g.vars.surpriseUntil) P('倉促應戰', 0.7);   // 被突襲的一方前幾回合還沒整好隊伍
     if (has(D, 'duanhou') && g.vars.retreating) P('斷後', 0.75);
@@ -349,7 +351,7 @@
     const pct = dmg / Math.max(1, before) * 100;
     let coh = pct * 2.0 + (info.side >= 0 ? [0, 6, 12, 18][info.side] : 0) + (info.charge ? 8 : 0) + (info.joint || 0) * 4 + (info.extraCoh || 0);
     coh *= steady(D);
-    if (has(D, 'xianzhen') || (has(D, 'duanhou') && g.vars.retreating)) coh *= 0.5;
+    if (steadfast(D) || (has(D, 'duanhou') && g.vars.retreating)) coh *= 0.5;
     if (info.ranged) coh *= 0.7;
     D.coh = clamp(D.coh - Math.max(2, coh), 0, 100);
     D.mor = clamp(D.mor - (pct * 0.9 + (info.side === 3 ? 5 : 0) + (info.extraMor || 0)), 0, 100);
@@ -363,7 +365,7 @@
     // 兵力折損到兩成五以下：殘部潰逃（陷陣營除外，每支部隊只觸發一次）
     if (u.troops < u.max * 0.25 && !u.broken && !has(u, 'xianzhen') && !(has(u, 'duanhou') && g.vars.retreating)) { u.broken = true; rout(g, u); return; }
     if (u.coh < 15 || u.mor <= 5) {
-      if (has(u, 'xianzhen') || lead >= 70) {
+      if (steadfast(u) || lead >= 70) {
         if (u.coh < 15) { u.coh = 15; u.mor = clamp(u.mor - 8, 0, 100); }
         if (u.mor <= 5) u.mor = 10;
         if (!u.steadied) { u.steadied = true; log(g, `${u.name}陣型大亂，靠著統率勉強穩住部隊`, u.side); }
@@ -460,7 +462,7 @@
     // 特效先排進佇列（之後的潰逃、陣亡動畫才會排在攻擊之後）
     const fx = { t: 'attack', a: A.id, d: D.id, dmg: res.dmg, counter: 0, side: res.side, ranged: res.ranged, charge: res.charge, joint: res.joint, kind: A.type };
     g.fx.push(fx);
-    applyLoss(g, D, res.dmg, { side: res.side, charge: res.charge, joint: res.joint, ranged: res.ranged, extraCoh: (A.buff.feijiang ? 15 : 0) + (opts.weizhen ? 15 : 0) });
+    applyLoss(g, D, res.dmg, { side: res.side, charge: res.charge, joint: res.joint, ranged: res.ranged, extraCoh: (A.buff.feijiang ? 15 : 0) + (opts.weizhen ? 15 : 0) + (has(A, 'xianzhen') ? 12 : 0) });
     if (A.type === 'cata' && D.alive && onWall(g, D)) damageStruct(g, D.c, D.r, 6, A);
     let cres = null;
     if (counterOK && D.alive && A.alive) {
@@ -617,6 +619,7 @@
     return true;
   }
   const isRemnant = u => u.troops <= u.max * 0.35;
+  const steadfast = u => has(u, 'xianzhen') || has(u, 'xiandeng');   // 陷陣、先登：陣型不易亂、永不就地解散
   // 統率越高，陣型越不容易被打亂：統率 50 受 8 成影響、70 受 6 成、90 只受 4 成（最低 3 成）
   function steady(u) { return clamp(1.3 - gen(u).lead / 100, 0.3, 1); }
   // 兩軍合流：主帥（劇本的主將，否則統率較高者）那一支留下，另一支併入；位置取兵力較多的那一格（殘部因此脫離包圍）
