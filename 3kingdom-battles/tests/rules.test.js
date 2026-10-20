@@ -178,7 +178,7 @@ module.exports = [
     env.assert(isFinite(r.gateFromOut) && isFinite(r.gateOut) && isFinite(r.wallToCity), '城門可以進出、城牆可以下到城內：' + JSON.stringify(r));
     env.assert(r.viaGate, '城外部隊要上城牆一定要經過城門');
   } },
-  { name: '水淹：大水可以涉水（器械不行），3 回合後退成泥濘', async fn(env) {
+  { name: '水淹：大水分三波漲高、可以涉水（器械不行），掘堤後第 4 回合退成泥濘', async fn(env) {
     const pg = await page(env);
     const r = await pg.evaluate(() => {
       const g = RULES.newGame('xiapi', { seed: 2 }); g.round = 7;
@@ -187,13 +187,16 @@ module.exports = [
       g.vars.digOpen = true; g.vars.dig = 3; inf.c = 12; inf.r = 1;   // 站在河堤上
       RULES.doAction(g, inf, 'dig');
       const flooded = g.vars.flooded && g.map[lw[1]][lw[0]] === 'w';
+      const cnt = () => { let n = 0; for (const row of g.map) for (const ch of row) if (ch === 'w') n++; return n; };
+      const waves = [cnt()]; const fr = g.vars.floodRound;
       const wadeInf = RULES.moveCost(g, inf, lw[0], lw[1], lw[0] - 1, lw[1]), wadeEng = RULES.moveCost(g, eng, lw[0], lw[1], lw[0] - 1, lw[1]);
-      g.order = []; g.oi = 0; for (let i = 0; i < 3; i++) RULES.startRound(g);
-      return { flooded, wadeInf, wadeEng, after: g.map[lw[1]][lw[0]], receded: g.vars.receded, engAfter: RULES.moveCost(g, eng, lw[0], lw[1], lw[0] - 1, lw[1]) };
+      g.order = []; g.oi = 0; for (let i = 0; i < 4; i++) { RULES.startRound(g); waves.push(cnt()); }
+      return { waves, stage: g.vars.floodStage, flooded, wadeInf, wadeEng, after: g.map[lw[1]][lw[0]], receded: g.vars.receded, engAfter: RULES.moveCost(g, eng, lw[0], lw[1], lw[0] - 1, lw[1]) };
     });
     env.assert(r.flooded, '掘滿應該水淹：' + JSON.stringify(r));
+    env.assert(r.waves[0] > 0 && r.waves[1] > r.waves[0] && r.waves[2] > r.waves[1] && r.waves[3] === r.waves[2] && r.stage === 3, '水位分三波越漲越高：' + JSON.stringify(r));
     env.assert(isFinite(r.wadeInf) && !isFinite(r.wadeEng), '步兵可以涉水、器械不行：' + JSON.stringify(r));
-    env.assert(r.receded && r.after === 'm' && isFinite(r.engAfter), '3 回合後應退成泥濘、器械可以通過：' + JSON.stringify(r));
+    env.assert(r.receded && r.after === 'm' && isFinite(r.engAfter), '第 4 回合應退成泥濘、器械可以通過：' + JSON.stringify(r));
   } },
   { name: '同格與順序：器械可和一支友軍同格；己方可以改派別的部隊先行動', async fn(env) {
     const pg = await page(env);

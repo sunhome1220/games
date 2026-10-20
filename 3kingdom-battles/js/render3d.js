@@ -297,16 +297,26 @@
     } else if (ch === 'P') {
       const hall = mesh(new T.BoxGeometry(1.1, 0.45, 0.8), mat(0xb94a32)); hall.position.y = 0.23; grp.add(hall);
       const roof = mesh(new T.ConeGeometry(0.95, 0.45, 4), mat(0x3d3a44)); roof.position.y = 0.68; roof.rotation.y = Math.PI / 4; roof.scale.set(1.25, 1, 0.9); grp.add(roof);
-    } else if (ch === '=') {
-      const p = mesh(G.plank, mat(0x8a6236)); p.position.y = 0.3; grp.add(p);
-      for (const s of [-1, 1]) { const rl = mesh(G.rail, mat(0x6b4a2b)); rl.position.set(0, 0.42, s * 0.48); grp.add(rl); }
+    } else if (ch === '=') {   // 橋：中段平直，兩端斜下搭到兩岸地面，橋墩插進水裡
+      const mid = mesh(new T.BoxGeometry(2.0, 0.08, 1.0), mat(0x8a6236)); mid.position.y = 0.32; grp.add(mid);
+      for (const sx of [-1, 1]) {
+        const ramp = mesh(new T.BoxGeometry(0.85, 0.08, 1.0), mat(0x7e5a31)); ramp.position.set(sx * 1.38, 0.27, 0); ramp.rotation.z = -sx * 0.13; grp.add(ramp);
+      }
+      for (const s2 of [-1, 1]) {
+        const rl = mesh(new T.BoxGeometry(2.0, 0.12, 0.06), mat(0x6b4a2b)); rl.position.set(0, 0.45, s2 * 0.48); grp.add(rl);
+        for (const sx of [-1, 1]) { const rr = mesh(new T.BoxGeometry(0.85, 0.12, 0.06), mat(0x6b4a2b)); rr.position.set(sx * 1.38, 0.4, s2 * 0.48); rr.rotation.z = -sx * 0.13; grp.add(rr); }
+        for (const sx of [-0.8, 0, 0.8]) { const q = mesh(new T.CylinderGeometry(0.06, 0.07, 0.8, 5), mat(0x4a3523)); q.position.set(sx, -0.05, s2 * 0.42); grp.add(q); }
+      }
       grp.position.y = 0;
-    } else if (ch === 'b') {   // 斷橋：只剩兩頭的橋板與橋柱
-      for (const sx of [-1, 1]) { const p = mesh(new T.BoxGeometry(0.5, 0.08, 1.0), mat(0x6e4e2c)); p.position.set(sx * 0.62, 0.3, 0); p.rotation.z = sx * 0.12; grp.add(p); }
-      for (const sx of [-0.3, 0.3]) for (const sz of [-0.42, 0.42]) { const q = mesh(new T.CylinderGeometry(0.05, 0.06, 0.6, 5), mat(0x4a3523)); q.position.set(sx, 0.0, sz); grp.add(q); }
+    } else if (ch === 'b') {   // 斷橋：兩岸各剩一段橋板與橋柱，中間空了
+      for (const sx of [-1, 1]) { const p = mesh(new T.BoxGeometry(0.85, 0.08, 1.0), mat(0x6e4e2c)); p.position.set(sx * 1.38, 0.27, 0); p.rotation.z = -sx * 0.13; grp.add(p); }
+      for (const sx of [-1.1, 1.1]) for (const sz of [-0.42, 0.42]) { const q = mesh(new T.CylinderGeometry(0.05, 0.06, 0.6, 5), mat(0x4a3523)); q.position.set(sx, 0.0, sz); grp.add(q); }
       grp.position.y = 0;
     } else if (ch === 'd') {
-      const o = mesh(new T.BoxGeometry(1.5, 0.18, 0.5), mat(0x7a6446)); o.position.y = 0.09; o.rotation.y = 1.05; grp.add(o);
+      // 河堤：沿河南北走向、堤身隆起（半圓柱壓扁成土堤），堤頂有踩出來的小路與草叢
+      const bank = mesh(new T.CylinderGeometry(0.5, 0.5, 1.9, 12), mat(0x7d6a48)); bank.rotation.x = Math.PI / 2; bank.scale.set(1, 1, 0.45); bank.position.set(0, 0.44, 0); grp.add(bank);
+      const path = mesh(new T.BoxGeometry(0.16, 0.03, 1.6), mat(0xa08a5c), false); path.position.set(0, 0.7, 0); grp.add(path);
+      for (let i = 0; i < 5; i++) { const t = mesh(G.reed, mat(i % 2 ? 0x8fa35a : 0x74893f), false); t.position.set((rnd() - 0.5) * 0.6, 0.62, (rnd() - 0.5) * 1.6); t.rotation.z = (rnd() - 0.5) * 0.5; grp.add(t); }
     } else if (ch === 'S') {
       for (let i = 0; i < 3; i++) { const t = mesh(G.tent, mat(0xe8dcc0)); t.position.set((i - 1) * 0.5, 0.22, (i % 2 - 0.5) * 0.4); grp.add(t); }
     } else if (ch === 'r') {
@@ -761,6 +771,27 @@
     }
     V.scene.add(V.fireGrp); V.dirty = true;
   }
+  // 河堤破口：每掘一次堤上多一處缺口（越掘越大），大水決堤後缺口湧出水柱；另調整水位（三波漲高、退水時回落）
+  function leveeMarks(g) {
+    const v = g.vars, dikes = [];
+    for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') dikes.push([c, r]);
+    const stage = v.flooded && !v.receded ? (v.floodStage || 1) : 0;
+    V.waterTarget = [0, 0.03, 0.06, 0.09][stage];
+    const n = v.flooded ? 4 : Math.min(4, v.dig || 0), sig = dikes.length + ':' + n + ':' + (v.flooded && !v.receded ? 1 : 0);
+    if (V.levSig === sig && V.levGrp) return; V.levSig = sig;
+    if (V.levGrp) V.scene.remove(V.levGrp); V.levGrp = null; if (!dikes.length || !n) { V.dirty = true; return; }
+    V.levGrp = new T.Group();
+    const ps = dikes.map(([c, r]) => wpos(c, r)).sort((a, b) => a[1] - b[1]); const [x1, z1] = ps[0], [x2, z2] = ps[ps.length - 1];
+    for (let i = 0; i < n; i++) {
+      const t = (i + 0.5) / 4, x = x1 + (x2 - x1) * (-0.35 + 1.7 * t) , z = z1 + (z2 - z1) * (-0.35 + 1.7 * t) + (z1 === z2 ? (t - 0.5) * 1.8 : 0);
+      const y = topAt(g, ...clampHex(g, hexAtWorld(x, z))) ;
+      const w = 0.45 + i * 0.05 + (v.flooded ? 0.25 : 0);
+      const gap = mesh(new T.BoxGeometry(0.95, 0.26 + (v.flooded ? 0.1 : 0), w), mat(0x3a2c1a), false); gap.position.set(x, y + 0.05, z); gap.raycast = () => {}; V.levGrp.add(gap);
+      const dirt = mesh(new T.BoxGeometry(0.5, 0.1, 0.3), mat(0x9a825a), false); dirt.position.set(x - 0.55, y - 0.02, z + 0.2); dirt.rotation.y = 0.5; dirt.raycast = () => {}; V.levGrp.add(dirt);
+      if (v.flooded && !v.receded) { const jet = new T.Mesh(new T.BoxGeometry(2.6, 0.12, w * 0.9), new T.MeshBasicMaterial({ color: 0x6fb6d8, transparent: true, opacity: 0.6, depthWrite: false })); jet.position.set(x + 1.3, y - 0.12, z); jet.rotation.z = -0.07; jet.raycast = () => {}; V.levGrp.add(jet); }
+    }
+    V.scene.add(V.levGrp); V.dirty = true;
+  }
   function ladderMarks(g) {
     if (V.lads) V.scene.remove(V.lads);
     V.lads = new T.Group();
@@ -927,7 +958,7 @@
     else if (f.t === 'flood') {
       // 大水漫過低地：水面先漲高再退回
       const hexes = f.hexes;
-      await tween(ms(1600), t => { V.waterBoost = Math.sin(Math.min(1, t * 1.4) * Math.PI / 2) * 0.32 * (1 - Math.max(0, t - 0.7) / 0.3); });
+      await tween(ms(1600), t => { V.waterBoost = Math.sin(Math.min(1, t * 1.4) * Math.PI / 2) * (f.stage > 1 ? 0.18 : 0.3) * (1 - Math.max(0, t - 0.7) / 0.3); });
       V.waterBoost = 0;
       hexes.forEach(([c, r]) => refreshHex(g, c, r)); syncUnits(g);
     } else if (f.t === 'recede') { f.hexes.forEach(([c, r]) => refreshHex(g, c, r)); await sleep(ms(500)); syncUnits(g);
@@ -985,7 +1016,7 @@
         return true;
       });
     }
-    if (V.water) { V.water.position.y = -0.02 + Math.sin(now / 900) * 0.015 + (V.waterBoost || 0); }
+    if (V.water) { V.waterBase = (V.waterBase || 0) + ((V.waterTarget || 0) - (V.waterBase || 0)) * Math.min(1, dt * 1.5); V.water.position.y = -0.02 + Math.sin(now / 900) * 0.015 + (V.waterBoost || 0) + V.waterBase; if (Math.abs((V.waterTarget || 0) - V.waterBase) > 0.002) busy = true; }
     if (!busy && !V.dirty && (now - (V.lastDraw || 0)) < 250) return;
     V.dirty = false; V.lastDraw = now;
     if (!V.g) return;
@@ -993,5 +1024,5 @@
     V.r.render(V.scene, V.cam);
   }
 
-  Object.assign(V, { init, build, syncUnits, playFx, highlight, clearHighlights, showSides, selectRing, focus, rotate, zoom, refreshHex, ladderMarks, digMarks, fireMarks, wpos });
+  Object.assign(V, { init, build, syncUnits, playFx, highlight, clearHighlights, showSides, selectRing, focus, rotate, zoom, refreshHex, ladderMarks, digMarks, leveeMarks, fireMarks, wpos });
 })(window);

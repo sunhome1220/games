@@ -514,7 +514,7 @@
       bits.push(`曹軍糧草 <b>${Math.max(0, v.supply)}</b>${v.depots ? `（糧營 ${v.depots.filter(d => !d.burnt).length}/${v.depots.length}）` : ''}${v.supply <= 0 ? `<span class="warn"> 缺糧 ${v.starve}/${v.starveLimit}</span>` : ''}`);
       bits.push(`城中糧 <b>${v.food}</b>`);
       if (v.digOpen && !v.flooded) bits.push(`<button class="hudlink" id="hDig" title="點一下看河堤在哪裡">⛏ 掘堤 ${v.dig}/${v.digNeed}</button>`);
-      if (v.flooded && !v.receded) bits.push(`<span title="城外低地是大水；城內每回合糧 −3、士氣 −4">🌊 水淹（第 ${v.floodRound + 3} 回合退）</span>`);
+      if (v.flooded && !v.receded) bits.push(`<span title="城外低地是大水；城內每回合糧 −3、士氣 −4">🌊 水位 ${v.floodStage || 1}/3（第 ${v.floodRound + 4} 回合退）</span>`);
       else if (v.flooded) bits.push('<span title="城外泥濘；城內每回合糧 −3、士氣 −4">🟫 水退・泥濘</span>');
       if (v.betrayed) bits.push('西門已開');
       else if (v.unrest) bits.push('<span class="warn">⚠ 城內人心浮動</span>');
@@ -527,6 +527,7 @@
     }
     $('#hVars').innerHTML = bits.join('｜');
     const dig = $('#hDig'); if (dig) dig.onclick = () => { const d = digHexes(g)[0]; if (d) { root.V3.focus(d[0], d[1]); toast('⛏ 河堤：曹軍步兵或弓兵站上來就能「掘堤」', 2600); } };
+    root.V3.leveeMarks && root.V3.leveeMarks(g);
     root.V3.fireMarks && root.V3.fireMarks(g, burning.map(k => k.split(',').map(Number)));
     root.V3.digMarks && root.V3.digMarks(g, v.digOpen && !v.flooded ? digHexes(g).filter(([c, r]) => !R.unitAt(g, c, r)) : []);
     const ids = R.upcoming(g, 14);
