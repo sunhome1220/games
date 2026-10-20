@@ -175,6 +175,11 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, { two: [0, 'hopeless'], one: [null, null], other: [null, null], black: [1, 'hopeless'] });
   } },
+  { name: '認輸按鈕：只有連線對打與同裝置面對面才有（並排、對電腦隱藏）', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => { const o = {}; for (const m of ['local', 'ai', 'face', 'online']) { mode = m; showResignBtn(); o[m] = !$('mResign').hidden; } return o; });
+    t.assert.deepStrictEqual(r, { local: false, ai: false, face: true, online: true });
+  } },
   { name: '認輸：對方獲勝、一局結束；結束後不能再認輸；選牌中不能認輸', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
@@ -198,7 +203,7 @@ module.exports = [
   { name: '每回合限時：超時後才出現「強制取消」，按下後這一步取消、換對方；對電腦不計時', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
-      const o = {}; clockSec = 5; clockReset(); mode = 'local'; clockTick(0);
+      const o = {}; clockSec = 5; clockReset(); mode = 'face'; clockTick(0);
       o.start = [clockLeft, forceReady()];
       for (let i = 0; i < 90; i++) clockTick(0.05);   // 4.5 秒
       o.before = forceReady();
@@ -206,10 +211,11 @@ module.exports = [
       o.after = forceReady(); o.visible = !$('forceBox').hidden;
       const t0 = turn; $('forceBtn').click(); o.turn = [t0, turn];
       clockTick(0); o.reset = [Math.round(clockLeft), forceReady()];
-      mode = 'ai'; clockLeft = 0; o.ai = forceReady();
+      clockLeft = 0; o.face = forceReady();
+      for (const m of ['local', 'ai']) { mode = m; clockLeft = 0; o[m] = forceReady(); }   // 並排、對電腦都不計時
       return o;
     });
-    t.assert.deepStrictEqual(r, { start: [5, false], before: false, after: true, visible: true, turn: [0, 1], reset: [5, false], ai: false });
+    t.assert.deepStrictEqual(r, { start: [5, false], before: false, after: true, visible: true, turn: [0, 1], reset: [5, false], face: true, local: false, ai: false });
   } },
   { name: '強化卡牌：不可疊加、只影響自己這一方、卡表格式正確', async fn(t) {
     const pg = await t.open();

@@ -1,11 +1,11 @@
-// ===== 每回合時間限制（同裝置對戰、連線對戰；對電腦不計時）=====
+// ===== 每回合時間限制（只有連線對打、同裝置面對面才計時；並排與對電腦不計時）=====
 // 超過時間後不會自動處理：輪到等待的那一方可以按「強制取消對手這一步」，不按就一直等。
 const CLOCK_OPTIONS = [0, 5, 10, 15, 20, 25, 30];   // 秒；0＝不限時
 let clockSec = 0;
 try { const v = +localStorage.getItem('rc-clock'); if (CLOCK_OPTIONS.includes(v)) clockSec = v; } catch (e) {}
 { const v = +new URLSearchParams(location.search).get('clock'); if (CLOCK_OPTIONS.includes(v)) clockSec = v; }
 let clockLeft = 0, clockKey = null, clockForced = false;
-const clockOn = () => clockSec > 0 && mode !== 'ai' && winner === null && state !== 'over';
+const clockOn = () => clockSec > 0 && pvpMode() && winner === null && state !== 'over';
 const clockCounting = () => ['aim', 'select', 'target', 'wait'].includes(state);   // 出發、開火動畫與選牌時不計時
 // 目前能不能按「強制取消」：超時、還在等對方決定；連線時只有等待的那一方，同裝置對戰則由另一位玩家按
 const forceReady = () => clockOn() && clockLeft <= 0 && !clockForced && clockCounting() && (online() ? !myTurn() : true);
@@ -43,7 +43,7 @@ $('forceBtn').onclick = () => {
   else skipTurnByForce();
   renderClock();
 };
-function showClockBtn() { $('mClock').textContent = `⏲ 每回合限時：${clockSec ? clockSec + ' 秒' : '不限時'}（點一下切換）`; }
+function showClockBtn() { $('mClock').textContent = `⏲ 每回合限時：${clockSec ? clockSec + ' 秒' : '不限時'}（僅連線／面對面）`; }
 $('mClock').onclick = () => {
   clockSec = CLOCK_OPTIONS[(CLOCK_OPTIONS.indexOf(clockSec) + 1) % CLOCK_OPTIONS.length]; showClockBtn(); clockReset();
   try { localStorage.setItem('rc-clock', clockSec); } catch (e) {}

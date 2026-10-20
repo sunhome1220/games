@@ -148,11 +148,12 @@ document.querySelectorAll('#lobby .lv button').forEach(b => b.onclick = () => {
   setMsg(`對電腦（${AI_LEVELS[aiLevel]}）：你執紅先手，點選棋子開始。`);
 });
 $('mHelp').onclick = () => { $('lobby').hidden = true; helpFrom = 'lobby'; $('legendOv').hidden = false; };
-// 認輸：同裝置對戰時是「目前輪到的那一方」認輸；對電腦／連線是自己這方。要連按兩次才生效，避免誤觸
-const resignSide = () => mode === 'ai' || online() ? mySide : turn;
+// 認輸：只有連線對打、同裝置面對面才有。面對面時是「目前輪到的那一方」認輸；連線是自己這方。要連按兩次才生效，避免誤觸
+const resignSide = () => online() ? mySide : turn;
 let resignArm = 0;
-function showResignBtn() { const b = $('mResign'); b.textContent = resignArm ? `⚠️ 確定認輸？（${SIDE[resignSide()].name}）` : `🏳️ 認輸（${SIDE[resignSide()].name}）`; b.disabled = state === 'over' || state === 'pick'; }
+function showResignBtn() { const b = $('mResign'); b.textContent = resignArm ? `⚠️ 確定認輸？（${SIDE[resignSide()].name}）` : `🏳️ 認輸（${SIDE[resignSide()].name}）`; b.disabled = state === 'over' || state === 'pick'; b.hidden = !pvpMode(); }
 $('mResign').onclick = () => {
+  if (!pvpMode()) return;
   if (!resignArm) { resignArm = setTimeout(() => { resignArm = 0; showResignBtn(); }, 3500); showResignBtn(); return; }
   clearTimeout(resignArm); resignArm = 0;
   if (resign(resignSide())) $('lobby').hidden = true;
