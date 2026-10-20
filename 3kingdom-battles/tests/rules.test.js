@@ -273,4 +273,20 @@ module.exports = [
     env.assert(r.lubu > r.archer && r.archer > r.liao && r.liao > 0, '威力：' + JSON.stringify(r));
     env.assert(r.noCounter && r.hit, '射箭不被反擊：' + JSON.stringify(r));
   } },
+  { name: '技能冷卻與代價：飛將用完按鈕顯示冷卻、陣勢下降；陣勢太低不能用；冷卻 3 回合後恢復', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = T.setup([{ gen: 'lubu', c: 8, r: 8 }, { gen: 'caocao', c: 2, r: 8 }]); const lu = T.u('lubu'); g.active = lu.id;
+      const find = () => RULES.actionsFor(g, lu).find(a => a.id === 'skill:feijiang');
+      const before = lu.coh; RULES.doAction(g, lu, 'skill:feijiang');
+      const used = find(), drop = before - lu.coh;
+      const cd = []; for (let i = 0; i < 3; i++) { cd.push(lu.cd.feijiang); for (const u of g.units) if (u.alive) for (const k in u.cd) if (u.cd[k] > 0) u.cd[k]--; }
+      lu.coh = 30; const tired = find();
+      lu.coh = 100; lu.acted = false; const again = find();
+      return { name: used.name, enabled: used.enabled, drop, cd, tired: tired.enabled, tiredWhy: tired.why, again: again.enabled };
+    });
+    env.assert(r.name === '飛將（冷卻 3）' && !r.enabled, JSON.stringify(r));
+    env.assert(r.drop > 3 && r.drop < 8, '呂布統率高，代價約 5：' + JSON.stringify(r));
+    env.assert(!r.tired && r.again, JSON.stringify(r));
+  } },
 ];
