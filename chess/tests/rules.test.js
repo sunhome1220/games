@@ -217,6 +217,25 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, { start: [5, false], before: false, after: true, visible: true, turn: [0, 1], reset: [5, false], face: true, local: false, ai: false });
   } },
+  { name: '建議認輸：勢均力敵不提示；大勢已去（勝率 <5%）才提示並列出理由；繼續下後不再問；認輸則同難度開新局；只在對電腦時', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const o = {}, board = list => { T_.place(list); mode = 'ai'; mySide = 0; aiLevel = 3; winner = null; state = 'aim'; turn = 0; turnsPlayed = [HINT_MIN_TURNS, HINT_MIN_TURNS]; hintReset(); };
+      const full = [{ s: 0, t: 'K', c: 4, r: 9 }, { s: 0, t: 'R', c: 0, r: 9 }, { s: 0, t: 'N', c: 1, r: 9 }, { s: 0, t: 'C', c: 1, r: 7 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'R', c: 0, r: 0 }, { s: 1, t: 'N', c: 1, r: 0 }, { s: 1, t: 'C', c: 1, r: 2 }];
+      board(full); const even = winEstimate(0).p; hintTick(); o.even = [even > 0.3 && even < 0.7, $('surrOv').hidden];
+      // 我方只剩帥（半血），對方俥傌炮齊全且已過河
+      board([{ s: 0, t: 'K', c: 4, r: 9, hp: 1 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'R', c: 0, r: 4 }, { s: 1, t: 'N', c: 7, r: 3 }, { s: 1, t: 'C', c: 1, r: 4 }, { s: 1, t: 'P', c: 2, r: 5 }]);
+      const e = winEstimate(0); hintTick(); o.lost = [e.p < 0.05, e.why.length >= 1 && e.why.length <= 3, !$('surrOv').hidden, $('surrWhy').children.length >= 1];
+      $('surrNo').click(); o.no = $('surrOv').hidden;
+      const real = winEstimate, ask = p => { winEstimate = () => ({ p, why: [] }); turnsPlayed[0]++; hintTick(); return !$('surrOv').hidden; };   // 之後用假的勝率測「再問」規則
+      o.again = [ask(0.03), (() => { $('surrNo').click(); return ask(0.005); })(), (() => { $('surrNo').click(); return ask(0.001); })()];   // 1%～5% 不再問；低於 1% 再問一次；最多兩次
+      winEstimate = real;
+      hintAsked = 0; hintKey = null; $('surrYes').click(); o.yes = { winner, mode, played: turnsPlayed.join(), hidden: $('surrOv').hidden };
+      mode = 'local'; board([{ s: 0, t: 'K', c: 4, r: 9, hp: 1 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'R', c: 0, r: 4 }, { s: 1, t: 'N', c: 7, r: 3 }, { s: 1, t: 'C', c: 1, r: 4 }]); mode = 'local'; hintTick(); o.local = $('surrOv').hidden;
+      return o;
+    });
+    t.assert.deepStrictEqual(r, { even: [true, true], lost: [true, true, true, true], no: true, again: [false, true, false], yes: { winner: null, mode: 'ai', played: '0,0', hidden: true }, local: true });
+  } },
   { name: '強化卡牌：不可疊加、只影響自己這一方、卡表格式正確', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {

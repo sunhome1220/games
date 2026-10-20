@@ -272,6 +272,7 @@ function update(dt) {
   updParts(dt);
   aiTick();
   clockTick(dt);
+  hintTick();
 }
 // 彈體目前位置（火箭加速、砲彈拋物線）
 function projPos(f) {
