@@ -84,7 +84,13 @@
   const isEngine = u => !!ty(u).engine;
   const has = (u, sk) => gen(u).skills.includes(sk) && !isEngine(u);
   const alive = g => g.units.filter(u => u.alive);
-  const enemiesOf = (g, u) => g.units.filter(v => v.alive && v.side !== u.side);
+  // 伏兵：劇本設定 sc.ambush＝某一方，這一方的作戰部隊藏在樹林格裡、敵軍 2 格內才看得見；本回合出手過（暴露）也看得見
+  const rawEnemies = (g, u) => g.units.filter(v => v.alive && v.side !== u.side);
+  function hidden(g, v) {
+    if (!v.alive || g.sc.ambush !== v.side || isEngine(v) || g.map[v.r][v.c] !== 'f' || v.exposed === g.round) return false;
+    return !rawEnemies(g, v).some(e => H.dist(e.c, e.r, v.c, v.r) <= 2);
+  }
+  const enemiesOf = (g, u) => g.units.filter(v => v.alive && v.side !== u.side && !hidden(g, v));
   const friendsOf = (g, u) => g.units.filter(v => v.alive && v.side === u.side && v !== u);
   const onWall = (g, u) => !!(terr(g, u.c, u.r) || {}).wall;
   const inCity = (g, u) => { const t = terr(g, u.c, u.r); return !!(t && (t.wall || g.city.has(H.key(u.c, u.r)))); };
@@ -140,6 +146,7 @@
     let mp = ty(u).move; const f = formOf(u);
     if (f && f.move) mp += f.move;
     if (state(u) === 'disorder') mp -= 1;
+    if (g.sc.ambush === u.side && u.type === 'cav') mp += 2;   // 呂布的騎兵來去如風
     return Math.max(1, mp + u.mpBonus);
   }
   // 可到達的格子：Map key → { cost, prev }
@@ -198,7 +205,7 @@
   }
   function beginActivation(g, u) {
     g.active = u.id;
-    Object.assign(u, { moved: false, acted: false, attacked: false, mpBonus: 0, ignoreZOC: false, buff: {}, sortie: false, moveLen: 0, from: [u.c, u.r, u.face] });
+    Object.assign(u, { moved: false, acted: false, attacked: false, mpBonus: 0, ignoreZOC: false, buff: {}, sortie: false, moveLen: 0, from: [u.c, u.r, u.face], ambush: hidden(g, u) });
   }
   const activeUnit = g => (g.active == null ? null : g.units[g.active]);
   // 不必照順序：輪到己方時（目前的部隊還沒移動、沒動作），可以改派本回合還沒行動的其他己方部隊先動
@@ -289,6 +296,7 @@
     if (has(D, 'duanhou') && g.vars.retreating) P('斷後', 0.75);
     if (A.buff.feijiang && !opts.counter) P('飛將', 1.4);
     if (opts.weizhen) P('威震', 1.3);
+    if (A.ambush && !opts.counter) P('伏擊', 1.3);
     // 兵種相剋
     if (td.engine) P('打器械', ranged ? 1.2 : 1.5);
     else if (!shoot) { const cm = (COUNTER[A.type] || {})[D.type]; if (cm) P(cm > 1 ? '兵種剋制' : '兵種被剋', cm); }   // 射箭不算近戰的兵種相剋
@@ -313,6 +321,7 @@
     }
     // 方向
     const side = sideHit(g, A, D);
+    if (A.ambush && !opts.counter && side === 3) P('伏擊打背後', 1.15);
     if (side >= 0) {
       const fd = formOf(D); let sm = (fd ? fd.def : BASE_DEF)[side];
       if (side >= 1 && sm > 1) {
@@ -489,7 +498,9 @@
     // 特效先排進佇列（之後的潰逃、陣亡動畫才會排在攻擊之後）
     const fx = { t: 'attack', a: A.id, d: D.id, dmg: res.dmg, counter: 0, side: res.side, ranged: res.ranged, charge: res.charge, joint: res.joint, kind: A.type };
     g.fx.push(fx);
-    applyLoss(g, D, res.dmg, { side: res.side, charge: res.charge, joint: res.joint, ranged: res.ranged, extraCoh: (A.buff.feijiang ? 15 : 0) + (opts.weizhen ? 15 : 0) + (has(A, 'xianzhen') ? 12 : 0) });
+    applyLoss(g, D, res.dmg, { side: res.side, charge: res.charge, joint: res.joint, ranged: res.ranged, extraCoh: (A.buff.feijiang ? 15 : 0) + (opts.weizhen ? 15 : 0) + (has(A, 'xianzhen') ? 12 : 0) + (A.ambush ? 15 : 0) });
+    if (A.ambush) { g.fx.push({ t: 'skill', id: A.id, name: '伏擊' }); A.ambush = false; }
+    A.exposed = g.round;
     if (A.type === 'cata' && D.alive && onWall(g, D)) damageStruct(g, D.c, D.r, 6, A);
     let cres = null;
     if (counterOK && D.alive && A.alive) {
@@ -870,21 +881,34 @@
     actions(g, u, add) {
       const v = g.vars;
       if (u.side === 'att' && v.digOpen && !v.flooded && g.map[u.r][u.c] === 'd' && !isEngine(u)) {
-        add({ id: 'dig', name: `掘堤（${v.dig}/${v.digNeed}）`, desc: '挖開河堤，挖滿後引泗水、沂水灌城：城外低地變成大水（低地上的攻城器械會被沖毀），城內糧草與士氣每回合下降。' });
+        add({ id: 'dig', name: `掘堤（本段 ${(v.digSeg || {})[H.key(u.c, u.r)] || 0}/${v.digNeed}）`, desc: '挖開腳下這一段河堤：同一段挖滿後決堤，大水從這裡開始淹向城下（低地上的攻城器械會被沖毀），城內糧草與士氣每回合下降。守軍可以在旁邊「搶修」把進度倒扣。' });
+      }
+      // 搶修河堤：守軍站在堤上或相鄰，把一段堤的掘堤進度 −2
+      if (u.side !== 'att' && v.digOpen && !v.flooded && !isEngine(u) && !u.acted) {
+        const targets = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') { const k = H.key(c, r), d = H.dist(u.c, u.r, c, r); if (d <= 1 && (v.digSeg || {})[k] > 0) targets.push({ c, r, k, dist: d }); }
+        if (targets.length) add({ id: 'mend', name: '搶修河堤', desc: '站在河堤上或相鄰時，花一次動作把一段堤的掘堤進度 −2（水淹之後就修不了了）。', need: 'hex', targets });
       }
     },
-    doAction(g, u, id) {
+    doAction(g, u, id, target) {
+      const v = g.vars; v.digSeg = v.digSeg || {};
+      if (id === 'mend') {
+        const A = actionsFor(g, u).find(a => a.id === 'mend'); const t = A && A.targets.find(x => x.k === target); if (!t) return false;
+        v.digSeg[t.k] = Math.max(0, v.digSeg[t.k] - 2); u.acted = true; v.dig = Math.max(0, ...Object.values(v.digSeg));
+        log(g, `${u.name}搶修河堤，這一段掘堤進度降到 ${v.digSeg[t.k]}/${v.digNeed}`, u.side); g.fx.push({ t: 'dig', id: u.id, mend: true });
+        return true;
+      }
       if (id !== 'dig') return false;
-      const v = g.vars; v.dig += u.gen === 'xunyou' ? 2 : 1; u.acted = true;
-      log(g, `${u.name}掘堤（${Math.min(v.dig, v.digNeed)}/${v.digNeed}）`, u.side);
+      const k = H.key(u.c, u.r); v.digSeg[k] = (v.digSeg[k] || 0) + (u.gen === 'xunyou' ? 2 : 1); u.acted = true;
+      v.dig = Math.max(...Object.values(v.digSeg));
+      log(g, `${u.name}掘堤（本段 ${Math.min(v.digSeg[k], v.digNeed)}/${v.digNeed}）`, u.side);
       g.fx.push({ t: 'dig', id: u.id });
-      if (v.dig >= v.digNeed) XIAPI.flood(g);
+      if (v.digSeg[k] >= v.digNeed) XIAPI.flood(g, [u.c, u.r]);
       return true;
     },
-    flood(g) {
-      const v = g.vars; v.flooded = true; v.floodRound = g.round; v.floodStage = 0;
+    flood(g, origin) {
+      const v = g.vars; v.flooded = true; v.floodAt = origin || null; v.floodRound = g.round; v.floodStage = 0;
       // 低地依離河堤的遠近分三波淹：近的先淹，之後每回合再漫開一圈
-      const dikes = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') dikes.push([c, r]);
+      const dikes = [origin || [12, 2]];   // 從決堤的那一段開始淹
       const lows = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'l') lows.push([c, r, Math.min(...dikes.map(([dc, dr]) => H.dist(c, r, dc, dr)))]);
       lows.sort((x, y) => x[2] - y[2] || x[1] - y[1] || x[0] - y[0]);
       const per = Math.ceil(lows.length / 3); v.floodWaves = [0, 1, 2].map(i => lows.slice(i * per, (i + 1) * per).map(([c, r]) => [c, r]));
@@ -1084,7 +1108,7 @@
   // ---------- 匯出 ----------
   root.RULES = {
     newGame, serialize, restore, startRound, nextActivation, endActivation, activeUnit, upcoming,
-    steady, seer, shootTargets, depotTargets, douseTargets, WEATHER_ICON, weatherAt, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
+    steady, seer, hidden, shootTargets, depotTargets, douseTargets, WEATHER_ICON, weatherAt, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
     attackTargets, structTargets, attack, calcDamage, canCounter, actionsFor, doAction,
     unitAt, terr, tAt, state, STATE_NAME, formOf, encircled, adjEnemies, sideHit, inCity, onWall, isEngine, gen, ty, has, alive, enemiesOf, friendsOf,
     rangeOf, canMeleeReach, ENDINGS, other, clamp, inZOC, moveCost,

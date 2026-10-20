@@ -78,7 +78,8 @@
   }
   function digHex(g, u) {
     const ds = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') ds.push([c, r]);
-    ds.sort((a, b) => H.dist(u.c, u.r, a[0], a[1]) - H.dist(u.c, u.r, b[0], b[1]));
+    const seg = g.vars.digSeg || {};
+    ds.sort((a, b) => ((seg[b[0] + ',' + b[1]] || 0) - (seg[a[0] + ',' + a[1]] || 0)) * 3 + (H.dist(u.c, u.r, a[0], a[1]) - H.dist(u.c, u.r, b[0], b[1])));
     return ds.find(([c, r]) => { const o = R.unitAt(g, c, r); return !o || o === u; }) || ds[0];
   }
   function nearest(u, list) { let b = null, bd = 1e9; for (const x of list) { const d = H.dist(u.c, u.r, x.c, x.r); if (d < bd) { bd = d; b = x; } } return [b.c, b.r]; }
@@ -170,6 +171,7 @@
       }
       if (a.id === 'ladder') for (const tg of a.targets) opts.push({ score: R.unitAt(g, tg.c, tg.r) ? 180 : 220, kind: 'act', id: 'ladder', t: tg.k });
       if (a.id === 'dig') opts.push({ score: 600, kind: 'act', id: 'dig' });
+      if (a.id === 'mend') for (const t of a.targets) opts.push({ score: 420 + (g.vars.digSeg[t.k] || 0) * 40, kind: 'act', id: 'mend', t: t.k });
       if (a.id === 'rocks' || a.id === 'oil') for (const id of a.targets) { const T = g.units[id]; opts.push({ score: T.troops * (R.isEngine(T) ? 0.6 : 0.12) * val(g, T) * (T.type === 'ladder' ? 2 : 1), kind: 'act', id: a.id, t: id }); }
       if (a.id === 'skill:huoji') for (const id of a.targets) { const T = g.units[id]; opts.push({ score: T.troops * (R.isEngine(T) ? 0.24 : 0.08) * val(g, T) + 40, kind: 'act', id: a.id, t: id }); }
       if (a.id === 'skill:lijian') for (const id of a.targets) { const T = g.units[id]; const low = (R.gen(T).loyal || 100) < 50; opts.push({ score: (low && R.inCity(g, T) ? 260 : 60) + (100 - T.mor), kind: 'act', id: a.id, t: id }); }
