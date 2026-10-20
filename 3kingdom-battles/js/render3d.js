@@ -552,11 +552,20 @@
     if (R.isEngine(u)) buildEngine(u, inner, col);
     else {
       const N = 16;
-      const cav = u.type === 'cav';
-      const mBody = new T.InstancedMesh(cav ? G.bodyC : G.body, mat(col), N), mHead = new T.InstancedMesh(cav ? G.headC : G.head, mat(0xe8c8a0), N);
-      const extra = u.type === 'cav' ? new T.InstancedMesh(G.horse, mat(0x6b4a2b), N) : u.type === 'arc' ? new T.InstancedMesh(G.bow, mat(0x5a3a1a), N) : new T.InstancedMesh(G.spear, mat(0x9a9a9a), N);
+      if (u.type === 'cav' && root.CAVALRY) {
+        // 騎兵：披甲戰馬（毛色由 instanceColor 決定）＋裝備與騎士（頂點色，含陣營色），移動／衝鋒時換成奔馳姿態
+        const geo = root.CAVALRY.build(T, toneOf(u.side), 'idle');
+        const coat = new T.InstancedMesh(geo.coat, new T.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, flatShading: true }), N);
+        const gear = new T.InstancedMesh(geo.gear, new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, flatShading: true }), N);
+        const c = new T.Color(); for (let i = 0; i < N; i++) coat.setColorAt(i, c.setHex(root.CAVALRY.coatOf(u, i)));
+        for (const m of [coat, gear]) { m.castShadow = true; m.count = 0; inner.add(m); }
+        rec.ims = [coat, gear]; rec.cur = []; rec.target = []; rec.cav = true; rec.pose = 'idle';
+      } else {
+      const mBody = new T.InstancedMesh(G.body, mat(col), N), mHead = new T.InstancedMesh(G.head, mat(0xe8c8a0), N);
+      const extra = u.type === 'arc' ? new T.InstancedMesh(G.bow, mat(0x5a3a1a), N) : new T.InstancedMesh(G.spear, mat(0x9a9a9a), N);
       for (const m of [mBody, mHead, extra]) { m.castShadow = true; m.count = 0; inner.add(m); }
       rec.ims = [mBody, mHead, extra]; rec.cur = []; rec.target = [];
+      }
     }
     // 軍旗（將旗）
     const flagM = new T.MeshStandardMaterial({ map: flagTexture(R.isEngine(u) ? R.ty(u).icon : R.gen(u).mark, col), side: T.DoubleSide, roughness: 0.9 });
@@ -619,6 +628,7 @@
     if (form !== rec.form || n !== rec.n) {
       rec.form = form; rec.n = n;
       rec.target = layout(form, n, u.id * 97 + (u.routed || 0));
+      if (rec.cav) rec.target = rec.target.map(([a, b]) => [a * 1.15, b * 1.3]);   // 馬比較長，隊形拉開一點
       rec.yawJit = rec.target.map((_, i) => (form === 'chaos' ? (seeded(u.id * 13 + i)() - 0.5) * 3 : 0));
       while (rec.cur.length < n) rec.cur.push(rec.target[rec.cur.length] ? [...rec.target[rec.cur.length]] : [0, 0]);
       rec.cur.length = n;
@@ -626,17 +636,17 @@
       rec.ims.forEach(m => (m.count = n));
     }
   }
-  const _m4 = () => new T.Matrix4(); let M4, Q, S1, P3;
+  const _m4 = () => new T.Matrix4(); let M4, Q, S1, P3; const CAV_SCALE = 1.3; let S1c;
   function drawFigures(rec, dt) {
     if (!rec.ims) return false;
-    M4 = M4 || _m4(); Q = Q || new T.Quaternion(); S1 = S1 || new T.Vector3(1, 1, 1); P3 = P3 || new T.Vector3();
+    M4 = M4 || _m4(); Q = Q || new T.Quaternion(); S1 = S1 || new T.Vector3(1, 1, 1); S1c = S1c || new T.Vector3(CAV_SCALE, CAV_SCALE, CAV_SCALE); P3 = P3 || new T.Vector3();
     let moving = false; const k = Math.min(1, dt * 4);
     for (let i = 0; i < rec.n; i++) {
       const c = rec.cur[i], t = rec.target[i]; if (!t) continue;
       const dx = t[0] - c[0], dz = t[1] - c[1];
       if (Math.abs(dx) + Math.abs(dz) > 0.002) { c[0] += dx * k; c[1] += dz * k; moving = true; }
       Q.setFromAxisAngle(new T.Vector3(0, 1, 0), rec.yawJit[i] || 0);
-      M4.compose(P3.set(c[0], 0, -c[1]), Q, S1);
+      M4.compose(P3.set(c[0], 0, -c[1]), Q, rec.cav ? S1c : S1);
       for (const m of rec.ims) m.setMatrixAt(i, M4);
     }
     for (const m of rec.ims) m.instanceMatrix.needsUpdate = true;
@@ -655,9 +665,15 @@
     }
     V.dirty = true;
   }
+  // 騎兵姿態：'idle' 站立、'run' 奔馳（換幾何體，陣營色也在這裡換）
+  function setPose(u, rec, pose) {
+    if (!rec || !rec.cav) return; rec.pose = pose;
+    const geo = root.CAVALRY.build(T, toneOf(u.side), pose);
+    rec.ims[0].geometry = geo.coat; rec.ims[1].geometry = geo.gear; V.dirty = true;
+  }
   function recolor(u, rec) {
     const col = sideColor(u.side); rec.side = u.side;
-    if (rec.ims) rec.ims[0].material = mat(col);
+    if (rec.cav) setPose(u, rec, rec.pose); else if (rec.ims) rec.ims[0].material = mat(col);
     rec.arrow.material.color.setHex(col);
     rec.flagM.map = flagTexture(root.RULES.gen(u).mark, col); rec.flagM.needsUpdate = true;
   }
@@ -855,14 +871,14 @@
     const R = root.RULES; const ms = x => x / speed;
     if (f.t === 'move') {
       const rec = V.units.get(f.id); const u = g.units[f.id]; if (!rec || f.path.length < 2) { syncUnits(g); return; }
-      rec.moving = true;
+      rec.moving = true; setPose(u, rec, 'run');
       for (let i = 1; i < f.path.length; i++) {
         const [c0, r0] = f.path[i - 1], [c1, r1] = f.path[i];
         const [x0, z0] = wpos(c0, r0), [x1, z1] = wpos(c1, r1); const y0 = topAt(g, c0, r0), y1 = topAt(g, c1, r1);
         rec.targetYaw = HX.angleOf(HX.dirTo(c0, r0, c1, r1)) * Math.PI / 180;
         await tween(ms(f.rout ? 150 : 210), t => { rec.grp.position.set(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t + Math.sin(t * Math.PI) * 0.08, z0 + (z1 - z0) * t); });
       }
-      rec.moving = false; placeUnit(u, g, false);
+      rec.moving = false; setPose(u, rec, 'idle'); placeUnit(u, g, false);
     } else if (f.t === 'warp' || f.t === 'face' || f.t === 'form') { syncUnits(g); await sleep(ms(f.t === 'form' ? 350 : 60)); }
     else if (f.t === 'attack' || f.t === 'rocks' || f.t === 'oil') {
       const A = g.units[f.a], D = g.units[f.d]; const ra = V.units.get(f.a), rd = V.units.get(f.d);
@@ -874,8 +890,9 @@
       else if (f.t === 'oil') { await fire(D.c, D.r, ms(700)); }
       else if (ra) {
         const [hx, hy, hz] = ra.home; const [tx, tz] = wpos(D.c, D.r);
+        if (f.charge) setPose(A, ra, 'run');
         await tween(ms(f.charge ? 300 : 220), t => { const k = Math.sin(t * Math.PI) * (f.charge ? 0.55 : 0.38); ra.grp.position.set(hx + (tx - hx) * k, hy, hz + (tz - hz) * k); });
-        ra.grp.position.set(hx, hy, hz);
+        ra.grp.position.set(hx, hy, hz); if (f.charge) setPose(A, ra, 'idle');
       }
       if (rd) dust(D.c, D.r);
       floater(D.c, D.r, '−' + f.dmg + (f.side >= 2 ? (f.side === 3 ? ' 背襲!' : ' 側擊!') : f.charge ? ' 衝鋒!' : ''), f.side >= 2 || f.charge ? 'big' : '');
