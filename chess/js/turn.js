@@ -5,7 +5,7 @@ function interceptorFor(side, x, y) {
                 .sort((u, v) => Math.hypot(u.x - x, u.y - y) - Math.hypot(v.x - x, v.y - y))[0] || null;
 }
 const flies = T => T.proj === 'rocket' || T.proj === 'shell';   // 會被防空攔截的武器
-const reloadMsg = p => p.T.aa ? `${p.T.n[p.s]}防空冷卻中，對方接下來 ${p.cd} 次攻擊攔截不了。` : `${p.T.n[p.s]}${p.T.w}裝填中，還要 ${p.cd} 回合${p.T.alt ? '，期間改用步槍' : '才能再射擊'}。`
+const reloadMsg = p => p.T.aa ? `${p.T.n[p.s]}防空冷卻中（對方下 ${p.cd} 次攻擊攔截不了）。` : `${p.T.n[p.s]}${p.T.w}裝填中，還要 ${p.cd} 回合${p.T.alt ? '，期間改用步槍' : ''}。`
 function setSkip(on) {
   $('skip').disabled = !on;
   $('skip').textContent = state === 'target' && moved ? (targets.some(t => t.ok) ? '不射擊' : '結束回合') : '取消';
@@ -20,17 +20,17 @@ function onStop() {
   const manual = !(mode === 'ai' && turn === aiSide());
   if (targets.some(t => t.ok)) {
     state = 'target'; setSkip(true);
-    setMsg(`圓圈是${mover.T.n[mover.s]}的攻擊範圍，點黃色準星的敵人開火（準星旁為預估傷害）；` +
-           (moved ? '不滿意可按「取消移動」換別的棋，或按「不射擊」結束回合。' : '或按「取消」／點其他己方棋子改操作。'));
+    setMsg(`圓圈是${mover.T.n[mover.s]}的攻擊範圍，點黃色準星開火（旁為預估傷害）；` +
+           (moved ? '或按「取消移動」重選、「不射擊」結束。' : '或按「取消」改操作。'));
   } else if (moved && manual && !quick) {   // 沒有目標也停下來：看過攻擊範圍後可取消移動
     state = 'target'; setSkip(true);
-    setMsg(`圓圈是${mover.T.n[mover.s]}的攻擊範圍，` + (mover.T.aa && !targets.length ? '範圍內沒有敵人，藍圈內的火箭和砲彈會被攔截。' : mover.T.guard ? '範圍內沒有敵人；帥被直射時仕會走到射線上擋子彈。' : mover.cd > 0 && targets.length ? reloadMsg(mover) + '' : '範圍內沒有可攻擊的敵人。') + '可按「取消移動」換別的棋，或按「結束回合」。');
+    setMsg(`圓圈是${mover.T.n[mover.s]}的攻擊範圍，` + (mover.T.aa && !targets.length ? '範圍內沒敵人，藍圈內火箭砲彈會被攔截。' : mover.T.guard ? '範圍內沒敵人（帥被直射時自動擋）。' : mover.cd > 0 && targets.length ? reloadMsg(mover) : '範圍內沒有可攻擊的敵人。') + '按「取消移動」重選或「結束回合」。');
   } else if (!moved) {   // 原地選取但沒東西可打：不浪費回合，回到選棋
     const p = mover;
-    cancelSelect((p.T.aa ? `${p.T.n[p.s]}射程內沒有敵人（相鄰或田字對角點），負責攔截飛來的火箭和砲彈。` : p.T.guard ? `${p.T.n[p.s]}近距離（相鄰與斜角）沒有敵人；帥被直射時會走到射線上擋子彈。` : p.cd > 0 && targets.length ? reloadMsg(p) : '射程內沒有可攻擊的敵人，') + '請選擇移動位置或換別的棋子。');
+    cancelSelect((p.T.aa ? `${p.T.n[p.s]}射程內沒有敵人，負責攔截火箭與砲彈。` : p.T.guard ? `${p.T.n[p.s]}近距離沒有敵人；帥被直射時自動擋。` : p.cd > 0 && targets.length ? reloadMsg(p) : '射程內沒有可攻擊的敵人，') + '請選擇移動位置或換別的棋子。');
   } else {
     state = 'fire'; timer = 0.9;
-    setMsg(mover.T.aa && !targets.length ? `${mover.T.n[mover.s]}就定位，藍圈內的火箭和砲彈會被攔截。` : mover.T.guard ? `${mover.T.n[mover.s]}就定位，近距離沒有敵人。` : mover.cd > 0 && targets.length ? reloadMsg(mover)
+    setMsg(mover.T.aa && !targets.length ? `${mover.T.n[mover.s]}就定位（藍圈內火箭砲彈會被攔截）。` : mover.T.guard ? `${mover.T.n[mover.s]}就定位，近距離沒有敵人。` : mover.cd > 0 && targets.length ? reloadMsg(mover)
            : targets.length ? '射程內的敵人都被擋住或太近，無法開火。' : '射程內沒有敵人。');
   }
 }

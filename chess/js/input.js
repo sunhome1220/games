@@ -11,10 +11,11 @@ function selectPiece(p) {
   sel = { p, moves: movesFor(p), dest: null, scan: sc };
   state = 'select'; setSkip(true); SFX.play('click');
   const atk = sc.some(t => t.ok), nm = p.T.n[p.s];
+  const note = oneStep(p) ? '（只能走一格）' : p.T.aa ? (fallbackMode(p, sel.moves) ? '（田字走不了，改走一步）' : '（走田字）') : p.T.knight ? (fallbackMode(p, sel.moves) ? '（日字走不了，改走一步）' : '（走日字）') : '';
+  const tail = p.T.aa ? (p.cd > 0 ? `（防空冷卻 ${p.cd}）` : '（藍圈內火箭砲彈自動攔截）') : p.T.knight ? (p.cd > 0 ? `（火箭裝填中 ${p.cd}）` : '（火箭只打日字位置）') : p.T.guard ? '（帥被直射時自動擋）' : p.cd > 0 ? `（裝填中 ${p.cd}）` : '';
+  // 訊息列固定三行高：這裡的說明要精簡，更詳細的規格看「📖 兵種」
   setMsg(!sel.moves.length && !atk ? `${nm}沒有可走的位置，也沒有可攻擊的目標，請換別的棋子。`
-    : `${nm}：` + (sel.moves.length ? '點綠點移動' + (oneStep(p) ? '（每次只能走一格）' : p.T.aa ? (fallbackMode(p, sel.moves) ? '（田字走不了，改走一步）' : '（走田字，象眼被塞就過不去）') : p.T.knight ? (fallbackMode(p, sel.moves) ? '（日字走不了，改走一步）' : '（走日字，蹩馬腳不能走）') : '') : '沒有可走的位置') +
-      (atk ? '，或點黃色準星原地攻擊' : '') + '；點別處取消。' +
-      (p.T.aa ? (p.cd > 0 ? `（防空冷卻中，對方接下來 ${p.cd} 次攻擊攔截不了；近戰不受影響）` : '（藍圈內的火箭和砲彈會被自動攔截）') : p.T.knight ? (p.cd > 0 ? `（火箭裝填中還要 ${p.cd} 回合；近戰可用步槍）` : '（火箭只能打日字位置；近戰用步槍 1 心）') : p.T.guard ? '（九宮內斜走一格；近距離手槍 1 心；帥被直射時，若有落點在射線上會自動走去擋）' : p.cd > 0 ? `（裝填中還要 ${p.cd} 回合）` : ''));
+    : `${nm}：` + (sel.moves.length ? '點綠點移動' + note : '沒有可走的位置') + (atk ? '，或點黃色準星原地攻擊' : '') + '；點別處取消。' + tail);
 }
 function cancelSel(msg = '已取消，請重新選擇棋子。') {
   sel = null; state = 'aim'; setSkip(false); setMsg(msg);
@@ -90,3 +91,7 @@ $('quick').onclick = () => {
   setMsg(quick ? '⚡快速模式：點綠點立即出發。' : '一般模式：點綠點後再按「出發」（或再點一次）才會移動。');
 };
 
+
+// 訊息列固定三行高；太長被截斷時，點一下訊息可看完整內容
+$('info').onclick = () => { const e = $('info'); if (e.scrollHeight > e.clientHeight + 1) { $('msgFull').textContent = e.textContent; $('msgOv').hidden = false; } };
+$('msgClose').onclick = () => { $('msgOv').hidden = true; };

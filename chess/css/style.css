@@ -8,8 +8,8 @@
   header a { color:#e8c88a; text-decoration:none; }
   #turn { font-weight:700; font-size:18px; }
   #bar { width:100%; max-width:560px; padding:0 12px 6px; display:flex; gap:8px; align-items:flex-start; }
-  #info { flex:1; min-height:2.8em; font-size:14px; }
-  canvas { width:min(96vw, 560px, calc((100vh - 150px) * 540 / 596), calc((100dvh - 150px) * 540 / 596)); display:block; touch-action:none; border-radius:6px; box-shadow:0 4px 18px #0008; }
+  #info { flex:1; height:4.5em; font-size:14px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; }   /* 固定三行高：訊息長短不同也不會把棋盤推上推下；太長的截斷，點一下看全文 */
+  canvas { width:min(96vw, 560px, calc((100vh - 171px) * 540 / 596), calc((100dvh - 171px) * 540 / 596)); display:block; touch-action:none; border-radius:6px; box-shadow:0 4px 18px #0008; }
   button { background:#e8c88a; color:#2b2118; border:0; border-radius:4px; padding:6px 12px; font:inherit; cursor:pointer; }
   button:disabled { opacity:.35; cursor:default; }
   #fire { background:#e74c3c; color:#fff; font-weight:700; }
@@ -76,7 +76,7 @@
   td, th { padding:3px 8px; border-bottom:1px solid #3d4f44; text-align:center; }
 
 /* 立體（3D）畫面：與 2D 畫布同大小，上層 HUD 畫布疊在 WebGL 畫布上 */
-#stage3 { width:min(96vw, 560px, calc((100vh - 150px) * 540 / 596), calc((100dvh - 150px) * 540 / 596)); aspect-ratio:540 / 596; position:relative; border-radius:6px; overflow:hidden; box-shadow:0 4px 18px #0008; background:radial-gradient(ellipse at 50% 35%, #5a4430, #2b2118); }
+#stage3 { width:min(96vw, 560px, calc((100vh - 171px) * 540 / 596), calc((100dvh - 171px) * 540 / 596)); aspect-ratio:540 / 596; position:relative; border-radius:6px; overflow:hidden; box-shadow:0 4px 18px #0008; background:radial-gradient(ellipse at 50% 35%, #5a4430, #2b2118); }
 #stage3[hidden] { display:none; }
 #stage3 canvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; box-shadow:none; border-radius:0; }
 #hud3 { pointer-events:none; }
@@ -156,3 +156,6 @@ i.tier.t2 { background:#2f6fb5; } i.tier.t3 { background:#8e3fb8; } i.tier.t4 { 
 #surrOv { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:16; padding:14px; }
 #surrOv[hidden] { display:none; }
 #surrOv ul { margin:4px 0 8px; padding-left:20px; color:#f3e2bd; font-size:14px; line-height:1.6; }
+#msgOv { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:16; padding:14px; }
+#msgOv[hidden] { display:none; }
+#msgFull { font-size:15px; line-height:1.6; color:#f3e2bd; margin:6px 0 8px; }
