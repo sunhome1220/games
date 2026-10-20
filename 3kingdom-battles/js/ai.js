@@ -19,7 +19,7 @@
       if (u.type === 'ram') return [11, 8];
       if (u.type === 'ladder') return u.label.includes('甲') ? [9, 8] : [13, 8];
       if (breach) return pal;
-      const field = R.alive(g).filter(x => x.side === 'def' && !R.inCity(g, x) && !R.onWall(g, x) && !R.isEngine(x));
+      const field = R.alive(g).filter(x => x.side === 'def' && !(u.side === 'att' && R.hidden(g, x)) && !R.inCity(g, x) && !R.onWall(g, x) && !R.isEngine(x));
       if (field.length && u.gen !== 'sunquan') return nearest(u, field);
       if (u.gen === 'sunquan') return [12, 12];
       if (u.type === 'arc') return [10 + (u.id % 2) * 2, 9];
@@ -42,7 +42,7 @@
   function findCh(g, ch) { for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === ch) return [c, r]; return null; }
   function xiapiGoal(g, u) {
     const v = g.vars;
-    const defField = R.alive(g).filter(x => x.side === 'def' && !R.inCity(g, x) && !R.isEngine(x));
+    const defField = R.alive(g).filter(x => x.side === 'def' && !(u.side === 'att' && R.hidden(g, x)) && !R.inCity(g, x) && !R.isEngine(x));
     const breach = findBreach(g);
     if (u.side === 'att') {
       if (u.type === 'ram') return [14, 9];
@@ -234,9 +234,10 @@
     }
     const goal = goalOf(g, u);
     const reach = R.reachable(g, u);
+    g._hid = new Set(g.units.filter(v => v.alive && R.hidden(g, v)).map(v => v.id));   // 試走每一格時，看不到的伏兵不能因為「走近了」就被發現
     const home = [u.c, u.r, u.moveLen];
     const aggr = u.side === 'def' && u.retreating && !R.has(u, 'wushuang') ? 0.5 : 1;
-    const assault = u.side === 'att' && (g.vars.flooded || findBreach(g) || !R.alive(g).some(x => x.side === 'def' && !R.inCity(g, x) && !R.isEngine(x)));
+    const assault = u.side === 'att' && (g.vars.flooded || findBreach(g) || !R.alive(g).some(x => x.side === 'def' && !(u.side === 'att' && R.hidden(g, x)) && !R.inCity(g, x) && !R.isEngine(x)));
     const dW = u.side === 'def' ? (R.isEngine(u) ? 0.9 : 0.75) : assault ? (R.isEngine(u) ? 0.3 : 0.25) : (R.isEngine(u) ? 0.9 : 0.55);
     const avoidLow = g.vars.digOpen && !g.vars.flooded && u.side === 'att';
     let best = null;
@@ -257,7 +258,7 @@
       if (u.side === 'def' && u.retreating && !R.inCity(g, u)) s -= 30;
       if (!best || s > best.s) best = { s, k, v, ba };
     }
-    u.c = home[0]; u.r = home[1]; u.moveLen = home[2];
+    u.c = home[0]; u.r = home[1]; u.moveLen = home[2]; g._hid = null;
     if (best && best.k !== H.key(u.c, u.r)) R.moveUnit(g, u, best.v.c, best.v.r);
     if (g.over || !u.alive) return;
     // 移動後重新評估（位置確定）
