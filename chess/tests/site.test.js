@@ -110,6 +110,24 @@ module.exports = [
     for (let i = 0; i < 100 && (await pg.evaluate(() => turn)) === 0; i++) { await pg.waitForTimeout(60); if ((await pg.evaluate(() => state)) === 'target') await pg.click('#skip'); }
     t.assert.strictEqual(await pg.evaluate(() => turn), 1);
   } },
+  { name: '訊息列固定三行高：不論訊息長短，棋盤位置都不動；太長會截斷，點一下看全文', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const top = () => Math.round(document.getElementById('cv').getBoundingClientRect().top), o = { tops: [], select: [] };
+      for (const m of ['短', '一二三四五六七八九十'.repeat(4), '一二三四五六七八九十'.repeat(12)]) { setMsg(m); o.tops.push(top()); }   // 1 行、2 行、遠超過 3 行
+      o.h = Math.round(document.getElementById('info').getBoundingClientRect().height);
+      for (const pc of pieces) { selectPiece(pc); o.select.push(top()); cancelSel(); }   // 每種棋子選取時的說明
+      const long = document.getElementById('info'); setMsg('一二三四五六七八九十'.repeat(12)); o.clamped = long.scrollHeight > long.clientHeight;
+      long.click(); o.popup = !document.getElementById('msgOv').hidden && document.getElementById('msgFull').textContent.length === 120; document.getElementById('msgClose').click();
+      o.closed = document.getElementById('msgOv').hidden; o.over = document.documentElement.scrollHeight - innerHeight;
+      return o;
+    });
+    t.assert.strictEqual(new Set(r.tops).size, 1, '棋盤位置會隨訊息長短變動：' + r.tops);
+    t.assert.strictEqual(new Set(r.select).size, 1, '選取棋子時棋盤位置會變動：' + [...new Set(r.select)]);
+    t.assert.ok(r.h >= 60 && r.h <= 66, '訊息列高度約三行：' + r.h);
+    t.assert.deepStrictEqual([r.clamped, r.popup, r.closed], [true, true, true]);
+    t.assert.ok(r.over <= 0, '整頁不該捲動：' + r.over);
+  } },
   { name: '版面：整頁滿版不捲動（手機直立與橫放）；兵種說明預設隱藏，點按鈕才開', async fn(t) {
     for (const [w, h] of [[390, 700], [360, 640], [800, 420]]) {
       const pg = await t.ctx.newPage(); await pg.setViewportSize({ width: w, height: h });
