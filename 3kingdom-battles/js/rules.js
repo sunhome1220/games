@@ -519,8 +519,10 @@
           if (!targets.length) why = '範圍內沒有敵軍';
         }
         if (state(u) === 'disorder') why = '陣型混亂，無法施展';
+        if (S.cost && u.coh < 40) why = '陣勢太低（要 40 以上），沒力氣衝鋒';
         if (cd > 0) why = `冷卻中（${cd} 回合）`;
-        add({ id: 'skill:' + sk, name: S.name, desc: S.desc, need, targets, enabled: !why, why, skill: true, pre: S.target === 'self' });
+        const costTxt = S.cost ? `　【代價】使用時陣勢 −${Math.round(S.cost * steady(u))}（統率越高扣越少）。` : '';
+        add({ id: 'skill:' + sk, name: cd > 0 ? `${S.name}（冷卻 ${cd}）` : S.name, desc: `${S.desc}　冷卻 ${S.cd} 回合。${costTxt}`, need, targets, enabled: !why, why, skill: true, pre: S.target === 'self' });
       }
       // 單挑
       if (!isEngine(u) && gen(u).war >= 60 && !u.dueled) {
@@ -605,6 +607,7 @@
     const near = (rad, incSelf) => g.units.filter(v => v.alive && v.side === u.side && (incSelf || v !== u) && H.dist(v.c, v.r, u.c, u.r) <= rad && !isEngine(v));
     if (S.target !== 'self') u.acted = true;
     u.cd[sk] = S.cd;
+    if (S.cost) u.coh = clamp(u.coh - S.cost * steady(u), 0, 100);   // 衝鋒耗體力：陣勢下降
     g.fx.push({ t: 'skill', id: u.id, name: S.name, target });
     if (sk === 'jili') { for (const v of near(3, true)) { v.mor = clamp(v.mor + 15, 0, 100); v.coh = clamp(v.coh + 10, 0, 100); } log(g, `${u.name}親自激勵將士，全軍士氣大振`, u.side); }
     else if (sk === 'rende') { for (const v of near(1, true)) { v.mor = clamp(v.mor + 20, 0, 100); v.coh = clamp(v.coh + 15, 0, 100); } log(g, `${u.name}撫慰士卒，人心安定`, u.side); }
