@@ -464,7 +464,7 @@
     x.fillStyle = '#fff'; x.font = 'bold 40px "Noto Serif TC","Microsoft JhengHei",serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, 32, 35);
     const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; return t;
   }
-  // 部隊頭上的徽章：圓形武將頭像（器械用兵種字）、兵力點數（5 格）、完整度細條、兵力數字
+  // 部隊頭上的徽章：圓形武將頭像（器械用兵種字）、兵力點數（5 格）、陣勢細條、兵力數字
   const faceImgs = {};
   function faceImg(u) {
     const k = u.gen + '|' + toneOf(u.side); if (faceImgs[k]) return faceImgs[k];
@@ -505,7 +505,7 @@
       x.beginPath(); x.moveTo(px, py - 8); x.quadraticCurveTo(px + 7, py, px, py + 7); x.quadraticCurveTo(px - 7, py, px, py - 8); x.closePath();
       x.fillStyle = i < n ? '#f0a43a' : 'rgba(20,16,10,0.75)'; x.fill(); x.lineWidth = 2; x.strokeStyle = 'rgba(20,14,8,0.9)'; x.stroke();
     }
-    // 完整度
+    // 陣勢
     if (!R.isEngine(u)) { x.fillStyle = 'rgba(20,16,10,0.75)'; x.fillRect(22, 128, 84, 6); x.fillStyle = u.coh >= 70 ? '#7cc46a' : u.coh >= 40 ? '#e0b84a' : '#e05a3a'; x.fillRect(22, 128, 84 * u.coh / 100, 6); }
     // 兵力數字
     x.font = 'bold 22px "Microsoft JhengHei","PingFang TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'top';

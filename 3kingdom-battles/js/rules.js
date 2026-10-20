@@ -89,7 +89,7 @@
   const onWall = (g, u) => !!(terr(g, u.c, u.r) || {}).wall;
   const inCity = (g, u) => { const t = terr(g, u.c, u.r); return !!(t && (t.wall || g.city.has(H.key(u.c, u.r)))); };
   function state(u) { if (isEngine(u)) return 'full'; return u.coh >= 70 ? 'full' : u.coh >= 40 ? 'shaken' : 'disorder'; }
-  const STATE_NAME = { full: '完整', shaken: '動搖', disorder: '混亂' };
+  const STATE_NAME = { full: '嚴整', shaken: '動搖', disorder: '混亂' };
 
   // 目前生效的陣型數值（動搖時效果減半、混亂時全失）
   function formOf(u) {
@@ -528,7 +528,7 @@
         if (ts.length) add({ id: 'duel', name: '單挑', desc: '向相鄰敵將挑戰（每位武將限一次）。勝者部隊士氣大振，敗者部隊士氣與陣型大亂；實力差太多時對方會避戰。', need: 'enemy', targets: ts });
       }
       // 變換陣型
-      if (FORM_ALLOWED[u.type]) add({ id: 'form', name: '變陣', desc: '變換陣型（花掉這次動作；貼著敵軍變陣會讓完整度 −15）。', need: 'form', targets: FORM_ALLOWED[u.type].filter(f => f !== u.form) });
+      if (FORM_ALLOWED[u.type]) add({ id: 'form', name: '變陣', desc: '變換陣型（花掉這次動作；貼著敵軍變陣會讓陣勢 −15）。', need: 'form', targets: FORM_ALLOWED[u.type].filter(f => f !== u.form) });
       // 步兵、騎兵射箭
       if (!isEngine(u) && !ty(u).ranged) {
         const st = shootTargets(g, u);
@@ -539,11 +539,11 @@
         const mates = H.neighbors(u.c, u.r).map(([c, r]) => unitAt(g, c, r)).filter(v => v && v !== u && v.side === u.side && !isEngine(v) && (isRemnant(v) || isRemnant(u)));
         if (mates.length) add({ id: 'merge', name: '救援合流', desc: '與相鄰的友軍合為一支部隊（其中一方兵力剩三成五以下才能合流）：兵力相加，由主帥（或統率較高者）統領，站到兵力較多的那一格，士氣 +10。被圍的殘部可以這樣被救出來。', need: 'ally', targets: mates.map(v => v.id) });
       }
-      if (!isEngine(u)) add({ id: 'rally', name: '整隊', desc: `重整隊伍：完整度 +${Math.round(15 + gen(u).lead / 5)}、士氣 +5（被包圍時減半）。`, enabled: u.coh < 100 || u.mor < 100, why: '隊伍已經很整齊' });
+      if (!isEngine(u)) add({ id: 'rally', name: '整隊', desc: `重整隊伍：陣勢 +${Math.round(15 + gen(u).lead / 5)}、士氣 +5（被包圍時減半）。`, enabled: u.coh < 100 || u.mor < 100, why: '隊伍已經很整齊' });
       // 守城器具
       if (u.side === 'def' && onWall(g, u)) {
         const adj = H.neighbors(u.c, u.r).map(([c, r]) => unitAt(g, c, r)).filter(v => v && v.side !== u.side && !onWall(g, v) && !inCity(g, v)).map(v => v.id);
-        add({ id: 'rocks', name: `滾木礌石（剩 ${g.vars.rocks}）`, desc: '砸城牆底下相鄰的敵軍：兵力 −12%、完整度 −15；對器械效果更大。', need: 'enemy', targets: adj, enabled: g.vars.rocks > 0 && adj.length > 0, why: g.vars.rocks <= 0 ? '用完了' : '城下沒有敵軍' });
+        add({ id: 'rocks', name: `滾木礌石（剩 ${g.vars.rocks}）`, desc: '砸城牆底下相鄰的敵軍：兵力 −12%、陣勢 −15；對器械效果更大。', need: 'enemy', targets: adj, enabled: g.vars.rocks > 0 && adj.length > 0, why: g.vars.rocks <= 0 ? '用完了' : '城下沒有敵軍' });
         add({ id: 'oil', name: `火油（剩 ${g.vars.oil}）`, desc: '向城下相鄰敵軍潑灑火油：兵力 −10%、士氣 −8；燒攻城器械特別有效。', need: 'enemy', targets: adj, enabled: g.vars.oil > 0 && adj.length > 0, why: g.vars.oil <= 0 ? '用完了' : '城下沒有敵軍' });
       }
       // 雲梯
@@ -847,7 +847,7 @@
         for (const u of g.units) if (u.gen === 'zhangliao' || u.gen === 'lidian') u.mor = 100;
         // 天亮出擊：第 1 回合魏軍全部先動，吳軍才醒過來
         g.order = [...g.order.filter(id => g.units[id].side === 'def'), ...g.order.filter(id => g.units[id].side === 'att')];
-        msg(g, '合肥之戰', '孫權率十萬大軍圍合肥。張遼、李典、樂進打開曹操的密函：「若孫權至者，張、李將軍出戰；樂將軍守護軍，勿得與戰。」張遼連夜募得敢死之士八百人，殺牛犒軍，準備天亮出擊。\n\n【晨襲】\n・天亮出擊：第 1 回合魏軍全部先行動；吳軍營寨還沒整好，各部陣型鬆散（完整度 55），第 1、2 回合攻擊力 ×0.7（倉促應戰）\n・張遼「遼來」：攻擊 +20%，每回合讓身邊 2 格的吳軍士氣下降\n・孫權在南邊的小土丘上；吳軍大營在西南，衝進去可以放火\n・突擊完要從南門或東門退回城裡', null, [['zhangliao', 'charge'], ['lidian', 'resolve'], ['yuejin', 'default']]);
+        msg(g, '合肥之戰', '孫權率十萬大軍圍合肥。張遼、李典、樂進打開曹操的密函：「若孫權至者，張、李將軍出戰；樂將軍守護軍，勿得與戰。」張遼連夜募得敢死之士八百人，殺牛犒軍，準備天亮出擊。\n\n【晨襲】\n・天亮出擊：第 1 回合魏軍全部先行動；吳軍營寨還沒整好，各部陣型鬆散（陣勢 55），第 1、2 回合攻擊力 ×0.7（倉促應戰）\n・張遼「遼來」：攻擊 +20%，每回合讓身邊 2 格的吳軍士氣下降\n・孫權在南邊的小土丘上；吳軍大營在西南，衝進去可以放火\n・突擊完要從南門或東門退回城裡', null, [['zhangliao', 'charge'], ['lidian', 'resolve'], ['yuejin', 'default']]);
       }
       if (g.round === v.plagueRound && !v.plague && !v.retreating) {
         v.plague = true;

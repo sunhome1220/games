@@ -424,7 +424,7 @@
       <div class="uname">${esc(u.name)}<small>${eng ? ty.name : `${ty.name}${u.label ? '・' + u.label : ''}　統${gn.lead} 武${gn.war} 智${gn.int}`}</small></div>
       <div class="usub">${tags.join('｜')}</div>
       <div class="bars"><span>兵力</span>${bar(u.troops, u.max, u.side === 'att' ? 'var(--att)' : 'var(--def)')}<span>${u.troops}</span>
-      ${eng ? '' : `<span>士氣</span>${bar(u.mor, 100, '#b98cf0')}<span>${Math.round(u.mor)}</span><span>完整</span>${bar(u.coh, 100, cohColor(u.coh))}<span>${Math.round(u.coh)} ${R.STATE_NAME[st]}</span>`}</div>
+      ${eng ? '' : `<span>士氣</span>${bar(u.mor, 100, '#b98cf0')}<span>${Math.round(u.mor)}</span><span class="cohlbl" id="cohHelp" title="點一下看說明">陣勢ⓘ</span>${bar(u.coh, 100, cohColor(u.coh))}<span>${Math.round(u.coh)} ${R.STATE_NAME[st]}</span>`}</div>
     </div></div>`;
   }
   function skillLine(u) {
@@ -446,7 +446,7 @@
       h += `<div class="hint">選擇朝向：點部隊旁邊的黃色格子（白色＝目前朝向）。正面受傷最少、背面最多，記得把正面對準敵人。</div>`;
       h += `<div class="acts"><button class="end" id="bFaceOk">✔ 確定朝向，結束行動</button>${!u.acted ? '<button id="bFaceBack">↩ 返回</button>' : ''}</div>`;
     } else if (S.mode === 'form') {
-      h += `<div class="hint">選擇新陣型（花掉這次動作${R.adjEnemies(g, u).length ? '；貼著敵軍變陣，完整度 −15' : ''}）：</div><div class="forms">`;
+      h += `<div class="hint">選擇新陣型（花掉這次動作${R.adjEnemies(g, u).length ? '；貼著敵軍變陣，陣勢 −15' : ''}）：</div><div class="forms">`;
       for (const fid of S.pending.targets) { const F = D.FORMATIONS[fid]; h += `<button data-f="${fid}"><span><b>${F.name}</b>　攻擊 ×${F.atk}${F.move ? `、移動 +${F.move}` : ''}${F.ranged ? `、遠程 ×${F.ranged}` : ''}${F.joint ? '、合擊 ×2' : ''}${F.charge ? `、衝鋒 ×${F.charge}` : ''}<small>${F.desc}</small><small>受傷：${profileText(F.def)}</small></span></button>`; }
       h += `</div><div class="acts"><button id="bFormBack">↩ 返回</button></div>`;
     } else if (S.mode === 'target') {
@@ -464,6 +464,7 @@
     h += lastLogHTML();
     $('#panel').innerHTML = h;
     for (const b of document.querySelectorAll('#panel [data-a]')) b.onclick = () => onAction(S._acts[+b.dataset.a]);
+    const ch = $('#cohHelp'); if (ch) ch.onclick = () => modal('<h2>陣勢</h2><p>隊伍的陣型穩不穩。橫條越滿，越能發揮陣型的威力；被打亂（變黃、變紅）陣型就會變弱，甚至潰逃。</p><ul><li><b>70 以上 嚴整</b>：陣型效果全開</li><li><b>40～70 動搖</b>：效果減半</li><li><b>15～40 混亂</b>：陣型失效、受傷加重、不能用技能</li></ul><p>被攻擊、被包圍會降低；用「整隊」或遠離敵軍可以恢復。統率高的將領比較不容易亂。</p>', [['知道了', true]]);
     for (const b of document.querySelectorAll('#panel [data-f]')) b.onclick = () => act('form', b.dataset.f);
     const on = (id, fn) => { const e = $(id); if (e) e.onclick = fn; };
     on('#bEnd', endUnit); on('#bFaceOk', finishUnit); on('#bEndRound', endRound); on('#bFaceBack', () => { S.mode = 'main'; refresh(); });
@@ -561,8 +562,15 @@
       <table class="ft"><tr><th>陣型</th><th>攻擊</th><th>受傷倍率</th><th>特性</th></tr>
       ${Object.values(F).map(f => `<tr><td>${f.name}</td><td>×${f.atk}</td><td>${f.def.join(' / ')}</td><td style="text-align:left">${f.desc}</td></tr>`).join('')}
       <tr><td>混亂</td><td>×0.65</td><td>1.6 全方位</td><td style="text-align:left">陣型失效、不能用技能、無法反擊</td></tr></table>
-      <h3>完整度（陣型被衝亂）</h3><p><b>統率越高越不容易被打亂</b>：統率 50 的部隊受到 8 成影響、70 受 6 成、90 只受 4 成；統率高的部隊也恢復得比較快。70 以上完整；40～70 動搖（陣型效果減半）；15～40 混亂；低於 15 潰散：統率 70 以上勉強穩住，45～69 潰逃，45 以下<b>就地解散</b>。側擊、背襲、衝鋒、合擊、被包圍都會大幅打亂陣型；用「整隊」恢復，遠離敵軍也會慢慢恢復。兵力剩兩成五以下的部隊會潰逃一次。</p>
-      <h3>深入敵陣：包圍與合擊</h3><p>相鄰有 3 支敵軍，或兩支敵軍從正對面夾擊，就是<b>被包圍</b>：受傷 ×1.15，每回合士氣、完整度下降。攻擊時，目標旁邊每多一支我方部隊就有<b>合擊</b>加成（統率越高越多；有「合擊」技能或鶴翼陣翻倍）。反過來說，突破敵陣的一方如果敵將統率低、沒有合擊能力，就能從側背痛擊對方。</p>
+      <h3>陣勢（隊伍的陣型穩不穩）</h3>
+      <p>部隊資訊裡「陣勢」那條綠色橫條：<b>橫條越滿，隊伍越整齊、越能發揮陣型的威力；被打亂了，陣型的好處就消失。</b>跟「兵力」（還有多少人）、「士氣」（敢不敢打）是三件不同的事。</p>
+      <ul>
+        <li><b>70 以上＝嚴整（綠）</b>：陣型效果全開。</li>
+        <li><b>40～70＝動搖（黃）</b>：陣型效果減半。</li>
+        <li><b>15～40＝混亂（紅）</b>：陣型完全失效、受傷變重、不能用技能、無法反擊。</li>
+        <li><b>低於 15＝潰散</b>：統率 70 以上勉強穩住；45～69 潰逃；45 以下就地解散。</li></ul>
+      <p><b>什麼會降低陣勢</b>：被攻擊（側面、背面、衝鋒、合擊更嚴重）、被包圍、涉水、貼著敵軍變陣。<b>怎麼恢復</b>：用「整隊」、遠離敵軍後每回合慢慢回復、友軍「激勵」「仁德」。<b>統率越高越不容易被打亂</b>：統率 50 受 8 成影響、70 受 6 成、90 只受 4 成；統率 70 以上的將領連交戰中也會自己穩住一些。兵力剩兩成五以下的部隊會潰逃一次。</p>
+      <h3>深入敵陣：包圍與合擊</h3><p>相鄰有 3 支敵軍，或兩支敵軍從正對面夾擊，就是<b>被包圍</b>：受傷 ×1.15，每回合士氣、陣勢下降。攻擊時，目標旁邊每多一支我方部隊就有<b>合擊</b>加成（統率越高越多；有「合擊」技能或鶴翼陣翻倍）。反過來說，突破敵陣的一方如果敵將統率低、沒有合擊能力，就能從側背痛擊對方。</p>
       <h3>衝鋒、反擊、地形</h3><p>騎兵移動 2 格以上再攻擊就是衝鋒（樹林、丘陵、城牆擋住衝鋒）。近戰從正面或前側攻擊會被反擊。居高臨下 ×1.15；樹林、丘陵受傷較少；進入敵軍相鄰格（控制區）會停下來。</p>
       <h3>攻城</h3><p><b>進出城只能走城門</b>：守軍回城、出城都要經過城門；攻方步兵要先用雲梯攀城，或等城門被撞破、城牆被打出缺口。城牆上的守軍：近戰要先用雲梯「架梯」，步兵、弓兵才能爬上去；弓箭仰攻 ×0.6（井闌旁 ×0.8）。衝車撞門、投石車打城牆，耐久歸零出現缺口。守方可用滾木礌石、火油，四角箭樓每回合自動放箭；從城門出城後攻擊有「出城突擊」加成。</p>
       <h3>射箭</h3><p>不只弓兵，步兵、騎兵也帶弓箭：按「射箭」可以向 2 格外的敵軍放箭（威力約弓兵的兩成，但不會被反擊；陣型混亂時不能射）。呂布「騎射」（轅門射戟）射程 3、威力勝過一般弓兵。站在丘陵上射程 +1。</p><h3>單挑與計策</h3><p>武力 60 以上的武將可以向相鄰敵將單挑；實力差太多對方會避戰（士氣下降）。各武將的技能在部隊資訊裡可以看到。</p>`, [['關閉', true]]);
