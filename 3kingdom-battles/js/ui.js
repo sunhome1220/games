@@ -108,7 +108,7 @@
   async function enterBattle(g, side, fresh) {
     show('scrBattle');
     const sc = g.sc; $('#title').textContent = sc.name; setTone(sc);
-    S.g = g; S.side = side; S.skipRound = null; S.mode = 'main'; S.inspect = null; S.preview = null; S.pending = null;
+    S.g = g; S.side = side; root.V3.viewSide = S.auto ? null : side; S.skipRound = null; S.mode = 'main'; S.inspect = null; S.preview = null; S.pending = null;
     root.G = S.g;
     if (!(await root.V3.init($('#stage')))) { $('#panel').innerHTML = '<p>這台裝置無法顯示 3D 畫面（不支援 WebGL）。</p>'; return; }
     root.V3.onTap = onTap;
@@ -257,7 +257,7 @@
 
   function onTap(c, r) {
     const g = S.g; if (!g || g.over) return;
-    const u = R.activeUnit(g); const t = R.unitAt(g, c, r);
+    const u = R.activeUnit(g); let t = R.unitAt(g, c, r); if (t && t.side !== S.side && R.hidden(g, t)) t = null;
     if (S.busy || !isMine(u)) { if (t) { S.inspect = t.id; renderPanelEnemy(u, t); root.V3.showSides(R.isEngine(t) || R.onWall(g, t) ? null : t, (R.formOf(t) || { def: D.BASE_DEF }).def); } else terrainTip(g, c, r); return; }
     if (S.mode === 'face') {
       const d = H.neighbors(u.c, u.r).findIndex(([cc, rr]) => cc === c && rr === r);
@@ -364,19 +364,20 @@
     if (g.scId === 'hefei') return showGoalsHefei(g, common);
     const status = `<ul class="goalst">
       ${common}
-      <li>水淹：${v.flooded ? (v.receded ? '已水淹，城外泥濘' : '已水淹') : v.digOpen ? `掘堤 ${v.dig}/${v.digNeed}` : `第 ${v.digUnlock} 回合起可掘堤`}</li>
+      <li>水淹：${v.flooded ? (v.receded ? '已水淹，城外泥濘' : '已水淹') : v.digOpen ? `掘堤 最高 ${v.dig}/${v.digNeed}（五段各算）` : `第 ${v.digUnlock} 回合起可掘堤`}</li>
       <li>城內守軍平均士氣 ${mor}${v.betrayed ? '（已有將領倒戈）' : mor < 55 ? '（人心浮動，可能倒戈）' : ''}；城中糧 ${v.food}；曹軍糧草 ${Math.max(0, v.supply)}（糧營剩 ${v.depots.filter(d => !d.burnt).length}/${v.depots.length}${v.supply <= 0 ? `，缺糧 ${v.starve}/${v.starveLimit} 天` : ''}）</li></ul>`;
     const how = side === 'att' ? `<h3>怎麼打進城</h3><ol>
       <li><b>雲梯攀城</b>：雲梯部隊推到城牆旁按「架梯」，步兵、弓兵就能從那格攀上城頭（城上有守軍就先攻擊他）。騎兵不能攀城。</li>
       <li><b>衝車撞門</b>：沿中間的大路把衝車推到城門旁撞門，城門破了全軍都能進城。</li>
       <li><b>投石車開缺口</b>：投石車在 2～4 格外打城牆，耐久歸零就出現缺口。</li>
-      <li><b>水淹＋倒戈</b>：第 ${v.digUnlock} 回合起到城北河堤「掘堤」，水淹後城內士氣一直掉，侯成等人可能綁了陳宮開西門投降（史實）。</li>
+      <li><b>水淹＋倒戈</b>：第 ${v.digUnlock} 回合起到城北上游的長堤（五段，任一段掘滿 6 次就決堤；守軍可「搶修」）「掘堤」，水淹後城內士氣一直掉，侯成等人可能綁了陳宮開西門投降（史實）。</li>
       <li>進城後把部隊開到中央的<b>府衙</b>，回合結束時還站著就獲勝；或直接擊敗、擒獲呂布。</li></ol>`
       : `<h3>怎麼守住</h3><ol>
       <li>城牆上的守軍很難被打：敵軍要先架雲梯才能近戰。優先打掉雲梯、衝車。</li>
       <li>用「滾木礌石」「火油」打城下敵軍，四角箭樓會自動放箭；可從城門出城突擊，但回城也要走城門。</li>
       <li>曹軍有<b>三座糧營</b>（西邊：中軍、北營、南營）：走到<b>糧營旁邊</b>按「放火燒營」；也可以在 2～3 格外射<b>火箭</b>（弓兵、呂布一箭就燃，步騎要射 2 箭）。起火後<b>看天氣</b>：沒下雨就連燒三回合（糧 −15%、−30%、−55%），曹軍在旁邊會「滅火」，下雨火會熄。三座燒光曹軍就缺糧，軍心天天下降，撐 3 天就退兵。</li>
-      <li>派兵守住城北河堤，阻止曹軍掘堤水攻。</li>
+      <li>派兵守住城北河堤，阻止曹軍掘堤水攻：站在堤上或旁邊可以「搶修」，把一段的掘堤進度 −2。</li>
+      <li><b>伏兵</b>：呂布的騎兵移動力 +2，躲進樹林後曹軍在 2 格外看不到（也不會追）；等曹軍攻城時殺出，從林中發動的第一擊攻擊 +30%、打亂陣勢，打背後再 +15%。燒糧也是好辦法。</li>
       <li><b>呂布第一次被打光時會單騎殺出重圍</b>（只剩殘部），讓高順等友軍趕去「救援合流」；但別再讓他陷進包圍。</li>
       <li>維持城內士氣，避免將領倒戈。</li></ol>`;
     modal(`<h2>🎯 ${esc(sc.name)}：${side === 'att' ? '攻方' : '守方'}目標</h2><ul>${sc.brief.goal[side].map(x => `<li>${esc(x)}</li>`).join('')}</ul>
@@ -422,6 +423,7 @@
     tags.push('面向' + H.DIR_NAME[u.face]);
     if (R.encircled(g, u)) tags.push('<span class="m-bad">被包圍</span>');
     if (R.onWall(g, u)) tags.push('城上');
+    if (R.hidden(g, u)) tags.push('<span class="m-good">🌲 藏身林中（敵軍 2 格外看不到）</span>');
     const t = R.terr(g, u.c, u.r); tags.push(t.name);
     return `<div class="ucard">${eng ? `<div class="badge ${u.side}">${ty.icon}</div>` : `<div class="badge pt ${u.side}" data-gen="${u.gen}" title="看${esc(gn.name)}的武將錄">${P.html(u.gen, 'default', { side: u.side, name: gn.name, frame: u.side === 'att' ? '#5d8de0' : '#e0604f' })}</div>`}<div class="uinfo">
       <div class="uname">${esc(u.name)}<small>${eng ? ty.name : `${ty.name}${u.label ? '・' + u.label : ''}　統${gn.lead} 武${gn.war} 智${gn.int}`}</small></div>
@@ -513,7 +515,7 @@
     if (g.scId === 'xiapi') {
       bits.push(`曹軍糧草 <b>${Math.max(0, v.supply)}</b>${v.depots ? `（糧營 ${v.depots.filter(d => !d.burnt).length}/${v.depots.length}）` : ''}${v.supply <= 0 ? `<span class="warn"> 缺糧 ${v.starve}/${v.starveLimit}</span>` : ''}`);
       bits.push(`城中糧 <b>${v.food}</b>`);
-      if (v.digOpen && !v.flooded) bits.push(`<button class="hudlink" id="hDig" title="點一下看河堤在哪裡">⛏ 掘堤 ${v.dig}/${v.digNeed}</button>`);
+      if (v.digOpen && !v.flooded) bits.push(`<button class="hudlink" id="hDig" title="點一下看河堤在哪裡">⛏ 掘堤 最高 ${v.dig}/${v.digNeed}</button>`);
       if (v.flooded && !v.receded) bits.push(`<span title="城外低地是大水；城內每回合糧 −3、士氣 −4">🌊 水位 ${v.floodStage || 1}/3（第 ${v.floodRound + 4} 回合退）</span>`);
       else if (v.flooded) bits.push('<span title="城外泥濘；城內每回合糧 −3、士氣 −4">🟫 水退・泥濘</span>');
       if (v.betrayed) bits.push('西門已開');
@@ -527,7 +529,7 @@
     }
     $('#hVars').innerHTML = bits.join('｜');
     const dig = $('#hDig'); if (dig) dig.onclick = () => { const d = digHexes(g)[0]; if (d) { root.V3.focus(d[0], d[1]); toast('⛏ 河堤：曹軍步兵或弓兵站上來就能「掘堤」', 2600); } };
-    root.V3.leveeMarks && root.V3.leveeMarks(g);
+    root.V3.leveeMarks && root.V3.leveeMarks(g); root.V3.applyHidden && root.V3.applyHidden(g);
     root.V3.fireMarks && root.V3.fireMarks(g, burning.map(k => k.split(',').map(Number)));
     root.V3.digMarks && root.V3.digMarks(g, v.digOpen && !v.flooded ? digHexes(g).filter(([c, r]) => !R.unitAt(g, c, r)) : []);
     const ids = R.upcoming(g, 14);

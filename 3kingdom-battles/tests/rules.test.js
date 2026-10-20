@@ -97,16 +97,16 @@ module.exports = [
     });
     env.assert(!r.canBefore && r.canAfter && r.gate === 'o', JSON.stringify(r));
   } },
-  { name: '水攻：掘堤滿四次，低地變大水，低地上的器械被沖毀', async fn(env) {
+  { name: '水攻：同一段河堤掘滿 6 次決堤，低地變大水，低地上的器械被沖毀', async fn(env) {
     const pg = await page(env);
     const r = await pg.evaluate(() => {
       const g = T.setup([{ gen: 'liubei', c: 12, r: 1 }, { gen: 'gongbing', c: 14, r: 6 }]);
       g.vars.digOpen = true;
       const lb = T.u('liubei');
-      for (let i = 0; i < 4; i++) { lb.acted = false; RULES.doAction(g, lb, 'dig'); }
-      return { flooded: g.vars.flooded, cell: g.map[6][14], eng: T.u('gongbing').alive };
+      let early = null; for (let i = 0; i < 6; i++) { lb.acted = false; RULES.doAction(g, lb, 'dig'); if (i === 4) early = g.vars.flooded; }
+      return { early, flooded: g.vars.flooded, cell: g.map[6][14], eng: T.u('gongbing').alive };
     });
-    env.assert(r.flooded && r.cell === 'w' && !r.eng, JSON.stringify(r));
+    env.assert(!r.early && r.flooded && r.cell === 'w' && !r.eng, JSON.stringify(r));
   } },
   { name: '倒戈：水淹後城內士氣低落，侯成等人開城投降', async fn(env) {
     const pg = await page(env);
@@ -184,7 +184,7 @@ module.exports = [
       const g = RULES.newGame('xiapi', { seed: 2 }); g.round = 7;
       const inf = g.units.find(u => u.side === 'att' && u.type === 'inf' && u.alive), eng = g.units.find(u => u.type === 'ram');
       let lw = null; for (let r = 0; r < g.Hh && !lw; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'l' && !RULES.unitAt(g, c, r)) { lw = [c, r]; break; }
-      g.vars.digOpen = true; g.vars.dig = 3; inf.c = 12; inf.r = 1;   // 站在河堤上
+      g.vars.digOpen = true; g.vars.digSeg = { '12,1': 5 }; g.vars.dig = 5; inf.c = 12; inf.r = 1;   // 站在河堤上
       RULES.doAction(g, inf, 'dig');
       const flooded = g.vars.flooded && g.map[lw[1]][lw[0]] === 'w';
       const cnt = () => { let n = 0; for (const row of g.map) for (const ch of row) if (ch === 'w') n++; return n; };
@@ -388,5 +388,37 @@ module.exports = [
     });
     env.assert(Object.values(r.runs).every(n => n <= 2), '連雨超過 2 回合：' + JSON.stringify(r.runs));
     env.assert(r.seerAtt && r.n >= 1 && r.text.some(t => t.includes('下雨')), '預報：' + JSON.stringify(r));
+  } },
+  { name: '河堤五段：每段各自累計掘堤，守軍可搶修倒扣進度；沒掘的另一段不受影響', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = T.setup([{ gen: 'liubei', c: 12, r: 1 }, { gen: 'lubu', c: 12, r: 3 }]);
+      g.vars.digOpen = true; const lb = T.u('liubei'), lu = T.u('lubu');
+      const segs = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') segs.push(c + ',' + r);
+      for (let i = 0; i < 3; i++) { lb.acted = false; RULES.doAction(g, lb, 'dig'); }
+      g.active = lu.id; lu.acted = false; lu.c = 12; lu.r = 2;
+      const mend = RULES.actionsFor(g, lu).find(a => a.id === 'mend');
+      const ok = mend && RULES.doAction(g, lu, 'mend', '12,1');
+      return { segs: segs.length, after: g.vars.digSeg['12,1'], mend: !!mend, ok: !!ok, other: g.vars.digSeg['12,2'] || 0 };
+    });
+    env.assert(r.segs === 5, '河堤應有 5 段：' + JSON.stringify(r));
+    env.assert(r.mend && r.ok && r.after === 1 && r.other === 0, '搶修 −2、其他段不變：' + JSON.stringify(r));
+  } },
+  { name: '伏兵：林中部隊 2 格外對曹軍隱形；騎兵移動力 +2；從林中發動的第一擊有伏擊加成', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      let fr = null; const g0 = RULES.newGame('xiapi', { seed: 3 }); for (let r = 0; r < g0.Hh && !fr; r++) for (let c = 0; c < g0.W; c++) if (g0.map[r][c] === 'f' && c > 4 && c < 10) { fr = [c, r]; break; }
+      const g = T.setup([{ gen: 'lubu', c: fr[0], r: fr[1] }, { gen: 'caocao', c: Math.min(23, fr[0] + 6), r: fr[1] }, { gen: 'liubei', c: Math.min(23, fr[0] + 7), r: fr[1] }]);
+      const lu = T.u('lubu'), cao = T.u('caocao');
+      const hid = RULES.hidden(g, lu), seen = RULES.enemiesOf(g, cao).includes(lu);
+      const mp = RULES.maxMP(g, lu), base = DATA.UNITS ? 0 : 0;
+      cao.c = fr[0] + 2; cao.r = fr[1]; const near = RULES.hidden(g, lu);
+      cao.c = Math.min(23, fr[0] + 6);
+      g.active = lu.id; lu.ambush = true; const dm = RULES.calcDamage(g, lu, cao, { mean: true }); lu.ambush = false; const d0 = RULES.calcDamage(g, lu, cao, { mean: true });
+      return { hid, seen, near, mp, amb: dm.dmg, plain: d0.dmg };
+    });
+    env.assert(r.hid && !r.seen, '林中隱蔽：' + JSON.stringify(r));
+    env.assert(!r.near, '2 格內現形：' + JSON.stringify(r));
+    env.assert(r.amb > r.plain * 1.25, '伏擊加成：' + JSON.stringify(r));
   } },
 ];

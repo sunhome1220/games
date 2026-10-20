@@ -83,7 +83,7 @@
     if (V.world) { V.scene.remove(V.world); }
     V.units.forEach(u => V.scene.remove(u.grp)); V.units.clear();
     V.g = g; V.world = new T.Group(); V.scene.add(V.world);
-    if (V.digGrp) { V.scene.remove(V.digGrp); V.digGrp = null; } V.digSig = null;
+    if (V.digGrp) { V.scene.remove(V.digGrp); V.digGrp = null; } V.digSig = null; V.levSig = null; if (V.levGrp) { V.scene.remove(V.levGrp); V.levGrp = null; }
     const [mx, mz] = HX.center(g.W - 1, g.Hh - 1); V.ox = (mx + HX.S3 * 0.5) / 2; V.oz = mz / 2;
     computeSnap(g);
     V.cam3.tx = 0; V.cam3.tz = 0;
@@ -100,6 +100,7 @@
     buildWalls(g);
     buildFlora(g);
     buildProps(g);
+    buildLevee(g);
     V.dirty = true;
   }
   const isWet = ch => ch === '~' || ch === '=' || ch === 'w' || ch === 'b';
@@ -312,11 +313,6 @@
       for (const sx of [-1, 1]) { const p = mesh(new T.BoxGeometry(0.85, 0.08, 1.0), mat(0x6e4e2c)); p.position.set(sx * 1.38, 0.27, 0); p.rotation.z = -sx * 0.13; grp.add(p); }
       for (const sx of [-1.1, 1.1]) for (const sz of [-0.42, 0.42]) { const q = mesh(new T.CylinderGeometry(0.05, 0.06, 0.6, 5), mat(0x4a3523)); q.position.set(sx, 0.0, sz); grp.add(q); }
       grp.position.y = 0;
-    } else if (ch === 'd') {
-      // 河堤：沿河南北走向、堤身隆起（半圓柱壓扁成土堤），堤頂有踩出來的小路與草叢
-      const bank = mesh(new T.CylinderGeometry(0.5, 0.5, 1.9, 12), mat(0x7d6a48)); bank.rotation.x = Math.PI / 2; bank.scale.set(1, 1, 0.45); bank.position.set(0, 0.44, 0); grp.add(bank);
-      const path = mesh(new T.BoxGeometry(0.16, 0.03, 1.6), mat(0xa08a5c), false); path.position.set(0, 0.7, 0); grp.add(path);
-      for (let i = 0; i < 5; i++) { const t = mesh(G.reed, mat(i % 2 ? 0x8fa35a : 0x74893f), false); t.position.set((rnd() - 0.5) * 0.6, 0.62, (rnd() - 0.5) * 1.6); t.rotation.z = (rnd() - 0.5) * 0.5; grp.add(t); }
     } else if (ch === 'S') {
       for (let i = 0; i < 3; i++) { const t = mesh(G.tent, mat(0xe8dcc0)); t.position.set((i - 1) * 0.5, 0.22, (i % 2 - 0.5) * 0.4); grp.add(t); }
     } else if (ch === 'r') {
@@ -673,6 +669,13 @@
       placeUnit(u, g, false);
       refreshLabel(u, g);
     }
+    applyHidden(g);
+    V.dirty = true;
+  }
+  // 伏兵：藏在林中、敵軍看不到的部隊不畫出來（只對「對方」隱藏）
+  function applyHidden(g) {
+    const R = root.RULES; if (!R.hidden) return;
+    for (const u of g.units) { const rec = V.units.get(u.id); if (rec) rec.grp.visible = !(V.viewSide && u.side !== V.viewSide && R.hidden(g, u)); }
     V.dirty = true;
   }
   // 騎兵姿態：'idle' 站立、'run' 奔馳（換幾何體，陣營色也在這裡換）
@@ -771,24 +774,55 @@
     }
     V.scene.add(V.fireGrp); V.dirty = true;
   }
+  // 河堤：把相連的 'd' 格連成一道窄窄的竹籠石堤（像城牆一樣連續）：堤心夯土、兩側竹籠裝石、河側木樁護岸、堤頂木欄
+  function buildLevee(g) {
+    if (V.levee) V.world.remove(V.levee); V.levee = null;
+    const pts = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') pts.push(wpos(c, r));
+    if (!pts.length) return;
+    pts.sort((a, b) => a[1] - b[1]);
+    const grp = new T.Group(), earth = mat(0x8b7a55), cageA = mat(0xa88a52), cageB = mat(0x967a45), pile = mat(0x5a4328), rail = mat(0x6b4a2b);
+    const Y0 = 0.45;
+    for (let i = 0; i < pts.length; i++) {
+      const [x, z] = pts[i], prev = pts[i - 1], next = pts[i + 1];
+      // 每一格畫「走向下一格」的一段；最後一格往前一格的方向收尾
+      const [ex, ez] = next || [x + (x - prev[0]), z + (z - prev[1])];
+      const dx = ex - x, dz = ez - z, len = Math.hypot(dx, dz), ang = Math.atan2(dx, dz);
+      const seg = new T.Group(); seg.position.set((x + (next ? ex : x)) / 2, Y0, (z + (next ? ez : z)) / 2); seg.rotation.y = ang;
+      const L = next ? len + 0.12 : 0.9;
+      if (!next) seg.position.set(x + dx * 0.25, Y0, z + dz * 0.25);
+      const core = mesh(new T.BoxGeometry(0.46, 0.34, L), earth); core.position.y = 0.1; seg.add(core);
+      const n = Math.max(2, Math.round(L / 0.42));
+      for (let k = 0; k < n; k++) for (const sx of [-1, 1]) {
+        const cage = mesh(new T.CylinderGeometry(0.15, 0.15, L / n * 0.98, 7), (k + (sx > 0 ? 1 : 0)) % 2 ? cageA : cageB); cage.rotation.x = Math.PI / 2;
+        cage.position.set(sx * 0.31, 0.02, -L / 2 + (k + 0.5) * L / n); cage.scale.set(1, 1, 1); seg.add(cage);
+      }
+      const ns = Math.max(3, Math.round(L / 0.2));
+      for (let k = 0; k < ns; k++) { const st = mesh(new T.CylinderGeometry(0.03, 0.04, 0.5, 5), pile); st.position.set(-0.5, 0.05, -L / 2 + (k + 0.5) * L / ns); st.rotation.z = 0.1; seg.add(st); }
+      for (const sx of [-0.18, 0.18]) { const rl = mesh(new T.BoxGeometry(0.035, 0.04, L), rail, false); rl.position.set(sx, 0.4, 0); seg.add(rl); }
+      for (let k = 0; k <= 2; k++) for (const sx of [-0.18, 0.18]) { const p = mesh(new T.BoxGeometry(0.04, 0.2, 0.04), rail, false); p.position.set(sx, 0.3, -L / 2 + 0.05 + k * (L - 0.1) / 2); seg.add(p); }
+      grp.add(seg);
+    }
+    V.levee = grp; V.world.add(grp);
+  }
   // 河堤破口：每掘一次堤上多一處缺口（越掘越大），大水決堤後缺口湧出水柱；另調整水位（三波漲高、退水時回落）
   function leveeMarks(g) {
-    const v = g.vars, dikes = [];
+    const v = g.vars, seg = v.digSeg || {}, dikes = [];
     for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') dikes.push([c, r]);
     const stage = v.flooded && !v.receded ? (v.floodStage || 1) : 0;
     V.waterTarget = [0, 0.03, 0.06, 0.09][stage];
-    const n = v.flooded ? 4 : Math.min(4, v.dig || 0), sig = dikes.length + ':' + n + ':' + (v.flooded && !v.receded ? 1 : 0);
+    const sig = dikes.map(([c, r]) => (seg[c + ',' + r] || 0)).join(',') + ':' + (v.flooded && !v.receded ? 1 : 0) + ':' + (v.floodAt || '');
     if (V.levSig === sig && V.levGrp) return; V.levSig = sig;
-    if (V.levGrp) V.scene.remove(V.levGrp); V.levGrp = null; if (!dikes.length || !n) { V.dirty = true; return; }
+    if (V.levGrp) V.scene.remove(V.levGrp); V.levGrp = null;
+    const marks = dikes.filter(([c, r]) => (seg[c + ',' + r] || 0) > 0);
+    if (!marks.length) { V.dirty = true; return; }
     V.levGrp = new T.Group();
-    const ps = dikes.map(([c, r]) => wpos(c, r)).sort((a, b) => a[1] - b[1]); const [x1, z1] = ps[0], [x2, z2] = ps[ps.length - 1];
-    for (let i = 0; i < n; i++) {
-      const t = (i + 0.5) / 4, x = x1 + (x2 - x1) * (-0.35 + 1.7 * t) , z = z1 + (z2 - z1) * (-0.35 + 1.7 * t) + (z1 === z2 ? (t - 0.5) * 1.8 : 0);
-      const y = topAt(g, ...clampHex(g, hexAtWorld(x, z))) ;
-      const w = 0.45 + i * 0.05 + (v.flooded ? 0.25 : 0);
-      const gap = mesh(new T.BoxGeometry(0.95, 0.26 + (v.flooded ? 0.1 : 0), w), mat(0x3a2c1a), false); gap.position.set(x, y + 0.05, z); gap.raycast = () => {}; V.levGrp.add(gap);
-      const dirt = mesh(new T.BoxGeometry(0.5, 0.1, 0.3), mat(0x9a825a), false); dirt.position.set(x - 0.55, y - 0.02, z + 0.2); dirt.rotation.y = 0.5; dirt.raycast = () => {}; V.levGrp.add(dirt);
-      if (v.flooded && !v.receded) { const jet = new T.Mesh(new T.BoxGeometry(2.6, 0.12, w * 0.9), new T.MeshBasicMaterial({ color: 0x6fb6d8, transparent: true, opacity: 0.6, depthWrite: false })); jet.position.set(x + 1.3, y - 0.12, z); jet.rotation.z = -0.07; jet.raycast = () => {}; V.levGrp.add(jet); }
+    for (const [c, r] of marks) {
+      const p = Math.min(seg[c + ',' + r], v.digNeed || 6), [x, z] = wpos(c, r), y = topAt(g, c, r);
+      const burst = v.flooded && v.floodAt && v.floodAt[0] === c && v.floodAt[1] === r;
+      const w = 0.25 + p * 0.07 + (burst ? 0.5 : 0);
+      const gap = mesh(new T.BoxGeometry(1.05, 0.28 + (burst ? 0.12 : 0), w), mat(0x3a2c1a), false); gap.position.set(x, y + 0.2, z); gap.raycast = () => {}; V.levGrp.add(gap);
+      for (let k = 0; k < Math.min(p, 4); k++) { const d = mesh(new T.DodecahedronGeometry(0.07, 0), mat(0x9a825a), false); d.position.set(x - 0.55 + (k % 2) * 0.1, y + 0.1, z + (k - 1.5) * 0.12); d.raycast = () => {}; V.levGrp.add(d); }
+      if (burst && !v.receded) { const jet = new T.Mesh(new T.BoxGeometry(2.8, 0.12, w * 0.9), new T.MeshBasicMaterial({ color: 0x6fb6d8, transparent: true, opacity: 0.6, depthWrite: false })); jet.position.set(x + 1.4, y + 0.02, z); jet.rotation.z = -0.07; jet.raycast = () => {}; V.levGrp.add(jet); }
     }
     V.scene.add(V.levGrp); V.dirty = true;
   }
@@ -1024,5 +1058,5 @@
     V.r.render(V.scene, V.cam);
   }
 
-  Object.assign(V, { init, build, syncUnits, playFx, highlight, clearHighlights, showSides, selectRing, focus, rotate, zoom, refreshHex, ladderMarks, digMarks, leveeMarks, fireMarks, wpos });
+  Object.assign(V, { init, build, syncUnits, playFx, highlight, clearHighlights, showSides, selectRing, focus, rotate, zoom, refreshHex, ladderMarks, digMarks, leveeMarks, applyHidden, fireMarks, wpos });
 })(window);
