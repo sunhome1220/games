@@ -881,7 +881,7 @@
     actions(g, u, add) {
       const v = g.vars;
       if (u.side === 'att' && v.digOpen && !v.flooded && g.map[u.r][u.c] === 'd' && !isEngine(u)) {
-        add({ id: 'dig', name: `掘堤（本段 ${(v.digSeg || {})[H.key(u.c, u.r)] || 0}/${v.digNeed}）`, desc: '挖開腳下這一段河堤：同一段挖滿後決堤，大水從這裡開始淹向城下（低地上的攻城器械會被沖毀），城內糧草與士氣每回合下降。守軍可以在旁邊「搶修」把進度倒扣。' });
+        add({ id: 'dig', name: `掘堤（本段 ${(v.digSeg || {})[H.key(u.c, u.r)] || 0}/${v.digNeed}）`, desc: '挖開腳下這一段河堤：同一段挖滿後決堤，大水從這裡開始淹向城下（低地上的攻城器械會被沖毀），城內糧食消耗變 3 倍、士氣每回合下降。守軍可以在旁邊「搶修」把進度倒扣。' });
       }
       // 搶修河堤：守軍站在堤上或相鄰，把一段堤的掘堤進度 −2
       if (u.side !== 'att' && v.digOpen && !v.flooded && !isEngine(u) && !u.acted) {
@@ -913,7 +913,7 @@
       lows.sort((x, y) => x[2] - y[2] || x[1] - y[1] || x[0] - y[0]);
       const per = Math.ceil(lows.length / 3); v.floodWaves = [0, 1, 2].map(i => lows.slice(i * per, (i + 1) * per).map(([c, r]) => [c, r]));
       XIAPI.floodStep(g, 1);
-      msg(g, '水淹下邳', '泗水、沂水決堤，大水灌入下邳城下。城外一片汪洋，城內糧草漸絕、人心惶惶。\n\n【水淹後】\n・大水分三回合越漲越高：先淹靠河堤的低地，下回合、再下回合漸漸漫到城下各處（第 3 回合淹到最高）\n・淹到的低地變成大水：步兵、騎兵可以涉水，但走得慢、受傷多一成；器械過不去，原本在低地上的器械被沖走\n・通往城門的大路沒有淹，可以沿路進逼城門\n・城內每回合糧食 −3、守軍士氣 −4，城牆耐久慢慢下降；士氣太低時可能有人倒戈\n・掘堤後第 4 回合大水會退成泥濘，器械也能慢慢通過', 'att', [['lubu', 'haggard']]);
+      msg(g, '水淹下邳', '泗水、沂水決堤，大水灌入下邳城下。城外一片汪洋，城內糧草漸絕、人心惶惶。\n\n【水淹後】\n・大水分三回合越漲越高：先淹靠河堤的低地，下回合、再下回合漸漸漫到城下各處（第 3 回合淹到最高）\n・淹到的低地變成大水：步兵、騎兵可以涉水，但走得慢、受傷多一成；器械過不去，原本在低地上的器械被沖走\n・通往城門的大路沒有淹，可以沿路進逼城門\n・城內糧食消耗變 3 倍、守軍每回合士氣 −4，城牆耐久慢慢下降；士氣太低時可能有人倒戈\n・掘堤後第 4 回合大水會退成泥濘，器械也能慢慢通過', 'att', [['lubu', 'haggard']]);
       for (const k in g.hp) { const [c, r] = H.unkey(k); if (g.hp[k] > 0) damageStruct(g, c, r, 8, null); }
     },
     // 第 n 波大水（1～3）：這一波的低地變成大水，站在上面的人受損、器械被沖毀
@@ -947,16 +947,17 @@
     },
     onRoundEnd(g) {
       const v = g.vars;
-      v.supply -= 1;
+      // 糧草單位＝千人日：每天吃掉現存作戰部隊人數 ÷ 1000
+      v.supply -= supplyStat(g).daily;
       // 糧營：回合結束時站在糧營上的守方部隊會把它燒光；靠近（2 格內）的守方部隊每回合騷擾糧道
       let harass = false;
       for (const d of v.depots) {
         if (d.burnt) continue;
         if (g.units.some(u => u.alive && u.side === 'def' && !isEngine(u) && H.dist(u.c, u.r, d.c, d.r) <= 2)) harass = true;
       }
-      if (harass && v.supply > 0) { v.supply -= 1; log(g, '呂布軍襲擾曹軍糧道，糧草 −1', 'def', 'big'); }
+      if (harass && v.supply > 0) { v.supply -= 10; log(g, '呂布軍襲擾曹軍糧道，糧草 −10', 'def', 'big'); }
       // 缺糧：曹軍軍心天天下降，撐不了幾天就得退兵
-      v.supply = Math.max(v.supply, -99);
+      v.supply = Math.max(v.supply, -999);
       if (v.supply <= 0) {
         v.starve += 1;
         if (v.starve === 1) msg(g, '曹軍缺糧', `曹軍糧草耗盡！\n\n【缺糧】曹軍各部每回合軍心 −8，陣勢也會動搖；撐 ${v.starveLimit} 回合軍心渙散，曹操就只能退兵（守方獲勝）。守方只要守住、拖住就好。`, 'def', [['caocao', 'weep']]);
@@ -966,7 +967,7 @@
       // 城中糧草
       const cityDef = alive(g).filter(u => u.side === 'def' && inCity(g, u) && !isEngine(u));
       if (cityDef.length) {
-        v.food -= v.flooded ? 3 : 1;
+        v.food -= cityDef.reduce((s, u) => s + u.troops, 0) / 1000 * (v.flooded ? 3 : 1);   // 一樣是千人日；水淹後糧食泡爛，消耗是平常的 3 倍
         if (v.food <= 0) { v.food = 0; for (const u of cityDef) { u.mor = clamp(u.mor - 8, 0, 100); checkCollapse(g, u); } log(g, '城中糧盡，守軍士氣低落', 'def', 'bad'); }
         if (v.flooded) for (const u of cityDef) u.mor = clamp(u.mor - 4, 0, 100);
       }
@@ -1082,6 +1083,13 @@
       return null;
     },
   };
+  // 糧草現況（單位：千人日）：現有、每天消耗、還能撐幾天；城中糧同理
+  function supplyStat(g) {
+    const v = g.vars, daily = alive(g).filter(u => u.side === 'att' && !isEngine(u)).reduce((s, u) => s + u.troops, 0) / 1000;
+    const cityTroops = alive(g).filter(u => u.side === 'def' && inCity(g, u) && !isEngine(u)).reduce((s, u) => s + u.troops, 0) / 1000;
+    const days = (x, per) => (per > 0 ? Math.floor(Math.max(0, x) / per) : 99);
+    return { supply: Math.max(0, Math.round(v.supply)), daily, days: days(v.supply, daily), food: Math.max(0, Math.round(v.food)), cityDaily: cityTroops, foodDays: days(v.food, cityTroops * (v.flooded ? 3 : 1)) };
+  }
   const SC_RULES = { xiapi: XIAPI, hefei: HEFEI };
 
   // ---------- 結局文字 ----------
@@ -1108,7 +1116,7 @@
   // ---------- 匯出 ----------
   root.RULES = {
     newGame, serialize, restore, startRound, nextActivation, endActivation, activeUnit, upcoming,
-    steady, seer, hidden, shootTargets, depotTargets, douseTargets, WEATHER_ICON, weatherAt, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
+    steady, seer, hidden, supplyStat, shootTargets, depotTargets, douseTargets, WEATHER_ICON, weatherAt, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
     attackTargets, structTargets, attack, calcDamage, canCounter, actionsFor, doAction,
     unitAt, terr, tAt, state, STATE_NAME, formOf, encircled, adjEnemies, sideHit, inCity, onWall, isEngine, gen, ty, has, alive, enemiesOf, friendsOf,
     rangeOf, canMeleeReach, ENDINGS, other, clamp, inZOC, moveCost,
