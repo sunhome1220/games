@@ -236,6 +236,39 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, { even: [true, true], lost: [true, true, true, true], no: true, again: [false, true, false], yes: { winner: null, mode: 'ai', played: '0,0', hidden: true }, local: true });
   } },
+  { name: '犄角：仕／象被擊毀時，照一般走法走得到陣亡位置的另一位，下個回合走過去後可射復仇者飛彈打兇手；可不用；過期、太遠、走不到、不連鎖都不行', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const o = {}, offers = (p, c, r_, killer) => scan(p, T_.X(c), T_.Y(r_)).filter(x => x.ok && x.p === killer && x.T === AVENGER).length;
+      turnsPlayed = [0, 0];
+      // 紅仕在九宮頂（4,7）、紅象在 (2,9)：象照田字走得到 (4,7)，互為犄角；黑俥從 (4,4) 打掉仕
+      let [g, e, k] = T_.place([{ s: 0, t: 'G', c: 4, r: 7, hp: 0.5 }, { s: 0, t: 'E', c: 2, r: 9 }, { s: 1, t: 'R', c: 4, r: 4 }]);
+      T_.fire(k, g); o.token = [g.hp <= 0, !!e.rv && revengeOk(e.rv), e.x === T_.X(2) && e.y === T_.Y(9)];   // 不會自動換位
+      turn = 0; state = 'aim';
+      o.offer = [offers(e, 4, 7, k), offers(e, 2, 9, k)];   // 走到陣亡位置才有飛彈；原地沒有
+      o.go = T_.go(e, 4, 7); T_.fire(e, k); o.hit = [k.hp, e.rv.used];   // 走過去、打掉俥 2 心
+      // 過了這個回合就沒了（沒走過去）
+      [g, e, k] = T_.place([{ s: 0, t: 'G', c: 4, r: 7, hp: 0.5 }, { s: 0, t: 'E', c: 2, r: 9 }, { s: 1, t: 'R', c: 4, r: 4 }]); turnsPlayed = [0, 0];
+      T_.fire(k, g); turnsPlayed[0]++; o.expired = [revengeOk(e.rv), offers(e, 4, 7, k)];
+      // 象在 (8,7)，照田字走不到 (4,7)：沒有殺回機會
+      turnsPlayed = [0, 0]; [g, e, k] = T_.place([{ s: 0, t: 'G', c: 4, r: 7, hp: 0.5 }, { s: 0, t: 'E', c: 8, r: 7 }, { s: 1, t: 'R', c: 4, r: 4 }]);
+      T_.fire(k, g); o.noReach = !e.rv;
+      // 兇手在 5 格外的炮：走到陣亡位置也超過飛彈射程 4 格
+      [g, e, k] = T_.place([{ s: 0, t: 'G', c: 4, r: 7, hp: 0.5 }, { s: 0, t: 'E', c: 2, r: 9, cd: 1 }, { s: 1, t: 'C', c: 4, r: 2 }]);
+      T_.fire(k, g); o.far = [!!e.rv, offers(e, 4, 7, k)];
+      // 不連鎖：復仇者飛彈打死黑象，另一隻黑象（走得到黑象陣亡的位置）不會獲得殺回
+      turnsPlayed = [0, 0]; [g, e, k] = T_.place([{ s: 0, t: 'G', c: 4, r: 7, hp: 0.5 }, { s: 0, t: 'E', c: 2, r: 9 }, { s: 1, t: 'E', c: 6, r: 5, hp: 2, cd: 1 }, { s: 1, t: 'E', c: 8, r: 3, cd: 1 }]);   // 黑象冷卻中：不會攔截復仇者飛彈
+      const e2 = pieces.find(p => p.s === 1 && p.t === 'E' && p !== k);
+      T_.fire(k, g); turn = 0; state = 'aim'; T_.go(e, 4, 7); T_.fire(e, k); o.chain = [k.hp <= 0, !e2.rv];
+      // 被打死的不是仕／象：不觸發
+      turnsPlayed = [0, 0]; [g, e, k] = T_.place([{ s: 0, t: 'N', c: 4, r: 7, hp: 0.5 }, { s: 0, t: 'E', c: 2, r: 9 }, { s: 1, t: 'R', c: 4, r: 4 }]);
+      T_.fire(k, g); o.notCover = !e.rv;
+      return o;
+    });
+    t.assert.deepStrictEqual(r, {
+      token: [true, true, true], offer: [1, 0], go: 'target', hit: [2, true], expired: [false, 0], noReach: true, far: [true, 0], chain: [true, true], notCover: true,
+    });
+  } },
   { name: '強化卡牌：不可疊加、只影響自己這一方、卡表格式正確', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
