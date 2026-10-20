@@ -64,7 +64,7 @@
       if (!R.onWall(g, u) || u.type !== 'arc') return breach;
     }
     if (R.onWall(g, u) && u.type === 'arc') return [u.c, u.r];
-    const digging = R.alive(g).find(x => x.side === 'att' && g.map[x.r][x.c] === 'd');
+    const digging = R.alive(g).find(x => x.side === 'att' && !R.isEngine(x) && H.neighbors(x.c, x.r).some(([nc, nr]) => g.map[nr] && g.map[nr][nc] === 'd'));
     if (digging && !R.inCity(g, u) && u.type === 'cav') return [digging.c, digging.r];
     const retreat = g.round >= 3 || u.troops < u.max * 0.75 || adjCount(g, u, u.c, u.r) >= 2 || u.retreating;
     if (!R.inCity(g, u) && retreat) { u.retreating = true; return u.gen === 'lubu' ? PAL : [17, 8 + (u.id % 3)]; }
@@ -76,11 +76,17 @@
     for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'o' || g.map[r][c] === 'r') return [c, r];
     return null;
   }
+  // 河堤上不能站人：掘堤手要走到堤旁（緊鄰堤格的平地），優先進度最高的那一段
   function digHex(g, u) {
-    const ds = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') ds.push([c, r]);
-    const seg = g.vars.digSeg || {};
-    ds.sort((a, b) => ((seg[b[0] + ',' + b[1]] || 0) - (seg[a[0] + ',' + a[1]] || 0)) * 3 + (H.dist(u.c, u.r, a[0], a[1]) - H.dist(u.c, u.r, b[0], b[1])));
-    return ds.find(([c, r]) => { const o = R.unitAt(g, c, r); return !o || o === u; }) || ds[0];
+    const seg = g.vars.digSeg || {}, cand = [];
+    for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) {
+      const ch = g.map[r][c]; if (ch === '~' || ch === 'd' || ch === 'W' || ch === 'T' || ch === 'G') continue;
+      const ds = H.neighbors(c, r).filter(([nc, nr]) => g.map[nr] && g.map[nr][nc] === 'd' && H.center(c, r)[0] > H.center(nc, nr)[0] + 0.5); if (!ds.length) continue;
+      const o = R.unitAt(g, c, r); if (o && o !== u) continue;
+      cand.push({ c, r, prog: Math.max(...ds.map(([nc, nr]) => seg[nc + ',' + nr] || 0)) });
+    }
+    cand.sort((a, b) => (b.prog - a.prog) * 3 + (H.dist(u.c, u.r, a.c, a.r) - H.dist(u.c, u.r, b.c, b.r)));
+    return cand.length ? [cand[0].c, cand[0].r] : [13, 2];
   }
   function nearest(u, list) { let b = null, bd = 1e9; for (const x of list) { const d = H.dist(u.c, u.r, x.c, x.r); if (d < bd) { bd = d; b = x; } } return [b.c, b.r]; }
 
@@ -170,7 +176,7 @@
         opts.push({ score: (t.gate ? 260 : 150) * (u.type === 'inf' ? 0.3 : 1) + (100 - hp) * 2, kind: 'act', id: 'struct', t: tg.k });
       }
       if (a.id === 'ladder') for (const tg of a.targets) opts.push({ score: R.unitAt(g, tg.c, tg.r) ? 180 : 220, kind: 'act', id: 'ladder', t: tg.k });
-      if (a.id === 'dig') opts.push({ score: 600, kind: 'act', id: 'dig' });
+      if (a.id === 'dig') for (const t of a.targets) opts.push({ score: 600 + ((g.vars.digSeg || {})[t.k] || 0) * 30, kind: 'act', id: 'dig', t: t.k });
       if (a.id === 'mend') for (const t of a.targets) opts.push({ score: 420 + (g.vars.digSeg[t.k] || 0) * 40, kind: 'act', id: 'mend', t: t.k });
       if (a.id === 'rocks' || a.id === 'oil') for (const id of a.targets) { const T = g.units[id]; opts.push({ score: T.troops * (R.isEngine(T) ? 0.6 : 0.12) * val(g, T) * (T.type === 'ladder' ? 2 : 1), kind: 'act', id: a.id, t: id }); }
       if (a.id === 'skill:huoji') for (const id of a.targets) { const T = g.units[id]; opts.push({ score: T.troops * (R.isEngine(T) ? 0.24 : 0.08) * val(g, T) + 40, kind: 'act', id: a.id, t: id }); }
@@ -265,7 +271,7 @@
   function pickDigger(g) {
     const cands = R.alive(g).filter(x => x.side === 'att' && !R.isEngine(x) && x.gen !== 'caocao');
     const xun = cands.find(x => x.gen === 'xunyou');
-    const pick = xun || cands.sort((a, b) => H.dist(a.c, a.r, 12, 2) - H.dist(b.c, b.r, 12, 2))[0];
+    const pick = xun || cands.sort((a, b) => H.dist(a.c, a.r, 13, 2) - H.dist(b.c, b.r, 13, 2))[0];
     if (pick) g.aiDigger = pick.id;
   }
 

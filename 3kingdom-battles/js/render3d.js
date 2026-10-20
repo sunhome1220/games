@@ -151,23 +151,27 @@
   }
   function hexHeight(g, c, r) { const ch = groundCh(g, c, r); return GH[ch] != null ? GH[ch] : 0.2; }
   const RING = [[0, 0], ...Array.from({ length: 6 }, (_, i) => [Math.cos(i * Math.PI / 3) * 0.42, Math.sin(i * Math.PI / 3) * 0.42])];
-  // 長堤與河流：堤畫成一道筆直的線，河流在堤的西側緊貼著堤、順著堤拉直（不照六角格鋸齒走）
+  // 長堤與河流：堤沿著六角格的斜向軸線排成一直線（相鄰堤格剛好首尾相連）；河流在堤的西北側緊貼著堤、順著同方向流，對岸（遠側）是自然起伏的彎曲河岸
   function computeLev(g) {
     V.lev = null; const pts = [];
     for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') pts.push(wpos(c, r));
-    if (!pts.length) return;
-    const xs = pts.map(p => p[0]), zs = pts.map(p => p[1]);
-    V.lev = { xl: xs.reduce((a, b) => a + b, 0) / xs.length, z0: Math.min(...zs) - 1.0, z1: Math.max(...zs) + 1.0 };
+    if (pts.length < 2) return;
+    pts.sort((a, b) => b[1] - a[1]);   // 由南到北
+    const P1 = pts[0], P0 = pts[pts.length - 1], len = Math.hypot(P0[0] - P1[0], P0[1] - P1[1]);
+    const ux = (P0[0] - P1[0]) / len, uz = (P0[1] - P1[1]) / len;
+    V.lev = { P1, ux, uz, nx: uz, nz: -ux, len };   // n：指向河（西北）側
+    if (V.lev.nx > 0) { V.lev.nx = -V.lev.nx; V.lev.nz = -V.lev.nz; }
   }
-  // 這個位置若在長堤一帶，回傳覆蓋的地形字元（'~' 河、'd' 堤、'.' 堤東的平地）；否則 null（照六角格）
+  // 這個位置若在長堤一帶，回傳覆蓋的地形字元（'~' 河、'd' 堤、'.' 堤另一側的平地）；否則 null（照六角格）
   function leveeCh(g, wx, wz) {
-    const L = V.lev; if (!L || wz < L.z0 - 3 || wz > L.z1 + 0.9) return null;
-    const dx = wx - L.xl, inZone = wz >= L.z0;
-    if (!inZone) return null;
-    if (dx > -0.5 - 1.9 && dx < -0.5) return '~';
-    if (Math.abs(dx) <= 0.5) return 'd';
-    if (dx > 0.5 || dx <= -0.5 - 1.9) { const [c, r] = clampHex(g, hexAtWorld(wx, wz)); const ch = g.map[r][c]; return ch === '~' || ch === 'd' ? '.' : null; }
-    return null;
+    const L = V.lev; if (!L) return null;
+    const px = wx - L.P1[0], pz = wz - L.P1[1], t = px * L.ux + pz * L.uz, s = px * L.nx + pz * L.nz;   // t：沿堤，s：離堤中心（正＝河側）
+    if (t < -0.9 || t > L.len + 1.6 || s < -3 || s > 5) return null;
+    if (Math.abs(s) <= 0.5) return 'd';
+    const far = 0.5 + 1.75 + 0.55 * Math.sin(t * 0.85 + 0.9) + 0.3 * Math.sin(t * 2.3 + 2.1);   // 對岸：寬窄起伏、自然彎曲
+    if (s > 0.5 && s < far) return '~';
+    const [c, r] = clampHex(g, hexAtWorld(wx, wz)); const ch = g.map[r][c];
+    return ch === '~' || ch === 'd' ? '.' : null;
   }
   function groundHeight(g, wx, wz) {
     let s = 0; for (const [ax, az] of RING) { const ov = leveeCh(g, wx + ax, wz + az); if (ov) { s += GH[ov]; continue; } const [c, r] = clampHex(g, hexAtWorld(wx + ax, wz + az)); s += hexHeight(g, c, r); }
@@ -818,8 +822,8 @@
     if (V.levee) V.world.remove(V.levee); V.levee = null;
     const L = V.lev; if (!L) return;
     const grp = new T.Group(), earth = mat(0x8b7a55), cageA = mat(0xa88a52), cageB = mat(0x967a45), pile = mat(0x5a4328), rail = mat(0x6b4a2b);
-    const Y0 = 0.45, zA = L.z0 + 0.55, zB = L.z1 - 0.55, len = zB - zA, zc = (zA + zB) / 2;   // 筆直的一道堤，沿南北走向
-    const seg = new T.Group(); seg.position.set(L.xl, Y0, zc);
+    const Y0 = 0.45, len = L.len + 1.5;   // 兩端各延伸 0.75
+    const seg = new T.Group(); seg.position.set(L.P1[0] + L.ux * L.len / 2, Y0, L.P1[1] + L.uz * L.len / 2); seg.rotation.y = Math.atan2(L.ux, L.uz);
     const core = mesh(new T.BoxGeometry(0.46, 0.34, len), earth); core.position.y = 0.1; seg.add(core);
     const n = Math.max(2, Math.round(len / 0.42));
     for (let k = 0; k < n; k++) for (const sx of [-1, 1]) {
@@ -827,7 +831,7 @@
       cage.position.set(sx * 0.31, 0.02, -len / 2 + (k + 0.5) * len / n); seg.add(cage);
     }
     const ns = Math.max(3, Math.round(len / 0.2));
-    for (let k = 0; k < ns; k++) { const st = mesh(new T.CylinderGeometry(0.03, 0.04, 0.5, 5), pile); st.position.set(-0.5, 0.05, -len / 2 + (k + 0.5) * len / ns); st.rotation.z = 0.1; seg.add(st); }   // 河側木樁護岸
+    for (let k = 0; k < ns; k++) { const st = mesh(new T.CylinderGeometry(0.03, 0.04, 0.5, 5), pile); st.position.set(0.5, 0.05, -len / 2 + (k + 0.5) * len / ns); st.rotation.z = 0.1; seg.add(st); }   // 河側木樁護岸
     for (const sx of [-0.18, 0.18]) { const rl = mesh(new T.BoxGeometry(0.035, 0.04, len), rail, false); rl.position.set(sx, 0.4, 0); seg.add(rl); }
     const np = Math.max(3, Math.round(len / 1.0));
     for (let k = 0; k <= np; k++) for (const sx of [-0.18, 0.18]) { const p = mesh(new T.BoxGeometry(0.04, 0.2, 0.04), rail, false); p.position.set(sx, 0.3, -len / 2 + 0.05 + k * (len - 0.1) / np); seg.add(p); }
@@ -845,13 +849,16 @@
     const marks = dikes.filter(([c, r]) => (seg[c + ',' + r] || 0) > 0);
     if (!marks.length) { V.dirty = true; return; }
     V.levGrp = new T.Group();
+    const ang = V.lev ? Math.atan2(V.lev.ux, V.lev.uz) : 0;
     for (const [c, r] of marks) {
-      const p = Math.min(seg[c + ',' + r], v.digNeed || 6), [x0, z] = wpos(c, r), x = V.lev ? V.lev.xl : x0, y = topAt(g, c, r);
+      const p = Math.min(seg[c + ',' + r], v.digNeed || 6), [x, z] = wpos(c, r), y = topAt(g, c, r);
       const burst = v.flooded && v.floodAt && v.floodAt[0] === c && v.floodAt[1] === r;
       const w = 0.25 + p * 0.07 + (burst ? 0.5 : 0);
-      const gap = mesh(new T.BoxGeometry(1.05, 0.28 + (burst ? 0.12 : 0), w), mat(0x3a2c1a), false); gap.position.set(x, y + 0.2, z); gap.raycast = () => {}; V.levGrp.add(gap);
-      for (let k = 0; k < Math.min(p, 4); k++) { const d = mesh(new T.DodecahedronGeometry(0.07, 0), mat(0x9a825a), false); d.position.set(x - 0.55 + (k % 2) * 0.1, y + 0.1, z + (k - 1.5) * 0.12); d.raycast = () => {}; V.levGrp.add(d); }
-      if (burst && !v.receded) { const jet = new T.Mesh(new T.BoxGeometry(2.8, 0.12, w * 0.9), new T.MeshBasicMaterial({ color: 0x6fb6d8, transparent: true, opacity: 0.6, depthWrite: false })); jet.position.set(x + 1.4, y + 0.02, z); jet.rotation.z = -0.07; jet.raycast = () => {}; V.levGrp.add(jet); }
+      const m = new T.Group(); m.position.set(x, y, z); m.rotation.y = ang;   // 本地 x＝橫過堤（＋是河側）、z＝沿堤
+      const gap = mesh(new T.BoxGeometry(1.05, 0.28 + (burst ? 0.12 : 0), w), mat(0x3a2c1a), false); gap.position.set(0, 0.2, 0); gap.raycast = () => {}; m.add(gap);
+      for (let k = 0; k < Math.min(p, 4); k++) { const d = mesh(new T.DodecahedronGeometry(0.07, 0), mat(0x9a825a), false); d.position.set(-0.55 + (k % 2) * 0.1, 0.1, (k - 1.5) * 0.12); d.raycast = () => {}; m.add(d); }
+      if (burst && !v.receded) { const jet = new T.Mesh(new T.BoxGeometry(2.8, 0.12, w * 0.9), new T.MeshBasicMaterial({ color: 0x6fb6d8, transparent: true, opacity: 0.6, depthWrite: false })); jet.position.set(-1.4, 0.02, 0); jet.raycast = () => {}; m.add(jet); }
+      V.levGrp.add(m);
     }
     V.scene.add(V.levGrp); V.dirty = true;
   }

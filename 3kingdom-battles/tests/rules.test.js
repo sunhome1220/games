@@ -100,10 +100,10 @@ module.exports = [
   { name: '水攻：同一段河堤掘滿 6 次決堤，低地變大水，低地上的器械被沖毀', async fn(env) {
     const pg = await page(env);
     const r = await pg.evaluate(() => {
-      const g = T.setup([{ gen: 'liubei', c: 12, r: 1 }, { gen: 'gongbing', c: 14, r: 6 }]);
+      const g = T.setup([{ gen: 'liubei', c: 14, r: 1 }, { gen: 'gongbing', c: 14, r: 6 }]);
       g.vars.digOpen = true;
       const lb = T.u('liubei');
-      let early = null; for (let i = 0; i < 6; i++) { lb.acted = false; RULES.doAction(g, lb, 'dig'); if (i === 4) early = g.vars.flooded; }
+      let early = null; for (let i = 0; i < 6; i++) { lb.acted = false; RULES.doAction(g, lb, 'dig', '13,1'); if (i === 4) early = g.vars.flooded; }
       return { early, flooded: g.vars.flooded, cell: g.map[6][14], eng: T.u('gongbing').alive };
     });
     env.assert(!r.early && r.flooded && r.cell === 'w' && !r.eng, JSON.stringify(r));
@@ -184,8 +184,8 @@ module.exports = [
       const g = RULES.newGame('xiapi', { seed: 2 }); g.round = 7;
       const inf = g.units.find(u => u.side === 'att' && u.type === 'inf' && u.alive), eng = g.units.find(u => u.type === 'ram');
       let lw = null; for (let r = 0; r < g.Hh && !lw; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'l' && !RULES.unitAt(g, c, r)) { lw = [c, r]; break; }
-      g.vars.digOpen = true; g.vars.digSeg = { '12,1': 5 }; g.vars.dig = 5; inf.c = 12; inf.r = 1;   // 站在河堤上
-      RULES.doAction(g, inf, 'dig');
+      g.vars.digOpen = true; g.vars.digSeg = { '13,1': 5 }; g.vars.dig = 5; inf.c = 14; inf.r = 1;   // 站在堤旁
+      RULES.doAction(g, inf, 'dig', '13,1');
       const flooded = g.vars.flooded && g.map[lw[1]][lw[0]] === 'w';
       const cnt = () => { let n = 0; for (const row of g.map) for (const ch of row) if (ch === 'w') n++; return n; };
       const waves = [cnt()]; const fr = g.vars.floodRound;
@@ -392,17 +392,18 @@ module.exports = [
   { name: '河堤五段：每段各自累計掘堤，守軍可搶修倒扣進度；沒掘的另一段不受影響', async fn(env) {
     const pg = await page(env);
     const r = await pg.evaluate(() => {
-      const g = T.setup([{ gen: 'liubei', c: 12, r: 1 }, { gen: 'lubu', c: 12, r: 3 }]);
+      const g = T.setup([{ gen: 'liubei', c: 14, r: 1 }, { gen: 'lubu', c: 14, r: 2 }]);
       g.vars.digOpen = true; const lb = T.u('liubei'), lu = T.u('lubu');
       const segs = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') segs.push(c + ',' + r);
-      for (let i = 0; i < 3; i++) { lb.acted = false; RULES.doAction(g, lb, 'dig'); }
-      g.active = lu.id; lu.acted = false; lu.c = 12; lu.r = 2;
+      for (let i = 0; i < 3; i++) { lb.acted = false; RULES.doAction(g, lb, 'dig', '13,1'); }
+      g.active = lu.id; lu.acted = false; lu.c = 14; lu.r = 2;
+      const onLevee = RULES.reachable(g, lb).has('13,2');
       const mend = RULES.actionsFor(g, lu).find(a => a.id === 'mend');
-      const ok = mend && RULES.doAction(g, lu, 'mend', '12,1');
-      return { segs: segs.length, after: g.vars.digSeg['12,1'], mend: !!mend, ok: !!ok, other: g.vars.digSeg['12,2'] || 0 };
+      const ok = mend && RULES.doAction(g, lu, 'mend', '13,1');
+      return { segs: segs.length, after: g.vars.digSeg['13,1'], mend: !!mend, ok: !!ok, other: g.vars.digSeg['13,2'] || 0, onLevee };
     });
     env.assert(r.segs === 5, '河堤應有 5 段：' + JSON.stringify(r));
-    env.assert(r.mend && r.ok && r.after === 1 && r.other === 0, '搶修 −2、其他段不變：' + JSON.stringify(r));
+    env.assert(!r.onLevee && r.mend && r.ok && r.after === 1 && r.other === 0, '堤上不能站人；搶修 −2、其他段不變：' + JSON.stringify(r));
   } },
   { name: '伏兵：林中部隊 2 格外對曹軍隱形；騎兵移動力 +2；從林中發動的第一擊有伏擊加成', async fn(env) {
     const pg = await page(env);

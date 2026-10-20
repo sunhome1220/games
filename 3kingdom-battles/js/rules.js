@@ -881,13 +881,16 @@
     },
     actions(g, u, add) {
       const v = g.vars;
-      if (u.side === 'att' && v.digOpen && !v.flooded && g.map[u.r][u.c] === 'd' && !isEngine(u)) {
-        add({ id: 'dig', name: `掘堤（本段 ${(v.digSeg || {})[H.key(u.c, u.r)] || 0}/${v.digNeed}）`, desc: '挖開腳下這一段河堤：同一段挖滿後決堤，大水從這裡開始淹向城下（低地上的攻城器械會被沖毀），城內糧食消耗變 3 倍、士氣每回合下降。守軍可以在旁邊「搶修」把進度倒扣。' });
+      // 河堤上不能站人：只能站在堤的右側（東側）緊鄰的格子對那一段掘堤／搶修（西側是河）
+      const nearDikes = (pred) => { const L = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') { const k = H.key(c, r), d = H.dist(u.c, u.r, c, r); if (d <= 1 && H.center(u.c, u.r)[0] > H.center(c, r)[0] + 0.5 && pred((v.digSeg || {})[k] || 0)) L.push({ c, r, k, dist: d }); } return L; };
+      if (u.side === 'att' && v.digOpen && !v.flooded && !isEngine(u) && !u.acted) {
+        const targets = nearDikes(() => true);
+        if (targets.length) add({ id: 'dig', name: '掘堤', desc: `挖開身旁這一段河堤（堤上不能站人，站在緊鄰的格子挖）：同一段挖滿 ${v.digNeed} 次後決堤，大水從這裡開始淹向城下（低地上的攻城器械會被沖毀），城內糧食消耗變 3 倍、士氣每回合下降。守軍可以在旁邊「搶修」把進度倒扣。`, need: 'hex', targets: targets.map(t => Object.assign(t, { label: `${(v.digSeg || {})[t.k] || 0}/${v.digNeed}` })) });
       }
       // 搶修河堤：守軍站在堤上或相鄰，把一段堤的掘堤進度 −2
       if (u.side !== 'att' && v.digOpen && !v.flooded && !isEngine(u) && !u.acted) {
-        const targets = []; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'd') { const k = H.key(c, r), d = H.dist(u.c, u.r, c, r); if (d <= 1 && (v.digSeg || {})[k] > 0) targets.push({ c, r, k, dist: d }); }
-        if (targets.length) add({ id: 'mend', name: '搶修河堤', desc: '站在河堤上或相鄰時，花一次動作把一段堤的掘堤進度 −2（水淹之後就修不了了）。', need: 'hex', targets });
+        const targets = nearDikes(p => p > 0);
+        if (targets.length) add({ id: 'mend', name: '搶修河堤', desc: '站在堤旁（緊鄰）時，花一次動作把一段堤的掘堤進度 −2（水淹之後就修不了了）。', need: 'hex', targets });
       }
     },
     doAction(g, u, id, target) {
@@ -899,11 +902,12 @@
         return true;
       }
       if (id !== 'dig') return false;
-      const k = H.key(u.c, u.r); v.digSeg[k] = (v.digSeg[k] || 0) + (u.gen === 'xunyou' ? 2 : 1); u.acted = true;
+      const A = actionsFor(g, u).find(a => a.id === 'dig'); const t = A && A.targets.find(x => x.k === target); if (!t) return false;
+      const k = t.k; v.digSeg[k] = (v.digSeg[k] || 0) + (u.gen === 'xunyou' ? 2 : 1); u.acted = true;
       v.dig = Math.max(...Object.values(v.digSeg));
       log(g, `${u.name}掘堤（本段 ${Math.min(v.digSeg[k], v.digNeed)}/${v.digNeed}）`, u.side);
       g.fx.push({ t: 'dig', id: u.id });
-      if (v.digSeg[k] >= v.digNeed) XIAPI.flood(g, [u.c, u.r]);
+      if (v.digSeg[k] >= v.digNeed) XIAPI.flood(g, [t.c, t.r]);
       return true;
     },
     flood(g, origin) {
