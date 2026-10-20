@@ -72,7 +72,8 @@
     wushuang: { name: '無雙', kind: 'passive', desc: '攻擊力 +30%，反擊不減半。' },
     feijiang: { name: '飛將', kind: 'active', cd: 3, target: 'self', desc: '本次行動移動 +2、無視敵軍阻擋，下一次攻擊 ×1.4 並額外打亂陣型。' },
     tuxi: { name: '突襲', kind: 'active', cd: 3, target: 'self', desc: '本次行動移動 +3、無視敵軍阻擋，衝鋒加成再提高。' },
-    xianzhen: { name: '陷陣', kind: 'passive', desc: '攻擊 +15%；陣型被打亂的程度減半，永不就地解散。' },
+    xianzhen: { name: '陷陣', kind: 'passive', desc: '「每所攻擊無不破者」：攻擊 +35%，打中敵軍時額外打亂對方陣型；「鎧甲斗具皆精練齊整」：受到的傷害 −20%；陣型被打亂的程度減半，不會潰逃、永不就地解散。' },
+    xiandeng: { name: '先登', kind: 'passive', desc: '每戰常先登：攻擊 +15%；陣型被打亂的程度減半，永不就地解散。' },
     liaolai: { name: '遼來', kind: 'passive', desc: '「遼來遼來」：攻擊 +20%；每回合結束時，2 格內的敵軍士氣 −4。' },
     duanhou: { name: '斷後', kind: 'passive', desc: '友軍撤退時拚死斷後：受到的傷害 −25%，陣型被打亂的程度減半，不會潰逃。' },
     huoji: { name: '火計', kind: 'active', cd: 3, target: 'enemy', rng: 3, desc: '3 格內放火：兵力 −8%、完整度 −20；對攻城器械 ×3，在樹林中 ×1.5。' },
@@ -91,7 +92,7 @@
     lubu: { name: '呂布', mark: '呂', lead: 88, war: 100, int: 26, skills: ['wushuang', 'feijiang'], bio: '「人中呂布，馬中赤兔」，天下無雙的猛將。' },
     zhangliao: { name: '張遼', mark: '張', lead: 90, war: 92, int: 78, skills: ['tuxi', 'heji'], bio: '呂布麾下騎將，日後的合肥守將。' },
 
-    gaoshun: { name: '高順', mark: '高', lead: 86, war: 85, int: 60, skills: ['xianzhen'], bio: '統領「陷陣營」，所攻無不破者。' },
+    gaoshun: { name: '高順', mark: '高', lead: 86, war: 85, int: 60, skills: ['xianzhen'], bio: '統領「陷陣營」：七百餘兵號為千人，鎧甲精練，每所攻擊無不破者（遊戲比例）。' },
     chengong: { name: '陳宮', mark: '陳', lead: 70, war: 55, int: 92, skills: ['huoji'], bio: '呂布的謀主，屢獻良策卻不被採用。' },
     houcheng: { name: '侯成', mark: '侯', lead: 46, war: 65, int: 40, loyal: 30, skills: [], bio: '呂布部將，曾因私釀酒被呂布責罵。' },
     songxian: { name: '宋憲', mark: '宋', lead: 42, war: 60, int: 38, loyal: 35, skills: [], bio: '呂布部將。' },
@@ -103,7 +104,7 @@
     chenwu: { name: '陳武', mark: '陳', lead: 72, war: 84, int: 50, skills: [], bio: '吳軍騎將，在合肥之戰中力戰而死。' },
     wubu: { name: '吳軍部將', mark: '吳', lead: 55, war: 52, int: 40, skills: [], bio: '吳軍弓弩隊。' },
     lidian: { name: '李典', mark: '李', lead: 78, war: 75, int: 72, skills: ['heji'], bio: '與張遼素來不和，國難當前仍慨然隨張遼出戰。' },
-    yuejin: { name: '樂進', mark: '樂', lead: 80, war: 82, int: 55, skills: ['xianzhen'], bio: '曹操密函指定「樂將軍守護軍，勿得與戰」。' },
+    yuejin: { name: '樂進', mark: '樂', lead: 80, war: 82, int: 55, skills: ['xiandeng'], bio: '曹操密函指定「樂將軍守護軍，勿得與戰」。' },
     xueti: { name: '薛悌', mark: '薛', lead: 60, war: 35, int: 75, skills: [], bio: '護軍，帶來曹操「賊至乃發」的密函。' },
     weixu: { name: '魏續', mark: '魏', lead: 44, war: 62, int: 35, loyal: 35, skills: [], bio: '呂布部將。' },
   };
