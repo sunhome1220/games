@@ -235,7 +235,7 @@
     u.sortie = wasIn && !inCity(g, u);
     // 涉水、穿林會打亂隊形
     const t = terr(g, c, r);
-    if (!isEngine(u) && path.length > 1) { if (t.water) u.coh -= 8; else if (t.cover && u.type === 'cav') u.coh -= 4; }
+    if (!isEngine(u) && path.length > 1) { if (t.water) u.coh -= 8 * steady(u); else if (t.cover && u.type === 'cav') u.coh -= 4 * steady(u); }
     g.fx.push({ t: 'move', id: u.id, path });
     return true;
   }
@@ -280,6 +280,7 @@
     if (has(A, 'wusheng')) P('武聖', 1.2);
     if (has(A, 'xianzhen')) P('陷陣', 1.15);
     if (has(A, 'liaolai')) P('遼來', 1.2);
+    if (g.vars.surpriseSide === A.side && g.round <= g.vars.surpriseUntil) P('倉促應戰', 0.7);   // 被突襲的一方前幾回合還沒整好隊伍
     if (has(D, 'duanhou') && g.vars.retreating) P('斷後', 0.75);
     if (A.buff.feijiang && !opts.counter) P('飛將', 1.4);
     if (opts.weizhen) P('威震', 1.3);
@@ -347,7 +348,7 @@
     if (isEngine(D)) { if (D.troops <= 0) destroy(g, D, '被摧毀'); return; }
     const pct = dmg / Math.max(1, before) * 100;
     let coh = pct * 2.0 + (info.side >= 0 ? [0, 6, 12, 18][info.side] : 0) + (info.charge ? 8 : 0) + (info.joint || 0) * 4 + (info.extraCoh || 0);
-    coh *= 1 - gen(D).lead / 200;
+    coh *= steady(D);
     if (has(D, 'xianzhen') || (has(D, 'duanhou') && g.vars.retreating)) coh *= 0.5;
     if (info.ranged) coh *= 0.7;
     D.coh = clamp(D.coh - Math.max(2, coh), 0, 100);
@@ -557,7 +558,7 @@
     if (id === 'form') {
       if (!A.targets.includes(target)) return false;
       u.form = target; u.acted = true;
-      if (adjEnemies(g, u).length) { u.coh = clamp(u.coh - 15, 0, 100); checkCollapse(g, u); }
+      if (adjEnemies(g, u).length) { u.coh = clamp(u.coh - 15 * steady(u) * 1.4, 0, 100); checkCollapse(g, u); }
       log(g, `${u.name}變陣為${FORMATIONS[target].name}`, u.side); g.fx.push({ t: 'form', id: u.id }); return true;
     }
     if (id === 'merge') { if (!A.targets.includes(target)) return false; return merge(g, u, g.units[target]); }
@@ -616,6 +617,8 @@
     return true;
   }
   const isRemnant = u => u.troops <= u.max * 0.35;
+  // 統率越高，陣型越不容易被打亂：統率 50 受 8 成影響、70 受 6 成、90 只受 4 成（最低 3 成）
+  function steady(u) { return clamp(1.3 - gen(u).lead / 100, 0.3, 1); }
   // 兩軍合流：主帥（劇本的主將，否則統率較高者）那一支留下，另一支併入；位置取兵力較多的那一格（殘部因此脫離包圍）
   function merge(g, u, v) {
     const leader = g.sc.sides[u.side].leader;
@@ -654,7 +657,7 @@
     const W = result === 'win' ? u : D, Lz = result === 'win' ? D : u;
     if (result === 'draw') { log(g, `${u.name}與${D.name}大戰數十回合，不分勝負`, u.side); }
     else {
-      W.mor = clamp(W.mor + 15, 0, 100); Lz.mor = clamp(Lz.mor - 25, 0, 100); Lz.coh = clamp(Lz.coh - 20, 0, 100);
+      W.mor = clamp(W.mor + 15, 0, 100); Lz.mor = clamp(Lz.mor - 25, 0, 100); Lz.coh = clamp(Lz.coh - 20 * steady(Lz) * 1.4, 0, 100);
       log(g, `單挑！${W.name}擊敗${Lz.name}，${Lz.name}部軍心動搖`, W.side, 'big');
       checkCollapse(g, Lz);
     }
@@ -669,10 +672,11 @@
       for (const k in u.cd) if (u.cd[k] > 0) u.cd[k]--;
       if (isEngine(u)) continue;
       const lead = gen(u).lead;
-      if (encircled(g, u)) { u.coh -= 8 * (1 - lead / 200); u.mor -= 6; }
-      else if (!adjEnemies(g, u).length) { u.coh += 6 + lead / 25; if (!(g.vars.flooded && u.side === 'def' && inCity(g, u))) u.mor += 2; }
+      if (encircled(g, u)) { u.coh -= 8 * steady(u); u.mor -= 6; }
+      else if (!adjEnemies(g, u).length) { u.coh += 4 + lead / 12; if (!(g.vars.flooded && u.side === 'def' && inCity(g, u))) u.mor += 2; }
+      else u.coh += Math.max(0, (lead - 70) / 5);   // 統率高的將領在交戰中也能穩住陣腳（統率 90：每回合 +4）
       if (g.units.some(v => v.alive && v.side === u.side && v !== u && has(v, 'jianxiong') && H.dist(v.c, v.r, u.c, u.r) <= 2)) { u.mor += 3; u.coh += 4; }
-      if (terr(g, u.c, u.r).water) { u.coh -= 8; u.troops = Math.round(u.troops * 0.97); }
+      if (terr(g, u.c, u.r).water) { u.coh -= 8 * steady(u); u.troops = Math.round(u.troops * 0.97); }
       u.coh = clamp(u.coh, 0, 100); u.mor = clamp(u.mor, 0, 100);
       checkCollapse(g, u);
     }
@@ -824,7 +828,7 @@
         for (const u of g.units) if (u.gen === 'zhangliao' || u.gen === 'lidian') u.mor = 100;
         // 天亮出擊：第 1 回合魏軍全部先動，吳軍才醒過來
         g.order = [...g.order.filter(id => g.units[id].side === 'def'), ...g.order.filter(id => g.units[id].side === 'att')];
-        msg(g, '合肥之戰', '孫權率十萬大軍圍合肥。張遼、李典、樂進打開曹操的密函：「若孫權至者，張、李將軍出戰；樂將軍守護軍，勿得與戰。」張遼連夜募得敢死之士八百人，殺牛犒軍，準備天亮出擊。\n\n【晨襲】\n・天亮出擊：第 1 回合魏軍全部先行動；吳軍營寨還沒整好，各部陣型鬆散（完整度 55）\n・張遼「遼來」：攻擊 +20%，每回合讓身邊 2 格的吳軍士氣下降\n・孫權在南邊的小土丘上；吳軍大營在西南，衝進去可以放火\n・突擊完要從南門或東門退回城裡', null, [['zhangliao', 'charge'], ['lidian', 'resolve'], ['yuejin', 'default']]);
+        msg(g, '合肥之戰', '孫權率十萬大軍圍合肥。張遼、李典、樂進打開曹操的密函：「若孫權至者，張、李將軍出戰；樂將軍守護軍，勿得與戰。」張遼連夜募得敢死之士八百人，殺牛犒軍，準備天亮出擊。\n\n【晨襲】\n・天亮出擊：第 1 回合魏軍全部先行動；吳軍營寨還沒整好，各部陣型鬆散（完整度 55），第 1、2 回合攻擊力 ×0.7（倉促應戰）\n・張遼「遼來」：攻擊 +20%，每回合讓身邊 2 格的吳軍士氣下降\n・孫權在南邊的小土丘上；吳軍大營在西南，衝進去可以放火\n・突擊完要從南門或東門退回城裡', null, [['zhangliao', 'charge'], ['lidian', 'resolve'], ['yuejin', 'default']]);
       }
       if (g.round === v.plagueRound && !v.plague && !v.retreating) {
         v.plague = true;
@@ -905,7 +909,7 @@
   // ---------- 匯出 ----------
   root.RULES = {
     newGame, serialize, restore, startRound, nextActivation, endActivation, activeUnit, upcoming,
-    reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
+    steady, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
     attackTargets, structTargets, attack, calcDamage, canCounter, actionsFor, doAction,
     unitAt, terr, tAt, state, STATE_NAME, formOf, encircled, adjEnemies, sideHit, inCity, onWall, isEngine, gen, ty, has, alive, enemiesOf, friendsOf,
     rangeOf, canMeleeReach, ENDINGS, other, clamp, inZOC, moveCost,
