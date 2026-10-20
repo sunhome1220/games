@@ -73,6 +73,7 @@ const LAYOUT = [['K',4,9],['G',3,9],['G',5,9],['R',0,9],['R',8,9],['N',1,9],['N'
                 ['P',0,6],['P',2,6],['P',4,6],['P',6,6],['P',8,6]];
 
 let pieces, turn, state, mover, timer, fx, winner, targets;
+let overReason = null;   // 一局怎麼結束的：'resign' 認輸、'hopeless' 只剩帥仕象且對方已有 2 個以上過河攻擊單位（判負）、null 一般（帥陣亡或和局）
 let moved = false, firedPiece = null, sel = null, origin = null;   // moved：本回合已移動；sel：目前選取的棋子 {p, moves 可走的點, dest 目的地, scan 原地可攻擊}
 // 對戰模式：local＝同裝置並排、face＝同裝置面對面（黑方文字倒轉）、online＝兩台裝置連線
 let mode = 'local', mySide = 0, conn = null, pendingEnd = null;

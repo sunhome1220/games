@@ -50,6 +50,18 @@ module.exports = [
     t.assert.strictEqual(mism, 0, `有 ${mism} 回合兩邊局面不一致`);
     console.log(`      （${n} 回合）`);
   } },
+  { name: '連線：認輸兩邊同步（設定頁按鈕要連按兩次才生效）', async fn(t) {
+    const room = 'resign' + Date.now() % 100000, pgs = [];
+    for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}`, { mode: false, freeze: false }));
+    await pgs[0].waitForTimeout(600);
+    await pgs[1].evaluate(() => { $('lobby').hidden = true; }); await pgs[1].click('#menu');
+    await pgs[1].click('#mResign');   // 第一次只是「確認」
+    t.assert.deepStrictEqual(await pgs[1].evaluate(() => [winner, $('mResign').textContent.includes('確定')]), [null, true]);
+    await pgs[1].click('#mResign');
+    await pgs[0].waitForFunction(() => state === 'over', null, { timeout: 30000 });
+    const end = await Promise.all(pgs.map(p => p.evaluate(() => ({ state, winner, overReason }))));
+    t.assert.deepStrictEqual(end, [{ state: 'over', winner: 0, overReason: 'resign' }, { state: 'over', winner: 0, overReason: 'resign' }]);
+  } },
   { name: '連線：取消移動（含升官空投）兩邊同步還原', async fn(t) {
     const room = 'undo' + Date.now() % 100000, pgs = [];
     for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}`, { mode: false, freeze: false }));

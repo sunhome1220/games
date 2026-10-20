@@ -2,7 +2,7 @@
 // 連線做法：輪到誰，誰的裝置就是「主控」——它算物理、把動作（出發／開火）送給對方播放動畫，
 // 回合結束時送出完整局面快照，對方直接套用，兩台裝置就不會因浮點誤差而越跑越不同步。
 function snapshot() {
-  return { turn, winner, md: mods, tp: turnsPlayed, im: immune, xt: extraTurn, ps: pieces.map(p => [p.x, p.y, p.hp, p.cd, p.T.id === 'P2' ? 1 : 0, p.hd]) };
+  return { turn, winner, or: overReason, md: mods, tp: turnsPlayed, im: immune, xt: extraTurn, ps: pieces.map(p => [p.x, p.y, p.hp, p.cd, p.T.id === 'P2' ? 1 : 0, p.hd]) };
 }
 function applySnap(sn) {
   if (JSON.stringify(sn.md) !== JSON.stringify(mods)) { mods = JSON.parse(JSON.stringify(sn.md)); buildTypes(0); buildTypes(1); }
@@ -12,7 +12,7 @@ function applySnap(sn) {
     Object.assign(p, { x, y, hp, cd, hd, vx: 0, vy: 0, cdFresh: false });
     p.T = pr ? TT[p.s].P2 : TT[p.s][p.t];
   });
-  turn = sn.turn; winner = sn.winner;
+  turn = sn.turn; winner = sn.winner; overReason = sn.or || null;
 }
 function applyEnd() {
   const sn = pendingEnd; pendingEnd = null;
@@ -31,6 +31,7 @@ function send(m) { if (online() && conn && conn.open) conn.send(m); }
 function onNet(m) {
   if (m.t === 'reset') { reset(); setMsg('對手重新開始了一局。'); return; }
   if (m.t === 'cfg') { if (cardsOn !== m.cards || (m.every && cardEvery !== m.every)) { cardsOn = m.cards; if (m.every) cardEvery = m.every; showCardsBtn(); } reset(); return; }   // 連線時以房主的強化卡牌設定為準
+  if (m.t === 'resign') { resign(m.side, true); return; }
   if (m.t === 'card') { incoming.push(m); drainIncoming(); return; }
   if (m.t === 'launch') {
     const p = pieces[m.i];
@@ -132,7 +133,7 @@ function bcConnect(room, side) {
 function gameOverToLobby() { setTimeout(() => { if (state === 'over') $('lobby').hidden = false; }, 1400); }
 let helpFrom = null;   // 從設定頁開的說明，關掉後回到設定頁
 $('legendClose').addEventListener('click', () => { if (helpFrom === 'lobby') $('lobby').hidden = false; helpFrom = null; });
-$('menu').onclick = () => { SFX.init(); $('lobby').hidden = false; };
+$('menu').onclick = () => { SFX.init(); $('lobby').hidden = false; showResignBtn(); };
 $('mClose').onclick = () => $('lobby').hidden = true;
 $('mLocal').onclick = () => setMode('local');
 $('mFace').onclick = () => setMode('face');
@@ -144,5 +145,15 @@ document.querySelectorAll('#lobby .lv button').forEach(b => b.onclick = () => {
   setMsg(`對電腦（${AI_LEVELS[aiLevel]}）：你執紅先手，點選棋子開始。`);
 });
 $('mHelp').onclick = () => { $('lobby').hidden = true; helpFrom = 'lobby'; $('legendOv').hidden = false; };
+// 認輸：同裝置對戰時是「目前輪到的那一方」認輸；對電腦／連線是自己這方。要連按兩次才生效，避免誤觸
+const resignSide = () => mode === 'ai' || online() ? mySide : turn;
+let resignArm = 0;
+function showResignBtn() { const b = $('mResign'); b.textContent = resignArm ? `⚠️ 確定認輸？（${SIDE[resignSide()].name}）` : `🏳️ 認輸（${SIDE[resignSide()].name}）`; b.disabled = state === 'over' || state === 'pick'; }
+$('mResign').onclick = () => {
+  if (!resignArm) { resignArm = setTimeout(() => { resignArm = 0; showResignBtn(); }, 3500); showResignBtn(); return; }
+  clearTimeout(resignArm); resignArm = 0;
+  if (resign(resignSide())) $('lobby').hidden = true;
+  showResignBtn();
+};
 $('mRestart').onclick = () => { restart(); $('lobby').hidden = true; };
 

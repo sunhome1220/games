@@ -146,3 +146,4 @@ i.tier.t2 { background:#2f6fb5; } i.tier.t3 { background:#8e3fb8; } i.tier.t4 { 
   #legend { font-size:12px; border-collapse:collapse; width:100%; } #legend th, #legend td { border:1px solid #4d6355; padding:3px 5px; text-align:left; vertical-align:top; }
 #legend td.num { white-space:nowrap; font-weight:700; text-align:center; }
 #legend th { white-space:nowrap; padding:3px 4px; } #legend td:nth-child(3), #legend td:nth-child(4), #legend td:nth-child(6) { white-space:nowrap; text-align:center; } #legend td:nth-child(5) { text-align:center; min-width:56px; } #legend td:last-child { min-width:170px; }
+#lobby .lhead .lbtns { display:flex; gap:6px; } #lobby .lhead #mResign { font-size:13px; padding:6px 8px; } #lobby .lhead button:disabled { opacity:.4; }

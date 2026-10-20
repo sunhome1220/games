@@ -163,6 +163,28 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, { heavy: { g: 2.5, p: 1 }, cap: 0 });
   } },
+  { name: '只剩帥／仕／象且對方有 2 個以上過河攻擊單位：自動判負；只有 1 個或自己還有別的棋子則不判', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const o = {}, run = list => { T_.place(list); winner = null; overReason = null; checkWin(); return [winner, overReason]; };
+      o.two = run([{ s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'G', c: 3, r: 0 }, { s: 0, t: 'K', c: 4, r: 9 }, { s: 0, t: 'R', c: 0, r: 3 }, { s: 0, t: 'N', c: 8, r: 4 }]);   // 黑只剩帥仕；紅有俥、傌都已過河
+      o.one = run([{ s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'E', c: 2, r: 0 }, { s: 0, t: 'K', c: 4, r: 9 }, { s: 0, t: 'R', c: 0, r: 3 }, { s: 0, t: 'N', c: 8, r: 7 }]);   // 傌還沒過河，只有 1 個
+      o.other = run([{ s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'P', c: 0, r: 2 }, { s: 0, t: 'K', c: 4, r: 9 }, { s: 0, t: 'R', c: 0, r: 3 }, { s: 0, t: 'N', c: 8, r: 4 }]);   // 黑還有兵：不判
+      o.black = run([{ s: 0, t: 'K', c: 4, r: 9 }, { s: 0, t: 'G', c: 3, r: 9 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'C', c: 0, r: 6 }, { s: 1, t: 'R', c: 8, r: 5 }]);   // 反過來：紅只剩帥仕，黑有炮、俥過河
+      return o;
+    });
+    t.assert.deepStrictEqual(r, { two: [0, 'hopeless'], one: [null, null], other: [null, null], black: [1, 'hopeless'] });
+  } },
+  { name: '認輸：對方獲勝、一局結束；結束後不能再認輸；選牌中不能認輸', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const o = {}; T_.place([{ s: 0, t: 'K', c: 4, r: 9 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 0, t: 'R', c: 0, r: 5 }]);
+      state = 'pick'; o.pick = resign(0); state = 'aim';
+      o.first = resign(0); o.after = { winner, state, overReason }; o.again = resign(1);
+      return o;
+    });
+    t.assert.deepStrictEqual(r, { pick: false, first: true, after: { winner: 1, state: 'over', overReason: 'resign' }, again: false });
+  } },
   { name: '強化卡牌：不可疊加、只影響自己這一方、卡表格式正確', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
