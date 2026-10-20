@@ -374,4 +374,16 @@ module.exports = [
     env.assert(r.rainTargets === 0, '雨天點不著：' + JSON.stringify(r));
     env.assert(r.douse.act && r.douse.ok && r.douse.burning === 0 && r.douse.stage === 1 && !r.douse.burnt, '滅火止住：' + JSON.stringify(r));
   } },
+  { name: '天氣預報：智力 90 以上者提前一兩回合提醒下雨或放晴；天氣表連雨最多 2 回合', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const runs = {}; for (const id in DATA.SCENARIOS) { const w = DATA.SCENARIOS[id].weather; if (!w) continue; const t = w.concat(w); let run = 0, mx = 0; for (const x of t) { run = x === '雨' ? run + 1 : 0; mx = Math.max(mx, run); } runs[id] = mx; }
+      const g = RULES.newGame('xiapi', { seed: 2 }); g.sc.weather = ['晴', '晴', '雨', '雨', '晴']; RULES.startRound(g);
+      const fx = g.fx.filter(f => f.t === 'forecast');   // 第 1 回合：看到第 3 回合下雨（後天）
+      const seerDef = RULES.seer(g, 'def') && RULES.seer(g, 'def').gen, seerAtt = RULES.seer(g, 'att') && RULES.seer(g, 'att').gen;
+      return { runs, n: fx.length, text: fx.map(f => f.side + ':' + f.text), seerDef, seerAtt };
+    });
+    env.assert(Object.values(r.runs).every(n => n <= 2), '連雨超過 2 回合：' + JSON.stringify(r.runs));
+    env.assert(r.seerAtt && r.n >= 1 && r.text.some(t => t.includes('下雨')), '預報：' + JSON.stringify(r));
+  } },
 ];
