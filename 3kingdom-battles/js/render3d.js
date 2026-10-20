@@ -83,7 +83,7 @@
     if (V.world) { V.scene.remove(V.world); }
     V.units.forEach(u => V.scene.remove(u.grp)); V.units.clear();
     V.g = g; V.world = new T.Group(); V.scene.add(V.world);
-    if (V.digGrp) { V.scene.remove(V.digGrp); V.digGrp = null; } V.digSig = null; V.levSig = null; if (V.levGrp) { V.scene.remove(V.levGrp); V.levGrp = null; }
+    if (V.digGrp) { V.scene.remove(V.digGrp); V.digGrp = null; } V.digSig = null; V.depSig = null; if (V.depGrp) { V.scene.remove(V.depGrp); V.depGrp = null; } V.levSig = null; if (V.levGrp) { V.scene.remove(V.levGrp); V.levGrp = null; }
     const [mx, mz] = HX.center(g.W - 1, g.Hh - 1); V.ox = (mx + HX.S3 * 0.5) / 2; V.oz = mz / 2;
     computeSnap(g);
     V.cam3.tx = 0; V.cam3.tz = 0;
@@ -762,6 +762,26 @@
     }
     V.scene.add(V.digGrp); V.dirty = true;
   }
+  // 糧營牌子：糧營名稱與剩餘存量（單位：千人日），起火時標出燒到第幾階段
+  function depotMarks(g) {
+    const list = (g.vars.depots || []).filter(d => !d.burnt).map(d => ({ d, left: Math.max(0, Math.round(d.s - (d.lost || 0))), fire: g.vars.burning && g.vars.burning[d.c + ',' + d.r] ? (g.vars.dstage && g.vars.dstage[d.c + ',' + d.r]) || 1 : 0 }));
+    const sig = list.map(o => o.d.c + ',' + o.d.r + ':' + o.left + ':' + o.fire).join(';');
+    if (V.depSig === sig && V.depGrp) return; V.depSig = sig;
+    if (V.depGrp) V.scene.remove(V.depGrp); V.depGrp = null; if (!list.length) { V.dirty = true; return; }
+    V.depGrp = new T.Group(); V.depTex = V.depTex || {};
+    for (const o of list) {
+      const key = o.d.name + o.left + ':' + o.fire;
+      if (!V.depTex[key]) {
+        const cv = document.createElement('canvas'); cv.width = 240; cv.height = 64; const x = cv.getContext('2d');
+        x.fillStyle = o.fire ? 'rgba(80,28,12,0.82)' : 'rgba(40,32,20,0.78)'; roundRect(x, 4, 4, 232, 56, 14); x.fill(); x.lineWidth = 2; x.strokeStyle = o.fire ? '#ff9a4a' : '#d9b26a'; x.stroke();
+        x.fillStyle = '#f6e7c1'; x.font = 'bold 24px "Microsoft JhengHei","PingFang TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText((o.fire ? '🔥' : '🌾') + o.d.name.slice(0, 2) + ' ' + o.left, 120, 34);
+        V.depTex[key] = new T.CanvasTexture(cv); V.depTex[key].colorSpace = T.SRGBColorSpace;
+      }
+      const sp = new T.Sprite(new T.SpriteMaterial({ map: V.depTex[key], depthTest: false, transparent: true, opacity: 0.9 })); sp.scale.set(1.9, 0.51, 1); sp.renderOrder = 8; sp.raycast = () => {};
+      const [x, z] = wpos(o.d.c, o.d.r); sp.position.set(x, topAt(g, o.d.c, o.d.r) + 1.15, z); V.depGrp.add(sp);
+    }
+    V.scene.add(V.depGrp); V.dirty = true;
+  }
   // 燃燒中的糧營：持續搖曳的火苗（在 loop 裡動畫）
   function fireMarks(g, list) {
     const sig = list.map(p => p.join(',')).join(';');
@@ -1058,5 +1078,5 @@
     V.r.render(V.scene, V.cam);
   }
 
-  Object.assign(V, { init, build, syncUnits, playFx, highlight, clearHighlights, showSides, selectRing, focus, rotate, zoom, refreshHex, ladderMarks, digMarks, leveeMarks, applyHidden, fireMarks, wpos });
+  Object.assign(V, { init, build, syncUnits, playFx, highlight, clearHighlights, showSides, selectRing, focus, rotate, zoom, refreshHex, ladderMarks, digMarks, depotMarks, leveeMarks, applyHidden, fireMarks, wpos });
 })(window);

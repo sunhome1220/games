@@ -307,7 +307,7 @@ module.exports = [
       const out = []; for (let i = 0; i < 6 && !g.over; i++) { roundEnd(); out.push(g.vars.starve); }
       return { sup0, afterOne, burnt1, sup2, starve2, mor, cao: cao.mor, out, over: g.over };
     });
-    env.assert(r.burnt1 === 1 && r.afterOne <= r.sup0 - 12, '燒一座：' + JSON.stringify(r));
+    env.assert(r.burnt1 === 1 && r.afterOne <= r.sup0 - 210, '燒一座：' + JSON.stringify(r));
     env.assert(r.sup2 <= 0 && r.starve2 >= 1, '三座燒光就缺糧：' + JSON.stringify(r));
     env.assert(r.over && r.over.winner === 'def' && r.over.round >= 1, '缺糧 3 天後守方勝：' + JSON.stringify(r));
   } },
@@ -356,7 +356,7 @@ module.exports = [
       const light = (g, d) => { const u = g.units.find(x => x.gen === 'zhangliao'); g.active = u.id; u.acted = false; u.c = d.c + 1; u.r = d.r; return RULES.doAction(g, u, 'burn', HEX.key(d.c, d.r)); };
       // 晴天：與沒起火的對照局相比，糧草差額 = 2（15%）→ 5（45%）→ 12（全部）
       const base = []; { const g0 = mk(['晴']); base.push(g0.vars.supply); for (let i = 0; i < 3; i++) { roundEnd(g0); base.push(g0.vars.supply); } }
-      let g = mk(['晴']); const d = g.vars.depots[0]; light(g, d); g.units.find(x => x.gen === 'zhangliao').c = 20; const dif = [base[0] - g.vars.supply]; for (let i = 0; i < 3; i++) { roundEnd(g); dif.push(base[i + 1] - g.vars.supply); }
+      let g = mk(['晴']); const d = g.vars.depots[0]; light(g, d); g.units.find(x => x.gen === 'zhangliao').c = 20; const dif = [Math.round(base[0] - g.vars.supply)]; for (let i = 0; i < 3; i++) { roundEnd(g); dif.push(Math.round(base[i + 1] - g.vars.supply)); }
       const out = { dif, burnt: d.burnt, tile: g.map[d.r][d.c] };
       // 下雨：起火後下一回合下雨 → 熄火、剩餘保住
       g = mk(['晴', '雨']); const d1 = g.vars.depots[0], s1 = g.vars.supply; light(g, d1); g.units.find(x => x.gen === 'zhangliao').c = 20; roundEnd(g);
@@ -372,8 +372,8 @@ module.exports = [
       out.douse = { act: !!act, ok: !!ok, afterIgnite, stage: g.vars.dstage[HEX.key(d3.c, d3.r)], burnt: d3.burnt, burning: Object.keys(g.vars.burning).length };
       return out;
     });
-    env.assert(r.dif[0] === 2 && r.dif[1] === 2 && r.dif[2] === 5 && r.dif[3] === 12 && r.burnt && r.tile === '.', '晴天連燒：15%→45%→全部：' + JSON.stringify(r));
-    env.assert(r.rainLoss <= 6 && r.rainBurning === 0 && !r.rainBurnt, '下雨熄火：' + JSON.stringify(r));
+    env.assert(r.dif[0] === 32 && r.dif[1] === 32 && r.dif[2] === 95 && r.dif[3] === 210 && r.burnt && r.tile === '.', '晴天連燒：15%→45%→全部（210 的 15%＝32、45%＝95）：' + JSON.stringify(r));
+    env.assert(r.rainLoss <= 100 && r.rainBurning === 0 && !r.rainBurnt, '下雨熄火：' + JSON.stringify(r));
     env.assert(r.rainTargets === 0, '雨天點不著：' + JSON.stringify(r));
     env.assert(r.douse.act && r.douse.ok && r.douse.burning === 0 && r.douse.stage === 1 && !r.douse.burnt, '滅火止住：' + JSON.stringify(r));
   } },
