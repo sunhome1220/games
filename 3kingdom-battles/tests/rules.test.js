@@ -295,9 +295,10 @@ module.exports = [
       const g = RULES.newGame('xiapi', { seed: 2 }); RULES.startRound(g);
       const ds = g.vars.depots, zl = g.units.find(u => u.gen === 'zhangliao'), cao = g.units.find(u => u.gen === 'caocao');
       const sup0 = g.vars.supply; const roundEnd = () => { g.order = []; g.oi = 0; RULES.nextActivation(g); };
-      zl.c = ds[0].c; zl.r = ds[0].r; roundEnd();                      // 燒中軍糧營
+      const ignite = (u, d) => { g.active = u.id; u.acted = false; u.c = d.c + 1; u.r = d.r; const t = RULES.actionsFor(g, u).find(x => x.id === 'burn'); return t && RULES.doAction(g, u, 'burn', HEX.key(d.c, d.r)); };
+      ignite(zl, ds[0]); roundEnd();                                   // 燒中軍糧營（相鄰放火）
       const afterOne = g.vars.supply, burnt1 = ds.filter(d => d.burnt).length;
-      for (const d of ds.slice(1)) { const u = g.units.find(x => x.gen === (d === ds[1] ? 'gaoshun' : 'lubu')); u.c = d.c; u.r = d.r; }
+      for (const d of ds.slice(1)) { const u = g.units.find(x => x.gen === (d === ds[1] ? 'gaoshun' : 'lubu')); ignite(u, d); }
       roundEnd();
       const sup2 = g.vars.supply, starve2 = g.vars.starve, mor = cao.mor;
       const out = []; for (let i = 0; i < 6 && !g.over; i++) { roundEnd(); out.push(g.vars.starve); }
@@ -325,5 +326,23 @@ module.exports = [
     });
     env.assert(r.first.alive && !r.first.over && r.first.troops >= 40 && r.first.near <= 2, '第一次：' + JSON.stringify(r));
     env.assert(!r.second.alive && r.second.over === 'att', '第二次：' + JSON.stringify(r));
+  } },
+  { name: '火箭燒營：弓兵 2～3 格外一箭就燃；步騎要射 2 箭，火勢累積', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = RULES.newGame('xiapi', { seed: 5 }); RULES.startRound(g);
+      const d = g.vars.depots[1]; const arc = g.units.find(u => u.gen === 'chengong'), cav = g.units.find(u => u.gen === 'zhangliao');
+      const place = (u, c, r) => { u.c = c; u.r = r; u.acted = false; g.active = u.id; };
+      place(cav, d.c + 3, d.r); const farCav = RULES.depotTargets(g, cav).length;     // 3 格外，沒有高地：步騎射程 2，射不到
+      place(cav, d.c + 2, d.r); const k = HEX.key(d.c, d.r);
+      const t1 = RULES.doAction(g, cav, 'burn', k), after1 = g.map[d.r][d.c], fire1 = g.vars.fire[k];
+      place(cav, d.c + 2, d.r); RULES.doAction(g, cav, 'burn', k);
+      const after2 = g.map[d.r][d.c], burnt = d.burnt;
+      const d2 = g.vars.depots[2]; place(arc, d2.c + 2, d2.r); const a1 = RULES.doAction(g, arc, 'burn', HEX.key(d2.c, d2.r));
+      return { farCav, t1, after1, fire1, after2, burnt, a1, arcBurnt: g.vars.depots[2].burnt };
+    });
+    env.assert(r.farCav === 0 && r.t1 && r.after1 === 'S' && r.fire1 === 1, '步騎一箭只有 1/2：' + JSON.stringify(r));
+    env.assert(r.after2 === '.' && r.burnt, '第二箭燒光：' + JSON.stringify(r));
+    env.assert(r.a1 && r.arcBurnt, '弓兵一箭就燃：' + JSON.stringify(r));
   } },
 ];
