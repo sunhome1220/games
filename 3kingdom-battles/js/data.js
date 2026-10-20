@@ -61,13 +61,13 @@
   // ---------- 技能 ----------
   // kind: passive 被動；active 主動（cd 冷卻回合、rng 範圍、target: self/ally/enemy/none）
   const SKILLS = {
-    jianxiong: { name: '奸雄', kind: 'passive', desc: '周圍 2 格內友軍每回合士氣 +3、完整度 +4；合擊加成 ×1.5。' },
-    jili: { name: '激勵', kind: 'active', cd: 4, target: 'none', desc: '3 格內友軍士氣 +15、完整度 +10。' },
+    jianxiong: { name: '奸雄', kind: 'passive', desc: '周圍 2 格內友軍每回合士氣 +3、陣勢 +4；合擊加成 ×1.5。' },
+    jili: { name: '激勵', kind: 'active', cd: 4, target: 'none', desc: '3 格內友軍士氣 +15、陣勢 +10。' },
     ganglie: { name: '剛烈', kind: 'passive', desc: '被攻擊時反擊傷害提高 50%。' },
     heji: { name: '合擊', kind: 'passive', desc: '與友軍夾擊時，合擊加成翻倍。' },
-    rende: { name: '仁德', kind: 'active', cd: 3, target: 'none', desc: '自己與相鄰友軍士氣 +20、完整度 +15。' },
+    rende: { name: '仁德', kind: 'active', cd: 3, target: 'none', desc: '自己與相鄰友軍士氣 +20、陣勢 +15。' },
     wusheng: { name: '武聖', kind: 'passive', desc: '攻擊力 +20%。' },
-    weizhen: { name: '威震', kind: 'active', cd: 3, target: 'enemy', rng: 1, desc: '猛攻相鄰敵軍：傷害 ×1.3，目標完整度再 −15，目標周圍敵軍士氣 −10。' },
+    weizhen: { name: '威震', kind: 'active', cd: 3, target: 'enemy', rng: 1, desc: '猛攻相鄰敵軍：傷害 ×1.3，目標陣勢再 −15，目標周圍敵軍士氣 −10。' },
     lijian: { name: '離間', kind: 'active', cd: 3, target: 'enemy', rng: 4, desc: '4 格內敵軍士氣 −18；對忠誠低的將領效果加倍。' },
     wushuang: { name: '無雙', kind: 'passive', desc: '攻擊力 +30%，反擊不減半。' },
     feijiang: { name: '飛將', kind: 'active', cd: 3, target: 'self', desc: '本次行動移動 +2、無視敵軍阻擋，下一次攻擊 ×1.4 並額外打亂陣型。' },
@@ -77,7 +77,7 @@
     xiandeng: { name: '先登', kind: 'passive', desc: '每戰常先登：攻擊 +15%；陣型被打亂的程度減半，永不就地解散。' },
     liaolai: { name: '遼來', kind: 'passive', desc: '「遼來遼來」：攻擊 +20%；每回合結束時，2 格內的敵軍士氣 −4。' },
     duanhou: { name: '斷後', kind: 'passive', desc: '友軍撤退時拚死斷後：受到的傷害 −25%，陣型被打亂的程度減半，不會潰逃。' },
-    huoji: { name: '火計', kind: 'active', cd: 3, target: 'enemy', rng: 3, desc: '3 格內放火：兵力 −8%、完整度 −20；對攻城器械 ×3，在樹林中 ×1.5。' },
+    huoji: { name: '火計', kind: 'active', cd: 3, target: 'enemy', rng: 3, desc: '3 格內放火：兵力 −8%、陣勢 −20；對攻城器械 ×3，在樹林中 ×1.5。' },
   };
 
   // ---------- 武將 ----------

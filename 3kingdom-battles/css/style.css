@@ -74,7 +74,7 @@ h3 { color: var(--gold); font-size: 16px; margin: 14px 0 4px; }
 .uname { font-weight: bold; font-size: 16px; }
 .uname small { font-weight: normal; color: var(--dim); font-size: 12px; margin-left: 4px; }
 .usub { font-size: 12px; color: var(--dim); }
-.bars { display: grid; grid-template-columns: 34px 1fr 60px; gap: 2px 6px; align-items: center; font-size: 12px; margin-top: 4px; }
+.bars { display: grid; grid-template-columns: 48px 1fr 60px; gap: 2px 6px; align-items: center; font-size: 12px; margin-top: 4px; }
 .bar { height: 7px; background: #3d3226; border-radius: 4px; overflow: hidden; }
 .bar i { display: block; height: 100%; }
 .hint { font-size: 13px; color: var(--gold); margin: 6px 0 2px; }
@@ -180,3 +180,5 @@ body.swap .logl.att { color: #f3c0b6; } body.swap .logl.def { color: #b7cdf5; }
 .art figcaption { font-size: 12px; color: var(--dim); margin-top: 6px; line-height: 1.5; }
 #modal.wide .box { max-width: 640px; }
 .brief .art { margin: 4px 0 14px; }
+.cohlbl { cursor: pointer; text-decoration: underline dotted; }
+.cohlbl { white-space: nowrap; }
