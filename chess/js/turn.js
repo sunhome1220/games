@@ -203,8 +203,9 @@ function avenge(a, dead) {
 }
 const CROSSERS = ['R', 'N', 'C', 'P'];   // 能過河的兵種（含已升官的士官長）
 function checkWin() {
-  for (const s of [0, 1])
-    if (!pieces.some(p => p.s === s && p.t === 'K' && p.hp > 0)) winner = 1 - s;
+  const dead = [0, 1].map(s => !pieces.some(p => p.s === s && p.t === 'K' && p.hp > 0));
+  if (dead[0] && dead[1]) { winner = 2; setMsg('雙方的帥同時陣亡，和局！'); }   // 隕石雨敵我不分：可能同時打死雙方的帥
+  else if (dead[0]) winner = 1; else if (dead[1]) winner = 0;
   // 只剩帥／仕／象的一方，對方已有 2 個以上過河的攻擊單位：守不住了，自動判負
   for (const s of [0, 1]) {
     if (winner !== null) break;

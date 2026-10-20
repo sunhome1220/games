@@ -4,7 +4,7 @@
 //  · drawUltScreen：蓋在整個畫面上的（招式名稱橫幅、色調／暗角、時鐘、飄雪…），座標系是 W×H
 // 傷害／復活等規則效果仍在 cards.js 的 instant 裡，這裡只管動畫與聲音，時間點（at）與 spellHit 的 delay 對齊。
 const ULT = {
-  meteor: { title: '隕石雨', sub: '☄️ 流星墜落・敵軍全體重創', col: '#ff8a3a', T: 2.8, snd: 'meteor' },
+  meteor: { title: '隕石雨', sub: '☄️ 流星墜落・範圍內敵我不分', col: '#ff8a3a', T: 2.8, snd: 'meteor' },
   revive: { title: '起死回生', sub: '😇 聖光降臨・英靈歸來', col: '#ffe38a', T: 2.8, snd: 'holy' },
   time:   { title: '時間暫停', sub: '⏳ 時間靜止・再行動一次', col: '#b79bff', T: 2.8, snd: 'tick' },
   shield: { title: '神之護盾', sub: '🛡️ 神明庇佑・全軍免傷', col: '#7fc4ff', T: 2.6, snd: 'shield' },

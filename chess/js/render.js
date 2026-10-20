@@ -373,6 +373,7 @@ function draw() {
   for (const f of fx) if (f.k !== 'txt') drawProj(f);
   drawParts();
   drawRevenge();
+  drawSpellPreview();
   for (const f of fx) if (f.k === 'txt') drawTxtFx(f);
   ctx.restore();
   for (const f of fx) if (f.k === 'ult') drawUltScreen(f);
