@@ -191,7 +191,7 @@
   };
   // 事件標題 → 場景
   const EVENT = {
-    '下邳之戰': 'xiapi:intro', '荀攸、郭嘉獻策': 'xiapi:dig', '水淹下邳': 'xiapi:flood', '大水退去': 'xiapi:recede', '火燒糧營': 'xiapi:depot', '侯成、宋憲、魏續倒戈': 'xiapi:betray',
+    '下邳之戰': 'xiapi:intro', '荀攸、郭嘉獻策': 'xiapi:dig', '水淹下邳': 'xiapi:flood', '大水退去': 'xiapi:recede', '火燒糧營': 'xiapi:depot', '曹軍缺糧': 'xiapi:supply', '侯成、宋憲、魏續倒戈': 'xiapi:betray',
     '合肥之戰': 'hefei:intro', '吳軍疫病': 'hefei:plague', '孫權撤軍': 'hefei:retreat', '逍遙津斷橋': 'hefei:bridge', '火燒吳營': 'hefei:camp',
   };
   // 結局：xiapi 的 supply、jijiao 共用退兵圖；沒有專屬圖的用潰敗圖

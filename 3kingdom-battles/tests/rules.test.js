@@ -130,7 +130,7 @@ module.exports = [
       g.units.find(u => u.gen === 'lubu').c = 3; g.units.find(u => u.gen === 'lubu').r = 3;
       g.order = []; g.oi = 0; RULES.nextActivation(g);
       const a = g.over && g.over.winner;
-      g = RULES.newGame('xiapi', { seed: 1 }); g.vars.supply = 1; g.order = []; g.oi = 0; RULES.nextActivation(g);
+      g = RULES.newGame('xiapi', { seed: 1 }); g.vars.supply = 1; g.vars.starve = 2; g.order = []; g.oi = 0; RULES.nextActivation(g);
       return { a, b: g.over && g.over.winner };
     });
     env.assert.strictEqual(r.a, 'att'); env.assert.strictEqual(r.b, 'def');
@@ -288,5 +288,42 @@ module.exports = [
     env.assert(r.name === '飛將（冷卻 3）' && !r.enabled, JSON.stringify(r));
     env.assert(r.drop > 3 && r.drop < 8, '呂布統率高，代價約 5：' + JSON.stringify(r));
     env.assert(!r.tired && r.again, JSON.stringify(r));
+  } },
+  { name: '下邳：糧營各存一部分，燒光才缺糧；缺糧後軍心天天下降，撐 3 天退兵', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = RULES.newGame('xiapi', { seed: 2 }); RULES.startRound(g);
+      const ds = g.vars.depots, zl = g.units.find(u => u.gen === 'zhangliao'), cao = g.units.find(u => u.gen === 'caocao');
+      const sup0 = g.vars.supply; const roundEnd = () => { g.order = []; g.oi = 0; RULES.nextActivation(g); };
+      zl.c = ds[0].c; zl.r = ds[0].r; roundEnd();                      // 燒中軍糧營
+      const afterOne = g.vars.supply, burnt1 = ds.filter(d => d.burnt).length;
+      for (const d of ds.slice(1)) { const u = g.units.find(x => x.gen === (d === ds[1] ? 'gaoshun' : 'lubu')); u.c = d.c; u.r = d.r; }
+      roundEnd();
+      const sup2 = g.vars.supply, starve2 = g.vars.starve, mor = cao.mor;
+      const out = []; for (let i = 0; i < 6 && !g.over; i++) { roundEnd(); out.push(g.vars.starve); }
+      return { sup0, afterOne, burnt1, sup2, starve2, mor, cao: cao.mor, out, over: g.over };
+    });
+    env.assert(r.burnt1 === 1 && r.afterOne <= r.sup0 - 12, '燒一座：' + JSON.stringify(r));
+    env.assert(r.sup2 <= 0 && r.starve2 >= 1, '三座燒光就缺糧：' + JSON.stringify(r));
+    env.assert(r.over && r.over.winner === 'def' && r.over.round >= 1, '缺糧 3 天後守方勝：' + JSON.stringify(r));
+  } },
+  { name: '主將殺出重圍：呂布第一次被打光時帶殘部衝到友軍旁，第二次才算被擒；可被救援合流', async fn(env) {
+    const pg = await page(env);
+    const r = await pg.evaluate(() => {
+      const g = RULES.newGame('xiapi', { seed: 3 }); RULES.startRound(g);
+      const lu = g.units.find(u => u.gen === 'lubu'), gao = g.units.find(u => u.gen === 'gaoshun'), at = (n, c, r) => { const u = g.units.find(x => x.gen === n); u.c = c; u.r = r; return u; };
+      at('lubu', 8, 8); at('gaoshun', 6, 6); at('guanyu', 9, 8); at('xiahoudun', 8, 7);
+      RULES.attack ? null : null;
+      // 直接把呂布打光
+      g.units.find(u => u.gen === 'guanyu').acted = false;
+      const A = g.units.find(u => u.gen === 'guanyu'); lu.troops = 30; g.active = A.id; A.moved = false; A.acted = false;
+      RULES.attack(g, A, lu);
+      const first = { alive: lu.alive, troops: lu.troops, over: !!g.over, near: Math.min(...g.units.filter(u => u.alive && u.side === 'def' && u !== lu && !RULES.isEngine(u)).map(u => HEX.dist(u.c, u.r, lu.c, lu.r))) };
+      // 再被打光 = 被擒
+      lu.troops = 10; A.acted = false; if (HEX.dist(A.c, A.r, lu.c, lu.r) > 1) { A.c = lu.c + 1; A.r = lu.r; } RULES.attack(g, A, lu);
+      return { first, second: { alive: lu.alive, over: g.over && g.over.winner } };
+    });
+    env.assert(r.first.alive && !r.first.over && r.first.troops >= 40 && r.first.near <= 2, '第一次：' + JSON.stringify(r));
+    env.assert(!r.second.alive && r.second.over === 'att', '第二次：' + JSON.stringify(r));
   } },
 ];

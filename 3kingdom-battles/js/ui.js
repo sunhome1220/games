@@ -364,7 +364,7 @@
     const status = `<ul class="goalst">
       ${common}
       <li>水淹：${v.flooded ? (v.receded ? '已水淹，城外泥濘' : '已水淹') : v.digOpen ? `掘堤 ${v.dig}/${v.digNeed}` : `第 ${v.digUnlock} 回合起可掘堤`}</li>
-      <li>城內守軍平均士氣 ${mor}${v.betrayed ? '（已有將領倒戈）' : mor < 55 ? '（人心浮動，可能倒戈）' : ''}；城中糧 ${v.food}；曹軍糧草 ${Math.max(0, v.supply)}</li></ul>`;
+      <li>城內守軍平均士氣 ${mor}${v.betrayed ? '（已有將領倒戈）' : mor < 55 ? '（人心浮動，可能倒戈）' : ''}；城中糧 ${v.food}；曹軍糧草 ${Math.max(0, v.supply)}（糧營剩 ${v.depots.filter(d => !d.burnt).length}/${v.depots.length}${v.supply <= 0 ? `，缺糧 ${v.starve}/${v.starveLimit} 天` : ''}）</li></ul>`;
     const how = side === 'att' ? `<h3>怎麼打進城</h3><ol>
       <li><b>雲梯攀城</b>：雲梯部隊推到城牆旁按「架梯」，步兵、弓兵就能從那格攀上城頭（城上有守軍就先攻擊他）。騎兵不能攀城。</li>
       <li><b>衝車撞門</b>：沿中間的大路把衝車推到城門旁撞門，城門破了全軍都能進城。</li>
@@ -374,7 +374,9 @@
       : `<h3>怎麼守住</h3><ol>
       <li>城牆上的守軍很難被打：敵軍要先架雲梯才能近戰。優先打掉雲梯、衝車。</li>
       <li>用「滾木礌石」「火油」打城下敵軍，四角箭樓會自動放箭；可從城門出城突擊，但回城也要走城門。</li>
-      <li>派兵守住城北河堤，阻止曹軍掘堤水攻；派騎兵襲擾、火燒曹軍糧營，讓曹軍糧盡退兵。</li>
+      <li>曹軍有<b>三座糧營</b>（西邊：中軍、北營、南營）：派騎兵在回合結束時<b>站在糧營上</b>就能燒掉，三座燒光曹軍就缺糧，軍心天天下降，撐 3 天就退兵。</li>
+      <li>派兵守住城北河堤，阻止曹軍掘堤水攻。</li>
+      <li><b>呂布第一次被打光時會單騎殺出重圍</b>（只剩殘部），讓高順等友軍趕去「救援合流」；但別再讓他陷進包圍。</li>
       <li>維持城內士氣，避免將領倒戈。</li></ol>`;
     modal(`<h2>🎯 ${esc(sc.name)}：${side === 'att' ? '攻方' : '守方'}目標</h2><ul>${sc.brief.goal[side].map(x => `<li>${esc(x)}</li>`).join('')}</ul>
       <h3>目前戰況</h3>${status}${how}`, [['知道了', true]]);
@@ -505,7 +507,7 @@
     $('#hRound').textContent = `第 ${g.round} 回合`;
     const v = g.vars; const bits = [];
     if (g.scId === 'xiapi') {
-      bits.push(`曹軍糧草 <b>${Math.max(0, v.supply)}</b>`);
+      bits.push(`曹軍糧草 <b>${Math.max(0, v.supply)}</b>${v.depots ? `（糧營 ${v.depots.filter(d => !d.burnt).length}/${v.depots.length}）` : ''}${v.supply <= 0 ? `<span class="warn"> 缺糧 ${v.starve}/${v.starveLimit}</span>` : ''}`);
       bits.push(`城中糧 <b>${v.food}</b>`);
       if (v.digOpen && !v.flooded) bits.push(`<button class="hudlink" id="hDig" title="點一下看河堤在哪裡">⛏ 掘堤 ${v.dig}/${v.digNeed}</button>`);
       if (v.flooded && !v.receded) bits.push(`<span title="城外低地是大水；城內每回合糧 −3、士氣 −4">🌊 水淹（第 ${v.floodRound + 3} 回合退）</span>`);
@@ -590,7 +592,7 @@
   }
   function endNotes(g) {
     const v = g.vars;
-    if (g.scId === 'xiapi') return `${v.flooded ? '有水淹下邳。' : '沒有水淹。'}${v.betrayed ? '城內將領倒戈。' : '沒有人倒戈。'}${v.depotBurnt ? '曹軍糧營被燒。' : ''}`;
+    if (g.scId === 'xiapi') return `${v.flooded ? '有水淹下邳。' : '沒有水淹。'}${v.betrayed ? '城內將領倒戈。' : '沒有人倒戈。'}${v.depots && v.depots.some(d => d.burnt) ? `曹軍${v.depots.filter(d => d.burnt).length} 座糧營被燒。` : ''}`;
     if (g.scId === 'hefei') { const liao = g.units.find(u => u.gen === 'zhangliao'); return `${v.campBurnt ? '吳軍大營被燒。' : ''}${v.retreating ? `吳軍第 ${v.retreatStart} 回合撤軍。` : '吳軍沒有撤軍。'}${liao.alive ? '張遼活了下來。' : '張遼戰死。'}`; }
     return '';
   }

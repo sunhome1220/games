@@ -402,7 +402,31 @@
     }
     u.coh = 25; u.mor = clamp(u.mor - 10, 8, 100); u.routed = (u.routed || 0) + 1;
   }
+  // 主將單騎殺出重圍：第一次被打光時，若身邊（3 格內）有友軍或人在城內，就帶著殘部（約 1.2% 兵力）衝到友軍旁邊，之後才算被擒
+  function leaderEscape(g, u, how) {
+    if (!g.sc.leaderEscape || isEngine(u) || u.escaped || u.gen !== g.sc.sides[u.side].leader) return false;
+    const friends = alive(g).filter(v => v !== u && v.side === u.side && !isEngine(v));
+    if (!friends.length) return false;
+    friends.sort((a, b) => H.dist(a.c, a.r, u.c, u.r) - H.dist(b.c, b.r, u.c, u.r));
+    const near = friends[0];
+    if (!(H.dist(near.c, near.r, u.c, u.r) <= 3 || inCity(g, u) || onWall(g, u))) return false;
+    // 找友軍旁邊的空格（優先不貼著敵軍；城內的主將優先留在城內）
+    const old = [u.c, u.r]; let best = null;
+    for (const f of friends.slice(0, 3)) for (const [c, r] of H.neighbors(f.c, f.r)) {
+      if (!inMap(g, c, r) || unitAt(g, c, r) || !isFinite(moveCost(g, u, c, r, f.c, f.r))) continue;
+      const t = terr(g, c, r); if (t.water) continue;
+      const foes = H.neighbors(c, r).filter(([cc, rr]) => { const w = unitAt(g, cc, rr); return w && w.side !== u.side && !isEngine(w); }).length;
+      const sc = foes * 10 + H.dist(c, r, old[0], old[1]) * 0.5 + (inCity(g, u) && !g.city.has(H.key(c, r)) ? 20 : 0);
+      if (!best || sc < best.sc) best = { sc, c, r };
+    }
+    if (!best) return false;
+    u.escaped = true; u.troops = Math.max(40, Math.round(u.max * 0.012)); u.mor = 35; u.coh = 25; u.c = best.c; u.r = best.r; u.moved = true;
+    log(g, `${u.name}${how}，單騎殺出重圍，身邊只剩 ${u.troops} 人！（友軍趕來可「救援合流」）`, u.side, 'big');
+    g.fx.push({ t: 'warp', id: u.id });
+    return true;
+  }
   function destroy(g, u, how) {
+    if (leaderEscape(g, u, how)) return;
     u.alive = false; u.troops = 0;
     for (const lk in g.ladders) if (g.ladders[lk] === u.id) delete g.ladders[lk];
     const caught = !isEngine(u) && u.gen !== 'caobu';
@@ -773,17 +797,28 @@
     onRoundEnd(g) {
       const v = g.vars;
       v.supply -= 1;
-      // 襲擾糧營
-      let depot = null; for (let r = 0; r < g.Hh; r++) for (let c = 0; c < g.W; c++) if (g.map[r][c] === 'S') depot = [c, r];
-      if (depot) {
-        const on = unitAt(g, depot[0], depot[1]);
-        if (on && on.side === 'def' && !v.depotBurnt) {
-          v.depotBurnt = true; v.supply -= 7; g.map[depot[1]][depot[0]] = '.';
-          g.fx.push({ t: 'burn', c: depot[0], r: depot[1] });
-          msg(g, '火燒糧營', `${on.name}突入曹軍糧營放火！曹軍糧草 −7。`, 'def', [[on.gen, 'default']]);
-        } else if (g.units.some(u => u.alive && u.side === 'def' && !isEngine(u) && H.dist(u.c, u.r, depot[0], depot[1]) <= 2)) {
-          v.supply -= 1; log(g, '呂布軍襲擾曹軍糧道，糧草 −1', 'def', 'big');
-        }
+      // 糧營：回合結束時站在糧營上的守方部隊會把它燒光；靠近（2 格內）的守方部隊每回合騷擾糧道
+      let harass = false;
+      for (const d of v.depots) {
+        if (d.burnt) continue;
+        const on = unitAt(g, d.c, d.r);
+        if (on && on.side === 'def' && !isEngine(on)) {
+          d.burnt = true; v.supply -= d.s; g.map[d.r][d.c] = '.';
+          v.depotBurnt = v.depots.every(x => x.burnt);
+          g.fx.push({ t: 'burn', c: d.c, r: d.r });
+          for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) u.mor = clamp(u.mor - 4, 0, 100);
+          const left = v.depots.filter(x => !x.burnt).length;
+          msg(g, '火燒糧營', `${on.name}突入曹軍的${d.name}放火！曹軍糧草 −${d.s}，全軍士氣 −4。${left ? `曹軍還剩 ${left} 座糧營。` : '曹軍的糧營全被燒光了！'}`, 'def', [[on.gen, 'default']]);
+        } else if (g.units.some(u => u.alive && u.side === 'def' && !isEngine(u) && H.dist(u.c, u.r, d.c, d.r) <= 2)) harass = true;
+      }
+      if (harass && v.supply > 0) { v.supply -= 1; log(g, '呂布軍襲擾曹軍糧道，糧草 −1', 'def', 'big'); }
+      // 缺糧：曹軍軍心天天下降，撐不了幾天就得退兵
+      v.supply = Math.max(v.supply, -99);
+      if (v.supply <= 0) {
+        v.starve += 1;
+        if (v.starve === 1) msg(g, '曹軍缺糧', `曹軍糧草耗盡！\n\n【缺糧】曹軍各部每回合軍心 −8，陣勢也會動搖；撐 ${v.starveLimit} 回合軍心渙散，曹操就只能退兵（守方獲勝）。守方只要守住、拖住就好。`, 'def', [['caocao', 'weep']]);
+        else log(g, `曹軍缺糧第 ${v.starve} 天，軍心渙散`, 'att', 'bad');
+        for (const u of alive(g)) if (u.side === 'att' && !isEngine(u)) { u.mor = clamp(u.mor - 8, 0, 100); u.coh = clamp(u.coh - 3, 0, 100); checkCollapse(g, u); }
       }
       // 城中糧草
       const cityDef = alive(g).filter(u => u.side === 'def' && inCity(g, u) && !isEngine(u));
@@ -829,7 +864,7 @@
       if (roundEnd) {
         const pal = g.units.find(u => u.alive && u.side === 'att' && g.map[u.r][u.c] === 'P');
         if (pal) return end('att', v.flooded && v.betrayed ? 'history' : 'storm');
-        if (v.supply <= 0) return end('def', defAlive.some(u => !inCity(g, u)) ? 'jijiao' : 'supply');
+        if (v.supply <= 0 && v.starve >= v.starveLimit) return end('def', defAlive.some(u => !inCity(g, u)) ? 'jijiao' : 'supply');
       }
       return null;
     },
