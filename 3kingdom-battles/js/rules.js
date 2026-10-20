@@ -87,6 +87,7 @@
   // 伏兵：劇本設定 sc.ambush＝某一方，這一方的作戰部隊藏在樹林格裡、敵軍 2 格內才看得見；本回合出手過（暴露）也看得見
   const rawEnemies = (g, u) => g.units.filter(v => v.alive && v.side !== u.side);
   function hidden(g, v) {
+    if (g._hid) return g._hid.has(v.id);   // AI 試走各格時沿用行動開始時的可見狀態
     if (!v.alive || g.sc.ambush !== v.side || isEngine(v) || g.map[v.r][v.c] !== 'f' || v.exposed === g.round) return false;
     return !rawEnemies(g, v).some(e => H.dist(e.c, e.r, v.c, v.r) <= 2);
   }
