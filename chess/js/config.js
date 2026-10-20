@@ -64,7 +64,9 @@ function knightOffset(x, y, b) {
 }
 // 打目標 b 時實際使用的武器：傌——日字位置且火箭已裝填完用火箭，其餘用步槍；炮——冷卻中不能攻擊；俥——冷卻中改用步槍
 function weaponFor(a, b, x = a.x, y = a.y) {
-  const T = a.T;
+  const T = a.T, rv = a.rv;
+  // 犄角殺回：走到了兄弟陣亡的位置，目標正是殺死兄弟的那一個、且在 4 格內，就多一項復仇者飛彈可用（見 turn.js 的 avenge）
+  if (rv && revengeOk(rv) && b === rv.killer && Math.hypot(x - rv.x, y - rv.y) < 2 && Math.hypot(b.x - x, b.y - y) <= AVENGER.range + 1) return AVENGER;
   if (!T.alt) return T;
   if (T.knight) return !a.cd && knightOffset(x, y, b) ? T : T.alt;
   return a.cd > 0 ? T.alt : T;

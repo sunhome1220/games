@@ -80,6 +80,7 @@ const visX = p => p.x + (p.ox || 0), visY = p => p.y + (p.oy || 0);   // 畫面�
 // 開火：車頭轉向目標、槍口火光、彈體飛行，命中時才扣血（impact）
 function shoot(a, b) {
   const W = weaponFor(a, b); a.fireT = W !== a.T ? W : null;   // 近戰／冷卻中改用步槍
+  if (W === AVENGER) { a.rv.used = true; fx.push({ k: 'txt', x: a.x, y: a.y - R - 8, txt: '為兄弟復仇！', t: 1.6, T: 1.6, col: '#c0392b', side: a.s }); }
   const bl = guardBlock(b, a, a.fireT || a.T);
   if (bl) {   // 仕走到射線上擋：單發武器改打仕；霰彈則由彈丸自然打到擋在前面的仕
     slideGuard(bl);
@@ -177,10 +178,28 @@ function impact(a, b, dmg = (a.fireT || a.T).dmg, note = '') {
       if (dmg > 0) all.push(impact(a, q, dmg, '（波及）'));
     }
   }
+  const rev = b.hp <= 0 ? avenge(a, b) : '';   // 仕／象被擊毀：另一位夾伴殺回
+  if (rev) all.push(rev);
   if (!note.includes('波及')) setMsg(`${T.n[a.s]} 用${T.w}攻擊 ` + all.join('；'));
   timer = Math.max(timer, b.hp <= 0 ? 1.2 : 0.8);
   checkWin();
+  if (T === AVENGER) a.fireT = null;
   return res;
+}
+// 犄角：仕、象互相掩護（傳統象棋的「吃回」）。一方被對手擊毀時，若另一位仕／象「照一般走法」走得到陣亡位置，
+// 它在自己緊接著的下一個回合多一項能力：走到陣亡位置後，可改用復仇者飛彈（威力 2、射程 4 格）打殺死兄弟的那一個。
+// 要不要走過去由玩家決定；沒走過去、或超過那個回合就沒有了。每次擊毀只有一次機會（誰先用掉就沒了）；復仇者飛彈打死的不再引發殺回。
+const COVER = ['G', 'E'];
+const AVENGER = { n: ['復仇者', '復仇者'], w: '復仇者飛彈', snd: 'rocket', proj: 'rocket', dmg: 2, range: 4 * C, min: 0, reload: 0, indirect: true, isAlt: true };
+const revengeOk = tok => tok && !tok.used && tok.at === turnsPlayed[tok.side] && tok.killer.hp > 0;
+function avenge(a, dead) {
+  if (!COVER.includes(dead.t) || dead.s === a.s || a.hp <= 0 || winner !== null || (a.fireT || a.T) === AVENGER) return '';
+  const mates = alive().filter(q => q !== dead && q.s === dead.s && COVER.includes(q.t) && movesFor(q).some(([x, y]) => Math.hypot(x - dead.x, y - dead.y) < 2));
+  if (!mates.length) return '';
+  const tok = { x: dead.x, y: dead.y, killer: a, side: dead.s, at: turnsPlayed[dead.s], used: false };
+  for (const m of mates) { m.rv = tok; m.flash = Math.max(m.flash, 0.5); }
+  fx.push({ k: 'txt', x: dead.x, y: dead.y - R - 8, txt: '犄角！可殺回', t: 1.8, T: 1.8, col: '#c0392b', side: dead.s });
+  return `${mates.map(m => m.T.n[m.s]).join('、')}可在下個回合走到陣亡位置，為兄弟復仇`;
 }
 const CROSSERS = ['R', 'N', 'C', 'P'];   // 能過河的兵種（含已升官的士官長）
 function checkWin() {

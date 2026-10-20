@@ -27,7 +27,7 @@ window.T_ = {
   cell: p => [Math.round((p.x - M) / C), Math.round((p.y - M) / C)],
   // 清空棋盤再依 specs 擺棋：{ s 0紅/1黑, t 兵種, c 欄 0~8, r 列 0~9, id:'P2' 升官, hp, cd }；缺帥時自動補在九宮中央。回傳棋子（依 specs 順序）
   place(specs) {
-    for (const p of pieces) { p.hp = 0; p.x = p.y = -999; p.cd = 0; p.vx = p.vy = 0; p.ox = p.oy = 0; p.T = TT[p.s][p.t]; p.cdFresh = false; }
+    for (const p of pieces) { p.hp = 0; p.x = p.y = -999; p.cd = 0; p.vx = p.vy = 0; p.ox = p.oy = 0; p.T = TT[p.s][p.t]; p.cdFresh = false; p.rv = null; }
     const all = specs.slice();
     for (const s of [0, 1]) if (!specs.some(sp => sp.s === s && sp.t === 'K')) all.push({ s, t: 'K', c: 4, r: s ? 0 : 9 });
     const used = new Set(), out = [];
