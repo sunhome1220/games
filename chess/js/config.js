@@ -78,6 +78,7 @@ let moved = false, firedPiece = null, sel = null, origin = null;   // moved：�
 // 對戰模式：local＝同裝置並排、face＝同裝置面對面（黑方文字倒轉）、online＝兩台裝置連線
 let mode = 'local', mySide = 0, conn = null, pendingEnd = null;
 const online = () => mode === 'online';
+const pvpMode = () => mode === 'online' || mode === 'face';   // 認輸、每回合倒數只在連線對打、同裝置面對面（上下對打）時才有
 const myTurn = () => (!online() && mode !== 'ai') || turn === mySide;   // 連線或對電腦時，只能操作自己那方
 const viewFlip = () => online() && mySide === 1;   // 連線時執黑的一方，棋盤轉 180° 讓自己在下方
 // 文字朝向：讓該方玩家讀起來是正的
