@@ -185,6 +185,32 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, { pick: false, first: true, after: { winner: 1, state: 'over', overReason: 'resign' }, again: false });
   } },
+  { name: '俥：機槍射程 3 格（3 格內打得到、超過 3 格打不到）', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const [a] = T_.place([{ s: 0, t: 'R', c: 4, r: 8 }, { s: 1, t: 'N', c: 4, r: 5 }, { s: 0, t: 'K', c: 3, r: 9 }, { s: 1, t: 'K', c: 3, r: 0 }]);
+      const near = scan(a).some(x => x.ok && x.p.t === 'N');   // 相隔 3 格
+      T_.place([{ s: 0, t: 'R', c: 4, r: 8 }, { s: 1, t: 'N', c: 4, r: 4 }, { s: 0, t: 'K', c: 3, r: 9 }, { s: 1, t: 'K', c: 3, r: 0 }]);
+      return { near, far: alive().filter(p => p.t === 'R').flatMap(p => scan(p)).some(x => x.ok && x.p.t === 'N'), range: TT[0].R.range / C };
+    });
+    t.assert.deepStrictEqual(r, { near: true, far: false, range: 3 });
+  } },
+  { name: '每回合限時：超時後才出現「強制取消」，按下後這一步取消、換對方；對電腦不計時', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const o = {}; clockSec = 5; clockReset(); mode = 'local'; clockTick(0);
+      o.start = [clockLeft, forceReady()];
+      for (let i = 0; i < 90; i++) clockTick(0.05);   // 4.5 秒
+      o.before = forceReady();
+      for (let i = 0; i < 20; i++) clockTick(0.05);
+      o.after = forceReady(); o.visible = !$('forceBox').hidden;
+      const t0 = turn; $('forceBtn').click(); o.turn = [t0, turn];
+      clockTick(0); o.reset = [Math.round(clockLeft), forceReady()];
+      mode = 'ai'; clockLeft = 0; o.ai = forceReady();
+      return o;
+    });
+    t.assert.deepStrictEqual(r, { start: [5, false], before: false, after: true, visible: true, turn: [0, 1], reset: [5, false], ai: false });
+  } },
   { name: '強化卡牌：不可疊加、只影響自己這一方、卡表格式正確', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
@@ -204,6 +230,16 @@ module.exports = [
       undoMove(); o.back = p.x === x0 && p.y === y0; o.T = p.T.id; o.hp = p.hp; o.state = state; o.moved = moved; o.hidden = document.getElementById('undo').hidden; return o;
     });
     t.assert.deepStrictEqual(r, { st: 'target', shown: true, promoted: true, back: true, T: 'P', hp: 2, state: 'aim', moved: false, hidden: true });
+  } },
+  { name: '強制取消：對方已移動到「選目標」時，這一步退回原位並換人', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const [p] = T_.place([{ s: 0, t: 'P', c: 2, r: 5 }, { s: 0, t: 'K', c: 4, r: 9 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'R', c: 0, r: 2 }]); const x0 = p.x, y0 = p.y;
+      T_.go(p, 2, 4); const mid = state;
+      const ok = skipTurnByForce();
+      return { mid, ok, back: p.x === x0 && p.y === y0, T: p.T.id, turn, state };
+    });
+    t.assert.deepStrictEqual(r, { mid: 'target', ok: true, back: true, T: 'P', turn: 1, state: 'aim' });
   } },
   { name: '電腦：各難度都能選出合法行動', async fn(t) {
     const pg = await t.open();

@@ -42,6 +42,7 @@ function updParts(dt) {
 }
 
 function reset(noPick = false) {
+  clockReset();
   gameCounted = false; $('tipCard').hidden = true;   // 新的一局：重新計數、收起小提醒（見 tip.js）
   mods = [{}, {}]; cardCount = [{}, {}]; turnsPlayed = [0, 0]; immune = [0, 0]; extraTurn = [0, 0]; pickQ = []; pickSide = null; waitingFor = null; incoming = [];
   $('cardPick').hidden = true; buildTypes(0); buildTypes(1);

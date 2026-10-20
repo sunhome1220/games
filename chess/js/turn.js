@@ -271,6 +271,7 @@ function update(dt) {
   for (const f of fx) if (f.k === 'drop' && !f.landed && 1 - f.t / f.T >= LAND_AT) { f.landed = true; f.land(); }
   updParts(dt);
   aiTick();
+  clockTick(dt);
 }
 // 彈體目前位置（火箭加速、砲彈拋物線）
 function projPos(f) {

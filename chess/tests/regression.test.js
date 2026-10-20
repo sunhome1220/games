@@ -62,6 +62,19 @@ module.exports = [
     const end = await Promise.all(pgs.map(p => p.evaluate(() => ({ state, winner, overReason }))));
     t.assert.deepStrictEqual(end, [{ state: 'over', winner: 0, overReason: 'resign' }, { state: 'over', winner: 0, overReason: 'resign' }]);
   } },
+  { name: '連線：每回合限時，超時後等待方按「強制取消」，行動方這一步被取消並換人（房主的限時設定同步給對方）', async fn(t) {
+    const room = 'clock' + Date.now() % 100000, pgs = [];
+    for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}&clock=${s ? 0 : 10}`, { mode: false, freeze: false }));
+    await pgs[0].waitForTimeout(600);
+    t.assert.deepStrictEqual(await Promise.all(pgs.map(p => p.evaluate(() => clockSec))), [10, 10]);
+    await pgs[0].evaluate(() => { const p = pieces.find(q => q.s === 0 && q.t === 'R'); selectPiece(p); });   // 紅方選了棋子但沒動
+    await Promise.all(pgs.map(p => p.evaluate(() => { clockLeft = 0; })));
+    await pgs[1].waitForFunction(() => !$('forceBox').hidden, null, { timeout: 10000 });
+    t.assert.strictEqual(await pgs[0].evaluate(() => $('forceBox').hidden), true, '行動方不該看到強制取消按鈕');
+    await pgs[1].click('#forceBtn');
+    await pgs[0].waitForFunction(() => turn === 1, null, { timeout: 30000 }); await pgs[1].waitForFunction(() => turn === 1, null, { timeout: 30000 });
+    t.assert.deepStrictEqual(await Promise.all(pgs.map(p => p.evaluate(() => [turn, state]))), [[1, 'aim'], [1, 'aim']]);
+  } },
   { name: '連線：取消移動（含升官空投）兩邊同步還原', async fn(t) {
     const room = 'undo' + Date.now() % 100000, pgs = [];
     for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}`, { mode: false, freeze: false }));
