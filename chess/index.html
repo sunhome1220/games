@@ -22,8 +22,9 @@
 </header>
 <div id="bar"><div id="info"></div><button id="fire" hidden>出發</button><button id="undo" hidden>↩ 取消移動</button><button id="skip" disabled>不射擊</button></div>
 <canvas id="cv"></canvas>
-<div id="perksBar"><button id="legendBtn" title="兵種操作說明">📖 兵種</button><button id="perkBtn" hidden>🃏 我的強化</button><span id="drawIn" hidden></span><span id="perks"></span></div>
+<div id="perksBar"><button id="legendBtn" title="兵種操作說明">📖 兵種</button><button id="perkBtn" hidden>🃏 我的強化</button><span id="clock" hidden></span><span id="drawIn" hidden></span><span id="perks"></span></div>
 <div id="legendOv" hidden><div class="pbox wide"><h2>📖 兵種操作說明</h2><div class="lgwrap"><table id="legend"></table></div><button id="legendClose" style="width:100%;margin-top:8px">關閉</button></div></div>
+<div id="forceBox" hidden><button id="forceBtn">⏰ 對手超時！強制取消對方這一步</button></div>
 <div id="toast"></div>
 <div id="cardPick" hidden><div class="pbox" id="cardBox"><h2 id="cardTitle"></h2><div class="sub" id="cardSub"></div><div id="cardList"></div></div></div>
 <div id="perkOv" hidden><div class="pbox"><h2>🃏 我的強化</h2><div class="tabs"><button id="pTab0">紅方</button><button id="pTab1">黑方</button></div><div id="perkBody"></div><button id="perkClose" style="width:100%;margin-top:8px">關閉</button></div></div>
@@ -34,7 +35,7 @@
 <div id="tipCard" hidden><div id="tipTxt"></div><div class="tipRow"><a id="tipGo" class="btnlink" href="#" target="_blank" rel="noopener noreferrer"></a><button id="tipNo"></button></div></div>
 <button id="newver" hidden>🆕 有新版本，點此更新</button>
 <div id="lobby" hidden><div class="box">
-  <div class="lhead"><h2>對戰模式</h2><button id="mClose" title="關閉">✕</button></div>
+  <div class="lhead"><h2>對戰模式</h2><span class="lbtns"><button id="mResign">🏳️ 認輸</button><button id="mClose" title="關閉">✕</button></span></div>
   <button id="mCards">🃏 強化卡牌：開<br><small>開局與定期三選一強化（連線以房主為準）</small></button>
   <button id="mLocal">📱 同裝置・並排<br><small>兩人輪流用同一支手機／電腦</small></button>
   <button id="mFace">🔄 同裝置・面對面<br><small>平板放桌上，兩人對坐，黑方文字倒轉</small></button>
@@ -48,7 +49,8 @@
     <div class="row"><input id="roomIn" inputmode="numeric" maxlength="4" placeholder="輸入 4 位數房號"><button id="mJoin">加入（執黑）</button></div>
     <div id="netStatus"></div>
   </details>
-  <details class="sec" id="secCards"><summary>🃏 強化卡牌設定</summary>
+  <details class="sec" id="secCards"><summary>🃏 強化卡牌・每回合限時</summary>
+    <button id="mClock">⏲ 每回合限時：不限時（點一下切換）</button>
     <button id="mEvery">⏱ 每 10 回合選一次卡（點一下切換）</button>
     <div class="note">卡牌分四個等級：★ 普通、★★ 稀有、★★★ 瘋狂、✨ 終極魔法。選過的卡越多，越容易出現高等級；終極魔法要到第 4 次選牌後才有機會。連線時以房主的設定為準。</div>
   </details>
@@ -64,26 +66,27 @@
     <div id="ver"></div>
   </details>
 </div></div>
-<script src="js/config.js?v=2026-10-19.18"></script>
-<script src="js/audio.js?v=2026-10-19.18"></script>
-<script src="js/particles.js?v=2026-10-19.18"></script>
-<script src="js/physics.js?v=2026-10-19.18"></script>
-<script src="js/movement.js?v=2026-10-19.18"></script>
-<script src="js/combat.js?v=2026-10-19.18"></script>
-<script src="js/turn.js?v=2026-10-19.18"></script>
-<script src="js/input.js?v=2026-10-19.18"></script>
-<script src="js/render.js?v=2026-10-19.18"></script>
-<script src="js/render3d.js?v=2026-10-19.18"></script>
-<script src="js/ultimate.js?v=2026-10-19.18"></script>
-<script src="js/view3d.js?v=2026-10-19.18"></script>
-<script src="js/ai.js?v=2026-10-19.18"></script>
-<script src="js/cards.js?v=2026-10-19.18"></script>
-<script src="js/changelog.js?v=2026-10-19.18"></script>
-<script src="js/version.js?v=2026-10-19.18"></script>
-<script src="js/update.js?v=2026-10-19.18"></script>
-<script src="js/pwa.js?v=2026-10-19.18"></script>
-<script src="js/tip.js?v=2026-10-19.18"></script>
-<script src="js/network.js?v=2026-10-19.18"></script>
-<script src="js/main.js?v=2026-10-19.18"></script>
+<script src="js/config.js?v=2026-10-20.02"></script>
+<script src="js/audio.js?v=2026-10-20.02"></script>
+<script src="js/particles.js?v=2026-10-20.02"></script>
+<script src="js/physics.js?v=2026-10-20.02"></script>
+<script src="js/movement.js?v=2026-10-20.02"></script>
+<script src="js/combat.js?v=2026-10-20.02"></script>
+<script src="js/turn.js?v=2026-10-20.02"></script>
+<script src="js/input.js?v=2026-10-20.02"></script>
+<script src="js/render.js?v=2026-10-20.02"></script>
+<script src="js/render3d.js?v=2026-10-20.02"></script>
+<script src="js/ultimate.js?v=2026-10-20.02"></script>
+<script src="js/view3d.js?v=2026-10-20.02"></script>
+<script src="js/ai.js?v=2026-10-20.02"></script>
+<script src="js/cards.js?v=2026-10-20.02"></script>
+<script src="js/clock.js?v=2026-10-20.02"></script>
+<script src="js/changelog.js?v=2026-10-20.02"></script>
+<script src="js/version.js?v=2026-10-20.02"></script>
+<script src="js/update.js?v=2026-10-20.02"></script>
+<script src="js/pwa.js?v=2026-10-20.02"></script>
+<script src="js/tip.js?v=2026-10-20.02"></script>
+<script src="js/network.js?v=2026-10-20.02"></script>
+<script src="js/main.js?v=2026-10-20.02"></script>
 </body>
 </html>

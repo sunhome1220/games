@@ -186,8 +186,24 @@ const CROSSERS = ['R', 'N', 'C', 'P'];   // 能過河的兵種（含已升官的
 function checkWin() {
   for (const s of [0, 1])
     if (!pieces.some(p => p.s === s && p.t === 'K' && p.hp > 0)) winner = 1 - s;
+  // 只剩帥／仕／象的一方，對方已有 2 個以上過河的攻擊單位：守不住了，自動判負
+  for (const s of [0, 1]) {
+    if (winner !== null) break;
+    const mine = alive().filter(p => p.s === s);
+    if (mine.length && mine.every(p => ['K', 'G', 'E'].includes(p.t)) && alive().filter(p => p.s !== s && CROSSERS.includes(p.t) && crossed(p.s, p.y)).length >= 2) {
+      winner = 1 - s; overReason = 'hopeless'; setMsg(`${SIDE[s].name}只剩帥／仕／象，對方已有 2 個以上過河的攻擊單位，判負！`);
+    }
+  }
   // 雙方都沒有能過河的棋子（只剩帥／仕／相）就沒人打得到對方，直接和局
   if (winner === null && !alive().some(p => CROSSERS.includes(p.t))) { winner = 2; setMsg('雙方都沒有能過河的棋子（只剩帥／仕／象），和局！'); }
+}
+// 認輸：side 方認輸，對方獲勝（連線時通知對方）
+function resign(side, fromNet) {
+  if (winner !== null || state === 'over' || state === 'pick') return false;
+  winner = 1 - side; overReason = 'resign'; state = 'over'; sel = null; targets = []; moved = false; mover = null; snaps = null; pendingEnd = null;
+  setSkip(false); SFX.play('win'); countGame(); gameOverToLobby(); updateHeader();
+  if (!fromNet) send({ t: 'resign', side });
+  return true;
 }
 function endTurn() {
   if (online() && !myTurn()) {   // 對手的回合：動畫播完後等對方送來的結果
@@ -255,6 +271,7 @@ function update(dt) {
   for (const f of fx) if (f.k === 'drop' && !f.landed && 1 - f.t / f.T >= LAND_AT) { f.landed = true; f.land(); }
   updParts(dt);
   aiTick();
+  clockTick(dt);
 }
 // 彈體目前位置（火箭加速、砲彈拋物線）
 function projPos(f) {

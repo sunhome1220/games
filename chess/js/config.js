@@ -17,7 +17,7 @@ const gx = c => M + c * C, gy = r => M + r * C;
 const SIDE = [{ name: '紅方', col: '#c0392b' }, { name: '黑方', col: '#1d1d1d' }];
 const TYPES = {
   K: { n: ['帥', '將'], hp: 3, dist: 1.5 * C, range: 1.5 * C, min: 0,     dmg: 1, mass: 3,   w: '手槍',   snd: 'pistol', proj: 'bullet', palace: true },
-  R: { n: ['俥', '車'], hp: 4, dist: 10 * C,   range: 4.2 * C, min: 0,     dmg: 2, mass: 2,   w: '機槍',   snd: 'mg',     proj: 'burst', reload: 1, backup: true, line: true, ortho: true },   // 只能沿橫線／直線移動；橫線、直線射程 5 格，斜對角只有 3 格
+  R: { n: ['俥', '車'], hp: 4, dist: 10 * C,   range: 3 * C,   min: 0,     dmg: 2, mass: 2,   w: '機槍',   snd: 'mg',     proj: 'burst', reload: 1, backup: true, line: true, ortho: true },   // 只能沿橫線／直線移動；橫線、直線射程 5 格，斜對角只有 3 格
   N: { n: ['傌', '馬'], hp: 3, dist: 0, knight: true, range: 3 * C, min: 0,     dmg: 2, mass: 1.5, w: '火箭',   snd: 'rocket', proj: 'rocket', reload: 1, backup: true, knightOnly: true },   // 火箭只能打「日」字位置；近戰（任何時候）用 1 心步槍   // 射後需裝填 2 回合（期間改用步槍）
   C: { n: ['炮', '砲'], hp: 3, dist: 10 * C, range: 5.2 * C, min: 4 * C, dmg: 2, mass: 1.5, w: '迫擊炮', snd: 'mortar', proj: 'shell', reload: 1, indirect: true, moveLine: true, ortho: true, splash: 1.5 * C },   // 只能打同一橫線／直線上的目標；   // 只能沿橫線／直線移動；射後需裝填 1 回合（期間完全不能攻擊，包括近戰）；上下左右相鄰受 1/2 傷害、斜角受 1/4（無條件捨去到 ¼ 心）
   // 相／象：防空＋近戰；自動攔截落點在 2.5 格內的火箭／砲彈（冷卻 2 回合，不影響近戰）；近戰 1 心、射程 1.5 格；只能走田字（象眼被塞就過不去）
@@ -73,6 +73,7 @@ const LAYOUT = [['K',4,9],['G',3,9],['G',5,9],['R',0,9],['R',8,9],['N',1,9],['N'
                 ['P',0,6],['P',2,6],['P',4,6],['P',6,6],['P',8,6]];
 
 let pieces, turn, state, mover, timer, fx, winner, targets;
+let overReason = null;   // 一局怎麼結束的：'resign' 認輸、'hopeless' 只剩帥仕象且對方已有 2 個以上過河攻擊單位（判負）、null 一般（帥陣亡或和局）
 let moved = false, firedPiece = null, sel = null, origin = null;   // moved：本回合已移動；sel：目前選取的棋子 {p, moves 可走的點, dest 目的地, scan 原地可攻擊}
 // 對戰模式：local＝同裝置並排、face＝同裝置面對面（黑方文字倒轉）、online＝兩台裝置連線
 let mode = 'local', mySide = 0, conn = null, pendingEnd = null;

@@ -42,6 +42,7 @@ function updParts(dt) {
 }
 
 function reset(noPick = false) {
+  clockReset();
   gameCounted = false; $('tipCard').hidden = true;   // 新的一局：重新計數、收起小提醒（見 tip.js）
   mods = [{}, {}]; cardCount = [{}, {}]; turnsPlayed = [0, 0]; immune = [0, 0]; extraTurn = [0, 0]; pickQ = []; pickSide = null; waitingFor = null; incoming = [];
   $('cardPick').hidden = true; buildTypes(0); buildTypes(1);
@@ -52,7 +53,7 @@ function reset(noPick = false) {
       pieces.push({ s, t, T, x: gx(c), y: gy(s ? 9 - r : r), hx: gx(c), hy: gy(s ? 9 - r : r), vx: 0, vy: 0, hp: T.hp, hd: s ? Math.PI / 2 : -Math.PI / 2, flash: 0, recoil: 0, cd: 0 });
     }
   aiGen++; aiBusy = false; aiPlan = null;   // 取消還沒執行的電腦動作
-  turn = 0; state = 'aim'; sel = null; fx = []; moved = false; firedPiece = null; winner = null; targets = []; parts = []; decals = []; shake = 0;
+  turn = 0; state = 'aim'; sel = null; fx = []; moved = false; firedPiece = null; winner = null; overReason = null; targets = []; parts = []; decals = []; shake = 0;
   updateHeader(); $('skip').disabled = true;
   setMsg('拉動己方棋子移動（輕點＝原地不動），停下後點選要攻擊的敵人。');
   renderPerks();

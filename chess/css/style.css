@@ -146,3 +146,10 @@ i.tier.t2 { background:#2f6fb5; } i.tier.t3 { background:#8e3fb8; } i.tier.t4 { 
   #legend { font-size:12px; border-collapse:collapse; width:100%; } #legend th, #legend td { border:1px solid #4d6355; padding:3px 5px; text-align:left; vertical-align:top; }
 #legend td.num { white-space:nowrap; font-weight:700; text-align:center; }
 #legend th { white-space:nowrap; padding:3px 4px; } #legend td:nth-child(3), #legend td:nth-child(4), #legend td:nth-child(6) { white-space:nowrap; text-align:center; } #legend td:nth-child(5) { text-align:center; min-width:56px; } #legend td:last-child { min-width:170px; }
+#lobby .lhead .lbtns { display:flex; gap:6px; } #lobby .lhead #mResign { font-size:13px; padding:6px 8px; } #lobby .lhead button:disabled { opacity:.4; }
+#clock { flex:none; font-size:12px; font-weight:700; color:#cfe0d4; background:#0003; border:1px solid #6b8a7455; border-radius:12px; padding:2px 9px; white-space:nowrap; }
+#clock.warn { color:#fff; background:#c0392b; border-color:#c0392b; }
+#forceBox { position:fixed; left:50%; bottom:14px; transform:translateX(-50%); z-index:11; width:min(92vw, 360px); }
+#forceBox[hidden] { display:none; }
+#forceBox.flip { bottom:auto; top:64px; transform:translateX(-50%) rotate(180deg); }
+#forceBox button { width:100%; padding:12px; font-size:15px; font-weight:700; background:#c0392b; color:#fff; border:2px solid #fff; border-radius:10px; box-shadow:0 4px 14px #000a; animation:soonPulse .9s ease-in-out infinite alternate; }

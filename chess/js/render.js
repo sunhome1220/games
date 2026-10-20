@@ -210,8 +210,8 @@ function marks(list, T, ghost) {
       line(x, y - R - 12, x, y - R - 2); line(x, y + R + 2, x, y + R + 12);
       if (t.est) {   // 預估傷害
         ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3;
-        const gd = guardBlock(t.p, state === 'select' && sel ? (sel.dest ? { x: sel.dest[0], y: sel.dest[1] } : sel.p) : mover || t.p, Tt), aa = Tt && flies(Tt) && interceptorFor(t.p.s, x, y);
-        textAt(aa ? '✈ 會被攔截' : gd ? '🛡 仕會擋' : '-' + hearts(t.est), x, y, -R - 30, textAng(turn), gd || aa ? '#2f6fb5' : '#e8202a', '#fff');
+        const gd = guardBlock(t.p, state === 'select' && sel ? (sel.dest ? { x: sel.dest[0], y: sel.dest[1] } : sel.p) : mover || t.p, Tt);   // 會被防空攔截的目標不再特別標示
+        textAt(gd ? '🛡 仕會擋' : '-' + hearts(t.est), x, y, -R - 30, textAng(turn), gd ? '#2f6fb5' : '#e8202a', '#fff');
       }
     } else {
       ctx.strokeStyle = '#7778'; ctx.lineWidth = 2; circle(x, y, R + 5); ctx.stroke();
@@ -396,6 +396,7 @@ function drawOver() {
       const dy = mode === 'face' ? 90 : 0;
       ctx.fillStyle = winner === 0 ? '#ff7b6b' : '#fff'; ctx.font = 'bold 44px sans-serif'; ctx.fillText(title, 0, dy - 10);
       ctx.fillStyle = '#fff'; ctx.font = '18px sans-serif'; ctx.fillText('點擊棋盤回到設定頁', 0, dy + 34);
+      if (overReason) { ctx.font = 'bold 20px sans-serif'; ctx.fillStyle = '#ffd166'; ctx.fillText(overReason === 'resign' ? `${SIDE[1 - winner].name}認輸` : `${SIDE[1 - winner].name}只剩帥／仕／象，已守不住`, 0, dy + 68); }
       ctx.restore();
     }
   }
