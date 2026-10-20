@@ -376,7 +376,7 @@
       <li>城牆上的守軍很難被打：敵軍要先架雲梯才能近戰。優先打掉雲梯、衝車。</li>
       <li>用「滾木礌石」「火油」打城下敵軍，四角箭樓會自動放箭；可從城門出城突擊，但回城也要走城門。</li>
       <li>曹軍有<b>三座糧營</b>（西邊：中軍、北營、南營）：走到<b>糧營旁邊</b>按「放火燒營」；也可以在 2～3 格外射<b>火箭</b>（弓兵、呂布一箭就燃，步騎要射 2 箭）。起火後<b>看天氣</b>：沒下雨就連燒三回合（糧 −15%、−30%、−55%），曹軍在旁邊會「滅火」，下雨火會熄。三座燒光曹軍就缺糧，軍心天天下降，撐 3 天就退兵。</li>
-      <li>派兵守住城北河堤，阻止曹軍掘堤水攻：站在堤上或旁邊可以「搶修」，把一段的掘堤進度 −2。</li>
+      <li>派兵守住城北河堤，阻止曹軍掘堤水攻：堤上不能站人，站在堤右側（東側）緊鄰的格子可以「搶修」，把一段的掘堤進度 −2。</li>
       <li><b>伏兵</b>：呂布的騎兵移動力 +2，躲進樹林後曹軍在 2 格外看不到（也不會追）；等曹軍攻城時殺出，從林中發動的第一擊攻擊 +30%、打亂陣勢，打背後再 +15%。燒糧也是好辦法。</li>
       <li><b>呂布第一次被打光時會單騎殺出重圍</b>（只剩殘部），讓高順等友軍趕去「救援合流」；但別再讓他陷進包圍。</li>
       <li>維持城內士氣，避免將領倒戈。</li></ol>`;
@@ -529,7 +529,7 @@
       if (v.campBurnt) bits.push('吳營已燒');
     }
     $('#hVars').innerHTML = bits.join('｜');
-    const dig = $('#hDig'); if (dig) dig.onclick = () => { const d = digHexes(g)[0]; if (d) { root.V3.focus(d[0], d[1]); toast('⛏ 河堤：曹軍步兵或弓兵站上來就能「掘堤」', 2600); } };
+    const dig = $('#hDig'); if (dig) dig.onclick = () => { const d = digHexes(g)[0]; if (d) { root.V3.focus(d[0], d[1]); toast('⛏ 河堤：堤上不能站人，曹軍步兵或弓兵站到堤右側（東側）緊鄰的格子就能「掘堤」', 2600); } };
     root.V3.depotMarks && root.V3.depotMarks(g); root.V3.leveeMarks && root.V3.leveeMarks(g); root.V3.applyHidden && root.V3.applyHidden(g);
     root.V3.fireMarks && root.V3.fireMarks(g, burning.map(k => k.split(',').map(Number)));
     root.V3.digMarks && root.V3.digMarks(g, v.digOpen && !v.flooded ? digHexes(g).filter(([c, r]) => !R.unitAt(g, c, r)) : []);
