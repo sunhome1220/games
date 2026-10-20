@@ -263,9 +263,10 @@
   function calcDamage(g, A, D, opts = {}) {
     const ta = ty(A), td = ty(D), ga = gen(A);
     const dist = H.dist(A.c, A.r, D.c, D.r);
-    const ranged = !!ta.ranged && !opts.counter;
+    const shoot = !!opts.shoot && !opts.counter;   // 步兵、騎兵也帶弓箭：射箭（威力比弓兵低）
+    const ranged = (!!ta.ranged || shoot) && !opts.counter;
     const parts = [];
-    const atkVal = ranged ? ta.atk : (ta.melee || ta.atk);
+    const atkVal = shoot ? ta.atk * shootPower(A) : ranged ? ta.atk : (ta.melee || ta.atk);
     let m = A.troops / 1000 * 45 * atkVal / 10;
     const P = (label, x) => { if (Math.abs(x - 1) > 0.005) parts.push([label, x]); m *= x; };
     P('武力', 0.8 + ga.war / 250);
@@ -276,6 +277,7 @@
       else P(f.short, f.atk);
     }
     if (ranged && dist === 1 && !ta.engine) P('近距離射擊', 0.8);
+    if (shoot) parts.push([has(A, 'qishe') ? '騎射（轅門射戟）' : A.type === 'cav' ? '騎射' : '步兵弓箭', 1]);
     if (has(A, 'wushuang')) P('無雙', 1.3);
     if (has(A, 'wusheng')) P('武聖', 1.2);
     if (has(A, 'xianzhen')) P('陷陣', 1.35);
@@ -288,7 +290,7 @@
     if (opts.weizhen) P('威震', 1.3);
     // 兵種相剋
     if (td.engine) P('打器械', ranged ? 1.2 : 1.5);
-    else { const cm = (COUNTER[A.type] || {})[D.type]; if (cm) P(cm > 1 ? '兵種剋制' : '兵種被剋', cm); }
+    else if (!shoot) { const cm = (COUNTER[A.type] || {})[D.type]; if (cm) P(cm > 1 ? '兵種剋制' : '兵種被剋', cm); }   // 射箭不算近戰的兵種相剋
     // 衝鋒
     let charge = false;
     if (!opts.counter && ta.charge && !ranged && A.moveLen >= 2 && state(A) !== 'disorder') {
@@ -473,7 +475,7 @@
     if (A.alive && !isEngine(A) && !res.ranged) A.coh = clamp(A.coh - 2, 0, 100);
     if (A.alive) A.mor = clamp(A.mor + 2, 0, 100);
     const sideTxt = res.side >= 0 ? `（${SIDE_NAME[res.side]}${res.charge ? '・衝鋒' : ''}${res.joint ? `・合擊${res.joint}` : ''}）` : '';
-    log(g, `${A.name}攻擊${D.name}${sideTxt}，殺傷 ${res.dmg}${cres ? `，反擊 ${cres.dmg}` : ''}`, A.side);
+    log(g, `${A.name}${opts.shoot ? (has(A, 'qishe') ? '張弓騎射' : '放箭射擊') : '攻擊'}${D.name}${sideTxt}，殺傷 ${res.dmg}${cres ? `，反擊 ${cres.dmg}` : ''}`, A.side);
     if (opts.weizhen) for (const [c, r] of H.neighbors(D.c, D.r)) { const v = unitAt(g, c, r); if (v && v.side === D.side) { v.mor = clamp(v.mor - 10, 0, 100); checkCollapse(g, v); } }
     checkVictory(g);
     return { res, cres };
@@ -527,6 +529,11 @@
       }
       // 變換陣型
       if (FORM_ALLOWED[u.type]) add({ id: 'form', name: '變陣', desc: '變換陣型（花掉這次動作；貼著敵軍變陣會讓完整度 −15）。', need: 'form', targets: FORM_ALLOWED[u.type].filter(f => f !== u.form) });
+      // 步兵、騎兵射箭
+      if (!isEngine(u) && !ty(u).ranged) {
+        const st = shootTargets(g, u);
+        add({ id: 'shoot', name: has(u, 'qishe') ? '騎射' : '射箭', desc: has(u, 'qishe') ? `呂布「轅門射戟」：向 2～${shootRange(g, u)} 格外的敵軍放箭，威力與精銳弓兵相當，不會被反擊。` : `向 2～${shootRange(g, u)} 格外的敵軍放箭（威力約弓兵的兩成，不會被反擊）。`, need: 'enemy', targets: st.map(v => v.id), enabled: st.length > 0, why: state(u) === 'disorder' ? '陣型混亂，無法放箭' : '2 格外沒有敵軍' });
+      }
       // 救援合流：與相鄰的友軍合成一支部隊（其中一方是殘部時）
       if (!isEngine(u)) {
         const mates = H.neighbors(u.c, u.r).map(([c, r]) => unitAt(g, c, r)).filter(v => v && v !== u && v.side === u.side && !isEngine(v) && (isRemnant(v) || isRemnant(u)));
@@ -563,6 +570,7 @@
       if (adjEnemies(g, u).length) { u.coh = clamp(u.coh - 15 * steady(u) * 1.4, 0, 100); checkCollapse(g, u); }
       log(g, `${u.name}變陣為${FORMATIONS[target].name}`, u.side); g.fx.push({ t: 'form', id: u.id }); return true;
     }
+    if (id === 'shoot') { if (!A.targets.includes(target)) return false; attack(g, u, g.units[target], { shoot: true }); return true; }
     if (id === 'merge') { if (!A.targets.includes(target)) return false; return merge(g, u, g.units[target]); }
     if (id === 'rally') {
       const half = encircled(g, u) ? 0.5 : 1;
@@ -619,6 +627,14 @@
     return true;
   }
   const isRemnant = u => u.troops <= u.max * 0.35;
+  // 步騎射箭：一般步兵 3 成、騎兵 3 成 5 的攻擊力；「騎射」的呂布接近精銳弓兵
+  function shootPower(u) { return has(u, 'qishe') ? 0.6 : u.type === 'cav' ? 0.22 : 0.18; }
+  const shootRange = (g, u) => (has(u, 'qishe') ? 3 : 2) + (terr(g, u.c, u.r).h >= 1 ? 1 : 0);
+  function shootTargets(g, u) {
+    if (u.acted || isEngine(u) || ty(u).ranged || state(u) === 'disorder') return [];
+    const R = shootRange(g, u);
+    return enemiesOf(g, u).filter(v => { const d = H.dist(u.c, u.r, v.c, v.r); return d >= 2 && d <= R && !(isEngine(v) && unitAt(g, v.c, v.r) !== v); });
+  }
   const steadfast = u => has(u, 'xianzhen') || has(u, 'xiandeng');   // 陷陣、先登：陣型不易亂、永不就地解散
   // 統率越高，陣型越不容易被打亂：統率 50 受 8 成影響、70 受 6 成、90 只受 4 成（最低 3 成）
   function steady(u) { return clamp(1.3 - gen(u).lead / 100, 0.3, 1); }
@@ -912,7 +928,7 @@
   // ---------- 匯出 ----------
   root.RULES = {
     newGame, serialize, restore, startRound, nextActivation, endActivation, activeUnit, upcoming,
-    steady, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
+    steady, shootTargets, reachable, pathTo, moveUnit, unitsAt, canStop, canChoose, chooseActive, undoMove, setFacing, maxMP,
     attackTargets, structTargets, attack, calcDamage, canCounter, actionsFor, doAction,
     unitAt, terr, tAt, state, STATE_NAME, formOf, encircled, adjEnemies, sideHit, inCity, onWall, isEngine, gen, ty, has, alive, enemiesOf, friendsOf,
     rangeOf, canMeleeReach, ENDINGS, other, clamp, inZOC, moveCost,

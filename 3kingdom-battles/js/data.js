@@ -73,6 +73,7 @@
     feijiang: { name: '飛將', kind: 'active', cd: 3, target: 'self', desc: '本次行動移動 +2、無視敵軍阻擋，下一次攻擊 ×1.4 並額外打亂陣型。' },
     tuxi: { name: '突襲', kind: 'active', cd: 3, target: 'self', desc: '本次行動移動 +3、無視敵軍阻擋，衝鋒加成再提高。' },
     xianzhen: { name: '陷陣', kind: 'passive', desc: '「每所攻擊無不破者」：攻擊 +35%，打中敵軍時額外打亂對方陣型；「鎧甲斗具皆精練齊整」：受到的傷害 −20%；陣型被打亂的程度減半，不會潰逃、永不就地解散。' },
+    qishe: { name: '騎射', kind: 'passive', desc: '「轅門射戟」：射箭威力與精銳弓兵相當，射程 3。' },
     xiandeng: { name: '先登', kind: 'passive', desc: '每戰常先登：攻擊 +15%；陣型被打亂的程度減半，永不就地解散。' },
     liaolai: { name: '遼來', kind: 'passive', desc: '「遼來遼來」：攻擊 +20%；每回合結束時，2 格內的敵軍士氣 −4。' },
     duanhou: { name: '斷後', kind: 'passive', desc: '友軍撤退時拚死斷後：受到的傷害 −25%，陣型被打亂的程度減半，不會潰逃。' },
@@ -89,7 +90,7 @@
     xunyou: { name: '荀攸', mark: '荀', lead: 70, war: 30, int: 94, skills: ['lijian'], bio: '軍師，與郭嘉力勸曹操引水灌城。' },
     caobu: { name: '曹軍部將', mark: '魏', lead: 58, war: 55, int: 40, skills: [], bio: '曹軍弓弩隊。' },
     gongbing: { name: '工兵隊', mark: '工', lead: 40, war: 20, int: 30, skills: [], bio: '操作攻城器械的工兵。' },
-    lubu: { name: '呂布', mark: '呂', lead: 88, war: 100, int: 26, skills: ['wushuang', 'feijiang'], bio: '「人中呂布，馬中赤兔」，天下無雙的猛將。' },
+    lubu: { name: '呂布', mark: '呂', lead: 88, war: 100, int: 26, skills: ['wushuang', 'feijiang', 'qishe'], bio: '「人中呂布，馬中赤兔」，天下無雙的猛將；弓馬嫺熟，曾在轅門一箭射中畫戟小枝。' },
     zhangliao: { name: '張遼', mark: '張', lead: 90, war: 92, int: 78, skills: ['tuxi', 'heji'], bio: '呂布麾下騎將，日後的合肥守將。' },
 
     gaoshun: { name: '高順', mark: '高', lead: 86, war: 85, int: 60, skills: ['xianzhen'], bio: '統領「陷陣營」：七百餘兵號為千人，鎧甲精練，每所攻擊無不破者（遊戲比例）。' },
