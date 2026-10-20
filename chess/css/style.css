@@ -153,3 +153,6 @@ i.tier.t2 { background:#2f6fb5; } i.tier.t3 { background:#8e3fb8; } i.tier.t4 { 
 #forceBox[hidden] { display:none; }
 #forceBox.flip { bottom:auto; top:64px; transform:translateX(-50%) rotate(180deg); }
 #forceBox button { width:100%; padding:12px; font-size:15px; font-weight:700; background:#c0392b; color:#fff; border:2px solid #fff; border-radius:10px; box-shadow:0 4px 14px #000a; animation:soonPulse .9s ease-in-out infinite alternate; }
+#surrOv { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:16; padding:14px; }
+#surrOv[hidden] { display:none; }
+#surrOv ul { margin:4px 0 8px; padding-left:20px; color:#f3e2bd; font-size:14px; line-height:1.6; }
