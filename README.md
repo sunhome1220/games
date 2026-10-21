@@ -8,5 +8,6 @@
   - `manifest.webmanifest`、`icons/`、`js/pwa.js`：加到主畫面（圖示是用 `tools/icon.html` 的 3D 場景渲染，`node chess/tools/make_icons.js` 重新產生）與全螢幕按鈕
   - `CARDS.md`：強化卡牌表的維護說明；`vendor/`：PeerJS（連線對戰）
 - `3kingdom-battles/`：三國・名戰錄（立體 3D 回合制攻守城戰，歷史戰役關卡），說明見 `3kingdom-battles/README.md`
+- `pikmin-like/`：小芽隊長（2D 即時群體操作，類皮克敏玩法；單一 `index.html`，無外部函式庫）
 - `proto-a.html`、`proto-c.html`：另外兩個原型
 - `proto-b.html`：舊網址，會自動轉址到 `chess/`
