@@ -15,20 +15,23 @@ function applySnap(sn) {
   turn = sn.turn; winner = sn.winner; overReason = sn.or || null;
 }
 function applyEnd() {
-  const sn = pendingEnd; pendingEnd = null;
+  const sn = pendingEnd, h = pendingEndH; pendingEnd = null; pendingEndH = undefined;
   const before = pieces.map(p => p.hp);
   applySnap(sn);
   let healed = false;   // 對方回合開始時的戰地醫療也播特效
   pieces.forEach((p, i) => { if (p.hp > before[i] && p.hp > 0) { healFX(p, p.hp - before[i]); healed = true; } });
   if (healed) SFX.play('heal');
   targets = []; moved = false; sel = null; setSkip(false);
+  if (h !== undefined && stateHash() !== h) requestResync('局面雜湊對不上');   // 套用快照後仍和對方不一樣（例如強化卡牌紀錄）：要對方重傳完整局面
   if (winner !== null) { state = 'over'; SFX.play('win'); countGame(); gameOverToLobby(); }
   else { state = 'aim'; setMsg(myTurn() ? '輪到你了！拉動己方棋子移動，停下後點選要攻擊的敵人。' : '等待對手操作…'); }
   updateHeader();
   if (winner === null) maybeTurnPick();
 }
-function send(m) { if (online() && conn && conn.open) conn.send(m); }
+function send(m) { if (online() && conn && conn.open) { m.n = ++sendN; conn.send(m); } }
 function onNet(m) {
+  if (m.n !== undefined) { if (recvN && m.n !== recvN + 1) requestResync(`序號 ${recvN} → ${m.n}`); recvN = m.n; }   // 訊息序號跳號＝中間掉了訊息
+  if (onNetPlus(m)) return;
   if (m.t === 'reset') { reset(); setMsg('對手重新開始了一局。'); return; }
   if (m.t === 'force') { if (myTurn()) skipTurnByForce(); return; }
   if (m.t === 'cfg') {
@@ -49,7 +52,7 @@ function onNet(m) {
     state = 'fire'; timer = 0.5; mover = pieces[m.a];
     shoot(pieces[m.a], pieces[m.b]);
   } else if (m.t === 'end') {
-    pendingEnd = m.snap;
+    pendingEnd = m.snap; pendingEndH = m.h;
     if (!['moving', 'settle', 'fire'].includes(state)) applyEnd();   // 否則等動畫播完（onStop／endTurn）再套用
   }
 }
@@ -81,7 +84,7 @@ function bindConn(c, side) {
   conn = c;
   c.on('data', onNet);
   c.on('open', () => {
-    mode = 'online'; mySide = side; pendingEnd = null;
+    mode = 'online'; mySide = side; pendingEnd = null; sendN = 0; recvN = 0;
     reset(); $('lobby').hidden = true;
     if (side === 0) send({ t: 'cfg', cards: cardsOn, every: cardEvery, clock: clockSec });
     netStatus('✅ 已連線');
