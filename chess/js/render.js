@@ -424,7 +424,8 @@ function drawOver() {
       const dy = mode === 'face' ? 90 : 0;
       ctx.fillStyle = winner === 0 ? '#ff7b6b' : '#fff'; ctx.font = 'bold 44px sans-serif'; ctx.fillText(title, 0, dy - 10);
       ctx.fillStyle = '#fff'; ctx.font = '18px sans-serif'; ctx.fillText('點擊棋盤回到設定頁', 0, dy + 34);
-      if (overReason) { ctx.font = 'bold 20px sans-serif'; ctx.fillStyle = '#ffd166'; ctx.fillText(overReason === 'resign' ? `${SIDE[1 - winner].name}認輸` : `${SIDE[1 - winner].name}只剩帥／仕／象，已守不住`, 0, dy + 68); }
+      if (overReason) { ctx.font = 'bold 20px sans-serif'; ctx.fillStyle = '#ffd166'; ctx.fillText(overReason === 'resign' ? `${sideLabel(1 - winner)}認輸` : `${sideLabel(1 - winner)}只剩帥／仕／象，已守不住`, 0, dy + 68); }
+      if (online()) { ctx.font = '15px sans-serif'; ctx.fillStyle = '#cfe0d4'; ctx.fillText(`${nameOf(0)}（紅） vs ${nameOf(1)}（黑）`, 0, dy + 96); }   // 連線時標出雙方暱稱
       ctx.restore();
     }
   }

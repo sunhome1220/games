@@ -156,6 +156,28 @@ module.exports = [
     t.assert.strictEqual(claim, true);
     t.assert.deepStrictEqual(end, [0, 'over', true, 'resign']);
   } },
+  { name: '連線：互相傳送暱稱（顯示在回合標題）、表情泡泡雙方都看得到、2 秒節流、可隱藏對手表情、非法編號被忽略', async fn(t) {
+    const room = 'nick' + Date.now() % 100000, pgs = [], nicks = ['小明', '阿華'];
+    for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}&nick=${encodeURIComponent(nicks[s])}`, { mode: false, freeze: false }));
+    await pgs[0].waitForTimeout(700);
+    const names = await Promise.all(pgs.map(p => p.evaluate(() => [myName, peerName, document.getElementById('turn').textContent])));
+    t.assert.deepStrictEqual(names, [['小明', '阿華', '你的回合・小明'], ['阿華', '小明', '小明的回合']]);
+    t.assert.deepStrictEqual(await Promise.all(pgs.map(p => p.evaluate(() => !document.getElementById('emoBtn').hidden))), [true, true]);
+    await pgs[0].evaluate(() => sendEmoji(0));
+    await pgs[1].waitForFunction(() => document.querySelectorAll('.emoBubble').length === 1, null, { timeout: 5000 });
+    const b = await Promise.all(pgs.map(p => p.evaluate(() => [...document.querySelectorAll('.emoBubble')].map(e => e.textContent))));
+    t.assert.deepStrictEqual(b, [['👍小明'], ['👍小明']]);   // 雙方都看得到，泡泡標著發送者暱稱
+    await pgs[0].evaluate(() => sendEmoji(1));   // 2 秒內再送：被擋下
+    await pgs[0].waitForTimeout(400);
+    t.assert.strictEqual(await pgs[1].evaluate(() => document.querySelectorAll('.emoBubble').length), 1, '節流：2 秒內第二個表情不該送出');
+    await pgs[1].evaluate(() => onNet({ t: 'emo', i: 99 })); await pgs[1].evaluate(() => onNet({ t: 'name', name: '<img src=x onerror=alert(1)>超長暱稱超長暱稱' }));
+    t.assert.strictEqual(await pgs[1].evaluate(() => [document.querySelectorAll('.emoBubble').length, peerName].join()), '1,img src=', '非法表情編號要忽略；暱稱要濾掉 < > 並截成 8 個字');
+    // 隱藏對手的表情：之後對方送的就不顯示
+    await pgs[1].evaluate(() => { document.getElementById('emoMute').click(); });
+    await pgs[0].waitForTimeout(2300);   // 等第一個泡泡消失與節流過去
+    await pgs[0].evaluate(() => sendEmoji(2)); await pgs[0].waitForTimeout(600);
+    t.assert.deepStrictEqual(await Promise.all(pgs.map(p => p.evaluate(() => document.querySelectorAll('.emoBubble').length))), [1, 0], '自己看得到、被隱藏的一方看不到');
+  } },
   { name: '連線：局面雜湊對不上、訊息序號跳號時，自動要對方重傳完整局面並修復', async fn(t) {
     const room = 'sync' + Date.now() % 100000, pgs = [];
     for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}&cards=0`, { mode: false, freeze: false }));
