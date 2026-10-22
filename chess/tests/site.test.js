@@ -128,6 +128,30 @@ module.exports = [
     t.assert.deepStrictEqual([r.clamped, r.popup, r.closed], [true, true, true]);
     t.assert.ok(r.over <= 0, '整頁不該捲動：' + r.over);
   } },
+  { name: '暱稱：預設「玩家＋3 碼」、最多 8 個字、過濾特殊字元、存在這台裝置、重新整理後還在', async fn(t) {
+    const pg = await t.open('', { mode: false });
+    const r = await pg.evaluate(() => {
+      const o = {}, inp = document.getElementById('nickIn');
+      o.def = /^玩家\d{3}$/.test(localStorage.getItem('rc-nick')) && inp.value === localStorage.getItem('rc-nick');
+      inp.value = '一二三四五六七八九十'; inp.dispatchEvent(new Event('input')); o.cut = [myName, localStorage.getItem('rc-nick')];
+      inp.value = '<b>小明</b>'; inp.dispatchEvent(new Event('input')); o.clean = myName;
+      inp.value = ''; inp.dispatchEvent(new Event('input')); inp.dispatchEvent(new Event('change')); o.empty = [myName, inp.value];   // 清空不會變成空暱稱
+      return o;
+    });
+    t.assert.deepStrictEqual(r, { def: true, cut: ['一二三四五六七八', '一二三四五六七八'], clean: 'b小明/b', empty: ['b小明/b', 'b小明/b'] });
+    await pg.reload(); await pg.waitForTimeout(300);
+    t.assert.strictEqual(await pg.evaluate(() => document.getElementById('nickIn').value), 'b小明/b', '重新整理後暱稱應該還在');
+  } },
+  { name: '連線時回合標題放進很長的暱稱：右邊的按鈕不會被擠出畫面（360px 寬）', async fn(t) {
+    const pg = await t.open('', { mode: false }); await pg.setViewportSize({ width: 360, height: 640 });
+    const r = await pg.evaluate(() => {
+      mode = 'online'; mySide = 0; myName = '一二三四五六七八'; peerName = '甲乙丙丁戊己庚辛'; const o = [];
+      for (const tn of [0, 1]) { turn = tn; updateHeader(); const b = document.getElementById('menu').getBoundingClientRect(); o.push(Math.round(b.right) <= innerWidth && b.left > 0); }
+      showPerks(0); o.push(document.getElementById('pTab0').textContent, document.getElementById('pTab1').textContent);   // 「我的強化」頁籤也用暱稱
+      return o;
+    });
+    t.assert.deepStrictEqual(r, [true, true, '一二三四五六七八（我）', '甲乙丙丁戊己庚辛']);
+  } },
   { name: '設定頁：有沒打完的連線對戰（30 分鐘內）時顯示「回到上次的連線對戰」，過期或沒有就不顯示', async fn(t) {
     const pg = await t.open('', { mode: false });
     const r = await pg.evaluate(() => {

@@ -62,7 +62,7 @@ function reset(noPick = false) {
   if (cardsOn && !noPick) beginPick([0, 1]);   // 開局：雙方各選一張強化卡
 }
 function updateHeader() {
-  $('turn').textContent = online() ? (myTurn() ? `你的回合（${SIDE[turn].name}）` : `對手回合（${SIDE[turn].name}）`)
+  $('turn').textContent = online() ? (myTurn() ? `你的回合・${myName}` : `${peerName}的回合`)
     : mode === 'ai' ? (myTurn() ? '你的回合' : `電腦回合・${AI_LEVELS[aiLevel]}`) : SIDE[turn].name + ' 回合';
   $('turn').style.color = turn ? '#ddd' : '#ff7b6b';
   // 面對面：訊息列移到目前玩家那一側（黑方在上、文字倒轉）
@@ -71,6 +71,7 @@ function updateHeader() {
   bar.classList.toggle('flip', face && turn === 1);
   if (state === 'pick') $('turn').textContent = '選擇強化卡';
   if (state === 'spell') $('turn').textContent = '選擇隕石落點';
+  if (typeof renderEmoBtn === 'function') renderEmoBtn();
   if (typeof renderDrawIn === 'function') renderDrawIn();
   if (online() && !myTurn() && state === 'aim') setMsg('等待對手操作…');
 }

@@ -36,6 +36,7 @@ function onNet(m) {
   if (m.n !== undefined) { if (recvN && m.n !== recvN + 1) requestResync(`序號 ${recvN} → ${m.n}`); recvN = m.n; }   // 訊息序號跳號＝中間掉了訊息
   if (onNetBeat(m)) return;
   if (onNetPlus(m)) return;
+  if (onNetSocial(m)) return;
   if (m.t === 'reset') { reset(); setMsg('對手重新開始了一局。'); return; }
   if (m.t === 'force') { if (myTurn()) skipTurnByForce(); return; }
   if (m.t === 'cfg') {
@@ -91,7 +92,7 @@ function bindConn(c, side) {
   c.on('data', onNet);
   c.on('open', () => {
     if (conn !== c) { try { c.close(); } catch (e) {} return; }   // 已經被新的連線取代
-    mode = 'online'; mySide = side; pendingEnd = null; sendN = 0; recvN = 0;
+    mode = 'online'; mySide = side; pendingEnd = null; sendN = 0; recvN = 0; sendName();   // 互相告知暱稱
     if (netOnOpen()) { $('lobby').hidden = true; netStatus('✅ 已連線'); return; }   // 斷線重連／回到房間：交換檢查點續局，不重開
     reset(); $('lobby').hidden = true; saveCheckpoint();
     if (side === 0) send({ t: 'cfg', cards: cardsOn, every: cardEvery, clock: clockSec });

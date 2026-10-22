@@ -248,7 +248,7 @@ let perkTab = 0;
 function showPerks(side) {
   perkTab = side;
   const mine = mode === 'ai' || online() ? mySide : -1;   // 對電腦／連線時標示哪一方是自己
-  for (const s of [0, 1]) { const b = $('pTab' + s); b.textContent = SIDE[s].name + (s === mine ? '（我）' : ''); b.classList.toggle('on', s === side); }
+  for (const s of [0, 1]) { const b = $('pTab' + s); b.textContent = sideLabel(s) + (s === mine ? '（我）' : ''); b.classList.toggle('on', s === side); }
   const list = Object.entries(cardCount[side]).filter(([id]) => cardOf(id));
   const left = cardEvery - (turnsPlayed[side] % cardEvery);
   $('perkBody').innerHTML = (list.length ? list.map(([id, n]) => {
