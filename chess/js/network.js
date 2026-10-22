@@ -22,7 +22,8 @@ function applyEnd() {
   pieces.forEach((p, i) => { if (p.hp > before[i] && p.hp > 0) { healFX(p, p.hp - before[i]); healed = true; } });
   if (healed) SFX.play('heal');
   targets = []; moved = false; sel = null; setSkip(false);
-  if (h !== undefined && stateHash() !== h) requestResync('局面雜湊對不上');   // 套用快照後仍和對方不一樣（例如強化卡牌紀錄）：要對方重傳完整局面
+  if (h !== undefined && stateHash() !== h) requestResync('局面雜湊對不上');
+  saveCheckpoint();   // 套用快照後仍和對方不一樣（例如強化卡牌紀錄）：要對方重傳完整局面
   if (winner !== null) { state = 'over'; SFX.play('win'); countGame(); gameOverToLobby(); }
   else { state = 'aim'; setMsg(myTurn() ? '輪到你了！拉動己方棋子移動，停下後點選要攻擊的敵人。' : '等待對手操作…'); }
   updateHeader();
@@ -30,7 +31,10 @@ function applyEnd() {
 }
 function send(m) { if (online() && conn && conn.open) { m.n = ++sendN; conn.send(m); } }
 function onNet(m) {
+  if (netDrop) return;
+  if (m.t === 'resume') recvN = (m.n || 1) - 1;   // 重新連上後序號從頭算
   if (m.n !== undefined) { if (recvN && m.n !== recvN + 1) requestResync(`序號 ${recvN} → ${m.n}`); recvN = m.n; }   // 訊息序號跳號＝中間掉了訊息
+  if (onNetBeat(m)) return;
   if (onNetPlus(m)) return;
   if (m.t === 'reset') { reset(); setMsg('對手重新開始了一局。'); return; }
   if (m.t === 'force') { if (myTurn()) skipTurnByForce(); return; }
@@ -61,6 +65,7 @@ function restart() {
   send({ t: 'reset' });
 }
 function setMode(m, side = 0) {
+  if (m !== 'online' && online()) clearSession();   // 自己離開連線對戰：不再保留「回到上次的房間」
   if (m !== 'online' && conn) { try { conn.close(); } catch (e) {} conn = null; }
   mode = m; mySide = side; pendingEnd = null;
   reset();
@@ -69,7 +74,7 @@ function setMode(m, side = 0) {
 const netStatus = s => $('netStatus').innerHTML = s;
 
 // --- PeerJS（WebRTC 點對點；房號＝在免費的 PeerJS 公用伺服器上的 ID） ---
-let peer = null;
+let peer = null;   // roomCode（目前房號）在 netplus.js
 const peerId = code => 'rc-chess-b-' + code;
 function loadPeer() {
   return window.Peer ? Promise.resolve() : new Promise((ok, fail) => {
@@ -81,23 +86,24 @@ function loadPeer() {
 const netErr = e => ({ network: '連不上配對伺服器，請檢查網路', 'server-error': '配對伺服器暫時無法使用，請稍後再試',
                        'browser-incompatible': '這個瀏覽器不支援連線對戰' })[e.type] || (e.type || e.message);
 function bindConn(c, side) {
+  if (conn && conn !== c) { try { conn.close(); } catch (e) {} }
   conn = c;
   c.on('data', onNet);
   c.on('open', () => {
+    if (conn !== c) { try { c.close(); } catch (e) {} return; }   // 已經被新的連線取代
     mode = 'online'; mySide = side; pendingEnd = null; sendN = 0; recvN = 0;
-    reset(); $('lobby').hidden = true;
+    if (netOnOpen()) { $('lobby').hidden = true; netStatus('✅ 已連線'); return; }   // 斷線重連／回到房間：交換檢查點續局，不重開
+    reset(); $('lobby').hidden = true; saveCheckpoint();
     if (side === 0) send({ t: 'cfg', cards: cardsOn, every: cardEvery, clock: clockSec });
     netStatus('✅ 已連線');
     setMsg(side === 0 ? '對手已加入！你執紅先手，開始吧。' : '已加入房間！你執黑，等待紅方先手…');
   });
-  c.on('close', () => { if (conn === c) { conn = null; setMsg('⚠ 連線中斷，可按 ☰ 重新建立房間。'); netStatus('⚠ 連線中斷'); } });
-  c.on('error', e => netStatus('⚠ ' + e.message));
+  c.on('close', () => { if (conn === c) { netStatus('⚠ 連線中斷'); markLost('連線關閉'); } });
+  c.on('error', e => { netStatus('⚠ ' + e.message); if (conn === c) markLost('連線錯誤'); });
 }
-async function host() {
-  netStatus('建立房間中…');
-  try { await loadPeer(); } catch (e) { netStatus('⚠ ' + e.message); return; }
+function hostPeer(code, keep) {   // 用房號在公用服務上註冊自己的 id，等對手連進來；keep＝斷線重連／回到房間，id 被占住時等一下再試（不換房號）
   if (peer) peer.destroy();
-  const code = String(1000 + Math.floor(Math.random() * 9000));
+  roomCode = code;
   peer = new Peer(peerId(code));
   peer.on('open', () => {
     const link = location.href.split('?')[0] + '?room=' + code;
@@ -105,15 +111,38 @@ async function host() {
               `<br><button id="copyLink" style="width:auto">複製連結</button>`);
     $('copyLink').onclick = () => navigator.clipboard?.writeText(link).then(() => $('copyLink').textContent = '已複製 ✓');
   });
-  peer.on('connection', c => { if (conn && conn.open) { c.close(); return; } bindConn(c, 0); });
+  peer.on('connection', c => { if (conn && conn.open && !netLost) { c.close(); return; } bindConn(c, 0); });
+  peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });   // 和配對伺服器斷了：重新註冊，才接得到對手的連線
   peer.on('error', e => {
-    if (e.type === 'unavailable-id') host();   // 房號撞到，換一個
+    if (e.type === 'unavailable-id') { if (keep) setTimeout(() => hostPeer(code, true), 2000); else host(); }   // 房號撞到：重連時等舊的過期，新開房間則換一個
     else netStatus('⚠ 無法建立房間：' + netErr(e));
   });
+}
+async function host() {
+  netStatus('建立房間中…');
+  try { await loadPeer(); } catch (e) { netStatus('⚠ ' + e.message); return; }
+  hostPeer(String(1000 + Math.floor(Math.random() * 9000)), false);
+}
+// 斷線重連：房主確保自己的 peer 還在（等對手連回來）；加入者重新連向房號
+function reconnectHost() {
+  if (!window.Peer) return;
+  if (!peer || peer.destroyed) hostPeer(roomCode, true);
+  else if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} }
+}
+let joining = false;
+function reconnectJoin() {
+  if (!window.Peer || joining) return;
+  joining = true; setTimeout(() => joining = false, Math.max(HB * 3, 1500));
+  if (conn && !conn.open) { try { conn.close(); } catch (e) {} }   // 上一次還沒連上的嘗試先收掉
+  const go = () => bindConn(peer.connect(peerId(roomCode), { reliable: true, serialization: 'json' }), 1);
+  if (!peer || peer.destroyed) { peer = new Peer(); peer.on('open', go); peer.on('error', () => {}); }
+  else if (peer.disconnected) { peer.once('open', go); try { peer.reconnect(); } catch (e) {} }
+  else go();
 }
 async function join(code) {
   code = String(code).trim();
   if (!/^\d{4}$/.test(code)) { netStatus('請輸入 4 位數房號'); return; }
+  roomCode = code;
   netStatus('連線中…');
   try { await loadPeer(); } catch (e) { netStatus('⚠ ' + e.message); return; }
   if (peer) peer.destroy();
@@ -123,8 +152,9 @@ async function join(code) {
 }
 // 測試用：?bc=房名&side=0|1 用 BroadcastChannel 在同一台電腦的兩個分頁之間連線
 function bcConnect(room, side) {
+  roomCode = room;
   const ch = new BroadcastChannel('rc-chess-' + room), hs = {};
-  const c = { open: false, send: m => ch.postMessage(m), close() { ch.close(); }, on: (ev, fn) => hs[ev] = fn };
+  const c = { open: false, send: m => ch.postMessage(m), close() { ch.close(); }, on: (ev, fn) => hs[ev] = fn, reconnect() { c.open = false; ch.postMessage('hello'); } };   // reconnect：測試用，模擬重新連線
   ch.onmessage = e => {
     if (e.data === 'hello' || e.data === 'ack') {
       if (e.data === 'hello') ch.postMessage('ack');

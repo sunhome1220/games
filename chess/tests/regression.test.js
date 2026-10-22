@@ -106,6 +106,56 @@ module.exports = [
     t.assert.ok(cardsSeen >= 4, '應該選過幾次牌：' + cardsSeen);
     t.assert.strictEqual(warns, 0, `出現了 ${warns} 次不同步修復`);
   } },
+  { name: '連線：心跳偵測斷線、顯示提示、自動重連後兩邊回到上個回合結束的局面（未完成的那一步取消）', async fn(t) {
+    const room = 'lost' + Date.now() % 100000, pgs = [];
+    for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}&hb=250`, { mode: false, freeze: false }));
+    await pgs[0].waitForTimeout(700);
+    const settle = async () => { for (let i = 0; i < 600; i++) { await pgs[0].waitForTimeout(60); const st = await Promise.all(pgs.map(p => p.evaluate(() => state))); if (st.every(s => ['aim', 'over', 'target', 'wait', 'select'].includes(s))) return st; } throw new Error('動畫卡住'); };
+    await playTurn(pgs[0], settle); await pgs[0].waitForTimeout(300); await settle();
+    await playTurn(pgs[1], settle); await pgs[0].waitForTimeout(300); await settle();
+    // 紅方（輪到他）先走了一步但還沒結束回合
+    const before = await pgs[0].evaluate(() => { const p = pieces.find(q => q.s === 0 && q.t === 'P'), [c, r] = T_.cell(p); T_.go(p, c, r - 1); return [pieces.indexOf(p), p.x, p.y, state, turn]; });
+    t.assert.strictEqual(before[3], 'target');
+    const idx = before[0], orig = await pgs[1].evaluate(i => [pieces[i].x, pieces[i].y], idx);   // 黑方這邊看到的位置（還是原位）
+    await Promise.all(pgs.map(p => p.evaluate(() => { netDrop = true; })));   // 網路全斷
+    await Promise.all(pgs.map(p => p.waitForFunction(() => netLost && !$('netOv').hidden, null, { timeout: 8000 })));
+    await Promise.all(pgs.map(p => p.evaluate(() => { netDrop = false; })));   // 網路恢復
+    await Promise.all(pgs.map(p => p.waitForFunction(() => !netLost && $('netOv').hidden, null, { timeout: 15000 })));
+    const after = await Promise.all(pgs.map(p => p.evaluate(i => ({ h: stateHash(), turn, state, pos: [pieces[i].x, pieces[i].y], lost: netLost }), idx)));
+    t.assert.strictEqual(after[0].h, after[1].h, '重連後兩邊局面應一致');
+    t.assert.deepStrictEqual(after.map(a => [a.turn, a.state, a.lost]), [[0, 'aim', false], [0, 'aim', false]]);
+    t.assert.deepStrictEqual(after[0].pos, orig, '斷線時還沒結束的那一步應取消、退回原位');
+    // 重連後可以繼續下
+    await playTurn(pgs[0], settle); await pgs[0].waitForTimeout(300); await settle();
+    const h2 = await Promise.all(pgs.map(p => p.evaluate(() => [stateHash(), turn])));
+    t.assert.deepStrictEqual(h2[0], h2[1]);
+    t.assert.strictEqual(h2[0][1], 1);
+  } },
+  { name: '連線：重新整理頁面後從存下的檢查點回到原房間，和對手核對進度後續局；斷線太久可判對手認輸', async fn(t) {
+    const room = 'reload' + Date.now() % 100000, pgs = [];
+    for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}&hb=250`, { mode: false, freeze: false }));
+    await pgs[0].waitForTimeout(700);
+    const settle = async (ps = pgs) => { for (let i = 0; i < 600; i++) { await ps[0].waitForTimeout(60); const st = await Promise.all(ps.map(p => p.evaluate(() => state))); if (st.every(s => ['aim', 'over', 'target', 'wait', 'select'].includes(s))) return st; } throw new Error('動畫卡住'); };
+    await playTurn(pgs[0], settle); await pgs[0].waitForTimeout(300); await settle();
+    await playTurn(pgs[1], settle); await pgs[0].waitForTimeout(300); await settle();
+    const h0 = await pgs[0].evaluate(() => [stateHash(), turn, progress()]);
+    await pgs[1].close();   // 黑方關掉頁面（相當於重新整理）
+    const b2 = await t.open(`bc=${room}&side=1&hb=250&resume=1`, { mode: false, freeze: false });
+    await b2.waitForFunction(() => !netLost && $('netOv').hidden, null, { timeout: 15000 });
+    await pgs[0].waitForFunction(() => !netLost, null, { timeout: 15000 });
+    const r = await Promise.all([pgs[0], b2].map(p => p.evaluate(() => [stateHash(), turn, progress(), mode, mySide])));
+    t.assert.deepStrictEqual(r[0].slice(0, 3), h0, '紅方局面不該被改動');
+    t.assert.deepStrictEqual(r[1], [h0[0], h0[1], h0[2], 'online', 1], '重新整理的黑方應回到同一局面');
+    // 斷線太久：出現「判對手認輸」，按下後我方獲勝
+    await Promise.all([pgs[0], b2].map(p => p.evaluate(() => { netDrop = true; })));
+    await pgs[0].waitForFunction(() => netLost, null, { timeout: 8000 });
+    await pgs[0].evaluate(() => { lostSince -= 31000; renderNetOv(); });
+    const claim = await pgs[0].evaluate(() => !$('netClaim').hidden);
+    await pgs[0].evaluate(() => $('netClaim').click());
+    const end = await pgs[0].evaluate(() => [winner, state, $('netOv').hidden, overReason]);
+    t.assert.strictEqual(claim, true);
+    t.assert.deepStrictEqual(end, [0, 'over', true, 'resign']);
+  } },
   { name: '連線：局面雜湊對不上、訊息序號跳號時，自動要對方重傳完整局面並修復', async fn(t) {
     const room = 'sync' + Date.now() % 100000, pgs = [];
     for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}&cards=0`, { mode: false, freeze: false }));

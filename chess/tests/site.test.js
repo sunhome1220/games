@@ -128,6 +128,19 @@ module.exports = [
     t.assert.deepStrictEqual([r.clamped, r.popup, r.closed], [true, true, true]);
     t.assert.ok(r.over <= 0, '整頁不該捲動：' + r.over);
   } },
+  { name: '設定頁：有沒打完的連線對戰（30 分鐘內）時顯示「回到上次的連線對戰」，過期或沒有就不顯示', async fn(t) {
+    const pg = await t.open('', { mode: false });
+    const r = await pg.evaluate(() => {
+      const o = {}; localStorage.clear();
+      offerResume(); o.none = !document.getElementById('mResume');
+      localStorage.setItem('rc-sess-1', JSON.stringify({ room: '4321', side: 1, t: Date.now(), ck: { prog: 2, full: fullState() } }));
+      offerResume(); const b = document.getElementById('mResume'); o.shown = !!b && b.textContent.includes('4321') && b.textContent.includes('執黑');
+      document.getElementById('netStatus').innerHTML = ''; localStorage.setItem('rc-sess-1', JSON.stringify({ room: '4321', side: 1, t: Date.now() - 31 * 60 * 1000, ck: { prog: 2, full: fullState() } }));
+      offerResume(); o.expired = !document.getElementById('mResume'); localStorage.clear();
+      return o;
+    });
+    t.assert.deepStrictEqual(r, { none: true, shown: true, expired: true });
+  } },
   { name: '版面：整頁滿版不捲動（手機直立與橫放）；兵種說明預設隱藏，點按鈕才開', async fn(t) {
     for (const [w, h] of [[390, 700], [360, 640], [800, 420]]) {
       const pg = await t.ctx.newPage(); await pg.setViewportSize({ width: w, height: h });

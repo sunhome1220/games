@@ -5,7 +5,7 @@ let clockSec = 0;
 try { const v = +localStorage.getItem('rc-clock'); if (CLOCK_OPTIONS.includes(v)) clockSec = v; } catch (e) {}
 { const v = +new URLSearchParams(location.search).get('clock'); if (CLOCK_OPTIONS.includes(v)) clockSec = v; }
 let clockLeft = 0, clockKey = null, clockForced = false;
-const clockOn = () => clockSec > 0 && pvpMode() && winner === null && state !== 'over';
+const clockOn = () => clockSec > 0 && pvpMode() && !netLost && winner === null && state !== 'over';
 const clockCounting = () => ['aim', 'select', 'target', 'wait'].includes(state);   // 出發、開火動畫與選牌時不計時
 // 目前能不能按「強制取消」：超時、還在等對方決定；連線時只有等待的那一方，同裝置對戰則由另一位玩家按
 const forceReady = () => clockOn() && clockLeft <= 0 && !clockForced && clockCounting() && (online() ? !myTurn() : true);

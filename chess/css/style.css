@@ -164,3 +164,5 @@ i.tier.t2 { background:#2f6fb5; } i.tier.t3 { background:#8e3fb8; } i.tier.t4 { 
 #spellBox.flip { bottom:auto; top:64px; transform:translateX(-50%) rotate(180deg); }
 #spellBox .sub { color:#f3e2bd; font-size:14px; margin-bottom:8px; line-height:1.5; }
 #spellBox button { width:100%; background:#ff7a1a; color:#fff; font-weight:700; font-size:16px; padding:10px; }
+#netOv { position:fixed; inset:0; background:#000a; display:flex; align-items:center; justify-content:center; z-index:14; padding:14px; }
+#netOv[hidden] { display:none; }

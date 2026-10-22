@@ -58,6 +58,7 @@ function reset(noPick = false) {
   updateHeader(); $('skip').disabled = true;
   setMsg('拉動己方棋子移動（輕點＝原地不動），停下後點選要攻擊的敵人。');
   renderPerks();
+  if (typeof saveCheckpoint === 'function' && online()) saveCheckpoint();   // 連線對戰：新的一局從這裡開始（斷線重連的回溯點）
   if (cardsOn && !noPick) beginPick([0, 1]);   // 開局：雙方各選一張強化卡
 }
 function updateHeader() {
