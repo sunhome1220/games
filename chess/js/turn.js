@@ -220,6 +220,7 @@ function checkWin() {
 // 認輸：side 方認輸，對方獲勝（連線時通知對方）
 function resign(side, fromNet) {
   if (winner !== null || state === 'over' || state === 'pick') return false;
+  if (typeof clearSession === 'function') clearSession();   // 一局結束：不用再保留重連的檢查點
   winner = 1 - side; overReason = 'resign'; state = 'over'; sel = null; targets = []; moved = false; mover = null; snaps = null; pendingEnd = null;
   setSkip(false); SFX.play('win'); countGame(); gameOverToLobby(); updateHeader();
   if (!fromNet) send({ t: 'resign', side });
