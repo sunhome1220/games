@@ -36,6 +36,7 @@ module.exports = [
   { name: '連線整局（BroadcastChannel 模擬）：每回合兩邊局面一致', async fn(t) {
     const room = 'room' + Date.now() % 100000, pgs = [];
     for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}`, { mode: false, freeze: false }));
+    let warns = 0; pgs.forEach(p => p.on('console', m => { if (m.text().includes('[連線]')) warns++; }));   // 正常對局不該出現任何「局面不同步」
     await pgs[0].waitForTimeout(400);
     await pgs[0].evaluate(() => { quick = true; }); await pgs[1].evaluate(() => { quick = false; });   // 一邊快速模式、一邊一般模式
     const settle = async () => { for (let i = 0; i < 600; i++) { await pgs[0].waitForTimeout(60); const st = await Promise.all(pgs.map(p => p.evaluate(() => state))); if (st.every(s => ['aim', 'over', 'target', 'wait', 'select'].includes(s))) return st; } throw new Error('動畫卡住'); };
@@ -48,6 +49,7 @@ module.exports = [
       if (sn[0] !== sn[1]) mism++;
     }
     t.assert.strictEqual(mism, 0, `有 ${mism} 回合兩邊局面不一致`);
+    t.assert.strictEqual(warns, 0, `正常對局出現了 ${warns} 次不同步修復`);
     console.log(`      （${n} 回合）`);
   } },
   { name: '連線：認輸兩邊同步（設定頁按鈕要連按兩次才生效）', async fn(t) {
@@ -74,6 +76,52 @@ module.exports = [
     await pgs[1].click('#forceBtn');
     await pgs[0].waitForFunction(() => turn === 1, null, { timeout: 30000 }); await pgs[1].waitForFunction(() => turn === 1, null, { timeout: 30000 });
     t.assert.deepStrictEqual(await Promise.all(pgs.map(p => p.evaluate(() => [turn, state]))), [[1, 'aim'], [1, 'aim']]);
+  } },
+  { name: '連線整局含強化卡牌（含隕石雨選落點）：兩邊局面一致，沒有觸發不同步修復', async fn(t) {
+    const room = 'cards' + Date.now() % 100000, pgs = [];
+    for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}&cards=1&every=3`, { mode: false, freeze: false }));
+    let warns = 0; pgs.forEach(p => p.on('console', m => { if (m.text().includes('[連線]')) warns++; }));
+    await pgs[0].waitForTimeout(600);
+    // 輪流處理選牌：選第一張；遇到要選範圍的卡（隕石雨）就點棋盤中央再按「降下」
+    const picks = async () => {
+      for (let k = 0; k < 400; k++) {
+        const st = await Promise.all(pgs.map(p => p.evaluate(() => { const o = state; if (o === 'pick' && !$('cardPick').hidden) { $('cardList').children[0].click(); return 'picked'; } if (o === 'spell') { spellTap({ x: M + 4 * C, y: M + 4 * C }); $('spellGo').click(); return 'spelled'; } return o; })));
+        if (st.every(s => ['aim', 'over', 'target', 'wait', 'select'].includes(s))) return;
+        await pgs[0].waitForTimeout(60);
+      }
+      throw new Error('選牌卡住');
+    };
+    const settle = async () => { await picks(); for (let i = 0; i < 600; i++) { await pgs[0].waitForTimeout(60); const st = await Promise.all(pgs.map(p => p.evaluate(() => state))); if (st.every(s => ['aim', 'over', 'target', 'wait', 'select'].includes(s))) return st; } throw new Error('動畫卡住'); };
+    let mism = 0, n = 0, cardsSeen = 0;
+    await picks();
+    for (; n < 24; n++) {
+      if ((await pgs[0].evaluate(() => state)) === 'over') break;
+      const turn = await pgs[0].evaluate(() => turn);
+      await playTurn(pgs[turn], settle); await pgs[0].waitForTimeout(250); await settle();
+      const sn = await Promise.all(pgs.map(p => p.evaluate(() => JSON.stringify([snapshot(), cardCount]))));
+      if (sn[0] !== sn[1]) mism++;
+    }
+    cardsSeen = await pgs[0].evaluate(() => Object.keys(cardCount[0]).length + Object.keys(cardCount[1]).length);
+    t.assert.strictEqual(mism, 0, `有 ${mism} 回合兩邊局面不一致`);
+    t.assert.ok(cardsSeen >= 4, '應該選過幾次牌：' + cardsSeen);
+    t.assert.strictEqual(warns, 0, `出現了 ${warns} 次不同步修復`);
+  } },
+  { name: '連線：局面雜湊對不上、訊息序號跳號時，自動要對方重傳完整局面並修復', async fn(t) {
+    const room = 'sync' + Date.now() % 100000, pgs = [];
+    for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}&cards=0`, { mode: false, freeze: false }));
+    await pgs[0].waitForTimeout(600);
+    const settle = async () => { for (let i = 0; i < 600; i++) { await pgs[0].waitForTimeout(60); const st = await Promise.all(pgs.map(p => p.evaluate(() => state))); if (st.every(s => ['aim', 'over', 'target', 'wait', 'select'].includes(s))) return st; } throw new Error('動畫卡住'); };
+    // 1. 黑方的強化卡牌紀錄被弄亂（快照裡沒有這項）：紅方走完一回合，黑方套用快照後雜湊對不上，應自動被修好
+    await pgs[1].evaluate(() => { cardCount = [{ r_dmg: 1 }, {}]; });
+    await playTurn(pgs[0], settle); await pgs[0].waitForTimeout(250); await settle();
+    await pgs[1].waitForFunction(() => JSON.stringify(cardCount) === '[{},{}]', null, { timeout: 15000 });
+    await pgs[0].waitForTimeout(1700);   // 修復要求有 1.5 秒節流，避免來回重傳
+    // 2. 序號跳號：黑方的棋子血量被弄亂＋接收序號被改亂，紅方送任何訊息後黑方應重傳修復
+    await pgs[1].evaluate(() => { pieces[0].hp = 0.1; recvN = 999; });
+    await pgs[0].evaluate(() => send({ t: 'noop' }));
+    await pgs[1].waitForFunction(() => pieces[0].hp !== 0.1, null, { timeout: 15000 });
+    const h = await Promise.all(pgs.map(p => p.evaluate(() => stateHash())));
+    t.assert.strictEqual(h[0], h[1], '修復後兩邊局面雜湊應一致');
   } },
   { name: '連線：取消移動（含升官空投）兩邊同步還原', async fn(t) {
     const room = 'undo' + Date.now() % 100000, pgs = [];

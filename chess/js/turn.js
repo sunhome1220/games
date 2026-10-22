@@ -230,7 +230,7 @@ function endTurn() {
     if (pendingEnd) applyEnd(); else state = 'wait';
     return;
   }
-  if (winner !== null) { state = 'over'; SFX.play('win'); countGame(); gameOverToLobby(); send({ t: 'end', snap: snapshot() }); return; }
+  if (winner !== null) { state = 'over'; SFX.play('win'); countGame(); gameOverToLobby(); sendEnd(); return; }
   // 裝填倒數：每結束一個自己的回合減 1（開火那回合不算）
   for (const p of pieces) {
     if (!(p.cd > 0)) continue;
@@ -244,12 +244,12 @@ function endTurn() {
   if (extraTurn[turn] > 0) {   // 時間暫停：換自己再走一回合（回合不換邊）
     extraTurn[turn]--; state = 'aim'; targets = []; moved = false; setSkip(false);
     healPhase(turn); updateHeader(); setMsg('⏳ 時間暫停！你再行動一次。');
-    send({ t: 'end', snap: snapshot() }); maybeTurnPick(); return;
+    sendEnd(); maybeTurnPick(); return;
   }
   turn = 1 - turn; state = 'aim'; targets = []; moved = false; setSkip(false);
   healPhase(turn);
   updateHeader();
-  send({ t: 'end', snap: snapshot() });
+  sendEnd();
   maybeTurnPick();
 }
 function update(dt) {
