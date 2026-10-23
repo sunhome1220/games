@@ -93,6 +93,7 @@ function bindConn(c, side) {
   c.on('open', () => {
     if (conn !== c) { try { c.close(); } catch (e) {} return; }   // 已經被新的連線取代
     mode = 'online'; mySide = side; pendingEnd = null; sendN = 0; recvN = 0; sendName();   // 互相告知暱稱
+    hostWaiting = false; lobbyUnannounce(); lobbySetView(false);   // 已經連上對手：房間不用再公開、也不用再看大廳
     if (netOnOpen()) { $('lobby').hidden = true; netStatus('✅ 已連線'); return; }   // 斷線重連／回到房間：交換檢查點續局，不重開
     reset(); $('lobby').hidden = true; saveCheckpoint();
     if (side === 0) send({ t: 'cfg', cards: cardsOn, every: cardEvery, clock: clockSec });
@@ -102,11 +103,14 @@ function bindConn(c, side) {
   c.on('close', () => { if (conn === c) { netStatus('⚠ 連線中斷'); markLost('連線關閉'); } });
   c.on('error', e => { netStatus('⚠ ' + e.message); if (conn === c) markLost('連線錯誤'); });
 }
+let hostWaiting = false;   // 房主已建立房間、還在等對手加入
 function hostPeer(code, keep) {   // 用房號在公用服務上註冊自己的 id，等對手連進來；keep＝斷線重連／回到房間，id 被占住時等一下再試（不換房號）
   if (peer) peer.destroy();
+  lobbyUnannounce(); hostWaiting = false;
   roomCode = code;
   peer = new Peer(peerId(code));
   peer.on('open', () => {
+    if (!keep) { hostWaiting = true; if ($('pubChk').checked) lobbyAnnounce(code); }   // 新開的房間：公開到大廳（對手加入就撤掉）
     const link = location.href.split('?')[0] + '?room=' + code;
     netStatus(`房號 <b style="font-size:22px">${code}</b>，等待對手加入…<br>或把連結傳給對方：<br><small>${link}</small>` +
               `<br><button id="copyLink" style="width:auto">複製連結</button>`);
@@ -170,7 +174,7 @@ function bcConnect(room, side) {
 function gameOverToLobby() { setTimeout(() => { if (state === 'over') $('lobby').hidden = false; }, 1400); }
 let helpFrom = null;   // 從設定頁開的說明，關掉後回到設定頁
 $('legendClose').addEventListener('click', () => { if (helpFrom === 'lobby') $('lobby').hidden = false; helpFrom = null; });
-$('menu').onclick = () => { SFX.init(); $('lobby').hidden = false; showResignBtn(); };
+$('menu').onclick = () => { SFX.init(); $('lobby').hidden = false; showResignBtn(); if ($('secNet').open) lobbySetView(true); };
 $('mClose').onclick = () => $('lobby').hidden = true;
 $('mLocal').onclick = () => setMode('local');
 $('mFace').onclick = () => setMode('face');
