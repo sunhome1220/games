@@ -103,7 +103,7 @@ module.exports = [
     t.assert.deepStrictEqual(r, { remote: [3, 0, 3], draw3d: 'ok' });
     t.assert.deepStrictEqual(errs, []);
   } },
-  { name: '終極魔法：起死回生（只在有陣亡棋子時出現、回到出生點）、時間暫停（再走一回合）', async fn(t) {
+  { name: '終極魔法：起死回生（只在有陣亡棋子時出現、只復活 1 顆、回到出生點）、時間暫停（再走一回合）', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
       const o = {}; cardCount = [{}, {}]; mods = [{}, {}]; rebuildAll(); immune = [0, 0]; extraTurn = [0, 0];
@@ -111,12 +111,37 @@ module.exports = [
       const rook = pieces.find(p => p.s === 0 && p.t === 'R'), pawn = pieces.find(p => p.s === 0 && p.t === 'P'), horse = pieces.find(p => p.s === 0 && p.t === 'N');
       for (const p of [rook, pawn, horse]) { p.hp = 0; p.x = p.y = -999; }
       o.hasDead = rv.cond(0); applyCard(0, 'ult_revive');
-      o.revived = [rook, horse, pawn].map(p => p.hp > 0 && p.x === p.hx && p.y === p.hy);   // 價值高的先復活（俥、傌），最多 2 顆
+      o.revived = [rook, horse, pawn].map(p => p.hp > 0 && p.x === p.hx && p.y === p.hy);   // 沒指定（電腦）：只復活價值最高的 1 顆（俥）
       turn = 0; state = 'fire'; applyCard(0, 'ult_time'); o.xt = extraTurn[0];
       endTurn(); o.afterFirst = [turn, extraTurn[0], state]; state = 'fire'; endTurn(); o.afterSecond = turn;
       return o;
     });
-    t.assert.deepStrictEqual(r, { noDead: false, hasDead: true, revived: [true, true, false], xt: 1, afterFirst: [0, 0, 'aim'], afterSecond: 1 });
+    t.assert.deepStrictEqual(r, { noDead: false, hasDead: true, revived: [true, false, false], xt: 1, afterFirst: [0, 0, 'aim'], afterSecond: 1 });
+  } },
+  { name: '起死回生：玩家從陣亡清單選 1 顆復活（只有一顆就直接復活）；連線時選擇的編號一起傳給對方；亂傳的編號被忽略', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(() => {
+      const o = {}, up = (...ps) => ps.map(p => p.hp > 0 && p.x === p.hx && p.y === p.hy);
+      const setup = () => { reset(true);   // 全新開局，只讓紅方的一顆俥、一顆傌、一顆兵陣亡
+        const ps = ['R', 'N', 'P'].map(t => pieces.find(p => p.s === 0 && p.t === t)); ps.forEach(p => { p.hp = 0; p.x = p.y = -999; }); return ps; };
+      let [rook, horse, pawn] = setup();
+      mode = 'local'; pickSide = 0; pickQ = []; chooseCard(0, 'ult_revive');
+      const btns = [...document.querySelectorAll('#reviveList button')];
+      o.list = [!document.getElementById('reviveOv').hidden, btns.map(b => b.querySelector('b').textContent)];   // 依價值排：俥、傌、兵
+      btns[2].click(); o.chosen = [up(rook, horse, pawn).join(), document.getElementById('reviveOv').hidden];   // 選兵：只有兵復活
+      [rook, horse, pawn] = setup(); pawn.hp = 1; pawn.x = pawn.hx; pawn.y = pawn.hy;   // 只剩俥、傌陣亡
+      mode = 'local'; pickSide = 0; pickQ = []; chooseCard(0, 'ult_revive'); document.querySelectorAll('#reviveList button')[1].click();
+      o.second = up(rook, horse).join();   // 選傌
+      [rook, horse, pawn] = setup(); horse.hp = 3; horse.x = horse.hx; horse.y = horse.hy; pawn.hp = 2; pawn.x = pawn.hx; pawn.y = pawn.hy;   // 只有俥陣亡：不跳清單、直接復活
+      mode = 'local'; pickSide = 0; pickQ = []; chooseCard(0, 'ult_revive'); o.single = [up(rook).join(), document.getElementById('reviveOv').hidden];
+      // 連線：對手選了傌（編號隨選牌訊息傳來）；亂傳的編號（活著的棋子、不存在）改復活價值最高的
+      [rook, horse, pawn] = setup(); mode = 'online'; mySide = 1; pickSide = null; pickQ = []; waitingFor = 0; incoming = [];
+      onNet({ t: 'card', side: 0, id: 'ult_revive', i: pieces.indexOf(horse) }); o.remote = up(rook, horse, pawn).join();
+      [rook, horse, pawn] = setup(); waitingFor = 0; incoming = [];
+      onNet({ t: 'card', side: 0, id: 'ult_revive', i: 9999 }); o.bogus = up(rook, horse, pawn).join();
+      return o;
+    });
+    t.assert.deepStrictEqual(r, { list: [true, ['俥', '傌', '兵']], chosen: ['false,false,true', true], second: 'false,true', single: ['true', true], remote: 'false,true,false', bogus: 'true,false,false' });
   } },
   { name: '連線同步：護盾與時間暫停隨局面快照同步；房主的選牌間隔會傳給對方', async fn(t) {
     const pg = await t.open();

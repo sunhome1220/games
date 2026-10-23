@@ -126,14 +126,14 @@ const CARDS = validateCards([
       ultCast('meteor', s, [...hit.map((p, i) => ({ x: p.x, y: p.y, at: when(i) })), ...extra].sort((a, b) => a.at - b.at));
       hit.forEach((p, i) => spellHit(p, 1, when(i), false)); checkWin();
     } },
-  { id: 'ult_revive', tier: 4, ic: '😇', name: '終極魔法・起死回生', desc: '復活最多 2 顆己方陣亡的棋子（優先價值高的，帥除外），滿血回到出生點', max: 1, cond: s => deadOf(s).length > 0,
-    instant: s => {
-      const ts = [];
-      for (const p of deadOf(s).sort((a, b) => unitValue(b) - unitValue(a)).slice(0, 2)) {
-        const [x, y] = reviveCell(p); p.T = TT[s][p.t]; p.hp = p.T.hp; p.x = x; p.y = y; p.cd = 0; p.vx = p.vy = 0; p.flash = 0.8; ts.push({ x, y, at: 0.15 + ts.length * 0.25 });
-        flashAt(x, y, 70, 0.3); emit(x, y, 30, { k: 'spark', sp: 160, life: 0.9, size: 3, col: '#7dff9a' }); parts.push({ x, y, vx: 0, vy: 0, t: 0.6, L: 0.6, size: 70, k: 'ring', drag: 0 });
-      }
-      ultCast('revive', s, ts);
+  { id: 'ult_revive', tier: 4, ic: '😇', name: '終極魔法・起死回生', desc: '復活 1 顆己方陣亡的棋子（由你選擇，帥除外），滿血回到出生點', max: 1, pickDead: true, cond: s => deadOf(s).length > 0,
+    instant: (s, at) => {
+      const dead = deadOf(s).sort((a, b) => unitValue(b) - unitValue(a));
+      const p = at && at.i !== undefined && dead.includes(pieces[at.i]) ? pieces[at.i] : dead[0];   // 玩家選的那顆；電腦／沒指定時復活價值最高的
+      if (!p) return;
+      const [x, y] = reviveCell(p); p.T = TT[s][p.t]; p.hp = p.T.hp; p.x = x; p.y = y; p.cd = 0; p.vx = p.vy = 0; p.flash = 0.8;
+      flashAt(x, y, 70, 0.3); emit(x, y, 30, { k: 'spark', sp: 160, life: 0.9, size: 3, col: '#7dff9a' }); parts.push({ x, y, vx: 0, vy: 0, t: 0.6, L: 0.6, size: 70, k: 'ring', drag: 0 });
+      ultCast('revive', s, [{ x, y, at: 0.15 }]);
     } },
   { id: 'ult_time', tier: 4, ic: '⏳', name: '終極魔法・時間暫停', desc: '這個回合結束後，你再行動一次（對手跳過一回合）', max: 1,
     instant: s => { extraTurn[s]++; ultCast('time', s); } },
@@ -308,8 +308,24 @@ function chooseCard(side, id) {
   $('cardPick').hidden = true;
   const c = cardOf(id);
   if (c && c.area && !(mode === 'ai' && side === aiSide())) { beginAreaPick(side, c); return; }   // 要選範圍的卡：先讓玩家點落點、按「降下」才生效
+  if (c && c.pickDead && !(mode === 'ai' && side === aiSide())) { beginRevivePick(side, c); return; }   // 要選復活對象的卡（起死回生）
   applyCard(side, id); send({ t: 'card', side, id });
   nextPick();
+}
+// ---- 選復活對象（起死回生）：列出陣亡的棋子讓玩家選一顆；只有一顆就直接復活 ----
+function beginRevivePick(side, c) {
+  const dead = deadOf(side).sort((a, b) => unitValue(b) - unitValue(a));
+  const finish = p => { $('reviveOv').hidden = true; const at = { i: pieces.indexOf(p) }; applyCard(side, c.id, at); send({ t: 'card', side, id: c.id, i: at.i }); nextPick(); };
+  if (dead.length <= 1) { finish(dead[0]); return; }
+  $('reviveBox').classList.toggle('flip', mode === 'face' && side === 1);
+  const list = $('reviveList'); list.innerHTML = '';
+  for (const p of dead) {
+    const b = document.createElement('button'); b.className = 'cbtn t4';
+    b.innerHTML = `<div class="ic">${p.T.n[side]}</div><div><b>${p.T.n[side]}${p.T.id === 'P2' ? '（士官長）' : ''}</b><span>復活後滿血 ${hearts(TT[side][p.t].hp)}，回到出生點</span></div>`;
+    b.onclick = () => finish(p);
+    list.appendChild(b);
+  }
+  $('reviveOv').hidden = false; setMsg('請選擇要復活的棋子。');
 }
 // ---- 選範圍（隕石雨）：點棋盤放圓圈（吸附到交叉點）、預覽範圍內的棋子，按「降下」確認 ----
 let spell = null;   // { side, id, x, y }；x、y 為 null＝還沒點
@@ -349,7 +365,7 @@ function drainIncoming() {
   const i = incoming.findIndex(m => m.side === waitingFor);
   if (i < 0) return;
   const [m] = incoming.splice(i, 1); waitingFor = null;
-  applyCard(m.side, m.id, m.x !== undefined ? { x: m.x, y: m.y } : undefined); nextPick();
+  applyCard(m.side, m.id, m.x !== undefined || m.i !== undefined ? { x: m.x, y: m.y, i: m.i } : undefined); nextPick();
 }
 // 每方自己的第 N、2N、3N… 個回合開始前選牌（N = cardEvery）
 function maybeTurnPick() {

@@ -29,7 +29,7 @@ function applyFull(f) {
   applySnap(f.snap); cardCount = netClone(f.cc); unpackRv(f.rv);
   if (f.cfg) { if (f.cfg.clock !== undefined && CLOCK_OPTIONS.includes(f.cfg.clock)) { clockSec = f.cfg.clock; showClockBtn(); } if (cardsOn !== f.cfg.cards || (f.cfg.every && cardEvery !== f.cfg.every)) { cardsOn = f.cfg.cards; if (f.cfg.every) cardEvery = f.cfg.every; showCardsBtn(); } }
   pendingEnd = null; pendingEndH = undefined; targets = []; moved = false; sel = null; mover = null; origin = null; snaps = null; fx = []; incoming = []; pickQ = []; pickSide = null; waitingFor = null;
-  $('cardPick').hidden = true; if (typeof spell !== 'undefined' && spell) { spell = null; $('spellBox').hidden = true; }
+  $('cardPick').hidden = true; $('reviveOv').hidden = true; if (typeof spell !== 'undefined' && spell) { spell = null; $('spellBox').hidden = true; }
   setSkip(false); state = winner !== null ? 'over' : 'aim';
   renderPerks(); updateHeader(); saveCheckpoint();
   setMsg(winner !== null ? '一局結束。' : myTurn() ? '輪到你了！拉動己方棋子移動，停下後點選要攻擊的敵人。' : '等待對手操作…');
