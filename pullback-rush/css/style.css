@@ -27,3 +27,8 @@ button.small { font-size: 14px; padding: 6px 12px; border-radius: 20px; backgrou
 .screen.face #btn-menu { order: 2; }
 .screen.face #result-title { order: 3; }
 .screen.face #result-sub { order: 4; }
+
+.newver { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 30; background: #ffe9a0; color: #2b3a1e; border: 0; border-radius: 20px; padding: 8px 16px;
+  font: 700 14px/1 inherit; box-shadow: 0 2px 8px rgba(0,0,0,.4); white-space: nowrap; }
+.newver[hidden] { display: none; }
+#ver { font-size: 11px; color: rgba(255,255,255,.5); }

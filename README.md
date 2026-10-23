@@ -9,7 +9,7 @@
   - `CARDS.md`：強化卡牌表的維護說明；`vendor/`：PeerJS（連線對戰）
 - `3kingdom-battles/`：三國・名戰錄（立體 3D 回合制攻守城戰，歷史戰役關卡），說明見 `3kingdom-battles/README.md`
 - `pikmin-like/`：小芽隊長（2D 即時群體操作，類皮克敏玩法；單一 `index.html`，無外部函式庫）。改版時執行 `python3 pikmin-like/tools/bump_version.py 2026-xx-xx.nn` 更新版本號，玩家端會跳出「有新版本」提示
-- `pullback-rush/`：Pullback Rush（回力戰車同畫面雙人對戰，純 Canvas、無外部函式庫）。`js/config.js` 集中所有參數（蓄力、馬達、射程、主堡血量），`js/audio.js` 合成音效，`js/game.js` 邏輯與繪圖。本機執行：`python3 -m http.server` 後開 `/pullback-rush/`
+- `pullback-rush/`：Pullback Rush（回力戰車同畫面雙人對戰，純 Canvas、無外部函式庫）。`js/config.js` 集中所有參數（蓄力、馬達、射程、主堡血量），`js/audio.js` 合成音效，`js/game.js` 邏輯與繪圖。本機執行：`python3 -m http.server` 後開 `/pullback-rush/`。改版時執行 `python3 pullback-rush/tools/bump_version.py 2026-xx-xx.nn` 更新版本號，玩家端會跳出「有新版本」提示
 - `proto-a.html`、`proto-c.html`：另外兩個原型
 - `proto-b.html`：舊網址，會自動轉址到 `chess/`
 
