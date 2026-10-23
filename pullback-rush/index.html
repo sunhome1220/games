@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Pullback Rush</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="wrap">
+  <canvas id="stage" width="1000" height="560"></canvas>
+
+  <div id="hud-top" class="hidden">
+    <button id="btn-quit" class="small">← 離開</button>
+    <button class="mute small"></button>
+  </div>
+
+  <section id="screen-start" class="screen">
+    <h1>PULLBACK <span>RUSH</span></h1>
+    <p class="sub">Pull Back. Power Up. Take Down.</p>
+    <ul class="how">
+      <li>🎮 兩人同畫面輪流操作：紅隊（左）先攻</li>
+      <li>👆 按住自己的戰車，<b>向後拖曳</b>蓄力，拉越遠衝越遠</li>
+      <li>🚀 放手後戰車加速衝刺並滑行，停下時自動開砲</li>
+      <li>🎯 車頭停在地上<b>綠色射程區</b>內才會命中，主堡扣 1 血；太遠或太近都打不到</li>
+      <li>🏰 先讓對方主堡生命值歸零者獲勝</li>
+    </ul>
+    <button id="btn-start" class="big">開始遊戲</button>
+    <button class="mute small"></button>
+  </section>
+
+  <section id="screen-result" class="screen hidden">
+    <h2 id="result-title"></h2>
+    <p id="result-sub" class="sub"></p>
+    <button id="btn-restart" class="big">再來一局</button>
+    <button id="btn-menu" class="small">回到開始畫面</button>
+  </section>
+</div>
+<script src="js/config.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
