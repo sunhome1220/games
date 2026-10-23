@@ -54,9 +54,10 @@
       <li>🔴 紅：攻擊力 ×2　🔵 藍：能走過水域　🟡 黃：搬運力 ×2、丟得更遠</li>
       <li>搬運物要的人數 ≥ 重量數字才搬得動；搬回育苗艙會孵出新的小芽兵</li>
       <li>🌍 <b>天數越多越危險</b>：敵人更強、更多（威脅值每天上升）；每回收一批碎片或過幾天，地圖就會擴張、出現新區域與新敵人</li>
+      <li>💾 會自動存檔在這個瀏覽器（每 5 秒；日落換天、更新版本時也會存），下次開啟可按「繼續上次進度」</li>
       <li>⚠ 每天有時限，<b>日落時沒回到育苗艙附近的小芽兵會消失</b></li>
     </ul>
-    <button id="go">開始冒險</button>
+    <button id="cont" hidden>繼續上次進度</button> <button id="go">開始冒險</button>
   </div>
 </div>
 
@@ -254,11 +255,12 @@ function fx_text(x,y,s,c){G.fx.push({k:'text',x,y,t:0,life:1.2,s,c:c||'#fff'});}
 
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 pikmin-like/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-10-23.01';
+const VERSION='2026-10-23.02';
 document.getElementById('ver').textContent='版本 '+VERSION;
 const newverBtn=document.getElementById('newver');
 function reloadFresh(){
-  if(G.state==='play'&&G.day>1&&!confirm('重新整理會重新開始遊戲（目前沒有存檔），確定嗎？'))return;
+  saveGame();
+  try{sessionStorage.setItem('pikmin-resume','1');}catch(e){}
   location.replace(location.pathname+'?v='+Date.now());
 }
 async function checkUpdate(){
@@ -328,7 +330,21 @@ wh.addEventListener('pointerdown',e=>{input.wBtn=true;wh.classList.add('on');});
 ['pointerup','pointercancel','pointerleave'].forEach(n=>wh.addEventListener(n,()=>{input.wBtn=false;wh.classList.remove('on');}));
 const colBtns=[...document.querySelectorAll('#cols button')];
 colBtns.forEach(b=>b.addEventListener('pointerdown',e=>{G.sel=b.dataset.c;e.preventDefault();}));
-document.getElementById('go').onclick=()=>{document.getElementById('ov').classList.add('hide');initWorld();};
+const ovEl=document.getElementById('ov'),contBtn=document.getElementById('cont'),goBtn=document.getElementById('go');
+function refreshMenu(){
+  const sv=readSave();
+  contBtn.hidden=!sv;
+  if(sv){contBtn.textContent=`繼續上次進度（第 ${sv.day} 天・★ ${sv.delivered}/${TREASURES.length}）`;goBtn.textContent='新遊戲';}
+  else goBtn.textContent='開始冒險';
+}
+goBtn.onclick=()=>{
+  if(readSave()&&!confirm('開始新遊戲會覆蓋目前的存檔，確定嗎？'))return;
+  ovEl.classList.add('hide');initWorld();
+};
+contBtn.onclick=()=>{
+  const sv=readSave();ovEl.classList.add('hide');
+  try{loadGame(sv);}catch(e){clearSave();initWorld();toast('存檔損毀，已開始新遊戲',3);}
+};
 const toastEl=document.getElementById('toast');
 function toast(s,secs){toastEl.textContent=s;toastEl.classList.add('show');G.toastT=secs||3;}
 
@@ -605,6 +621,7 @@ function newDay(){
     if(!def.item){def.item=makeItem('pellet',def.col,def.w,def.x,def.y,def);G.items.push(def.item);}
   });
   toast(`第 ${G.day} 天開始！敵人變強了（威脅 ×${G.sc.hp.toFixed(1)}）`,4);
+  saveGame();
 }
 function update(dt){
   if(G.toastT>0){G.toastT-=dt;if(G.toastT<=0)toastEl.classList.remove('show');}
@@ -857,11 +874,53 @@ function render(t){
   updateButtons();
 }
 function showEnd(){
+  clearSave();
   const ov=document.getElementById('ov'),p=document.getElementById('panel');
   p.innerHTML=`<h1>🎉 任務完成！</h1><p>${TREASURES.length} 塊星光碎片全部回收，飛船修好了！</p><p>用了 <b>${G.day}</b> 天，現有芽兵 <b>${G.minis.length}</b> 隻，一路損失 ${G.lost} 隻。</p><button id="again">再玩一次</button>`;
   ov.classList.remove('hide');
   document.getElementById('again').onclick=()=>{ov.classList.add('hide');initWorld();};
 }
+
+/* ---------- 自動存檔 ---------- */
+const SAVE_KEY='pikmin-like-save-v1';
+function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+function readSave(){try{const o=JSON.parse(localStorage.getItem(SAVE_KEY));return o&&o.v===1?o.d:null;}catch(e){return null;}}
+function saveGame(){
+  if(G.state!=='play')return;
+  try{
+    const d={day:G.day,stage:G.stage,doneT:[...G.doneT],delivered:G.delivered,t:G.t,lost:G.lost,sel:G.sel,cap:[cap.x,cap.y],
+      minis:G.minis.map(m=>[m.col,Math.round(m.x),Math.round(m.y)]),
+      items:G.items.map(it=>[it.kind,it.col,it.w,Math.round(it.x),Math.round(it.y),it.def?PELLETS_DEFS.indexOf(it.def):-1,it.tIdx===undefined?-1:it.tIdx,it.etype||'']),
+      enemies:G.enemies.map(e=>[e.type,Math.round(e.x),Math.round(e.y),e.hx,e.hy,e.hp,e.max,e.alive?1:0,e.extra?1:0]),
+      walls:walls.map(w=>w.hp)};
+    localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,saved:Date.now(),d}));
+  }catch(e){}
+}
+function loadGame(sv){
+  walls=WALL_DEFS.map((d,i)=>({x:d[0],y:d[1],w:d[2],h:d[3],hp:sv.walls[i]!==undefined?sv.walls[i]:d[4],max:d[4],stage:d[5]||0,hit:0}));
+  walls.forEach(w=>{w.gone=w.hp<=0;});
+  G.stage=sv.stage;BW=STAGE_BOUNDS[G.stage][0];BH=STAGE_BOUNDS[G.stage][1];
+  G.doneT=new Set(sv.doneT);G.day=sv.day;calcScale();buildGrid();
+  G.items=[];G.enemies=[];G.minis=[];G.fx=[];
+  PELLETS_DEFS.forEach(d=>{d.item=null;});
+  sv.items.forEach(([kind,col,w,x,y,di,ti,et])=>{
+    let it;
+    if(kind==='pellet'){const d=PELLETS_DEFS[di];if(!d)return;it=makeItem('pellet',col,w,x,y,d);d.item=it;}
+    else if(kind==='treasure')it=makeItem('treasure','g',w,x,y,null,ti);
+    else{it=makeItem('corpse','x',w,x,y);it.etype=et;it.r=ENEMY[et].r;}
+    G.items.push(it);
+  });
+  sv.enemies.forEach(([type,x,y,hx,hy,hp,max,alive,ex])=>{
+    const e=makeEnemy(type,x,y,!!ex);e.hx=hx;e.hy=hy;e.hp=hp;e.max=max;e.alive=!!alive;G.enemies.push(e);
+  });
+  cap.x=sv.cap[0];cap.y=sv.cap[1];cap.stun=0;cap.wr=0;
+  sv.minis.forEach(([c,x,y])=>G.minis.push(newMini(c,x,y,'follow')));
+  G.t=sv.t;G.delivered=sv.delivered;G.lost=sv.lost;G.sel=sv.sel;G.state='play';G.sunT=0;
+  toast(`已載入存檔：第 ${G.day} 天`,3);
+}
+setInterval(saveGame,5000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)saveGame();});
+addEventListener('pagehide',saveGame);
 
 let last=performance.now();
 function loop(now){
@@ -871,6 +930,14 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 walls=WALL_DEFS.map(d=>({x:d[0],y:d[1],w:d[2],h:d[3],hp:d[4],max:d[4],stage:d[5]||0,hit:0}));buildGrid();
+refreshMenu();
+try{
+  if(sessionStorage.getItem('pikmin-resume')){
+    sessionStorage.removeItem('pikmin-resume');
+    const sv=readSave();
+    if(sv){ovEl.classList.add('hide');try{loadGame(sv);}catch(e){clearSave();initWorld();}}
+  }
+}catch(e){}
 requestAnimationFrame(loop);
 window.__G=G;window.__cap=cap;
 })();

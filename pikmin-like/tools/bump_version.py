@@ -6,7 +6,7 @@ v = sys.argv[1] if len(sys.argv) > 1 else None
 if not v: sys.exit(__doc__)
 h = pathlib.Path(__file__).resolve().parent.parent / 'index.html'
 t = h.read_text(encoding='utf-8')
-t, n = re.subn(r"const VERSION='[^']+'", f"const VERSION='{v}'", t)
+t, n = re.subn(r"^const VERSION='[^']+'", f"const VERSION='{v}'", t, flags=re.M)
 if n != 1: sys.exit('找不到 VERSION')
 h.write_text(t, encoding='utf-8')
 print('VERSION =', v)
