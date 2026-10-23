@@ -40,7 +40,7 @@
 <div id="ov">
   <div id="panel">
     <h1>🌱 小芽隊長</h1>
-    <p>你的飛船摔壞了！帶領一群小芽兵，把散落各地的 <b>3 塊星光碎片</b>搬回育苗艙。</p>
+    <p>你的飛船摔壞了！帶領一群小芽兵，把散落各地的 <b>8 塊星光碎片</b>搬回育苗艙。</p>
     <ul>
       <li><b>移動</b>：WASD／方向鍵；手機按住左半邊螢幕拖曳</li>
       <li><b>投擲</b>：滑鼠點擊目標；手機按住右半邊拖曳瞄準、放開投出。小芽兵落地後會自動攻擊敵人、搬東西、拆岩石</li>
@@ -48,6 +48,7 @@
       <li><b>換色</b>：Q／數字鍵 1-3，或點下方色塊</li>
       <li>🔴 紅：攻擊力 ×2　🔵 藍：能走過水域　🟡 黃：搬運力 ×2、丟得更遠</li>
       <li>搬運物要的人數 ≥ 重量數字才搬得動；搬回育苗艙會孵出新的小芽兵</li>
+      <li>🌍 <b>天數越多越危險</b>：敵人更強、更多（威脅值每天上升）；每回收一批碎片或過幾天，地圖就會擴張、出現新區域與新敵人</li>
       <li>⚠ 每天有時限，<b>日落時沒回到育苗艙附近的小芽兵會消失</b></li>
     </ul>
     <button id="go">開始冒險</button>
@@ -57,8 +58,12 @@
 <script>
 (()=>{
 'use strict';
-const W=2400,H=1600,T=20,GW=W/T,GH=H/T;
-const DAY_LEN=240, MAXMINI=70, THROW=250;
+const W=3600,H=2600,T=20,GW=W/T,GH=H/T;
+const DAY_LEN=240, THROW=250;
+const STAGE_BOUNDS=[[2400,1600],[2400,2600],[3600,2600]];
+const STAGE_DAY=[3,5];
+let BW=2400,BH=1600;
+const maxMini=()=>70+15*G.stage;
 const BASE={x:260,y:800,r:44,safe:140};
 const COL={
   r:{n:'紅',c:'#e5483f',d:'#a8261f',atk:2,carry:1,swim:false,range:1},
@@ -69,43 +74,63 @@ const ORDER=['r','b','y'];
 const ENEMY={
   bug:{r:11,hp:8,speed:46,aggro:115,cd:1.1,w:2,col:'#8e4fa8',leash:380},
   big:{r:19,hp:30,speed:40,aggro:140,cd:0.8,w:4,col:'#7f8f3a',leash:420},
-  boss:{r:32,hp:120,speed:34,aggro:200,cd:0.5,w:6,col:'#3b2f55',leash:520}
+  boss:{r:32,hp:120,speed:34,aggro:200,cd:0.5,w:6,col:'#3b2f55',leash:520},
+  hunter:{r:12,hp:14,speed:85,aggro:170,cd:0.7,w:3,col:'#c0603a',leash:450},
+  king:{r:40,hp:220,speed:36,aggro:230,cd:0.4,w:8,col:'#6b1f3a',leash:600}
 };
 
 /* ---------- 地形 ---------- */
 const CLIFFS=[
   [900,0,60,640],[900,960,60,640],
-  [1880,0,40,380],[1880,520,40,80],[1880,560,520,40],
-  [600,200,120,80],[500,1350,160,90],[1150,820,90,70],[1650,1250,140,80],[1400,200,100,100],[2050,900,120,120],[340,250,90,70]
+  [1880,0,40,380],[1880,520,40,80],[1880,560,520,40],[2360,0,40,560],
+  [600,200,120,80],[500,1350,160,90],[1150,820,90,70],[1650,1250,140,80],[1400,200,100,100],[2050,900,120,120],[340,250,90,70],
+  /* 第 2 階段（南方） */
+  [900,1600,60,1000,1],[210,2330,40,270,1],[250,2330,490,40,1],
+  [400,1950,300,100,1],[1050,2150,200,200,1],[1700,1950,160,160,1],[2000,2300,300,100,1],[1250,1700,150,100,1],
+  /* 第 3 階段（東方） */
+  [2700,700,200,150,2],[3100,1100,200,200,2],[2600,1900,150,150,2],[3300,2300,150,150,2],[3300,700,120,200,2],[2900,1600,250,120,2],[2800,300,100,200,2]
 ];
 const WATERS=[
   [520,1100,200,120],
-  [1300,600,500,180],[1300,920,500,180],[1300,780,180,140],[1620,780,180,140]
+  [1300,600,500,180],[1300,920,500,180],[1300,780,180,140],[1620,780,180,140],
+  [1450,2100,400,100,1],[1450,2300,400,100,1],[1450,2200,100,100,1],[1700,2200,150,100,1],
+  [2800,2050,400,100,2],[2800,2350,400,100,2],[2800,2150,100,200,2],[3100,2150,100,200,2]
 ];
-const WALL_DEFS=[[900,640,60,320,14]];
+const WALL_DEFS=[[900,640,60,320,14,0],[700,2370,40,230,20,1]];
 const PELLETS=[
   ['r',1,430,640,1],['r',1,500,980,1],['r',2,650,760,1],['r',3,820,1250,1],
   ['y',1,380,1000,1],['y',2,700,540,1],['y',1,300,420,1],
   ['b',1,420,420,1],['b',2,620,1160,1],['b',1,300,1150,1],['b',2,760,300,1],
-  ['r',3,1100,500,0],['r',5,1700,1300,0],['y',3,1100,1100,0],['y',5,1500,300,0],
-  ['b',3,1250,1400,0],['b',5,2000,1100,0],['b',2,1510,890,0],['y',2,2200,200,0],['r',2,2200,450,0]
+  ['r',3,1100,500,0],['r',5,1700,1380,0],['y',3,1100,1100,0],['y',5,1500,300,0],
+  ['b',3,1250,1400,0],['b',5,2000,1100,0],['b',2,1510,890,0],['y',2,2200,200,0],['r',2,2200,450,0],
+  ['r',3,400,1700,0,1],['y',3,800,1900,0,1],['b',3,1200,2050,0,1],['r',5,1500,2400,0,1],['y',5,2100,1850,0,1],
+  ['b',2,1590,2240,0,1],['b',3,2200,2450,0,1],['r',2,300,2100,0,1],['y',2,600,2250,0,1],
+  ['r',5,2700,300,0,2],['y',5,2800,1000,0,2],['b',5,3200,900,0,2],['r',5,3400,1900,0,2],['y',5,2600,1600,0,2],
+  ['b',2,2930,2200,0,2],['b',2,3060,2300,0,2],['y',3,3300,400,0,2],['r',3,2600,2300,0,2]
 ];
-const TREASURES=[[1150,350,5],[1550,850,4],[2260,300,6]];
+const TREASURES=[[1150,350,5,0],[1550,850,4,0],[2260,300,6,0],[400,2500,6,1],[1650,2250,5,1],[3250,350,7,2],[3300,1300,7,2],[3000,2250,6,2]];
 const ENEMIES=[
   ['bug',720,480],['bug',700,1300],
   ['bug',1100,430],['big',1250,300],['bug',1150,1250],['big',1560,1250],
-  ['bug',1700,500],['bug',2000,1200],['big',2050,800],['boss',2130,330]
+  ['bug',1700,500],['bug',2000,1200],['big',2050,800],['boss',2130,330],
+  ['bug',500,1900,1],['bug',300,2200,1],['big',800,2400,1],['hunter',700,2050,1],
+  ['big',1500,1900,1],['hunter',1300,2250,1],['bug',2000,2100,1],['big',2100,2400,1],['bug',1200,1750,1],
+  ['big',2700,500,2],['king',3050,380,2],['big',3400,1200,2],['big',3150,1450,2],['hunter',3300,1100,2],
+  ['hunter',2700,1300,2],['hunter',2750,2100,2],['big',3000,1900,2],['big',2600,2400,2],['boss',3400,2100,2]
 ];
 
 let solid,water,walls,fieldLand,fieldSwim;
-const PELLETS_DEFS=PELLETS.map(p=>({col:p[0],w:p[1],x:p[2],y:p[3],rs:p[4],item:null}));
+const PELLETS_DEFS=PELLETS.map(p=>({col:p[0],w:p[1],x:p[2],y:p[3],rs:p[4],stage:p[5]||0,item:null}));
 const cellOf=(x,y)=>Math.max(0,Math.min(GW-1,(x/T)|0))+Math.max(0,Math.min(GH-1,(y/T)|0))*GW;
-function buildGrid(){
+function buildGrid(stage){
+  if(stage===undefined)stage=G.stage;
   solid=new Uint8Array(GW*GH);water=new Uint8Array(GW*GH);
   const fill=(arr,r)=>{for(let cy=Math.floor(r[1]/T);cy<Math.ceil((r[1]+r[3])/T);cy++)for(let cx=Math.floor(r[0]/T);cx<Math.ceil((r[0]+r[2])/T);cx++)if(cx>=0&&cy>=0&&cx<GW&&cy<GH)arr[cx+cy*GW]=1;};
-  CLIFFS.forEach(r=>fill(solid,r));
-  walls.forEach(w=>{if(w.hp>0)fill(solid,[w.x,w.y,w.w,w.h]);});
-  WATERS.forEach(r=>fill(water,r));
+  const b=STAGE_BOUNDS[Math.min(stage,2)];
+  fill(solid,[b[0],0,W-b[0],H]);fill(solid,[0,b[1],W,H-b[1]]);
+  CLIFFS.forEach(r=>{if((r[4]||0)<=stage)fill(solid,r);});
+  walls.forEach(w=>{if(w.hp>0&&w.stage<=stage)fill(solid,[w.x,w.y,w.w,w.h]);});
+  WATERS.forEach(r=>{if((r[4]||0)<=stage)fill(water,r);});
   fieldLand=flood(false);fieldSwim=flood(true);
 }
 function passable(i,swim){return !solid[i]&&(swim||!water[i]);}
@@ -146,7 +171,7 @@ function freeSpot(x,y,swim){
 }
 
 /* ---------- 狀態 ---------- */
-const G={state:'menu',day:1,t:DAY_LEN,minis:[],items:[],enemies:[],fx:[],delivered:0,sunT:0,sel:'r',toastT:0,lost:0,cd:0};
+const G={state:'menu',stage:0,doneT:new Set(),sc:{hp:1,spd:1,cd:1,aggro:1},day:1,t:DAY_LEN,minis:[],items:[],enemies:[],fx:[],delivered:0,sunT:0,sel:'r',toastT:0,lost:0,cd:0};
 const cap={x:BASE.x+90,y:BASE.y,face:0,stun:0,wr:0,anim:0,moving:false};
 const cam={x:0,y:0};
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -156,24 +181,61 @@ function newMini(col,x,y,s){
   return {x,y,col,s:s||'follow',job:null,ox:rnd(-35,35),oy:rnd(-25,25),h:0,sx:0,sy:0,dx:0,dy:0,u:0,dur:0,hold:false,slot:-1,scan:rnd(0,.3),ang:rnd(0,6.28),ph:rnd(0,6.28),dead:false,stuck:0,ban:0};
 }
 function spawnMini(col,x,y,s){
-  if(G.minis.length>=MAXMINI)return null;
+  if(G.minis.length>=maxMini())return null;
   const [fx,fy]=freeSpot(x,y,false);
   const m=newMini(col,fx,fy,s||'idle');G.minis.push(m);
   fx_pop(fx,fy,COL[col].c);return m;
 }
-function makeItem(kind,col,w,x,y,def){
+function makeItem(kind,col,w,x,y,def,tIdx){
   const r=kind==='pellet'?8+w*1.6:kind==='treasure'?20:ENEMY.bug.r+4;
   const slots=Math.ceil(w*1.8)+1;
-  return {kind,col,w,x,y,r,slots,taken:new Array(slots).fill(null),def,stuck:false,power:0,rot:rnd(0,6.28)};
+  return {kind,col,w,x,y,r,slots,taken:new Array(slots).fill(null),def,tIdx,stuck:false,power:0,rot:rnd(0,6.28)};
+}
+function calcScale(){
+  const d=G.day-1;
+  G.sc={hp:1+.12*d,spd:Math.min(1.4,1+.03*d),cd:Math.max(.6,1-.03*d),aggro:Math.min(1.5,1+.04*d)};
+}
+function makeEnemy(type,x,y,extra){
+  const d=ENEMY[type],hp=d.hp*G.sc.hp;
+  return {type,x,y,hx:x,hy:y,r:d.r,hp,max:hp,alive:true,cd:0,state:'wander',tx:x,ty:y,wt:0,hit:0,face:1,ph:rnd(0,6),extra:!!extra};
+}
+function spawnStage(st){
+  PELLETS_DEFS.forEach(d=>{if(d.stage===st){d.item=makeItem('pellet',d.col,d.w,d.x,d.y,d);G.items.push(d.item);}});
+  TREASURES.forEach((t,i)=>{if(t[3]===st)G.items.push(makeItem('treasure','g',t[2],t[0],t[1],null,i));});
+  ENEMIES.forEach(e=>{if((e[3]||0)===st)G.enemies.push(makeEnemy(e[0],e[1],e[2]));});
+}
+function stageDone(st){return TREASURES.every((t,i)=>t[3]!==st||G.doneT.has(i));}
+function expandTo(st){
+  G.stage=st;BW=STAGE_BOUNDS[st][0];BH=STAGE_BOUNDS[st][1];
+  buildGrid();spawnStage(st);
+  toast(st===1?'大地震！南方的新區域出現了（更危險的敵人也出現了）':'地圖再次擴張！東方的荒地開放了',5);
+  fx_text(cap.x,cap.y-40,'新區域！','#ffe9a0');
+}
+function checkExpand(){
+  let t=G.stage;
+  while(t<2&&(G.day>=STAGE_DAY[t]||stageDone(t)))t++;
+  if(t>G.stage){for(let k=G.stage+1;k<=t;k++)expandTo(k);}
+}
+function topUpExtras(){
+  G.enemies=G.enemies.filter(e=>!(e.extra&&!e.alive));
+  const target=Math.min(28,(G.day-1)*2);
+  let n=G.enemies.filter(e=>e.extra).length,guard=0;
+  while(n<target&&guard++<300){
+    const x=rnd(100,BW-100),y=rnd(100,BH-100);
+    if(Math.hypot(x-BASE.x,y-BASE.y)<600||blockedR(x,y,20,false))continue;
+    const r=Math.random();
+    const type=G.day>=4&&G.stage>=1&&r<.3?'hunter':G.day>=3&&r<.55?'big':'bug';
+    G.enemies.push(makeEnemy(type,x,y,true));n++;
+  }
 }
 function initWorld(){
-  walls=WALL_DEFS.map(d=>({x:d[0],y:d[1],w:d[2],h:d[3],hp:d[4],max:d[4],hit:0}));
+  walls=WALL_DEFS.map(d=>({x:d[0],y:d[1],w:d[2],h:d[3],hp:d[4],max:d[4],stage:d[5]||0,hit:0}));
+  G.stage=0;BW=STAGE_BOUNDS[0][0];BH=STAGE_BOUNDS[0][1];G.doneT=new Set();
+  G.day=1;calcScale();
   buildGrid();
   G.items=[];G.enemies=[];G.minis=[];G.fx=[];
-  PELLETS_DEFS.forEach(d=>{d.item=makeItem('pellet',d.col,d.w,d.x,d.y,d);G.items.push(d.item);});
-  TREASURES.forEach(t=>G.items.push(makeItem('treasure','g',t[2],t[0],t[1])));
-  ENEMIES.forEach(e=>{const d=ENEMY[e[0]];G.enemies.push({type:e[0],x:e[1],y:e[2],hx:e[1],hy:e[2],r:d.r,hp:d.hp,max:d.hp,alive:true,cd:0,state:'wander',tx:e[1],ty:e[2],wt:0,hit:0,face:1,ph:rnd(0,6)});});
-  G.day=1;G.t=DAY_LEN;G.delivered=0;G.state='play';G.sunT=0;G.sel='r';G.lost=0;
+  spawnStage(0);
+  G.t=DAY_LEN;G.delivered=0;G.state='play';G.sunT=0;G.sel='r';G.lost=0;
   cap.x=BASE.x+90;cap.y=BASE.y;cap.stun=0;cap.wr=0;
   [['r',4],['b',4],['y',3]].forEach(([c,n])=>{for(let i=0;i<n;i++)G.minis.push(newMini(c,cap.x+rnd(-30,30),cap.y+rnd(-30,30),'follow'));});
   toast('第 1 天：先在營地附近找小豆子（彩色圓球）搬回育苗艙，孵出更多芽兵',5);
@@ -288,7 +350,7 @@ function findJob(m){
     bd=d;best={type:'item',item:it};
   }
   if(best)return best;
-  for(const w of walls){if(w.hp<=0)continue;const p=nearPt(w,m.x,m.y);if(Math.hypot(p.x-m.x,p.y-m.y)<50)return {type:'wall',w};}
+  for(const w of walls){if(w.hp<=0||w.stage>G.stage)continue;const p=nearPt(w,m.x,m.y);if(Math.hypot(p.x-m.x,p.y-m.y)<50)return {type:'wall',w};}
   return null;
 }
 function startJob(m,j){
@@ -371,7 +433,7 @@ function updateMinis(dt){
     if(w.hp<=0&&!w.gone){
       w.gone=true;buildGrid();
       for(let i=0;i<14;i++)fx_pop(w.x+rnd(0,w.w),w.y+rnd(0,w.h),'#a89880');
-      toast('岩石被打碎了！東邊的路開通了',4);
+      toast('岩石被打碎了！路開通了',4);
       G.minis.forEach(m=>{if(m.s==='work'&&m.job.type==='wall')setIdle(m);});
     }
   }
@@ -411,17 +473,17 @@ function deliver(it){
   if(it.kind==='pellet'){for(let k=0;k<it.w;k++)spawnMini(it.col,BASE.x+rnd(-20,20),BASE.y+rnd(50,80));n=it.w;}
   else if(it.kind==='corpse'){for(let k=0;k<it.w;k++)spawnMini(ORDER[(Math.random()*3)|0],BASE.x+rnd(-20,20),BASE.y+rnd(50,80));n=it.w;}
   else{
-    G.delivered++;
+    G.delivered++;G.doneT.add(it.tIdx);
     for(let k=0;k<5;k++)spawnMini(ORDER[k%3],BASE.x+rnd(-30,30),BASE.y+rnd(50,90));n=5;
-    toast(`星光碎片 ${G.delivered}/3 回收！`,4);
-    if(G.delivered>=3){G.state='win';showEnd();}
+    toast(`星光碎片 ${G.delivered}/${TREASURES.length} 回收！`,4);
+    if(G.delivered>=TREASURES.length){G.state='win';showEnd();}else checkExpand();
   }
   fx_text(BASE.x,BASE.y-50,'+'+n+' 芽兵','#ffe9a0');
 }
 function updateEnemies(dt){
   for(const e of G.enemies){
     if(!e.alive)continue;
-    const d=ENEMY[e.type];
+    const d=ENEMY[e.type],sc=G.sc,dusk=G.day>=3&&G.t<40?1.3:1;
     if(e.hit>0)e.hit-=dt;
     if(e.hp<=0){
       e.alive=false;
@@ -431,30 +493,31 @@ function updateEnemies(dt){
       continue;
     }
     e.cd-=dt;e.wt-=dt;e.ph+=dt*6;
-    let tgt=null,bd=d.aggro;
+    const aggro=d.aggro*sc.aggro*dusk,spd=d.speed*sc.spd,cdm=d.cd*sc.cd;
+    let tgt=null,bd=aggro;
     for(const m of G.minis){if(m.s==='thrown'||m.dead)continue;const dd=dist(e,m);if(dd<bd){bd=dd;tgt=m;}}
-    const dc=dist(e,cap);if(dc<bd*.8&&dc<d.aggro){tgt=cap;bd=dc;}
+    const dc=dist(e,cap);if(dc<bd*.8&&dc<aggro){tgt=cap;bd=dc;}
     if(Math.hypot(e.x-e.hx,e.y-e.hy)>d.leash)tgt=null;
     if(tgt){
       const dx=tgt.x-e.x,dy=tgt.y-e.y,dd=Math.hypot(dx,dy)||1;
       e.face=dx>=0?1:-1;
-      if(dd>e.r+8)moveEnt(e,dx/dd*d.speed*1.25*dt,dy/dd*d.speed*1.25*dt,false,e.r*.6);
+      if(dd>e.r+8)moveEnt(e,dx/dd*spd*1.25*dt,dy/dd*spd*1.25*dt,false,e.r*.6);
       if(e.cd<=0){
         if(tgt===cap){
-          if(dd<e.r+16){cap.stun=.6;moveEnt(cap,-dx/dd*45,-dy/dd*45,false,8);e.cd=d.cd;fx_text(cap.x,cap.y-24,'!','#ff8');}
+          if(dd<e.r+16){cap.stun=.6;moveEnt(cap,-dx/dd*45,-dy/dd*45,false,8);e.cd=cdm;fx_text(cap.x,cap.y-24,'!','#ff8');}
         }else{
           let v=null,vd=e.r+14;
           for(const m of G.minis){if(m.s==='thrown'||m.dead)continue;const q=dist(e,m);if(q<vd){vd=q;v=m;}}
           if(v){
             if(v.job&&v.job.type==='item'&&v.slot>=0&&v.job.item.taken[v.slot]===v)v.job.item.taken[v.slot]=null;
-            v.dead=true;G.lost++;fx_ghost(v.x,v.y,COL[v.col].c);e.cd=d.cd;
+            v.dead=true;G.lost++;fx_ghost(v.x,v.y,COL[v.col].c);e.cd=cdm;
           }
         }
       }
     }else{
       if(e.wt<=0){e.wt=rnd(2,4);const a=rnd(0,6.28),r=rnd(0,140);e.tx=e.hx+Math.cos(a)*r;e.ty=e.hy+Math.sin(a)*r;}
       const dx=e.tx-e.x,dy=e.ty-e.y,dd=Math.hypot(dx,dy);
-      if(dd>6){e.face=dx>=0?1:-1;moveEnt(e,dx/dd*d.speed*.45*dt,dy/dd*d.speed*.45*dt,false,e.r*.6);}
+      if(dd>6){e.face=dx>=0?1:-1;moveEnt(e,dx/dd*spd*.45*dt,dy/dd*spd*.45*dt,false,e.r*.6);}
     }
   }
   G.minis=G.minis.filter(m=>!m.dead);
@@ -496,20 +559,24 @@ function endDay(){
   toast(`日落了…… ${lost} 隻來不及回家的芽兵消失了`,3);
 }
 function newDay(){
-  G.day++;G.t=DAY_LEN;G.state='play';
+  G.day++;G.t=DAY_LEN;G.state='play';calcScale();
   for(const m of G.minis){setIdle(m);m.s='follow';}
   let ex=0;
   while(G.minis.length<5){spawnMini(ORDER[ex++%3],BASE.x+rnd(-40,40),BASE.y+rnd(50,90),'follow');}
   cap.x=BASE.x+90;cap.y=BASE.y;cap.stun=0;
   G.minis.forEach(m=>{m.x=cap.x+rnd(-30,30);m.y=cap.y+rnd(-30,30);});
-  for(const e of G.enemies)if(!e.alive&&e.type!=='boss'){e.alive=true;e.hp=e.max;e.x=e.hx;e.y=e.hy;}
-  for(const e of G.enemies)if(e.alive)e.hp=e.max;
-  PELLETS.forEach((p,i)=>{
-    if(!p[4])return;
-    const def=PELLETS_DEFS[i];
+  for(const e of G.enemies){
+    const base=ENEMY[e.type].hp*G.sc.hp;e.max=base;
+    if(!e.alive&&e.type!=='boss'&&e.type!=='king'&&!e.extra){e.alive=true;e.x=e.hx;e.y=e.hy;}
+    if(e.alive)e.hp=e.max;
+  }
+  checkExpand();
+  topUpExtras();
+  PELLETS_DEFS.forEach(def=>{
+    if(!def.rs||def.stage>G.stage)return;
     if(!def.item){def.item=makeItem('pellet',def.col,def.w,def.x,def.y,def);G.items.push(def.item);}
   });
-  toast(`第 ${G.day} 天開始！`,3);
+  toast(`第 ${G.day} 天開始！敵人變強了（威脅 ×${G.sc.hp.toFixed(1)}）`,4);
 }
 function update(dt){
   if(G.toastT>0){G.toastT-=dt;if(G.toastT<=0)toastEl.classList.remove('show');}
@@ -526,6 +593,7 @@ function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a
 let bg=null;
 function makeBg(){
   bg=document.createElement('canvas');bg.width=W;bg.height=H;
+  buildGrid(2);
   const c=bg.getContext('2d'),R=mulberry(7);
   c.fillStyle='#8fd16b';c.fillRect(0,0,W,H);
   for(let i=0;i<420;i++){c.fillStyle=R()<.5?'rgba(60,140,50,.13)':'rgba(190,240,120,.13)';c.beginPath();c.arc(R()*W,R()*H,30+R()*70,0,6.28);c.fill();}
@@ -539,6 +607,7 @@ function makeBg(){
     if(R()<.12){c.fillStyle=['#fff','#ffd1e8','#fff59a'][(R()*3)|0];c.beginPath();c.arc(x,y,2.6,0,6.28);c.fill();c.fillStyle='#e8a030';c.beginPath();c.arc(x,y,1,0,6.28);c.fill();}
     else{c.strokeStyle='#5fa84a';c.lineWidth=2;c.beginPath();c.moveTo(x-4,y);c.lineTo(x-6,y-8);c.moveTo(x,y);c.lineTo(x,y-10);c.moveTo(x+4,y);c.lineTo(x+6,y-8);c.stroke();}
   }
+  buildGrid();
   CLIFFS.forEach(r=>{
     c.fillStyle='rgba(0,0,0,.28)';rr(c,r[0]+4,r[1]+8,r[2],r[3],12);c.fill();
     c.fillStyle='#5d4d3a';rr(c,r[0],r[1],r[2],r[3],12);c.fill();
@@ -548,6 +617,7 @@ function makeBg(){
 }
 function drawWater(c,t){
   WATERS.forEach((r,ri)=>{
+    if((r[4]||0)>G.stage)return;
     c.fillStyle='#3f93d6';rr(c,r[0]-4,r[1]-4,r[2]+8,r[3]+8,12);c.fill();
     c.fillStyle='#58b2ee';rr(c,r[0],r[1],r[2],r[3],10);c.fill();
     c.strokeStyle='rgba(255,255,255,.45)';c.lineWidth=2;
@@ -577,7 +647,7 @@ function drawBase(c,t){
 function label(c,s,x,y,sz,col){c.font=`700 ${sz||12}px sans-serif`;c.textAlign='center';c.lineWidth=3;c.strokeStyle='rgba(0,0,0,.65)';c.strokeText(s,x,y);c.fillStyle=col||'#fff';c.fillText(s,x,y);}
 function drawWalls(c){
   for(const w of walls){
-    if(w.hp<=0)continue;
+    if(w.hp<=0||w.stage>G.stage)continue;
     const hurt=1-w.hp/w.max;
     c.fillStyle='rgba(0,0,0,.28)';rr(c,w.x+4,w.y+8,w.w,w.h,12);c.fill();
     c.fillStyle=w.hit>0?'#b8a58c':'#9a8670';rr(c,w.x,w.y,w.w,w.h,12);c.fill();
@@ -656,7 +726,7 @@ function drawEnemy(c,e,t){
   for(let i=-1;i<=1;i++)for(const s of[-1,1]){const w=Math.sin(e.ph+i*1.2)*3;c.beginPath();c.moveTo(x+s*r*.6,y+i*r*.4);c.lineTo(x+s*(r*1.1+w),y+i*r*.6+w);c.stroke();}
   c.fillStyle=e.hit>0?'#fff':d.col;c.beginPath();c.ellipse(x,y,r,r*.9,0,0,6.28);c.fill();
   if(e.type!=='bug'){c.fillStyle='rgba(0,0,0,.2)';for(let i=0;i<5;i++){c.beginPath();c.arc(x+Math.cos(i*1.9)*r*.55,y+Math.sin(i*2.3)*r*.5,r*.14,0,6.28);c.fill();}}
-  if(e.type==='boss'){c.fillStyle='#d6c8f0';for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(x+i*r*.3-4,y-r*.8);c.lineTo(x+i*r*.3,y-r*1.25);c.lineTo(x+i*r*.3+4,y-r*.8);c.fill();}}
+  if(e.type==='boss'||e.type==='king'){c.fillStyle='#d6c8f0';for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(x+i*r*.3-4,y-r*.8);c.lineTo(x+i*r*.3,y-r*1.25);c.lineTo(x+i*r*.3+4,y-r*.8);c.fill();}}
   c.fillStyle='#fff';c.beginPath();c.arc(x-r*.35,y-r*.2,r*.22,0,6.28);c.arc(x+r*.35,y-r*.2,r*.22,0,6.28);c.fill();
   c.fillStyle='#c00';c.beginPath();c.arc(x-r*.35+e.face*r*.06,y-r*.2,r*.1,0,6.28);c.arc(x+r*.35+e.face*r*.06,y-r*.2,r*.1,0,6.28);c.fill();
   c.strokeStyle='#111';c.lineWidth=2;c.beginPath();c.moveTo(x-r*.6,y-r*.55);c.lineTo(x-r*.15,y-r*.38);c.moveTo(x+r*.6,y-r*.55);c.lineTo(x+r*.15,y-r*.38);c.stroke();
@@ -695,7 +765,7 @@ function drawHud(c,t){
   const bw=Math.min(210,vw*.4);
   c.fillStyle='rgba(0,0,0,.45)';rr(c,8,8,bw+16,58,10);c.fill();
   c.fillStyle='#fff';c.font='700 15px sans-serif';c.textAlign='left';
-  c.fillText(`第 ${G.day} 天　★ ${G.delivered}/3`,18,28);
+  c.fillText(`第 ${G.day} 天　★ ${G.delivered}/${TREASURES.length}　威脅 ×${G.sc.hp.toFixed(1)}`,18,28);
   const frac=Math.max(0,G.t/DAY_LEN);
   c.fillStyle='rgba(255,255,255,.25)';rr(c,18,36,bw-4,10,5);c.fill();
   c.fillStyle=G.t<45?'#ff7a5a':'#ffd84a';rr(c,18,36,Math.max(6,(bw-4)*frac),10,5);c.fill();
@@ -711,13 +781,14 @@ function drawHud(c,t){
   /* 小地圖 */
   const mw=Math.min(150,vw*.28),s=mw/W,mh=H*s,mx=vw-mw-10,my=48;
   c.fillStyle='rgba(30,60,30,.7)';c.fillRect(mx,my,mw,mh);
-  c.fillStyle='#6a5a46';CLIFFS.forEach(r=>c.fillRect(mx+r[0]*s,my+r[1]*s,r[2]*s,r[3]*s));
-  c.fillStyle='#4aa3e0';WATERS.forEach(r=>c.fillRect(mx+r[0]*s,my+r[1]*s,r[2]*s,r[3]*s));
-  c.fillStyle='#9a8670';walls.forEach(w=>{if(w.hp>0)c.fillRect(mx+w.x*s,my+w.y*s,w.w*s+1,w.h*s);});
+  c.fillStyle='#6a5a46';CLIFFS.forEach(r=>{if((r[4]||0)<=G.stage)c.fillRect(mx+r[0]*s,my+r[1]*s,r[2]*s,r[3]*s);});
+  c.fillStyle='#4aa3e0';WATERS.forEach(r=>{if((r[4]||0)<=G.stage)c.fillRect(mx+r[0]*s,my+r[1]*s,r[2]*s,r[3]*s);});
+  c.fillStyle='#9a8670';walls.forEach(w=>{if(w.hp>0&&w.stage<=G.stage)c.fillRect(mx+w.x*s,my+w.y*s,w.w*s+1,w.h*s);});
   const dot=(o,col,r)=>{c.fillStyle=col;c.beginPath();c.arc(mx+o.x*s,my+o.y*s,r,0,6.28);c.fill();};
+  c.fillStyle='rgba(0,0,0,.7)';c.fillRect(mx+BW*s,my,mw-BW*s,mh);c.fillRect(mx,my+BH*s,BW*s,mh-BH*s);
   dot(BASE,'#b090ff',4);
-  G.items.forEach(it=>{if(it.kind==='treasure')dot(it,'#ffd84a',3.5);});
-  G.enemies.forEach(e=>{if(e.alive)dot(e,'#ff5a5a',e.type==='bug'?1.6:2.6);});
+  G.items.forEach(it=>{if(it.kind==='treasure'&&it.x<BW&&it.y<BH)dot(it,'#ffd84a',3.5);});
+  G.enemies.forEach(e=>{if(e.alive&&e.x<BW&&e.y<BH)dot(e,'#ff5a5a',e.type==='bug'?1.6:2.6);});
   dot(cap,'#fff',3);
   c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=1;c.strokeRect(mx+cam.x*s,my+cam.y*s,vw/zoom*s,vh/zoom*s);
   if(G.state==='sunset'){
@@ -736,12 +807,14 @@ function render(t){
   ctx.fillStyle='#1d2a1a';ctx.fillRect(0,0,vw,vh);
   const vwW=vw/zoom,vhW=vh/zoom;
   const tx=cap.x-vwW/2,ty=cap.y-vhW/2;
-  const gx=Math.max(0,Math.min(Math.max(0,W-vwW),tx)),gy=Math.max(0,Math.min(Math.max(0,H-vhW),ty));
+  const gx=Math.max(0,Math.min(Math.max(0,BW-vwW),tx)),gy=Math.max(0,Math.min(Math.max(0,BH-vhW),ty));
   cam.x+=(gx-cam.x)*.15;cam.y+=(gy-cam.y)*.15;
   ctx.setTransform(dpr*zoom,0,0,dpr*zoom,-cam.x*zoom*dpr,-cam.y*zoom*dpr);
   if(!bg)makeBg();
   const sw=Math.min(W,vwW),sh=Math.min(H,vhW);
   ctx.drawImage(bg,cam.x,cam.y,sw,sh,cam.x,cam.y,sw,sh);
+  ctx.fillStyle='#0d140c';ctx.fillRect(BW,0,W-BW,H);ctx.fillRect(0,BH,BW,H-BH);
+  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=3;ctx.setLineDash([12,10]);ctx.beginPath();if(BW<W){ctx.moveTo(BW,0);ctx.lineTo(BW,BH);}if(BH<H){ctx.moveTo(0,BH);ctx.lineTo(BW,BH);}ctx.stroke();ctx.setLineDash([]);
   drawWater(ctx,t);drawBase(ctx,t);drawWalls(ctx);
   G.items.forEach(it=>drawItem(ctx,it,t));
   const ents=[];
@@ -757,7 +830,7 @@ function render(t){
 }
 function showEnd(){
   const ov=document.getElementById('ov'),p=document.getElementById('panel');
-  p.innerHTML=`<h1>🎉 任務完成！</h1><p>3 塊星光碎片全部回收，飛船修好了！</p><p>用了 <b>${G.day}</b> 天，現有芽兵 <b>${G.minis.length}</b> 隻，一路損失 ${G.lost} 隻。</p><button id="again">再玩一次</button>`;
+  p.innerHTML=`<h1>🎉 任務完成！</h1><p>${TREASURES.length} 塊星光碎片全部回收，飛船修好了！</p><p>用了 <b>${G.day}</b> 天，現有芽兵 <b>${G.minis.length}</b> 隻，一路損失 ${G.lost} 隻。</p><button id="again">再玩一次</button>`;
   ov.classList.remove('hide');
   document.getElementById('again').onclick=()=>{ov.classList.add('hide');initWorld();};
 }
@@ -769,7 +842,7 @@ function loop(now){
   render(now/1000);
   requestAnimationFrame(loop);
 }
-walls=WALL_DEFS.map(d=>({x:d[0],y:d[1],w:d[2],h:d[3],hp:d[4],max:d[4],hit:0}));buildGrid();
+walls=WALL_DEFS.map(d=>({x:d[0],y:d[1],w:d[2],h:d[3],hp:d[4],max:d[4],stage:d[5]||0,hit:0}));buildGrid();
 requestAnimationFrame(loop);
 window.__G=G;window.__cap=cap;
 })();
