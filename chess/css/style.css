@@ -182,3 +182,5 @@ header > span:last-child { flex:none; }
 #reviveOv { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:15; padding:14px; overflow:auto; }
 #reviveOv[hidden] { display:none; }
 #reviveBox.flip { transform:rotate(180deg); }
+.pickT { text-align:center; font-weight:700; color:#ffd166; font-size:14px; min-height:1.3em; margin-bottom:4px; }
+.pickT.warn { color:#ff6b5b; animation:soonPulse .6s ease-in-out infinite alternate; }
