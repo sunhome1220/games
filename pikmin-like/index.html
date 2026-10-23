@@ -15,6 +15,9 @@
   #wh { position:fixed; right:16px; bottom:86px; width:74px; height:74px; border-radius:50%; font-size:30px; padding:0; }
   #wh:active, #wh.on { background:rgba(255,255,255,.35); }
   #back { position:fixed; right:10px; top:10px; padding:6px 10px; font-size:13px; text-decoration:none; min-width:0; z-index:5; }
+  #ver { position:fixed; left:10px; top:72px; font-size:11px; color:rgba(255,255,255,.6); pointer-events:none; z-index:4; }
+  #newver { position:fixed; left:50%; top:100px; transform:translateX(-50%); z-index:20; background:#ffe9a0; color:#2b3a1e; border:0; border-radius:20px; padding:8px 16px; font:700 14px/1 inherit; box-shadow:0 2px 8px rgba(0,0,0,.4); }
+  #newver[hidden] { display:none; }
   #toast { position:fixed; left:50%; top:64px; transform:translateX(-50%); max-width:90vw; text-align:center; background:rgba(0,0,0,.6); border-radius:10px; padding:6px 14px; pointer-events:none; opacity:0; transition:opacity .25s; }
   #toast.show { opacity:1; }
   #ov { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(10,25,10,.82); z-index:10; padding:16px; touch-action:auto; overflow:auto; }
@@ -30,6 +33,8 @@
 <canvas id="c"></canvas>
 <a id="back" href="../index.html">← 選單</a>
 <div id="toast"></div>
+<div id="ver"></div>
+<button id="newver" hidden>🔔 有新版本，點此重新整理</button>
 <div id="cols">
   <button data-c="r"><i style="background:#e5483f"></i><b>0</b></button>
   <button data-c="b"><i style="background:#3f86e8"></i><b>0</b></button>
@@ -246,6 +251,29 @@ function fx_pop(x,y,c){for(let i=0;i<7;i++)G.fx.push({k:'spark',x,y,vx:rnd(-50,5
 function fx_ghost(x,y,c){G.fx.push({k:'ghost',x,y,t:0,life:1.1,c});}
 function fx_splash(x,y){G.fx.push({k:'ring',x,y,t:0,life:.6,c:'#fff'});}
 function fx_text(x,y,s,c){G.fx.push({k:'text',x,y,t:0,life:1.2,s,c:c||'#fff'});}
+
+/* ---------- 版本與更新提示 ---------- */
+// 每次更新遊戲都要改 VERSION（可執行 python3 pikmin-like/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
+const VERSION='2026-10-23.01';
+document.getElementById('ver').textContent='版本 '+VERSION;
+const newverBtn=document.getElementById('newver');
+function reloadFresh(){
+  if(G.state==='play'&&G.day>1&&!confirm('重新整理會重新開始遊戲（目前沒有存檔），確定嗎？'))return;
+  location.replace(location.pathname+'?v='+Date.now());
+}
+async function checkUpdate(){
+  try{
+    const txt=await (await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'})).text();
+    const v=(txt.match(/const VERSION='([^']+)'/)||[])[1];
+    newverBtn.hidden=!v||v===VERSION;
+  }catch(e){/* 離線時略過 */}
+}
+newverBtn.onclick=reloadFresh;
+if(location.protocol.startsWith('http')){
+  checkUpdate();setInterval(checkUpdate,5*60*1000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate();});
+  addEventListener('focus',checkUpdate);addEventListener('pageshow',checkUpdate);
+}
 
 /* ---------- 輸入 ---------- */
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
