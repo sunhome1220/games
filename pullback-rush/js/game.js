@@ -455,24 +455,21 @@
     ctx.strokeStyle = '#ffd24a'; ctx.lineWidth = 3; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.arc(gx, gy, 24 * pulse, 0, 7); ctx.stroke(); ctx.setLineDash([]);
     for (const [r2, col2] of [[16, '#e8312a'], [11, '#fff'], [6, '#e8312a'], [2.5, '#ffd24a']]) { ctx.fillStyle = col2; ctx.beginPath(); ctx.arc(gx, gy, r2, 0, 7); ctx.fill(); }
     ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 3;
-    for (let i = 0; i < c.crack; i++) {
+    for (let i = 0; i < Math.min(c.crack, 4); i++) {
       const cx = R.x + 36 + i * 34, cy = R.y + 14;
       ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 8, cy + 18); ctx.lineTo(cx - 4, cy + 34); ctx.stroke();
     }
     ctx.restore();
     const hy = side === 'blue' ? 46 : H - 46;
     rot(face && side === 'blue', 78, hy, () => {
+      // 血條 + 數字（血量高，不用愛心）
+      const ratio = c.hp / C.castle.hp, bx = 16, bw = 100;
       ctx.fillStyle = 'rgba(0,0,0,.4)'; rr(8, hy - 24, 144, 48, 12); ctx.fill();
-      for (let i = 0; i < C.castle.hp; i++) drawHeart(26 + i * 25, hy, 10, i < c.hp ? '#ff4a6a' : 'rgba(255,255,255,.25)');
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'left'; ctx.fillText(c.hp, 128, hy + 8);
+      ctx.fillStyle = 'rgba(255,255,255,.25)'; rr(bx, hy - 9, bw, 18, 9); ctx.fill();
+      if (c.hp > 0) { ctx.fillStyle = ratio > .5 ? '#3fe05a' : ratio > .25 ? '#ffd24a' : '#ff4a3a'; rr(bx, hy - 9, Math.max(14, bw * ratio), 18, 9); ctx.fill(); }
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'left'; ctx.fillText(c.hp, 122, hy + 7);
     });
   }
-  function drawHeart(x, y, s, color) {
-    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x, y + s * .8);
-    ctx.bezierCurveTo(x - s * 1.3, y - s * .2, x - s * .5, y - s * 1.1, x, y - s * .3);
-    ctx.bezierCurveTo(x + s * .5, y - s * 1.1, x + s * 1.3, y - s * .2, x, y + s * .8); ctx.fill();
-  }
-
   function drawTank(t) {
     const col = COLORS[t.side], L = C.tank.hullLen, Wd = C.tank.hullWid;
     const speed = Math.hypot(t.vx, t.vy);
