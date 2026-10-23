@@ -51,10 +51,13 @@
   </div>
   <div class="row two"><button id="mRestart">↺ 重新開始</button><button id="mInstall">📲 加到主畫面</button><button id="mHelp">📖 說明</button></div>
   <details class="sec" id="secNet"><summary>🌐 兩台裝置連線</summary>
-    <div class="row"><input id="nickIn" maxlength="8" placeholder="暱稱（最多 8 字，會記住）"></div>
+    <div class="row nickRow"><span>暱稱</span><input id="nickIn" maxlength="8" placeholder="最多 8 字，會記住"></div>
     <button id="mHost">建立房間（我執紅先手）</button>
+    <label class="pubRow"><input type="checkbox" id="pubChk" checked> 公開到大廳（讓別人在清單看到這個房間）</label>
     <div class="row"><input id="roomIn" inputmode="numeric" maxlength="4" placeholder="輸入 4 位數房號"><button id="mJoin">加入（執黑）</button></div>
     <div id="netStatus"></div>
+    <div class="lobbyHead"><span id="lobbyStat"></span><button id="lobbyRefresh" title="重新整理清單">↻</button></div>
+    <div id="roomList"></div>
   </details>
   <details class="sec" id="secCards"><summary>🃏 強化卡牌・每回合限時</summary>
     <button id="mClock">⏲ 每回合限時：不限時（點一下切換）</button>
@@ -73,30 +76,31 @@
     <div id="ver"></div>
   </details>
 </div></div>
-<script src="js/config.js?v=2026-10-20.13"></script>
-<script src="js/audio.js?v=2026-10-20.13"></script>
-<script src="js/particles.js?v=2026-10-20.13"></script>
-<script src="js/physics.js?v=2026-10-20.13"></script>
-<script src="js/movement.js?v=2026-10-20.13"></script>
-<script src="js/combat.js?v=2026-10-20.13"></script>
-<script src="js/turn.js?v=2026-10-20.13"></script>
-<script src="js/input.js?v=2026-10-20.13"></script>
-<script src="js/render.js?v=2026-10-20.13"></script>
-<script src="js/render3d.js?v=2026-10-20.13"></script>
-<script src="js/ultimate.js?v=2026-10-20.13"></script>
-<script src="js/view3d.js?v=2026-10-20.13"></script>
-<script src="js/ai.js?v=2026-10-20.13"></script>
-<script src="js/surrender.js?v=2026-10-20.13"></script>
-<script src="js/cards.js?v=2026-10-20.13"></script>
-<script src="js/clock.js?v=2026-10-20.13"></script>
-<script src="js/changelog.js?v=2026-10-20.13"></script>
-<script src="js/version.js?v=2026-10-20.13"></script>
-<script src="js/update.js?v=2026-10-20.13"></script>
-<script src="js/pwa.js?v=2026-10-20.13"></script>
-<script src="js/tip.js?v=2026-10-20.13"></script>
-<script src="js/network.js?v=2026-10-20.13"></script>
-<script src="js/netplus.js?v=2026-10-20.13"></script>
-<script src="js/social.js?v=2026-10-20.13"></script>
-<script src="js/main.js?v=2026-10-20.13"></script>
+<script src="js/config.js?v=2026-10-20.14"></script>
+<script src="js/audio.js?v=2026-10-20.14"></script>
+<script src="js/particles.js?v=2026-10-20.14"></script>
+<script src="js/physics.js?v=2026-10-20.14"></script>
+<script src="js/movement.js?v=2026-10-20.14"></script>
+<script src="js/combat.js?v=2026-10-20.14"></script>
+<script src="js/turn.js?v=2026-10-20.14"></script>
+<script src="js/input.js?v=2026-10-20.14"></script>
+<script src="js/render.js?v=2026-10-20.14"></script>
+<script src="js/render3d.js?v=2026-10-20.14"></script>
+<script src="js/ultimate.js?v=2026-10-20.14"></script>
+<script src="js/view3d.js?v=2026-10-20.14"></script>
+<script src="js/ai.js?v=2026-10-20.14"></script>
+<script src="js/surrender.js?v=2026-10-20.14"></script>
+<script src="js/cards.js?v=2026-10-20.14"></script>
+<script src="js/clock.js?v=2026-10-20.14"></script>
+<script src="js/changelog.js?v=2026-10-20.14"></script>
+<script src="js/version.js?v=2026-10-20.14"></script>
+<script src="js/update.js?v=2026-10-20.14"></script>
+<script src="js/pwa.js?v=2026-10-20.14"></script>
+<script src="js/tip.js?v=2026-10-20.14"></script>
+<script src="js/network.js?v=2026-10-20.14"></script>
+<script src="js/netplus.js?v=2026-10-20.14"></script>
+<script src="js/lobby.js?v=2026-10-20.14"></script>
+<script src="js/social.js?v=2026-10-20.14"></script>
+<script src="js/main.js?v=2026-10-20.14"></script>
 </body>
 </html>

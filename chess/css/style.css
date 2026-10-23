@@ -184,3 +184,13 @@ header > span:last-child { flex:none; }
 #reviveBox.flip { transform:rotate(180deg); }
 .pickT { text-align:center; font-weight:700; color:#ffd166; font-size:14px; min-height:1.3em; margin-bottom:4px; }
 .pickT.warn { color:#ff6b5b; animation:soonPulse .6s ease-in-out infinite alternate; }
+#lobby .pubRow { display:block; font-size:13px; color:#cfe0d4; margin:2px 0 6px; }
+#lobby .pubRow input { width:auto; margin-right:6px; }
+#lobby .lobbyHead { display:flex; align-items:center; justify-content:space-between; margin-top:10px; font-size:14px; color:#ffd166; }
+#lobby .lobbyHead button { width:auto; margin:0; padding:2px 10px; }
+#lobby .roomRow { display:flex; align-items:center; gap:8px; background:#0003; border:1px solid #4d6355; border-radius:8px; padding:6px 8px; margin:6px 0; }
+#lobby .roomRow > div { flex:1; min-width:0; }
+#lobby .roomRow b { display:block; font-size:15px; color:#f3e2bd; }
+#lobby .roomRow small { color:#a9bcaf; font-size:12px; line-height:1.4; }
+#lobby .roomRow button { width:auto; margin:0; flex:none; background:#e8c88a; text-align:center; }
+#lobby .nickRow { align-items:center; gap:8px; } #lobby .nickRow span { flex:none; font-size:14px; color:#cfe0d4; }
