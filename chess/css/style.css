@@ -179,3 +179,6 @@ i.tier.t2 { background:#2f6fb5; } i.tier.t3 { background:#8e3fb8; } i.tier.t4 { 
 @media (prefers-reduced-motion: reduce) { .emoBubble { animation:none; } }
 header #turn { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* 暱稱很長時標題截斷，不把右邊的按鈕擠出畫面 */
 header > span:last-child { flex:none; }
+#reviveOv { position:fixed; inset:0; background:#000c; display:flex; align-items:center; justify-content:center; z-index:15; padding:14px; overflow:auto; }
+#reviveOv[hidden] { display:none; }
+#reviveBox.flip { transform:rotate(180deg); }
