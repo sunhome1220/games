@@ -10,7 +10,7 @@
     blue: { body: '#3a8fe0', dark: '#2260a0', light: '#9bd0ff', name: '藍隊' },
   };
   const PHASE = { move: '移動', aim: '瞄準' };
-  const HINT = { move: '點戰車・拉後放手衝', aim: '拉後放手開砲' };
+  const HINT = { move: '點戰車・拉後放手衝', aim: '拉後放手鎖定', meter: '綠區按下！' };
   const PU_COLOR = { range: '#3a8fe0', power: '#e8493f', repair: '#3fbf5a' };
   const PU_NAME = { range: '射程 +', power: '威力 +', repair: '修復 +' };
 
@@ -30,13 +30,22 @@
     const x = (W - C.castle.w) / 2;
     return { x, y: s === 'blue' ? 0 : H - C.castle.h, w: C.castle.w, h: C.castle.h };
   };
+  // 主堡被擊中的部位：tower 裝甲（四角塔樓）、gate 弱點（正面城門）、wall 一般城牆
+  function castleZone(side, x, y) {
+    const R = castleRect(side), tr = C.castle.tower.r;
+    for (const [cx, cy] of [[R.x, R.y], [R.x + R.w, R.y], [R.x, R.y + R.h], [R.x + R.w, R.y + R.h]])
+      if (Math.hypot(x - cx, y - cy) < tr) return 'tower';
+    const front = side === 'blue' ? R.y + R.h : R.y, gt = C.castle.gate;
+    if (Math.abs(x - (R.x + R.w / 2)) < gt.halfW && Math.abs(y - front) < gt.depth) return 'gate';
+    return 'wall';
+  }
   function nearestOnRect(r, x, y) { return { x: clamp(x, r.x, r.x + r.w), y: clamp(y, r.y, r.y + r.h) }; }
   const alive = s => g.tanks.filter(t => t.side === s && t.alive);
   const dmgOf = t => C.attack.damage + t.powerBonus;
   const rangeOf = t => C.attack.range + t.rangeBonus;
 
   function newGame() {
-    g = { state: 'move', turn: 'red', round: 0, t: 0, over: null, overWhy: '', tanks: [], castles: {}, shells: [], pickups: [],
+    g = { meter: null, state: 'move', turn: 'red', round: 0, t: 0, over: null, overWhy: '', tanks: [], castles: {}, shells: [], pickups: [],
       parts: [], texts: [], drag: null, banner: null, resolveT: 0, shot: null, sel: null };
     for (const s of SIDES) {
       const y = s === 'red' ? H - C.tank.startOffset : C.tank.startOffset;
@@ -90,6 +99,10 @@
     return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H };
   }
   canvas.addEventListener('pointerdown', e => {
+    if (g && g.state === 'meter') { // 罰球條：點螢幕任何地方定住指針
+      if (g.t - g.meter.tStart > C.accuracy.startDelay) lockMeter();
+      e.preventDefault(); return;
+    }
     if (!g || (g.state !== 'move' && g.state !== 'aim') || g.drag) return; // 同時只接受一個指標
     const p = toWorld(e);
     // 移動階段可選任一台己方戰車；瞄準階段只能操作剛移動過的那台
@@ -120,6 +133,9 @@
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
   canvas.addEventListener('contextmenu', e => e.preventDefault());
+  window.addEventListener('keydown', e => {
+    if (g && g.state === 'meter' && (e.code === 'Space' || e.code === 'Enter') && g.t - g.meter.tStart > C.accuracy.startDelay) { lockMeter(); e.preventDefault(); }
+  });
 
   function setPull(dx, dy) {
     const t = g.sel, d = g.drag;
@@ -156,7 +172,7 @@
       launch(t, (t.pull - C.pull.min) / (C.pull.max - C.pull.min));
     } else {
       if (!(d.len >= C.attack.aimMin)) { cancelDrag(); return; }
-      g.drag = null; fire(t);
+      g.drag = null; startMeter(t);
     }
   }
   function launch(t, p) {
@@ -166,6 +182,38 @@
     g.drag = null; g.state = 'dashing';
     Sfx.launch(p);
     burst(t.x - Math.cos(t.angle) * 40, t.y - Math.sin(t.angle) * 40, 10, '#d9c9a8', 90);
+  }
+  // 沿砲管方向找第一個目標的距離（敵方戰車或主堡），找不到就用到主堡的距離
+  function aimDistance(t) {
+    const dx = Math.cos(t.turret), dy = Math.sin(t.turret), R = castleRect(enemy(t.side));
+    let x = t.x + dx * C.tank.barrelLen, y = t.y + dy * C.tank.barrelLen;
+    for (let d = 0; d < rangeOf(t); d += 4) {
+      x += dx * 4; y += dy * 4;
+      if (x >= R.x && x <= R.x + R.w && y >= R.y && y <= R.y + R.h) return d + C.tank.barrelLen;
+      if (g.tanks.some(o => o.alive && o.side !== t.side && Math.hypot(x - o.x, y - o.y) < C.tank.r)) return d + C.tank.barrelLen;
+    }
+    return castleDist(t);
+  }
+  function startMeter(t) {
+    const A = C.accuracy, dist = aimDistance(t), k = clamp((dist - A.near) / (A.far - A.near), 0, 1);
+    const speed = lerp(A.speedNear, A.speedFar, k);
+    g.meter = { tank: t, dist, k, speed, zone: lerp(A.zoneNear, A.zoneFar, k), maxErr: lerp(A.errNear, A.errFar, k) * Math.PI / 180,
+      tStart: g.t, t0: g.t - Math.random() * 2 / speed, force: null }; // 隨機起點，沒辦法背時機
+    g.state = 'meter'; Sfx.ratchet(0.6);
+  }
+  function meterValue() { // 0..1 來回擺動
+    const m = g.meter; if (m.force != null) return m.force;
+    const p = ((g.t - m.t0) * m.speed) % 2; return p < 1 ? p : 2 - p;
+  }
+  function lockMeter() {
+    const m = g.meter, t = m.tank, off = meterValue() * 2 - 1;
+    let err = 0;
+    if (Math.abs(off) > m.zone) err = Math.sign(off) * (Math.abs(off) - m.zone) / (1 - m.zone) * m.maxErr;
+    t.turret += err; g.meter = null;
+    const deg = Math.abs(err) * 180 / Math.PI;
+    if (deg < 0.01) floatText(t.x, t.y - 70, '完美！', '#7dff8a', 28);
+    else floatText(t.x, t.y - 70, `${err > 0 ? '偏右' : '偏左'} ${deg.toFixed(0)}°`, '#fff', 22);
+    fire(t);
   }
   function skipMove() {
     if (!g || g.state !== 'move') return;
@@ -182,6 +230,7 @@
       if (!(g.state === 'charging' && g.sel === t)) t.squash = Math.max(0, t.squash - dt * 5);
     }
     if (g.state === 'dashing') updateDash(dt);
+    if (g.state === 'meter' && g.t - g.meter.tStart > C.accuracy.timeout) lockMeter();
     updateShells(dt);
     if (g.state === 'resolving') { g.resolveT -= dt; if (g.resolveT <= 0) nextTurn(); }
     if (g.state === 'over') { g.overT -= dt; if (g.overT <= 0 && !g.resultShown) showResult(); }
@@ -274,7 +323,7 @@
   }
   function shellHit(s) {
     const R = castleRect(enemy(s.side));
-    if (s.x >= R.x && s.x <= R.x + R.w && s.y >= R.y && s.y <= R.y + R.h) return { why: 'castle' };
+    if (s.x >= R.x && s.x <= R.x + R.w && s.y >= R.y && s.y <= R.y + R.h) return { why: 'castle', zone: castleZone(enemy(s.side), s.x, s.y) };
     for (const t of g.tanks) {
       if (!t.alive || t.side === s.side) continue; // 砲彈穿過己方戰車
       if (Math.hypot(s.x - t.x, s.y - t.y) < C.tank.r) return { why: 'tank', tank: t };
@@ -285,7 +334,7 @@
   function endShell(s, h) {
     s.done = true;
     if (g.shot.hit) { /* 一發砲彈只會結算一次 */ }
-    else if (h.why === 'castle') { g.shot.hit = true; hitCastle(enemy(s.side), s); }
+    else if (h.why === 'castle') { g.shot.hit = true; hitCastle(enemy(s.side), s, h.zone); }
     else if (h.why === 'tank') { g.shot.hit = true; hitTank(h.tank, s); }
     else {
       Sfx.miss(); burst(s.x, s.y, 10, '#9a8f7a', 120);
@@ -293,14 +342,24 @@
     }
     if (g.state === 'firing' && !g.over) { g.state = 'resolving'; g.resolveT = C.attack.resolveDelay; }
   }
-  function hitCastle(side, s) {
+  function hitCastle(side, s, zone) {
     const c = g.castles[side];
     if (c.hp <= 0) return;
-    c.hp = Math.max(0, c.hp - s.dmg);
+    const dy = side === 'blue' ? 44 : -44;
+    let dmg = s.dmg;
+    if (zone === 'gate') dmg = s.dmg * C.castle.gate.mult;
+    else if (zone === 'tower') dmg = Math.max(0, s.dmg - C.castle.tower.reduce);
+    if (dmg <= 0) { // 打在裝甲塔樓上：被彈開
+      Sfx.bump(); Sfx.miss(); burst(s.x, s.y, 16, '#cfd6de', 220);
+      floatText(s.x, s.y + dy, '裝甲彈開！', '#cfd6de', 24);
+      return;
+    }
+    c.hp = Math.max(0, c.hp - dmg);
     c.shake = C.castle.hitShake; c.flash = 0.3; c.crack++;
     Sfx.hit();
     burst(s.x, s.y, 26, '#ff9a2e', 260); burst(s.x, s.y, 14, '#fff2a8', 200);
-    floatText(s.x, s.y + (side === 'blue' ? 40 : -40), '-' + s.dmg, '#fff', 36);
+    if (zone === 'gate') floatText(s.x, s.y + dy + (side === 'blue' ? 28 : -28), '弱點命中！', '#ffd24a', 24);
+    floatText(s.x, s.y + dy, '-' + dmg, '#fff', 36);
     if (c.hp <= 0) {
       const R = castleRect(side); burst(R.x + R.w / 2, R.y + R.h / 2, 60, '#ff7a2e', 360);
       endGame(enemy(side), `${COLORS[side].name}的主堡被攻陷了`);
@@ -371,7 +430,7 @@
     ctx.restore();
   }
   function drawCastle(side) {
-    const c = g.castles[side], col = COLORS[side], R = castleRect(side);
+    const c = g.castles[side], col = COLORS[side], R = castleRect(side), tr = C.castle.tower.r, gt = C.castle.gate;
     let ox = 0, oy = 0;
     if (c.shake > 0) { const k = c.shake / C.castle.hitShake; ox = Math.sin(g.t * 70) * 8 * k; oy = Math.cos(g.t * 90) * 5 * k; }
     ctx.save(); ctx.translate(ox, oy);
@@ -380,26 +439,32 @@
     ctx.fillStyle = fill; rr(R.x, R.y, R.w, R.h, 10); ctx.fill();
     ctx.lineWidth = 5; ctx.strokeStyle = col.dark; ctx.stroke();
     ctx.strokeStyle = col.dark; ctx.globalAlpha = .35; ctx.lineWidth = 2;
-    for (let i = 1; i < 6; i++) { ctx.beginPath(); ctx.moveTo(R.x, R.y + i * R.h / 6); ctx.lineTo(R.x + R.w, R.y + i * R.h / 6); ctx.stroke(); }
+    for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(R.x, R.y + i * R.h / 4); ctx.lineTo(R.x + R.w, R.y + i * R.h / 4); ctx.stroke(); }
     ctx.globalAlpha = 1;
-    ctx.fillStyle = col.light; rr(R.x + R.w / 2 - 40, R.y + 14, 80, R.h - 28, 8); ctx.fill();
-    ctx.strokeStyle = col.dark; ctx.lineWidth = 4; ctx.stroke();
-    ctx.fillStyle = '#5a3a1e'; rr(R.x + R.w / 2 - 14, side === 'blue' ? R.y + R.h - 38 : R.y + 14, 28, 24, 6); ctx.fill();
+    // 四角裝甲塔樓：鋼灰色 + 鉚釘（打到會被彈開）
     for (const [tx, ty] of [[R.x, R.y], [R.x + R.w, R.y], [R.x, R.y + R.h], [R.x + R.w, R.y + R.h]]) {
-      ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(tx, ty, 24, 0, 7); ctx.fill(); ctx.strokeStyle = col.dark; ctx.stroke();
-      ctx.fillStyle = col.dark; ctx.beginPath(); ctx.arc(tx, ty, 10, 0, 7); ctx.fill();
+      ctx.fillStyle = '#8d97a3'; ctx.beginPath(); ctx.arc(tx, ty, tr, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#4b535d'; ctx.lineWidth = 5; ctx.stroke();
+      ctx.fillStyle = '#c5ccd4'; ctx.beginPath(); ctx.arc(tx, ty, tr - 9, 0, 7); ctx.fill();
+      ctx.fillStyle = '#4b535d';
+      for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; ctx.beginPath(); ctx.arc(tx + Math.cos(a) * (tr - 5), ty + Math.sin(a) * (tr - 5), 2.5, 0, 7); ctx.fill(); }
     }
+    // 正面城門＝弱點：閃爍的紅黃靶心
+    const gx = R.x + R.w / 2, gy = side === 'blue' ? R.y + R.h - 16 : R.y + 16, pulse = 1 + Math.sin(g.t * 6) * 0.12;
+    ctx.fillStyle = '#5a3a1e'; rr(gx - gt.halfW, side === 'blue' ? R.y + R.h - 34 : R.y, gt.halfW * 2, 34, 8); ctx.fill();
+    ctx.strokeStyle = '#ffd24a'; ctx.lineWidth = 3; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.arc(gx, gy, 24 * pulse, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    for (const [r2, col2] of [[16, '#e8312a'], [11, '#fff'], [6, '#e8312a'], [2.5, '#ffd24a']]) { ctx.fillStyle = col2; ctx.beginPath(); ctx.arc(gx, gy, r2, 0, 7); ctx.fill(); }
     ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 3;
     for (let i = 0; i < c.crack; i++) {
-      const cx = R.x + 40 + i * 70, cy = R.y + 24;
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 10, cy + 20); ctx.lineTo(cx - 4, cy + 40); ctx.stroke();
+      const cx = R.x + 36 + i * 34, cy = R.y + 14;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 8, cy + 18); ctx.lineTo(cx - 4, cy + 34); ctx.stroke();
     }
     ctx.restore();
     const hy = side === 'blue' ? 46 : H - 46;
     rot(face && side === 'blue', 78, hy, () => {
-      ctx.fillStyle = 'rgba(0,0,0,.4)'; rr(8, hy - 24, 140, 48, 12); ctx.fill();
-      for (let i = 0; i < C.castle.hp; i++) drawHeart(30 + i * 31, hy, 12, i < c.hp ? '#ff4a6a' : 'rgba(255,255,255,.25)');
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'left'; ctx.fillText(c.hp, 122, hy + 8);
+      ctx.fillStyle = 'rgba(0,0,0,.4)'; rr(8, hy - 24, 144, 48, 12); ctx.fill();
+      for (let i = 0; i < C.castle.hp; i++) drawHeart(26 + i * 25, hy, 10, i < c.hp ? '#ff4a6a' : 'rgba(255,255,255,.25)');
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'left'; ctx.fillText(c.hp, 128, hy + 8);
     });
   }
   function drawHeart(x, y, s, color) {
@@ -456,7 +521,7 @@
   function drawSelection() {
     const t = g.sel;
     if (!t || !t.alive || g.over || g.turn !== t.side) return;
-    const side = t.side, phaseOn = ['move', 'charging', 'aim', 'aiming'].includes(g.state);
+    const side = t.side, phaseOn = ['move', 'charging', 'aim', 'aiming', 'meter'].includes(g.state);
     if (!phaseOn) return;
     ctx.strokeStyle = inRange(t) ? 'rgba(47,191,85,.8)' : 'rgba(255,255,255,.55)'; ctx.lineWidth = 3; ctx.setLineDash([12, 10]);
     ctx.beginPath(); ctx.arc(t.x, t.y, rangeOf(t), 0, 7); ctx.stroke(); ctx.setLineDash([]);
@@ -471,12 +536,12 @@
       ctx.lineCap = 'butt';
       powerBar(t, p);
     }
-    if (g.state === 'aiming') {
+    if (g.state === 'aiming' || g.state === 'meter') {
       const dx = Math.cos(t.turret), dy = Math.sin(t.turret);
       ctx.strokeStyle = 'rgba(255,60,40,.9)'; ctx.lineWidth = 4; ctx.setLineDash([4, 12]); ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(t.x + dx * C.tank.barrelLen, t.y + dy * C.tank.barrelLen); ctx.lineTo(t.x + dx * rangeOf(t), t.y + dy * rangeOf(t)); ctx.stroke();
       ctx.setLineDash([]); ctx.lineCap = 'butt';
-      if (!(g.drag.len >= C.attack.aimMin)) rot(face && side === 'blue', t.x, t.y - 60, () => badge(t.x, t.y - 60, '再拉一點', '#777'));
+      if (g.state === 'aiming' && !(g.drag.len >= C.attack.aimMin)) rot(face && side === 'blue', t.x, t.y - 60, () => badge(t.x, t.y - 60, '再拉一點', '#777'));
     }
   }
   function powerBar(t, p) {
@@ -528,13 +593,13 @@
       ctx.fillStyle = col.body; rr(x - 68, cy - 24, 136, 30, 15); ctx.fill();
       ctx.fillStyle = '#fff'; ctx.font = 'bold 17px sans-serif'; ctx.fillText(`${col.name}・${PHASE[phase]}`, x, cy - 3);
       ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.font = '13px sans-serif';
-      if (g.state === 'move' || g.state === 'aim') ctx.fillText(HINT[g.state], x, cy + 20);
+      if (HINT[g.state]) ctx.fillText(HINT[g.state], x, cy + 20);
     });
-    if (g.sel && ['move', 'charging', 'aim', 'aiming'].includes(g.state) && inRange(g.sel)) {
+    if (g.sel && ['move', 'charging', 'aim', 'aiming', 'meter'].includes(g.state) && inRange(g.sel)) {
       const R = castleRect(enemy(g.turn));
       ctx.strokeStyle = `rgba(47,191,85,${0.6 + 0.4 * Math.sin(g.t * 8)})`; ctx.lineWidth = 6;
       rr(R.x - 4, R.y - 4, R.w + 8, R.h + 8, 12); ctx.stroke();
-      rot(flip, W / 2, R.y + R.h / 2, () => badge(W / 2, R.y + R.h / 2 + 5, '✔ 進入射程！', '#2fbf55'));
+      { const by = g.turn === 'red' ? R.y + R.h + 34 : R.y - 22; rot(flip, W / 2, by, () => badge(W / 2, by, '✔ 進入射程！', '#2fbf55')); }
     }
     if (g.banner) {
       ctx.globalAlpha = clamp(g.banner.t * 1.5, 0, 1);
@@ -546,6 +611,26 @@
       ctx.globalAlpha = 1;
     }
   }
+  // 罰球式瞄準條：綠區＝完美，黃區＝小偏差，紅區＝大偏差
+  function drawMeter() {
+    const m = g.meter, side = m.tank.side, cy = side === 'red' ? H - 250 : 250, bw = 300, bx = W / 2 - bw / 2, by = cy + 4;
+    const diff = m.k < 0.34 ? '簡單' : m.k < 0.67 ? '普通' : '困難';
+    rot(face && side === 'blue', W / 2, cy, () => {
+      ctx.fillStyle = 'rgba(20,14,40,.82)'; rr(W / 2 - 185, cy - 52, 370, 116, 18); ctx.fill();
+      ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.font = 'bold 20px sans-serif'; ctx.fillText('在綠區按下！', W / 2, cy - 26);
+      ctx.fillStyle = '#cfe9ff'; ctx.font = '14px sans-serif'; ctx.fillText(`目標距離 ${Math.round(m.dist)}・難度：${diff}`, W / 2, cy - 6);
+      // 條：紅(外) → 黃 → 綠(中)
+      ctx.fillStyle = '#e8493f'; rr(bx, by, bw, 24, 8); ctx.fill();
+      const yw = (m.zone + (1 - m.zone) * 0.45) * bw / 2, gw = m.zone * bw / 2;
+      ctx.fillStyle = '#ffd24a'; ctx.fillRect(W / 2 - yw, by, yw * 2, 24);
+      ctx.fillStyle = '#3fe05a'; ctx.fillRect(W / 2 - gw, by, gw * 2, 24);
+      ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 2; rr(bx, by, bw, 24, 8); ctx.stroke();
+      const mx = bx + meterValue() * bw;
+      ctx.fillStyle = '#fff'; ctx.fillRect(mx - 3, by - 6, 6, 36);
+      ctx.beginPath(); ctx.moveTo(mx, by + 32); ctx.lineTo(mx - 8, by + 44); ctx.lineTo(mx + 8, by + 44); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = '12px sans-serif'; ctx.fillText('點螢幕任何地方（空白鍵）定住指針', W / 2, cy + 56);
+    });
+  }
   function render() {
     ctx.clearRect(0, 0, W, H);
     drawBackground();
@@ -556,6 +641,7 @@
     drawSelection();
     drawEffects();
     if (g.state !== 'idle') drawHud();
+    if (g.state === 'meter') drawMeter();
   }
 
   // ---------- 畫面流程 ----------
