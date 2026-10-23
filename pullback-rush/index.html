@@ -9,22 +9,22 @@
 </head>
 <body>
 <div id="wrap">
-  <canvas id="stage" width="1000" height="560"></canvas>
-
-  <div id="hud-top" class="hidden">
+  <canvas id="stage" width="560" height="1000"></canvas>
+  <div id="bar">
     <button id="btn-quit" class="small">← 離開</button>
+    <button id="btn-skip" class="small skip">不移動・直接瞄準</button>
     <button class="mute small"></button>
   </div>
 
   <section id="screen-start" class="screen">
-    <h1>PULLBACK <span>RUSH</span></h1>
+    <h1>PULLBACK<br><span>RUSH</span></h1>
     <p class="sub">Pull Back. Power Up. Take Down.</p>
     <ul class="how">
-      <li>🎮 兩人同畫面輪流操作：紅隊（左）先攻</li>
-      <li>👆 按住自己的戰車，<b>向後拖曳</b>蓄力，拉越遠衝越遠</li>
-      <li>🚀 放手後戰車加速衝刺並滑行，停下時自動開砲</li>
-      <li>🎯 車頭停在地上<b>綠色射程區</b>內才會命中，主堡扣 1 血；太遠或太近都打不到</li>
-      <li>🏰 先讓對方主堡生命值歸零者獲勝</li>
+      <li>🎮 兩人同一支手機輪流操作，紅隊（下）先攻</li>
+      <li>👆 <b>① 移動：</b>按住自己的戰車向後拖曳蓄力，放手後朝反方向衝刺（會撞到障礙物反彈）</li>
+      <li>🎯 <b>② 瞄準：</b>停下後再按住戰車向後拖曳，砲管會朝反方向轉動，放手開砲</li>
+      <li>🏰 主堡必須在虛線<b>射程圈</b>內才打得到，砲彈會被障礙物與戰車擋住</li>
+      <li>❤️ 先讓對方主堡生命值歸零者獲勝</li>
     </ul>
     <button id="btn-start" class="big">開始遊戲</button>
     <button class="mute small"></button>
