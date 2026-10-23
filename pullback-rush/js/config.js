@@ -17,6 +17,17 @@ const CONFIG = {
     startX: [165, 395],    // 每方兩台戰車的起始 x
     barrelLen: 54,
     hp: 3,                 // 戰車生命值
+    // 裝甲：以車頭（車體朝向）為正面。正面裝甲強（傷害 −frontReduce，最低 0＝彈開），側面與背面較弱（全額傷害）
+    armor: { frontHalfDeg: 55, frontReduce: 1 },
+  },
+
+  // 戰車互撞：被撞的戰車會被推開（動量交換）、擦撞會讓車身轉向
+  collision: {
+    tankRestitution: 0.8, // 戰車對戰車的反彈係數（越高被撞飛越遠）
+    slideDecel: 800,      // 被撞後滑行的減速度
+    spin: 0.008,          // 擦撞產生的旋轉量
+    spinDamp: 4,          // 旋轉衰減
+    ram: { minSpeed: 420, damage: 1 }, // 撞擊速度達標，且撞在側面／背面時造成的傷害
   },
 
   // 第 1 段：選一台戰車，拖曳蓄力（向後拉，反方向衝刺）

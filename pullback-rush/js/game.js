@@ -51,7 +51,7 @@
       const y = s === 'red' ? H - C.tank.startOffset : C.tank.startOffset;
       C.tank.startX.forEach((x, i) => g.tanks.push({ side: s, id: s + i, alive: true, hp: C.tank.hp, x, y, vx: 0, vy: 0,
         angle: s === 'red' ? -Math.PI / 2 : Math.PI / 2, turret: s === 'red' ? -Math.PI / 2 : Math.PI / 2,
-        tread: 0, pull: 0, squash: 0, recoil: 0, flash: 0, motor: null, tickAcc: 0, rangeBonus: 0, powerBonus: 0 }));
+        omega: 0, bumped: false, tread: 0, pull: 0, squash: 0, recoil: 0, flash: 0, motor: null, tickAcc: 0, rangeBonus: 0, powerBonus: 0 }));
       g.castles[s] = { hp: C.castle.hp, shake: 0, flash: 0, crack: 0 };
     }
     for (let i = 0; i < PU.initial; i++) spawnPickup();
@@ -240,19 +240,31 @@
     g.texts = g.texts.filter(t => t.life > 0);
   }
 
-  // 戰車與其他戰車／兩座主堡／場邊碰撞，回傳撞擊速度
-  function collideTank(t) {
+  // ---------- 碰撞與裝甲 ----------
+  function wrapAng(a) { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; }
+  // 來自 fromAng 方向的攻擊／撞擊打在該戰車的哪一面：front（正面，裝甲強）／side／rear
+  function faceHit(t, fromAng) {
+    const rel = Math.abs(wrapAng(fromAng - t.angle)), fh = C.tank.armor.frontHalfDeg * Math.PI / 180;
+    return rel < fh ? 'front' : rel > Math.PI - fh * 0.8 ? 'rear' : 'side';
+  }
+  function damageTank(t, dmg, x, y) {
+    t.hp = Math.max(0, t.hp - dmg); t.flash = 0.3;
+    Sfx.hit(); burst(x, y, 20, '#ff9a2e', 220);
+    floatText(t.x, t.y - 50, '-' + dmg, '#fff', 30);
+    if (t.hp <= 0) {
+      t.alive = false; Sfx.boom(); burst(t.x, t.y, 50, '#ff7a2e', 320); burst(t.x, t.y, 24, '#333', 220);
+      floatText(t.x, t.y - 80, '戰車被擊毀！', '#ffd24a', 22);
+      if (!alive(t.side).length) endGame(enemy(t.side), `${COLORS[t.side].name}的戰車全數被擊毀`);
+    }
+  }
+  // 戰車與兩座主堡／場邊碰撞，回傳撞擊速度
+  function collideWalls(t) {
     const e = C.motor.restitution, r = C.tank.r;
     let impact = 0;
     const bounce = (nx, ny) => {
       const vn = t.vx * nx + t.vy * ny;
       if (vn < 0) { t.vx -= (1 + e) * vn * nx; t.vy -= (1 + e) * vn * ny; impact = Math.max(impact, -vn); }
     };
-    for (const o of g.tanks) {
-      if (o === t || !o.alive) continue;
-      const dx = t.x - o.x, dy = t.y - o.y, d = Math.hypot(dx, dy) || 0.01, min = r * 2;
-      if (d < min) { const nx = dx / d, ny = dy / d; t.x = o.x + nx * min; t.y = o.y + ny * min; bounce(nx, ny); }
-    }
     for (const s of SIDES) {
       const R = castleRect(s), p = nearestOnRect(R, t.x, t.y), dx = t.x - p.x, dy = t.y - p.y, d = Math.hypot(dx, dy);
       if (d < r) {
@@ -264,36 +276,79 @@
     if (t.y < r) { t.y = r; bounce(0, 1); } if (t.y > H - r) { t.y = H - r; bounce(0, -1); }
     return impact;
   }
+  // 兩台戰車互撞：等質量動量交換（被撞者被推開）、擦撞產生旋轉、撞到側面／背面會受傷
+  function collidePair(a, b) {
+    const K = C.collision, r2 = C.tank.r * 2;
+    const dx = a.x - b.x, dy = a.y - b.y, d = Math.hypot(dx, dy) || 0.01;
+    if (d >= r2) return;
+    const nx = dx / d, ny = dy / d, over = (r2 - d) / 2;
+    a.x += nx * over; a.y += ny * over; b.x -= nx * over; b.y -= ny * over;
+    const rel = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;   // < 0 表示正在靠近
+    if (rel >= 0) return;
+    const j = -(1 + K.tankRestitution) * rel / 2;
+    a.vx += j * nx; a.vy += j * ny; b.vx -= j * nx; b.vy -= j * ny;
+    const tn = (a.vx - b.vx) * -ny + (a.vy - b.vy) * nx;    // 擦撞（切線）分量 → 旋轉
+    a.omega -= tn * K.spin; b.omega -= tn * K.spin;
+    a.bumped = b.bumped = true;
+    const impact = -rel, cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+    if (impact > 80) { Sfx.bump(); burst(cx, cy, 10, '#ffd24a', 180); }
+    if (impact >= K.ram.minSpeed) { // 衝撞傷害：正面裝甲不受傷，側面／背面受傷
+      for (const [x, y] of [[a, b], [b, a]]) {
+        if (!x.alive) continue;
+        const face = faceHit(x, Math.atan2(y.y - x.y, y.x - x.x));
+        if (face !== 'front') { floatText(x.x, x.y - 78, face === 'rear' ? '背後被撞！' : '側面被撞！', '#ffd24a', 20); damageTank(x, K.ram.damage, cx, cy); }
+      }
+    }
+  }
 
+  // 衝刺階段的物理：主動戰車受馬達驅動，其餘被撞到的戰車依慣性滑行，全部停下才進入瞄準
   function updateDash(dt) {
-    const t = g.sel, m = t.motor;
-    m.t += dt;
-    let speed = Math.hypot(t.vx, t.vy);
-    if (m.phase === 'accel') {
-      speed = m.v0 * Math.min(1, m.t / C.motor.accelTime); // 發條釋放，快速加速
-      t.vx = Math.cos(t.angle) * speed; t.vy = Math.sin(t.angle) * speed;
-      if (m.t >= C.motor.accelTime) m.phase = 'glide';
-    } else {
-      const ns = Math.max(0, speed - C.motor.decel * dt);   // 滑行減速
-      const k = speed > 0 ? ns / speed : 0; t.vx *= k; t.vy *= k; speed = ns;
+    const K = C.collision, sel = g.sel, m = sel.motor;
+    const live = g.tanks.filter(t => t.alive);
+    if (sel.alive && m) {
+      m.t += dt;
+      let speed = Math.hypot(sel.vx, sel.vy);
+      if (m.phase === 'accel') {
+        speed = m.v0 * Math.min(1, m.t / C.motor.accelTime); // 發條釋放，快速加速
+        sel.vx = Math.cos(sel.angle) * speed; sel.vy = Math.sin(sel.angle) * speed;
+        if (m.t >= C.motor.accelTime) m.phase = 'glide';
+      }
     }
-    const mx = t.vx * dt, my = t.vy * dt, dist = Math.hypot(mx, my);
-    t.x += mx; t.y += my; t.tread += dist;
-    const impact = collideTank(t);
-    if (impact > 0) {
+    for (const t of live) {
+      if (!(t === sel && m && m.phase === 'accel')) { // 滑行減速
+        const sp = Math.hypot(t.vx, t.vy), ns = Math.max(0, sp - (t === sel ? C.motor.decel : K.slideDecel) * dt), k = sp > 0 ? ns / sp : 0;
+        t.vx *= k; t.vy *= k; if (ns < C.motor.stopSpeed) { t.vx = t.vy = 0; }
+      }
+      const dist = Math.hypot(t.vx * dt, t.vy * dt);
+      t.x += t.vx * dt; t.y += t.vy * dt; t.tread += dist;
+      t.angle += t.omega * dt; t.omega *= Math.exp(-K.spinDamp * dt); if (Math.abs(t.omega) < 0.05) t.omega = 0;
+      t.bumped = false;
+      if (t === sel) { // 「卡、卡、卡」與揚塵
+        t.tickAcc += dist; const speed = Math.hypot(t.vx, t.vy);
+        if (t.tickAcc >= 28) { t.tickAcc -= 28; Sfx.tick(speed / C.motor.vMax); }
+        if (speed > 120 && Math.random() < dt * 40) burst(t.x - Math.cos(t.angle) * 36, t.y - Math.sin(t.angle) * 36, 1, '#d9c9a8', 50);
+      }
+    }
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = 0; i < live.length; i++) for (let j = i + 1; j < live.length; j++) if (live[i].alive && live[j].alive) collidePair(live[i], live[j]);
+      for (const t of live) if (t.alive) {
+        const impact = collideWalls(t);
+        if (impact > 0) { t.bumped = true; if (impact > 80) { Sfx.bump(); burst(t.x + Math.cos(t.angle) * 30, t.y + Math.sin(t.angle) * 30, 8, '#ffd24a', 160); } }
+      }
+    }
+    if (g.state !== 'dashing') return; // 衝撞造成對方全滅
+    if (sel.alive && m && sel.bumped) { // 被撞偏後主動戰車改為滑行，車頭轉向新方向
       m.phase = 'glide';
-      if (impact > 80) { Sfx.bump(); burst(t.x + Math.cos(t.angle) * 30, t.y + Math.sin(t.angle) * 30, 8, '#ffd24a', 160); }
-      if (Math.hypot(t.vx, t.vy) > 30) t.angle = Math.atan2(t.vy, t.vx); // 被撞偏後車頭轉向新方向
+      if (Math.hypot(sel.vx, sel.vy) > 30) sel.angle = Math.atan2(sel.vy, sel.vx);
     }
-    checkPickups(t);
-    // 「卡、卡、卡」：依行進距離觸發，速度快則間隔短
-    t.tickAcc += dist;
-    if (t.tickAcc >= 28) { t.tickAcc -= 28; Sfx.tick(speed / C.motor.vMax); }
-    if (speed > 120 && Math.random() < dt * 40) burst(t.x - Math.cos(t.angle) * 36, t.y - Math.sin(t.angle) * 36, 1, '#d9c9a8', 50);
-    if (m.phase === 'glide' && Math.hypot(t.vx, t.vy) < C.motor.stopSpeed) {
-      t.vx = t.vy = 0; t.motor = null;
+    if (sel.alive) checkPickups(sel);
+    const settled = live.every(t => !t.alive || (Math.hypot(t.vx, t.vy) < C.motor.stopSpeed && Math.abs(t.omega) < 0.3));
+    if (!sel.alive || (m && m.phase === 'glide' && settled)) {
+      for (const t of live) { t.vx = t.vy = 0; t.omega = 0; }
+      sel.motor = null;
+      if (!sel.alive) { g.state = 'resolving'; g.resolveT = C.attack.resolveDelay; return; } // 主動戰車被撞毀，回合結束
       g.state = 'aim';
-      setBanner('瞄準！', inRange(t) ? '主堡進入射程' : '主堡還在射程外');
+      setBanner('瞄準！', inRange(sel) ? '主堡進入射程' : '主堡還在射程外');
     }
   }
 
@@ -366,14 +421,14 @@
     }
   }
   function hitTank(t, s) {
-    t.hp = Math.max(0, t.hp - s.dmg); t.flash = 0.3;
-    Sfx.hit(); burst(s.x, s.y, 20, '#ff9a2e', 220);
-    floatText(t.x, t.y - 50, '-' + s.dmg, '#fff', 30);
-    if (t.hp <= 0) {
-      t.alive = false; Sfx.boom(); burst(t.x, t.y, 50, '#ff7a2e', 320); burst(t.x, t.y, 24, '#333', 220);
-      floatText(t.x, t.y - 80, '戰車被擊毀！', '#ffd24a', 22);
-      if (!alive(t.side).length) endGame(enemy(t.side), `${COLORS[t.side].name}的戰車全數被擊毀`);
+    const face = faceHit(t, Math.atan2(-s.dy, -s.dx)); // 砲彈來自哪個方向
+    if (face === 'front') {
+      const dmg = Math.max(0, s.dmg - C.tank.armor.frontReduce);
+      if (dmg <= 0) { Sfx.bump(); Sfx.miss(); burst(s.x, s.y, 16, '#cfd6de', 220); floatText(t.x, t.y - 50, '正面裝甲彈開！', '#cfd6de', 22); return; }
+      floatText(t.x, t.y - 78, '正面（裝甲減傷）', '#cfd6de', 18); damageTank(t, dmg, s.x, s.y); return;
     }
+    floatText(t.x, t.y - 78, face === 'rear' ? '擊中背面！' : '擊中側面！', '#ffd24a', 20);
+    damageTank(t, s.dmg, s.x, s.y);
   }
   function endGame(winner, why) {
     g.over = winner; g.overWhy = why; g.state = 'over'; g.overT = 1.3; g.resultShown = false;
@@ -494,6 +549,10 @@
     ctx.lineWidth = 3; ctx.strokeStyle = col.dark; ctx.stroke();
     ctx.fillStyle = col.dark; rr(-L / 2 + 8, -Wd / 2 + 6, 14, Wd - 12, 3); ctx.fill();
     ctx.restore();
+    // 正面裝甲板：鋼灰色加鉚釘（側面與背面沒有）
+    ctx.fillStyle = '#aeb6c0'; rr(L / 2 - 14, -Wd / 2 - 3, 16, Wd + 6, 6); ctx.fill();
+    ctx.strokeStyle = '#59616b'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = '#59616b'; for (const yy of [-Wd / 2 + 6, Wd / 2 - 6]) { ctx.beginPath(); ctx.arc(L / 2 - 6, yy, 2.2, 0, 7); ctx.fill(); }
     // 砲塔（可獨立旋轉）與砲管；威力加成時砲管變粗發紅
     ctx.rotate(t.turret - t.angle);
     const back = t.recoil * 9, bw = 10 + t.powerBonus * 3;
@@ -513,6 +572,17 @@
     const nr = t.rangeBonus / PU.types.range.add, np = t.powerBonus / PU.types.power.add;
     for (let i = 0; i < nr; i++) { ctx.fillStyle = PU_COLOR.range; ctx.beginPath(); ctx.arc(t.x - 20 + i * 12 + 5, py + 18, 5, 0, 7); ctx.fill(); }
     for (let i = 0; i < np; i++) { ctx.fillStyle = PU_COLOR.power; ctx.beginPath(); ctx.moveTo(t.x + 8 + i * 13, py + 22); ctx.lineTo(t.x + 14 + i * 13, py + 22); ctx.lineTo(t.x + 11 + i * 13, py + 12); ctx.closePath(); ctx.fill(); }
+  }
+  // 瞄準時，在敵方戰車周圍標示裝甲強弱：實線鋼灰弧＝正面（強），紅色虛線弧＝側面／背面（弱）
+  function drawArmorHints() {
+    if (!['aim', 'aiming', 'meter'].includes(g.state) || g.over) return;
+    const fh = C.tank.armor.frontHalfDeg * Math.PI / 180;
+    for (const t of g.tanks) {
+      if (!t.alive || t.side === g.turn) continue;
+      ctx.lineWidth = 6; ctx.strokeStyle = '#aeb6c0'; ctx.beginPath(); ctx.arc(t.x, t.y, C.tank.r + 14, t.angle - fh, t.angle + fh); ctx.stroke();
+      ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,70,50,.9)'; ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.arc(t.x, t.y, C.tank.r + 14, t.angle + fh, t.angle + 2 * Math.PI - fh); ctx.stroke(); ctx.setLineDash([]);
+    }
   }
   // 目前選中戰車的射程圈、選取標記、蓄力箭頭與瞄準線
   function drawSelection() {
@@ -636,6 +706,7 @@
     g.tanks.filter(t => t.alive && t !== g.sel).forEach(drawTank);
     if (g.sel && g.sel.alive) drawTank(g.sel);
     drawSelection();
+    drawArmorHints();
     drawEffects();
     if (g.state !== 'idle') drawHud();
     if (g.state === 'meter') drawMeter();
