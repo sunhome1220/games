@@ -18,3 +18,12 @@ button.big { font-size: 1.5em; font-weight: bold; padding: .4em 1.8em; border-ra
 button.big:active { transform: translateY(.15em); box-shadow: 0 .05em 0 #a8342c; }
 button.small { font-size: 14px; padding: 6px 12px; border-radius: 20px; background: rgba(255,255,255,.2); white-space: nowrap; }
 #bar .skip { background: #ffd24a; color: #4a3300; font-weight: bold; visibility: hidden; }
+
+.flip { transform: rotate(180deg); }
+#btn-skip-top { position: absolute; top: 10.5%; left: 50%; margin-left: -6.5em; width: 13em; z-index: 2; visibility: hidden; }
+.skip { background: #ffd24a; color: #4a3300; font-weight: bold; }
+#result-top { text-align: center; }
+.screen.face #btn-restart { order: 1; }
+.screen.face #btn-menu { order: 2; }
+.screen.face #result-title { order: 3; }
+.screen.face #result-sub { order: 4; }
