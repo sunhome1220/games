@@ -126,7 +126,7 @@ const CARDS = validateCards([
       ultCast('meteor', s, [...hit.map((p, i) => ({ x: p.x, y: p.y, at: when(i) })), ...extra].sort((a, b) => a.at - b.at));
       hit.forEach((p, i) => spellHit(p, 1, when(i), false)); checkWin();
     } },
-  { id: 'ult_revive', tier: 4, ic: '😇', name: '終極魔法・起死回生', desc: '復活 1 顆己方陣亡的棋子（由你選擇，帥除外），滿血回到出生點', max: 1, pickDead: true, cond: s => deadOf(s).length > 0,
+  { id: 'ult_revive', tier: 4, ic: '😇', name: '終極魔法・起死回生', desc: '復活 1 顆己方陣亡的棋子（由你選擇），滿血回到出生點', max: 1, pickDead: true, cond: s => deadOf(s).length > 0,
     instant: (s, at) => {
       const dead = deadOf(s).sort((a, b) => unitValue(b) - unitValue(a));
       const p = at && at.i !== undefined && dead.includes(pieces[at.i]) ? pieces[at.i] : dead[0];   // 玩家選的那顆；電腦／沒指定時復活價值最高的
@@ -263,7 +263,37 @@ $('pTab0').onclick = () => showPerks(0); $('pTab1').onclick = () => showPerks(1)
 $('perkClose').onclick = () => { $('perkOv').hidden = true; };
 // 選牌流程：pickQ 依序處理；自己這台裝置上的人類顯示三選一，電腦自動選，連線對手則等他的選擇訊息
 function beginPick(sides) { pickQ = sides.slice(); state = 'pick'; sel = null; targets = []; setSkip(false); nextPick(); }
+// ---- 選卡限時：整個選卡流程（三選一，加上隕石雨選落點／起死回生選對象）共用 15 秒；時間到就自動選（三選一隨機一張，落點／復活對象選對自己最有利的）----
+const PICK_SECS = 15;
+let pickEnd = 0, pickTimer = 0, pickWaiting = false;
+function stopPickClock() { clearInterval(pickTimer); pickTimer = 0; for (const id of ['cardTimer', 'spellTimer', 'reviveTimer']) $(id).textContent = ''; }
+function startPickClock(waiting) {
+  stopPickClock(); pickWaiting = !!waiting; pickEnd = Date.now() + PICK_SECS * 1000;
+  pickTimer = setInterval(tickPick, 250); tickPick();
+}
+function tickPick() {
+  if (!pickTimer) return;   // 沒有在倒數（例如不是從選卡流程進來）就不動作
+  if (typeof netLost !== 'undefined' && netLost) { pickEnd += 250; return; }   // 斷線期間暫停倒數
+  const left = Math.max(0, Math.ceil((pickEnd - Date.now()) / 1000));
+  const txt = pickWaiting ? `⏱ 對手選卡中，剩 ${left} 秒` : `⏱ 剩 ${left} 秒，時間到會自動選`;
+  for (const id of ['cardTimer', 'spellTimer', 'reviveTimer']) { const e = $(id); e.textContent = pickWaiting ? '' : txt; e.classList.toggle('warn', left <= 5); }
+  if (pickWaiting) { if (state === 'pick' && waitingFor !== null) setMsg(txt); }
+  if (Date.now() >= pickEnd) { if (pickWaiting) clearInterval(pickTimer); else autoPick(); }
+}
+function autoPick() {
+  stopPickClock();
+  if (typeof spell !== 'undefined' && spell) {   // 隕石雨：選對自己最有利的落點
+    const c = aiMeteorCenter(spell.side); spell.x = c.x; spell.y = c.y; $('spellGo').disabled = false; toast('⏱ 時間到，自動選了落點'); $('spellGo').click(); return;
+  }
+  if (!$('reviveOv').hidden) { toast('⏱ 時間到，自動復活價值最高的'); $('reviveList').firstChild.click(); return; }   // 清單依價值排序，第一顆最高
+  if (!$('cardPick').hidden) {
+    const btns = [...$('cardList').children]; if (!btns.length) return;
+    toast('⏱ 時間到，隨機送你一張'); btns[Math.floor(Math.random() * btns.length)].click();
+    if ((typeof spell !== 'undefined' && spell) || !$('reviveOv').hidden) autoPick();   // 抽到要再選的卡：時間已到，一併自動選完
+  }
+}
 function nextPick() {
+  stopPickClock();
   if (!pickQ.length) {
     pickSide = null; waitingFor = null; $('cardPick').hidden = true;
     if (state === 'pick') state = 'aim';
@@ -281,7 +311,7 @@ function nextPick() {
       nextPick();
     }, 900);
   } else if (mine) showCards(side);
-  else { $('cardPick').hidden = true; waitingFor = side; setMsg(`等待對手選擇強化卡…`); drainIncoming(); }
+  else { $('cardPick').hidden = true; waitingFor = side; setMsg(`等待對手選擇強化卡…`); startPickClock(true); drainIncoming(); }
 }
 function showCards(side) {
   const offers = drawOffers(side);
@@ -301,7 +331,7 @@ function showCards(side) {
     b.onclick = () => chooseCard(side, c.id);
     list.appendChild(b);
   });
-  $('cardPick').hidden = false; setMsg('請選擇強化卡。');
+  $('cardPick').hidden = false; setMsg('請選擇強化卡。'); startPickClock(false);
 }
 function chooseCard(side, id) {
   if (pickSide !== side) return;
@@ -325,7 +355,7 @@ function beginRevivePick(side, c) {
     b.onclick = () => finish(p);
     list.appendChild(b);
   }
-  $('reviveOv').hidden = false; setMsg('請選擇要復活的棋子。');
+  $('reviveOv').hidden = false; setMsg('請選擇要復活的棋子。'); tickPick();
 }
 // ---- 選範圍（隕石雨）：點棋盤放圓圈（吸附到交叉點）、預覽範圍內的棋子，按「降下」確認 ----
 let spell = null;   // { side, id, x, y }；x、y 為 null＝還沒點
@@ -333,6 +363,7 @@ function beginAreaPick(side, c) {
   spell = { side, id: c.id, x: null, y: null }; state = 'spell'; sel = null; targets = []; setSkip(false);
   $('spellTxt').textContent = `${c.ic} ${c.name}：點棋盤選擇落點（直徑 4 格的圓，敵我不分）`; $('spellGo').disabled = true;
   $('spellBox').hidden = false; $('spellBox').classList.toggle('flip', mode === 'face' && side === 1);
+  tickPick();
   updateHeader(); setMsg('☄️ 點棋盤選擇隕石落點，可重新點選；按「降下」確認。');
 }
 function spellTap(m) {

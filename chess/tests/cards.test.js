@@ -118,6 +118,41 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, { noDead: false, hasDead: true, revived: [true, false, false], xt: 1, afterFirst: [0, 0, 'aim'], afterSecond: 1 });
   } },
+  { name: '選卡限時 15 秒：倒數顯示、時間到隨機送一張；抽到隕石雨／起死回生也一併自動選完；等待方看得到對手倒數；不影響電腦', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(async () => {
+      const o = {}, wait = ms => new Promise(r => setTimeout(r, ms)), total = () => cardCount[0] && Object.keys(cardCount[0]).length;
+      const expire = async () => { pickEnd = Date.now() - 1; await wait(450); };
+      // 1. 三選一：倒數 15 秒、時間到隨機送一張並進入下一步
+      reset(true); mode = 'local'; cardsOn = true; beginPick([0]);
+      o.start = [state, !$('cardPick').hidden, document.getElementById('cardTimer').textContent.includes('剩 15 秒') || document.getElementById('cardTimer').textContent.includes('剩 14 秒')];
+      await expire(); o.timeout = [total(), $('cardPick').hidden, state !== 'pick'];
+      // 2. 抽到隕石雨：時間到連落點一起自動選（選對自己最有利的圓心，敵方受傷）
+      reset(true); mode = 'local'; cardsOn = true; const real = drawOffers; drawOffers = () => [CARDS.find(c => c.id === 'ult_meteor')];
+      beginPick([0]); await expire(); const foeHurt = pieces.some(p => p.s === 1 && p.hp < p.T.hp);
+      o.meteor = [cardCount[0].ult_meteor, foeHurt, $('spellBox').hidden, state !== 'spell' && state !== 'pick'];
+      // 3. 抽到起死回生：時間到自動復活價值最高的那一顆
+      reset(true); mode = 'local'; cardsOn = true; drawOffers = () => [CARDS.find(c => c.id === 'ult_revive')];
+      for (const ty of ['R', 'N', 'P']) { const p = pieces.find(q => q.s === 0 && q.t === ty); p.hp = 0; p.x = p.y = -999; }
+      beginPick([0]); const dead0 = pieces.filter(p => p.s === 0 && p.hp <= 0).length; await expire();
+      o.revive = [dead0, pieces.filter(p => p.s === 0 && p.hp <= 0).length, pieces.find(p => p.s === 0 && p.t === 'R').hp > 0];
+      drawOffers = real;
+      // 4. 連線：等待方的訊息列顯示對手倒數；時間到不會自己選（由選卡那一方的裝置處理）
+      reset(true); mode = 'online'; mySide = 1; cardsOn = true; incoming = []; beginPick([0]);
+      o.wait = [waitingFor, document.getElementById('info').textContent];
+      await expire(); o.waitDone = [total(), pickTimer === 0 || state === 'pick'];
+      // 5. 電腦選牌不用倒數，照原本的延遲自己選
+      reset(true); mode = 'ai'; mySide = 0; cardsOn = true; beginPick([1]); o.ai0 = pickTimer === 0; await wait(1300); o.ai1 = Object.keys(cardCount[1]).length;
+      return o;
+    });
+    t.assert.deepStrictEqual(r.start, ['pick', true, true]);
+    t.assert.deepStrictEqual(r.timeout, [1, true, true]);
+    t.assert.deepStrictEqual(r.meteor, [1, true, true, true]);
+    t.assert.deepStrictEqual(r.revive, [3, 2, true]);
+    t.assert.strictEqual(r.wait[0], 0); t.assert.ok(/對手選卡中，剩 1[45] 秒/.test(r.wait[1]), r.wait[1]);
+    t.assert.strictEqual(r.waitDone[0], 0, '等待方不該替對手選卡');
+    t.assert.deepStrictEqual([r.ai0, r.ai1], [true, 1]);
+  } },
   { name: '起死回生：玩家從陣亡清單選 1 顆復活（只有一顆就直接復活）；連線時選擇的編號一起傳給對方；亂傳的編號被忽略', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
