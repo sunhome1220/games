@@ -98,6 +98,8 @@ const Sfx = (() => {
   }
   function miss() { noise(0.25, 0.18, 500, 1, 'lowpass', 0.05); tone(260, 0.2, 'triangle', 0.1, 120, 0.05); }
   function bump() { tone(90, 0.15, 'square', 0.25, 50); noise(0.1, 0.25, 600, 1, 'lowpass'); }
+  function pickup() { [660, 880, 1175].forEach((f, i) => tone(f, 0.12, 'triangle', 0.18, 0, i * 0.07)); }
+  function boom() { tone(80, 0.6, 'sawtooth', 0.4, 30); noise(0.6, 0.6, 500, 0.6, 'lowpass'); }
   function click() { tone(660, 0.06, 'square', 0.1, 880); }
   function cancel() { tone(300, 0.12, 'triangle', 0.12, 140); }
   function win() {
@@ -108,5 +110,5 @@ const Sfx = (() => {
     [392, 330, 262, 196].forEach((f, i) => tone(f, 0.28, 'sawtooth', 0.14, 0, i * 0.18));
   }
   return { init, setMuted, isMuted, ratchet, chargeStart, chargeUpdate, chargeStop,
-           launch, tick, shoot, hit, miss, bump, click, cancel, win, lose };
+           launch, tick, shoot, hit, miss, bump, pickup, boom, click, cancel, win, lose };
 })();

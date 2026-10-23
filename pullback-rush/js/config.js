@@ -12,10 +12,12 @@ const CONFIG = {
     r: 34,                 // 碰撞半徑
     hullLen: 78, hullWid: 44,
     startOffset: 175,      // 起始位置距離己方場邊
+    startX: [165, 395],    // 每方兩台戰車的起始 x
     barrelLen: 54,
+    hp: 3,                 // 戰車生命值
   },
 
-  // 第 1 段：拖曳蓄力（向後拉，反方向衝刺）
+  // 第 1 段：選一台戰車，拖曳蓄力（向後拉，反方向衝刺）
   pull: {
     min: 26,          // 低於此距離視為取消
     max: 170,         // 最大蓄力距離
@@ -34,20 +36,26 @@ const CONFIG = {
 
   // 第 2 段：砲塔瞄準（向後拉，砲管朝反方向）→ 放手開砲
   attack: {
-    damage: 1,
-    range: 540,        // 砲彈最大射程；主堡必須在射程內才打得到
+    damage: 1,         // 基礎傷害（對主堡與戰車；寶箱可加成）
+    range: 520,        // 砲彈基礎射程；目標必須在射程內才打得到（寶箱可加成）
     shellSpeed: 950,   // 砲彈飛行速度 (px/s)
     aimMin: 24,        // 瞄準時至少拉這麼遠才會開砲
     resolveDelay: 0.9, // 攻擊結束到換手的停頓
   },
 
-  // 障礙物（上下左右對稱）：kind = crate | barrel | rock
-  obstacles: [
-    { kind: 'rock',   x: 280, y: 500, r: 40 },
-    { kind: 'crate',  x: 150, y: 400, r: 30 }, { kind: 'crate',  x: 410, y: 600, r: 30 },
-    { kind: 'barrel', x: 410, y: 400, r: 26 }, { kind: 'barrel', x: 150, y: 600, r: 26 },
-    { kind: 'crate',  x: 130, y: 250, r: 28 }, { kind: 'crate',  x: 430, y: 750, r: 28 },
-  ],
+  // 增益寶箱：戰車衝刺時碰到就會撿起，效果永久跟著該戰車
+  powerups: {
+    initial: 3,          // 開局場上數量
+    maxOnField: 4,       // 場上最多同時存在幾個
+    spawnEveryRound: 1,  // 每過幾輪（雙方各一回合）補一個
+    pickupRadius: 28,    // 寶箱撿取半徑
+    zone: { yMin: 220, yMax: 780, xMargin: 60 }, // 出現範圍
+    types: {
+      range:  { weight: 1, add: 100, max: 3 },  // 射程 +100，最多疊 3 次
+      power:  { weight: 1, add: 1,   max: 2 },  // 威力 +1（砲彈傷害），最多疊 2 次
+      repair: { weight: 1, heal: 1 },           // 戰車回復 1 點生命
+    },
+  },
 
   audio: { master: 0.5 },
 };
