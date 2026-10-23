@@ -1,4 +1,7 @@
 // ===== 啟動 =====
+// 「← 選單」連到上一層的遊戲選單，只有放在 GitHub Pages（或本機）時才有意義；放在專屬網址（例如 Cloudflare Pages，網站根目錄就是這個遊戲）時隱藏
+const showMenuLink = h => h === '' || /(^|\.)github\.io$/.test(h) || /^(localhost|127\.|\[?::1)/.test(h);
+$('menuLink').hidden = !showMenuLink(location.hostname);
 reset(true);
 requestAnimationFrame(loop);
 { const q = new URLSearchParams(location.search); if (!q.has('bc') && !q.has('nolog')) setTimeout(() => showLog(false), 300); }   // nolog／bc：測試用，不自動彈出更新內容
