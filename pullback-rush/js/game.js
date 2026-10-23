@@ -13,6 +13,13 @@
   const HINT = { move: '拉後放手衝刺', aim: '拉後放手開砲' };
 
   let g;
+  // 面對面模式：手機平放在兩人中間，藍隊（上方玩家）看到的文字與按鈕轉 180° 方便閱讀
+  let face = false;
+  try { face = localStorage.getItem('pbr-face') === '1'; } catch (_) {}
+  function rot(cond, cx, cy, fn) {
+    if (!cond) return fn();
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.PI); ctx.translate(-cx, -cy); fn(); ctx.restore();
+  }
 
   const enemy = s => (s === 'red' ? 'blue' : 'red');
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -276,7 +283,7 @@
       g.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: life * (0.5 + Math.random()), max: life * 1.5, color, size: 2 + Math.random() * 4 });
     }
   }
-  function floatText(x, y, str, color, size = 22) { g.texts.push({ x, y, str, color, size, life: 1.2 }); }
+  function floatText(x, y, str, color, size = 22) { g.texts.push({ x, y, str, color, size, life: 1.2, flip: face && g.turn === 'blue' }); }
 
   // ---------- 繪圖 ----------
   function rr(x, y, w, h, r) {
@@ -343,9 +350,11 @@
     ctx.restore();
     // 生命值：三顆愛心 + 數字（放在主堡左側）
     const hy = side === 'blue' ? 46 : H - 46;
-    ctx.fillStyle = 'rgba(0,0,0,.4)'; rr(8, hy - 24, 140, 48, 12); ctx.fill();
-    for (let i = 0; i < C.castle.hp; i++) drawHeart(30 + i * 31, hy, 12, i < c.hp ? '#ff4a6a' : 'rgba(255,255,255,.25)');
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'left'; ctx.fillText(c.hp, 122, hy + 8);
+    rot(face && side === 'blue', 78, hy, () => {
+      ctx.fillStyle = 'rgba(0,0,0,.4)'; rr(8, hy - 24, 140, 48, 12); ctx.fill();
+      for (let i = 0; i < C.castle.hp; i++) drawHeart(30 + i * 31, hy, 12, i < c.hp ? '#ff4a6a' : 'rgba(255,255,255,.25)');
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'left'; ctx.fillText(c.hp, 122, hy + 8);
+    });
   }
   function drawHeart(x, y, s, color) {
     ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x, y + s * .8);
@@ -419,11 +428,12 @@
       ctx.strokeStyle = 'rgba(255,60,40,.9)'; ctx.lineWidth = 4; ctx.setLineDash([4, 12]); ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(t.x + dx * C.tank.barrelLen, t.y + dy * C.tank.barrelLen); ctx.lineTo(t.x + dx * C.attack.range, t.y + dy * C.attack.range); ctx.stroke();
       ctx.setLineDash([]); ctx.lineCap = 'butt';
-      if (!(g.drag.len >= C.attack.aimMin)) badge(t.x, t.y - 60, '再拉一點', '#777');
+      if (!(g.drag.len >= C.attack.aimMin)) rot(face && side === 'blue', t.x, t.y - 60, () => badge(t.x, t.y - 60, '再拉一點', '#777'));
     }
   }
   function powerBar(t, p) {
     const bw = 120, bx = t.x - bw / 2, by = t.y - 64;
+    rot(face && t.side === 'blue', t.x, by + 2, () => {
     ctx.fillStyle = 'rgba(0,0,0,.55)'; rr(bx - 4, by - 4, bw + 8, 18, 9); ctx.fill();
     const grad = ctx.createLinearGradient(bx, 0, bx + bw, 0);
     grad.addColorStop(0, '#6be36b'); grad.addColorStop(.6, '#ffd24a'); grad.addColorStop(1, '#ff4a3a');
@@ -431,6 +441,7 @@
     const mp = C.pull.min / C.pull.max; ctx.fillStyle = '#fff'; ctx.fillRect(bx + bw * mp - 1, by - 3, 2, 16);
     ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
     ctx.fillText(t.pull < C.pull.min ? '再拉一點' : Math.round(p * 100) + '%', t.x, by - 9);
+    });
   }
   function badge(x, y, str, color) {
     ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
@@ -451,8 +462,10 @@
     ctx.globalAlpha = 1;
     for (const t of g.texts) {
       ctx.globalAlpha = clamp(t.life, 0, 1); ctx.font = `bold ${t.size}px sans-serif`; ctx.textAlign = 'center';
-      ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.strokeText(t.str, t.x, t.y);
-      ctx.fillStyle = t.color; ctx.fillText(t.str, t.x, t.y);
+      rot(t.flip, t.x, t.y, () => {
+        ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.strokeText(t.str, t.x, t.y);
+        ctx.fillStyle = t.color; ctx.fillText(t.str, t.x, t.y);
+      });
     }
     ctx.globalAlpha = 1;
   }
@@ -460,23 +473,28 @@
     if (g.over) return;
     const col = COLORS[g.turn], phase = g.state === 'move' || g.state === 'charging' || g.state === 'dashing' ? 'move' : 'aim';
     const cy = g.turn === 'blue' ? 46 : H - 46, x = W - 78;
+    const flip = face && g.turn === 'blue';
     ctx.textAlign = 'center';
-    ctx.fillStyle = col.body; rr(x - 68, cy - 24, 136, 30, 15); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 17px sans-serif'; ctx.fillText(`${col.name}・${PHASE[phase]}`, x, cy - 3);
-    ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.font = '13px sans-serif';
-    if (g.state === 'move' || g.state === 'aim') ctx.fillText(HINT[g.state], x, cy + 20);
+    rot(flip, x, cy, () => {
+      ctx.fillStyle = col.body; rr(x - 68, cy - 24, 136, 30, 15); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 17px sans-serif'; ctx.fillText(`${col.name}・${PHASE[phase]}`, x, cy - 3);
+      ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.font = '13px sans-serif';
+      if (g.state === 'move' || g.state === 'aim') ctx.fillText(HINT[g.state], x, cy + 20);
+    });
     // 敵方主堡進入射程提示
     if ((g.state === 'move' || g.state === 'charging' || g.state === 'aim' || g.state === 'aiming') && inRange(g.turn)) {
       const R = castleRect(enemy(g.turn));
       ctx.strokeStyle = `rgba(47,191,85,${0.6 + 0.4 * Math.sin(g.t * 8)})`; ctx.lineWidth = 6;
       rr(R.x - 4, R.y - 4, R.w + 8, R.h + 8, 12); ctx.stroke();
-      badge(W / 2, R.y + R.h / 2 + 5, '✔ 進入射程！', '#2fbf55');
+      rot(flip, W / 2, R.y + R.h / 2, () => badge(W / 2, R.y + R.h / 2 + 5, '✔ 進入射程！', '#2fbf55'));
     }
     if (g.banner) {
       ctx.globalAlpha = clamp(g.banner.t * 1.5, 0, 1);
-      ctx.fillStyle = 'rgba(30,20,50,.82)'; rr(W / 2 - 210, 440, 420, 120, 22); ctx.fill();
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 40px sans-serif'; ctx.fillText(g.banner.text, W / 2, 500);
-      ctx.fillStyle = '#cfe9ff'; ctx.font = '20px sans-serif'; ctx.fillText(g.banner.sub, W / 2, 536);
+      rot(flip, W / 2, 500, () => {
+        ctx.fillStyle = 'rgba(30,20,50,.82)'; rr(W / 2 - 210, 440, 420, 120, 22); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 40px sans-serif'; ctx.fillText(g.banner.text, W / 2, 500);
+        ctx.fillStyle = '#cfe9ff'; ctx.font = '20px sans-serif'; ctx.fillText(g.banner.sub, W / 2, 536);
+      });
       ctx.globalAlpha = 1;
     }
   }
@@ -493,7 +511,7 @@
   // ---------- 畫面流程 ----------
   function showScreen(id) {
     for (const s of ['screen-start', 'screen-result']) $(s).classList.toggle('hidden', s !== id);
-    $('btn-skip').style.visibility = 'hidden';
+    $('btn-skip').style.visibility = 'hidden'; $('btn-skip-top').style.visibility = 'hidden';
   }
   function startGame() { Sfx.init(); Sfx.click(); newGame(); showScreen(null); }
   function showResult() {
@@ -502,6 +520,12 @@
     $('result-title').textContent = `${col.name}獲勝！`;
     $('result-title').style.color = col.body;
     $('result-sub').textContent = `${COLORS[enemy(w)].name}的主堡被攻陷了`;
+    // 面對面：上方多一份轉 180° 的結果，兩邊玩家都讀得到
+    $('screen-result').classList.toggle('face', face);
+    $('result-top').classList.toggle('hidden', !face);
+    $('result-title-top').textContent = $('result-title').textContent;
+    $('result-title-top').style.color = col.body;
+    $('result-sub-top').textContent = $('result-sub').textContent;
     showScreen('screen-result');
     Sfx.win(); setTimeout(Sfx.lose, 900);
   }
@@ -521,7 +545,9 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (g) {
       update(dt); render();
-      $('btn-skip').style.visibility = g.state === 'move' ? 'visible' : 'hidden';
+      const canSkip = g.state === 'move', topTurn = face && g.turn === 'blue'; // 面對面時，藍隊用上方的按鈕
+      $('btn-skip').style.visibility = canSkip && !topTurn ? 'visible' : 'hidden';
+      $('btn-skip-top').style.visibility = canSkip && topTurn ? 'visible' : 'hidden';
     }
     requestAnimationFrame(loop);
   }
@@ -530,13 +556,19 @@
     $('btn-start').onclick = startGame;
     $('btn-restart').onclick = startGame;
     $('btn-menu').onclick = () => { Sfx.chargeStop(); g = null; showScreen('screen-start'); newIdle(); };
-    $('btn-skip').onclick = skipMove;
+    $('btn-skip').onclick = skipMove; $('btn-skip-top').onclick = skipMove;
     $('btn-quit').onclick = () => { Sfx.chargeStop(); showScreen('screen-start'); newIdle(); };
     const syncMute = () => document.querySelectorAll('.mute').forEach(b => { b.textContent = Sfx.isMuted() ? '🔇 音效：關' : '🔊 音效：開'; });
     document.querySelectorAll('.mute').forEach(b => b.onclick = e => {
       e.stopPropagation(); Sfx.init(); Sfx.setMuted(!Sfx.isMuted()); syncMute(); Sfx.click();
     });
     syncMute();
+    const syncMode = () => { $('btn-mode').textContent = face ? '🔄 面對面（手機平放，藍隊在上）' : '👥 同側輪流（傳手機）'; };
+    $('btn-mode').onclick = () => {
+      face = !face; try { localStorage.setItem('pbr-face', face ? '1' : '0'); } catch (_) {}
+      Sfx.init(); Sfx.click(); syncMode();
+    };
+    syncMode();
   }
   function newIdle() { newGame(); g.state = 'idle'; g.banner = null; }
 
@@ -544,5 +576,5 @@
   fit(); bindUi(); showScreen('screen-start'); newIdle();
   requestAnimationFrame(loop);
 
-  window.__pbr = { get g() { return g; }, CONFIG, castleDist, inRange, castleRect, startGame };
+  window.__pbr = { get g() { return g; }, get face() { return face; }, CONFIG, castleDist, inRange, castleRect, startGame };
 })();
