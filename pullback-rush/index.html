@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Pullback Rush</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=2026-10-23.01">
 </head>
 <body>
 <div id="wrap">
+  <button id="newver" class="newver" hidden>🔔 有新版本，點此重新整理</button>
   <canvas id="stage" width="560" height="1000"></canvas>
   <button id="btn-skip-top" class="small skip flip">不移動・直接瞄準</button>
   <div id="bar">
@@ -30,6 +31,7 @@
     <button id="btn-mode" class="small mode"></button>
     <button id="btn-start" class="big">開始遊戲</button>
     <button class="mute small"></button>
+    <div id="ver"></div>
   </section>
 
   <section id="screen-result" class="screen hidden">
@@ -40,8 +42,10 @@
     <button id="btn-menu" class="small">回到開始畫面</button>
   </section>
 </div>
-<script src="js/config.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/game.js"></script>
+<script src="js/version.js?v=2026-10-23.01"></script>
+<script src="js/config.js?v=2026-10-23.01"></script>
+<script src="js/audio.js?v=2026-10-23.01"></script>
+<script src="js/game.js?v=2026-10-23.01"></script>
+<script src="js/update.js?v=2026-10-23.01"></script>
 </body>
 </html>
