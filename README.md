@@ -11,3 +11,7 @@
 - `pikmin-like/`：小芽隊長（2D 即時群體操作，類皮克敏玩法；單一 `index.html`，無外部函式庫）。改版時執行 `python3 pikmin-like/tools/bump_version.py 2026-xx-xx.nn` 更新版本號，玩家端會跳出「有新版本」提示
 - `proto-a.html`、`proto-c.html`：另外兩個原型
 - `proto-b.html`：舊網址，會自動轉址到 `chess/`
+
+## 專屬網址（Cloudflare Pages，免費）
+
+`chess/` 裡的路徑全部是相對路徑，可以直接當成網站根目錄：在 Cloudflare Pages 連結這個 repo，Production branch 填 `main`、Build command 留空、Build output directory 填 `chess`，每次合併到 `main` 會自動部署（例如 `crazy-chess.pages.dev`）。在專屬網址上「← 選單」連結會自動隱藏（見 `chess/js/main.js` 的 `showMenuLink`）；放在 GitHub Pages 或本機時照常顯示。

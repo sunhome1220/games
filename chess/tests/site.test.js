@@ -152,6 +152,15 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, [true, true, '一二三四五六七八（我）', '甲乙丙丁戊己庚辛']);
   } },
+  { name: '「← 選單」連結：GitHub Pages／本機顯示，專屬網址（例如 pages.dev）隱藏', async fn(t) {
+    const pg = await t.open('', { mode: false });
+    const r = await pg.evaluate(() => ({
+      shown: ['sunhome1220.github.io', 'github.io', 'localhost', '127.0.0.1', '', '[::1]'].map(showMenuLink),
+      hidden: ['crazy-chess.pages.dev', 'example.com', 'github.io.evil.com', 'notgithub.io'].map(showMenuLink),
+      linkNow: !document.getElementById('menuLink').hidden,   // 測試在 localhost 上跑：應該看得到
+    }));
+    t.assert.deepStrictEqual(r, { shown: [true, true, true, true, true, true], hidden: [false, false, false, false], linkNow: true });
+  } },
   { name: '設定頁：有沒打完的連線對戰（30 分鐘內）時顯示「回到上次的連線對戰」，過期或沒有就不顯示', async fn(t) {
     const pg = await t.open('', { mode: false });
     const r = await pg.evaluate(() => {
