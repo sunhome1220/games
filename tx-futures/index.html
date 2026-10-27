@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>台指期 預估・現價</title>
+<style>
+:root{--bg:#0f1318;--card:#1a2029;--fg:#e8ecf1;--mut:#8b96a5;--up:#ff5a5f;--dn:#2ecc8f;--line:#2a323d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,"Noto Sans TC",sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:18px;margin:0 0 12px}h1 small{color:var(--mut);font-weight:400;margin-left:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.lbl{color:var(--mut);font-size:13px}.big{font-size:38px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.sub{font-variant-numeric:tabular-nums}.up{color:var(--up)}.dn{color:var(--dn)}
+.stats{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;color:var(--mut);font-size:13px}.stats b{color:var(--fg);font-weight:500}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-variant-numeric:tabular-nums;text-align:right}
+th{color:var(--mut);font-weight:400;font-size:13px}td,th{padding:5px 8px;border-bottom:1px solid var(--line)}
+tr.atm td{background:#26303d;font-weight:600}td:first-child,th:first-child{text-align:center}
+#st{color:var(--mut);font-size:12px;margin-top:12px}.warn{color:#f5b942}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.big{font-size:32px}}
+</style></head><body><main>
+<h1>台指期 預估・現價<small id="sym"></small></h1>
+<div class="grid">
+ <div class="card"><div class="lbl">現價（近月）</div><div class="big" id="last">--</div>
+  <div class="sub" id="chg">--</div>
+  <div class="stats"><span>開 <b id="o">--</b></span><span>高 <b id="h">--</b></span><span>低 <b id="l">--</b></span><span>量 <b id="v">--</b></span></div></div>
+ <div class="card"><div class="lbl">預估（選擇權隱含期貨價）</div><div class="big" id="est">--</div>
+  <div class="sub" id="gap">--</div>
+  <div class="stats"><span>契約 <b id="om">--</b></span><span>算法：K＋買權−賣權（|C−P|最小三檔平均）</span></div></div>
+</div>
+<div class="card" style="margin-top:12px"><div class="lbl">近價履約價（買賣權中價）</div>
+<table><thead><tr><th>履約價</th><th>買權</th><th>賣權</th><th>C−P</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div id="st">載入中…</div>
+</main>
+<script>
+const $=id=>document.getElementById(id),f=(n,d=0)=>n==null?'--':n.toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
+const cls=n=>n>0?'up':n<0?'dn':'';
+async function tick(){
+ try{
+  const r=await fetch('/api/quote'),d=await r.json();if(!r.ok)throw new Error(d.error||r.status);
+  const q=d.future,ch=q.last!=null&&q.ref?q.last-q.ref:null;
+  $('sym').textContent=q.name||q.symbol;$('last').textContent=f(q.last);$('last').className='big '+cls(ch);
+  $('chg').innerHTML=ch==null?'--':`<span class="${cls(ch)}">${ch>0?'▲':ch<0?'▼':''} ${f(Math.abs(ch))}（${f(ch/q.ref*100,2)}%）</span>`;
+  $('o').textContent=f(q.open);$('h').textContent=f(q.high);$('l').textContent=f(q.low);$('v').textContent=f(q.volume);
+  $('est').textContent=f(d.estimate,0);
+  const g=d.estimate!=null&&q.last!=null?d.estimate-q.last:null;
+  $('gap').innerHTML=g==null?'--':`預估 − 現價 <span class="${cls(g)}">${g>0?'+':''}${f(g,1)}</span>`;
+  $('om').textContent=d.optionMonth;
+  $('rows').innerHTML=d.options.map(o=>`<tr class="${d.estimate!=null&&Math.abs(o.strike-d.estimate)<=25?'atm':''}"><td>${o.strike}</td><td>${f(o.c,1)}</td><td>${f(o.p,1)}</td><td class="${cls(o.diff)}">${f(o.diff,1)}</td></tr>`).join('');
+  $('st').textContent='更新 '+new Date(d.updated).toLocaleTimeString()+'（每 5 秒；資料來源：臺灣期貨交易所，僅供參考，非投資建議）';
+ }catch(e){$('st').innerHTML='<span class="warn">取得報價失敗：'+e.message+'（非交易時段或伺服器無法連線期交所）</span>'}
+}
+tick();setInterval(tick,5000);
+</script></body></html>
