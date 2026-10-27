@@ -4,6 +4,18 @@
 const http = require('http'), https = require('https'), fs = require('fs'), path = require('path');
 const PORT = process.env.PORT || 8080, TTL = 3000;
 const cache = {};
+// 每個交易日保留最後一筆報價，非交易時段／連不上期交所時就用它顯示
+const HISTORY = process.env.HISTORY_FILE || path.join(__dirname, 'data', 'history.json'), KEEP = 60;
+let history = {};
+try { history = JSON.parse(fs.readFileSync(HISTORY, 'utf8')); } catch (e) {}
+function record(d) {
+  const day = String(d.future.date || '').trim();
+  if (!/^\d{8}$/.test(day) || d.future.last == null) return;
+  history[day] = d;
+  for (const k of Object.keys(history).sort().slice(0, -KEEP)) delete history[k];
+  try { fs.mkdirSync(path.dirname(HISTORY), { recursive: true }); fs.writeFileSync(HISTORY, JSON.stringify(history)); } catch (e) { console.error('寫入紀錄失敗', e.message); }
+}
+const days = () => Object.keys(history).sort();
 
 function post(cid) {
   return new Promise((resolve, reject) => {
@@ -50,7 +62,9 @@ async function build() {
   }
   const center = est ?? future.last;
   const near = rows.sort((a, b) => Math.abs(a.strike - center) - Math.abs(b.strike - center)).slice(0, 11).sort((a, b) => a.strike - b.strike);
-  return { updated: Date.now(), future, estimate: est, optionMonth: key, options: near };
+  const out = { updated: Date.now(), future, estimate: est, optionMonth: key, options: near };
+  record(out);
+  return out;
 }
 
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
@@ -60,8 +74,17 @@ http.createServer(async (req, res) => {
     try {
       if (!cache.d || Date.now() - cache.t > TTL) cache.d = await build(), cache.t = Date.now();
       res.end(JSON.stringify(cache.d));
-    } catch (e) { res.statusCode = 502; res.end(JSON.stringify({ error: String(e.message || e) })); }
+    } catch (e) {
+      const last = days().pop(); // 連不上：回最後一筆紀錄並標示過期
+      if (last) res.end(JSON.stringify({ ...history[last], stale: true, error: String(e.message || e) }));
+      else { res.statusCode = 502; res.end(JSON.stringify({ error: String(e.message || e) })); }
+    }
     return;
+  }
+  if (req.url.startsWith('/api/history')) {
+    res.setHeader('content-type', 'application/json; charset=utf-8');
+    return res.end(JSON.stringify(days().reverse().map(k => { const d = history[k]; return { date: k, last: d.future.last, ref: d.future.ref,
+      open: d.future.open, high: d.future.high, low: d.future.low, volume: d.future.volume, estimate: d.estimate }; })));
   }
   let p = req.url.split('?')[0]; if (p === '/') p = '/index.html';
   const file = path.join(__dirname, path.normalize(p).replace(/^(\.\.[\/\\])+/, ''));

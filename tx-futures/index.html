@@ -20,7 +20,7 @@ tr.atm td{background:#26303d;font-weight:600}td:first-child,th:first-child{text-
 </style></head><body><main>
 <h1>台指期 預估・現價<small id="sym"></small></h1>
 <div class="grid">
- <div class="card"><div class="lbl">現價（近月）</div><div class="big" id="last">--</div>
+ <div class="card"><div class="lbl" id="lbl">現價（近月）</div><div class="big" id="last">--</div>
   <div class="sub" id="chg">--</div>
   <div class="stats"><span>開 <b id="o">--</b></span><span>高 <b id="h">--</b></span><span>低 <b id="l">--</b></span><span>量 <b id="v">--</b></span></div></div>
  <div class="card"><div class="lbl">預估（選擇權隱含期貨價）</div><div class="big" id="est">--</div>
@@ -29,10 +29,13 @@ tr.atm td{background:#26303d;font-weight:600}td:first-child,th:first-child{text-
 </div>
 <div class="card" style="margin-top:12px"><div class="lbl">近價履約價（買賣權中價）</div>
 <table><thead><tr><th>履約價</th><th>買權</th><th>賣權</th><th>C−P</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="card" style="margin-top:12px"><div class="lbl">歷史收盤紀錄（伺服器每日自動保存最後一筆報價）</div>
+<table><thead><tr><th>日期</th><th>收盤</th><th>漲跌</th><th>高</th><th>低</th><th>預估</th></tr></thead><tbody id="hist"><tr><td colspan="6" class="lbl">尚無紀錄</td></tr></tbody></table></div>
 <div id="st">載入中…</div>
 </main>
 <script>
 const $=id=>document.getElementById(id),f=(n,d=0)=>n==null?'--':n.toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fd=s=>s&&s.length===8?s.slice(0,4)+'/'+s.slice(4,6)+'/'+s.slice(6):'--';
 const cls=n=>n>0?'up':n<0?'dn':'';
 async function tick(){
  try{
@@ -46,8 +49,13 @@ async function tick(){
   $('gap').innerHTML=g==null?'--':`預估 − 現價 <span class="${cls(g)}">${g>0?'+':''}${f(g,1)}</span>`;
   $('om').textContent=d.optionMonth;
   $('rows').innerHTML=d.options.map(o=>`<tr class="${d.estimate!=null&&Math.abs(o.strike-d.estimate)<=25?'atm':''}"><td>${o.strike}</td><td>${f(o.c,1)}</td><td>${f(o.p,1)}</td><td class="${cls(o.diff)}">${f(o.diff,1)}</td></tr>`).join('');
-  $('st').textContent='更新 '+new Date(d.updated).toLocaleTimeString()+'（每 5 秒；資料來源：臺灣期貨交易所，僅供參考，非投資建議）';
+  $('lbl').textContent=d.stale?'最後紀錄價（非交易時段）':'現價（近月）';
+  $('st').innerHTML=(d.stale?`<div class="warn">目前無法取得即時報價，顯示 ${fd(q.date)} ${q.time||''} 的最後紀錄。</div>`:'')+'更新 '+new Date(d.updated).toLocaleTimeString()+'（每 5 秒；資料來源：臺灣期貨交易所，僅供參考，非投資建議）';
  }catch(e){$('st').innerHTML='<span class="warn">取得報價失敗：'+e.message+'（非交易時段或伺服器無法連線期交所）</span>'}
 }
-tick();setInterval(tick,5000);
+async function hist(){
+ try{const a=await (await fetch('/api/history')).json();if(!a.length)return;
+  $('hist').innerHTML=a.map(x=>{const c=x.ref?x.last-x.ref:null;return `<tr><td>${fd(x.date)}</td><td>${f(x.last)}</td><td class="${cls(c)}">${c==null?'--':(c>0?'+':'')+f(c)}</td><td>${f(x.high)}</td><td>${f(x.low)}</td><td>${f(x.estimate)}</td></tr>`}).join('')}catch(e){}
+}
+tick();hist();setInterval(tick,5000);setInterval(hist,60000);
 </script></body></html>
