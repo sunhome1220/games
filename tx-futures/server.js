@@ -33,10 +33,39 @@ function post(cid) {
     req.on('error', reject); req.end(body);
   });
 }
+// 新加坡交易所 SGX 富時台灣指數期貨（代號 TWN）：日盤(T) 與電子盤(T+1)。
+// 網址可用環境變數覆寫；欄位名稱用寬鬆比對，取失敗時不影響台指期主流程。
+const SGX_CODE = process.env.SGX_CODE || 'TWN';
+const SGX_URL = s => process.env['SGX_URL_' + s] || `https://api.sgx.com/derivatives/v1.0/contract-code/${SGX_CODE}?session=${s === 'T' ? '1' : '2'}`;
+function getJson(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { timeout: 8000, headers: { 'user-agent': 'Mozilla/5.0', origin: 'https://www.sgx.com', accept: 'application/json' } }, res => {
+      let b = ''; res.on('data', d => b += d);
+      res.on('end', () => { try { resolve(JSON.parse(b)); } catch (e) { reject(new Error('SGX 回應非 JSON')); } });
+    }).on('timeout', function () { this.destroy(new Error('SGX timeout')); }).on('error', reject);
+  });
+}
+const pick = (o, names) => { const m = {}; for (const k of Object.keys(o)) m[k.toLowerCase().replace(/[^a-z0-9]/g, '')] = o[k];
+  for (const n of names) if (m[n] != null && m[n] !== '') return num(m[n]) ?? m[n]; return null; };
+async function sgx(sess) {
+  const j = await getJson(SGX_URL(sess));
+  const rows = Array.isArray(j) ? j : j.data || j.items || [];
+  const r = rows.find(x => pick(x, ['lastprice', 'last', 'lasttradedprice', 'price']) != null) || rows[0];
+  if (!r) throw new Error('SGX 無資料');
+  const last = pick(r, ['lastprice', 'last', 'lasttradedprice', 'price']);
+  const settle = pick(r, ['settlementprice', 'settle', 'prevsettle', 'previoussettle', 'previousclose']);
+  let chg = pick(r, ['change', 'chg', 'netchange']);
+  if (chg == null && last != null && settle != null) chg = last - settle;
+  return { last, change: chg, pct: pick(r, ['changepercent', 'pctchange', 'changepct', 'chgpct']) ?? (chg != null && settle ? chg / settle * 100 : null),
+    open: pick(r, ['open', 'openprice']), high: pick(r, ['high', 'highprice']), low: pick(r, ['low', 'lowprice']),
+    volume: pick(r, ['volume', 'vol', 'totalvolume']), settle, month: pick(r, ['expirymonth', 'contractmonth', 'month', 'contractname', 'name']),
+    time: pick(r, ['tradetime', 'lasttradetime', 'updatetime', 'time']) };
+}
 const num = v => { const n = parseFloat(v); return isFinite(n) ? n : null; };
 
 async function build() {
-  const [fut, opt] = await Promise.all([post('TXF'), post('TXO')]);
+  const [fut, opt, sgxDay, sgxElec] = await Promise.all([post('TXF'), post('TXO'),
+    sgx('T').catch(e => ({ error: e.message })), sgx('T1').catch(e => ({ error: e.message }))]);
   const f = fut.find(q => /^TXF[A-L]\d$/.test(q.SymbolID) && num(q.CLastPrice) != null) || fut.find(q => /^TXF[A-L]\d$/.test(q.SymbolID));
   if (!f) throw new Error('no futures quote');
   const future = { symbol: f.SymbolID, name: f.DispCName, last: num(f.CLastPrice), ref: num(f.CRefPrice),
@@ -62,7 +91,7 @@ async function build() {
   }
   const center = est ?? future.last;
   const near = rows.sort((a, b) => Math.abs(a.strike - center) - Math.abs(b.strike - center)).slice(0, 11).sort((a, b) => a.strike - b.strike);
-  const out = { updated: Date.now(), future, estimate: est, optionMonth: key, options: near };
+  const out = { updated: Date.now(), future, estimate: est, optionMonth: key, options: near, sgx: { day: sgxDay, elec: sgxElec } };
   record(out);
   return out;
 }

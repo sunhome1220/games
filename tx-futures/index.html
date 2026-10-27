@@ -27,6 +27,10 @@ tr.atm td{background:#26303d;font-weight:600}td:first-child,th:first-child{text-
   <div class="sub" id="gap">--</div>
   <div class="stats"><span>契約 <b id="om">--</b></span><span>算法：K＋買權−賣權（|C−P|最小三檔平均）</span></div></div>
 </div>
+<div class="grid" style="margin-top:12px">
+ <div class="card"><div class="lbl">新加坡 富時台灣指數期貨（日盤）</div><div class="big" id="sd" style="font-size:28px">--</div><div class="sub" id="sdc">--</div></div>
+ <div class="card"><div class="lbl">新加坡 富時台灣指數期貨（電子盤）</div><div class="big" id="se" style="font-size:28px">--</div><div class="sub" id="sec">--</div></div>
+</div>
 <div class="card" style="margin-top:12px"><div class="lbl">近價履約價（買賣權中價）</div>
 <table><thead><tr><th>履約價</th><th>買權</th><th>賣權</th><th>C−P</th></tr></thead><tbody id="rows"></tbody></table></div>
 <div class="card" style="margin-top:12px"><div class="lbl">歷史收盤紀錄（伺服器每日自動保存最後一筆報價）</div>
@@ -48,6 +52,10 @@ async function tick(){
   const g=d.estimate!=null&&q.last!=null?d.estimate-q.last:null;
   $('gap').innerHTML=g==null?'--':`預估 − 現價 <span class="${cls(g)}">${g>0?'+':''}${f(g,1)}</span>`;
   $('om').textContent=d.optionMonth;
+  for(const [k,a,b] of [['day','sd','sdc'],['elec','se','sec']]){const x=d.sgx&&d.sgx[k];
+   if(!x||x.error||x.last==null){$(a).textContent='--';$(b).innerHTML=`<span class="lbl">${x&&x.error?'暫無資料（'+x.error+'）':'暫無資料'}</span>`;continue}
+   $(a).textContent=f(x.last,2);$(a).className='big '+cls(x.change);
+   $(b).innerHTML=`<span class="${cls(x.change)}">${x.change==null?'':(x.change>0?'▲ ':x.change<0?'▼ ':'')+f(Math.abs(x.change),2)}${x.pct==null?'':'（'+f(x.pct,2)+'%）'}</span> <span class="lbl">${x.month||''} 量 ${f(x.volume)}</span>`}
   $('rows').innerHTML=d.options.map(o=>`<tr class="${d.estimate!=null&&Math.abs(o.strike-d.estimate)<=25?'atm':''}"><td>${o.strike}</td><td>${f(o.c,1)}</td><td>${f(o.p,1)}</td><td class="${cls(o.diff)}">${f(o.diff,1)}</td></tr>`).join('');
   $('lbl').textContent=d.stale?'最後紀錄價（非交易時段）':'現價（近月）';
   $('st').innerHTML=(d.stale?`<div class="warn">目前無法取得即時報價，顯示 ${fd(q.date)} ${q.time||''} 的最後紀錄。</div>`:'')+'更新 '+new Date(d.updated).toLocaleTimeString()+'（每 5 秒；資料來源：臺灣期貨交易所，僅供參考，非投資建議）';
