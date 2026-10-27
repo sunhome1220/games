@@ -15,9 +15,12 @@ h1{font-size:18px;margin:0 0 12px}h1 small{color:var(--mut);font-weight:400;marg
 table{width:100%;border-collapse:collapse;margin-top:8px;font-variant-numeric:tabular-nums;text-align:right}
 th{color:var(--mut);font-weight:400;font-size:13px}td,th{padding:5px 8px;border-bottom:1px solid var(--line)}
 tr.atm td{background:#26303d;font-weight:600}td:first-child,th:first-child{text-align:center}
+#newver{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:20;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:20px;padding:8px 16px;font:700 14px/1 inherit;box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:pointer}
+#newver[hidden]{display:none}#ver{color:var(--mut);font-size:12px;margin-top:4px}
 #st{color:var(--mut);font-size:12px;margin-top:12px}.warn{color:#f5b942}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.big{font-size:32px}}
-</style></head><body><main>
+</style></head><body><button id="newver" hidden>🔔 有新版本，點此重新整理</button>
+<main>
 <h1>台指期 預估・現價<small id="sym"></small></h1>
 <div class="grid">
  <div class="card"><div class="lbl" id="lbl">現價（近月）</div><div class="big" id="last">--</div>
@@ -35,9 +38,20 @@ tr.atm td{background:#26303d;font-weight:600}td:first-child,th:first-child{text-
 <table><thead><tr><th>履約價</th><th>買權</th><th>賣權</th><th>C−P</th></tr></thead><tbody id="rows"></tbody></table></div>
 <div class="card" style="margin-top:12px"><div class="lbl">歷史收盤紀錄（伺服器每日自動保存最後一筆報價）</div>
 <table><thead><tr><th>日期</th><th>收盤</th><th>漲跌</th><th>高</th><th>低</th><th>預估</th></tr></thead><tbody id="hist"><tr><td colspan="6" class="lbl">尚無紀錄</td></tr></tbody></table></div>
-<div id="st">載入中…</div>
+<div id="st">載入中…</div><div id="ver"></div>
 </main>
 <script>
+// 每次更新都要改 VERSION（執行 python3 tx-futures/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
+const VERSION='2026-10-27.01';
+document.getElementById('ver').textContent='版本 '+VERSION;
+const newverBtn=document.getElementById('newver');
+async function checkUpdate(){
+ try{const txt=await (await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'})).text();
+  const v=(txt.match(/const VERSION='([^']+)'/)||[])[1];newverBtn.hidden=!v||v===VERSION}catch(e){}
+}
+newverBtn.onclick=()=>location.replace(location.pathname+'?v='+Date.now());
+if(location.protocol.startsWith('http')){checkUpdate();setInterval(checkUpdate,5*60*1000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});addEventListener('focus',checkUpdate);addEventListener('pageshow',checkUpdate)}
 const $=id=>document.getElementById(id),f=(n,d=0)=>n==null?'--':n.toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fd=s=>s&&s.length===8?s.slice(0,4)+'/'+s.slice(4,6)+'/'+s.slice(6):'--';
 const cls=n=>n>0?'up':n<0?'dn':'';

@@ -10,7 +10,7 @@
 - `3kingdom-battles/`：三國・名戰錄（立體 3D 回合制攻守城戰，歷史戰役關卡），說明見 `3kingdom-battles/README.md`
 - `pikmin-like/`：小芽隊長（2D 即時群體操作，類皮克敏玩法；單一 `index.html`，無外部函式庫）。改版時執行 `python3 pikmin-like/tools/bump_version.py 2026-xx-xx.nn` 更新版本號，玩家端會跳出「有新版本」提示
 - `pullback-rush/`：Pullback Rush（回力戰車同畫面雙人對戰，純 Canvas、無外部函式庫）。`js/config.js` 集中所有參數（蓄力、馬達、射程、主堡血量），`js/audio.js` 合成音效，`js/game.js` 邏輯與繪圖。本機執行：`python3 -m http.server` 後開 `/pullback-rush/`。改版時執行 `python3 pullback-rush/tools/bump_version.py 2026-xx-xx.nn` 更新版本號，玩家端會跳出「有新版本」提示
-- `tx-futures/`：台指期預估・現價查詢（參考 optratw.com）。`node tx-futures/server.js` 後開 `http://localhost:8080`；`server.js` 代理期交所 MIS 報價（`/api/quote`），並把每個交易日最後一筆報價存到 `tx-futures/data/history.json`（`/api/history`，保留 60 天；非交易時段顯示最後紀錄）。另外參考新加坡 SGX 富時台灣指數期貨（日盤／電子盤，代號 `TWN`，網址可用環境變數 `SGX_CODE`、`SGX_URL_T`、`SGX_URL_T1` 覆寫），預估價＝選擇權買賣權平價隱含期貨價（K＋C−P）
+- `tx-futures/`：台指期預估・現價查詢（參考 optratw.com）。改版時執行 `python3 tx-futures/tools/bump_version.py 2026-xx-xx.nn` 更新版本號，使用者端會跳出「有新版本」提示。`node tx-futures/server.js` 後開 `http://localhost:8080`；`server.js` 代理期交所 MIS 報價（`/api/quote`），並把每個交易日最後一筆報價存到 `tx-futures/data/history.json`（`/api/history`，保留 60 天；非交易時段顯示最後紀錄）。另外參考新加坡 SGX 富時台灣指數期貨（日盤／電子盤，代號 `TWN`，網址可用環境變數 `SGX_CODE`、`SGX_URL_T`、`SGX_URL_T1` 覆寫），預估價＝選擇權買賣權平價隱含期貨價（K＋C−P）
 - `proto-a.html`、`proto-c.html`：另外兩個原型
 - `proto-b.html`：舊網址，會自動轉址到 `chess/`
 
