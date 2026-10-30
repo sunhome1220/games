@@ -12,8 +12,26 @@ function setSkip(on) {
   $('undo').hidden = !(state === 'target' && moved && origin);
   $('fire').hidden = !(state === 'select' && sel && sel.dest);
 }
+// 護衛射擊：敵方棋子走完停在將／士／象的護衛領域裡，其中威力最高的一顆（同威力取最近的）自動朝它開一槍（威力 GUARD_DMG）。
+// 兩台裝置都會算同樣的結果；射擊（含傷害）播完後才繼續原本的流程（選目標或結束回合）。回傳 true＝有開槍、由 next 接手
+function guardFire(next) {
+  const m = mover; if (!m || m.hp <= 0) return false;
+  const ds = alive().filter(d => d.s !== m.s && inGuardZone(d, m)).sort((u, v) => v.T.dmg - u.T.dmg || Math.hypot(u.x - m.x, u.y - m.y) - Math.hypot(v.x - m.x, v.y - m.y));
+  if (!ds.length) return false;
+  const d = ds[0];
+  state = 'guard'; targets = []; setSkip(false);
+  fx.push({ k: 'txt', x: m.x, y: m.y - R - 10, txt: '護衛射擊！', t: 1.3, T: 1.3, col: '#c0392b', side: d.s });
+  d.fireT = { n: d.T.n, w: '護衛射擊', snd: 'pistol', proj: 'bullet', dmg: GUARD_DMG, range: 99 * C, min: 0, reload: 0, indirect: true, isAlt: true, guardShot: true };
+  shootAt(d, m, m.x, m.y, m);
+  fx.push({ k: 'txt', x: m.x, y: m.y, txt: '', t: 0.01, T: 0.01, delay: 0.55, done: next });   // 子彈（0.12 秒）命中後再繼續
+  return true;
+}
 function onStop() {
   promoteCrossed();
+  if (guardFire(onStop2)) return;
+  onStop2();
+}
+function onStop2() {
   if (online() && !myTurn()) { if (pendingEnd) applyEnd(); else state = 'wait'; return; }
   if (mover.hp <= 0) { state = 'fire'; timer = 0.6; return; }
   targets = scan(mover);
@@ -161,6 +179,7 @@ function effDmg(b, d) {
 function impact(a, b, dmg = (a.fireT || a.T).dmg, note = '') {
   const T = a.fireT || a.T, heavy = T.proj === 'rocket' || T.proj === 'shell';
   const bx = visX(b), by = visY(b);
+  if (!note && dmg === T.dmg) dmg = guardDmg(a, b, dmg);   // 將／士／象打自己領域裡的目標：威力至少 GUARD_DMG
   dmg = effDmg(b, dmg);
   b.hp = Math.max(0, b.hp - dmg); b.flash = 0.35;
   fx.push({ k: 'txt', x: bx, y: by - R, txt: dmg > 0 ? '-' + hearts(dmg) : '免疫', t: 1, T: 1, side: b.s, col: dmg > 0 ? undefined : '#2f6fb5' });
@@ -183,7 +202,7 @@ function impact(a, b, dmg = (a.fireT || a.T).dmg, note = '') {
   if (!note.includes('波及')) setMsg(`${T.n[a.s]} 用${T.w}攻擊 ` + all.join('；'));
   timer = Math.max(timer, b.hp <= 0 ? 1.2 : 0.8);
   checkWin();
-  if (T === AVENGER) a.fireT = null;
+  if (T === AVENGER || T.guardShot) a.fireT = null;
   return res;
 }
 // 犄角：仕、象互相掩護（傳統象棋的「吃回」）。一方被對手擊毀時，若另一位仕／象「照一般走法」走得到陣亡位置，

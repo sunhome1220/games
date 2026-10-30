@@ -220,6 +220,21 @@ module.exports = [
     const h = await Promise.all(pgs.map(p => p.evaluate(() => stateHash())));
     t.assert.strictEqual(h[0], h[1], '修復後兩邊局面雜湊應一致');
   } },
+  { name: '連線：護衛射擊兩邊都算同樣的結果（黑俥走到紅帥前被打死、血量高的撐住），回合結束後局面一致', async fn(t) {
+    const room = 'guard' + Date.now() % 100000, pgs = [];
+    for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}`, { mode: false, freeze: false }));
+    await pgs[0].waitForTimeout(700);
+    const layout = hp => pgs.map(p => p.evaluate(h => { T_.place([{ s: 0, t: 'K', c: 4, r: 9 }, { s: 0, t: 'G', c: 3, r: 9 }, { s: 1, t: 'R', c: 4, r: 4, hp: h }, { s: 1, t: 'C', c: 0, r: 2 }, { s: 1, t: 'K', c: 4, r: 0 }]); turn = 1; state = 'aim'; }, hp));   // 多一顆遠處的黑炮：俥死後還有能過河的棋子，不會變和局
+    for (const hp of [4, 6]) {
+      await Promise.all(layout(hp)); await pgs[0].waitForTimeout(200);
+      await pgs[1].evaluate(() => { const r = pieces.find(p => p.s === 1 && p.t === 'R'); T_.go(r, 4, 8); });
+      await Promise.all(pgs.map(p => p.waitForFunction(() => ['aim', 'wait', 'target', 'over'].includes(state) && !fx.some(f => f.done), null, { timeout: 15000 })));
+      if (hp === 4) await pgs[0].waitForFunction(() => turn === 0, null, { timeout: 15000 });   // 俥陣亡 → 黑方回合結束、換紅方
+      const r = await Promise.all(pgs.map(p => p.evaluate(() => { const rk = pieces.find(q => q.s === 1 && q.t === 'R'); return [rk.hp, Math.round(rk.x), Math.round(rk.y)]; })));
+      t.assert.deepStrictEqual(r[0], r[1], `血量 ${hp}：兩邊看到的俥應該一樣`);
+      t.assert.strictEqual(r[0][0], hp === 4 ? 0 : 2);
+    }
+  } },
   { name: '連線：取消移動（含升官空投）兩邊同步還原', async fn(t) {
     const room = 'undo' + Date.now() % 100000, pgs = [];
     for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}`, { mode: false, freeze: false }));

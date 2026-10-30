@@ -28,6 +28,27 @@ function shotgunSim(a, b, x = a.x, y = a.y, T = a.T) {
 }
 const pelletDmg = (n, T) => n ? Math.max(0.25, quarter(n / T.pellets * T.dmg)) : 0;
 
+// ----- 護衛領域（傳統象棋「蓋住的格子」）-----
+// 將／士／象照傳統走法「走得到（可以吃）」的格子，而且在己方帥／將 2 格內，就是這顆棋子的護衛領域：
+//   · 敵方棋子走完停在領域裡，領域的守衛會自動朝它開一槍（見 turn.js 的 guardFire）；
+//   · 將／士／象攻擊站在自己領域裡的目標，威力至少 GUARD_DMG（可以秒殺多數棋子）。
+const GUARD_DMG = 4, GUARD_NEAR = 2 * C, GUARD_TYPES = ['K', 'G', 'E'];
+function coverCells(d, x = d.x, y = d.y) {
+  const me = { s: d.s, T: d.T, t: d.t }, pts = pointsFor(me), at = (px, py) => ([qx, qy]) => Math.abs(qx - px) < 1 && Math.abs(qy - py) < 1;
+  const near = (cand) => cand.map(([sx, sy]) => [x + sx * C, y + sy * C]).filter(([cx, cy]) => pts.some(at(cx, cy)));
+  if (d.t === 'G') return near([[1, 1], [1, -1], [-1, 1], [-1, -1]]);   // 仕：九宮內斜走一格
+  if (d.t === 'K') return near([[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]);   // 帥／將：九宮內走一格（本遊戲含斜向）
+  if (d.t === 'E') return near([[2, 2], [2, -2], [-2, 2], [-2, -2]]).filter(([cx, cy]) => !alive().some(q => q !== d && Math.hypot(q.x - (x + cx) / 2, q.y - (y + cy) / 2) < 1));   // 象：田字，象眼（中間格）有棋子就蓋不到
+  return [];
+}
+// target 站在 a 的護衛領域裡嗎？（a 站在 (x,y)；領域只算己方帥／將 2 格內）
+function inGuardZone(a, target, x = a.x, y = a.y) {
+  if (!GUARD_TYPES.includes(a.t) || a.hp <= 0 || a.s === target.s) return false;
+  const k = a.t === 'K' ? { x, y } : alive().find(q => q.s === a.s && q.t === 'K');
+  if (!k || Math.hypot(target.x - k.x, target.y - k.y) > GUARD_NEAR + 1) return false;
+  return coverCells(a, x, y).some(([cx, cy]) => Math.abs(cx - target.x) < 1 && Math.abs(cy - target.y) < 1);
+}
+const guardDmg = (a, target, base, x = a.x, y = a.y) => inGuardZone(a, target, x, y) ? Math.max(base, GUARD_DMG) : base;
 // 回傳 {p, ok, why, est}：在射程內的敵人、能否射擊、預估傷害
 function scan(a, x = a.x, y = a.y, T0 = null) {
   return alive().filter(p => p.s !== a.s).map(p => {
@@ -40,7 +61,7 @@ function scan(a, x = a.x, y = a.y, T0 = null) {
     if (a.cd > 0 && !a.T.aa && !T.isAlt) return { p, ok: false, why: `裝填中 ${a.cd}` };
     if (d < T.min) return { p, ok: false, why: '太近' };
     if (!T.indirect && blocked(a, p, x, y)) return { p, ok: false, why: '被擋' };
-    return { p, ok: true, T, est: T.pellets ? pelletDmg(shotgunSim(a, p, x, y, T).count.get(p) || 0, T) : T.dmg };
+    return { p, ok: true, T, est: T.pellets ? pelletDmg(shotgunSim(a, p, x, y, T).count.get(p) || 0, T) : guardDmg(a, p, T.dmg, x, y) };
   }).filter(Boolean);
 }
 // 兵過河後永久升級成霰彈兵

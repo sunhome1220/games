@@ -58,7 +58,7 @@ function onNet(m) {
     shoot(pieces[m.a], pieces[m.b]);
   } else if (m.t === 'end') {
     pendingEnd = m.snap; pendingEndH = m.h;
-    if (!['moving', 'settle', 'fire'].includes(state)) applyEnd();   // 否則等動畫播完（onStop／endTurn）再套用
+    if (!['moving', 'settle', 'fire', 'guard'].includes(state)) applyEnd();   // 否則等動畫播完（onStop／endTurn）再套用
   }
 }
 function restart() {
