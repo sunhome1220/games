@@ -262,11 +262,14 @@ $('perkBtn').onclick = () => showPerks(mode === 'ai' || online() ? mySide : turn
 $('pTab0').onclick = () => showPerks(0); $('pTab1').onclick = () => showPerks(1);
 $('perkClose').onclick = () => { $('perkOv').hidden = true; };
 // 選牌流程：pickQ 依序處理；自己這台裝置上的人類顯示三選一，電腦自動選，連線對手則等他的選擇訊息
-function beginPick(sides) { pickQ = sides.slice(); state = 'pick'; sel = null; targets = []; setSkip(false); nextPick(); }
+function beginPick(sides, opening) {
+  if (opening && (mode === 'online' || mode === 'face')) { beginSimulPick(); return; }   // 開局：連線、面對面雙方同時選
+  pickQ = sides.slice(); state = 'pick'; sel = null; targets = []; setSkip(false); nextPick();
+}
 // ---- 選卡限時：整個選卡流程（三選一，加上隕石雨選落點／起死回生選對象）共用 15 秒；時間到就自動選（三選一隨機一張，落點／復活對象選對自己最有利的）----
 const PICK_SECS = 15;
 let pickEnd = 0, pickTimer = 0, pickWaiting = false;
-function stopPickClock() { clearInterval(pickTimer); pickTimer = 0; for (const id of ['cardTimer', 'spellTimer', 'reviveTimer']) $(id).textContent = ''; }
+function stopPickClock() { clearInterval(pickTimer); pickTimer = 0; for (const id of ['cardTimer', 'cardTimer2', 'spellTimer', 'reviveTimer']) $(id).textContent = ''; }
 function startPickClock(waiting) {
   stopPickClock(); pickWaiting = !!waiting; pickEnd = Date.now() + PICK_SECS * 1000;
   pickTimer = setInterval(tickPick, 250); tickPick();
@@ -275,12 +278,14 @@ function tickPick() {
   if (!pickTimer) return;   // 沒有在倒數（例如不是從選卡流程進來）就不動作
   if (typeof netLost !== 'undefined' && netLost) { pickEnd += 250; return; }   // 斷線期間暫停倒數
   const left = Math.max(0, Math.ceil((pickEnd - Date.now()) / 1000));
+  if (sp) { spTick(left); if (Date.now() >= pickEnd) spAuto(); return; }   // 開局同時選卡
   const txt = pickWaiting ? `⏱ 對手選卡中，剩 ${left} 秒` : `⏱ 剩 ${left} 秒，時間到會自動選`;
   for (const id of ['cardTimer', 'spellTimer', 'reviveTimer']) { const e = $(id); e.textContent = pickWaiting ? '' : txt; e.classList.toggle('warn', left <= 5); }
   if (pickWaiting) { if (state === 'pick' && waitingFor !== null) setMsg(txt); }
   if (Date.now() >= pickEnd) { if (pickWaiting) clearInterval(pickTimer); else autoPick(); }
 }
 function autoPick() {
+  if (sp) { spAuto(); return; }
   stopPickClock();
   if (typeof spell !== 'undefined' && spell) {   // 隕石雨：選對自己最有利的落點
     const c = aiMeteorCenter(spell.side); spell.x = c.x; spell.y = c.y; $('spellGo').disabled = false; toast('⏱ 時間到，自動選了落點'); $('spellGo').click(); return;
@@ -313,25 +318,91 @@ function nextPick() {
   } else if (mine) showCards(side);
   else { $('cardPick').hidden = true; waitingFor = side; setMsg(`等待對手選擇強化卡…`); startPickClock(true); drainIncoming(); }
 }
-function showCards(side) {
-  const offers = drawOffers(side);
-  if (!offers.length) { nextPick(); return; }
-  $('cardTitle').textContent = `${SIDE[side].name}・選擇一張強化卡`;
-  $('cardSub').textContent = `三選一，效果立刻生效；之後每 ${cardEvery} 回合再選一次（越後面的卡越瘋狂）`;
-  $('cardBox').classList.toggle('flip', mode === 'face' && side === 1);   // 面對面：黑方這邊的畫面倒轉
-  const list = $('cardList'); list.innerHTML = '';
-  const top = Math.max(...offers.map(tierOf)), box = $('cardBox');
+// 選卡面板：#cardPick 裡有兩組面板（A 一般、B 面對面同時選時給黑方用，倒轉）。renderPanel 把 side 的三選一畫進指定面板
+const PANELS = [{ box: 'cardBox', title: 'cardTitle', sub: 'cardSub', list: 'cardList', timer: 'cardTimer' }, { box: 'cardBox2', title: 'cardTitle2', sub: 'cardSub2', list: 'cardList2', timer: 'cardTimer2' }];
+function renderPanel(side, offers, P, onChoose, flip) {
+  $(P.title).textContent = `${sideLabel(side)}・選擇一張強化卡`;
+  $(P.sub).textContent = `三選一，效果立刻生效；之後每 ${cardEvery} 回合再選一次（越後面的卡越瘋狂）`;
+  const box = $(P.box); box.classList.toggle('flip', !!flip);   // 面對面：黑方這邊的畫面倒轉
+  const list = $(P.list); list.innerHTML = '';
+  const top = Math.max(...offers.map(tierOf));
   box.classList.remove('top2', 'top3', 'top4'); void box.offsetWidth; if (top >= 2) box.classList.add('top' + top);
-  $('cardTitle').textContent += top >= 4 ? ' ✨終極降臨！' : top === 3 ? ' ⚡瘋狂！' : '';
+  $(P.title).textContent += top >= 4 ? ' ✨終極降臨！' : top === 3 ? ' ⚡瘋狂！' : '';
   if (top >= 3) { gainFlash(top); SFX.play(top >= 4 ? 'win' : 'card'); }
   offers.forEach((c, i) => {
     const b = document.createElement('button'); b.className = 'cbtn t' + tierOf(c); b.style.setProperty('--d', (i * 0.18) + 's');
     const n = cardCount[side][c.id] || 0;
     b.innerHTML = `<div class="ic">${c.ic}</div><div>${tierBadge(c)}<b>${c.name}</b><span>${cardDesc(c)}</span>${n ? `<br><em>已持有 ${n} 張，效果疊加</em>` : ''}</div>`;
-    b.onclick = () => chooseCard(side, c.id);
+    b.onclick = () => onChoose(c.id);
     list.appendChild(b);
   });
+}
+function showCards(side) {
+  const offers = drawOffers(side);
+  if (!offers.length) { nextPick(); return; }
+  $('cardPick').classList.remove('dual'); $('cardBox2').hidden = true; $('cardBox').hidden = false;
+  renderPanel(side, offers, PANELS[0], id => chooseCard(side, id), mode === 'face' && side === 1);
   $('cardPick').hidden = false; setMsg('請選擇強化卡。'); startPickClock(false);
+}
+// ---- 開局同時選卡（連線、面對面）：雙方同時選、各 15 秒，不用互相等；兩邊都選完（或時間到）才一起亮牌、一起套用 ----
+// 連線：每台裝置只顯示自己的三選一，選好後把選擇傳給對方但先不套用；面對面：同一個畫面上方（黑方、倒轉）和下方（紅方）各一組，兩人同時點。
+// 開局的卡都是普通卡（沒有要再選落點／對象的），所以套用順序不影響結果。
+let sp = null;   // { sides: 這個裝置負責選的方, offers: {side: [卡]}, choice: {side: id|null}, got: {side: id|null}（連線：對手傳來的選擇）}
+const spDone = () => [0, 1].every(s => s in sp.choice || s in sp.got);
+function beginSimulPick() {
+  sp = { sides: mode === 'online' ? [mySide] : [0, 1], offers: {}, choice: {}, got: {} };
+  state = 'pick'; sel = null; targets = []; setSkip(false); pickQ = []; pickSide = null; waitingFor = null; updateHeader();
+  for (const s of sp.sides) { sp.offers[s] = drawOffers(s); if (!sp.offers[s].length) sp.choice[s] = null; }
+  if (mode === 'online') for (const s of sp.sides) if (sp.choice[s] === null) send({ t: 'card', side: s, id: null, sp: 1 });   // 沒有卡可選：告訴對方不用等
+  const dual = mode === 'face';
+  $('cardPick').classList.toggle('dual', dual); $('cardBox').hidden = false; $('cardBox2').hidden = !dual;
+  // 面對面：紅方在下（面板 A，正向）、黑方在上（面板 B，倒轉）；連線：只有我自己的面板 A
+  for (const s of sp.sides) if (sp.offers[s].length) { const P = PANELS[dual && s === 1 ? 1 : 0]; renderPanel(s, sp.offers[s], P, id => spChoose(s, id), dual && s === 1); }
+  $('cardPick').hidden = false; setMsg('請選擇強化卡（雙方同時選）。'); startPickClock(false);
+  if (spDone()) spFinish();
+}
+function spChoose(side, id) {
+  if (!sp || side in sp.choice) return;
+  sp.choice[side] = id;
+  const P = PANELS[mode === 'face' && side === 1 ? 1 : 0];
+  $(P.list).innerHTML = ''; $(P.sub).textContent = '✅ 已選好，雙方都選完才會一起亮牌';
+  if (mode === 'online') send({ t: 'card', side, id, sp: 1 });
+  spTick(Math.max(0, Math.ceil((pickEnd - Date.now()) / 1000)));
+  if (spDone()) spFinish(); else { pickWaiting = true; SFX.play('click'); }
+}
+function spRemote(m) {
+  if (!sp) return;
+  if (m.id === null || cardOf(m.id)) sp.got[m.side] = m.id;
+  if (spDone()) spFinish();
+}
+function spTick(left) {   // 倒數顯示：還沒選的人看到「剩 N 秒，時間到自動選」，選好的人看到「等對方」
+  for (const s of sp.sides) {
+    const P = PANELS[mode === 'face' && s === 1 ? 1 : 0], e = $(P.timer);
+    e.textContent = s in sp.choice ? `⏱ 等待${mode === 'online' ? '對手' : '另一方'}選卡，剩 ${left} 秒` : `⏱ 剩 ${left} 秒，時間到會自動選`;
+    e.classList.toggle('warn', left <= 5);
+  }
+  if (mode === 'online' && sp.sides.every(s => s in sp.choice)) setMsg(`✅ 你選好了，等待對手選卡（剩 ${left} 秒）`);
+}
+function spAuto() {   // 時間到：自己這邊還沒選的，從三張裡隨機送一張
+  if (!sp) return;
+  clearInterval(pickTimer); pickTimer = 0;
+  for (const s of sp.sides) if (!(s in sp.choice) && sp.offers[s].length) { const o = sp.offers[s]; spChoose(s, o[Math.floor(Math.random() * o.length)].id); toast('⏱ 時間到，隨機送你一張'); if (!sp) return; }
+}
+function spFinish() {
+  const picks = [0, 1].map(s => s in sp.choice ? sp.choice[s] : sp.got[s]);
+  sp = null; stopPickClock(); $('cardPick').hidden = true; $('cardPick').classList.remove('dual'); $('cardBox2').hidden = true;
+  picks.forEach((id, s) => { if (id) applyCard(s, id); });   // 一起套用（紅方、黑方依序）
+  showReveal(picks);
+  pickQ = []; nextPick();
+}
+// 亮牌：雙方各選了什麼（短暫顯示，不擋住操作）；面對面時上下各一份
+function showReveal(picks) {
+  const txt = picks.map((id, s) => id ? `${sideLabel(s)}：${cardOf(id).ic} ${cardOf(id).name.split('・')[1] || cardOf(id).name}` : '').filter(Boolean).join('　');
+  if (!txt) return;
+  for (const flip of mode === 'face' ? [false, true] : [false]) {
+    const e = document.createElement('div'); e.className = 'revealBar' + (flip ? ' flip' : ''); e.textContent = '🃏 ' + txt;
+    document.body.appendChild(e); setTimeout(() => e.remove(), 4200);
+  }
 }
 function chooseCard(side, id) {
   if (pickSide !== side) return;

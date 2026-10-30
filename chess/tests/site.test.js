@@ -92,10 +92,10 @@ module.exports = [
     const html = fs.readFileSync(path.join(root, '..', 'proto-b.html'), 'utf8'), m = html.match(/const VERSION = '([^']+)'/);
     t.assert.ok(m && m[1] !== fs.readFileSync(path.join(root, 'js/version.js'), 'utf8').match(/const VERSION = '([^']+)'/)[1], '轉址頁要有版本字串');
   } },
-  { name: '遊戲列表：主卡片（小芽隊長、瘋狂象棋、三國）在前，早期原型預設收合', async fn(t) {
+  { name: '遊戲列表：主卡片（含瘋狂象棋）在前且都看得到，早期原型預設收合', async fn(t) {
     const pg = await t.ctx.newPage(); await pg.goto(`${t.base}/index.html`);
-    const r = await pg.evaluate(() => ({ feats: [...document.querySelectorAll('a.feat')].map(a => a.getAttribute('href')), old: document.querySelector('details.old').open, oldLinks: [...document.querySelectorAll('details.old a')].map(a => a.getAttribute('href')), visibleCards: [...document.querySelectorAll('a.card')].filter(a => a.checkVisibility()).length }));
-    t.assert.deepStrictEqual(r, { feats: ['pikmin-like/index.html', 'chess/index.html', '3kingdom-battles/index.html', '3kingdom/index.html'], old: false, oldLinks: ['proto-a.html', 'proto-c.html'], visibleCards: 4 });   // 小芽隊長＋瘋狂象棋＋三國兩款
+    const r = await pg.evaluate(() => { const feats = [...document.querySelectorAll('a.feat')].map(a => a.getAttribute('href')); return { chess: feats.includes('chess/index.html'), featCount: feats.length >= 4, old: document.querySelector('details.old').open, oldLinks: [...document.querySelectorAll('details.old a')].map(a => a.getAttribute('href')), visibleCards: [...document.querySelectorAll('a.card')].filter(a => a.checkVisibility()).length === feats.length }; });   // 主卡片數量不寫死：別的遊戲加進選單不該讓這項失敗
+    t.assert.deepStrictEqual(r, { chess: true, featCount: true, old: false, oldLinks: ['proto-a.html', 'proto-c.html'], visibleCards: true });
     await pg.close();
   } },
   { name: '舊網址 proto-b.html 會轉址到 chess/（保留參數）', async fn(t) {

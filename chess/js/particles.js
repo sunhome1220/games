@@ -45,7 +45,7 @@ function reset(noPick = false) {
   clockReset(); if (typeof stopPickClock === 'function') stopPickClock();
   if (typeof hintReset === 'function') hintReset();
   gameCounted = false; $('tipCard').hidden = true;   // 新的一局：重新計數、收起小提醒（見 tip.js）
-  mods = [{}, {}]; cardCount = [{}, {}]; turnsPlayed = [0, 0]; immune = [0, 0]; extraTurn = [0, 0]; pickQ = []; pickSide = null; waitingFor = null; incoming = [];
+  mods = [{}, {}]; cardCount = [{}, {}]; turnsPlayed = [0, 0]; immune = [0, 0]; extraTurn = [0, 0]; pickQ = []; pickSide = null; waitingFor = null; incoming = []; sp = null; $('cardPick').classList.remove('dual'); $('cardBox2').hidden = true;
   $('cardPick').hidden = true; buildTypes(0); buildTypes(1);
   pieces = [];
   for (let s = 0; s < 2; s++)
@@ -59,7 +59,7 @@ function reset(noPick = false) {
   setMsg('拉動己方棋子移動（輕點＝原地不動），停下後點選要攻擊的敵人。');
   renderPerks();
   if (typeof saveCheckpoint === 'function' && online()) saveCheckpoint();   // 連線對戰：新的一局從這裡開始（斷線重連的回溯點）
-  if (cardsOn && !noPick) beginPick([0, 1]);   // 開局：雙方各選一張強化卡
+  if (cardsOn && !noPick) beginPick([0, 1], true);   // 開局：雙方各選一張強化卡
 }
 function updateHeader() {
   $('turn').textContent = online() ? (myTurn() ? `你的回合・${myName}` : `${peerName}的回合`)

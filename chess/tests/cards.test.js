@@ -118,6 +118,31 @@ module.exports = [
     });
     t.assert.deepStrictEqual(r, { noDead: false, hasDead: true, revived: [true, false, false], xt: 1, afterFirst: [0, 0, 'aim'], afterSecond: 1 });
   } },
+  { name: '開局同時選卡（面對面）：上下各一組同時選、兩人都選完才一起亮牌套用；時間到各自隨機；並排／對電腦仍輪流', async fn(t) {
+    const pg = await t.open();
+    const r = await pg.evaluate(async () => {
+      const o = {}, wait = ms => new Promise(r => setTimeout(r, ms)), total = s => Object.keys(cardCount[s]).length;
+      reset(true); mode = 'face'; cardsOn = true; beginPick([0, 1], true);
+      const vis = id => !document.getElementById(id).hidden;
+      o.panels = [state, vis('cardPick'), vis('cardBox'), vis('cardBox2'), document.getElementById('cardBox2').classList.contains('flip'), document.getElementById('cardPick').classList.contains('dual'), document.querySelectorAll('#cardList button').length, document.querySelectorAll('#cardList2 button').length];
+      document.querySelector('#cardList2 button').click();   // 黑方（上方）先選好
+      o.afterBlack = [state, total(0), total(1), document.querySelectorAll('#cardList2 button').length, document.getElementById('cardSub2').textContent.includes('已選好'), vis('cardPick')];   // 還在等紅方：都還沒套用
+      document.querySelector('#cardList button').click();    // 紅方選好 → 一起亮牌套用
+      o.done = [state === 'aim', total(0), total(1), vis('cardPick'), document.querySelectorAll('.revealBar').length, document.querySelector('.revealBar').textContent.includes('紅方') && document.querySelector('.revealBar').textContent.includes('黑方')];
+      document.querySelectorAll('.revealBar').forEach(e => e.remove());
+      // 時間到：兩邊都沒選，各自隨機送一張
+      reset(true); mode = 'face'; cardsOn = true; beginPick([0, 1], true); pickEnd = Date.now() - 1; await wait(450);
+      o.timeout = [state === 'aim', total(0), total(1), vis('cardPick')];
+      // 並排（local）：維持輪流，一次只有一組
+      reset(true); mode = 'local'; cardsOn = true; beginPick([0, 1], true); o.local = [sp === null, vis('cardBox'), vis('cardBox2'), pickSide];
+      return o;
+    });
+    t.assert.deepStrictEqual(r.panels, ['pick', true, true, true, true, true, 3, 3]);
+    t.assert.deepStrictEqual(r.afterBlack, ['pick', 0, 0, 0, true, true]);
+    t.assert.deepStrictEqual(r.done, [true, 1, 1, false, 2, true]);
+    t.assert.deepStrictEqual(r.timeout, [true, 1, 1, false]);
+    t.assert.deepStrictEqual(r.local, [true, true, false, 0]);
+  } },
   { name: '選卡限時 15 秒：倒數顯示、時間到隨機送一張；抽到隕石雨／起死回生也一併自動選完；等待方看得到對手倒數；不影響電腦', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(async () => {
