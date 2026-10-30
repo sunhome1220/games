@@ -43,7 +43,7 @@ function onNet(m) {
     if (m.clock !== undefined && CLOCK_OPTIONS.includes(m.clock)) { clockSec = m.clock; showClockBtn(); }   // 連線時以房主的限時設定為準
     if (cardsOn !== m.cards || (m.every && cardEvery !== m.every)) { cardsOn = m.cards; if (m.every) cardEvery = m.every; showCardsBtn(); } reset(); return; }   // 連線時以房主的強化卡牌設定為準
   if (m.t === 'resign') { resign(m.side, true); return; }
-  if (m.t === 'card') { incoming.push(m); drainIncoming(); return; }
+  if (m.t === 'card') { if (m.sp) { spRemote(m); return; } incoming.push(m); drainIncoming(); return; }
   if (m.t === 'launch') {
     const p = pieces[m.i];
     p.vx = m.vx; p.vy = m.vy; p.hd = Math.atan2(m.vy, m.vx); mover = p;

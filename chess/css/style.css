@@ -194,3 +194,12 @@ header > span:last-child { flex:none; }
 #lobby .roomRow small { color:#a9bcaf; font-size:12px; line-height:1.4; }
 #lobby .roomRow button { width:auto; margin:0; flex:none; background:#e8c88a; text-align:center; }
 #lobby .nickRow { align-items:center; gap:8px; } #lobby .nickRow span { flex:none; font-size:14px; color:#cfe0d4; }
+#cardPick.dual { flex-direction:column; gap:10px; justify-content:space-around; }
+#cardPick.dual #cardBox2 { order:-1; }
+#cardPick.dual .pbox { padding:10px; max-width:420px; }
+#cardPick.dual .cbtn { margin:4px 0; padding:6px 10px; } #cardPick.dual .cbtn span { font-size:12px; } #cardPick.dual .pbox h2 { font-size:16px; } #cardPick.dual .pbox .sub { font-size:12px; margin-bottom:4px; }
+#cardBox2.flip { transform:rotate(180deg); }
+.revealBar { position:fixed; left:50%; top:96px; transform:translateX(-50%); z-index:13; pointer-events:none; background:#2b3a31ee; border:2px solid #ffd166; color:#ffe9a8; font-weight:700; font-size:14px; padding:8px 14px; border-radius:12px; max-width:92vw; text-align:center; box-shadow:0 4px 14px #000a; animation:revealIn .35s ease-out both, revealOut .4s ease-in 3.8s both; }
+.revealBar.flip { top:auto; bottom:30px; transform:translateX(-50%) rotate(180deg); }
+@keyframes revealIn { from { opacity:0; margin-top:-14px; } to { opacity:1; margin-top:0; } }
+@keyframes revealOut { to { opacity:0; } }

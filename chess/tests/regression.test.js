@@ -77,6 +77,31 @@ module.exports = [
     await pgs[0].waitForFunction(() => turn === 1, null, { timeout: 30000 }); await pgs[1].waitForFunction(() => turn === 1, null, { timeout: 30000 });
     t.assert.deepStrictEqual(await Promise.all(pgs.map(p => p.evaluate(() => [turn, state]))), [[1, 'aim'], [1, 'aim']]);
   } },
+  { name: '連線開局同時選卡：雙方各自選、互不等待；兩邊都選完才一起亮牌套用，局面一致；時間到各自隨機', async fn(t) {
+    const room = 'simul' + Date.now() % 100000, pgs = [];
+    for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}&cards=1&every=3`, { mode: false, freeze: false }));
+    await pgs[0].waitForTimeout(700);
+    const st = () => Promise.all(pgs.map(p => p.evaluate(() => [state, !document.getElementById('cardPick').hidden, document.querySelectorAll('#cardList button').length, Object.keys(cardCount[0]).length + Object.keys(cardCount[1]).length])));
+    t.assert.deepStrictEqual(await st(), [['pick', true, 3, 0], ['pick', true, 3, 0]]);   // 兩邊同時都在選卡
+    await pgs[1].evaluate(() => document.querySelector('#cardList button').click());   // 黑方先選好
+    await pgs[1].waitForTimeout(400);
+    const mid = await st();
+    t.assert.deepStrictEqual(mid.map(a => [a[0], a[3]]), [['pick', 0], ['pick', 0]], '紅方還沒選：雙方都還沒套用任何卡');
+    t.assert.strictEqual(await pgs[1].evaluate(() => document.getElementById('info').textContent.includes('等待對手選卡')), true);
+    await pgs[0].evaluate(() => document.querySelector('#cardList button').click());   // 紅方選好：兩邊一起亮牌套用
+    await Promise.all(pgs.map(p => p.waitForFunction(() => state === 'aim', null, { timeout: 8000 })));
+    const done = await Promise.all(pgs.map(p => p.evaluate(() => [Object.keys(cardCount[0]).length, Object.keys(cardCount[1]).length, document.querySelectorAll('.revealBar').length, stateHash()])));
+    t.assert.deepStrictEqual(done.map(d => d.slice(0, 3)), [[1, 1, 1], [1, 1, 1]]);
+    t.assert.strictEqual(done[0][3], done[1][3], '亮牌後兩邊局面應一致');
+    // 時間到：重新開一局，兩邊都不選
+    await pgs[0].evaluate(() => $('mRestart').click()); await pgs[0].waitForTimeout(600);
+    await Promise.all(pgs.map(p => p.waitForFunction(() => state === 'pick', null, { timeout: 8000 })));
+    await Promise.all(pgs.map(p => p.evaluate(() => { pickEnd = Date.now() - 1; })));
+    await Promise.all(pgs.map(p => p.waitForFunction(() => state === 'aim', null, { timeout: 8000 })));
+    const done2 = await Promise.all(pgs.map(p => p.evaluate(() => [Object.keys(cardCount[0]).length, Object.keys(cardCount[1]).length, stateHash()])));
+    t.assert.deepStrictEqual(done2.map(d => d.slice(0, 2)), [[1, 1], [1, 1]]);
+    t.assert.strictEqual(done2[0][2], done2[1][2]);
+  } },
   { name: '連線整局含強化卡牌（含隕石雨選落點）：兩邊局面一致，沒有觸發不同步修復', async fn(t) {
     const room = 'cards' + Date.now() % 100000, pgs = [];
     for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}&cards=1&every=3`, { mode: false, freeze: false }));
