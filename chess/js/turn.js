@@ -24,10 +24,10 @@ function onStop() {
            (moved ? '或按「取消移動」重選、「不射擊」結束。' : '或按「取消」改操作。'));
   } else if (moved && manual && !quick) {   // 沒有目標也停下來：看過攻擊範圍後可取消移動
     state = 'target'; setSkip(true);
-    setMsg(`圓圈是${mover.T.n[mover.s]}的攻擊範圍，` + (mover.T.aa && !targets.length ? '範圍內沒敵人，藍圈內火箭砲彈會被攔截。' : mover.T.guard ? '範圍內沒敵人（帥被直射時自動擋）。' : mover.cd > 0 && targets.length ? reloadMsg(mover) : '範圍內沒有可攻擊的敵人。') + '按「取消移動」重選或「結束回合」。');
+    setMsg(`圓圈是${mover.T.n[mover.s]}的攻擊範圍，` + (mover.T.aa && !targets.length ? '範圍內沒敵人，藍圈內火箭砲彈會被攔截。' : mover.T.guard ? '範圍內沒敵人（帥被攻擊時，2 格內的仕或象會替它擋）。' : mover.cd > 0 && targets.length ? reloadMsg(mover) : '範圍內沒有可攻擊的敵人。') + '按「取消移動」重選或「結束回合」。');
   } else if (!moved) {   // 原地選取但沒東西可打：不浪費回合，回到選棋
     const p = mover;
-    cancelSelect((p.T.aa ? `${p.T.n[p.s]}射程內沒有敵人，負責攔截火箭與砲彈。` : p.T.guard ? `${p.T.n[p.s]}近距離沒有敵人；帥被直射時自動擋。` : p.cd > 0 && targets.length ? reloadMsg(p) : '射程內沒有可攻擊的敵人，') + '請選擇移動位置或換別的棋子。');
+    cancelSelect((p.T.aa ? `${p.T.n[p.s]}射程內沒有敵人，負責攔截火箭與砲彈。` : p.T.guard ? `${p.T.n[p.s]}近距離沒有敵人；帥被攻擊時 2 格內的仕或象會替它擋。` : p.cd > 0 && targets.length ? reloadMsg(p) : '射程內沒有可攻擊的敵人，') + '請選擇移動位置或換別的棋子。');
   } else {
     state = 'fire'; timer = 0.9;
     setMsg(mover.T.aa && !targets.length ? `${mover.T.n[mover.s]}就定位（藍圈內火箭砲彈會被攔截）。` : mover.T.guard ? `${mover.T.n[mover.s]}就定位，近距離沒有敵人。` : mover.cd > 0 && targets.length ? reloadMsg(mover)
@@ -53,39 +53,28 @@ function undoMove() {
 function cancelSelect(msg = '已取消，請重新選擇棋子。') {
   state = 'aim'; mover = null; targets = []; setSkip(false); setMsg(msg);
 }
-// 帥被直射（非炮、非飛彈）時：仕的某個合法落點剛好落在射線上，就自動走過去擋；沒有這種落點就擋不了
-function guardBlock(k, from, T) {
-  if (k.t !== 'K' || flies(T)) return null;
-  const dx = k.x - from.x, dy = k.y - from.y, d2 = dx * dx + dy * dy || 1;
-  let best = null;
-  for (const g of alive()) {
-    if (g.s !== k.s || !g.T.guard) continue;
-    for (const [x, y] of movesFor(g)) {
-      const t = ((x - from.x) * dx + (y - from.y) * dy) / d2;
-      if (t <= 0 || t >= 1) continue;
-      const off = Math.hypot(x - (from.x + t * dx), y - (from.y + t * dy));
-      if (off < R * 0.9 && (!best || off < best.off)) best = { g, x, y, off };
-    }
-  }
-  return best;
-}
-// 仕走到擋子彈的位置（永久換位）；ox/oy 為畫面上的滑動位移，實際座標立刻更新
-function slideGuard(bl) {
-  const g = bl.g, ox = g.x - bl.x, oy = g.y - bl.y;
-  g.sl = { ox, oy, k: 0 }; g.ox = ox; g.oy = oy; g.x = bl.x; g.y = bl.y;
-  fx.push({ k: 'txt', x: g.x, y: g.y - R - 6, txt: '護駕！', t: 1, T: 1, col: '#2f6fb5', side: g.s });
-  SFX.play('click');
+// 替身（傳統象棋「蓋住的子」）：帥／將被攻擊時，己方帥／將 2 格內的仕或象衝出來替它挨這一發——所有攻擊都算（含炮擊、火箭、霰彈）。
+// 象的防空攔截還是先發動；沒被攔下的才由替身承受。先上仕（價值較低），其次血量多的、離帥近的。沒有符合的仕／象才由帥自己挨
+const SUB_NEAR = 2 * C;
+const SUB_RULE = new URLSearchParams(location.search).get('sub') || 'all';   // 測試用：?sub=lethal（只在這一發會打死帥時才替身）／guards（只有仕）
+function guardSub(k, attacker, dmg) {
+  if (k.t !== 'K') return null;
+  if (SUB_RULE === 'lethal' && !(dmg >= k.hp)) return null;
+  const cand = alive().filter(g => g.s === k.s && (g.t === 'G' || (g.t === 'E' && SUB_RULE !== 'guards')) && g !== attacker && Math.hypot(g.x - k.x, g.y - k.y) <= SUB_NEAR + 1);
+  const dist = g => Math.hypot(g.x - k.x, g.y - k.y);
+  return cand.sort((u, v) => unitValue(u) - unitValue(v) || v.hp - u.hp || dist(u) - dist(v))[0] || null;
 }
 const visX = p => p.x + (p.ox || 0), visY = p => p.y + (p.oy || 0);   // 畫面上的位置（含衝出位移）
 // 開火：車頭轉向目標、槍口火光、彈體飛行，命中時才扣血（impact）
 function shoot(a, b) {
   const W = weaponFor(a, b); a.fireT = W !== a.T ? W : null;   // 近戰／冷卻中改用步槍
   if (W === AVENGER) { a.rv.used = true; fx.push({ k: 'txt', x: a.x, y: a.y - R - 8, txt: '為兄弟復仇！', t: 1.6, T: 1.6, col: '#c0392b', side: a.s }); }
-  const bl = guardBlock(b, a, a.fireT || a.T);
-  if (bl) {   // 仕走到射線上擋：單發武器改打仕；霰彈則由彈丸自然打到擋在前面的仕
-    slideGuard(bl);
-    setMsg(`${bl.g.T.n[bl.g.s]}走到射線上替${b.T.n[b.s]}擋子彈！`);
-    if ((a.fireT || a.T).proj !== 'pellets') return shootAt(a, bl.g, bl.g.x, bl.g.y, b);
+  const sub = guardSub(b, a, effDmg(b, (a.fireT || a.T).dmg));
+  if (sub) {   // 替身：仕／象衝出來替帥挨這一發（單發武器改打替身；霰彈把扇形對準替身）
+    sub.flash = 0.4; SFX.play('click');
+    fx.push({ k: 'txt', x: sub.x, y: sub.y - R - 6, txt: '替身！', t: 1.2, T: 1.2, col: '#2f6fb5', side: sub.s });
+    setMsg(`${sub.T.n[sub.s]}衝上來替${b.T.n[b.s]}擋下這一發！`);
+    return shootAt(a, sub, sub.x, sub.y, (a.fireT || a.T).proj === 'pellets' ? sub : b);
   }
   return shootAt(a, b, b.x, b.y, b);
 }

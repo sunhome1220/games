@@ -220,6 +220,17 @@ module.exports = [
     const h = await Promise.all(pgs.map(p => p.evaluate(() => stateHash())));
     t.assert.strictEqual(h[0], h[1], '修復後兩邊局面雜湊應一致');
   } },
+  { name: '連線：帥被攻擊時仕／象替身，兩邊算出同樣的結果（含局面一致）', async fn(t) {
+    const room = 'sub' + Date.now() % 100000, pgs = [];
+    for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}`, { mode: false, freeze: false }));
+    await pgs[0].waitForTimeout(700);
+    await Promise.all(pgs.map(p => p.evaluate(() => { T_.place([{ s: 0, t: 'R', c: 4, r: 3 }, { s: 0, t: 'K', c: 4, r: 9 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'G', c: 3, r: 0 }, { s: 1, t: 'G', c: 5, r: 0 }, { s: 1, t: 'E', c: 2, r: 0 }, { s: 1, t: 'E', c: 6, r: 0 }, { s: 1, t: 'C', c: 0, r: 2 }]); turn = 0; state = 'aim'; })));
+    await pgs[0].evaluate(() => { const rk = pieces.find(p => p.s === 0 && p.t === 'R'), k = pieces.find(p => p.s === 1 && p.t === 'K'); selectPiece(rk); mover = rk; moved = false; fireAt(k); });
+    await Promise.all(pgs.map(p => p.waitForFunction(() => ['aim', 'wait', 'over'].includes(state) && !fx.some(f => f.done) && turn === 1, null, { timeout: 20000 })));
+    const r = await Promise.all(pgs.map(p => p.evaluate(() => pieces.filter(q => q.s === 1 && q.hp > 0 && q.hp < q.T.hp).map(q => q.t + ':' + q.hp).sort().join() + '|' + stateHash())));
+    t.assert.strictEqual(r[0], r[1], '兩邊的替身結果與局面應一致');
+    t.assert.ok(/^G:1\|/.test(r[0]), '應是一顆仕挨 2 心、帥沒事：' + r[0]);
+  } },
   { name: '連線：取消移動（含升官空投）兩邊同步還原', async fn(t) {
     const room = 'undo' + Date.now() % 100000, pgs = [];
     for (const s of [0, 1]) pgs.push(await t.open(`bc=${room}&side=${s}`, { mode: false, freeze: false }));

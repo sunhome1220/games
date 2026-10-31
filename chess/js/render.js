@@ -210,8 +210,8 @@ function marks(list, T, ghost) {
       line(x, y - R - 12, x, y - R - 2); line(x, y + R + 2, x, y + R + 12);
       if (t.est) {   // 預估傷害
         ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3;
-        const gd = guardBlock(t.p, state === 'select' && sel ? (sel.dest ? { x: sel.dest[0], y: sel.dest[1] } : sel.p) : mover || t.p, Tt);   // 會被防空攔截的目標不再特別標示
-        textAt(gd ? '🛡 仕會擋' : '-' + hearts(t.est), x, y, -R - 30, textAng(turn), gd ? '#2f6fb5' : '#e8202a', '#fff');
+        const gd = guardSub(t.p, state === 'select' && sel ? sel.p : mover || t.p, t.est);   // 會被防空攔截的目標不再特別標示
+        textAt(gd ? `🛡 ${gd.T.n[gd.s]}會擋` : '-' + hearts(t.est), x, y, -R - 30, textAng(turn), gd ? '#2f6fb5' : '#e8202a', '#fff');
       }
     } else {
       ctx.strokeStyle = '#7778'; ctx.lineWidth = 2; circle(x, y, R + 5); ctx.stroke();
@@ -436,7 +436,7 @@ function loop(now) { update(Math.min(0.05, (now - last) / 1000)); last = now; dr
 $('legend').innerHTML = '<tr><th>兵種</th><th>武器</th><th>血量</th><th>移動(格)</th><th>射程(格)</th><th>威力</th><th>特性</th></tr>' +
   Object.values(TYPES).map(T => `<tr><td>${T.n.join('/')}${T.tag || ''}</td><td>${T.w}</td><td class="num hp" style="color:#e8202a">♥${+T.hp.toFixed(2)}</td><td>${T.knight ? '日字' : T.aa ? '田字' : T.guard ? '斜 1' : T.dist >= 9 * C ? '不限' : (T.dist / C).toFixed(1)}</td>` +
     `<td>${T.guard ? '手槍 ' + (T.range / C).toFixed(1) : T.aa ? '手槍 ' + (T.melee / C).toFixed(1) + '／田字／攔截 ' + (T.aa / C).toFixed(1) : (T.min ? (T.min / C).toFixed(1) + '～' : '') + (T.range / C).toFixed(1)}</td><td class="num" style="color:#e8202a">${+T.dmg.toFixed(2)}</td>` +
-    `<td>${T.indirect ? `曲射，越過障礙；相鄰受 1/2、斜角受 1/4 傷害（敵我皆傷）；走法同車；只能打同一橫線／直線上、距離 4～5.2 格的目標；射後裝填 ${T.reload} 回合，冷卻期間完全無法攻擊（包括近戰），近距離毫無辦法` : T.guard ? '限九宮斜走一格；手槍可打相鄰與斜角的敵人；帥被直射（非炮、非火箭）時，若仕的某個落點剛好在射線上，會自動走過去擋下並換位；犄角：仕、象互相掩護——一方被敵人擊毀時，另一位仕／象若照一般走法走得到陣亡位置，下個回合多一項能力：走到那裡後可改射復仇者飛彈（威力 2、射程 4 格）打殺死兄弟的那個棋子，要不要走過去由你決定' : T.palace ? '限九宮' : T.aa ? `自動攔截落點在範圍內的火箭／砲彈（攔截後冷卻：對方接下來 ${T.reload} 次攻擊攔截不了）；手槍可打相鄰與田字對角點的敵人；走田字（象眼被塞就過不去；田字走不了時改走一步）；犄角：被擊毀時，仕或另一隻象若走得到陣亡位置，下個回合走到那裡後可射復仇者飛彈（威力 2、射程 4 格）打殺死兄弟的棋子` : T.line ? '走法如傳統象棋的車：橫線／直線不限距離（不能穿過棋子）；機槍只能打同一橫線／直線上的目標（比炮短 1 格），直射會被擋' : T.knight ? '走日字（可跳過棋子），蹩馬腳不能走；日字都走不了時改走一步；火箭只能打日字位置、可被相攔截；近戰隨時可用步槍（1 心）' : T.locked ? '只能前進一格' : T.pellets ? '扇形霰彈，越近越痛；每次最多走 2 格，可前進或橫移，不能往後退' : '直射，會被擋'}${T.alt && !T.indirect ? `；射後裝填 ${T.reload} 回合（期間改用步槍）` : ''}</td></tr>`).join('');
+    `<td>${T.indirect ? `曲射，越過障礙；相鄰受 1/2、斜角受 1/4 傷害（敵我皆傷）；走法同車；只能打同一橫線／直線上、距離 4～5.2 格的目標；射後裝填 ${T.reload} 回合，冷卻期間完全無法攻擊（包括近戰），近距離毫無辦法` : T.guard ? '限九宮斜走一格；手槍可打相鄰與斜角的敵人；替身：帥／將被攻擊時（含炮擊、火箭），2 格內的仕或象（仕優先）會衝出來替它挨那一發；象的防空攔截仍會先發動；犄角：仕、象互相掩護——一方被敵人擊毀時，另一位仕／象若照一般走法走得到陣亡位置，下個回合多一項能力：走到那裡後可改射復仇者飛彈（威力 2、射程 4 格）打殺死兄弟的那個棋子，要不要走過去由你決定' : T.palace ? '限九宮' : T.aa ? `自動攔截落點在範圍內的火箭／砲彈（攔截後冷卻：對方接下來 ${T.reload} 次攻擊攔截不了）；手槍可打相鄰與田字對角點的敵人；走田字（象眼被塞就過不去；田字走不了時改走一步）；犄角：被擊毀時，仕或另一隻象若走得到陣亡位置，下個回合走到那裡後可射復仇者飛彈（威力 2、射程 4 格）打殺死兄弟的棋子` : T.line ? '走法如傳統象棋的車：橫線／直線不限距離（不能穿過棋子）；機槍只能打同一橫線／直線上的目標（比炮短 1 格），直射會被擋' : T.knight ? '走日字（可跳過棋子），蹩馬腳不能走；日字都走不了時改走一步；火箭只能打日字位置、可被相攔截；近戰隨時可用步槍（1 心）' : T.locked ? '只能前進一格' : T.pellets ? '扇形霰彈，越近越痛；每次最多走 2 格，可前進或橫移，不能往後退' : '直射，會被擋'}${T.alt && !T.indirect ? `；射後裝填 ${T.reload} 回合（期間改用步槍）` : ''}</td></tr>`).join('');
 // 兵種說明：點「📖 兵種」才開啟彈窗，遊戲頁本身維持整頁不捲動
 $('legendBtn').onclick = () => { $('legendOv').hidden = false; };
 $('legendClose').onclick = () => { $('legendOv').hidden = true; };

@@ -12,7 +12,7 @@ function selectPiece(p) {
   state = 'select'; setSkip(true); SFX.play('click');
   const atk = sc.some(t => t.ok), nm = p.T.n[p.s];
   const note = oneStep(p) ? '（只能走一格）' : p.T.aa ? (fallbackMode(p, sel.moves) ? '（田字走不了，改走一步）' : '（走田字）') : p.T.knight ? (fallbackMode(p, sel.moves) ? '（日字走不了，改走一步）' : '（走日字）') : '';
-  const tail = p.T.aa ? (p.cd > 0 ? `（防空冷卻 ${p.cd}）` : '（藍圈內火箭砲彈自動攔截）') : p.T.knight ? (p.cd > 0 ? `（火箭裝填中 ${p.cd}）` : '（火箭只打日字位置）') : p.T.guard ? '（帥被直射時自動擋）' : p.cd > 0 ? `（裝填中 ${p.cd}）` : '';
+  const tail = p.T.aa ? (p.cd > 0 ? `（防空冷卻 ${p.cd}）` : '（藍圈內火箭砲彈自動攔截）') : p.T.knight ? (p.cd > 0 ? `（火箭裝填中 ${p.cd}）` : '（火箭只打日字位置）') : p.T.guard ? '（帥被攻擊時，2 格內的仕或象替它擋）' : p.cd > 0 ? `（裝填中 ${p.cd}）` : '';
   // 訊息列固定三行高：這裡的說明要精簡，更詳細的規格看「📖 兵種」
   setMsg(!sel.moves.length && !atk ? `${nm}沒有可走的位置，也沒有可攻擊的目標，請換別的棋子。`
     : `${nm}：` + (sel.moves.length ? '點綠點移動' + note : '沒有可走的位置') + (atk ? '，或點黃色準星原地攻擊' : '') + '；點別處取消。' + tail);

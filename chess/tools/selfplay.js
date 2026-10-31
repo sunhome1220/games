@@ -8,7 +8,7 @@ const srv = http.createServer((q, r) => { let f = path.join(__dirname, '..', '..
   const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_BROWSERS_PATH ? process.env.PLAYWRIGHT_BROWSERS_PATH + '/chromium' : undefined, args: ['--no-sandbox'] });
   const pg = await b.newPage({ viewport: { width: 420, height: 800 } });
   pg.on('pageerror', e => console.log('ERR', e.message));
-  await pg.goto(`http://localhost:${srv.address().port}/chess/index.html?nolog=1&cards=0&view=2d`);
+  await pg.goto(`http://localhost:${srv.address().port}/chess/index.html?nolog=1&cards=0&view=2d${process.env.QS || ''}`);
   await pg.waitForTimeout(500);
   await pg.evaluate(() => { window.loop = () => {}; });
   const data = [];
