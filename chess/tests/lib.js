@@ -52,7 +52,7 @@ window.T_ = {
     const mv = sel.moves.find(([x, y]) => Math.abs(x - M - c * C) < 1 && Math.abs(y - M - r * C) < 1);
     if (!mv) return 'no-move';
     sel.dest = mv; go(mv);
-    for (let i = 0; i < 400 && (state === 'moving' || state === 'settle' || state === 'guard'); i++) update(0.02);
+    for (let i = 0; i < 400 && (state === 'moving' || state === 'settle'); i++) update(0.02);
     for (let i = 0; i < 200 && fx.some(f => f.k === 'drop'); i++) update(0.02);
     return state;
   },

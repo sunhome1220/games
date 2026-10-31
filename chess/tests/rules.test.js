@@ -96,9 +96,7 @@ module.exports = [
     const pg = await t.open();
     const r = await pg.evaluate(() => {
       const o = {};
-      let [g, e] = T_.place([{ s: 0, t: 'G', c: 3, r: 9 }, { s: 1, t: 'P', c: 4, r: 8 }]); o.pistol = scan(g).find(x => x.p === e).est;   // 敵兵在仕的護衛領域（斜鄰、帥 2 格內）：威力至少 4
-      { const [g2, e2] = T_.place([{ s: 0, t: 'G', c: 3, r: 9 }, { s: 1, t: 'P', c: 2, r: 9 }]); o.pistolOut = scan(g2).find(x => x.p === e2).est; }   // 橫向相鄰不是仕的傳統走法格子：維持 1 心
-      [g, e] = T_.place([{ s: 0, t: 'G', c: 3, r: 9 }, { s: 1, t: 'P', c: 4, r: 8 }]);
+      let [g, e] = T_.place([{ s: 0, t: 'G', c: 3, r: 9 }, { s: 1, t: 'P', c: 4, r: 8 }]); o.pistol = scan(g).find(x => x.p === e).est;
       const [rk, K, g1, g2] = T_.place([{ s: 0, t: 'R', c: 4, r: 4 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'G', c: 3, r: 0 }, { s: 1, t: 'G', c: 5, r: 0 }]);
       const bl = guardBlock(K, rk, rk.T); o.line = bl && T_.cell({ x: bl.x, y: bl.y }).join(',');
       o.cannon = !!guardBlock(K, rk, TT[0].C);
@@ -107,7 +105,7 @@ module.exports = [
       const [rk2, K2] = T_.place([{ s: 0, t: 'R', c: 7, r: 3 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'G', c: 3, r: 0 }, { s: 1, t: 'G', c: 5, r: 0 }]);
       o.diag = !guardBlock(K2, rk2, rk2.T); return o;
     });
-    t.assert.deepStrictEqual(r, { pistol: 4, pistolOut: 1, line: '4,1', cannon: false, guard: true, king: 3, diag: true });
+    t.assert.deepStrictEqual(r, { pistol: 1, line: '4,1', cannon: false, guard: true, king: 3, diag: true });
   } },
   { name: '兵：未過河只能前進一格；過河後升士官長（3 心、霰彈槍、每次最多 2 格、不能後退）', async fn(t) {
     const pg = await t.open();
@@ -283,28 +281,6 @@ module.exports = [
       return o;
     });
     t.assert.deepStrictEqual(r, { none: 0, turn0: 2, turn1: 2, expired: 0 });
-  } },
-  { name: '護衛領域：敵人走到將／士／象傳統走法走得到、且在帥 2 格內的格子，會被威力最高的一顆自動射一槍（4 心）；領域外、象眼被塞、超過 2 格都不會', async fn(t) {
-    const pg = await t.open();
-    const r = await pg.evaluate(() => {
-      const o = {}, run = (specs, mover, c, r_, hp) => { const ps = T_.place(specs); const m = ps[mover]; if (hp) m.hp = hp; turn = 1; const st = T_.go(m, c, r_); return [m.hp, st]; };
-      const base = [{ s: 0, t: 'K', c: 4, r: 9 }, { s: 0, t: 'G', c: 3, r: 9 }, { s: 0, t: 'E', c: 2, r: 9 }];
-      o.inZone = run([...base, { s: 1, t: 'R', c: 4, r: 4 }, { s: 1, t: 'K', c: 4, r: 0 }], 3, 4, 8);   // 黑俥走到帥前一格 (4,8)：血量 4 被一槍打死
-      o.tough = run([...base, { s: 1, t: 'R', c: 4, r: 4, hp: 6 }, { s: 1, t: 'K', c: 4, r: 0 }], 3, 4, 8, 6);   // 血量 6 的俥撐得住，剩 2 心，仍可繼續行動（進入選目標）
-      o.out = run([...base, { s: 1, t: 'R', c: 4, r: 4 }, { s: 1, t: 'K', c: 4, r: 0 }], 3, 4, 6);   // (4,6) 離帥 3 格：不在領域
-      o.eleZone = run([...base, { s: 1, t: 'R', c: 4, r: 2 }, { s: 1, t: 'K', c: 4, r: 0 }], 3, 4, 7);   // (4,7)：象 (2,9) 的田字點且離帥正好 2 格 → 被象射
-      o.eyeBlocked = run([...base, { s: 0, t: 'P', c: 3, r: 8 }, { s: 1, t: 'R', c: 4, r: 2 }, { s: 1, t: 'K', c: 4, r: 0 }], 4, 4, 7);   // 象眼 (3,8) 有棋子：象蓋不到 (4,7)
-      o.tooFar = run([{ s: 0, t: 'K', c: 4, r: 9 }, { s: 0, t: 'E', c: 6, r: 9 }, { s: 1, t: 'R', c: 8, r: 2 }, { s: 1, t: 'K', c: 4, r: 0 }], 2, 8, 7);   // 象 (6,9) 的田字點 (8,7) 離帥 4 格：超過 2 格
-      // 自動射擊後不影響原本的流程：沒死的俥走完還能選目標
-      o.after = (() => { const ps = T_.place([...base, { s: 1, t: 'R', c: 4, r: 4, hp: 6 }, { s: 1, t: 'K', c: 4, r: 0 }]); turn = 1; return [T_.go(ps[3], 4, 8), ps[3].hp, targets.some(x => x.ok)]; })();
-      // 兩顆都蓋得到：選威力高的（帥帶「指揮官配槍」類加成時威力 2，先射）；同威力選最近的
-      T_.place([...base, { s: 1, t: 'R', c: 4, r: 4, hp: 9 }, { s: 1, t: 'K', c: 4, r: 0 }]); const rk = pieces.find(p => p.s === 1 && p.t === 'R'); rk.x = T_.X(3); rk.y = T_.Y(8);
-      const who = alive().filter(d => d.s === 0 && inGuardZone(d, rk)).map(d => d.t).sort().join(); o.cover = who;   // (3,8)：帥（斜鄰）、仕（4,9 的斜格…）蓋得到的有哪些
-      return o;
-    });
-    t.assert.deepStrictEqual([r.inZone[0], r.tough[0], r.out[0], r.eleZone[0], r.eyeBlocked[0], r.tooFar[0]], [0, 2, 4, 0, 4, 4]);
-    t.assert.deepStrictEqual(r.after, ['target', 2, true]);
-    t.assert.ok(/K/.test(r.cover), r.cover);
   } },
   { name: '強化卡牌：不可疊加、只影響自己這一方、卡表格式正確', async fn(t) {
     const pg = await t.open();

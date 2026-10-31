@@ -24,7 +24,7 @@ function predictAttack(a, x, y, T, b) {
   }
   if (flies(T) && interceptorFor(b.s, b.x, b.y)) return dm;   // 會被防空攔下
   const bl = guardBlock(b, from, T), tgt = bl ? bl.g : b;
-  add(tgt, guardDmg(a, tgt, T.dmg, x, y));
+  add(tgt, T.dmg);
   if (T.splash) {
     const cx = b.x, cy = b.y;
     for (const q of alive()) {
@@ -57,18 +57,7 @@ function actionsFor(side) {
   }
   return acts;
 }
-// 走到對方將／士／象的護衛領域，會先挨一槍（威力 GUARD_DMG，見 turn.js 的 guardFire）；被打死就沒辦法攻擊了
-function guardHit(a) {
-  if (!a.mv) return null;
-  const tgt = { x: a.x, y: a.y, s: a.p.s };
-  if (!alive().some(d => d.s !== a.p.s && inGuardZone(d, tgt))) return null;
-  const d = effDmg(a.p, GUARD_DMG); return d > 0 ? { d: Math.min(d, a.p.hp), die: d >= a.p.hp } : null;
-}
-const attackValue = (a, side) => {
-  const g = guardHit(a), pen = g ? dmgValue(new Map([[a.p, g.d]]), side) : 0;
-  if (g && g.die) return pen;
-  return pen + (a.b ? dmgValue(predictAttack(a.p, a.x, a.y, a.T, a.b), side) : 0);
-};
+const attackValue = (a, side) => a.b ? dmgValue(predictAttack(a.p, a.x, a.y, a.T, a.b), side) : 0;
 // 位置分：攻擊棋子往敵帥推進；士守在帥旁；相待在帥附近約 2 格掩護
 function positional(a, side) {
   const p = a.p, ek = alive().find(q => q.s !== side && q.t === 'K'), mk = alive().find(q => q.s === side && q.t === 'K');
