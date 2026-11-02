@@ -154,7 +154,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
 .mbox{background:var(--panel);color:var(--ink);border:2px solid var(--ink);border-radius:4px;max-width:520px;width:100%;padding:22px;max-height:90vh;overflow-y:auto}
 .mbox h3{font-family:var(--f-display);font-size:26px;margin:4px 0 6px;font-weight:900}
-.verdict.atk{color:var(--atk)} .verdict.def{color:var(--def)}
+.verdict.atk{color:var(--atk)} .verdict.def{color:var(--def)} .verdict.draw{color:var(--accent)}
 .mbox.ev{max-width:600px}
 .badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:2px;color:var(--on-unit);margin-right:6px}
 .badge.atk{background:var(--atk)} .badge.def{background:var(--def)} .badge.dice{background:var(--accent);color:#1b1408}
@@ -508,7 +508,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
           <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li></ul></details>
           <details class="rg"><summary>國際與集結</summary><ul><li><b>美日菲參戰：</b>開局可選參戰情境：擲骰決定（預設）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊，菲律賓決定北呂宋基地。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li><li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li></ul></details>
           <details class="rg"><summary>戰爭代價</summary><ul><li><b>戰爭代價：</b>側欄的「戰爭代價」依部隊編制把損失換算成傷亡人數（合成旅約 5,000 人；在海上被擊沉的死亡比例高於陸戰），並累計火力打擊與城市戰鬥造成的平民傷亡、各國經濟損失、全球股市與晶片供應。結算時依 Bloomberg Economics 2024 年的估算（台海戰爭約使全球 GDP 減少 10%，封鎖約 5%）推估一年期衝擊。所有數字都是遊戲依公開資料的粗估。</li></ul></details>
-          <details class="rg"><summary>推演與判定</summary><ul><li><b>純模擬（影片）：</b>全程由電腦操作並自動決策與擲骰：先瞬間跑完整場戰爭並錄下每個動作，再以戰棋地圖為背景播放。地圖下方的字幕區顯示雙方動作與影響，並有戰況、傷亡與經濟摘要；可暫停、變速（1～8×）、拖曳時間軸或跳回合，地圖上的圈標出這一步發生變化的位置。結束後可看戰後檢討、回頭看影片或再模擬一次。</li><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>電腦代打：</b>你操作的階段，可以按「電腦代打剩餘單位」，還沒行動的單位交給電腦處理，然後自動結束階段。</li><li><b>統計：</b>在設定頁或影片模式按「跑統計」，電腦自動模擬 50／100／300 局（雙方由電腦操作、決策與擲骰隨機），列出攻方勝率與信賴區間、各條件達成率、代價範圍，以及美國參戰程度與各項決策對勝率的影響。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
+          <details class="rg"><summary>推演與判定</summary><ul><li><b>純模擬（影片）：</b>全程由電腦操作並自動決策與擲骰：先瞬間跑完整場戰爭並錄下每個動作，再以戰棋地圖為背景播放。地圖下方的字幕區顯示雙方動作與影響，並有戰況、傷亡與經濟摘要；可暫停、變速（1～8×）、拖曳時間軸或跳回合，地圖上的圈標出這一步發生變化的位置。結束後可看戰後檢討、回頭看影片或再模擬一次。</li><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>電腦代打：</b>你操作的階段，可以按「電腦代打剩餘單位」，還沒行動的單位交給電腦處理，然後自動結束階段。</li><li><b>統計：</b>在設定頁或影片模式按「跑統計」，電腦自動模擬 50／100／300 局（雙方由電腦操作、決策與擲骰隨機），列出攻方勝率與信賴區間、各條件達成率、代價範圍，以及美國參戰程度與各項決策對勝率的影響。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。只達成「首都」一項時：台北已連續被攻方控制至少 2 個回合結束，判「僵局」；最後一回合才占領，視為暫時占領，判守方勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
           
         </div>
       </div>
@@ -601,7 +601,7 @@ function newState(){
   S={turn:1,phase:'atk',T:8,ctrl:{atk:'human',def:'ai'},weather:WEATHER.good,fire:0,units:[],owner:{},log:[],
      sel:null,mode:null,busy:false,over:false,started:false,nid:1,hover:null,zoneFlip:0,
      sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods(),
-     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
+     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,tpHold:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
   for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
   const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
     ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],
@@ -772,22 +772,28 @@ function strike(t){
   checkInstant();
 }
 
-function conditions(){
+function conditions(final){
   const tp=S.owner[TAIPEI]==='atk';
   const pc=PORTS.filter(k=>S.owner[k]==='atk').length;
   let as=0,ds=0;
   for(const u of S.units)if(onTW(u)){if(u.side==='atk')as+=u.hp;else ds+=u.hp;}
   return [
-    {title:'首都台北',desc:'判定時台北由攻方控制',atk:tp,now:'目前由'+(tp?'攻方':'守方')+'控制'},
+    {title:'首都台北',desc:'判定時台北由攻方控制',atk:tp,now:'目前由'+(tp?'攻方':'守方')+'控制'+(tp?'（已連續 '+tpHeldTurns(!!final)+' 個回合）':'')},
     {title:'主要港口',desc:'攻方控制基隆、台中港、高雄中至少 2 個',atk:pc>=2,now:'攻方控制 '+pc+' / 3'},
     {title:'島上戰力',desc:'攻方在本島的兵力步數不少於守方',atk:as>=ds&&as>0,now:'攻方 '+as+' 步 對 守方 '+ds+' 步'}
   ];
 }
-function verdict(n){
-  return n===3?{s:'atk',t:'攻方決定性勝利',d:'首都、港口與兵力優勢全數到手，守方防線崩潰。'}
-    :n===2?{s:'atk',t:'攻方勝利',d:'攻方達成兩項條件，已在島上站穩並取得戰略主動。'}
-    :n===1?{s:'def',t:'守方勝利',d:'攻方雖有斬獲，但未能同時達成兩項條件，攻勢頓挫。'}
-    :{s:'def',t:'守方決定性勝利',d:'攻方三項條件全部落空，登陸作戰失敗。'};
+// consecutive turn-ends the attacker has held Taipei; final=true at judgment time (the last turn-end is already counted)
+function tpHeldTurns(final){const h=S.stats.tpHold||0;return final?h:h+(S.owner[TAIPEI]==='atk'?1:0);}
+function verdict(n,final){
+  const tp=S.owner[TAIPEI]==='atk',hold=tpHeldTurns(final);
+  if(n===3)return {s:'atk',t:'攻方決定性勝利',d:'首都、港口與兵力優勢全數到手，守方防線崩潰。'};
+  if(n===2)return {s:'atk',t:'攻方勝利',d:'攻方達成兩項條件，已在島上站穩並取得戰略主動。'};
+  if(n===1&&tp)return hold>=2
+    ?{s:'draw',t:'僵局',d:'攻方占領首都已連續 '+hold+' 個回合，但沒有控制足夠的港口、島上兵力也不足以站穩，補給線孤立；守方預期會集結兵力收復，戰局尚未分出勝負。'}
+    :{s:'def',t:'守方勝利',d:'攻方直到最後才占領首都（只持續 '+hold+' 個回合），立足未穩、其他條件都落空，預期很快被收復，視為攻勢失敗。'};
+  if(n===1)return {s:'def',t:'守方勝利',d:'攻方雖有斬獲，但未能同時達成兩項條件，攻勢頓挫。'};
+  return {s:'def',t:'守方決定性勝利',d:'攻方三項條件全部落空，登陸作戰失敗。'};
 }
 function checkInstant(){
   if(S.over)return;
@@ -796,8 +802,8 @@ function checkInstant(){
 }
 function endGame(early,side){
   S.over=true;S.sel=null;S.mode=null;
-  const cs=conditions();const n=cs.filter(c=>c.atk).length;
-  const v=early?{s:side,t:side==='atk'?'攻方勝利':'守方勝利',d:early}:verdict(n);
+  const cs=conditions(true);const n=cs.filter(c=>c.atk).length;
+  const v=early?{s:side,t:side==='atk'?'攻方勝利':'守方勝利',d:early}:verdict(n,true);
   log('作戰結束：'+v.t);
   S.result={side:v.s,n,early:!!early};
   const html='<div class="eyebrow">'+(early?'提前結束 · 第 '+S.turn+' 回合':'第 '+S.T+' 回合 判定')+'</div>'+
@@ -1508,7 +1514,8 @@ function afterAction(win){
   else keys.push([3,'外國參戰有限：'+b.fx+'，戰局主要由兩岸兵力決定。']);
   if(st.cn.strikes)keys.push([st.cn.hits+3,'對大陸打擊：台灣與盟軍共發動 '+st.cn.strikes+' 次，命中 '+st.cn.hits+' 次，癱瘓 '+Object.keys(CNB).filter(id=>S.cn[id]<=0).length+' 處基地；火箭軍飛彈存量剩 '+P.rf+'／'+POOL0.rf+'。'+(st.retal.strikes?'中方報復 '+st.retal.strikes+' 次，命中 '+st.retal.hits+' 次。':'')]);
   keys.push([b.ports?b.ports*3:5,b.ports?'港口：攻方控制 '+b.ports+' 個主要港口，重型旅得以上岸、補給容量擴大。':'港口：攻方沒有拿下任何主要港口，重型旅無法上岸，補給只能靠灘頭。']);
-  keys.push([b.taipei?8:3,b.taipei?'首都：攻方攻入台北，守方指揮與政治中心失守。':'首都：台北始終由守方控制。']);
+  const hold=st.tpHold||0;
+  keys.push([b.taipei?8:3,b.taipei?'首都：攻方控制台北，已連續 '+hold+' 個回合'+(hold<2?'（直到最後才占領，視為暫時占領、立足未穩）':'')+'。':'首都：台北始終由守方控制，或已被收復。']);
   const airGap=b.plaAir-b.ally;
   keys.push([Math.abs(airGap)+1,'制空：結束時攻方空軍 '+b.plaAir+'、守方與盟國空軍 '+b.ally+'，'+(airGap>=3?'攻方掌握空優，火力打擊得以持續。':airGap<=-3?'守方與盟國奪回空優，攻方火力受限。':'雙方空中力量拉鋸。')+'攻方共使用火力 '+st.fire+' 點，火箭軍存量剩 '+P.rf+'。']);
   if(P.plaNavy<=2)keys.push([5,'制海：攻方護航艦隊幾乎耗盡（剩 '+P.plaNavy+'），後續船團失去掩護。']);
@@ -1649,6 +1656,7 @@ async function beginPhase(side){
 async function endPhase(){
   if(S.over||!S.started)return;
   if(S.phase==='atk')return beginPhase('def');
+  S.stats.tpHold=S.owner[TAIPEI]==='atk'?(S.stats.tpHold||0)+1:0;
   econTick();
   if(S.turn>=S.T)return endGame();
   const n=buildNews();S.news.push(n);
@@ -1671,11 +1679,12 @@ function landDist(sources){
 const OBJ=[TAIPEI].concat(PORTS);
 const OBJD={};OBJ.forEach(k=>OBJD[k]=landDist([k]));
 function est(u,t){return effAtk(u)+support(u,t)+seaPen(u)-(effDef(t)+terrDef(hexOf(t)))+(TYPES[t.type].hp-t.hp)*.5;}
-async function aiTryAttack(u,thr){
+async function aiTryAttack(u,thr,focus){
   if(!alive(u)||S.over)return false;
   const ts=targets(u);if(!ts.length)return false;
-  let best=null,bs=-99;for(const t of ts){const e=est(u,t);if(e>bs){bs=e;best=t;}}
-  if(bs>=thr){attack(u,best);render();await sleep(380);return true;}
+  let best=null,bs=-99,braw=-99;
+  for(const t of ts){const e=est(u,t),f=focus&&focus.includes(hexOf(t).k),adj=e+(f?3:0);if(adj>bs){bs=adj;best=t;braw=e+(f?2:0);}}
+  if(braw>=thr){attack(u,best);render();await sleep(380);return true;}
   return false;
 }
 function enemyAdj(k,side){const h=TER[k];return nbrs(h.c,h.r).filter(n=>{const e=unitAt(n.k);return e&&e.side!==side;}).length;}
@@ -1797,13 +1806,21 @@ async function aiDef(){
   for(const u of order){if(S.over)return;if(alive(u))await aiDefUnit(u);}
 }
 async function aiDefUnit(u){
-  const thr=u.type==='tank'?0:1;
-  if(await aiTryAttack(u,thr))return;
+  // when Taipei or a main port has fallen, defenders counterattack more readily and converge on it
+  const lost=OBJ.filter(k=>S.owner[k]==='atk'),thr=u.type==='tank'?0:1;
+  if(await aiTryAttack(u,thr,lost))return;
   if(u.garrison||S.mods.defFreeze[S.turn])return;
   const h=hexOf(u);if(h.isl!=='TW')return;
   const rc=reach(u);if(!rc.size)return;
   // retake an empty objective in reach
   for(const k of OBJ){if(S.owner[k]==='atk'&&rc.has(k)&&rc.get(k).kind==='move'){doMove(u,k,'move');log(TYPES[u.type].n+' 收復 '+hname(TER[k]));render();await sleep(300);return;}}
+  if(lost.length){
+    const od=landDist(lost);let bs0=od[h.k]===undefined?1e9:od[h.k],pick0=null;
+    if(bs0<=1)return;
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<bs0){bs0=sc;pick0=k;}}
+    if(pick0){doMove(u,pick0,'move');render();await sleep(280);await aiTryAttack(u,thr,lost);}
+    return;
+  }
   const foes=S.units.filter(e=>e.side==='atk'&&onTW(e));
   let best=null;
   if(foes.length){
@@ -2095,7 +2112,7 @@ function snapFrame(){
   o.fx={lv:Object.assign({},S.fx.lv),reach:S.fx.reach,units:S.fx.units.map(f=>Object.assign({},f))};
   o.cn=Object.assign({},S.cn);o.cost=JSON.parse(JSON.stringify(S.cost));
   o.hits=S.hits.slice();o.log=S.log.slice(0,60);o.news=S.news.slice();o.events=S.events.slice();o.cnLog=S.cnLog.slice();
-  o.sel=null;o.hover=null;o.mode=null;o.rec=false;
+  o.sel=null;o.hover=null;o.mode=null;o.rec=false;o.stats=Object.assign({},S.stats);
   return o;
 }
 function recordFrame(card){
@@ -2232,7 +2249,7 @@ function quant(a,q){if(!a.length)return 0;const b=a.slice().sort((x,y)=>x-y),i=(
 function collectRun(){
   const cs=conditions(),n=cs.filter(c=>c.atk).length,R=S.result||{side:n>=2?'atk':'def',n},c=costSummary(),ev={};
   S.events.forEach(e=>{if(e.choice)ev[e.id]=e.choice;});
-  return {win:R.side==='atk',n:R.n,early:!!R.early,tp:cs[0].atk,pt:cs[1].atk,fo:cs[2].atk,milA:c.mil.atk.n,milD:c.mil.def.n,civ:c.civ.TW,mkt:c.mkt,us:S.fx.lv.US,ev};
+  return {win:R.side==='atk',draw:R.side==='draw',n:R.n,early:!!R.early,tp:cs[0].atk,pt:cs[1].atk,fo:cs[2].atk,milA:c.mil.atk.n,milD:c.mil.def.n,civ:c.civ.TW,mkt:c.mkt,us:S.fx.lv.US,ev};
 }
 function statBar(label,p,cls){return '<div class="sbar"><span>'+label+'</span><i><em class="'+(cls||'')+'" style="width:'+p+'%"></em></i><b>'+p+'%</b></div>';}
 function statsHTML(rows){
@@ -2252,10 +2269,11 @@ function statsHTML(rows){
   const cond=[['首都台北',rows.filter(r=>r.tp).length],['主要港口',rows.filter(r=>r.pt).length],['島上戰力',rows.filter(r=>r.fo).length]].sort((a,b)=>a[1]-b[1]);
   takeaways.push('三項條件中最難達成的是「'+cond[0][0]+'」（'+pct(cond[0][1],N)+'%），最容易的是「'+cond[2][0]+'」（'+pct(cond[2][1],N)+'%）。');
   if(best&&best.gap>=15)takeaways.push('決策中影響最大的是「'+best.name+'」：選「'+best.hi.k+'」時攻方勝率約 '+pct(best.hi.w,best.hi.n)+'%，選「'+best.lo.k+'」時約 '+pct(best.lo.w,best.lo.n)+'%。');
-  const tpLoss=rows.filter(r=>r.tp&&!r.win).length;
-  if(tpLoss)takeaways.push('有 '+tpLoss+' 局（'+pct(tpLoss,N)+'%）首都台北失守，但因另外兩項條件沒達成，仍判守方獲勝。');
+  const D=rows.filter(r=>r.draw).length,brief=rows.filter(r=>r.tp&&!r.win&&!r.draw).length;
+  if(D)takeaways.push('有 '+D+' 局（'+pct(D,N)+'%）判僵局：首都已連續被占 2 個回合以上，但攻方孤立。');
+  if(brief)takeaways.push('有 '+brief+' 局（'+pct(brief,N)+'%）首都在最後一刻才被占領（暫時占領），判守方獲勝。');
   const usFull=rows.filter(r=>r.us>=3);if(usFull.length>=8&&usFull.length<N-7)takeaways.push('美國全面參戰時攻方勝率約 '+pct(usFull.filter(r=>r.win).length,usFull.length)+'%，其他情況約 '+pct(rows.filter(r=>r.us<3&&r.win).length,rows.filter(r=>r.us<3).length)+'%。');
-  return '<div class="eyebrow">統計結果 · '+N+' 局</div><h3>攻方勝率 '+pct(W,N)+'%</h3>'+
+  return '<div class="eyebrow">統計結果 · '+N+' 局</div><h3>攻方勝率 '+pct(W,N)+'%　<span class="dd">僵局 '+pct(rows.filter(r=>r.draw).length,N)+'%・守方勝 '+pct(N-W-rows.filter(r=>r.draw).length,N)+'%</span></h3>'+
     '<div class="dd">95% 信賴區間約 '+Math.round(lo*100)+'%～'+Math.round(hi*100)+'%。設定：第 '+$('#optT').value+' 回合判定、'+optLabel('optBuild',$('#optBuild').value)+'、'+optLabel('optFx',$('#optFx').value)+'。雙方由電腦操作，事件決策與擲骰隨機。</div>'+
     '<ul class="stk">'+takeaways.map(t=>'<li>'+t+'</li>').join('')+'</ul>'+
     '<div class="eyebrow" style="margin-top:12px">攻方達成幾項條件</div>'+[0,1,2,3].map(k=>statBar(k+' 項'+(k>=2?'（獲勝）':''),pct(rows.filter(r=>r.n===k).length,N),k>=2?'atk':'def')).join('')+
@@ -2359,7 +2377,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.08';
+const VERSION='2026-11-02.09';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
@@ -2387,7 +2405,7 @@ const SETUP_PAGES=[
   {sel:'optSide',q:'你要操作哪一方？',when:()=>$('#optMode').value==='play',opts:{atk:['攻方（紅）','你指揮渡海登陸，電腦防守台灣。'],def:['守方（藍）','你防守台灣，電腦負責進攻。'],both:['雙方都操作','同一台裝置輪流操作兩方。'],none:['都不操作（觀戰）','兩邊都由電腦操作，看戰局演變。']}},
   {sel:'optVSpeed',q:'播放速度',when:()=>isVideo(),opts:{'1':['1×','逐步閱讀，一場約需數分鐘。'],'2':['2×','建議速度。'],'4':['4×','快轉，適合只看結果與重點。']}},
   {sel:'optSpeed',q:'推演速度',when:()=>isSim(),opts:{'1':['一般','每個動作有短暫停頓，方便看清楚。'],'0.35':['快速','縮短動作之間的停頓。']}}]},
- {t:'判定回合',d:'戰爭持續到指定回合結束，才依三項條件判定勝負，攻方達成 2 項以上獲勝：① 台北由攻方控制 ② 基隆、台中港、高雄至少 2 個港口由攻方控制 ③ 攻方島上兵力步數不少於守方。每回合約半天。',fields:[
+ {t:'判定回合',d:'戰爭持續到指定回合結束，才依三項條件判定勝負，攻方達成 2 項以上獲勝：① 台北由攻方控制 ② 基隆、台中港、高雄至少 2 個港口由攻方控制 ③ 攻方島上兵力步數不少於守方。只拿下台北且連續控制 2 個回合以上，判「僵局」（首都陷落但攻方孤立）；到最後才占領則視為暫時占領，仍判守方勝。每回合約半天。',fields:[
   {sel:'optT',q:'幾回合後判定？',opts:{'6':['第 6 回合','約 3 天。時間很緊，攻方多半來不及站穩。'],'8':['第 8 回合','約 4 天。基準設定。'],'10':['第 10 回合','約 5 天。攻方有較多時間奪港。'],'12':['第 12 回合','約 6 天。長期戰，攻方較有機會站穩。']}}]},
  {t:'戰前集結',d:'渡海前要先集結船團與兵員，很難完全隱藏。集結越公開，台灣與美日越早準備。',fields:[
   {sel:'optBuild',q:'攻方怎麼集結？',when:()=>!isSim(),opts:{open:['公開全面集結','兵力最多（+2 兩棲旅、+1 重型旅、護航艦隊 +2），但守方提早動員、美國航艦已在附近、各國參戰擲骰 +1。'],exercise:['演習掩護','以軍演名義集結，雙方都只有部分預警。基準設定。'],surprise:['戰略突襲','兵力少一截（−2 兩棲旅、−1 重型旅），換取守方動員延後、各國參戰擲骰 −1。']}}],
