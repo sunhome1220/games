@@ -439,7 +439,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
         <span class="mb-l">地圖</span>
         <button class="ghost zb" data-z="-1" aria-label="縮小">－</button><button class="ghost zv" id="zLabel" title="重設為 100%">100%</button><button class="ghost zb" data-z="1" aria-label="放大">＋</button>
         <button class="ghost" id="btnFs">⛶ 全螢幕</button>
-        <span class="dd">Ctrl＋滾輪可縮放；縮小可看外圍示意區（宮古、舟山、黃山、梅州、呂宋北部），放大後可拖曳</span>
+        <span class="dd">Ctrl＋滾輪可縮放；縮小可看外圍示意區（美中日各方投射武力的基地與海域），放大後可拖曳</span>
       </div>
       <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"><defs id="mdefs"></defs><g id="gX"></g><g id="gS"></g><g id="gD"></g><g id="gF" style="pointer-events:none"></g></svg></div>
       <div class="vcap" id="vcap" hidden>
@@ -576,7 +576,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 const COL0=-1, COL1=16, ROW0=-2, ROW1=16, R=26, W=Math.sqrt(3)*R, PAD=6;
 const VBW=W*(COL1-COL0)+W/2+PAD*2, VBH=1.5*R*(ROW1-ROW0-1)+2*R+PAD*2+12;
 // 外圍示意區（僅縮小時可見，不參與遊戲）：左／右／上／下的延伸量
-const MX0=150, MX1=270, MY0=170, MY1=330, EVBW=VBW+MX0+MX1, EVBH=VBH+MY0+MY1, EXT=EVBW/VBW;
+const MX0=150, MX1=620, MY0=170, MY1=330, EVBW=VBW+MX0+MX1, EVBH=VBH+MY0+MY1, EXT=EVBW/VBW;
 const K=(c,r)=>c+','+r;
 const $=s=>document.querySelector(s);
 const sleep=ms=>S&&S.rec?Promise.resolve():new Promise(r=>setTimeout(r,ms*(S&&S.speed||1)));
@@ -813,7 +813,7 @@ function fireMissile(m,t){
 }
 function strike(t){
   S.fire--;S.stats.fire++;const h=hexOf(t);civHit('TW',h,'strike');const need=(h.t==='city'||h.t==='mtn')?6:5;const r=d6();
-  fxq({t:'air',at:[t.c,t.r],hit:r>=need,tsea:atSea(t),src:'w'});
+  fxq({t:'air',at:[t.c,t.r],hit:r>=need,tsea:atSea(t),org:orgPick('pla')});
   if(r>=need){log('火力打擊命中 '+hname(h)+' 的 '+TYPES[t.type].n+'（擲 '+r+'）');damage(t,1,'火力打擊');}
   else log('火力打擊 '+hname(h)+' 未命中（擲 '+r+'，需 '+need+'）');
   checkInstant();
@@ -1046,15 +1046,16 @@ function airBattle(){
   if(S.fx.units.some(f=>f.kind==='air'&&fxActive(f))&&P.plaAD>0&&d6()<=2){P.plaAD--;out.push('攻方防空 −1');}
   if(out.length)log('第 '+S.turn+' 回合空優爭奪：'+out.join('、'));
 }
-function antiShip(who,shots,need,canLand,tag){
+function antiShip(who,shots,need,canLand,tag,ok0){
+  const base=ok0||'roc';
   const P=S.pools;let hc=0,he=0,hl=0;
   for(let i=0;i<shots;i++){
     const fleet=S.units.filter(u=>u.side==='atk'&&atSea(u));
-    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pick(fleet),ok=d6()>=need+escortMod();fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,src:'e'});if(ok){hc++;damage(tg,1,who);}}
+    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pick(fleet),ok=d6()>=need+escortMod();fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:orgPick(base)});if(ok){hc++;damage(tg,1,who);}}
     else if(P.plaNavy>0){if(d6()>=need){he++;P.plaNavy--;}}
     else if(canLand){
       const land=S.units.filter(u=>u.side==='atk'&&onTW(u));if(!land.length)break;
-      const t=pick(land),h=hexOf(t),ok=d6()>=(h.t==='city'||h.t==='mtn'?6:5);fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:false,src:'e'});if(ok){hl++;damage(t,1,who);}
+      const t=pick(land),h=hexOf(t),ok=d6()>=(h.t==='city'||h.t==='mtn'?6:5);fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:false,org:orgPick(base)});if(ok){hl++;damage(t,1,who);}
     } else break;
   }
   const parts=[];if(hc)parts.push('命中船團 '+hc);if(he)parts.push('擊傷護航艦 '+he);if(hl)parts.push('命中島上部隊 '+hl);
@@ -1062,14 +1063,14 @@ function antiShip(who,shots,need,canLand,tag){
 }
 async function navalPhase(){
   const P=S.pools;
-  if(P.rocNavy>0){antiShip('守方海軍',Math.ceil(P.rocNavy/2),4,false);if(d6()<=3){P.rocNavy--;log('守方海軍遭攻方海空兵力打擊 −1');}}
-  if(P.rocDrone>0){antiShip('無人機與巡飛彈',Math.min(P.rocDrone,3),5,false);if(d6()<=2){P.rocDrone--;log('無人機群遭干擾與攔截 −1');}}
+  if(P.rocNavy>0){antiShip('守方海軍',Math.ceil(P.rocNavy/2),4,false,'','roc');if(d6()<=3){P.rocNavy--;log('守方海軍遭攻方海空兵力打擊 −1');}}
+  if(P.rocDrone>0){antiShip('無人機與巡飛彈',Math.min(P.rocDrone,3),5,false,'','roc');if(d6()<=2){P.rocDrone--;log('無人機群遭干擾與攔截 −1');}}
   const act=S.fx.units.filter(fxActive);
   if(act.length)toast('美日部隊出擊');
   for(const f of act){
     if(S.over)return;
     const us=f.c==='US',pi=usIdx(),shots=Math.max(1,Math.ceil(f.hp*(f.salvo||1)*(us?usVol(f):1)));
-    antiShip(f.n,shots,4+(f.kind==='air'&&P.plaAD>=4?1:0),f.kind==='air',us&&pi===1?'（代客發射）':us&&pi===0?'（不具名行動）':'');
+    antiShip(f.n,shots,4+(f.kind==='air'&&P.plaAD>=4?1:0),f.kind==='air',us&&pi===1?'（代客發射）':us&&pi===0?'（不具名行動）':'',f.base);
     render();await sleep(220);
   }
   await alliedLandStrikes();
@@ -2011,6 +2012,10 @@ function farSet(c,r,t,name,tag,who){FAR[K(c,r)]={c,r,t,name:name||null,tag:tag||
   farSet(16,5,'plain','與那國','自衛隊','jp');
   farSet(18,5,'plain','石垣','自衛隊','jp'); farSet(19,5,'plain');
   farSet(20,3,'air','宮古島','自衛隊','jp'); farSet(21,3,'plain');
+  // 沖繩（美日基地）、九州（佐世保）、關島（美軍）
+  farSet(26,-1,'air','嘉手納','美空軍','us'); farSet(27,-1,'plain','那霸','空自','jp'); farSet(27,-2,'plain'); farSet(28,-2,'plain'); farSet(25,0,'plain');
+  farSet(27,-6,'port','佐世保','海自','jp'); farSet(28,-6,'plain'); farSet(28,-5,'plain'); farSet(27,-5,'plain');
+  farSet(26,22,'air','關島','美空軍','us'); farSet(27,22,'plain'); farSet(26,23,'plain');
   // 呂宋海峽與呂宋北部（美軍 EDCA／部署）
   farSet(12,16,'plain','伊特巴雅特','美軍','us'); farSet(12,17,'port','巴丹','美軍','us'); farSet(13,17,'plain');
   farSet(10,20,'plain','巴布煙群島','美軍','us');
@@ -2018,10 +2023,14 @@ function farSet(c,r,t,name,tag,who){FAR[K(c,r)]={c,r,t,name:name||null,tag:tag||
   for(let c=-2;c<=13;c++){farSet(c,24,'plain');}
   farSet(7,23,'air','拉婁','美軍','us'); farSet(4,24,'port','卡米洛‧奧西亞斯','美軍','us'); farSet(1,23,'air','拉瓦格','美軍','us');
 })();
+// 各方火力的出發位置（地圖座標），讓打擊不再憑空出現
+const ORG={okinawa:[[26,-1],[27,-1]],sakishima:[[20,3],[18,5]],sasebo:[[27,-6]],guam:[[26,22]],sea:[[19,9],[18,13]],
+  pla:[[2,2],[2,4],[2,6],[-3,-4],[-3,11],[7,-4]],roc:[[13,6],[10,10],[12,1],[9,6]]};
+const orgPick=k=>{const a=ORG[k];return a?a[Math.floor(Math.random()*a.length)].slice():null;};
 function farKeyInGrid(c,r){return c>=COL0&&c<COL1&&r>=ROW0&&r<ROW1;}
 function buildFar(){
   const tiles=[];
-  for(let r=ROW0-5;r<=ROW1+10;r++)for(let c=COL0-5;c<=COL1+8;c++){
+  for(let r=ROW0-5;r<=ROW1+10;r++)for(let c=COL0-5;c<=COL1+18;c++){
     if(farKeyInGrid(c,r))continue;
     const [x,y]=center(c,r);
     if(x<-MX0-W||x>VBW+MX1+W||y<-MY0-R||y>VBH+MY1+R)continue;
@@ -2053,8 +2062,13 @@ function buildFar(){
     o+='<text class="far-lbl" x="'+x+'" y="'+(y-9)+'">'+f.name+'</text>';
     if(f.tag)o+='<text class="far-tag" x="'+x+'" y="'+(y+18)+'" fill="'+col[f.who]+'">'+f.tag+'</text>';
   }
+  const Z=(c,r,rx,ry,who,t)=>{const [x,y]=center(c,r);return '<ellipse cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" fill="'+col[who]+'" fill-opacity=".10" stroke="'+col[who]+'" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="6 4"/>'+(t?'<text class="far-tag" x="'+x+'" y="'+(y+ry+10)+'" fill="'+col[who]+'">'+t+'</text>':'');};
+  const SH=(c,r,who,t,sub,dash)=>{const [x,y]=center(c,r);return '<g><ellipse cx="'+x+'" cy="'+(y+5)+'" rx="15" ry="5" fill="#000" opacity=".15"/><path d="M'+(x-14)+' '+y+'h28l-4 7h-20z" fill="'+col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".45"':'')+'/><rect x="'+(x-5)+'" y="'+(y-6)+'" width="10" height="6" fill="'+col[who]+'" stroke="#fff" stroke-width=".8"/></g><text class="far-lbl" x="'+x+'" y="'+(y-10)+'">'+t+'</text><text class="far-tag" x="'+x+'" y="'+(y+19)+'" fill="'+col[who]+'">'+sub+'</text>';};
+  o+=Z(26.5,-1,115,70,'us','美日 沖繩投射區')+Z(19.5,4,150,95,'jp','日本 先島投射區')+Z(26.5,22,95,60,'us','美軍 關島投射區')+Z(27.5,-5.5,95,50,'jp','日本 九州')
+    +Z(-4,5,62,300,'atk','共軍 大陸沿海投射區')+Z(8,-3.5,85,55,'atk','共軍 東海艦隊');
+  o+=SH(19,9,'us','第7艦隊','航艦打擊群')+SH(18,13,'us','潛艦','美軍・隱蔽',true)+SH(16,15,'jp','潛艦','海自・隱蔽',true);
   const T=(c,r,t,sz)=>{const [x,y]=center(c,r);return '<text class="big" font-size="'+(sz||12)+'" x="'+x+'" y="'+y+'" text-anchor="middle">'+t+'</text>';};
-  o+=T(21,10,'太平洋',13)+T(5,19,'南海',13)+T(10,12.5,'呂宋海峽',11)+T(14,-3,'東海',13)+T(8,21,'美軍 EDCA 範圍（示意）',10);
+  o+=T(23,8,'太平洋',13)+T(5,19,'南海',13)+T(10,12.5,'呂宋海峽',11)+T(14,-3,'東海',13)+T(8,21,'美軍 EDCA 範圍（示意）',10);
   o+='</g><rect class="playbox" x="0" y="0" width="'+VBW.toFixed(1)+'" height="'+VBH.toFixed(1)+'" rx="6"/>';
   $('#gX').innerHTML=o;
 }
@@ -2189,7 +2203,7 @@ function fxTheater(o){
     tween(500,k=>path.setAttribute('opacity',.5*(1-k)),()=>path.remove());});
 }
 function runFx(o){
-  const P=h=>cen(h[0],h[1]);
+  const P=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);
   if(o.t==='atk'){
     const a=P(o.from),b=P(o.to),n=o.sea?1:3;
     for(let i=0;i<n;i++)setTimeout(()=>{fxFlash(a,2,9,'#ffe08a',150);fxShot(a,b,{arc:o.sea?42:8,dur:o.sea?340:170,end:()=>fxImpact(b,o.hit&&i===n-1,o.tsea,false)});},i*95*fxK());
@@ -2197,8 +2211,9 @@ function runFx(o){
     const a=P(o.from),b=P(o.to);fxFlash(a,3,12,'#fff',240);fxSmoke(a,b,62,6,480);
     fxShot(a,b,{arc:62,dur:480,color:'#fff',trail:'#ffb347',w:3,r:3.5,end:()=>fxImpact(b,o.hit,true,true)});
   }else if(o.t==='air'){
-    const b=P(o.at),src=o.src||'w',s=src==='w'?[b[0]-200,b[1]-150]:src==='e'?[b[0]+200,b[1]-165]:[b[0],b[1]-230];
-    fxShot(s,b,{arc:-12,dur:420,color:'#fff',trail:'#ff9a3c',w:3,r:3.5,end:()=>fxImpact(b,o.hit,o.tsea,true)});
+    const b=P(o.at),src=o.src||'w',s=o.org?P(o.org):src==='w'?[b[0]-200,b[1]-150]:src==='e'?[b[0]+200,b[1]-165]:[b[0],b[1]-230];
+    const dd=Math.hypot(s[0]-b[0],s[1]-b[1]);if(o.org)fxFlash(s,3,14,'#fff',260);
+    fxShot(s,b,{arc:o.org?Math.min(110,dd*.12):-12,dur:o.org?Math.min(900,260+dd*.7):420,color:'#fff',trail:'#ff9a3c',w:3,r:3.5,end:()=>fxImpact(b,o.hit,o.tsea,true)});
   }else if(o.t==='dmg'){
     const p=P(o.at);fxText(p,'−'+o.n,o.side);fxShake(o.id,true);
   }else if(o.t==='dead'){
@@ -2574,7 +2589,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.13';
+const VERSION='2026-11-02.14';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
@@ -2665,7 +2680,7 @@ $('#sidetabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]
 $('#flist').addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.f)FOLD[d.dataset.f]=d.open;},true);
 $('#btnThWide').onclick=()=>{const t=document.querySelector('.theater');t.classList.toggle('wide');$('#btnThWide').textContent=t.classList.contains('wide')?'縮小戰區圖':'放大戰區圖';};
 /* ---------- map zoom and fullscreen ---------- */
-let ZOOM=1;const ZMIN=.5;
+let ZOOM=1;const ZMIN=.4;
 function setZoom(z,recenter){
   const w=document.querySelector('.mapwrap'),m=$('#map'),old=ZOOM,fs=document.body.classList.contains('mapfs');
   const fx=(w.scrollLeft+w.clientWidth/2)/Math.max(1,w.scrollWidth),fy=(w.scrollTop+w.clientHeight/2)/Math.max(1,w.scrollHeight);
