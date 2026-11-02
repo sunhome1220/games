@@ -51,7 +51,7 @@ h1{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,4vw,38px);l
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
 @media (max-width:960px){.layout{grid-template-columns:minmax(0,1fr)}}
 .board{min-width:0}
-.mapwrap{overflow:auto;border:1px solid var(--line);background:var(--sea);border-radius:4px}
+.mapwrap{touch-action:pan-x pan-y;overflow:auto;border:1px solid var(--line);background:var(--sea);border-radius:4px}
 #map{display:block;width:100%;min-width:640px;height:auto;user-select:none;-webkit-user-select:none}
 .mapbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-bottom:6px;font-size:13px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin-top:8px}
@@ -157,6 +157,60 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .nodes .dd{display:block;color:var(--muted);font-size:12px}
 .nodes li.done .tn{color:var(--accent)}
 #resume{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:25;background:var(--accent);border-color:var(--accent);color:#1b1408;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+/* tabs, wizard */
+.side{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow-y:auto;padding-right:2px}
+@media (max-width:960px){.side{position:static;max-height:none}}
+.side>*{flex-shrink:0}
+.tabs{display:flex;gap:4px;position:sticky;top:0;z-index:3;background:var(--bg);padding-bottom:6px;overflow-x:auto}
+.tabs button{flex:1;background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:6px 4px;font-size:13px;white-space:nowrap}
+.tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabpane{display:flex;flex-direction:column;gap:14px}
+.tabpane[hidden]{display:none}
+.wz-chips{display:flex;gap:6px;margin:6px 0 10px}
+.wz-chips button{flex:1;padding:5px 0;font-size:12px;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:3px}
+.wz-chips button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.wz-chips button.ok:not(.on){color:var(--ok);border-color:var(--ok)}
+.wz-desc{font-size:13px;color:var(--muted);margin:0 0 10px}
+.wz-q{font-weight:700;font-size:13px;margin:12px 0 6px}
+.opt.on{border-color:var(--accent);background:var(--hl-land)}
+.opt .dd{display:block;font-weight:400}
+.wz-nav{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
+.wz-start{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.wz-start button{width:100%}
+.wz-start #btnDefault{margin-top:8px}
+.wz-sum{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.wz-sum td{padding:4px 0;border-top:1px solid var(--line);vertical-align:top}
+.wz-sum td:first-child{color:var(--muted);width:6.5em}
+.wz-note{font-size:12.5px;color:var(--muted);border-left:3px solid var(--accent);padding-left:8px;margin:8px 0}
+details.rg{border-top:1px solid var(--line);padding:6px 0}
+details.rg:first-of-type{border-top:0}
+details.rg ul{padding-left:18px;margin:6px 0 0;font-size:12.5px}
+details.fside{border-top:1px solid var(--line);padding:6px 0}
+details.fside:first-child{border-top:0}
+details.fside>summary{cursor:pointer;list-style:none;display:flex;justify-content:flex-start;align-items:center;gap:8px}
+details.fside>summary .pill{margin-left:auto}
+details.fside>summary::-webkit-details-marker{display:none}
+details.fside>summary::before{content:'▸';color:var(--muted);margin-right:4px}
+details.fside[open]>summary::before{content:'▾'}
+details.fside>summary .dd{margin-left:auto}
+button.sm{padding:3px 9px;font-size:12px}
+.theater.wide .th-grid{grid-template-columns:minmax(0,1fr)}
+.theater.wide #tmap{max-width:760px;margin:0 auto}
+.mapbar .mb-l{font-weight:700}
+.mapbar button{padding:3px 10px;min-width:2.2em}
+.mapbar .zv,.fshud .zv{min-width:4.2em;font-family:var(--f-mono)}
+.mapwrap{cursor:grab} .mapwrap.drag{cursor:grabbing}
+.fshud,.fshint{display:none}
+body.mapfs{overflow:hidden}
+body.mapfs .app>header,body.mapfs .app>footer,body.mapfs .side,body.mapfs .legend,body.mapfs .theater,body.mapfs .mapbar{display:none}
+body.mapfs .app{max-width:none;padding:0}
+body.mapfs .layout{display:block}
+body.mapfs .board{position:fixed;inset:0;z-index:12;background:var(--bg);display:flex;flex-direction:column}
+body.mapfs .mapwrap{flex:1;max-height:none!important;border:0;border-radius:0}
+body.mapfs .fshud{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px max(12px,env(safe-area-inset-right,0px)) 6px max(12px,env(safe-area-inset-left,0px));padding-top:calc(8px + env(safe-area-inset-top,0px));background:var(--panel);border-bottom:1px solid var(--line)}
+body.mapfs .fshud .sp{flex:1}
+body.mapfs .fshud .fst-text{font-size:13px;font-weight:700}
+body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0px));font-size:12.5px;color:var(--muted);background:var(--panel)}
 /* mainland bases */
 .tcb{fill:var(--atk);stroke:var(--ink);stroke-width:1}
 .tcg{cursor:pointer} .tcg.off .tcb{fill:var(--panel);stroke:var(--atk);stroke-dasharray:3 2}
@@ -248,7 +302,21 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
   </header>
   <main class="layout">
     <section class="board">
-      <div class="mapbar"><label for="optZoom">地圖大小</label> <select id="optZoom"><option value="1">標準</option><option value="1.25">放大</option><option value="1.6">最大</option></select><span class="dd">放大後可在地圖框內拖曳或捲動</span></div>
+      <div class="fshud" id="fshud">
+        <span id="fsStatus" class="fst-text"></span>
+        <span class="sp"></span>
+        <button class="ghost" id="fsStrike" hidden>火力打擊</button>
+        <button id="fsEnd" hidden>結束階段</button>
+        <button class="ghost zb" data-z="-1" aria-label="縮小">－</button><button class="ghost zv" id="fsZ">100%</button><button class="ghost zb" data-z="1" aria-label="放大">＋</button>
+        <button class="ghost" id="fsExit">離開全螢幕</button>
+      </div>
+      <div class="fshint" id="fsHint"></div>
+      <div class="mapbar">
+        <span class="mb-l">地圖</span>
+        <button class="ghost zb" data-z="-1" aria-label="縮小">－</button><button class="ghost zv" id="zLabel" title="重設為 100%">100%</button><button class="ghost zb" data-z="1" aria-label="放大">＋</button>
+        <button class="ghost" id="btnFs">⛶ 全螢幕</button>
+        <span class="dd">Ctrl＋滾輪可縮放，放大後可拖曳或捲動</span>
+      </div>
       <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"></svg></div>
       <div class="legend">
         <span><i style="background:var(--land)"></i>平原</span>
@@ -261,7 +329,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
         <span><i style="background:var(--accent);border-radius:50%"></i>棋子下方圓點＝戰力「步」，實心為剩餘、空心為已損失</span>
       </div>
       <div class="card theater">
-        <div class="th-head"><h2>西太平洋戰區</h2><span class="hint" id="thHint"></span></div>
+        <div class="th-head"><h2>西太平洋戰區</h2><button class="ghost sm" id="btnThWide">放大戰區圖</button><span class="hint" id="thHint"></span></div>
         <div class="th-grid">
           <svg id="tmap" role="img" aria-label="西太平洋戰區圖：九州、琉球、沖繩、台灣、菲律賓北部與美日基地"></svg>
           <div id="flist"></div>
@@ -269,68 +337,77 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
       </div>
     </section>
     <aside class="side" id="side">
-      <div class="card" id="setup">
-        <h2>作戰設定</h2>
-        <label class="row" for="optT">判定回合 <select id="optT"><option value="6">第 6 回合</option><option value="8" selected>第 8 回合</option><option value="10">第 10 回合</option><option value="12">第 12 回合</option></select></label>
-        <label class="row" for="optMode">模式 <select id="optMode"><option value="play">對戰</option><option value="sim">電腦推演（含事件節點）</option></select></label>
-        <label class="row" for="optBuild" id="rowBuild">戰前集結 <select id="optBuild"><option value="open">公開全面集結</option><option value="exercise" selected>演習掩護</option><option value="surprise">戰略突襲</option></select></label>
-        <label class="row" for="optFx">美日菲參戰情境 <select id="optFx"><option value="dice" selected>擲骰決定</option><option value="none">不介入（台灣孤軍）</option><option value="full">開戰即全面介入</option></select></label>
-        <label class="row" for="optNews">每回合國際快訊 <select id="optNews"><option value="1">開啟</option><option value="0">關閉</option></select></label>
-        <label class="row" for="optSpeed" id="rowSpeed" hidden>推演速度 <select id="optSpeed"><option value="1">一般</option><option value="0.35">快速</option></select></label>
-        <label class="row" for="optSide" id="rowSide">你要操作 <select id="optSide"><option value="atk">攻方（紅），電腦當守方</option><option value="def">守方（藍），電腦當攻方</option><option value="both">雙方都操作（同機對戰）</option><option value="none">都不操作（觀戰）</option></select></label>
-        <div class="btns"><button id="btnStart">開始作戰</button></div>
-        <div class="hint" id="setupHint">單人可選攻方或守方，由電腦負責另一方；也可以兩方都由你操作。</div>
+      <div class="tabs" id="sidetabs" role="tablist">
+        <button data-tab="cmd" class="on" role="tab">指揮</button>
+        <button data-tab="goal" role="tab">勝負</button>
+        <button data-tab="cost" role="tab">代價</button>
+        <button data-tab="log" role="tab">戰報</button>
+        <button data-tab="rules" role="tab">規則</button>
       </div>
-      <div class="card" id="ctrl" hidden>
-        <h2 id="phaseTitle">指揮</h2>
-        <div class="btns">
-          <button id="btnStrike" class="ghost">火力打擊</button>
-          <button id="btnEnd">結束階段</button>
+      <div class="tabpane" data-pane="cmd">
+        <div class="card" id="setup">
+          <div class="eyebrow" id="wzStep"></div>
+          <h2 id="wzTitle"></h2>
+          <div class="wz-chips" id="wzChips"></div>
+          <p class="wz-desc" id="wzDesc"></p>
+          <div id="wzBody"></div>
+          <div class="wz-nav"><button class="ghost" id="wzPrev">← 上一步</button><button class="ghost" id="wzNext">下一步 →</button></div>
+          <div class="wz-start"><button id="btnStart">開始作戰</button><div class="hint" id="wzHint"></div>
+            <button class="ghost" id="btnDefault">依預設值直接開始</button>
+            <div class="hint">預設：對戰、你操作攻方（電腦守方）、第 8 回合判定、演習掩護、擲骰決定參戰、快訊開啟。不會改掉你已記錄的設定。</div></div>
+          <div id="wzStore" hidden>
+            <select id="optMode"><option value="play">對戰</option><option value="sim">電腦推演</option></select>
+            <select id="optSide"><option value="atk">攻方</option><option value="def">守方</option><option value="both">雙方</option><option value="none">觀戰</option></select>
+            <select id="optSpeed"><option value="1">一般</option><option value="0.35">快速</option></select>
+            <select id="optT"><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option><option value="12">12</option></select>
+            <select id="optBuild"><option value="open">open</option><option value="exercise" selected>exercise</option><option value="surprise">surprise</option></select>
+            <select id="optFx"><option value="dice" selected>dice</option><option value="none">none</option><option value="full">full</option></select>
+            <select id="optNews"><option value="1" selected>on</option><option value="0">off</option></select>
+          </div>
         </div>
-        <div class="hint" id="hint"></div>
+        <div class="card" id="ctrl" hidden>
+          <h2 id="phaseTitle">指揮</h2>
+          <div class="btns">
+            <button id="btnStrike" class="ghost">火力打擊</button>
+            <button id="btnEnd">結束階段</button>
+          </div>
+          <div class="hint" id="hint"></div>
+          <div class="proj" id="miniGoal"></div>
+        </div>
+        <div class="card info" id="info"><div class="k">點選地圖上的單位或地格查看資料。</div></div>
       </div>
-      <div class="card info" id="info"><div class="k">點選地圖上的單位或地格查看資料。</div></div>
-      <div class="card">
-        <h2>戰爭代價</h2>
-        <div id="costs"></div>
+      <div class="tabpane" data-pane="goal" hidden>
+        <div class="card" id="simCard" hidden>
+          <h2>推演節點</h2>
+          <ul class="nodes" id="nodes"></ul>
+        </div>
+        <div class="card">
+          <h2>勝負條件</h2>
+          <div id="vcs"></div>
+        </div>
       </div>
-      <div class="card" id="simCard" hidden>
-        <h2>推演節點</h2>
-        <ul class="nodes" id="nodes"></ul>
+      <div class="tabpane" data-pane="cost" hidden>
+        <div class="card">
+          <h2>戰爭代價</h2>
+          <div id="costs"></div>
+        </div>
       </div>
-      <div class="card">
-        <h2>勝負條件</h2>
-        <div id="vcs"></div>
+      <div class="tabpane" data-pane="log" hidden>
+        <div class="card">
+          <h2>戰報</h2>
+          <ul class="log" id="log"></ul>
+        </div>
       </div>
-      <div class="card">
-        <h2>戰報</h2>
-        <ul class="log" id="log"></ul>
-      </div>
-      <div class="card">
-        <details>
-          <summary>規則摘要</summary>
-          <ul>
-            <li><b>步（戰力）：</b>每個單位的戰力分成幾「步」，就是棋子下方的圓點。旅級單位多為 3 步，空降旅、後備旅、反艦飛彈為 2 步。每損失 1 步約失去三分之一戰力（在海上就是部分船艦連同人員裝備被擊沉）；只剩 1 步時攻防各 −1，歸零即被殲滅。戰況與報告中的「兵力 X 步」是各單位剩餘步數的加總，約 3 步相當於一個旅。</li>
-            <li>每回合先攻方、後守方。每個單位每階段可移動一次，之後可攻擊一次。</li>
-            <li><b>渡海：</b>兩棲旅、陸戰旅可從大陸任一沿岸格出航；裝甲旅只能從港口出航，且只能在攻方已控制的港口上岸。海上移動力依天候：良好 3、普通 2、惡劣 1。登陸後該單位本階段結束。</li>
-            <li><b>搶灘突擊：</b>從海上直接攻擊岸上敵軍，攻擊 −2（陸戰旅 −1）。守方若被消滅，突擊單位可直接上岸。</li>
-            <li><b>戰鬥：</b>攻擊值＋骰 對 防禦值＋地形＋骰。差 ≥4 守方失 2 步；1～3 失 1 步；0 雙方各失 1；−1～−3 攻方失 1；≤−4 攻方失 2。每多一支友軍與目標相鄰 +1（最多 +2）。只剩 1 步的單位攻防各 −1。</li>
-            <li><b>控制區：</b>移動進入與敵軍相鄰的陸地格必須停下。</li>
-            <li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；每次空投擲骰，擲 1 因防空攔截損失 1 步；落在敵軍旁時擲 1～3 就損失 1 步。惡劣天候不能空降。</li>
-            <li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li>
-            <li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li>
-            <li><b>美日菲參戰：</b>開局可選參戰情境：擲骰決定（預設）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊，菲律賓決定北呂宋基地。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li>
-            <li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊也會自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li>
-            <li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li>
-            <li><b>戰爭代價：</b>側欄的「戰爭代價」依部隊編制把損失換算成傷亡人數（合成旅約 5,000 人；在海上被擊沉的死亡比例高於陸戰），並累計火力打擊與城市戰鬥造成的平民傷亡、各國經濟損失、全球股市與晶片供應。結算時依 Bloomberg Economics 2024 年的估算（台海戰爭約使全球 GDP 減少 10%，封鎖約 5%）推估一年期衝擊。所有數字都是遊戲依公開資料的粗估。</li>
-            <li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li>
-            <li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li>
-            <li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 2、港口 4、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1。</li>
-            <li><b>增援：</b>攻方第 2～5 回合於大陸沿岸到達；守方後備旅第 2～4 回合在城市動員。</li>
-            <li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li>
-            <li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li>
-          </ul>
-        </details>
+      <div class="tabpane" data-pane="rules" hidden>
+        <div class="card rules">
+          <h2>規則摘要</h2>
+          <details class="rg" open><summary>基本規則</summary><ul><li><b>步（戰力）：</b>每個單位的戰力分成幾「步」，就是棋子下方的圓點。旅級單位多為 3 步，空降旅、後備旅、反艦飛彈為 2 步。每損失 1 步約失去三分之一戰力（在海上就是部分船艦連同人員裝備被擊沉）；只剩 1 步時攻防各 −1，歸零即被殲滅。戰況與報告中的「兵力 X 步」是各單位剩餘步數的加總，約 3 步相當於一個旅。</li><li>每回合先攻方、後守方。每個單位每階段可移動一次，之後可攻擊一次。</li><li><b>渡海：</b>兩棲旅、陸戰旅可從大陸任一沿岸格出航；裝甲旅只能從港口出航，且只能在攻方已控制的港口上岸。海上移動力依天候：良好 3、普通 2、惡劣 1。登陸後該單位本階段結束。</li><li><b>搶灘突擊：</b>從海上直接攻擊岸上敵軍，攻擊 −2（陸戰旅 −1）。守方若被消滅，突擊單位可直接上岸。</li><li><b>戰鬥：</b>攻擊值＋骰 對 防禦值＋地形＋骰。差 ≥4 守方失 2 步；1～3 失 1 步；0 雙方各失 1；−1～−3 攻方失 1；≤−4 攻方失 2。每多一支友軍與目標相鄰 +1（最多 +2）。只剩 1 步的單位攻防各 −1。</li><li><b>控制區：</b>移動進入與敵軍相鄰的陸地格必須停下。</li><li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；每次空投擲骰，擲 1 因防空攔截損失 1 步；落在敵軍旁時擲 1～3 就損失 1 步。惡劣天候不能空降。</li><li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 2、港口 4、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1。</li><li><b>增援：</b>攻方第 2～5 回合於大陸沿岸到達；守方後備旅第 2～4 回合在城市動員。</li></ul></details>
+          <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li></ul></details>
+          <details class="rg"><summary>國際與集結</summary><ul><li><b>美日菲參戰：</b>開局可選參戰情境：擲骰決定（預設）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊，菲律賓決定北呂宋基地。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li><li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li></ul></details>
+          <details class="rg"><summary>戰爭代價</summary><ul><li><b>戰爭代價：</b>側欄的「戰爭代價」依部隊編制把損失換算成傷亡人數（合成旅約 5,000 人；在海上被擊沉的死亡比例高於陸戰），並累計火力打擊與城市戰鬥造成的平民傷亡、各國經濟損失、全球股市與晶片供應。結算時依 Bloomberg Economics 2024 年的估算（台海戰爭約使全球 GDP 減少 10%，封鎖約 5%）推估一年期衝擊。所有數字都是遊戲依公開資料的粗估。</li></ul></details>
+          <details class="rg"><summary>推演與判定</summary><ul><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
+          
+        </div>
       </div>
     </aside>
   </main>
@@ -829,8 +906,12 @@ function aiPickCN(){
   return best;
 }
 const allyCanStrike=f=>f.land&&fxActive(f)&&(f.c==='US'?S.fx.lv.US>=3:S.fx.lv.JP>=2&&S.fx.lv.US>=2);
+// each eligible force rolls whether to strike the mainland this phase: US needs 4+, Japan 5+ (more wary of escalation)
 async function alliedLandStrikes(){
   for(const f of S.fx.units.filter(allyCanStrike)){
+    const need=f.c==='US'?4:5,r=d6();
+    if(r<need){log(f.n+'評估對大陸打擊：擲 '+r+'，需 '+need+'，本回合按兵不動');continue;}
+    log(f.n+'評估對大陸打擊：擲 '+r+'，決定出手');
     for(let i=0;i<f.land;i++){const id=aiPickCN();if(!id)return;strikeCN(id,f.c);render();await sleep(200);if(S.over)return;}
   }
 }
@@ -1111,6 +1192,7 @@ function timelineHTML(){
 }
 
 /* ---------- theater rendering ---------- */
+let FOLD={};
 const TPROJ=(lon,lat)=>[((lon-116)*26*.9135).toFixed(1),((34-lat)*26).toFixed(1)];
 const TPOLY=(pts,cls)=>'<polygon class="'+cls+'" points="'+pts.map(p=>TPROJ(p[0],p[1]).join(',')).join(' ')+'"/>';
 const LAND={
@@ -1155,20 +1237,22 @@ function renderTheater(){
   }
   const svg=$('#tmap');svg.setAttribute('viewBox','-28 0 408 533');svg.innerHTML=o;
   const P=S.pools,bar=(k,side)=>'<div class="pool"><span>'+POOLN[k]+'</span><i><em class="'+side+'" style="width:'+Math.round(100*Math.max(0,P[k])/Math.max(POOL0[k],P[k]))+'%"></em></i><b>'+P[k]+'</b></div>';
-  let l='<div class="fside"><div class="fh"><b>攻方</b></div>'+['plaAir','plaAD','plaNavy','rf'].map(k=>bar(k,'atk')).join('')+'</div>'+
-    '<div class="fside"><div class="fh"><b>中方基地</b><span class="dd">◆火箭軍 ▲空軍 ■海軍 ●集結港（數字＝完整度）</span></div>'+
+  const dt=(key,def,head,body)=>'<details class="fside" data-f="'+key+'"'+((FOLD[key]===undefined?def:FOLD[key])?' open':'')+'><summary class="fh">'+head+'</summary>'+body+'</details>';
+  const cnN=Object.keys(CNB).filter(id=>S.cn[id]>0).length;
+  let l=dt('atk',true,'<b>攻方</b>',['plaAir','plaAD','plaNavy','rf'].map(k=>bar(k,'atk')).join(''))+
+    dt('cnb',false,'<b>中方基地</b><span class="dd">運作中 '+cnN+' / '+Object.keys(CNB).length+'　◆火箭軍 ▲空軍 ■海軍 ●集結港</span>',
       Object.entries(CNB).map(([id,B])=>'<div class="fu cnrow'+(S.cnSel===id?' hl':'')+'"><div><b>'+KIND_S[B.kind]+' '+B.n+'</b> <span class="dd">'+KIND_N[B.kind]+'</span></div><div class="fst"><span class="pips">'+
-        Array.from({length:B.hp},(_,i)=>'<i class="'+(i<S.cn[id]?'f':'')+'"></i>').join('')+'</span><span class="st'+(S.cn[id]>0?'':' off')+'">'+(S.cn[id]>0?'運作中':'已癱瘓')+'</span></div></div>').join('')+'</div>'+
-    '<div class="fside"><div class="fh"><b>守方</b></div>'+['rocAir','rocNavy','rocAD','rocMsl'].map(k=>bar(k,'def')).join('')+'</div>';
+        Array.from({length:B.hp},(_,i)=>'<i class="'+(i<S.cn[id]?'f':'')+'"></i>').join('')+'</span><span class="st'+(S.cn[id]>0?'':' off')+'">'+(S.cn[id]>0?'運作中':'已癱瘓')+'</span></div></div>').join(''))+
+    dt('def',true,'<b>守方</b>',['rocAir','rocNavy','rocAD','rocMsl'].map(k=>bar(k,'def')).join(''));
   ['US','JP','PH'].forEach(c=>{
     const lv=S.fx.lv[c];
-    l+='<div class="fside"><div class="fh"><b>'+CN[c]+'</b><span class="pill '+(lv?c.toLowerCase():'off')+'">'+LV[c][lv]+'</span></div>';
+    let inner='';
     const us=S.fx.units.filter(f=>f.c===c);
-    if(!us.length)l+='<div class="fu dd">本身不派兵；決定美軍能否使用北呂宋基地。</div>';
+    if(!us.length)inner+='<div class="fu dd">本身不派兵；決定美軍能否使用北呂宋基地。</div>';
     us.forEach(f=>{const st=fxStatus(f);
-      l+='<div class="fu'+(S.thSel===f.base?' hl':'')+'"><div><b>'+f.n+'</b> <span class="dd">'+f.d+'・'+BASES[f.base].n+'</span></div><div class="fst"><span class="pips">'+
+      inner+='<div class="fu'+(S.thSel===f.base?' hl':'')+'"><div><b>'+f.n+'</b> <span class="dd">'+f.d+'・'+BASES[f.base].n+'</span></div><div class="fst"><span class="pips">'+
         Array.from({length:f.max},(_,i)=>'<i class="'+(i<f.hp?'f':'')+'"></i>').join('')+'</span><span class="st'+(st==='出擊中'?' on':'')+'">'+st+'</span></div></div>';});
-    l+='</div>';
+    l+=dt(c,lv>0,'<b>'+CN[c]+'</b><span class="pill '+(lv?c.toLowerCase():'off')+'">'+LV[c][lv]+'</span>',inner);
   });
   $('#flist').innerHTML=l;
   const sel=S.thSel&&BASES[S.thSel],csel=S.cnSel&&CNB[S.cnSel];
@@ -1666,13 +1750,14 @@ function renderMap(){
   const svg=$('#map');svg.setAttribute('viewBox','0 0 '+VBW.toFixed(1)+' '+VBH.toFixed(1));svg.innerHTML=o;
 }
 function renderStatus(){
-  if(!S.started){$('#status').innerHTML='<span class="chip">尚未開始 · 判定回合 <b>'+S.T+'</b></span>';return;}
+  if(!S.started){$('#status').innerHTML='<span class="chip">尚未開始 · 判定回合 <b>'+S.T+'</b></span>';$('#fsStatus').textContent='';return;}
   const sp=supply();
   $('#status').innerHTML='<span class="chip">回合 <b>'+S.turn+' / '+S.T+'</b></span>'+
     '<span class="chip '+S.phase+'">'+SIDE[S.phase]+'階段'+(S.ctrl[S.phase]==='ai'?' · 電腦':'')+'</span>'+
     '<span class="chip">天候 '+S.weather.n+' · 海上移動 <b>'+S.weather.sea+'</b></span>'+
     '<span class="chip" title="'+S.fireNote+'">火力 <b>'+S.fire+'</b></span>'+
     '<span class="chip"'+(sp.over?' style="border-color:var(--atk);color:var(--atk)"':'')+'>補給 <b>'+sp.used+' / '+sp.cap+'</b></span>';
+  $('#fsStatus').textContent='第 '+S.turn+' / '+S.T+' 回合 · '+SIDE[S.phase]+'階段 · 天候'+S.weather.n+' · 火力 '+S.fire+' · 補給 '+sp.used+'/'+sp.cap;
 }
 function renderCtrl(){
   $('#setup').hidden=S.started;$('#ctrl').hidden=!S.started;
@@ -1689,7 +1774,8 @@ function renderCtrl(){
   else if(S.mode==='strike')hint=S.phase==='atk'?'點選任一守方單位，或戰區圖上的美日基地進行火力打擊，每次消耗 1 點。':'點選戰區圖上的大陸基地（紅色圖形）進行長程打擊，每次消耗 1 發長程飛彈；打擊會讓中方報復。';
   else if(S.sel)hint='綠色＝可移動，橘色＝可登陸，紫色＝可空降；橘圈＝可攻擊目標。再點一次單位可取消選取。';
   else hint=S.phase==='atk'?'點選紅色單位下令。先把兩棲部隊從沿岸出航，下一回合搶灘。':'點選藍色單位下令。飛彈單位可射擊 4 格內海上的攻方船團。';
-  $('#hint').textContent=hint;
+  $('#hint').textContent=hint;$('#fsHint').textContent=hint;
+  const fs1=$('#fsStrike'),fs2=$('#fsEnd');fs1.hidden=bs.hidden;fs1.disabled=bs.disabled;fs1.textContent=bs.textContent;fs1.classList.toggle('on',bs.classList.contains('on'));fs2.hidden=$('#btnEnd').hidden;fs2.disabled=$('#btnEnd').disabled;
 }
 function renderInfo(){
   const el=$('#info');
@@ -1716,6 +1802,7 @@ function renderVC(){
   const cs=conditions();const n=cs.filter(c=>c.atk).length;
   $('#vcs').innerHTML=cs.map((c,i)=>'<div class="vc"><span class="n">'+(i+1)+'</span><div><div class="t">'+c.title+'</div><div class="d">'+c.desc+'<br>'+c.now+'</div></div><span class="pill '+(c.atk?'atk':'def')+'">'+(c.atk?'攻方':'守方')+'</span></div>').join('')+
     '<div class="proj">第 <b>'+S.T+'</b> 回合結束時判定。若現在判定：攻方 <b>'+n+'</b> / 3 → <b class="verdict '+verdict(n).s+'">'+verdict(n).t+'</b></div>';
+  $('#miniGoal').innerHTML='若現在判定：攻方 <b>'+n+'</b> / 3 → <b class="verdict '+verdict(n).s+'">'+verdict(n).t+'</b>（詳見「勝負」頁）';
 }
 function renderLog(){
   $('#log').innerHTML=S.log.length?S.log.map(l=>'<li><span class="tn">T'+l.t+(l.p==='atk'?'攻':'守')+'</span>'+l.msg+'</li>').join(''):'<li>尚無戰報。</li>';
@@ -1750,18 +1837,25 @@ function readSetup(){
   S.T=+$('#optT').value;S.sim=$('#optMode').value==='sim';S.speed=S.sim?+$('#optSpeed').value:1;
   const sd=$('#optSide').value;
   S.ctrl=S.sim?{atk:'ai',def:'ai'}:{atk:sd==='atk'||sd==='both'?'human':'ai',def:sd==='def'||sd==='both'?'human':'ai'};
-  $('#rowSide').hidden=$('#rowBuild').hidden=S.sim;S.newsOn=$('#optNews').value==='1';S.fxScen=$('#optFx').value;$('#rowSpeed').hidden=!S.sim;
-  $('#setupHint').textContent=S.sim?'雙方由電腦操作，途中在 5 個關鍵節點暫停，由你做決定或擲骰。':'單人可選攻方或守方，由電腦負責另一方；也可以兩方都由你操作。';
-  $('#btnStart').textContent=S.sim?'開始推演':'開始作戰';
+  S.newsOn=$('#optNews').value==='1';S.fxScen=$('#optFx').value;
 }
-['#optT','#optSide','#optMode','#optSpeed','#optBuild','#optNews','#optFx'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();render();}));
-$('#btnStart').onclick=()=>{
-  readSetup();S.started=true;
+['#optT','#optSide','#optMode','#optSpeed','#optBuild','#optNews','#optFx'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
+const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optT:'8',optBuild:'exercise',optFx:'dice',optNews:'1'};
+$('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
+// one-off start with the default settings; the saved setup choices are left as they were
+$('#btnDefault').onclick=()=>{
+  const keep={};Object.keys(DEFAULT_CFG).forEach(id=>{keep[id]=$('#'+id).value;$('#'+id).value=DEFAULT_CFG[id];});
+  startGame();
+  Object.entries(keep).forEach(([id,v])=>{$('#'+id).value=v;});
+  renderWizard();
+};
+function startGame(){
+  readSetup();S.started=true;setTab('cmd');
   applyFxScenario();
   if(!S.sim){const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));}
   S.lastSnap=snap();
   log((S.sim?'推演開始':'作戰開始')+'。判定回合：第 '+S.T+' 回合。');beginPhase('atk');
-};
+}
 function confirmBox(msg){return new Promise(res=>{const box=$('#mbox');box.classList.remove('ev');
   box.innerHTML='<div class="eyebrow">確認打擊</div><h3>升級戰事？</h3><p>'+msg+'</p><div class="btns"><button id="cfY">確定打擊</button><button class="ghost" id="cfN">取消</button></div>';
   $('#modal').hidden=false;$('#cfY').onclick=()=>{$('#modal').hidden=true;res(true);};$('#cfN').onclick=()=>{$('#modal').hidden=true;res(false);};$('#cfN').focus();});}
@@ -1784,7 +1878,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.02';
+const VERSION='2026-11-02.05';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
@@ -1802,11 +1896,123 @@ if(location.protocol.startsWith('http')){
   addEventListener('focus',checkUpdate);addEventListener('pageshow',checkUpdate);
 }
 $('#btnStart').addEventListener('click',()=>{if(!newverBtn.hidden)updateLabel();});
-function applyZoom(){const z=+$('#optZoom').value;$('#map').style.width=(z*100)+'%';$('.mapwrap').style.maxHeight=z>1?'86vh':'none';try{localStorage.setItem('tsl-zoom',String(z));}catch(e){}}
-try{const z=localStorage.getItem('tsl-zoom');if(z&&[...$('#optZoom').options].some(o=>o.value===z))$('#optZoom').value=z;}catch(e){}
-$('#optZoom').addEventListener('change',applyZoom);applyZoom();
-function reset(){newState();readSetup();render();}
-reset();
+
+/* ---------- setup wizard ---------- */
+const isSim=()=>$('#optMode').value==='sim';
+const SETUP_PAGES=[
+ {t:'對戰方式',d:'先決定怎麼玩：自己指揮，或交給電腦推演整場戰爭。',fields:[
+  {sel:'optMode',q:'模式',opts:{play:['對戰','由你下令移動、攻擊與打擊，隨時掌握戰場。'],sim:['電腦推演','雙方由電腦操作，途中在 7 個關鍵節點暫停，由你做決策或擲骰，最後產出推演時間軸與檢討報告。']}},
+  {sel:'optSide',q:'你要操作哪一方？',when:()=>!isSim(),opts:{atk:['攻方（紅）','你指揮渡海登陸，電腦防守台灣。'],def:['守方（藍）','你防守台灣，電腦負責進攻。'],both:['雙方都操作','同一台裝置輪流操作兩方。'],none:['都不操作（觀戰）','兩邊都由電腦操作，看戰局演變。']}},
+  {sel:'optSpeed',q:'推演速度',when:()=>isSim(),opts:{'1':['一般','每個動作有短暫停頓，方便看清楚。'],'0.35':['快速','縮短動作之間的停頓。']}}]},
+ {t:'判定回合',d:'戰爭持續到指定回合結束，才依三項條件判定勝負，攻方達成 2 項以上獲勝：① 台北由攻方控制 ② 基隆、台中港、高雄至少 2 個港口由攻方控制 ③ 攻方島上兵力步數不少於守方。每回合約半天。',fields:[
+  {sel:'optT',q:'幾回合後判定？',opts:{'6':['第 6 回合','約 3 天。時間很緊，攻方多半來不及站穩。'],'8':['第 8 回合','約 4 天。基準設定。'],'10':['第 10 回合','約 5 天。攻方有較多時間奪港。'],'12':['第 12 回合','約 6 天。長期戰，攻方較有機會站穩。']}}]},
+ {t:'戰前集結',d:'渡海前要先集結船團與兵員，很難完全隱藏。集結越公開，台灣與美日越早準備。',fields:[
+  {sel:'optBuild',q:'攻方怎麼集結？',when:()=>!isSim(),opts:{open:['公開全面集結','兵力最多（+2 兩棲旅、+1 重型旅、護航艦隊 +2），但守方提早動員、美國航艦已在附近、各國參戰擲骰 +1。'],exercise:['演習掩護','以軍演名義集結，雙方都只有部分預警。基準設定。'],surprise:['戰略突襲','兵力少一截（−2 兩棲旅、−1 重型旅），換取守方動員延後、各國參戰擲骰 −1。']}}],
+  note:()=>isSim()?'推演模式的集結會在第一個事件節點由你選擇，這一頁不用設定。':''},
+ {t:'美日菲參戰',d:'美國、日本、菲律賓是否參戰，會大幅改變戰局。',fields:[
+  {sel:'optFx',q:'參戰情境',opts:{dice:['擲骰決定','第 3 回合各國擲骰決定態度，第 5 回合再擲一次；攻方打擊基地會讓該國升級參戰。'],none:['不介入（台灣孤軍）','三國全程不參戰，戰區基地也不能被打擊。'],full:['開戰即全面介入','三國第 1 回合就參戰，航艦仍要 2 回合才抵達。']}}]},
+ {t:'快訊與確認',d:'最後確認設定。任何一頁都可以回去修改，所有頁面看過之後，在哪一頁都能開始作戰。',fields:[
+  {sel:'optNews',q:'每回合結束時顯示國際快訊',opts:{'1':['開啟','戰場插圖、頭條與戰況摘要。'],'0':['關閉','直接進入下一回合。']}}],summary:true}
+];
+const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
+function optLabel(sel,v){for(const pg of SETUP_PAGES)for(const f of pg.fields)if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
+function saveSetup(){try{const cfg={};['optMode','optSide','optSpeed','optT','optBuild','optFx','optNews'].forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
+function loadSetup(){
+  try{const o=JSON.parse(localStorage.getItem('tsl-setup')||'null');if(!o)return;
+    Object.entries(o.cfg||{}).forEach(([id,v])=>{const el=$('#'+id);if(el&&[...el.options].some(x=>x.value===v))el.value=v;});
+    if(Array.isArray(o.done)&&o.done.length===WZ.done.length)WZ.done=o.done.map(Boolean);
+  }catch(e){}
+}
+function renderWizard(){
+  const pg=SETUP_PAGES[WZ.i],N=SETUP_PAGES.length;WZ.done[WZ.i]=true;
+  $('#wzStep').textContent='作戰設定 · 第 '+(WZ.i+1)+' / '+N+' 頁';
+  $('#wzTitle').textContent=pg.t;$('#wzDesc').textContent=pg.d;
+  $('#wzChips').innerHTML=SETUP_PAGES.map((x,i)=>'<button data-i="'+i+'" class="'+(i===WZ.i?'on':'')+(WZ.done[i]?' ok':'')+'" title="'+x.t+'" aria-label="第 '+(i+1)+' 頁 '+x.t+'">'+(WZ.done[i]&&i!==WZ.i?'✓':i+1)+'</button>').join('');
+  let h='';
+  pg.fields.filter(f=>!f.when||f.when()).forEach(f=>{
+    const cur=$('#'+f.sel).value;
+    h+='<div class="wz-q">'+f.q+'</div><div class="opts">'+Object.entries(f.opts).map(([v,[l,d]])=>'<button class="opt'+(v===cur?' on':'')+'" data-sel="'+f.sel+'" data-v="'+v+'" aria-pressed="'+(v===cur)+'"><b>'+l+'</b><span class="dd">'+d+'</span></button>').join('')+'</div>';
+  });
+  const note=pg.note&&pg.note();if(note)h+='<div class="wz-note">'+note+'</div>';
+  if(pg.summary){
+    const sim=isSim(),rows=[['模式',optLabel('optMode',$('#optMode').value)]];
+    if(!sim)rows.push(['操作',optLabel('optSide',$('#optSide').value)]);else rows.push(['速度',optLabel('optSpeed',$('#optSpeed').value)]);
+    rows.push(['判定',optLabel('optT',$('#optT').value)]);
+    rows.push(['集結',sim?'推演中選擇':optLabel('optBuild',$('#optBuild').value)]);
+    rows.push(['參戰',optLabel('optFx',$('#optFx').value)]);rows.push(['快訊',optLabel('optNews',$('#optNews').value)]);
+    h+='<table class="wz-sum">'+rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('')+'</table>';
+  }
+  $('#wzBody').innerHTML=h;
+  $('#wzPrev').disabled=WZ.i===0;$('#wzNext').disabled=WZ.i===N-1;
+  const left=WZ.done.map((d,i)=>d?null:i+1).filter(Boolean),b=$('#btnStart');
+  b.disabled=left.length>0;b.textContent=isSim()?'開始推演':'開始作戰';
+  $('#wzHint').textContent=left.length?'還有第 '+left.join('、')+' 頁沒看過，看過每一頁後才能開始。':'設定完成，在任何一頁都可以開始。';
+  saveSetup();
+}
+$('#wzChips').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;WZ.i=+b.dataset.i;renderWizard();});
+$('#wzPrev').onclick=()=>{if(WZ.i>0){WZ.i--;renderWizard();}};
+$('#wzNext').onclick=()=>{if(WZ.i<SETUP_PAGES.length-1){WZ.i++;renderWizard();}};
+$('#wzBody').addEventListener('click',e=>{
+  const b=e.target.closest('.opt[data-sel]');if(!b)return;
+  const el=$('#'+b.dataset.sel);el.value=b.dataset.v;el.dispatchEvent(new Event('change'));
+});
+/* ---------- side tabs ---------- */
+function setTab(name){
+  document.querySelectorAll('#sidetabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+  document.querySelectorAll('.tabpane').forEach(p=>{p.hidden=p.dataset.pane!==name;});
+}
+$('#sidetabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)setTab(b.dataset.tab);});
+$('#flist').addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.f)FOLD[d.dataset.f]=d.open;},true);
+$('#btnThWide').onclick=()=>{const t=document.querySelector('.theater');t.classList.toggle('wide');$('#btnThWide').textContent=t.classList.contains('wide')?'縮小戰區圖':'放大戰區圖';};
+/* ---------- map zoom and fullscreen ---------- */
+let ZOOM=1;
+function setZoom(z){
+  const w=document.querySelector('.mapwrap'),m=$('#map'),old=ZOOM;
+  const fx=(w.scrollLeft+w.clientWidth/2)/Math.max(1,w.scrollWidth),fy=(w.scrollTop+w.clientHeight/2)/Math.max(1,w.scrollHeight);
+  ZOOM=Math.max(.5,Math.min(3,Math.round(z*100)/100));
+  m.style.width=(ZOOM*100)+'%';m.style.minWidth=ZOOM<1?'0':'';
+  w.style.maxHeight=document.body.classList.contains('mapfs')?'':(ZOOM>1?'86vh':'none');
+  w.scrollLeft=fx*w.scrollWidth-w.clientWidth/2;w.scrollTop=fy*w.scrollHeight-w.clientHeight/2;
+  const t=Math.round(ZOOM*100)+'%';$('#zLabel').textContent=t;$('#fsZ').textContent=t;
+  if(old!==ZOOM&&!document.body.classList.contains('mapfs'))try{localStorage.setItem('tsl-zoom',String(ZOOM));}catch(e){}
+}
+document.querySelectorAll('.zb').forEach(b=>b.addEventListener('click',()=>setZoom(ZOOM+(+b.dataset.z)*.25)));
+$('#zLabel').onclick=()=>setZoom(1);$('#fsZ').onclick=()=>setZoom(1);
+(function(){
+  const w=document.querySelector('.mapwrap');
+  w.addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZoom(ZOOM+(e.deltaY<0?.15:-.15));}},{passive:false});
+  let st=null,moved=false;
+  w.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;st={x:e.clientX,y:e.clientY,l:w.scrollLeft,t:w.scrollTop};moved=false;});
+  w.addEventListener('pointermove',e=>{if(!st)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;
+    if(!moved&&Math.hypot(dx,dy)>6)moved=true;
+    if(moved){w.classList.add('drag');w.scrollLeft=st.l-dx;w.scrollTop=st.t-dy;}});
+  const end=()=>{st=null;w.classList.remove('drag');};
+  w.addEventListener('pointerup',end);w.addEventListener('pointerleave',end);w.addEventListener('pointercancel',end);
+  w.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);
+})();
+function setFs(on){
+  document.body.classList.toggle('mapfs',on);
+  const root=document.documentElement;
+  if(on&&root.requestFullscreen)root.requestFullscreen().catch(()=>{/* 不支援時仍以頁面內全螢幕顯示 */});
+  else if(!on&&document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+  if(on){savedZoom=ZOOM;requestAnimationFrame(()=>requestAnimationFrame(fitZoom));}else{setZoom(savedZoom||1);}
+}
+let savedZoom=1;
+// in fullscreen, start with the whole map visible
+function fitZoom(){
+  const w=document.querySelector('.mapwrap');
+  const h1=w.clientWidth*VBH/VBW;
+  setZoom(Math.max(.5,Math.min(1,(w.clientHeight-4)/h1)));
+}
+$('#btnFs').onclick=()=>setFs(true);$('#fsExit').onclick=()=>setFs(false);
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('mapfs')){document.body.classList.remove('mapfs');setZoom(savedZoom||1);}else if(document.fullscreenElement&&document.body.classList.contains('mapfs'))requestAnimationFrame(fitZoom);});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('mapfs'))setFs(false);});
+$('#fsStrike').onclick=()=>$('#btnStrike').click();$('#fsEnd').onclick=()=>$('#btnEnd').click();
+
+function reset(){newState();readSetup();render();renderWizard();}
+loadSetup();
+try{const z=+localStorage.getItem('tsl-zoom');if(z)ZOOM=Math.max(.5,Math.min(3,z));}catch(e){}
+reset();setZoom(ZOOM);
 })();
 </script>
 </body>
