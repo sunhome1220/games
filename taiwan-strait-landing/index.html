@@ -550,7 +550,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
         <div class="card rules">
           <h2>規則摘要</h2>
           <details class="rg" open><summary>基本規則</summary><ul><li><b>步（戰力）：</b>每個單位的戰力分成幾「步」，就是棋子下方的圓點。旅級單位多為 3 步，空降旅、後備旅、反艦飛彈為 2 步。每損失 1 步約失去三分之一戰力（在海上就是部分船艦連同人員裝備被擊沉）；只剩 1 步時攻防各 −1，歸零即被殲滅。戰況與報告中的「兵力 X 步」是各單位剩餘步數的加總，約 3 步相當於一個旅。</li><li>每回合先攻方、後守方。每個單位每階段可移動一次，之後可攻擊一次。</li><li><b>渡海：</b>兩棲旅、陸戰旅可從大陸任一沿岸格出航；裝甲旅只能從港口出航，且只能在攻方已控制的港口上岸。海上移動力依天候：良好 3、普通 2、惡劣 1。登陸後該單位本階段結束。</li><li><b>搶灘突擊：</b>從海上直接攻擊岸上敵軍，攻擊 −2（陸戰旅 −1）。守方若被消滅，突擊單位可直接上岸。</li><li><b>戰鬥：</b>攻擊值＋骰 對 防禦值＋地形＋骰。差 ≥4 守方失 2 步；1～3 失 1 步；0 雙方各失 1；−1～−3 攻方失 1；≤−4 攻方失 2。每多一支友軍與目標相鄰 +1（最多 +2）。只剩 1 步的單位攻防各 −1。</li><li><b>控制區：</b>移動進入與敵軍相鄰的陸地格必須停下。</li><li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；每次空投擲骰，擲 1 因防空攔截損失 1 步；落在敵軍旁時擲 1～3 就損失 1 步。惡劣天候不能空降。</li><li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 2、港口 4、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1。</li><li><b>增援：</b>攻方第 2～5 回合於大陸沿岸到達；守方後備旅第 2～4 回合在城市動員。</li></ul></details>
-          <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>兵力年代：</b>開局可選 2026 現況、2028 近期、2030 中期。2026 依公開報導概略設定（台灣：雲峰與雄風IIE 長程飛彈、HIMARS／ATACMS、魚叉岸防、F-16V、天弓與愛國者；共軍：東風-15／16 與 PCH-191 長程火箭、東風-17 高超音速、東風-26／21D）；2028、2030 是依已規劃的採購與特別預算所做的推估，雙方都會成長。東風-17 的火力不受守方防空削減；東風-26／21D 讓打擊美日基地與艦艇的門檻 −1；無人機與巡飛彈每階段增加反艦攻擊。數字為遊戲的抽象點數，實際數量並不公開，各來源也有出入，詳見 DATA.md。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li><li><b>制空與防空壓制：</b>每回合先比較攻方陸基空軍＋艦載機與守方、盟國空軍：差 3 以上算「優勢」。攻方優勢時美日空軍的反艦命中門檻 +1，守方優勢時 −1；守方防空降到 2 以下算「遭壓制」，攻方火力 +1，攻方防空降到 2 以下則大陸基地更容易被打。</li><li><b>海上交戰：</b>每回合守方階段，攻方護航艦隊與航艦會與守方海軍、美日水面艦及潛艦交戰；潛艦（美日，以及台灣自製的海鯤，2028 年起 1 艘、2030 年 1 艘以上）可能擊沉護航艦或重創航艦，也可能遭反潛。共軍航艦（遼寧、山東、福建）提供艦載機制空，被反艦攻擊命中護航艦時，可能連帶被重創。</li><li><b>水面艦艇：</b>共軍護航艦（紅色，最多 4 艘）在港口外海，可航行、貼近己方船團掩護（目標旁有護航艦時，守方反艦攻擊命中門檻 +1），也能砲擊海岸；守方艦艇群（藍色，停泊港口，最多 4 組）每階段有 1 發反艦飛彈，不能移動。兩者都只有 2 步、很容易被反艦飛彈或空襲擊沉；擊沉會連動減少海軍點數，海軍點數被海戰扣減時也會沉掉對應的艦艇。</li><li><b>堆疊：</b>每格最多 2 個友軍單位（飛彈單位也計入），不能與敵軍同格；同格時單位並排縮小顯示、被攻擊時防禦 −1（擁擠），空位的友軍格也會亮綠色（敵軍相鄰的陸地格不能再疊）。點選已選單位取消選取後，才能改選同一格的另一個單位；移入有友軍的格子，直接點那一格的友軍即可。攻擊後只有目標格已無敵軍才會推進占領。</li><li><b>布雷：</b>守方開戰前依年代預先在西岸灘頭（火山布雷車，14 套最新報導預計 2027 年交付）與近海（水雷）布雷，地圖上以黑色圓點標示；攻方部隊進入布雷格要擲骰，3 以下觸雷損失 1 步並清除該處布雷。攻方護航艦隊每回合開始掃雷（最多 1～2 處），掃雷艦有 1/6 觸雷損失。</li><li><b>共軍潛艦：</b>每回合守方階段，最多 3 艘共軍潛艦攻擊美日艦艇（航艦要擲 6）或守方海軍。美日、台灣的反潛兵力（護衛隊群、美軍潛艦、航艦、台灣海軍與潛艦）越多，潛艦越容易被擊沉；完全沒有反潛兵力時（例如台灣孤軍）命中門檻 −1，也不會被擊沉。</li><li><b>巡弋飛彈：</b>長劍、鷹擊等巡弋飛彈每回合最多 1～2 點，守方防空強（≥5）時少 1 點；東風-17 仍不受防空影響。</li></ul></details>
+          <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>兵力年代：</b>開局可選 2026 現況、2028 近期、2030 中期。2026 依公開報導概略設定（台灣：雲峰與雄風IIE 長程飛彈、HIMARS／ATACMS、魚叉岸防、F-16V、天弓與愛國者；共軍：東風-15／16 與 PCH-191 長程火箭、東風-17 高超音速、東風-26／21D）；2028、2030 是依已規劃的採購與特別預算所做的推估，雙方都會成長。東風-17 的火力不受守方防空削減；東風-26／21D 讓打擊美日基地與艦艇的門檻 −1；無人機與巡飛彈每階段增加反艦攻擊。數字為遊戲的抽象點數，實際數量並不公開，各來源也有出入，詳見 DATA.md。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li><li><b>制空與防空壓制：</b>每回合先比較攻方陸基空軍＋艦載機與守方、盟國空軍：差 3 以上算「優勢」。攻方優勢時美日空軍的反艦命中門檻 +1，守方優勢時 −1；守方防空降到 2 以下算「遭壓制」，攻方火力 +1，攻方防空降到 2 以下則大陸基地更容易被打。</li><li><b>海上交戰：</b>每回合守方階段，攻方護航艦隊與航艦會與守方海軍、美日水面艦及潛艦交戰；潛艦（美日，以及台灣自製的海鯤，2028 年起 1 艘、2030 年 1 艘以上）可能擊沉護航艦或重創航艦，也可能遭反潛。共軍航艦（遼寧、山東、福建）提供艦載機制空，被反艦攻擊命中護航艦時，可能連帶被重創。</li><li><b>細格地圖：</b>地圖格數加倍（每個舊格細分為 2×2，約 36×36 格），海岸線、山地、港口與機場位置更細；移動力、海上移動、飛彈射程、空降距離、相鄰（控制區、支援、攻擊距離）都隨之加倍，實際行進與作戰距離不變。攻占一格時，周圍沒有敵軍的陸地格一併易主（港口與台北需親自踏入）。單位圖示縮小，同格可疊 2 個。</li><li><b>水面艦艇：</b>共軍護航艦（紅色，最多 4 艘）在港口外海，可航行、貼近己方船團掩護（目標旁有護航艦時，守方反艦攻擊命中門檻 +1），也能砲擊海岸；守方艦艇群（藍色，停泊港口，最多 4 組）每階段有 1 發反艦飛彈，不能移動。兩者都只有 2 步、很容易被反艦飛彈或空襲擊沉；擊沉會連動減少海軍點數，海軍點數被海戰扣減時也會沉掉對應的艦艇。</li><li><b>堆疊：</b>每格最多 2 個友軍單位（飛彈單位也計入），不能與敵軍同格；同格時單位並排縮小顯示、被攻擊時防禦 −1（擁擠），空位的友軍格也會亮綠色（敵軍相鄰的陸地格不能再疊）。點選已選單位取消選取後，才能改選同一格的另一個單位；移入有友軍的格子，直接點那一格的友軍即可。攻擊後只有目標格已無敵軍才會推進占領。</li><li><b>布雷：</b>守方開戰前依年代預先在西岸灘頭（火山布雷車，14 套最新報導預計 2027 年交付）與近海（水雷）布雷，地圖上以黑色圓點標示；攻方部隊進入布雷格要擲骰，3 以下觸雷損失 1 步並清除該處布雷。攻方護航艦隊每回合開始掃雷（最多 1～2 處），掃雷艦有 1/6 觸雷損失。</li><li><b>共軍潛艦：</b>每回合守方階段，最多 3 艘共軍潛艦攻擊美日艦艇（航艦要擲 6）或守方海軍。美日、台灣的反潛兵力（護衛隊群、美軍潛艦、航艦、台灣海軍與潛艦）越多，潛艦越容易被擊沉；完全沒有反潛兵力時（例如台灣孤軍）命中門檻 −1，也不會被擊沉。</li><li><b>巡弋飛彈：</b>長劍、鷹擊等巡弋飛彈每回合最多 1～2 點，守方防空強（≥5）時少 1 點；東風-17 仍不受防空影響。</li></ul></details>
           <details class="rg"><summary>國際與集結</summary><ul><li><b>美軍立場：</b>美國有三種立場：<b>隱蔽支援</b>（傷亡過高後的退縮立場：提供情報、補給，反艦飛彈命中門檻 −1，第 2 回合起有不具名的潛艦行動）、<b>代理打擊</b>（開戰起的基本立場；轟炸機、潛艦以台灣、日本名義發射遠程飛彈，火力約四成半到六成，載人戰機與航艦撤出，中方不報復美軍）、<b>公開參戰</b>（全數投入）。非台灣孤軍、也不是「只提供情報」的情境下，開戰起美軍至少是代理打擊（台灣與美軍共用不少飛彈與魚雷，外觀、編號相同，很難分辨是誰發射），參戰程度決定會不會公開參戰。美軍累計傷亡達 6 步與 11 步時（美軍兵力共 14 步），每個守方階段擲骰（1d6≥4）決定是否降一級；美國本土（關島）遭攻擊會民意凝聚，擲骰 −2 並恢復一級。</li><li><b>美日參戰：</b>開局可選參戰情境：擲骰決定（預設）、只提供情報（美國只給情報與目標資料，不補給、不出兵、不公開參戰，日本中立，基地不能被打擊）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li><li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li></ul></details>
           <details class="rg"><summary>戰爭代價</summary><ul><li><b>戰爭代價：</b>側欄的「戰爭代價」依部隊編制把損失換算成傷亡人數（合成旅約 5,000 人；在海上被擊沉的死亡比例高於陸戰），並累計火力打擊與城市戰鬥造成的平民傷亡、各國經濟損失、全球股市與晶片供應。結算時依 Bloomberg Economics 2024 年的估算（台海戰爭約使全球 GDP 減少 10%，封鎖約 5%）推估一年期衝擊。所有數字都是遊戲依公開資料的粗估。</li></ul></details>
           <details class="rg"><summary>推演與判定</summary><ul><li><b>純模擬（影片）：</b>全程由電腦操作並自動決策與擲骰：先瞬間跑完整場戰爭並錄下每個動作，再以戰棋地圖為背景播放。地圖下方的字幕區顯示雙方動作與影響，並有戰況、傷亡與經濟摘要；可暫停、變速（1～8×）、拖曳時間軸或跳回合，地圖上的圈標出這一步發生變化的位置。結束後可看戰後檢討、回頭看影片或再模擬一次。</li><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>電腦代打：</b>你操作的階段，可以按「電腦代打剩餘單位」，還沒行動的單位交給電腦處理，然後自動結束階段。</li><li><b>統計：</b>在設定頁或影片模式按「跑統計」，電腦自動模擬 50／100／300 局（雙方由電腦操作、決策與擲骰隨機），列出攻方勝率與信賴區間、各條件達成率、代價範圍，以及美國參戰程度與各項決策對勝率的影響。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。只達成「首都」一項時：台北已連續被攻方控制至少 2 個回合結束，判「僵局」；最後一回合才占領，視為暫時占領，判守方勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
@@ -573,10 +573,18 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 (function(){
 'use strict';
 // coordinates may be negative: columns COL0..COL1-1, rows ROW0..ROW1-1 (original Taiwan coordinates are unchanged)
-const COL0=-1, COL1=16, ROW0=-2, ROW1=16, R=26, W=Math.sqrt(3)*R, PAD=6;
-const VBW=W*(COL1-COL0)+W/2+PAD*2, VBH=1.5*R*(ROW1-ROW0-1)+2*R+PAD*2+12;
-// 外圍示意區（僅縮小時可見，不參與遊戲）：左／右／上／下的延伸量
-const MX0=150, MX1=620, MY0=170, MY1=330, EVBW=VBW+MX0+MX1, EVBH=VBH+MY0+MY1, EXT=EVBW/VBW;
+// 格數加倍：遊戲格是舊版格子（粗格，R=26）的 2×2 細分；舊座標系（粗格）仍用於地形來源與外圍示意區
+const OC0=-1, OC1=16, OR0=-2, OR1=16, OR=26, OW=Math.sqrt(3)*OR, OPAD=6;
+const OVBW=OW*(OC1-OC0)+OW/2+OPAD*2, OVBH=1.5*OR*(OR1-OR0-1)+2*OR+OPAD*2+12;
+const KS=16/(OR/2); // 細格相對舊座標系的放大倍率
+const R=OR/2*KS, W=Math.sqrt(3)*R, PAD=6;
+const OX0=1.5*OW+OPAD, OY0=4*OR+OPAD; // 細格中心在舊座標系中的原點
+const COL0=-3, COL1=33, ROW0=-4, ROW1=32; // 細格索引範圍
+const VBW=OVBW*KS, VBH=OVBH*KS;
+const oCenter=(c,r)=>[OW*(c-OC0+.5*(r&1))+OW/2+OPAD,(r-OR0)*1.5*OR+OR+OPAD];
+// 外圍示意區（僅縮小時可見，不參與遊戲）：左／右／上／下的延伸量（舊座標系 px）
+const oMX0=150, oMX1=620, oMY0=170, oMY1=330;
+const MX0=oMX0*KS, MX1=oMX1*KS, MY0=oMY0*KS, MY1=oMY1*KS, EVBW=VBW+MX0+MX1, EVBH=VBH+MY0+MY1, EXT=EVBW/VBW;
 const K=(c,r)=>c+','+r;
 const $=s=>document.querySelector(s);
 const sleep=ms=>S&&S.rec?Promise.resolve():new Promise(r=>setTimeout(r,ms*(S&&S.speed||1)));
@@ -597,19 +605,21 @@ const TYPES={
   ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:0,hp:2}
 };
 const WEATHER={
-  good:{id:'good',n:'良好',sea:3,air:true,fire:0},
-  fair:{id:'fair',n:'普通',sea:2,air:true,fire:0},
-  bad:{id:'bad',n:'惡劣',sea:1,air:false,fire:-2}
+  good:{id:'good',n:'良好',sea:6,air:true,fire:0},
+  fair:{id:'fair',n:'普通',sea:4,air:true,fire:0},
+  bad:{id:'bad',n:'惡劣',sea:2,air:false,fire:-2}
 };
 
+Object.values(TYPES).forEach(t=>{t.mv*=2;}); // 格數加倍：移動力加倍，實際行進距離不變
+
 /* ---------- map ---------- */
-const TER={};
-for(let r=ROW0;r<ROW1;r++)for(let c=COL0;c<COL1;c++)TER[K(c,r)]={c,r,k:K(c,r),t:'sea',isl:null};
-const COAST=[4,4,3,3,3,3,4,3,3,3,2,2,2,1,1,1,1,1]; // coast column per row, starting at ROW0
-for(let r=ROW0;r<ROW1;r++)for(let c=COL0;c<=COAST[r-ROW0];c++)Object.assign(TER[K(c,r)],{t:'main',isl:'CN'});
+const TERC={}; // 舊版粗格地形（作為細格與外圍示意區的來源）
+for(let r=OR0;r<OR1;r++)for(let c=OC0;c<OC1;c++)TERC[K(c,r)]={c,r,k:K(c,r),t:'sea',isl:null};
+const COAST=[4,4,3,3,3,3,4,3,3,3,2,2,2,1,1,1,1,1]; // coast column per row, starting at OR0
+for(let r=OR0;r<OR1;r++)for(let c=OC0;c<=COAST[r-OR0];c++)Object.assign(TERC[K(c,r)],{t:'main',isl:'CN'});
 [[3,3,'port','福州'],[4,4,'port','平潭'],[2,4,'air','龍田'],[3,7,'port','泉州'],[2,9,'port','廈門'],
  [4,-2,'port','寧波'],[1,15,'port','汕頭'],[2,2,'air','長樂'],[2,6,'air','惠安']]
-  .forEach(([c,r,t,n])=>Object.assign(TER[K(c,r)],{t,name:n}));
+  .forEach(([c,r,t,n])=>Object.assign(TERC[K(c,r)],{t,name:n}));
 const TW=[
  [11,1,'plain','淡水'],[12,1,'port','基隆'],
  [10,2,'plain','林口'],[11,2,'city','台北'],[12,2,'mtn'],
@@ -624,9 +634,32 @@ const TW=[
  [10,11,'plain','屏東'],[11,11,'mtn'],
  [11,12,'plain','恆春']
 ];
-TW.forEach(([c,r,t,n,cl,mud])=>Object.assign(TER[K(c,r)],{t,name:n||null,cliff:!!cl,mud:!!mud,isl:'TW'}));
-[[7,8,'port','馬公'],[7,9,'plain','澎湖']].forEach(([c,r,t,n])=>Object.assign(TER[K(c,r)],{t,name:n,isl:'PH'}));
+TW.forEach(([c,r,t,n,cl,mud])=>Object.assign(TERC[K(c,r)],{t,name:n||null,cliff:!!cl,mud:!!mud,isl:'TW'}));
+[[7,8,'port','馬公'],[7,9,'plain','澎湖']].forEach(([c,r,t,n])=>Object.assign(TERC[K(c,r)],{t,name:n,isl:'PH'}));
 
+// 細格地形：每個粗格細分成 2×2，名稱／港口／機場只留在中心細格
+const TER={};
+for(let r=ROW0;r<ROW1;r++)for(let c=COL0;c<COL1;c++)TER[K(c,r)]={c,r,k:K(c,r),t:'sea',isl:null};
+(function(){
+  const cells=Object.values(TERC),cp=cells.map(h=>oCenter(h.c,h.r));
+  for(const h of Object.values(TER)){
+    const x=OW/2*(h.c+.5*(h.r&1))+OX0,y=.75*OR*h.r+OY0;let bi=0,bd=1e18;
+    for(let i=0;i<cells.length;i++){const dx=cp[i][0]-x,dy=cp[i][1]-y,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i;}}
+    const q=cells[bi],ctr=(h.c===2*q.c+(q.r&1)&&h.r===2*q.r);
+    h.t=q.t;h.isl=q.isl;h.cliff=!!q.cliff;h.mud=!!q.mud;h.name=null;h.pc=q.c;h.pr=q.r;
+    if(q.t==='port'||q.t==='air'){if(ctr)h.name=q.name||null;else{h.t='plain';}}
+    else if(ctr)h.name=q.name||null;
+  }
+})();
+// 粗格座標 → 細格座標（中心細格）
+const FK=k=>{const [c,r]=k.split(',').map(Number);return K(2*c+(r&1),2*r);};
+const FC=(c,r)=>[2*c+(r&1),2*r];
+const cc=(c,r)=>{const [a,b]=FC(c,r);return center(a,b);};
+function ring2(h){ // 距離 1～2 格（相當於舊版的「相鄰」）
+  if(h.n2)return h.n2;const seen=new Set([h.k]),out=[];let fr=[h];
+  for(let d=0;d<2;d++){const nx=[];for(const a of fr)for(const b of nbrs(a.c,a.r))if(!seen.has(b.k)){seen.add(b.k);out.push(b);nx.push(b);}fr=nx;}
+  return h.n2=out;
+}
 function nbrs(c,r){
   const d=(r&1)?[[1,0],[1,-1],[0,-1],[-1,0],[0,1],[1,1]]:[[1,0],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1]];
   const o=[];for(const [dc,dr] of d){const a=c+dc,b=r+dr;if(a>=COL0&&a<COL1&&b>=ROW0&&b<ROW1)o.push(TER[K(a,b)]);}return o;
@@ -636,9 +669,9 @@ function hd(a,b){const p=cube(a.c,a.r),q=cube(b.c,b.r);return Math.max(Math.abs(
 const isLand=h=>h.t!=='sea';
 Object.values(TER).forEach(h=>{h.coastal=isLand(h)&&nbrs(h.c,h.r).some(n=>n.t==='sea');});
 
-const TAIPEI='11,2', PORTS=['12,1','9,6','10,10'], MAGONG='7,8';
-const ZONES={north:['10,2','11,1','10,3'],central:['9,5','9,4','9,6'],penghu:['7,9','7,8']};
-const ABN_GOAL={north:['10,3','11,3'],central:['9,5','10,5']};
+const TAIPEI=FK('11,2'), PORTS=['12,1','9,6','10,10'].map(FK), MAGONG=FK('7,8');
+const ZONES=(()=>{const z={north:['10,2','11,1','10,3'],central:['9,5','9,4','9,6'],penghu:['7,9','7,8']};for(const k in z)z[k]=z[k].map(FK);return z;})();
+const ABN_GOAL={north:['10,3','11,3'].map(FK),central:['9,5','10,5'].map(FK)};
 
 /* ---------- state ---------- */
 let S;
@@ -655,11 +688,11 @@ function newState(){
   const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
     ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],
     ['mar','3,0','north'],['mar','2,10','penghu'],['amph','4,-1','north'],['amph','1,14','central'],['abn','2,4',null,0],['abn','2,6',null,1]];
-  A.forEach(([t,k,z,g])=>S.units.push(mkUnit('atk',t,k,{zone:z||null,goal:g})));
+  A.forEach(([t,k,z,g])=>S.units.push(mkUnit('atk',t,FK(k),{zone:z||null,goal:g})));
   const D=[['inf','11,2',1],['inf','12,1',1],['inf','10,2'],['inf','9,4'],['inf','9,6',1],['inf','9,9'],['inf','10,10',1],
     ['inf','13,3'],['inf','13,6'],['inf','7,8',1],['tank','10,4'],['tank','10,6'],['tank','10,9'],
     ['ssm','10,5'],['ssm','10,7'],['ssm','7,9']];
-  D.forEach(([t,k,g])=>S.units.push(mkUnit('def',t,k,{garrison:!!g})));
+  D.forEach(([t,k,g])=>S.units.push(mkUnit('def',t,FK(k),{garrison:!!g})));
   initTheater();
 }
 const hexOf=u=>TER[K(u.c,u.r)];
@@ -670,7 +703,7 @@ const unitAt=k=>S.units.find(u=>K(u.c,u.r)===k);
 const STACK_MAX=2;
 const unitsAt=k=>S.units.filter(u=>K(u.c,u.r)===k);
 const canStack=(u,k)=>{const a=unitsAt(k);return a.length<STACK_MAX&&a.every(x=>x.side===u.side&&x!==u)&&(!a.length||!isLand(TER[k])||!inZOC(u.side,TER[k]));};
-const stackPos=u=>{const a=unitsAt(K(u.c,u.r));if(a.length<2)return [0,0];const i=a.indexOf(u);return i<0?[0,0]:[i?11:-11,i?3:-3];};
+const stackPos=u=>{const a=unitsAt(K(u.c,u.r));if(a.length<2)return [0,0];const i=a.indexOf(u);return i<0?[0,0]:[i?8:-8,i?4:-4];};
 const atSea=u=>hexOf(u).t==='sea';
 const onTW=u=>hexOf(u).isl==='TW'&&u.type!=='ff'; // 港內艦艇不算島上地面部隊
 const alive=u=>S.units.includes(u);
@@ -685,7 +718,7 @@ function uname(u){return TYPES[u.type].n+'（'+SIDE[u.side]+'）';}
 function supply(){
   let cap=0;
   for(const h of Object.values(TER)){
-    if(h.isl==='TW'&&S.owner[h.k]==='atk'&&h.coastal&&!h.cliff&&h.t!=='mtn')cap+=h.t==='port'?4:2;
+    if(h.isl==='TW'&&S.owner[h.k]==='atk'&&h.coastal&&!h.cliff&&h.t!=='mtn')cap+=h.t==='port'?4:1;
   }
   if(S.owner[MAGONG]==='atk')cap+=2;
   const used=S.units.filter(u=>u.side==='atk'&&onTW(u)).length;
@@ -697,11 +730,11 @@ function effDef(u){return TYPES[u.type].def+sideMod(u,'def')-weak(u)-(u.side==='
 function terrDef(h){return h.t==='city'||h.t==='mtn'?2:h.t==='port'?1:0;}
 function seaPen(u){return atSea(u)?(u.type==='mar'?-1:-2):0;}
 function inZOC(side,h){
-  return nbrs(h.c,h.r).some(n=>unitsAt(n.k).some(e=>e.side!==side&&isLand(n)&&!isMsl(e)&&!isShip(e)&&!(e.type==='abn'&&n.isl==='CN')));
+  return ring2(h).some(n=>unitsAt(n.k).some(e=>e.side!==side&&isLand(n)&&!isMsl(e)&&!isShip(e)&&!(e.type==='abn'&&n.isl==='CN')));
 }
 function support(u,t){
   let n=0;
-  for(const h of nbrs(t.c,t.r))for(const f of unitsAt(h.k))if(f!==u&&f.side===u.side&&!isMsl(f)&&!(h.isl==='CN'))n++;
+  for(const h of ring2(t))for(const f of unitsAt(h.k))if(f!==u&&f.side===u.side&&!isMsl(f)&&!(h.isl==='CN'))n++;
   return Math.min(2,n);
 }
 const canSail=u=>u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm'||u.type==='dd');
@@ -756,7 +789,7 @@ function reach(u){
   const res=new Map();if(u.moved||u.acted||u.type==='ff')return res;const h=hexOf(u);
   if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
     if(S.weather.air)for(const t of Object.values(TER)){
-      if((t.isl==='TW'||t.isl==='PH')&&t.t!=='mtn'&&canStack(u,t.k)&&hd(h,t)<=10)res.set(t.k,{kind:'drop'});
+      if((t.isl==='TW'||t.isl==='PH')&&t.t!=='mtn'&&canStack(u,t.k)&&hd(h,t)<=20)res.set(t.k,{kind:'drop'});
     }
     return res;
   }
@@ -766,9 +799,9 @@ function reach(u){
 }
 function targets(u){
   if(u.acted)return [];
-  if(isMsl(u)){if(u.shots<=0)return [];return S.units.filter(e=>e.side!==u.side&&atSea(e)&&hd(hexOf(u),hexOf(e))<=4);}
+  if(isMsl(u)){if(u.shots<=0)return [];return S.units.filter(e=>e.side!==u.side&&atSea(e)&&hd(hexOf(u),hexOf(e))<=8);}
   const h=hexOf(u);if(h.isl==='CN')return [];
-  return nbrs(h.c,h.r).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e));
+  return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e));
 }
 
 function damage(u,n,why){
@@ -779,10 +812,15 @@ function damage(u,n,why){
     if(!isShip(u)){const rest=unitsAt(K(u.c,u.r));if(rest.length&&rest.every(isShip)){rest.forEach(x=>{fxq({t:'dead',at:[x.c,x.r],type:x.type,side:x.side});S.units=S.units.filter(y=>y!==x);if(x.type==='ff')S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);if(x.type==='dd')S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);log(uname(x)+' 隨港口失守而損失');});}}log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));return true;}
   return false;
 }
+// 占領：該格與周圍沒有敵軍的陸地格一併易主（細格版的「控制範圍」）
+function claim(side,h){
+  S.owner[h.k]=side;
+  for(const n of nbrs(h.c,h.r)){if(!isLand(n)||n.t==='port'||n.k===TAIPEI)continue;if(n.isl!==h.isl)continue;if(unitsAt(n.k).some(e=>e.side!==side))continue;if(n.isl==='CN'&&side!=='atk')continue;S.owner[n.k]=side;}
+}
 function doMove(u,k,kind){
   const from=hexOf(u);const h=TER[k];
   u.c=h.c;u.r=h.r;u.moved=true;
-  if(isLand(h))S.owner[k]=u.side;
+  if(isLand(h))claim(u.side,h);
   if((kind==='land'||kind==='drop')&&S.stats.firstLand===null&&h.isl==='TW')S.stats.firstLand=S.turn;
   if(kind==='land'){fxq({t:'land',at:[h.c,h.r]});u.acted=true;log(uname(u)+' 於 '+hname(h)+' 登陸');mineCheck(u,h);}
   else if(kind==='drop'){
@@ -808,7 +846,7 @@ function attack(u,t){
   const uDead=la?damage(u,la):false;
   if(tDead&&!uDead){
     const can=(atSea(u)?validLanding(u,th):true)&&unitsAt(th.k).every(isShip);
-    if(can){unitsAt(th.k).filter(isShip).forEach(x=>damage(x,x.hp,'港口失守'));u.c=th.c;u.r=th.r;S.owner[th.k]=u.side;log(TYPES[u.type].n+' 推進佔領 '+hname(th));}
+    if(can){unitsAt(th.k).filter(isShip).forEach(x=>damage(x,x.hp,'港口失守'));u.c=th.c;u.r=th.r;claim(u.side,th);log(TYPES[u.type].n+' 推進佔領 '+hname(th));}
   }
   checkInstant();
 }
@@ -916,7 +954,7 @@ const ERA={
 function previewEra(){const e=ERA[S.era]||ERA['2026'];S.p0=Object.assign({},POOL0,e.pools);S.pools=Object.assign({},S.p0);S.dfireMax=e.dfire;}
 function applyEra(){
   previewEra();const e=ERA[S.era]||ERA['2026'];
-  e.ssm.forEach(k=>{if(TER[k]&&!unitAt(k))S.units.push(mkUnit('def','ssm',k,{}));});
+  e.ssm.forEach(k=>{k=FK(k);if(TER[k]&&!unitAt(k))S.units.push(mkUnit('def','ssm',k,{}));});
   log('兵力年代：'+e.n+'。');
   placeShips();
   layMines();
@@ -924,10 +962,10 @@ function applyEra(){
 // 水面艦艇上地圖：共軍護航艦在港口外海，守方艦艇群停泊在港口；兩者都很脆弱，擊沉會連動減少海軍點數
 function placeShips(){
   const P=S.pools;
-  const nd=Math.min(4,Math.ceil(P.plaNavy/2)),ports=['4,4','3,3','3,7','2,9'].map(k=>TER[k]);
+  const nd=Math.min(4,Math.ceil(P.plaNavy/2)),ports=['4,4','3,3','3,7','2,9'].map(k=>TER[FK(k)]);
   const seaC=[];ports.forEach(h=>nbrs(h.c,h.r).filter(x=>x.t==='sea'&&x.c>h.c-1).forEach(x=>{if(!seaC.includes(x))seaC.push(x);}));
   for(let i=0;i<nd&&i<seaC.length;i++){const h=seaC[i];S.units.push(mkUnit('atk','dd',h.k,{}));}
-  const nf=Math.min(4,P.rocNavy),fp=['12,1','9,6','10,10','13,6','7,8'];
+  const nf=Math.min(4,P.rocNavy),fp=['12,1','9,6','10,10','13,6','7,8'].map(FK);
   for(let i=0;i<nf;i++){const k=fp[i];if(TER[k]&&unitsAt(k).length<STACK_MAX)S.units.push(mkUnit('def','ff',k,{}));}
 }
 function syncShips(){
@@ -942,7 +980,7 @@ function layMines(){
   S.mines={};let n=S.pools.rocMine||0;if(n<=0)return;
   const cand=Object.values(TER).filter(h=>h.isl==='TW'&&(h.t==='plain'||h.t==='port'||h.t==='city')&&!h.cliff&&!h.mud&&nbrs(h.c,h.r).some(x=>x.t==='sea'&&x.c<h.c));
   const dp=h=>Math.min(...PORTS.map(k=>hd(h,TER[k])));
-  const beach=cand.filter(h=>h.c<=10).sort((a,b)=>dp(a)-dp(b)||a.r-b.r);
+  const beach=cand.filter(h=>h.c<=21).sort((a,b)=>dp(a)-dp(b)||a.r-b.r);
   const seaS=new Set();beach.forEach(h=>nbrs(h.c,h.r).filter(x=>x.t==='sea'&&x.c<h.c).forEach(x=>seaS.add(x.k)));
   const sea=[...seaS].map(k=>TER[k]).sort((a,b)=>dp(a)-dp(b)||a.r-b.r);
   const land=beach.filter(h=>!unitAt(h.k));
@@ -1120,7 +1158,7 @@ function antiShip(who,shots,need,canLand,tag,ok0,fk){
   const P=S.pools;let hc=0,he=0,hl=0,cvh=0;
   for(let i=0;i<shots;i++){
     const fleet=S.units.filter(u=>u.side==='atk'&&atSea(u)&&!isShip(u));
-    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pick(fleet),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&hd(hexOf(x),hexOf(tg))<=1)?1:0,ok=d6()>=need+escortMod()+cov;fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:orgPick(base),k:fk||'cm'});if(ok){hc++;damage(tg,1,who);}}
+    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pick(fleet),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&hd(hexOf(x),hexOf(tg))<=2)?1:0,ok=d6()>=need+escortMod()+cov;fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:orgPick(base),k:fk||'cm'});if(ok){hc++;damage(tg,1,who);}}
     else if(P.plaNavy>0){if(d6()>=need){he++;P.plaNavy--;if(P.plaCV>0&&d6()>=5+(P.plaNavy>=5?1:0)){P.plaCV--;cvh++;}}}
     else if(canLand){
       const land=S.units.filter(u=>u.side==='atk'&&onTW(u));if(!land.length)break;
@@ -1294,8 +1332,8 @@ function doRetaliation(){
 function applyBuildup(id){
   const m=S.mods;m.buildup=id;const out=[];
   if(id==='open'){
-    ['3,3','4,4'].forEach(k=>{const h=placeNear(k,x=>x.isl==='CN'&&x.coastal);if(h)S.units.push(mkUnit('atk','amph',h.k,{zone:'central'}));});
-    const h=placeNear('3,3',x=>x.isl==='CN');if(h)S.units.push(mkUnit('atk','arm',h.k));
+    ['3,3','4,4'].forEach(k=>{const h=placeNear(FK(k),x=>x.isl==='CN'&&x.coastal);if(h)S.units.push(mkUnit('atk','amph',h.k,{zone:'central'}));});
+    const h=placeNear(FK('3,3'),x=>x.isl==='CN');if(h)S.units.push(mkUnit('atk','arm',h.k));
     S.pools.plaNavy+=2;m.defReinfDelay-=1;m.fxMod=1;m.strikeMod=1;
     S.fx.units.find(f=>f.id==='csg').delay=0;
     out.push('攻方第一波 +2 兩棲旅、+1 重型旅，護航艦隊 +2','守方後備提前 1 回合動員','美國航艦已在附近待命（參戰即到場）','先制打擊的攔截擲骰、各國參戰擲骰 +1');
@@ -1834,7 +1872,7 @@ function buildNews(){
 }
 function menOnTW(side){return S.units.filter(u=>u.side===side&&onTW(u)).reduce((a,u)=>a+PERS[u.type]/TYPES[u.type].hp*u.hp,0);}
 function newsArt(t){
-  const [x0]=center(2,0);let o='';
+  const [x0]=cc(2,0);let o='';
   for(const h of Object.values(TER)){if(!isLand(h))continue;const [x,y]=center(h.c,h.r);
     o+='<polygon class="hx '+h.t+(h.isl==='CN'?' cn':'')+'" points="'+hexPts(x,y,R)+'"/>';
     if(h.isl!=='CN'&&S.owner[h.k]==='atk')o+='<polygon class="ov-atk" points="'+hexPts(x,y,R-1)+'"/>';}
@@ -1875,7 +1913,7 @@ function newsRecap(){
 
 /* ---------- turn flow ---------- */
 const ATK_REINF={2:[['amph','north'],['amph','central'],['arm']],3:[['mar','central'],['amph','north']],4:[['amph','north'],['amph','central'],['arm']],5:[['amph','north'],['amph','central'],['arm']]};
-const DEF_REINF={2:['11,2','10,6'],3:['11,3','9,9'],4:['9,4','10,10']};
+const DEF_REINF=(()=>{const d={2:['11,2','10,6'],3:['11,3','9,9'],4:['9,4','10,10']};for(const t in d)d[t]=d[t].map(FK);return d;})();
 function placeNear(k,filter){
   const base=TER[k];
   const c=Object.values(TER).filter(h=>filter(h)&&!unitAt(h.k)).sort((a,b)=>hd(a,base)-hd(b,base));
@@ -1891,7 +1929,7 @@ async function beginPhase(side){
     S.weather=S.turn===1&&S.mods.wxT1?WEATHER[S.mods.wxT1]:rollWeather();if(S.weather.id==='bad')S.stats.badWx++;
     airBattle();S.fire=computeFire();doRetaliation();sweepMines();
     (ATK_REINF[S.turn]||[]).forEach(([t,z])=>{
-      const h=t==='arm'?placeNear('4,4',x=>x.isl==='CN'&&x.t==='port'):placeNear('4,4',x=>x.isl==='CN'&&x.coastal);
+      const h=t==='arm'?placeNear(FK('4,4'),x=>x.isl==='CN'&&x.t==='port'):placeNear(FK('4,4'),x=>x.isl==='CN'&&x.coastal);
       if(h){if(!z){z=S.zoneFlip++%2?'central':'north';}S.units.push(mkUnit('atk',t,h.k,{zone:z}));log('攻方增援 '+TYPES[t].n+' 抵達 '+hname(h));}
     });
     log('第 '+S.turn+' 回合開始，天候'+S.weather.n+'（海上移動 '+S.weather.sea+'，火力 '+S.fire+' 點'+(S.weather.air?'':'，無法空降')+'）');
@@ -1944,7 +1982,7 @@ async function aiTryAttack(u,thr,focus){
   if(braw>=thr){attack(u,best);render();await sleep(380);return true;}
   return false;
 }
-function enemyAdj(k,side){const h=TER[k];return nbrs(h.c,h.r).reduce((a,n)=>a+unitsAt(n.k).filter(e=>e.side!==side).length,0);}
+function enemyAdj(k,side){const h=TER[k];return ring2(h).reduce((a,n)=>a+unitsAt(n.k).filter(e=>e.side!==side).length,0);}
 function minD(k,list){const h=TER[k];return Math.min.apply(null,list.map(x=>hd(h,TER[x])));}
 async function runAI(side){
   S.busy=true;render();await sleep(500);
@@ -1959,17 +1997,17 @@ function aiPlan(){
   for(const z of ['north','central']){
     let s=0;
     // defenders near the beaches, anti-ship missiles covering the approach, minus the victory objectives within reach
-    for(const d of S.units)if(d.side==='def'&&onTW(d)&&!isMsl(d)&&ZONES[z].some(k=>hd(TER[k],hexOf(d))<=2))s+=d.hp*(effDef(d)+terrDef(hexOf(d)));
-    s+=S.units.filter(d=>d.side==='def'&&isMsl(d)&&ZONES[z].some(k=>hd(TER[k],hexOf(d))<=4)).reduce((a,d)=>a+d.hp*4,0);
-    s-=OBJ.filter(o=>ZONES[z].some(k=>hd(TER[k],TER[o])<=3)).length*12;
+    for(const d of S.units)if(d.side==='def'&&onTW(d)&&!isMsl(d)&&ZONES[z].some(k=>hd(TER[k],hexOf(d))<=4))s+=d.hp*(effDef(d)+terrDef(hexOf(d)));
+    s+=S.units.filter(d=>d.side==='def'&&isMsl(d)&&ZONES[z].some(k=>hd(TER[k],hexOf(d))<=8)).reduce((a,d)=>a+d.hp*4,0);
+    s-=OBJ.filter(o=>ZONES[z].some(k=>hd(TER[k],TER[o])<=6)).length*12;
     s+=Math.random()*2;
     if(s<bs){bs=s;best=z;}
   }
   S.plan={zone:best};if(S.ctrl.def!=='human')log('攻方主登陸區：'+(best==='north'?'北部（林口、桃園）':'中部（新竹、苗栗、台中港）'));
   return S.plan;
 }
-function friendAdj(k,side){const h=TER[k];let n=0;for(const x of nbrs(h.c,h.r)){const us=unitsAt(x.k).filter(u=>u.side===side&&isLand(x));if(us.length)n+=us.length;else if(x.isl==='TW'&&S.owner[x.k]===side)n+=.3;}return n;}
-function ssmThreat(k){const h=TER[k];return S.units.filter(d=>d.side==='def'&&isMsl(d)&&hd(hexOf(d),h)<=4).length;}
+function friendAdj(k,side){const h=TER[k];let n=0;for(const x of ring2(h)){const us=unitsAt(x.k).filter(u=>u.side===side&&isLand(x));if(us.length)n+=us.length;else if(x.isl==='TW'&&S.owner[x.k]===side)n+=.3/3;}return n;}
+function ssmThreat(k){const h=TER[k];return S.units.filter(d=>d.side==='def'&&isMsl(d)&&hd(hexOf(d),h)<=8).length;}
 async function aiAtk(){
   const plan=aiPlan();
   S.units.forEach(u=>{if(u.side==='atk'&&(u.type==='amph'||u.type==='mar'))u.zone=plan.zone;});
@@ -1989,9 +2027,9 @@ function pickStrike(){
     if(d.side!=='def')continue;const h=hexOf(d);
     let s=Math.random();
     if(d.type==='ssm')s+=9;else if(d.type==='ff')s-=3;
-    if(atkLand.some(a=>hd(hexOf(a),h)===1))s+=7+(TYPES[d.type].hp-d.hp);
+    if(atkLand.some(a=>hd(hexOf(a),h)<=2))s+=7+(TYPES[d.type].hp-d.hp);
     if(OBJ.includes(h.k))s+=2;
-    if(zoneKs.some(k=>hd(TER[k],h)<=1))s+=3;
+    if(zoneKs.some(k=>hd(TER[k],h)<=2))s+=3;
     if(h.t==='city'||h.t==='mtn')s-=2;
     if(s>bs){bs=s;best=d;}
   }
@@ -2002,7 +2040,7 @@ async function aiAtkUnit(u){
   if(u.type==='dd'){ // 護航艦：貼近己方船團，否則朝登陸區靠攏
     const tr=S.units.filter(x=>x.side==='atk'&&x!==u&&!isShip(x)&&atSea(x)),goals=tr.length?tr.map(x=>K(x.c,x.r)):ZONES[aiPlan().zone];
     const rc=reach(u);let best=null,bs=minD(h.k,goals)+ssmThreat(h.k)*.6;
-    for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+ssmThreat(k)*.6+Math.random()*.3-(tr.some(x=>hd(TER[k],hexOf(x))<=1)?.8:0);if(s<bs-.2){bs=s;best=k;}}
+    for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+ssmThreat(k)*.6+Math.random()*.3-(tr.some(x=>hd(TER[k],hexOf(x))<=2)?.8:0);if(s<bs-.2){bs=s;best=k;}}
     if(best){doMove(u,best,'sail');render();await sleep(260);}
     return;
   }
@@ -2027,7 +2065,7 @@ async function aiAtkUnit(u){
   // at sea or on the mainland
   let goals;
   if(u.type==='arm'){
-    goals=PORTS.concat(['13,6']).filter(k=>S.owner[k]==='atk');
+    goals=PORTS.concat([FK('13,6')]).filter(k=>S.owner[k]==='atk');
     if(!goals.length)return;
   } else {
     goals=ZONES[u.zone||aiPlan().zone];
@@ -2035,8 +2073,8 @@ async function aiAtkUnit(u){
   const rc=reach(u);
   let best=null,bs=1e9;
   for(const [k,v] of rc){
-    if(v.kind!=='land')continue;const md=minD(k,goals);if(md>3)continue;
-    const s=md*2+enemyAdj(k,'atk')*1.2-Math.min(friendAdj(k,'atk'),2)*.8+Math.random()*.3;if(s<bs){bs=s;best=k;}
+    if(v.kind!=='land')continue;const md=minD(k,goals);if(md>6)continue;
+    const s=md+enemyAdj(k,'atk')*1.2-Math.min(friendAdj(k,'atk'),2)*.8+Math.random()*.3;if(s<bs){bs=s;best=k;}
   }
   if(best){doMove(u,best,'land');render();await sleep(340);return;}
   if(h.t==='sea'&&await aiTryAttack(u,0))return;
@@ -2057,7 +2095,7 @@ async function aiDef(){
     if(S.over)return;if(!alive(m))continue;
     if(enemyAdj(K(m.c,m.r),'def')){
       const rc=reach(m);let best=null,bs=-1;
-      for(const [k,v] of rc){if(v.kind!=='move')continue;const s=-enemyAdj(k,'def')*3+Math.min.apply(null,S.units.filter(e=>e.side==='atk').map(e=>hd(TER[k],hexOf(e))).concat([9]));if(s>bs){bs=s;best=k;}}
+      for(const [k,v] of rc){if(v.kind!=='move')continue;const s=-enemyAdj(k,'def')*3+Math.min.apply(null,S.units.filter(e=>e.side==='atk').map(e=>hd(TER[k],hexOf(e))).concat([18]));if(s>bs){bs=s;best=k;}}
       if(best){doMove(m,best,'move');render();await sleep(250);}
     }
     while(alive(m)&&m.shots>0&&!S.over){
@@ -2096,7 +2134,7 @@ async function aiDefUnit(u){
     const fleet=S.units.filter(e=>e.side==='atk'&&atSea(e));if(!fleet.length)return;
     let tgt=null,ts=1e9;
     for(const c of Object.values(TER)){if(c.isl!=='TW'||!c.coastal||c.cliff)continue;const s=fleet.reduce((a,e)=>a+hd(c,hexOf(e)),0);if(s<ts){ts=s;tgt=c;}}
-    if(!tgt||hd(h,tgt)<=2)return;
+    if(!tgt||hd(h,tgt)<=4)return;
     let bs=hd(h,tgt);
     for(const [k,v] of rc){if(v.kind!=='move')continue;const s=hd(TER[k],tgt);if(s<bs){bs=s;best=k;}}
   }
@@ -2104,11 +2142,12 @@ async function aiDefUnit(u){
 }
 
 /* ---------- rendering ---------- */
-function center(c,r){return [W*(c-COL0+.5*(r&1))+W/2+PAD,(r-ROW0)*1.5*R+R+PAD];}
+function center(c,r){return [KS*(OW/2*(c+.5*(r&1))+OX0),KS*(.75*OR*r+OY0)];}
 function hexPts(x,y,rr){let p=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);p.push((x+rr*Math.cos(a)).toFixed(1)+','+(y+rr*Math.sin(a)).toFixed(1));}return p.join(' ');}
 const humanTurn=()=>S.started&&!S.over&&!S.busy&&S.ctrl[S.phase]==='human';
 /* ---------- 3D map: static terrain layer + dynamic layer + effects ---------- */
-const DEPTH={plain:5,city:6,port:4,air:4,mtn:11,main:4};
+const DEPTH={plain:3,city:4,port:2.5,air:2.5,mtn:7,main:2.5};
+const US=R/26*1.18; // 單位圖示縮放（細格較小）
 const elev=h=>isLand(h)?(DEPTH[h.t]||4):0;
 function cen(c,r){const [x,y]=center(c,r);return [x,y-elev(TER[K(c,r)])];}
 function hexV(x,y,rr){const o=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);o.push([x+rr*Math.cos(a),y+rr*Math.sin(a)]);}return o;}
@@ -2127,7 +2166,8 @@ function peak(px,py,w,h){
     '<polygon class="pkR" points="'+[px,py-h,px+w*.12,py+w*.16,px+w/2,py].join(',')+'"/>'+
     '<polygon class="pkS" points="'+[px,py-h,px-w*.14,py-h+h*.28,px+w*.02,py-h+h*.2,px+w*.13,py-h+h*.3].join(',')+'"/>';
 }
-function tileDetail(h,x,y){
+function tileDetail(h,x,y){const o=tileDetail0(h,x,y);return o?'<g transform="translate('+x+' '+y+') scale(.6) translate('+(-x)+' '+(-y)+')">'+o+'</g>':'';}
+function tileDetail0(h,x,y){
   if(h.t==='city')return bldg(x-9,y+7,8,11)+bldg(x+2,y+8,9,16)+bldg(x+11,y+5,7,9);
   if(h.t==='mtn')return peak(x-6,y+8,24,22)+peak(x+9,y+10,17,14);
   if(h.t==='port')return '<rect class="pier" x="'+(x-3)+'" y="'+(y+3)+'" width="6" height="14" rx="1"/><rect class="cont c1" x="'+(x-12)+'" y="'+(y+2)+'" width="8" height="5"/><rect class="cont c2" x="'+(x+5)+'" y="'+(y+6)+'" width="8" height="5"/><path class="crane" d="M'+(x+9)+' '+(y+4)+'V'+(y-10)+'H'+(x-2)+'"/>';
@@ -2142,7 +2182,7 @@ function farSet(c,r,t,name,tag,who){FAR[K(c,r)]={c,r,t,name:name||null,tag:tag||
   // 大陸沿海延伸（北側與西側、南側）
   const northCoast={'-3':5,'-4':5,'-5':6,'-6':6};
   for(const r in northCoast)for(let c=-4;c<=northCoast[r];c++)farSet(c,+r,'main');
-  for(let r=-2;r<ROW1;r++)for(let c=-4;c<COL0;c++)farSet(c,r,'main');
+  for(let r=-2;r<OR1;r++)for(let c=-4;c<OC0;c++)farSet(c,r,'main');
   const south={16:0,17:-1,18:-2,19:-3,20:-4};
   for(const r in south)for(let c=-4;c<=south[r];c++)farSet(c,+r,'main');
   farSet(-3,-4,'air','黃山','火箭軍','atk'); farSet(-3,11,'air','梅州','火箭軍','atk');
@@ -2192,8 +2232,10 @@ let FARSEL=null;
 const ORG={okinawa:[[26,-1],[27,-1]],sakishima:[[20,3],[18,5]],sasebo:[[27,-6]],guam:[[26,22]],sea:[[19,9],[18,13]],
   pla:[[2,2],[2,4],[2,6],[-3,-4],[-3,11],[7,-4]],plaCV:[[17,7]],roc:[[13,6],[10,10],[12,1],[9,6]]};
 const orgPick=k=>{const a=ORG[k];return a?a[Math.floor(Math.random()*a.length)].slice():null;};
-function farKeyInGrid(c,r){return c>=COL0&&c<COL1&&r>=ROW0&&r<ROW1;}
+function farKeyInGrid(c,r){return c>=OC0&&c<OC1&&r>=OR0&&r<OR1;}
 function buildFar(){
+  // 外圍示意區使用舊座標系（粗格），最後整組縮放 KS 後與細格地圖對齊
+  const center=oCenter,VBW=OVBW,VBH=OVBH,W=OW,R=OR,COL0=OC0,COL1=OC1,ROW0=OR0,ROW1=OR1,MX0=oMX0,MX1=oMX1,MY0=oMY0,MY1=oMY1,EVBW=OVBW+oMX0+oMX1,EVBH=OVBH+oMY0+oMY1,TER=TERC;
   const tiles=[];
   for(let r=ROW0-5;r<=ROW1+10;r++)for(let c=COL0-5;c<=COL1+18;c++){
     if(farKeyInGrid(c,r))continue;
@@ -2236,7 +2278,7 @@ function buildFar(){
   const T=(c,r,t,sz)=>{const [x,y]=center(c,r);return '<text class="big" font-size="'+(sz||12)+'" x="'+x+'" y="'+y+'" text-anchor="middle">'+t+'</text>';};
   o+=T(23,8,'太平洋',13)+T(5,19,'南海',13)+T(10,12.5,'呂宋海峽',11)+T(14,-3,'東海',13)+T(8,21,'美軍 EDCA 範圍（示意）',10);
   o+='<text class="far-tag" x="'+(VBW-6)+'" y="-6" text-anchor="end" fill="var(--muted)" style="text-anchor:end">▲ 虛線內為遊戲格；外圍僅為背景（可點選查看）</text></g><rect class="playbox" x="0" y="0" width="'+VBW.toFixed(1)+'" height="'+VBH.toFixed(1)+'" rx="6"/>';
-  $('#gX').innerHTML=o;
+  $('#gX').innerHTML='<g transform="scale('+KS+')">'+o+'</g>';
 }
 function buildStatic(){
   const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+
@@ -2267,12 +2309,12 @@ function buildStatic(){
     if(h.cliff)o+='<polygon class="cliff" points="'+hexPts(x,y,R-3)+'"/>';
     if(h.mud)o+='<polygon class="mud" points="'+hexPts(x,y,R-3)+'"/>';
     o+=tileDetail(h,x,y);
-    if(h.name){const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':'')+'" x="'+x+'" y="'+(y-(h.t==='mtn'?18:16))+'">'+(ob?'★':'')+h.name+'</text>';}
+    if(h.name){const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':'')+'" x="'+x+'" y="'+(y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';}
     o+='</g>';
   }
-  o+='<text class="big" font-size="15" x="'+center(6,3)[0]+'" y="'+center(6,3)[1]+'" writing-mode="tb">台灣海峽</text>';
-  o+='<text class="big" font-size="13" x="'+center(15,7)[0]+'" y="'+center(15,7)[1]+'" writing-mode="tb">太平洋</text>';
-  o+='<text class="big" font-size="12" x="'+center(1,1)[0]+'" y="'+center(1,1)[1]+'" writing-mode="tb">大陸沿海</text>';
+  o+='<text class="big" font-size="15" x="'+cc(6,3)[0]+'" y="'+cc(6,3)[1]+'" writing-mode="tb">台灣海峽</text>';
+  o+='<text class="big" font-size="13" x="'+cc(15,7)[0]+'" y="'+cc(15,7)[1]+'" writing-mode="tb">太平洋</text>';
+  o+='<text class="big" font-size="12" x="'+cc(1,1)[0]+'" y="'+cc(1,1)[1]+'" writing-mode="tb">大陸沿海</text>';
   $('#gS').innerHTML=o;
   const svg=$('#map');svg.setAttribute('viewBox',(-MX0)+' '+(-MY0)+' '+EVBW.toFixed(1)+' '+EVBH.toFixed(1));
   STATIC.built=true;
@@ -2293,11 +2335,11 @@ function unitSVG(u){
   const sea=atSea(u);
   const wake=sea?'<ellipse class="wk" cx="'+x+'" cy="'+(y+12)+'" rx="14" ry="4"/><ellipse class="wk w2" cx="'+x+'" cy="'+(y+12)+'" rx="14" ry="4"/>':'';
   return '<g class="u'+(sel?' sel':'')+(done?' done':'')+'" data-k="'+K(u.c,u.r)+'" data-id="'+u.id+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+wake+
-    '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'>'+(stacked?'<g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale(.86) translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')">':'')+'<ellipse class="ush" cx="'+x+'" cy="'+(y+11)+'" rx="16" ry="5"/>'+
+    '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')">'+'<ellipse class="ush" cx="'+x+'" cy="'+(y+11)+'" rx="16" ry="5"/>'+
     '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
     '<rect class="body '+u.side+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="23" rx="3"/>'+
     '<rect class="uhi" x="'+(x-13)+'" y="'+(y-13)+'" width="26" height="3" rx="1.5"/>'+sym+
-    '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+T.s+'</text>'+pips+(sea?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-12)+'" r="2.6"/>':'')+(stacked?'</g>':'')+'</g></g>';
+    '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+T.s+'</text>'+pips+(sea?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-12)+'" r="2.6"/>':'')+'</g></g></g>';
 }
 function renderMap(){
   if(!STATIC.built)buildStatic();
@@ -2311,12 +2353,12 @@ function renderMap(){
   }
   S.units.slice().sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
   Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<g class="mine" pointer-events="none"><circle cx="'+x.toFixed(1)+'" cy="'+(y+8).toFixed(1)+'" r="4.5" fill="#222" stroke="#ffd45a" stroke-width="1.2"/><path d="M'+(x-7).toFixed(1)+' '+(y+8).toFixed(1)+'h14M'+x.toFixed(1)+' '+(y+1).toFixed(1)+'v14" stroke="#ffd45a" stroke-width="1"/></g>';});
-  (S.focus||[]).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<ellipse class="vfocus" cx="'+x.toFixed(1)+'" cy="'+(y+4).toFixed(1)+'" rx="27" ry="20"/>';});
+  (S.focus||[]).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<ellipse class="vfocus" cx="'+x.toFixed(1)+'" cy="'+(y+4).toFixed(1)+'" rx="17" ry="12"/>';});
   if(humanTurn()){
     let rings=[];
     if(S.mode==='strike')rings=S.units.filter(u=>u.side==='def').map(u=>[u,'strike']);
     else if(S.sel&&alive(S.sel)&&S.sel.side===S.phase)rings=targets(S.sel).map(u=>[u,'']);
-    rings.forEach(([u,c])=>{const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy;o+='<circle class="ring '+c+'" cx="'+x+'" cy="'+y+'" r="21"/>';});
+    rings.forEach(([u,c])=>{const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy;o+='<circle class="ring '+c+'" cx="'+x+'" cy="'+y+'" r="15"/>';});
   }
   $('#gD').innerHTML=o;
   // slide units that moved since the previous render, pop in new ones
@@ -2399,6 +2441,7 @@ function fxTheater(o){
     tween(500,k=>path.setAttribute('opacity',.5*(1-k)),()=>path.remove());});
 }
 function runFx(o){
+  const PO=h=>{const q=oCenter(h[0],h[1]);return [q[0]*KS,q[1]*KS];}; // 外圍／港口出發點（舊座標）
   const P=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);
   if(o.t==='atk'){
     const a=P(o.from),b=P(o.to),n=o.sea?1:3;
@@ -2406,7 +2449,7 @@ function runFx(o){
   }else if(o.t==='msl'){
     const a=P(o.from),b=P(o.to);fxFlight(a,b,'cm',()=>fxImpact(b,o.hit,true,true));
   }else if(o.t==='air'){
-    const b=P(o.at),src=o.src||'w',s=o.org?P(o.org):src==='w'?[b[0]-200,b[1]-150]:src==='e'?[b[0]+200,b[1]-165]:[b[0],b[1]-230];
+    const b=P(o.at),src=o.src||'w',s=o.org?PO(o.org):src==='w'?[b[0]-200,b[1]-150]:src==='e'?[b[0]+200,b[1]-165]:[b[0],b[1]-230];
     const dd=Math.hypot(s[0]-b[0],s[1]-b[1]);if(o.org)fxFlash(s,3,14,'#fff',260);
     if(o.org&&o.k)fxFlight(s,b,o.k,()=>fxImpact(b,o.hit,o.tsea,true));
     else fxShot(s,b,{arc:o.org?Math.min(110,dd*.12):-12,dur:o.org?Math.min(900,260+dd*.7):420,color:'#fff',trail:'#ff9a3c',w:3,r:3.5,end:()=>fxImpact(b,o.hit,o.tsea,true)});
@@ -2792,7 +2835,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.23';
+const VERSION='2026-11-02.24';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
