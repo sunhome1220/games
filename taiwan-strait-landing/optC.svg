@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><defs><radialGradient id="tile" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#3a7f96"/><stop offset="1" stop-color="#1c4655"/></radialGradient></defs><rect width="512" height="512" fill="#1b2a30"/>
+ <polygon points="482.0,256.0 369.0,451.7 143.0,451.7 30.0,256.0 143.0,60.3 369.0,60.3" fill="url(#tile)" stroke="#e6dcb6" stroke-width="10" stroke-linejoin="round"/>
+ <path d="M296.3,106.0 C309.7,106.0 331.2,120.7 336.6,132.5 C342.0,144.2 333.9,154.5 328.5,176.6 C323.2,198.6 313.8,239.8 304.4,264.8 C295.0,289.8 282.2,303.1 272.1,326.6 C262.0,350.1 250.6,398.6 243.9,406.0 C237.2,413.4 239.2,381.0 231.8,370.7 C224.4,360.4 207.6,354.5 199.6,344.2 C191.5,333.9 185.5,323.6 183.5,308.9 C181.4,294.2 179.4,278.1 187.5,256.0 C195.5,233.9 220.4,197.2 231.8,176.6 C243.2,156.0 245.3,144.2 256.0,132.5 C266.7,120.7 282.9,106.0 296.3,106.0Z" fill="#e6dcb6" stroke="#b9b08a" stroke-width="6" stroke-linejoin="round" transform="translate(34,-6)"/>
+ <g transform="translate(196,318)">
+  <rect x="-84" y="-54" width="168" height="108" rx="9" fill="#c8372d" stroke="#fff" stroke-width="9"/>
+  <path d="M-84,-54 L84,54 M84,-54 L-84,54" stroke="#fff" stroke-width="9" fill="none"/>
+  <path d="M-22,-86 L22,-70 M22,-86 L-22,-70" stroke="#fff" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M-62,84 q15.5,-20 31,0 t31,0 t31,0 t31,0" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+ </g>
+</svg>
