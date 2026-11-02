@@ -252,6 +252,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
         <label class="row" for="optT">判定回合 <select id="optT"><option value="6">第 6 回合</option><option value="8" selected>第 8 回合</option><option value="10">第 10 回合</option><option value="12">第 12 回合</option></select></label>
         <label class="row" for="optMode">模式 <select id="optMode"><option value="play">對戰</option><option value="sim">電腦推演（含事件節點）</option></select></label>
         <label class="row" for="optBuild" id="rowBuild">戰前集結 <select id="optBuild"><option value="open">公開全面集結</option><option value="exercise" selected>演習掩護</option><option value="surprise">戰略突襲</option></select></label>
+        <label class="row" for="optFx">美日菲參戰情境 <select id="optFx"><option value="dice" selected>擲骰決定</option><option value="none">不介入（台灣孤軍）</option><option value="full">開戰即全面介入</option></select></label>
         <label class="row" for="optNews">每回合國際快訊 <select id="optNews"><option value="1">開啟</option><option value="0">關閉</option></select></label>
         <label class="row" for="optSpeed" id="rowSpeed" hidden>推演速度 <select id="optSpeed"><option value="1">一般</option><option value="0.35">快速</option></select></label>
         <label class="row" for="optSide" id="rowSide">你要操作 <select id="optSide"><option value="atk">攻方（紅），電腦當守方</option><option value="def">守方（藍），電腦當攻方</option><option value="both">雙方都操作（同機對戰）</option><option value="none">都不操作（觀戰）</option></select></label>
@@ -292,7 +293,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
             <li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；每次空投擲骰，擲 1 因防空攔截損失 1 步；落在敵軍旁時擲 1～3 就損失 1 步。惡劣天候不能空降。</li>
             <li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li>
             <li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li>
-            <li><b>美日菲參戰：</b>第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊，菲律賓決定北呂宋基地。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li>
+            <li><b>美日菲參戰：</b>開局可選參戰情境：擲骰決定（預設）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊，菲律賓決定北呂宋基地。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li>
             <li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li>
             <li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li>
             <li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 2、港口 4、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1。</li>
@@ -385,7 +386,7 @@ function newState(){
   S={turn:1,phase:'atk',T:8,ctrl:{atk:'human',def:'ai'},weather:WEATHER.good,fire:0,units:[],owner:{},log:[],
      sel:null,mode:null,busy:false,over:false,started:false,nid:1,hover:null,zoneFlip:0,
      sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods(),
-     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0},turnStart:null,fireNote:''};
+     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0},turnStart:null,fireNote:''};
   for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
   const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
     ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],
@@ -649,7 +650,7 @@ function fxStatus(f){
   return '出擊中';
 }
 function setLevel(c,v,why){
-  if(v<=S.fx.lv[c])return false;
+  if(S.fxLock||v<=S.fx.lv[c])return false;
   for(let l=S.fx.lv[c]+1;l<=v;l++)if(S.fx.reach[c][l]===undefined)S.fx.reach[c][l]=S.turn;
   S.fx.lv[c]=v;log(CN[c]+'：'+LV[c][v]+(why?'（'+why+'）':''));
   if(c==='US'&&v>=1)S.mods.ssmNeed=3;
@@ -711,7 +712,7 @@ function baseNeed(b){
   if(B.c==='JP'&&S.fx.units.some(f=>f.id==='jasdf'&&fxActive(f)))n++;
   return Math.min(6,n);
 }
-function baseTargets(b){return S.fx.units.filter(f=>f.base===b&&f.hp>0&&!f.hidden&&(b!=='sea'||fxActive(f)));}
+function baseTargets(b){if(S.fxScen==='none')return [];return S.fx.units.filter(f=>f.base===b&&f.hp>0&&!f.hidden&&(b!=='sea'||fxActive(f)));}
 function escalationText(b){
   const tr=BASE_TRIG[b],up=Object.keys(tr).filter(c=>S.fx.lv[c]<tr[c]);
   return up.length?'打擊'+BASES[b].n+'會讓'+up.map(c=>CN[c]+'升級為「'+LV[c][tr[c]]+'」').join('、')+'。':'';
@@ -764,7 +765,7 @@ function fxDice(c,esc){
     PH:[{min:1,max:3,label:'不開放基地',desc:'EDCA 基地不得用於作戰',lv:0},{min:4,max:5,label:'開放基地',desc:'美軍可從北呂宋出擊',lv:1},{min:6,max:6,label:'共同作戰',desc:'開放基地並參與防衛',lv:2}],
     US:[{min:1,max:1,label:'不介入',desc:'只發表聲明',lv:0},{min:2,max:3,label:'情報支援',desc:'守方反艦飛彈命中門檻 −1',lv:1},{min:4,max:5,label:'有限介入',desc:'潛艦、轟炸機，以及日本同意時的嘉手納戰機',lv:2},{min:6,max:6,label:'全面參戰',desc:'加上航艦、陸戰濱海團、多域特遣隊',lv:3}]
   }[c];
-  return {label:CN[c]+'的反應',rows,skip:()=>S.fx.lv[c]>=rows[rows.length-1].lv,
+  return {label:CN[c]+'的反應',rows,skip:()=>S.fxLock||S.fx.lv[c]>=rows[rows.length-1].lv,
     mod:()=>{const m=S.mods,p=[];let n=0;
       if(m.fxMod){n+=m.fxMod;p.push((m.buildup==='open'?'公開集結':'戰略突襲')+' '+(m.fxMod>0?'+':'')+m.fxMod);}
       if(c!=='PH'&&m.winter){n--;p.push('冬季奇襲 −1');}
@@ -773,6 +774,12 @@ function fxDice(c,esc){
       if(esc&&c!=='PH'){n++;p.push('戰事延長 +1');}
       return [n,p.join('、')];},
     onRow:r=>setLevel(c,r.lv,'擲骰')};
+}
+const FXSCEN={dice:'擲骰決定',none:'不介入（台灣孤軍）',full:'開戰即全面介入'};
+function applyFxScenario(){
+  if(S.fxScen==='full'){setLevel('JP',2,'開局情境');setLevel('PH',2,'開局情境');setLevel('US',3,'開局情境');}
+  if(S.fxScen!=='dice')S.fxLock=true;
+  log('參戰情境：'+FXSCEN[S.fxScen]+'。');
 }
 function fxSummary(){return ['美國：'+LV.US[S.fx.lv.US]+'；日本：'+LV.JP[S.fx.lv.JP]+'；菲律賓：'+LV.PH[S.fx.lv.PH],
   '出擊中的美日部隊：'+(S.fx.units.filter(f=>f.hp>0&&S.fx.lv[f.c]>=f.min&&(!f.needs||S.fx.lv[f.needs]>=1)).map(f=>f.n+(fxActive(f)?'':'（第 '+fxReady(f)+' 回合）')).join('、')||'無')];}
@@ -801,7 +808,7 @@ const EVENTS=[
    {id:'ssm',label:'反艦飛彈陣地',desc:'削弱守方岸置反艦飛彈，讓船團渡海更安全。'},
    {id:'c2',label:'指揮與通信',desc:'癱瘓守方指揮，使守方機動部隊無法調動。'},
    {id:'air',label:'機場與防空',desc:'摧毀守方空軍與防空，換取後續回合的火力。'},
-   {id:'okinawa',label:'沖繩美日基地',desc:'先打掉嘉手納等基地的戰機，但日本與美國會立即全面參戰。'}]},
+   {id:'okinawa',hide:()=>S.fxScen==='none',label:'沖繩美日基地',desc:'先打掉嘉手納等基地的戰機，但日本與美國會立即全面參戰。'}]},
   dice:[{label:'守方與盟國的防空攔截、預警',rows:[
    {min:1,max:2,label:'攔截失敗',desc:'打擊大致奏效'},
    {min:3,max:4,label:'部分攔截',desc:'效果打折'},
@@ -825,10 +832,10 @@ const EVENTS=[
     addTurns(m.fireAdd,1,1,lv);
     return ['守方空軍 −'+a+(d?'、防空 −'+d:''),lv?'第 1 回合火力 +'+lv:'火力沒有額外加成'];
    }
-   setLevel('JP',2,'沖繩遭先制打擊');setLevel('US',3,'駐日美軍遭先制打擊');
+   const upJ=setLevel('JP',2,'沖繩遭先制打擊'),upU=setLevel('US',3,'駐日美軍遭先制打擊');
    const hitU=(id,n)=>{const f=S.fx.units.find(x=>x.id===id);f.hp=Math.max(0,f.hp-n);return f.n+' −'+n;};
    const out=lv===2?[hitU('kadena',2),hitU('usmc',1),hitU('jasdf',1)]:lv===1?[hitU('kadena',1),hitU('jasdf',1)]:[hitU('kadena',1)];
-   return out.concat(['日本：全面參戰','美國：全面參戰']);
+   return out.concat(upJ?['日本：全面參戰']:[],upU?['美國：全面參戰']:[]);
   }},
  {id:'mobilize',at:()=>[2,'def'],title:'動員與社會韌性',
   blurb:'守方發布動員令並決定兵力重點。電網、網路與交通遭破壞後社會能否維持運作，則不是政府能完全掌控的。',
@@ -949,9 +956,9 @@ function playEvent(ev,i){
     };
     if(ev.choice){
       box.innerHTML=evHead(ev,i)+'<p><span class="badge '+ev.choice.who+'">'+SIDE[ev.choice.who]+'決策</span>由你替'+SIDE[ev.choice.who]+'指揮官決定：</p>'+
-        '<div class="opts">'+ev.choice.options.map((o,j)=>'<button class="opt" data-j="'+j+'"><b>'+o.label+'</b><span>'+o.desc+'</span></button>').join('')+'</div>';
+        '<div class="opts">'+ev.choice.options.filter(o=>!o.hide||!o.hide()).map((o,j)=>'<button class="opt" data-j="'+j+'"><b>'+o.label+'</b><span>'+o.desc+'</span></button>').join('')+'</div>';
       box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
-        const o=ev.choice.options[+b.dataset.j];rec.choice=o.label;rec.who=ev.choice.who;
+        const o=ev.choice.options.filter(o=>!o.hide||!o.hide())[+b.dataset.j];rec.choice=o.label;rec.who=ev.choice.who;
         if(specs.length)diceStep(o);else{box.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x!==b)x.style.opacity=.35;});finish(o,[]);}
       });
       box.querySelector('.opt').focus();
@@ -977,7 +984,7 @@ function renderNodes(){
     const [t,p]=ev.at(S.T),r=S.events.find(e=>e.id===ev.id);
     const kind=ev.choice&&ev.dice?'決策＋擲骰':ev.choice?SIDE[ev.choice.who]+'決策':'擲骰';
     return '<li class="'+(r?'done':'')+'"><span class="tn">T'+t+(p==='atk'?'攻':'守')+'</span><div><b>'+ev.title+'</b> <span class="dd" style="display:inline">'+kind+'</span>'+
-      '<span class="dd">'+(r?recLine(r):'尚未發生')+'</span></div></li>';
+      '<span class="dd">'+(r?recLine(r):S.fxLock&&(ev.id==='foreign'||ev.id==='escalate')?'依開局情境略過（'+FXSCEN[S.fxScen]+'）':'尚未發生')+'</span></div></li>';
   }).join('');
 }
 function timelineHTML(){
@@ -1090,13 +1097,14 @@ function afterAction(win){
   if(!ssmLeft)defTips.push('反艦飛彈陣地全數損失：飛彈應分散、機動部署，打完就轉移陣地，避免被先制打擊與火力打擊清除。');
   if(st.reserves<4)defTips.push('後備部隊到位不足（'+st.reserves+' 個旅）：強化電網、通信等關鍵設施韌性，並提早發布動員令。');
   if(P.rocAir<=1||P.rocAD<=1)defTips.push('空軍與防空在開戰初期就被壓制：加強機堡、分散跑道與機動防空，保留戰力到攻方渡海時再出擊。');
-  if(!(usIn||jpIn))defTips.push('盟國沒有實質參戰：戰前外交與早期預警很關鍵，攻方公開集結時的參戰機率明顯較高。');
+  if(S.fxScen==='none')defTips.push('本局設定為台灣孤軍作戰：守方只能靠自身的反艦飛彈、海空軍與後備動員，應把火力集中在渡海船團。');
+  else if(!(usIn||jpIn))defTips.push('盟國沒有實質參戰：戰前外交與早期預警很關鍵，攻方公開集結時的參戰機率明顯較高。');
   if(seaL>=6)defTips.push('海上殲敵是最有效的防衛：繼續把反艦飛彈、海軍與盟軍火力集中在渡海船團。');
   if(!defTips.length)defTips.push('守方防線大致穩固：保持機動預備隊，並持續打擊海上增援。');
   const yours=S.sim?null:(S.ctrl.atk==='human'&&S.ctrl.def!=='human'?'atk':S.ctrl.def==='human'&&S.ctrl.atk!=='human'?'def':null);
   const tipBlock=side=>'<div class="aar-col"><div class="eyebrow">'+SIDE[side]+(yours===side?'（你的陣營）':'')+(win===side?' · 勝方：可保持的做法':' · 改進措施')+'</div><ul>'+(side==='atk'?atkTips:defTips).map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
   const lossList=(side,label)=>{const l=lossBy(side);return '<div><b>'+label+'</b>：'+(l.length?l.map(([k,v])=>k+' '+v).join('、'):'無')+'</div>';};
-  return '<div class="aar"><div class="eyebrow" style="margin-top:16px">戰後檢討報告</div>'+
+  return '<div class="aar"><div class="eyebrow" style="margin-top:16px">戰後檢討報告 · 參戰情境：'+FXSCEN[S.fxScen]+'</div>'+
     '<h4>勝負關鍵</h4><ol>'+keys.slice(0,5).map(k=>'<li>'+k[1]+'</li>').join('')+'</ol>'+
     '<h4>損失來源（步）</h4><div class="dd aar-loss">'+lossList('atk','攻方（海上 '+seaL+'、陸上 '+landL+'）')+lossList('def','守方（共 '+defL+'）')+'</div>'+
     '<div class="aar-grid">'+(yours==='def'?tipBlock('def')+tipBlock('atk'):tipBlock('atk')+tipBlock('def'))+'</div></div>';
@@ -1478,13 +1486,14 @@ function readSetup(){
   S.T=+$('#optT').value;S.sim=$('#optMode').value==='sim';S.speed=S.sim?+$('#optSpeed').value:1;
   const sd=$('#optSide').value;
   S.ctrl=S.sim?{atk:'ai',def:'ai'}:{atk:sd==='atk'||sd==='both'?'human':'ai',def:sd==='def'||sd==='both'?'human':'ai'};
-  $('#rowSide').hidden=$('#rowBuild').hidden=S.sim;S.newsOn=$('#optNews').value==='1';$('#rowSpeed').hidden=!S.sim;
+  $('#rowSide').hidden=$('#rowBuild').hidden=S.sim;S.newsOn=$('#optNews').value==='1';S.fxScen=$('#optFx').value;$('#rowSpeed').hidden=!S.sim;
   $('#setupHint').textContent=S.sim?'雙方由電腦操作，途中在 5 個關鍵節點暫停，由你做決定或擲骰。':'單人可選攻方或守方，由電腦負責另一方；也可以兩方都由你操作。';
   $('#btnStart').textContent=S.sim?'開始推演':'開始作戰';
 }
-['#optT','#optSide','#optMode','#optSpeed','#optBuild','#optNews'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();render();}));
+['#optT','#optSide','#optMode','#optSpeed','#optBuild','#optNews','#optFx'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();render();}));
 $('#btnStart').onclick=()=>{
   readSetup();S.started=true;
+  applyFxScenario();
   if(!S.sim){const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));}
   S.lastSnap=snap();
   log((S.sim?'推演開始':'作戰開始')+'。判定回合：第 '+S.T+' 回合。');beginPhase('atk');
