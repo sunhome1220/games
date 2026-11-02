@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>台海登陸戰棋</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: ops-table — hex map on the left as the working surface, a staff clipboard of controls on the right */
+:root{
+  --bg:#e6eae7; --panel:#f6f7f5; --ink:#1b2320; --muted:#5a6660; --line:#c3cbc6;
+  --sea:#9fbcc6; --sea-edge:#8eaeb9; --land:#d9d1ad; --land-edge:#b9b08a; --mtn:#b5a47c; --mtn-ink:#7b6a45;
+  --main:#c8c4b8; --main-edge:#aaa597; --city:#cfc4a0;
+  --atk:#b3302a; --def:#1e4f8f; --accent:#c88710; --on-unit:#ffffff; --ok:#2f7d4f;
+  --hl-move:rgba(47,125,79,.38); --hl-land:rgba(200,135,16,.5); --hl-drop:rgba(110,70,160,.38);
+  --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121816; --panel:#1a221f; --ink:#e2e8e4; --muted:#8e9a94; --line:#2d3833;
+  --sea:#1e3a44; --sea-edge:#26474f; --land:#59553f; --land-edge:#6b664c; --mtn:#4a4230; --mtn-ink:#a08f66;
+  --main:#34352f; --main-edge:#44453d; --city:#66603f;
+  --atk:#d9534a; --def:#4b86d4; --accent:#e3a63a; --on-unit:#ffffff; --ok:#5cb57f;
+  --hl-move:rgba(92,181,127,.38); --hl-land:rgba(227,166,58,.5); --hl-drop:rgba(160,120,220,.4);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#121816; --panel:#1a221f; --ink:#e2e8e4; --muted:#8e9a94; --line:#2d3833;
+  --sea:#1e3a44; --sea-edge:#26474f; --land:#59553f; --land-edge:#6b664c; --mtn:#4a4230; --mtn-ink:#a08f66;
+  --main:#34352f; --main-edge:#44453d; --city:#66603f;
+  --atk:#d9534a; --def:#4b86d4; --accent:#e3a63a; --on-unit:#ffffff; --ok:#5cb57f;
+  --hl-move:rgba(92,181,127,.38); --hl-land:rgba(227,166,58,.5); --hl-drop:rgba(160,120,220,.4);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
+.app{max-width:1280px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:16px}
+h1{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,4vw,38px);letter-spacing:.06em;margin:0;line-height:1.1;text-wrap:balance}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.statusbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:4px 10px;font-size:13px;white-space:nowrap}
+.chip b{font-family:var(--f-mono);font-weight:700;font-variant-numeric:tabular-nums}
+.chip.atk{background:var(--atk);border-color:var(--atk);color:var(--on-unit)}
+.chip.def{background:var(--def);border-color:var(--def);color:var(--on-unit)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:960px){.layout{grid-template-columns:minmax(0,1fr)}}
+.board{min-width:0}
+.mapwrap{overflow-x:auto;border:1px solid var(--line);background:var(--sea);border-radius:4px}
+#map{display:block;width:100%;min-width:640px;height:auto;user-select:none;-webkit-user-select:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;vertical-align:-2px;margin-right:4px;border:1px solid var(--line)}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px}
+.card h2{font-family:var(--f-display);font-size:16px;font-weight:700;margin:0 0 10px;letter-spacing:.04em}
+.eyebrow{font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+label.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0}
+select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:3px;background:var(--bg);color:var(--ink)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-weight:500;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:var(--bg);padding:7px 14px;border-radius:3px}
+button.ghost{background:transparent;color:var(--ink)}
+button.on{background:var(--accent);border-color:var(--accent);color:#1b1408}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:8px}
+.vc{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:4px 10px;align-items:start;padding:9px 0;border-top:1px solid var(--line)}
+.vc:first-of-type{border-top:0}
+.vc .n{font-family:var(--f-mono);font-weight:700;color:var(--muted)}
+.vc .t{font-weight:700}
+.vc .d{font-size:12.5px;color:var(--muted)}
+.pill{font-size:12px;padding:2px 8px;border-radius:2px;white-space:nowrap;color:var(--on-unit)}
+.pill.atk{background:var(--atk)} .pill.def{background:var(--def)}
+.proj{margin-top:8px;font-size:13px;border-top:2px solid var(--ink);padding-top:8px}
+.info .k{color:var(--muted);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;text-align:center}
+.stats div{border:1px solid var(--line);border-radius:3px;padding:4px 0}
+.stats b{display:block;font-family:var(--f-mono);font-size:16px}
+.stats span{font-size:11px;color:var(--muted)}
+.log{max-height:240px;overflow-y:auto;font-size:12.5px;margin:0;padding:0;list-style:none}
+.log li{padding:4px 0;border-top:1px dashed var(--line)}
+.log li:first-child{border-top:0}
+.log .tn{font-family:var(--f-mono);color:var(--muted);margin-right:6px}
+details summary{cursor:pointer;font-family:var(--f-display);font-weight:700}
+details ul{padding-left:18px;margin:8px 0 0;font-size:12.5px}
+details li{margin:4px 0}
+footer{color:var(--muted);font-size:12px;margin-top:18px}
+/* svg */
+.hx{stroke-width:1}
+.hx.sea{fill:var(--sea);stroke:var(--sea-edge)}
+.hx.main,.hx.air.cn,.hx.port.cn{fill:var(--main);stroke:var(--main-edge)}
+.hx.plain,.hx.air,.hx.port{fill:var(--land);stroke:var(--land-edge)}
+.hx.city{fill:var(--city);stroke:var(--land-edge)}
+.hx.mtn{fill:var(--mtn);stroke:var(--land-edge)}
+.ov-atk{fill:var(--atk);opacity:.22;pointer-events:none}
+.mud{stroke:var(--sea-edge);stroke-width:2.6;stroke-dasharray:1 3;stroke-linecap:round;fill:none;pointer-events:none}
+.cliff{stroke:var(--mtn-ink);stroke-width:2.2;stroke-dasharray:2 2;fill:none;pointer-events:none}
+.mtn-g{stroke:var(--mtn-ink);fill:none;stroke-width:1.2;pointer-events:none}
+.lbl{font-size:8.5px;fill:var(--ink);text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:500}
+.lbl.obj{fill:var(--accent);font-weight:700}
+.big{font-family:var(--f-display);font-weight:700;fill:var(--ink);opacity:.35;pointer-events:none;letter-spacing:.3em}
+.hl{pointer-events:none}
+.hl.move{fill:var(--hl-move)} .hl.land{fill:var(--hl-land)} .hl.drop{fill:var(--hl-drop)} .hl.sail{fill:var(--hl-move)}
+.ring{fill:none;stroke:var(--accent);stroke-width:2.5;pointer-events:none}
+.ring.strike{stroke:var(--atk);stroke-dasharray:4 3}
+.u{cursor:pointer}
+.u .body.atk{fill:var(--atk)} .u .body.def{fill:var(--def)}
+.u .body{stroke:var(--ink);stroke-width:.8}
+.u.sel .body{stroke:var(--accent);stroke-width:2.6}
+.u.done{opacity:.5}
+.u .sym{stroke:var(--on-unit);fill:none;stroke-width:1}
+.u .tx{font-size:7px;fill:var(--on-unit);text-anchor:middle;font-family:var(--f-body);font-weight:700}
+.pip{stroke:var(--ink);stroke-width:.6}
+.pip.full{fill:var(--accent)} .pip.lost{fill:none}
+.sea-tag{fill:var(--accent)}
+/* modal & toast */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.mbox{background:var(--panel);color:var(--ink);border:2px solid var(--ink);border-radius:4px;max-width:520px;width:100%;padding:22px;max-height:90vh;overflow-y:auto}
+.mbox h3{font-family:var(--f-display);font-size:26px;margin:4px 0 6px;font-weight:900}
+.verdict.atk{color:var(--atk)} .verdict.def{color:var(--def)}
+.mbox.ev{max-width:600px}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:2px;color:var(--on-unit);margin-right:6px}
+.badge.atk{background:var(--atk)} .badge.def{background:var(--def)} .badge.dice{background:var(--accent);color:#1b1408}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.opt{text-align:left;background:transparent;color:var(--ink);border:1px solid var(--line);padding:10px 12px}
+.opt:hover{border-color:var(--accent)}
+.opt b{display:block;font-size:15px}
+.opt span{font-size:12.5px;color:var(--muted);font-weight:400}
+.dtable{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+.dtable td{border-top:1px solid var(--line);padding:6px 4px;vertical-align:top}
+.dtable td:first-child{font-family:var(--f-mono);font-weight:700;white-space:nowrap;width:52px}
+.dtable tr.hit td{background:var(--hl-land)}
+.dtable .dd{color:var(--muted);font-size:12px}
+.dierow{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap}
+.die{width:54px;height:54px;border:2px solid var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:26px;font-weight:700;background:var(--bg)}
+.res{margin-top:14px;border-top:2px solid var(--ink);padding-top:10px}
+.res ul{margin:6px 0 0;padding-left:18px}
+.snap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
+.snap div{border:1px solid var(--line);border-radius:3px;padding:6px 8px}
+.snap span{display:block;font-size:11px;color:var(--muted)}
+.snap b{font-family:var(--f-mono);font-size:16px;font-variant-numeric:tabular-nums}
+.snap i{font-style:normal;font-size:12px;margin-left:4px;font-family:var(--f-mono)}
+.up{color:var(--ok)} .down{color:var(--atk)}
+.tl{list-style:none;margin:10px 0 0;padding:0}
+.tl li{border-left:3px solid var(--line);padding:4px 0 8px 12px;font-size:13px}
+.tl li b{font-family:var(--f-display)}
+.tl .dd{color:var(--muted);font-size:12px}
+.nodes{list-style:none;margin:0;padding:0;font-size:13px}
+.nodes li{display:grid;grid-template-columns:54px minmax(0,1fr);gap:8px;padding:6px 0;border-top:1px solid var(--line)}
+.nodes li:first-child{border-top:0}
+.nodes .tn{font-family:var(--f-mono);color:var(--muted)}
+.nodes .dd{display:block;color:var(--muted);font-size:12px}
+.nodes li.done .tn{color:var(--accent)}
+#resume{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:25;background:var(--accent);border-color:var(--accent);color:#1b1408;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+#toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 18px;border-radius:3px;font-weight:700;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30;white-space:nowrap}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div>
+      <div class="eyebrow">兩棲登陸作戰 · 兵棋推演</div>
+      <h1>台海登陸戰棋</h1>
+      <div class="sub">攻方渡海搶灘，守方據島防禦。到判定回合結束時，以三項勝負條件決定勝負。</div>
+    </div>
+    <div class="statusbar" id="status"></div>
+  </header>
+  <main class="layout">
+    <section class="board">
+      <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"></svg></div>
+      <div class="legend">
+        <span><i style="background:var(--land)"></i>平原</span>
+        <span><i style="background:var(--city)"></i>城市（防禦 +2）</span>
+        <span><i style="background:var(--mtn)"></i>山地（防禦 +2，移動 2）</span>
+        <span><i style="background:var(--main)"></i>大陸沿海</span>
+        <span><i style="background:var(--atk);opacity:.4"></i>攻方控制</span>
+        <span>虛線邊＝斷崖海岸、點線邊＝泥灘潮間帶，皆不可登陸</span>
+        <span style="color:var(--accent)">★ 勝負目標</span>
+      </div>
+    </section>
+    <aside class="side" id="side">
+      <div class="card" id="setup">
+        <h2>作戰設定</h2>
+        <label class="row" for="optT">判定回合 <select id="optT"><option value="6">第 6 回合</option><option value="8" selected>第 8 回合</option><option value="10">第 10 回合</option><option value="12">第 12 回合</option></select></label>
+        <label class="row" for="optMode">模式 <select id="optMode"><option value="play">對戰</option><option value="sim">電腦推演（含事件節點）</option></select></label>
+        <label class="row" for="optSpeed" id="rowSpeed" hidden>推演速度 <select id="optSpeed"><option value="1">一般</option><option value="0.35">快速</option></select></label>
+        <label class="row" for="optA" id="rowA">攻方（紅） <select id="optA"><option value="human">玩家</option><option value="ai">電腦</option></select></label>
+        <label class="row" for="optD" id="rowD">守方（藍） <select id="optD"><option value="ai">電腦</option><option value="human">玩家</option></select></label>
+        <div class="btns"><button id="btnStart">開始作戰</button></div>
+        <div class="hint" id="setupHint">雙方都選玩家可同機對戰；都選電腦可觀戰。</div>
+      </div>
+      <div class="card" id="ctrl" hidden>
+        <h2 id="phaseTitle">指揮</h2>
+        <div class="btns">
+          <button id="btnStrike" class="ghost">火力打擊</button>
+          <button id="btnEnd">結束階段</button>
+        </div>
+        <div class="hint" id="hint"></div>
+      </div>
+      <div class="card info" id="info"><div class="k">點選地圖上的單位或地格查看資料。</div></div>
+      <div class="card" id="simCard" hidden>
+        <h2>推演節點</h2>
+        <ul class="nodes" id="nodes"></ul>
+      </div>
+      <div class="card">
+        <h2>勝負條件</h2>
+        <div id="vcs"></div>
+      </div>
+      <div class="card">
+        <h2>戰報</h2>
+        <ul class="log" id="log"></ul>
+      </div>
+      <div class="card">
+        <details>
+          <summary>規則摘要</summary>
+          <ul>
+            <li>每回合先攻方、後守方。每個單位每階段可移動一次，之後可攻擊一次。</li>
+            <li><b>渡海：</b>兩棲旅、陸戰旅可從大陸任一沿岸格出航；裝甲旅只能從港口出航，且只能在攻方已控制的港口上岸。海上移動力依天候：良好 3、普通 2、惡劣 1。登陸後該單位本階段結束。</li>
+            <li><b>搶灘突擊：</b>從海上直接攻擊岸上敵軍，攻擊 −2（陸戰旅 −1）。守方若被消滅，突擊單位可直接上岸。</li>
+            <li><b>戰鬥：</b>攻擊值＋骰 對 防禦值＋地形＋骰。差 ≥4 守方失 2 步；1～3 失 1 步；0 雙方各失 1；−1～−3 攻方失 1；≤−4 攻方失 2。每多一支友軍與目標相鄰 +1（最多 +2）。只剩 1 步的單位攻防各 −1。</li>
+            <li><b>控制區：</b>移動進入與敵軍相鄰的陸地格必須停下。</li>
+            <li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；每次空投擲骰，擲 1 因防空攔截損失 1 步；落在敵軍旁時擲 1～3 就損失 1 步。惡劣天候不能空降。</li>
+            <li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。第 1～2 回合 8 點、第 3～4 回合 6 點、之後 5 點；惡劣天候 −2。</li>
+            <li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li>
+            <li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 2、港口 4、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1。</li>
+            <li><b>增援：</b>攻方第 2～5 回合於大陸沿岸到達；守方後備旅第 2～4 回合在城市動員。</li>
+            <li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 5 個關鍵節點暫停：發起時機、先制打擊、動員與社會韌性、外國介入、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li>
+            <li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li>
+          </ul>
+        </details>
+      </div>
+    </aside>
+  </main>
+  <footer>抽象化的兵棋遊戲。地圖比例、部隊與數值皆為遊戲設定，不代表真實兵力或作戰計畫。</footer>
+</div>
+<div id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<button id="resume" hidden>回到事件 ▲</button>
+<div id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const COLS=16, ROWS=14, R=26, W=Math.sqrt(3)*R, PAD=6;
+const VBW=W*COLS+W/2+PAD*2, VBH=1.5*R*(ROWS-1)+2*R+PAD*2;
+const K=(c,r)=>c+','+r;
+const $=s=>document.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms*(S&&S.speed||1)));
+const d6=()=>1+Math.floor(Math.random()*6);
+const SIDE={atk:'攻方',def:'守方'};
+const TERN={sea:'海域',main:'大陸',plain:'平原',city:'城市',mtn:'山地',port:'港口',air:'機場'};
+
+const TYPES={
+  amph:{n:'兩棲合成旅',s:'兩棲',atk:3,def:3,mv:2,hp:3},
+  mar:{n:'陸戰旅',s:'陸戰',atk:3,def:3,mv:2,hp:3},
+  abn:{n:'空降旅',s:'空降',atk:3,def:2,mv:2,hp:2},
+  arm:{n:'重型合成旅',s:'裝甲',atk:5,def:3,mv:3,hp:3},
+  inf:{n:'聯兵旅',s:'步兵',atk:2,def:3,mv:2,hp:3},
+  tank:{n:'裝甲旅',s:'裝甲',atk:4,def:3,mv:3,hp:3},
+  res:{n:'後備旅',s:'後備',atk:2,def:2,mv:2,hp:2},
+  ssm:{n:'岸置反艦飛彈',s:'飛彈',atk:0,def:1,mv:2,hp:2}
+};
+const WEATHER={
+  good:{id:'good',n:'良好',sea:3,air:true,fire:0},
+  fair:{id:'fair',n:'普通',sea:2,air:true,fire:0},
+  bad:{id:'bad',n:'惡劣',sea:1,air:false,fire:-2}
+};
+
+/* ---------- map ---------- */
+const TER={};
+for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)TER[K(c,r)]={c,r,k:K(c,r),t:'sea',isl:null};
+const COAST=[3,3,3,3,4,3,3,3,2,2,2,1,1,1];
+for(let r=0;r<ROWS;r++)for(let c=0;c<=COAST[r];c++)Object.assign(TER[K(c,r)],{t:'main',isl:'CN'});
+[[3,3,'port','福州'],[4,4,'port','平潭'],[2,4,'air','龍田'],[3,7,'port','泉州'],[2,9,'port','廈門']]
+  .forEach(([c,r,t,n])=>Object.assign(TER[K(c,r)],{t,name:n}));
+const TW=[
+ [11,1,'plain','淡水'],[12,1,'port','基隆'],
+ [10,2,'plain','林口'],[11,2,'city','台北'],[12,2,'mtn'],
+ [10,3,'air','桃園機場'],[11,3,'city','桃園'],[12,3,'mtn'],[13,3,'plain','宜蘭'],
+ [9,4,'city','新竹'],[10,4,'plain','湖口'],[11,4,'mtn'],[12,4,'mtn'],[13,4,'plain',null,1],
+ [9,5,'plain','苗栗'],[10,5,'plain'],[11,5,'mtn'],[12,5,'mtn'],[13,5,'plain',null,1],
+ [9,6,'port','台中港'],[10,6,'city','台中'],[11,6,'mtn'],[12,6,'mtn'],[13,6,'port','花蓮'],
+ [9,7,'plain','彰化',null,0,1],[10,7,'plain'],[11,7,'mtn'],[12,7,'mtn'],[13,7,'plain',null,1],
+ [9,8,'plain','雲林',null,0,1],[10,8,'city','嘉義'],[11,8,'mtn'],[12,8,'mtn'],[13,8,'plain',null,1],
+ [9,9,'city','台南'],[10,9,'plain'],[11,9,'mtn'],[12,9,'city','台東',1],
+ [10,10,'port','高雄'],[11,10,'mtn'],[12,10,'plain',null,1],
+ [10,11,'plain','屏東'],[11,11,'mtn'],
+ [11,12,'plain','恆春']
+];
+TW.forEach(([c,r,t,n,cl,mud])=>Object.assign(TER[K(c,r)],{t,name:n||null,cliff:!!cl,mud:!!mud,isl:'TW'}));
+[[7,8,'port','馬公'],[7,9,'plain','澎湖']].forEach(([c,r,t,n])=>Object.assign(TER[K(c,r)],{t,name:n,isl:'PH'}));
+
+function nbrs(c,r){
+  const d=(r&1)?[[1,0],[1,-1],[0,-1],[-1,0],[0,1],[1,1]]:[[1,0],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1]];
+  const o=[];for(const [dc,dr] of d){const a=c+dc,b=r+dr;if(a>=0&&a<COLS&&b>=0&&b<ROWS)o.push(TER[K(a,b)]);}return o;
+}
+function cube(c,r){const x=c-(r-(r&1))/2;return [x,-x-r,r];}
+function hd(a,b){const p=cube(a.c,a.r),q=cube(b.c,b.r);return Math.max(Math.abs(p[0]-q[0]),Math.abs(p[1]-q[1]),Math.abs(p[2]-q[2]));}
+const isLand=h=>h.t!=='sea';
+Object.values(TER).forEach(h=>{h.coastal=isLand(h)&&nbrs(h.c,h.r).some(n=>n.t==='sea');});
+
+const TAIPEI='11,2', PORTS=['12,1','9,6','10,10'], MAGONG='7,8';
+const ZONES={north:['10,2','11,1','10,3'],central:['9,5','9,4','9,6'],penghu:['7,9','7,8']};
+const ABN_GOAL=['10,3','9,5'];
+
+/* ---------- state ---------- */
+let S;
+function mkUnit(side,type,k,extra){
+  const [c,r]=k.split(',').map(Number);
+  return Object.assign({id:S.nid++,side,type,c,r,hp:TYPES[type].hp,moved:false,acted:false,dropped:false,shots:0},extra||{});
+}
+function newState(){
+  S={turn:1,phase:'atk',T:8,ctrl:{atk:'human',def:'ai'},weather:WEATHER.good,fire:0,units:[],owner:{},log:[],
+     sel:null,mode:null,busy:false,over:false,started:false,nid:1,hover:null,zoneFlip:0,
+     sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods()};
+  for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
+  const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
+    ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],
+    ['mar','3,0','north'],['mar','2,10','penghu'],['abn','2,4',null,0],['abn','2,6',null,1]];
+  A.forEach(([t,k,z,g])=>S.units.push(mkUnit('atk',t,k,{zone:z||null,goal:g})));
+  const D=[['inf','11,2',1],['inf','12,1',1],['inf','10,2'],['inf','9,4'],['inf','9,6',1],['inf','9,9'],['inf','10,10',1],
+    ['inf','13,3'],['inf','13,6'],['inf','7,8',1],['tank','10,4'],['tank','10,6'],['tank','10,9'],
+    ['ssm','10,5'],['ssm','10,7'],['ssm','7,9']];
+  D.forEach(([t,k,g])=>S.units.push(mkUnit('def',t,k,{garrison:!!g})));
+}
+const hexOf=u=>TER[K(u.c,u.r)];
+const unitAt=k=>S.units.find(u=>K(u.c,u.r)===k);
+const atSea=u=>hexOf(u).t==='sea';
+const onTW=u=>hexOf(u).isl==='TW';
+const alive=u=>S.units.includes(u);
+
+function log(msg){S.log.unshift({t:S.turn,p:S.phase,msg});if(S.log.length>80)S.log.pop();}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),1500);}
+function hname(h){return h.name||(TERN[h.t]+' '+h.c+'-'+h.r);}
+function uname(u){return TYPES[u.type].n+'（'+SIDE[u.side]+'）';}
+
+/* ---------- rules ---------- */
+function supply(){
+  let cap=0;
+  for(const h of Object.values(TER)){
+    if(h.isl==='TW'&&S.owner[h.k]==='atk'&&h.coastal&&!h.cliff&&h.t!=='mtn')cap+=h.t==='port'?4:2;
+  }
+  if(S.owner[MAGONG]==='atk')cap+=2;
+  const used=S.units.filter(u=>u.side==='atk'&&onTW(u)).length;
+  return {cap,used,over:used>cap};
+}
+function weak(u){return u.hp===1&&TYPES[u.type].hp>1?1:0;}
+function effAtk(u){return TYPES[u.type].atk+sideMod(u,'atk')-weak(u)-(u.side==='atk'&&onTW(u)&&supply().over?1:0);}
+function effDef(u){return TYPES[u.type].def+sideMod(u,'def')-weak(u)-(u.side==='atk'&&onTW(u)&&supply().over?1:0);}
+function terrDef(h){return h.t==='city'||h.t==='mtn'?2:h.t==='port'?1:0;}
+function seaPen(u){return atSea(u)?(u.type==='mar'?-1:-2):0;}
+function inZOC(side,h){
+  return nbrs(h.c,h.r).some(n=>{const e=unitAt(n.k);return e&&e.side!==side&&isLand(n)&&e.type!=='ssm'&&!(e.type==='abn'&&n.isl==='CN');});
+}
+function support(u,t){
+  let n=0;
+  for(const h of nbrs(t.c,t.r)){const f=unitAt(h.k);if(f&&f!==u&&f.side===u.side&&f.type!=='ssm'&&!(h.isl==='CN'))n++;}
+  return Math.min(2,n);
+}
+const canSail=u=>u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm');
+function canEmbark(u,h){
+  if(!isLand(h)||!h.coastal||S.owner[h.k]!=='atk')return false;
+  return h.t==='port'||(u.type!=='arm'&&h.isl==='CN');
+}
+function validLanding(u,h){
+  if(!isLand(h)||!h.coastal||h.cliff||h.mud||h.t==='mtn'||h.k===TAIPEI)return false;
+  if(u.type==='arm')return h.t==='port'&&S.owner[h.k]==='atk';
+  return true;
+}
+function moveCost(u,h){return h.t==='mtn'?(u.type==='arm'||u.type==='tank'?3:2):1;}
+
+function landReach(u,res){
+  const start=hexOf(u);const best=new Map([[start.k,TYPES[u.type].mv]]);const q=[[start,TYPES[u.type].mv]];
+  while(q.length){
+    const [h,mp]=q.shift();
+    if(h!==start&&inZOC(u.side,h))continue;
+    for(const n of nbrs(h.c,h.r)){
+      if(!isLand(n))continue;
+      const cost=moveCost(u,n);
+      if(cost>mp&&!(h===start))continue;
+      const occ=unitAt(n.k);if(occ&&occ.side!==u.side)continue;
+      const left=Math.max(0,mp-cost);
+      if((best.has(n.k)?best.get(n.k):-1)>=left)continue;
+      best.set(n.k,left);
+      if(!occ&&n!==start)res.set(n.k,{kind:'move'});
+      q.push([n,left]);
+    }
+  }
+}
+function seaReach(u,res){
+  const here=hexOf(u);const startSea=here.t==='sea';
+  if(!startSea&&!canEmbark(u,here))return;
+  const sm=S.weather.sea;const best=new Map();const q=[];
+  const visitSea=(n,left)=>{
+    if((best.has(n.k)?best.get(n.k):-1)>=left)return;
+    best.set(n.k,left);if(!unitAt(n.k)&&!res.has(n.k))res.set(n.k,{kind:'sail'});q.push([n,left]);
+  };
+  if(startSea){best.set(here.k,sm);q.push([here,sm]);}
+  else for(const n of nbrs(here.c,here.r))if(n.t==='sea')visitSea(n,sm-1);
+  while(q.length){
+    const [h,mp]=q.shift();if(mp<1)continue;
+    for(const n of nbrs(h.c,h.r)){
+      if(n.t==='sea')visitSea(n,mp-1);
+      else if(n!==here&&validLanding(u,n)&&!unitAt(n.k)&&(!res.has(n.k)||res.get(n.k).kind!=='move'))res.set(n.k,{kind:'land'});
+    }
+  }
+}
+function reach(u){
+  const res=new Map();if(u.moved||u.acted)return res;const h=hexOf(u);
+  if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
+    if(S.weather.air)for(const t of Object.values(TER)){
+      if((t.isl==='TW'||t.isl==='PH')&&t.t!=='mtn'&&!unitAt(t.k)&&hd(h,t)<=10)res.set(t.k,{kind:'drop'});
+    }
+    return res;
+  }
+  if(isLand(h))landReach(u,res);
+  if(canSail(u))seaReach(u,res);
+  return res;
+}
+function targets(u){
+  if(u.acted)return [];
+  if(u.type==='ssm'){if(u.shots<=0)return [];return S.units.filter(e=>e.side!==u.side&&atSea(e)&&hd(hexOf(u),hexOf(e))<=4);}
+  const h=hexOf(u);if(h.isl==='CN')return [];
+  return nbrs(h.c,h.r).map(n=>unitAt(n.k)).filter(e=>e&&e.side!==u.side&&!atSea(e));
+}
+
+function damage(u,n,why){
+  u.hp-=n;
+  if(u.hp<=0){S.units=S.units.filter(x=>x!==u);log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));return true;}
+  return false;
+}
+function doMove(u,k,kind){
+  const from=hexOf(u);const h=TER[k];
+  u.c=h.c;u.r=h.r;u.moved=true;
+  if(isLand(h))S.owner[k]=u.side;
+  if(kind==='land'){u.acted=true;log(uname(u)+' 於 '+hname(h)+' 登陸');}
+  else if(kind==='drop'){
+    u.acted=true;u.dropped=true;
+    let msg=uname(u)+' 空降 '+hname(h);
+    const hot=inZOC(u.side,h),r=d6();
+    if(r<=(hot?3:1)){msg+='，'+(hot?'落點遭地面火力壓制':'運輸機群遭防空攔截')+'（擲 '+r+'）損失 1 步';log(msg);damage(u,1,'空降損失');return;}
+    log(msg);
+  } else if(kind==='sail'&&from.t!=='sea')log(uname(u)+' 自 '+hname(from)+' 出航');
+}
+function attack(u,t){
+  const th=hexOf(t);
+  const sup=support(u,t),pen=seaPen(u),ra=d6(),rd=d6();
+  const A=effAtk(u)+sup+pen+ra, D=effDef(t)+terrDef(th)+rd;
+  const diff=A-D;
+  let res,la=0,ld=0;
+  if(diff>=4){ld=2;res='守方失 2 步';}else if(diff>=1){ld=1;res='守方失 1 步';}
+  else if(diff===0){la=1;ld=1;res='雙方各失 1 步';}else if(diff>=-3){la=1;res='攻擊方失 1 步';}else{la=2;res='攻擊方失 2 步';}
+  log((pen?'搶灘突擊：':'')+uname(u)+' 攻擊 '+hname(th)+' 的 '+TYPES[t.type].n+'：'+A+' 對 '+D+' → '+res);
+  u.acted=true;u.moved=true;
+  const tDead=ld?damage(t,ld):false;
+  const uDead=la?damage(u,la):false;
+  if(tDead&&!uDead){
+    const can=atSea(u)?validLanding(u,th):true;
+    if(can){u.c=th.c;u.r=th.r;S.owner[th.k]=u.side;log(TYPES[u.type].n+' 推進佔領 '+hname(th));}
+  }
+  checkInstant();
+}
+function fireMissile(m,t){
+  m.shots--;if(m.shots<=0)m.acted=true;
+  const r=d6();
+  if(r>=S.mods.ssmNeed){log('反艦飛彈命中海上的 '+TYPES[t.type].n+'（擲 '+r+'）');damage(t,1,'反艦飛彈');}
+  else log('反艦飛彈未命中（擲 '+r+'）');
+  checkInstant();
+}
+function strike(t){
+  S.fire--;const h=hexOf(t);const need=(h.t==='city'||h.t==='mtn')?6:5;const r=d6();
+  if(r>=need){log('火力打擊命中 '+hname(h)+' 的 '+TYPES[t.type].n+'（擲 '+r+'）');damage(t,1,'火力打擊');}
+  else log('火力打擊 '+hname(h)+' 未命中（擲 '+r+'，需 '+need+'）');
+  checkInstant();
+}
+
+function conditions(){
+  const tp=S.owner[TAIPEI]==='atk';
+  const pc=PORTS.filter(k=>S.owner[k]==='atk').length;
+  let as=0,ds=0;
+  for(const u of S.units)if(onTW(u)){if(u.side==='atk')as+=u.hp;else ds+=u.hp;}
+  return [
+    {title:'首都台北',desc:'判定時台北由攻方控制',atk:tp,now:'目前由'+(tp?'攻方':'守方')+'控制'},
+    {title:'主要港口',desc:'攻方控制基隆、台中港、高雄中至少 2 個',atk:pc>=2,now:'攻方控制 '+pc+' / 3'},
+    {title:'島上戰力',desc:'攻方在本島的兵力步數不少於守方',atk:as>=ds&&as>0,now:'攻方 '+as+' 步 對 守方 '+ds+' 步'}
+  ];
+}
+function verdict(n){
+  return n===3?{s:'atk',t:'攻方決定性勝利',d:'首都、港口與兵力優勢全數到手，守方防線崩潰。'}
+    :n===2?{s:'atk',t:'攻方勝利',d:'攻方達成兩項條件，已在島上站穩並取得戰略主動。'}
+    :n===1?{s:'def',t:'守方勝利',d:'攻方雖有斬獲，但未能同時達成兩項條件，攻勢頓挫。'}
+    :{s:'def',t:'守方決定性勝利',d:'攻方三項條件全部落空，登陸作戰失敗。'};
+}
+function checkInstant(){
+  if(S.over)return;
+  if(!S.units.some(u=>u.side==='def'&&onTW(u)))return endGame('守方本島部隊全滅，攻方立即獲勝。','atk');
+  if(!S.units.some(u=>u.side==='atk')&&S.turn>=5)return endGame('攻方部隊全滅，守方立即獲勝。','def');
+}
+function endGame(early,side){
+  S.over=true;S.sel=null;S.mode=null;
+  const cs=conditions();const n=cs.filter(c=>c.atk).length;
+  const v=early?{s:side,t:side==='atk'?'攻方勝利':'守方勝利',d:early}:verdict(n);
+  log('作戰結束：'+v.t);
+  $('#mbox').innerHTML='<div class="eyebrow">'+(early?'提前結束 · 第 '+S.turn+' 回合':'第 '+S.T+' 回合 判定')+'</div>'+
+    '<h3 class="verdict '+v.s+'">'+v.t+'</h3><p>'+v.d+'</p>'+
+    cs.map((c,i)=>'<div class="vc"><span class="n">'+(i+1)+'</span><div><div class="t">'+c.title+'</div><div class="d">'+c.now+'</div></div><span class="pill '+(c.atk?'atk':'def')+'">'+(c.atk?'攻方達成':'守方確保')+'</span></div>').join('')+
+    '<div class="proj">攻方達成 <b>'+n+'</b> / 3 項（需 2 項以上獲勝）</div>'+
+    (S.sim?timelineHTML():'')+
+    '<div class="btns" style="margin-top:14px"><button id="btnAgain">重新開局</button><button class="ghost" id="btnClose">檢視地圖</button></div>';
+  $('#resume').hidden=true;$('#modal').hidden=false;
+  $('#btnAgain').onclick=()=>{$('#modal').hidden=true;reset();};
+  $('#btnClose').onclick=()=>{$('#modal').hidden=true;};
+  render();
+}
+
+
+/* ---------- simulation events ---------- */
+function defaultMods(){
+  return {wx:[.6,.25,.15],wxT1:'good',fireAdd:{},fireMinus:0,ssmNeed:4,foreignShots:0,atkReinfCut:false,
+    defFreeze:{},defReinfDelay:0,defReinfExtra:0,defReinfHalve:false,defAtk:{},defDef:{},taipeiFort:0,tankAtk:0,
+    atkAtk:{},atkDef:{},winter:false,c2Strong:false,moraleHigh:false};
+}
+function sideMod(u,kind){
+  const m=S.mods,t=S.turn;
+  if(u.side==='def')return kind==='atk'?(m.defAtk[t]||0)+(u.type==='tank'?m.tankAtk:0):(m.defDef[t]||0)+(K(u.c,u.r)===TAIPEI?m.taipeiFort:0);
+  return kind==='atk'?(m.atkAtk[t]||0):(m.atkDef[t]||0);
+}
+function addTurns(obj,from,to,v){for(let t=from;t<=to;t++)obj[t]=(obj[t]||0)+v;}
+const EVENTS=[
+ {id:'timing',at:()=>[1,'atk'],title:'發起時機',
+  blurb:'攻方必須選擇渡海的季節。台灣海峽每年只有春、秋兩個較穩定的窗口；冬季東北季風浪高，但守方較難預判。',
+  choice:{who:'atk',options:[
+   {id:'apr',label:'四月窗口',desc:'海象最穩定，第 1 回合必為好天氣。守方也最有防備。'},
+   {id:'oct',label:'十月窗口',desc:'天氣稍差，但秋季能見度佳，第 1 回合火力 +2。'},
+   {id:'winter',label:'冬季奇襲',desc:'東北季風、壞天氣多；守方動員延後一回合，外國反應也較慢。'}]},
+  apply(c){
+   const m=S.mods;
+   if(c==='apr'){m.wx=[.65,.25,.1];m.wxT1='good';return ['天候機率：良好 65%、普通 25%、惡劣 10%','第 1 回合天候良好'];}
+   if(c==='oct'){m.wx=[.5,.3,.2];m.wxT1='good';addTurns(m.fireAdd,1,1,2);return ['天候機率：良好 50%、普通 30%、惡劣 20%','第 1 回合火力 +2'];}
+   m.wx=[.3,.4,.3];m.wxT1=null;m.defReinfDelay+=1;m.winter=true;
+   return ['天候機率：良好 30%、普通 40%、惡劣 30%（第 1 回合也要擲）','守方後備動員延後 1 回合','之後的攔截與外國介入擲骰對攻方有利 1 點'];
+  }},
+ {id:'strike',at:()=>[1,'atk'],title:'先制打擊',
+  blurb:'開戰第一波飛彈與空襲。攻方選擇打擊重點，實際效果取決於守方的防空攔截與預警，這是攻方無法掌控的。',
+  choice:{who:'atk',options:[
+   {id:'ssm',label:'反艦飛彈陣地',desc:'削弱守方岸置反艦飛彈，讓船團渡海更安全。'},
+   {id:'c2',label:'指揮與通信',desc:'癱瘓守方指揮，使守方機動部隊無法調動。'},
+   {id:'air',label:'機場與港口',desc:'壓制守方空軍，取得制空，增加後續回合的火力點數。'}]},
+  dice:{label:'守方防空攔截與預警',mod:()=>S.mods.winter?-1:0,modNote:'冬季奇襲 −1',rows:[
+   {min:1,max:2,label:'攔截失敗',desc:'打擊大致奏效'},
+   {min:3,max:4,label:'部分攔截',desc:'效果打折'},
+   {min:5,max:6,label:'大多被攔截',desc:'效果有限'}]},
+  apply(c,row){
+   const m=S.mods,lv=row.min===1?2:row.min===3?1:0;
+   if(c==='ssm'){
+    const ss=S.units.filter(u=>u.side==='def'&&u.type==='ssm');const out=[];
+    const hit=lv===0?ss.slice(0,1):ss;
+    hit.forEach(u=>{const n=lv===2?2:1;const dead=damage(u,n,'先制打擊');out.push(hname(hexOf(u))+' 飛彈陣地 '+(dead?'被摧毀':'損失 '+n+' 步'));});
+    return out.length?out:['沒有可打擊的飛彈陣地'];
+   }
+   if(c==='c2'){
+    if(lv===2){m.defFreeze[1]=m.defFreeze[2]=true;m.c2Strong=true;return ['守方機動部隊第 1、2 回合無法調動（仍可就地反擊）','之後的社會韌性擲骰 −1'];}
+    if(lv===1){m.defFreeze[1]=true;return ['守方機動部隊第 1 回合無法調動'];}
+    addTurns(m.defAtk,1,1,-1);return ['守方第 1 回合攻擊 −1'];
+   }
+   if(lv===2){addTurns(m.fireAdd,1,3,3);return ['取得制空：第 1～3 回合火力 +3'];}
+   if(lv===1){addTurns(m.fireAdd,1,2,2);return ['局部制空：第 1～2 回合火力 +2'];}
+   addTurns(m.fireAdd,1,1,1);return ['僅短暫壓制：第 1 回合火力 +1'];
+  }},
+ {id:'mobilize',at:()=>[2,'def'],title:'動員與社會韌性',
+  blurb:'守方發布動員令並決定兵力重點。電網、網路與交通遭破壞後社會能否維持運作，則不是政府能完全掌控的。',
+  choice:{who:'def',options:[
+   {id:'full',label:'全面動員',desc:'每一梯次後備旅多 1 個。'},
+   {id:'capital',label:'首都要塞化',desc:'台北守軍防禦 +1，直到推演結束。'},
+   {id:'mobile',label:'機動反擊',desc:'所有裝甲旅攻擊 +1，直到推演結束。'}]},
+  dice:{label:'社會韌性（電網、網路、交通遭破壞後）',mod:()=>S.mods.c2Strong?-1:0,modNote:'指揮通信遭重創 −1',rows:[
+   {min:1,max:1,label:'電網癱瘓、士氣低落',desc:'後備旅減半，守方第 2～3 回合攻擊 −1'},
+   {min:2,max:3,label:'動員延遲',desc:'後備旅延後 1 回合到達'},
+   {min:4,max:5,label:'運作正常',desc:'沒有額外影響'},
+   {min:6,max:6,label:'全民團結',desc:'守方第 2～3 回合防禦 +1，國際同情升高'}]},
+  apply(c,row){
+   const m=S.mods,out=[];
+   if(c==='full'){m.defReinfExtra=1;out.push('每一梯次後備旅 +1');}
+   else if(c==='capital'){m.taipeiFort=1;out.push('台北守軍防禦 +1');}
+   else {m.tankAtk=1;out.push('裝甲旅攻擊 +1');}
+   if(row.min===1){m.defReinfHalve=true;addTurns(m.defAtk,2,3,-1);out.push('後備旅減半','守方第 2～3 回合攻擊 −1');}
+   else if(row.min===2){m.defReinfDelay+=1;out.push('後備旅延後 1 回合到達');}
+   else if(row.min===6){addTurns(m.defDef,2,3,1);m.moraleHigh=true;out.push('守方第 2～3 回合防禦 +1','外國介入擲骰 +1');}
+   else out.push('社會運作正常');
+   return out;
+  }},
+ {id:'foreign',at:()=>[3,'atk'],title:'外國介入',
+  blurb:'戰事進入第三回合，區域內的外國是否介入、介入多深，取決於其國內政治與盟約判斷，雙方都無法掌控。',
+  dice:{label:'外國反應',mod:()=>(S.mods.winter?-1:0)+(S.mods.moraleHigh?1:0),modNote:'冬季奇襲 −1；全民團結 +1',rows:[
+   {min:1,max:2,label:'不介入',desc:'只發表聲明'},
+   {min:3,max:4,label:'情報支援',desc:'守方反艦飛彈 3 以上即命中'},
+   {min:5,max:5,label:'有限介入',desc:'情報支援；每個守方階段 2 發外國反艦打擊；攻方火力每回合 −1'},
+   {min:6,max:6,label:'全面介入',desc:'有限介入加強為 4 發、火力 −2，並封鎖海峽使攻方第 4、5 回合增援取消'}]},
+  apply(c,row){
+   const m=S.mods;
+   if(row.min===1)return ['外國未介入'];
+   m.ssmNeed=3;if(row.min===3)return ['守方反艦飛彈命中門檻降為 3'];
+   if(row.min===5){m.foreignShots=2;m.fireMinus=1;return ['守方反艦飛彈命中門檻降為 3','每個守方階段 2 發外國反艦打擊','攻方火力每回合 −1'];}
+   m.foreignShots=4;m.fireMinus=2;m.atkReinfCut=true;
+   return ['守方反艦飛彈命中門檻降為 3','每個守方階段 4 發外國反艦打擊','攻方火力每回合 −2','攻方第 4、5 回合增援取消'];
+  }},
+ {id:'final',at:T=>[T,'atk'],title:'最後攻勢',
+  blurb:'判定回合到了。攻方指揮官要決定最後一回合是傾全力奪取目標，還是守住已經拿到的戰果。',
+  choice:{who:'atk',options:[
+   {id:'allin',label:'孤注一擲',desc:'本回合攻方攻擊 +1、火力 +3，但防禦 −1。'},
+   {id:'hold',label:'鞏固戰果',desc:'本回合攻方防禦 +1，守住已佔領的目標。'}]},
+  apply(c){
+   const m=S.mods,t=S.turn;
+   if(c==='allin'){addTurns(m.atkAtk,t,t,1);addTurns(m.fireAdd,t,t,3);addTurns(m.atkDef,t,t,-1);return ['攻方本回合攻擊 +1、火力 +3','攻方本回合防禦 −1'];}
+   addTurns(m.atkDef,t,t,1);return ['攻方本回合防禦 +1'];
+  }}
+];
+function snap(){
+  let as=0,ds=0;for(const u of S.units)if(onTW(u)){if(u.side==='atk')as+=u.hp;else ds+=u.hp;}
+  const cs=conditions();
+  return {as,ds,sea:S.units.filter(u=>u.side==='atk'&&atSea(u)).length,ports:PORTS.filter(k=>S.owner[k]==='atk').length,
+    taipei:S.owner[TAIPEI]==='atk',ssm:S.units.filter(u=>u.side==='def'&&u.type==='ssm').reduce((a,u)=>a+u.hp,0),n:cs.filter(c=>c.atk).length};
+}
+function snapHTML(now,prev){
+  const cell=(label,key,fmt,good)=>{
+    const v=now[key],p=prev?prev[key]:v;let d='';
+    if(typeof v==='number'&&p!==v){const up=v>p;d='<i class="'+((up===(good==='up'))?'up':'down')+'">'+(up?'+':'')+(v-p)+'</i>';}
+    return '<div><span>'+label+'</span><b>'+(fmt?fmt(v):v)+'</b>'+d+'</div>';
+  };
+  return '<div class="snap">'+cell('攻方島上兵力','as',null,'up')+cell('守方島上兵力','ds',null,'down')+cell('攻方海上單位','sea')+
+    cell('攻方控制港口','ports',v=>v+' / 3','up')+cell('台北','taipei',v=>v?'攻方':'守方')+cell('守方飛彈陣地','ssm',v=>v+' 步','down')+'</div>'+
+    '<div class="proj">若現在判定：攻方達成 <b>'+now.n+'</b> / 3 → <b class="verdict '+verdict(now.n).s+'">'+verdict(now.n).t+'</b></div>';
+}
+function evHead(ev,i){return '<div class="eyebrow">事件節點 '+(i+1)+' / '+EVENTS.length+' · 第 '+S.turn+' 回合 '+SIDE[S.phase]+'階段前</div><h3>'+ev.title+'</h3><p>'+ev.blurb+'</p>';}
+function rowFor(rows,v){return rows.find(r=>v>=r.min&&v<=r.max);}
+function playEvent(ev,i){
+  return new Promise(done=>{
+    const box=$('#mbox');box.classList.add('ev');$('#modal').hidden=false;$('#resume').hidden=true;
+    const rec={turn:S.turn,phase:S.phase,title:ev.title,id:ev.id};
+    const finish=(choice,row)=>{
+      const fx=ev.apply(choice&&choice.id,row);
+      rec.effects=fx;const now=snap();rec.snap=now;S.events.push(rec);
+      log('【'+ev.title+'】'+(choice?SIDE[ev.choice.who]+'選擇「'+choice.label+'」':'')+(row?(choice?'；':'')+'擲骰 '+rec.rollText+' →「'+row.label+'」':'')+'：'+fx.join('、'));
+      render();
+      const res=document.createElement('div');res.className='res';
+      res.innerHTML='<div class="eyebrow">結果</div><ul>'+fx.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+
+        '<div class="eyebrow" style="margin-top:12px">目前戰況</div>'+snapHTML(now,S.lastSnap)+
+        '<div class="btns" style="margin-top:14px"><button id="evGo">繼續推演 ▶</button><button class="ghost" id="evMap">看地圖</button></div>';
+      box.appendChild(res);
+      S.lastSnap=now;
+      $('#evMap').onclick=()=>{$('#modal').hidden=true;$('#resume').hidden=false;};
+      $('#evGo').onclick=()=>{$('#modal').hidden=true;$('#resume').hidden=true;box.classList.remove('ev');done();};
+      $('#evGo').focus();
+    };
+    const diceStep=choice=>{
+      const d=ev.dice,mod=d.mod();
+      let h=evHead(ev,i);
+      if(choice)h+='<p><span class="badge '+ev.choice.who+'">'+SIDE[ev.choice.who]+'決策</span>已選擇「'+choice.label+'」</p>';
+      h+='<p><span class="badge dice">不可控 · 擲骰</span>'+d.label+(mod?'（修正 '+(mod>0?'+':'')+mod+'：'+d.modNote+'）':'')+'</p>'+
+        '<table class="dtable">'+d.rows.map((r,j)=>'<tr data-j="'+j+'"><td>'+(r.min===r.max?r.min:r.min+'–'+r.max)+'</td><td><b>'+r.label+'</b> <span class="dd">'+r.desc+'</span><br><span class="dd">機率 '+Math.round((r.max-r.min+1)/6*100)+'%（未修正）</span></td></tr>').join('')+'</table>'+
+        '<div class="dierow"><div class="die" id="die">?</div><button id="evRoll">擲骰</button></div>';
+      box.innerHTML=h;
+      $('#evRoll').onclick=async()=>{
+        $('#evRoll').disabled=true;const die=$('#die');
+        const still=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if(!still)for(let k=0;k<10;k++){die.textContent=d6();await new Promise(r=>setTimeout(r,60));}
+        const raw=d6(),v=Math.max(1,Math.min(6,raw+mod));
+        die.textContent=v;rec.rollText=raw+(mod?(mod>0?' +':' ')+mod+' = '+v:'');
+        const row=rowFor(d.rows,v);rec.row=row.label;
+        box.querySelector('tr[data-j="'+d.rows.indexOf(row)+'"]').classList.add('hit');
+        $('#evRoll').textContent=mod?'擲出 '+raw+'，修正後 '+v:'擲出 '+v;
+        finish(choice,row);
+      };
+      $('#evRoll').focus();
+    };
+    if(ev.choice){
+      box.innerHTML=evHead(ev,i)+'<p><span class="badge '+ev.choice.who+'">'+SIDE[ev.choice.who]+'決策</span>由你替'+SIDE[ev.choice.who]+'指揮官決定：</p>'+
+        '<div class="opts">'+ev.choice.options.map((o,j)=>'<button class="opt" data-j="'+j+'"><b>'+o.label+'</b><span>'+o.desc+'</span></button>').join('')+'</div>';
+      box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+        const o=ev.choice.options[+b.dataset.j];rec.choice=o.label;rec.who=ev.choice.who;
+        if(ev.dice)diceStep(o);else{box.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x!==b)x.style.opacity=.35;});finish(o,null);}
+      });
+      box.querySelector('.opt').focus();
+    } else diceStep(null);
+  });
+}
+async function runEvents(side){
+  for(let i=0;i<EVENTS.length;i++){
+    const ev=EVENTS[i],[t,p]=ev.at(S.T);
+    if(t===S.turn&&p===side&&!S.events.some(e=>e.id===ev.id)){toast('事件節點：'+ev.title);await playEvent(ev,i);if(S.over)return;}
+  }
+}
+function renderNodes(){
+  $('#simCard').hidden=!S.sim;if(!S.sim)return;
+  $('#nodes').innerHTML=EVENTS.map(ev=>{
+    const [t,p]=ev.at(S.T),r=S.events.find(e=>e.id===ev.id);
+    const kind=ev.choice&&ev.dice?'決策＋擲骰':ev.choice?SIDE[ev.choice.who]+'決策':'擲骰';
+    return '<li class="'+(r?'done':'')+'"><span class="tn">T'+t+(p==='atk'?'攻':'守')+'</span><div><b>'+ev.title+'</b> <span class="dd" style="display:inline">'+kind+'</span>'+
+      '<span class="dd">'+(r?[r.choice&&('選擇「'+r.choice+'」'),r.row&&('擲骰 '+r.rollText+'「'+r.row+'」')].filter(Boolean).join('；'):'尚未發生')+'</span></div></li>';
+  }).join('');
+}
+function timelineHTML(){
+  if(!S.events.length)return '';
+  return '<div class="eyebrow" style="margin-top:16px">推演時間軸</div><ul class="tl">'+S.events.map(e=>
+    '<li><b>T'+e.turn+' '+e.title+'</b><div class="dd">'+[e.choice&&(SIDE[e.who]+'選擇「'+e.choice+'」'),e.row&&('擲骰 '+e.rollText+' →「'+e.row+'」')].filter(Boolean).join('；')+'</div>'+
+    '<div>'+e.effects.join('、')+'</div><div class="dd">當時：攻方島上 '+e.snap.as+' 步、守方 '+e.snap.ds+' 步、港口 '+e.snap.ports+'/3、台北'+(e.snap.taipei?'攻方':'守方')+'控制，攻方達成 '+e.snap.n+'/3</div></li>').join('')+
+    '<li><b>T'+S.turn+' 最終判定</b><div class="dd">攻方島上 '+snap().as+' 步、守方 '+snap().ds+' 步</div></li></ul>';
+}
+
+/* ---------- turn flow ---------- */
+const ATK_REINF={2:[['amph','north'],['amph','central'],['arm']],3:[['mar','central'],['amph','north']],4:[['amph','north'],['amph','central'],['arm']],5:[['amph','north'],['amph','central'],['arm']]};
+const DEF_REINF={2:['11,2','10,6'],3:['11,3','9,9'],4:['9,4','10,10']};
+function placeNear(k,filter){
+  const base=TER[k];
+  const c=Object.values(TER).filter(h=>filter(h)&&!unitAt(h.k)).sort((a,b)=>hd(a,base)-hd(b,base));
+  return c[0]||null;
+}
+function rollWeather(){const w=S.mods.wx,r=Math.random();return r<w[0]?WEATHER.good:r<w[0]+w[1]?WEATHER.fair:WEATHER.bad;}
+async function beginPhase(side){
+  S.phase=side;S.sel=null;S.mode=null;
+  for(const u of S.units)if(u.side===side){u.moved=false;u.acted=false;if(u.type==='ssm')u.shots=2;}
+  if(S.sim){render();await runEvents(side);if(S.over)return;}
+  if(side==='atk'){
+    S.weather=S.turn===1&&S.mods.wxT1?WEATHER[S.mods.wxT1]:rollWeather();
+    S.fire=Math.max(1,(S.turn<=2?8:S.turn<=4?6:5)+S.weather.fire+(S.mods.fireAdd[S.turn]||0)-S.mods.fireMinus);
+    if(S.mods.atkReinfCut&&ATK_REINF[S.turn]&&S.turn>=4)log('外國全面介入封鎖海峽，攻方第 '+S.turn+' 回合增援無法出發');
+    else (ATK_REINF[S.turn]||[]).forEach(([t,z])=>{
+      const h=t==='arm'?placeNear('4,4',x=>x.isl==='CN'&&x.t==='port'):placeNear('4,4',x=>x.isl==='CN'&&x.coastal);
+      if(h){if(!z){z=S.zoneFlip++%2?'central':'north';}S.units.push(mkUnit('atk',t,h.k,{zone:z}));log('攻方增援 '+TYPES[t].n+' 抵達 '+hname(h));}
+    });
+    log('第 '+S.turn+' 回合開始，天候'+S.weather.n+'（海上移動 '+S.weather.sea+'，火力 '+S.fire+' 點'+(S.weather.air?'':'，無法空降')+'）');
+  } else {
+    let wave=(DEF_REINF[S.turn-S.mods.defReinfDelay]||[]).slice();
+    if(S.mods.defReinfHalve)wave=wave.filter((k,i)=>i%2===0);
+    if(wave.length)for(let i=0;i<S.mods.defReinfExtra;i++)wave.push(wave[0]);
+    wave.forEach(k=>{
+      const h=(S.owner[k]==='def'&&!unitAt(k))?TER[k]:placeNear(k,x=>x.isl==='TW'&&x.t!=='mtn'&&S.owner[x.k]==='def'&&!inZOC('def',x));
+      if(h){S.units.push(mkUnit('def','res',h.k));log('守方後備旅於 '+hname(h)+' 完成動員');}
+    });
+    for(let i=0;i<S.mods.foreignShots;i++){
+      const fleet=S.units.filter(u=>u.side==='atk'&&atSea(u));if(!fleet.length)break;
+      const t=fleet[Math.floor(Math.random()*fleet.length)];const r=d6();
+      if(r>=4){log('外國反艦打擊命中海上的 '+TYPES[t.type].n+'（擲 '+r+'）');damage(t,1,'外國反艦打擊');}
+      else log('外國反艦打擊未命中（擲 '+r+'）');
+    }
+    checkInstant();if(S.over)return;
+  }
+  toast('第 '+S.turn+' 回合 · '+SIDE[side]+'階段');
+  render();
+  if(S.ctrl[side]==='ai')runAI(side);
+}
+function endPhase(){
+  if(S.over||!S.started)return;
+  if(S.phase==='atk')return beginPhase('def');
+  if(S.turn>=S.T)return endGame();
+  S.turn++;beginPhase('atk');
+}
+
+/* ---------- AI ---------- */
+function landDist(sources){
+  const dist={};const q=[];
+  sources.forEach(k=>{dist[k]=0;q.push(k);});
+  while(q.length){
+    q.sort((a,b)=>dist[a]-dist[b]);const k=q.shift();const h=TER[k];
+    for(const n of nbrs(h.c,h.r)){if(!isLand(n))continue;const nd=dist[k]+(n.t==='mtn'?2:1);if(dist[n.k]===undefined||nd<dist[n.k]){dist[n.k]=nd;q.push(n.k);}}
+  }
+  return dist;
+}
+const OBJ=[TAIPEI].concat(PORTS);
+const OBJD={};OBJ.forEach(k=>OBJD[k]=landDist([k]));
+function est(u,t){return effAtk(u)+support(u,t)+seaPen(u)-(effDef(t)+terrDef(hexOf(t)))+(TYPES[t.type].hp-t.hp)*.5;}
+async function aiTryAttack(u,thr){
+  if(!alive(u)||S.over)return false;
+  const ts=targets(u);if(!ts.length)return false;
+  let best=null,bs=-99;for(const t of ts){const e=est(u,t);if(e>bs){bs=e;best=t;}}
+  if(bs>=thr){attack(u,best);render();await sleep(380);return true;}
+  return false;
+}
+function enemyAdj(k,side){const h=TER[k];return nbrs(h.c,h.r).filter(n=>{const e=unitAt(n.k);return e&&e.side!==side;}).length;}
+function minD(k,list){const h=TER[k];return Math.min.apply(null,list.map(x=>hd(h,TER[x])));}
+async function runAI(side){
+  S.busy=true;render();await sleep(500);
+  try{ if(side==='atk')await aiAtk();else await aiDef(); }catch(e){console.error(e);}
+  S.busy=false;
+  if(!S.over){await sleep(250);endPhase();}
+}
+async function aiAtk(){
+  while(S.fire>0&&!S.over){
+    const t=pickStrike();if(!t)break;strike(t);render();await sleep(260);
+  }
+  const rank=u=>{const h=hexOf(u);return h.isl==='TW'||h.isl==='PH'?0:h.t==='sea'?1:2;};
+  const order=S.units.filter(u=>u.side==='atk').sort((a,b)=>rank(a)-rank(b));
+  for(const u of order){if(S.over)return;if(alive(u))await aiAtkUnit(u);}
+}
+function pickStrike(){
+  const atkLand=S.units.filter(u=>u.side==='atk'&&(onTW(u)||hexOf(u).isl==='PH'));
+  const zoneKs=[].concat(ZONES.north,ZONES.central);
+  let best=null,bs=-1;
+  for(const d of S.units){
+    if(d.side!=='def')continue;const h=hexOf(d);
+    let s=Math.random();
+    if(d.type==='ssm')s+=9;
+    if(atkLand.some(a=>hd(hexOf(a),h)===1))s+=7+(TYPES[d.type].hp-d.hp);
+    if(OBJ.includes(h.k))s+=2;
+    if(zoneKs.some(k=>hd(TER[k],h)<=1))s+=3;
+    if(h.t==='city'||h.t==='mtn')s-=2;
+    if(s>bs){bs=s;best=d;}
+  }
+  return best;
+}
+async function aiAtkUnit(u){
+  const h=hexOf(u);
+  if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
+    if(!S.weather.air||S.turn>3)return;
+    const rc=reach(u);let best=null,bs=1e9;const g=TER[ABN_GOAL[u.goal||0]];
+    for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)+Math.random()*.4;if(s<bs){bs=s;best=k;}}
+    if(best){doMove(u,best,'drop');render();await sleep(380);}
+    return;
+  }
+  if(h.isl==='TW'||h.isl==='PH'){
+    if(await aiTryAttack(u,0))return;
+    if(h.isl==='PH')return;
+    const open=OBJ.filter(k=>S.owner[k]!=='atk');
+    const goals=open.length?open:OBJ;
+    let g=goals[0],gd=1e9;for(const k of goals){if(OBJD[k][h.k]<gd){gd=OBJD[k][h.k];g=k;}}
+    const rc=reach(u);let best=null,bs=OBJD[g][h.k];
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const s=OBJD[g][k]+enemyAdj(k,'atk')*.3;if(s<bs){bs=s;best=k;}}
+    if(best){doMove(u,best,'move');render();await sleep(300);}
+    await aiTryAttack(u,0);return;
+  }
+  // at sea or on the mainland
+  let goals;
+  if(u.type==='arm'){
+    goals=PORTS.concat(['13,6']).filter(k=>S.owner[k]==='atk');
+    if(!goals.length)return;
+  } else {
+    if(u.zone==='penghu'&&S.owner['7,8']==='atk'&&S.owner['7,9']==='atk')u.zone='central';
+    goals=ZONES[u.zone||'central'];
+  }
+  const rc=reach(u);
+  let best=null,bs=1e9;
+  for(const [k,v] of rc){
+    if(v.kind!=='land')continue;const md=minD(k,goals);if(md>3)continue;
+    const s=md*2+enemyAdj(k,'atk')*1.2+Math.random()*.3;if(s<bs){bs=s;best=k;}
+  }
+  if(best){doMove(u,best,'land');render();await sleep(340);return;}
+  if(h.t==='sea'&&await aiTryAttack(u,0))return;
+  const cur=minD(h.k,goals);bs=h.t==='sea'?cur:1e9;best=null;
+  for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+Math.random()*.3;if(s<bs){bs=s;best=k;}}
+  if(best){doMove(u,best,'sail');render();await sleep(300);}
+  if(atSea(u))await aiTryAttack(u,1);
+}
+async function aiDef(){
+  for(const m of S.units.filter(u=>u.side==='def'&&u.type==='ssm')){
+    if(S.over)return;if(!alive(m))continue;
+    if(enemyAdj(K(m.c,m.r),'def')){
+      const rc=reach(m);let best=null,bs=-1;
+      for(const [k,v] of rc){if(v.kind!=='move')continue;const s=-enemyAdj(k,'def')*3+Math.min.apply(null,S.units.filter(e=>e.side==='atk').map(e=>hd(TER[k],hexOf(e))).concat([9]));if(s>bs){bs=s;best=k;}}
+      if(best){doMove(m,best,'move');render();await sleep(250);}
+    }
+    while(alive(m)&&m.shots>0&&!S.over){
+      const ts=targets(m);if(!ts.length)break;
+      ts.sort((a,b)=>a.hp-b.hp);fireMissile(m,ts[0]);render();await sleep(300);
+    }
+  }
+  const pri={tank:0,res:1,inf:2};
+  const order=S.units.filter(u=>u.side==='def'&&u.type!=='ssm').sort((a,b)=>pri[a.type]-pri[b.type]);
+  for(const u of order){if(S.over)return;if(alive(u))await aiDefUnit(u);}
+}
+async function aiDefUnit(u){
+  const thr=u.type==='tank'?0:1;
+  if(await aiTryAttack(u,thr))return;
+  if(u.garrison||S.mods.defFreeze[S.turn])return;
+  const h=hexOf(u);if(h.isl!=='TW')return;
+  const rc=reach(u);if(!rc.size)return;
+  // retake an empty objective in reach
+  for(const k of OBJ){if(S.owner[k]==='atk'&&rc.has(k)&&rc.get(k).kind==='move'){doMove(u,k,'move');log(TYPES[u.type].n+' 收復 '+hname(TER[k]));render();await sleep(300);return;}}
+  const foes=S.units.filter(e=>e.side==='atk'&&onTW(e));
+  let best=null;
+  if(foes.length){
+    const fd=landDist(foes.map(e=>K(e.c,e.r)));
+    let bs=fd[h.k]===undefined?1e9:fd[h.k];
+    if(bs<=1)return;
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const s=(fd[k]===undefined?1e9:fd[k])+(OBJ.includes(k)?-.5:0);if(s<bs){bs=s;best=k;}}
+  } else if(u.type==='tank'){
+    const fleet=S.units.filter(e=>e.side==='atk'&&atSea(e));if(!fleet.length)return;
+    let tgt=null,ts=1e9;
+    for(const c of Object.values(TER)){if(c.isl!=='TW'||!c.coastal||c.cliff)continue;const s=fleet.reduce((a,e)=>a+hd(c,hexOf(e)),0);if(s<ts){ts=s;tgt=c;}}
+    if(!tgt||hd(h,tgt)<=2)return;
+    let bs=hd(h,tgt);
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const s=hd(TER[k],tgt);if(s<bs){bs=s;best=k;}}
+  }
+  if(best){doMove(u,best,'move');render();await sleep(280);await aiTryAttack(u,thr);}
+}
+
+/* ---------- rendering ---------- */
+function center(c,r){return [W*(c+.5*(r&1))+W/2+PAD,r*1.5*R+R+PAD];}
+function hexPts(x,y,rr){let p=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);p.push((x+rr*Math.cos(a)).toFixed(1)+','+(y+rr*Math.sin(a)).toFixed(1));}return p.join(' ');}
+const humanTurn=()=>S.started&&!S.over&&!S.busy&&S.ctrl[S.phase]==='human';
+function unitSVG(u){
+  const [x,y]=center(u.c,u.r);const T=TYPES[u.type];
+  const done=S.started&&u.side===S.phase&&u.acted;
+  let sym='';const bx=x-9,by=y-10,bw=18,bh=10;
+  const box='<rect class="sym" x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'"'+(u.type==='res'?' stroke-dasharray="2 1.5"':'')+'/>';
+  const X='<path class="sym" d="M'+bx+' '+by+'L'+(bx+bw)+' '+(by+bh)+'M'+(bx+bw)+' '+by+'L'+bx+' '+(by+bh)+'"/>';
+  if(u.type==='arm'||u.type==='tank')sym=box+'<ellipse class="sym" cx="'+x+'" cy="'+(by+5)+'" rx="6" ry="3"/>';
+  else if(u.type==='ssm')sym=box+'<path class="sym" d="M'+(x-5)+' '+(by+8)+'L'+x+' '+(by+2)+'L'+(x+5)+' '+(by+8)+'M'+x+' '+(by+2)+'V'+(by+9)+'"/>';
+  else if(u.type==='abn')sym=box+X+'<path class="sym" d="M'+(x-5)+' '+(by+bh)+'Q'+x+' '+(by+4)+' '+(x+5)+' '+(by+bh)+'"/>';
+  else if(u.type==='amph'||u.type==='mar')sym=box+X+'<path class="sym" d="M'+(bx+1)+' '+(by+bh-1.5)+'q2.5 -2 5 0t5 0t5 0"/>';
+  else sym=box+X;
+  let pips='';const n=T.hp;for(let i=0;i<n;i++){const px=x-(n-1)*3.5+i*7;pips+='<circle class="pip '+(i<u.hp?'full':'lost')+'" cx="'+px+'" cy="'+(y+15.5)+'" r="2"/>';}
+  const sea=atSea(u)?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-11)+'" r="2.6"/>':'';
+  return '<g class="u'+(S.sel===u?' sel':'')+(done?' done':'')+'" data-k="'+K(u.c,u.r)+'">'+
+    '<rect class="body '+u.side+'" x="'+(x-15)+'" y="'+(y-12)+'" width="30" height="24" rx="2"/>'+sym+
+    '<text class="tx" x="'+x+'" y="'+(y+9)+'">'+T.s+'</text>'+pips+sea+'</g>';
+}
+function renderMap(){
+  let o='';
+  for(const h of Object.values(TER)){
+    const [x,y]=center(h.c,h.r);
+    o+='<polygon class="hx '+h.t+(h.isl==='CN'?' cn':'')+'" points="'+hexPts(x,y,R)+'" data-k="'+h.k+'"/>';
+  }
+  for(const h of Object.values(TER)){
+    if(!isLand(h))continue;const [x,y]=center(h.c,h.r);
+    if(h.isl!=='CN'&&S.owner[h.k]==='atk')o+='<polygon class="ov-atk" points="'+hexPts(x,y,R-1)+'"/>';
+    if(h.cliff)o+='<polygon class="cliff" points="'+hexPts(x,y,R-3)+'"/>';
+    if(h.mud)o+='<polygon class="mud" points="'+hexPts(x,y,R-3)+'"/>';
+    if(h.t==='mtn')o+='<path class="mtn-g" d="M'+(x-10)+' '+(y+8)+'l5 -8l5 8m-3 0l5 -7l5 7"/>';
+    if(h.name){const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':'')+'" x="'+x+'" y="'+(y-15)+'">'+(ob?'★':'')+h.name+'</text>';}
+  }
+  o+='<text class="big" font-size="15" x="'+center(6,3)[0]+'" y="'+center(6,3)[1]+'" writing-mode="tb">台灣海峽</text>';
+  o+='<text class="big" font-size="13" x="'+center(15,7)[0]+'" y="'+center(15,7)[1]+'" writing-mode="tb">太平洋</text>';
+  o+='<text class="big" font-size="12" x="'+center(1,1)[0]+'" y="'+center(1,1)[1]+'" writing-mode="tb">大陸沿海</text>';
+  if(humanTurn()&&S.sel&&alive(S.sel)&&S.sel.side===S.phase){
+    for(const [k,v] of reach(S.sel)){const [x,y]=center(TER[k].c,TER[k].r);o+='<polygon class="hl '+v.kind+'" points="'+hexPts(x,y,R-2)+'"/>';}
+  }
+  S.units.forEach(u=>{o+=unitSVG(u);});
+  if(humanTurn()){
+    let rings=[];
+    if(S.mode==='strike')rings=S.units.filter(u=>u.side==='def').map(u=>[u,'strike']);
+    else if(S.sel&&alive(S.sel)&&S.sel.side===S.phase)rings=targets(S.sel).map(u=>[u,'']);
+    rings.forEach(([u,c])=>{const [x,y]=center(u.c,u.r);o+='<circle class="ring '+c+'" cx="'+x+'" cy="'+y+'" r="21"/>';});
+  }
+  const svg=$('#map');svg.setAttribute('viewBox','0 0 '+VBW.toFixed(1)+' '+VBH.toFixed(1));svg.innerHTML=o;
+}
+function renderStatus(){
+  if(!S.started){$('#status').innerHTML='<span class="chip">尚未開始 · 判定回合 <b>'+S.T+'</b></span>';return;}
+  const sp=supply();
+  $('#status').innerHTML='<span class="chip">回合 <b>'+S.turn+' / '+S.T+'</b></span>'+
+    '<span class="chip '+S.phase+'">'+SIDE[S.phase]+'階段'+(S.ctrl[S.phase]==='ai'?' · 電腦':'')+'</span>'+
+    '<span class="chip">天候 '+S.weather.n+' · 海上移動 <b>'+S.weather.sea+'</b></span>'+
+    '<span class="chip">火力 <b>'+S.fire+'</b></span>'+
+    '<span class="chip"'+(sp.over?' style="border-color:var(--atk);color:var(--atk)"':'')+'>補給 <b>'+sp.used+' / '+sp.cap+'</b></span>';
+}
+function renderCtrl(){
+  $('#setup').hidden=S.started;$('#ctrl').hidden=!S.started;
+  if(!S.started)return;
+  const h=humanTurn();
+  $('#phaseTitle').textContent=S.over?'作戰結束':'第 '+S.turn+' 回合 · '+SIDE[S.phase]+'指揮';
+  const bs=$('#btnStrike');bs.hidden=S.phase!=='atk';bs.disabled=!h||S.fire<=0;bs.classList.toggle('on',S.mode==='strike');
+  bs.textContent=S.mode==='strike'?'取消打擊（剩 '+S.fire+'）':'火力打擊（'+S.fire+' 點）';
+  $('#btnEnd').disabled=!h;$('#btnEnd').hidden=S.sim;if(S.sim)bs.hidden=true;
+  let hint;
+  if(S.over)hint='作戰已結束，可在戰報中回顧過程。';
+  else if(S.sim)hint=S.busy?'電腦推演中：'+SIDE[S.phase]+'正在行動…':'推演暫停，等待事件節點的決定。';
+  else if(!h)hint=SIDE[S.phase]+'（電腦）正在行動…';
+  else if(S.mode==='strike')hint='點選任一守方單位進行火力打擊，每次消耗 1 點。';
+  else if(S.sel)hint='綠色＝可移動，橘色＝可登陸，紫色＝可空降；橘圈＝可攻擊目標。再點一次單位可取消選取。';
+  else hint=S.phase==='atk'?'點選紅色單位下令。先把兩棲部隊從沿岸出航，下一回合搶灘。':'點選藍色單位下令。飛彈單位可射擊 4 格內海上的攻方船團。';
+  $('#hint').textContent=hint;
+}
+function renderInfo(){
+  const el=$('#info');
+  const u=S.sel&&alive(S.sel)?S.sel:(S.hover?unitAt(S.hover):null);
+  const h=u?hexOf(u):(S.hover?TER[S.hover]:null);
+  if(!h){el.innerHTML='<div class="k">點選地圖上的單位或地格查看資料。</div>';return;}
+  let o='<div class="eyebrow">'+hname(h)+' · '+TERN[h.t]+(h.cliff?' · 斷崖':'')+(h.mud?' · 泥灘潮間帶':'')+(isLand(h)?' · '+SIDE[S.owner[h.k]]+'控制':'')+'</div>';
+  if(u){
+    const T=TYPES[u.type];
+    o+='<h2 style="color:var(--'+u.side+')">'+T.n+'</h2>';
+    o+='<div class="stats"><div><b>'+effAtk(u)+'</b><span>攻擊</span></div><div><b>'+effDef(u)+'</b><span>防禦</span></div><div><b>'+T.mv+'</b><span>移動</span></div><div><b>'+u.hp+'/'+T.hp+'</b><span>步數</span></div></div>';
+    let st=[];
+    if(atSea(u))st.push('海上航行中');
+    if(u.type==='ssm')st.push('本階段剩 '+(u.side===S.phase?u.shots:2)+' 發，射程 4');
+    if(u.type==='abn'&&!u.dropped&&h.isl==='CN')st.push('待命空降');
+    if(u.garrison)st.push('守備部隊');
+    if(S.started&&u.side===S.phase)st.push(u.acted?'本階段已完成':u.moved?'已移動，仍可攻擊':'可行動');
+    if(terrDef(h))st.push('地形防禦 +'+terrDef(h));
+    o+='<div class="hint">'+st.join(' · ')+'</div>';
+  } else o+='<div class="hint">'+(terrDef(h)?'地形防禦 +'+terrDef(h)+'。':'')+(h.coastal&&!h.cliff&&!h.mud&&h.t!=='mtn'&&h.isl!=='CN'&&h.k!==TAIPEI?'可供登陸。':'')+'</div>';
+  el.innerHTML=o;
+}
+function renderVC(){
+  const cs=conditions();const n=cs.filter(c=>c.atk).length;
+  $('#vcs').innerHTML=cs.map((c,i)=>'<div class="vc"><span class="n">'+(i+1)+'</span><div><div class="t">'+c.title+'</div><div class="d">'+c.desc+'<br>'+c.now+'</div></div><span class="pill '+(c.atk?'atk':'def')+'">'+(c.atk?'攻方':'守方')+'</span></div>').join('')+
+    '<div class="proj">第 <b>'+S.T+'</b> 回合結束時判定。若現在判定：攻方 <b>'+n+'</b> / 3 → <b class="verdict '+verdict(n).s+'">'+verdict(n).t+'</b></div>';
+}
+function renderLog(){
+  $('#log').innerHTML=S.log.length?S.log.map(l=>'<li><span class="tn">T'+l.t+(l.p==='atk'?'攻':'守')+'</span>'+l.msg+'</li>').join(''):'<li>尚無戰報。</li>';
+}
+function render(){renderMap();renderStatus();renderCtrl();renderInfo();renderVC();renderNodes();renderLog();}
+
+/* ---------- input ---------- */
+$('#map').addEventListener('click',e=>{
+  const el=e.target.closest('[data-k]');if(!el)return;const k=el.getAttribute('data-k');
+  S.hover=k;
+  if(!humanTurn()){S.sel=unitAt(k)||null;render();return;}
+  const u=unitAt(k);
+  if(S.mode==='strike'){
+    if(u&&u.side==='def'&&S.fire>0){strike(u);if(S.fire<=0)S.mode=null;}
+    render();return;
+  }
+  const sel=S.sel&&alive(S.sel)&&S.sel.side===S.phase?S.sel:null;
+  if(u){
+    if(sel&&u.side!==sel.side&&targets(sel).includes(u)){
+      if(sel.type==='ssm')fireMissile(sel,u);else attack(sel,u);
+      if(sel.acted||!alive(sel))S.sel=null;
+    } else S.sel=(S.sel===u)?null:u;
+    render();return;
+  }
+  if(sel){const rc=reach(sel);if(rc.has(k)){doMove(sel,k,rc.get(k).kind);if(!alive(sel)||(sel.acted&&!targets(sel).length))S.sel=null;render();return;}}
+  S.sel=null;render();
+});
+$('#map').addEventListener('mouseover',e=>{const el=e.target.closest('[data-k]');if(!el||S.sel)return;const k=el.getAttribute('data-k');if(k!==S.hover){S.hover=k;renderInfo();}});
+$('#btnStrike').onclick=()=>{if(!humanTurn())return;S.mode=S.mode==='strike'?null:'strike';S.sel=null;render();};
+$('#btnEnd').onclick=()=>{if(!humanTurn())return;endPhase();};
+function readSetup(){
+  S.T=+$('#optT').value;S.sim=$('#optMode').value==='sim';S.speed=S.sim?+$('#optSpeed').value:1;
+  S.ctrl=S.sim?{atk:'ai',def:'ai'}:{atk:$('#optA').value,def:$('#optD').value};
+  $('#rowA').hidden=$('#rowD').hidden=S.sim;$('#rowSpeed').hidden=!S.sim;
+  $('#setupHint').textContent=S.sim?'雙方由電腦操作，途中在 5 個關鍵節點暫停，由你做決定或擲骰。':'雙方都選玩家可同機對戰；都選電腦可觀戰。';
+  $('#btnStart').textContent=S.sim?'開始推演':'開始作戰';
+}
+['#optT','#optA','#optD','#optMode','#optSpeed'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();render();}));
+$('#btnStart').onclick=()=>{
+  readSetup();S.started=true;S.lastSnap=snap();
+  log((S.sim?'推演開始':'作戰開始')+'。判定回合：第 '+S.T+' 回合。');beginPhase('atk');
+};
+$('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
+function reset(){newState();readSetup();render();}
+reset();
+})();
+</script>
+</body>
+</html>
