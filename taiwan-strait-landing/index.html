@@ -197,6 +197,16 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .aar-loss div{margin:2px 0;font-size:12.5px}
 .aar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
 .aar-col{border:1px solid var(--line);border-radius:3px;padding:8px 10px}
+/* cost */
+.crow{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:3px 0;border-top:1px dashed var(--line)}
+.crow:first-of-type{border-top:0}
+.crow b{font-family:var(--f-mono);font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.crow b.atk{color:var(--atk)} .crow b.def{color:var(--def)}
+.tbl{overflow-x:auto}
+.ctable{border-collapse:collapse;width:100%;font-size:13px;margin:4px 0}
+.ctable th,.ctable td{border-top:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+.ctable th{color:var(--muted);font-weight:500;font-size:12px}
+.ctable td:nth-child(n+2){font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
 /* news */
 .news .nbar{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:12px;letter-spacing:.08em;color:var(--muted);border-bottom:2px solid var(--ink);padding-bottom:6px}
 .live{color:var(--atk);font-weight:700}
@@ -268,6 +278,10 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
         <div class="hint" id="hint"></div>
       </div>
       <div class="card info" id="info"><div class="k">點選地圖上的單位或地格查看資料。</div></div>
+      <div class="card">
+        <h2>戰爭代價</h2>
+        <div id="costs"></div>
+      </div>
       <div class="card" id="simCard" hidden>
         <h2>推演節點</h2>
         <ul class="nodes" id="nodes"></ul>
@@ -294,6 +308,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
             <li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li>
             <li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li>
             <li><b>美日菲參戰：</b>開局可選參戰情境：擲骰決定（預設）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊，菲律賓決定北呂宋基地。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li>
+            <li><b>戰爭代價：</b>側欄的「戰爭代價」依部隊編制把損失換算成傷亡人數（合成旅約 5,000 人；在海上被擊沉的死亡比例高於陸戰），並累計火力打擊與城市戰鬥造成的平民傷亡、各國經濟損失、全球股市與晶片供應。結算時依 Bloomberg Economics 2024 年的估算（台海戰爭約使全球 GDP 減少 10%，封鎖約 5%）推估一年期衝擊。所有數字都是遊戲依公開資料的粗估。</li>
             <li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li>
             <li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li>
             <li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 2、港口 4、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1。</li>
@@ -374,7 +389,7 @@ Object.values(TER).forEach(h=>{h.coastal=isLand(h)&&nbrs(h.c,h.r).some(n=>n.t===
 
 const TAIPEI='11,2', PORTS=['12,1','9,6','10,10'], MAGONG='7,8';
 const ZONES={north:['10,2','11,1','10,3'],central:['9,5','9,4','9,6'],penghu:['7,9','7,8']};
-const ABN_GOAL=['10,3','9,5'];
+const ABN_GOAL={north:['10,3','11,3'],central:['9,5','10,5']};
 
 /* ---------- state ---------- */
 let S;
@@ -386,7 +401,7 @@ function newState(){
   S={turn:1,phase:'atk',T:8,ctrl:{atk:'human',def:'ai'},weather:WEATHER.good,fire:0,units:[],owner:{},log:[],
      sel:null,mode:null,busy:false,over:false,started:false,nid:1,hover:null,zoneFlip:0,
      sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods(),
-     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0},turnStart:null,fireNote:''};
+     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,plan:null,cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0},turnStart:null,fireNote:''};
   for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
   const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
     ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],
@@ -500,7 +515,7 @@ function targets(u){
 }
 
 function damage(u,n,why){
-  S.hits.push({c:u.c,r:u.r,t:S.turn,side:u.side,n:Math.min(n,u.hp),sea:atSea(u),why:why||'地面戰鬥'});
+  S.hits.push({c:u.c,r:u.r,t:S.turn,side:u.side,type:u.type,n:Math.min(n,u.hp),sea:atSea(u),why:why||'地面戰鬥'});
   u.hp-=n;
   if(u.hp<=0){S.units=S.units.filter(x=>x!==u);log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));return true;}
   return false;
@@ -520,7 +535,7 @@ function doMove(u,k,kind){
   } else if(kind==='sail'&&from.t!=='sea')log(uname(u)+' 自 '+hname(from)+' 出航');
 }
 function attack(u,t){
-  const th=hexOf(t);
+  const th=hexOf(t);if(th.isl==='TW'||th.isl==='PH')civHit('TW',th,'combat');
   const sup=support(u,t),pen=seaPen(u),ra=d6(),rd=d6();
   const A=effAtk(u)+sup+pen+ra, D=effDef(t)+terrDef(th)+rd;
   const diff=A-D;
@@ -546,7 +561,7 @@ function fireMissile(m,t){
   checkInstant();
 }
 function strike(t){
-  S.fire--;S.stats.fire++;const h=hexOf(t);const need=(h.t==='city'||h.t==='mtn')?6:5;const r=d6();
+  S.fire--;S.stats.fire++;const h=hexOf(t);civHit('TW',h,'strike');const need=(h.t==='city'||h.t==='mtn')?6:5;const r=d6();
   if(r>=need){log('火力打擊命中 '+hname(h)+' 的 '+TYPES[t.type].n+'（擲 '+r+'）');damage(t,1,'火力打擊');}
   else log('火力打擊 '+hname(h)+' 未命中（擲 '+r+'，需 '+need+'）');
   checkInstant();
@@ -720,6 +735,7 @@ function escalationText(b){
 function strikeBase(b){
   S.fire--;S.stats.fire++;const B=BASES[b],tr=BASE_TRIG[b];
   Object.keys(tr).forEach(c=>{if(setLevel(c,tr[c],B.n+'遭攻方打擊'))S.stats.esc.push(B.n+'→'+CN[c]+LV[c][tr[c]]);});
+  const ck=B.c==='JP'?'JP':b==='nluzon'?'PH':b==='guam'?'US':null;if(ck){S.cost.civ[ck]+=Math.round(20+Math.random()*40);S.cost.dmg[ck]+=.4;}
   const tg=baseTargets(b);
   if(!tg.length){log('火力打擊 '+B.n+'：沒有可打擊的目標');return;}
   const need=baseNeed(b),r=d6();
@@ -816,6 +832,8 @@ const EVENTS=[
    mod:()=>{const m=S.mods,p=[];let n=0;if(m.winter){n--;p.push('冬季奇襲 −1');}if(m.strikeMod){n+=m.strikeMod;p.push((m.strikeMod>0?'公開集結 +1':'戰略突襲 −1'));}return [n,p.join('、')];}}],
   apply(c,rows){
    const m=S.mods,row=rows[0],lv=row.min===1?2:row.min===3?1:0,P=S.pools;
+   if(c==='okinawa'){S.cost.civ.JP+=[40,120,250][lv];S.cost.dmg.JP+=[.5,1.5,3][lv];}
+   else {S.cost.civ.TW+=[150,400,800][lv];S.cost.dmg.TW+=[.8,2,4][lv];}
    if(c==='ssm'){
     const ss=S.units.filter(u=>u.side==='def'&&u.type==='ssm');const out=[];
     const hit=lv===0?ss.slice(0,1):ss;
@@ -1052,12 +1070,115 @@ function renderTheater(){
 
 
 
+
+/* ---------- human & economic cost (rough public-source estimates, not precise data) ---------- */
+// personnel per unit at full strength; one step is a share of that
+const PERS={amph:5000,mar:4000,abn:3000,arm:5000,inf:4000,tank:3500,res:3000,ssm:400};
+// equipment value per step, US$ billions
+const EQUIP={amph:.15,mar:.12,abn:.08,arm:.25,inf:.1,tank:.2,res:.03,ssm:.15};
+// per point lost from a force pool: [personnel casualties, share killed, US$ billions, items lost, item name]
+const POOLCOST={plaAir:[15,.8,.9,12,'架戰機'],plaNavy:[300,.4,1,1.5,'艘作戰艦'],plaAD:[60,.3,.3,1,'個防空陣地'],
+  rocAir:[15,.8,.7,12,'架戰機'],rocNavy:[250,.4,.6,1.5,'艘作戰艦'],rocAD:[60,.3,.4,1,'個防空陣地']};
+// per foreign step: [personnel casualties, share killed, US$ billions]
+const FXCOST={air:[12,.7,.8],sub:[130,.9,2.5],ship:[300,.4,1],ssm:[150,.3,.2]};
+// Bloomberg Economics (2024) one-year GDP impact estimates, % of GDP: war vs blockade; GDP in US$ trillions
+const GDPHIT={war:{TW:40,CN:16.7,US:6.7,W:10.2},blockade:{TW:12.2,CN:8.9,US:3.3,W:5}};
+const GDP={TW:.8,CN:19,US:29,W:110};
+function newCost(){return {civ:{TW:0,JP:0,PH:0,US:0},dmg:{TW:0,JP:0,PH:0,US:0},econ:{TW:0,CN:0,US:0,JP:0},mkt:0};}
+// estimates: round to hundreds, switch to 萬 above ten thousand
+const fmt=n=>n>=10000?(n/10000).toFixed(n>=100000?0:1)+' 萬':n>=1000?(Math.round(n/100)*100).toLocaleString('zh-TW'):String(Math.round(n/10)*10);
+const ppl=n=>fmt(n)+(n>=10000?'人':' 人');
+// b is US$ billions
+function money(b){return b>=1000?(b/1000).toFixed(2)+' 兆美元':Math.round(b*10).toLocaleString('zh-TW')+' 億美元';}
+function civHit(where,h,kind){
+  // civilian casualties and damage from fighting at a hex; cities are far deadlier than open ground
+  const C=S.cost,c=h.t==='city'?1:h.t==='port'?.5:h.t==='mtn'?.02:.12;
+  const base={strike:180,combat:900}[kind];
+  C.civ[where]+=Math.round(base*c*(.7+Math.random()*.6));C.dmg[where]+=(kind==='combat'?2:.5)*c+.05;
+}
+function econTick(){
+  const C=S.cost,lv=S.fx.lv,ports=PORTS.filter(k=>S.owner[k]==='atk').length;
+  C.econ.TW+=0.45+ports*.3;
+  C.econ.CN+=1+.8*lv.US+.6*lv.JP;
+  C.econ.US+=.3+.5*lv.US;
+  C.econ.JP+=.3+.4*lv.JP;
+  C.mkt=Math.max(-35,C.mkt-(1.5+.8*lv.US+.4*lv.JP)*(.8+Math.random()*.4));
+}
+function menLost(side,filter){
+  let n=0,dead=0,eq=0;
+  S.hits.forEach(h=>{if(h.side!==side||!h.type||(filter&&!filter(h)))return;const per=PERS[h.type]/TYPES[h.type].hp*h.n;n+=per;dead+=per*(h.sea?.6:.3);eq+=EQUIP[h.type]*h.n;});
+  return {n,dead,eq};
+}
+function poolLost(keys){
+  let n=0,dead=0,eq=0;const what=[];
+  keys.forEach(k=>{const d=Math.max(0,POOL0[k]-S.pools[k]);if(!d)return;const [p,kr,b,q,w]=POOLCOST[k];n+=p*d;dead+=p*d*kr;eq+=b*d;what.push(POOLN[k]+'損失約 '+Math.round(q*d)+' '+w);});
+  return {n,dead,eq,what};
+}
+function fxLost(c){
+  let n=0,dead=0,eq=0;
+  S.fx.units.filter(f=>f.c===c).forEach(f=>{const d=f.max-f.hp;if(!d)return;const [p,kr,b]=f.id==='csg'?[900,.3,4]:f.id==='bomber'?[8,.7,.7]:FXCOST[f.kind];n+=p*d;dead+=p*d*kr;eq+=b*d;});
+  return {n,dead,eq};
+}
+function costSummary(){
+  const C=S.cost;
+  const pla=menLost('atk'),plaP=poolLost(['plaAir','plaNavy','plaAD']);
+  const roc=menLost('def'),rocP=poolLost(['rocAir','rocNavy','rocAD']);
+  const us=fxLost('US'),jp=fxLost('JP');
+  const rfUsed=POOL0.rf-S.pools.rf;
+  return {
+    mil:{atk:{n:pla.n+plaP.n,dead:pla.dead+plaP.dead},def:{n:roc.n+rocP.n,dead:roc.dead+rocP.dead},US:us,JP:jp},
+    civ:C.civ,
+    econ:{TW:C.econ.TW+C.dmg.TW+roc.eq+rocP.eq,CN:C.econ.CN+pla.eq+plaP.eq+rfUsed*.3,US:C.econ.US+us.eq+C.dmg.US,JP:C.econ.JP+jp.eq+C.dmg.JP},
+    mkt:C.mkt,seaDead:menLost('atk',h=>h.sea),plaP,rocP
+  };
+}
+function gdpProjection(win){
+  const lv=S.fx.lv,base=lv.US>=2?GDPHIT.war:GDPHIT.blockade;
+  // a longer war or an occupation that brings lasting sanctions pushes the impact toward the full-year estimate
+  const k=Math.min(1,.45+S.turn*.04+(win==='atk'?.25:0)+(lv.US>=3?.1:0));
+  const o={};Object.keys(base).forEach(c=>{o[c]={pct:base[c]*k,usd:GDP[c]*base[c]*k/100};});
+  return {o,k,kind:lv.US>=2?'戰爭':'封鎖與局部戰事'};
+}
+function renderCost(){
+  const el=$('#costs');if(!el)return;
+  if(!S.started){el.innerHTML='<div class="dd">開戰後在這裡累計雙方軍民傷亡、經濟損失與全球市場反應。數字為依公開資料粗估的遊戲換算。</div>';return;}
+  const c=costSummary(),row=(l,v,cls)=>'<div class="crow"><span>'+l+'</span><b'+(cls?' class="'+cls+'"':'')+'>'+v+'</b></div>';
+  el.innerHTML='<div class="eyebrow">傷亡（含死亡、受傷、失蹤）</div>'+
+    row('攻方軍人','約 '+ppl(c.mil.atk.n),'atk')+row('守方軍人','約 '+ppl(c.mil.def.n),'def')+
+    (c.mil.US.n||c.mil.JP.n?row('美軍／自衛隊','約 '+fmt(c.mil.US.n)+'／'+ppl(c.mil.JP.n)):'')+
+    row('台灣平民','約 '+ppl(c.civ.TW))+(c.civ.JP+c.civ.PH+c.civ.US?row('日本、菲律賓、關島平民','約 '+ppl(c.civ.JP+c.civ.PH+c.civ.US)):'')+
+    '<div class="eyebrow" style="margin-top:8px">經濟損失（累計）</div>'+
+    row('台灣',money(c.econ.TW))+row('中國',money(c.econ.CN))+row('美國／日本',money(c.econ.US)+'／'+money(c.econ.JP))+
+    row('全球股市',(c.mkt?c.mkt.toFixed(1):'0')+'%',c.mkt<-10?'atk':'')+
+    row('先進晶片供應',S.turn>1||S.phase==='def'?'中斷（台灣產能約占全球九成）':'正常');
+}
+
 /* ---------- after-action report ---------- */
+function lossCat(h){if(h.why==='地面戰鬥'&&h.sea)return '搶灘突擊';const f=S.fx.units.find(f=>f.n===h.why);return f?(f.c==='US'?'美軍':'自衛隊')+'打擊':h.why;}
 function lossBy(side,sea){
   const m={};S.hits.filter(h=>h.side===side&&(sea===undefined||h.sea===sea)).forEach(h=>{
-    let k=h.why;if(S.fx.units.some(f=>f.n===k))k=(S.fx.units.find(f=>f.n===k).c==='US'?'美軍':'自衛隊')+'打擊';
-    m[k]=(m[k]||0)+h.n;});
+    const k=lossCat(h);m[k]=(m[k]||0)+h.n;});
   return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+function costReport(win){
+  const c=costSummary(),g=gdpProjection(win),tr=(a,b,d)=>'<tr><td>'+a+'</td><td>'+b+'</td><td>'+(d||'')+'</td></tr>';
+  const m=c.mil,cv=c.civ;
+  return '<h4>軍民傷亡（估算，含死亡、受傷、失蹤）</h4><div class="tbl"><table class="ctable"><thead><tr><th></th><th>傷亡</th><th>其中死亡或失蹤</th></tr></thead><tbody>'+
+    tr('攻方軍人','約 '+ppl(m.atk.n),'約 '+ppl(m.atk.dead))+
+    tr('守方軍人','約 '+ppl(m.def.n),'約 '+ppl(m.def.dead))+
+    (m.US.n?tr('美軍','約 '+ppl(m.US.n),'約 '+ppl(m.US.dead)):'')+(m.JP.n?tr('日本自衛隊','約 '+ppl(m.JP.n),'約 '+ppl(m.JP.dead)):'')+
+    tr('台灣平民','約 '+ppl(cv.TW),'約 '+ppl(cv.TW*.3))+
+    (cv.JP?tr('日本平民（沖繩等）','約 '+ppl(cv.JP),'約 '+ppl(cv.JP*.3)):'')+(cv.PH?tr('菲律賓平民','約 '+ppl(cv.PH),'約 '+ppl(cv.PH*.3)):'')+(cv.US?tr('關島居民','約 '+ppl(cv.US),'約 '+ppl(cv.US*.3)):'')+
+    '</tbody></table></div>'+
+    '<div class="dd">裝備：'+[c.plaP.what.length?'攻方 '+c.plaP.what.join('、'):'',c.rocP.what.length?'守方 '+c.rocP.what.join('、'):''].filter(Boolean).join('；')+(POOL0.rf-S.pools.rf?'；火箭軍發射約 '+fmt((POOL0.rf-S.pools.rf)*40)+' 枚飛彈':'')+'。中國大陸本土未遭打擊，本遊戲不計大陸平民傷亡。</div>'+
+    '<h4>經濟代價</h4><div class="tbl"><table class="ctable"><thead><tr><th></th><th>戰事期間直接損失</th><th>若戰事與制裁延續一年，GDP 衝擊</th></tr></thead><tbody>'+
+    tr('台灣',money(c.econ.TW),'−'+g.o.TW.pct.toFixed(1)+'%（約 '+money(g.o.TW.usd*1000)+'）')+
+    tr('中國',money(c.econ.CN),'−'+g.o.CN.pct.toFixed(1)+'%（約 '+money(g.o.CN.usd*1000)+'）')+
+    tr('美國',money(c.econ.US),'−'+g.o.US.pct.toFixed(1)+'%（約 '+money(g.o.US.usd*1000)+'）')+
+    tr('日本',money(c.econ.JP),'無公開估算')+
+    tr('全球','股市累計 '+c.mkt.toFixed(1)+'%','−'+g.o.W.pct.toFixed(1)+'%（約 '+money(g.o.W.usd*1000)+'）')+
+    '</tbody></table></div>'+
+    '<div class="dd">先進晶片：台灣生產全球約九成的先進製程晶片，戰事期間供應中斷，汽車、手機、AI 伺服器等產業首當其衝。一年期 GDP 衝擊以 Bloomberg Economics 2024 年的估算為基準（'+g.kind+'情境），依本局戰事規模與結果換算 '+Math.round(g.k*100)+'%。所有數字為遊戲依公開資料的粗估，僅供參考。</div>';
 }
 function afterAction(win){
   const st=S.stats,b=snap(),P=S.pools,sum=a=>a.reduce((x,y)=>x+y[1],0);
@@ -1067,8 +1188,9 @@ function afterAction(win){
   const usIn=S.fx.lv.US>=2,jpIn=S.fx.lv.JP>=2;
   const keys=[];
   // weight each finding by how much it moved the result
-  if(seaL>=6)keys.push([seaL,'渡海損失：攻方在海上損失 '+seaL+' 步（約 '+Math.round(seaL/3)+' 個旅）'+(allyHits?'，其中 '+allyHits+' 步來自美日部隊':'')+(ssmHits?'、'+ssmHits+' 步來自守方反艦飛彈與海軍':'')+'。']);
-  if(usIn||jpIn)keys.push([allyHits+4,'外國參戰：'+b.fx+'。'+(allyHits?'美日部隊共造成攻方 '+allyHits+' 步損失。':'但實際戰果有限。')+(st.esc.length?'攻方打擊基地引發升級：'+st.esc.join('、')+'。':'')]);
+  const seaM=menLost('atk',h=>h.sea),allyM=menLost('atk',h=>S.fx.units.some(f=>f.n===h.why)),ssmM=menLost('atk',h=>h.why==='反艦飛彈'||h.why==='守方海軍');
+  if(seaL>=6)keys.push([seaL,'渡海損失：攻方約 '+Math.round(seaL/3)+' 個旅在渡海途中失去戰力，傷亡約 '+ppl(seaM.n)+'（其中約 '+ppl(seaM.dead)+'死亡或失蹤）'+(allyHits?'，約 '+ppl(allyM.n)+'是美日部隊造成':'')+(ssmHits?'、約 '+ppl(ssmM.n)+'是守方反艦飛彈與海軍造成':'')+'。']);
+  if(usIn||jpIn)keys.push([allyHits+4,'外國參戰：'+b.fx+'。'+(allyHits?'美日部隊共造成攻方約 '+ppl(allyM.n)+'傷亡。':'但實際戰果有限。')+(st.esc.length?'攻方打擊基地引發升級：'+st.esc.join('、')+'。':'')]);
   else keys.push([3,'外國參戰有限：'+b.fx+'，戰局主要由兩岸兵力決定。']);
   keys.push([b.ports?b.ports*3:5,b.ports?'港口：攻方控制 '+b.ports+' 個主要港口，重型旅得以上岸、補給容量擴大。':'港口：攻方沒有拿下任何主要港口，重型旅無法上岸，補給只能靠灘頭。']);
   keys.push([b.taipei?8:3,b.taipei?'首都：攻方攻入台北，守方指揮與政治中心失守。':'首都：台北始終由守方控制。']);
@@ -1079,7 +1201,8 @@ function afterAction(win){
   else if(st.firstLand>=3)keys.push([4,'登陸時程：攻方第一支部隊到第 '+st.firstLand+' 回合才上岸，給了守方動員與盟國反應的時間。']);
   if(st.badWx>=2)keys.push([st.badWx+1,'天候：共有 '+st.badWx+' 個回合惡劣天候，渡海與火力都受限。']);
   if(st.over>=2)keys.push([st.over+1,'補給：攻方有 '+st.over+' 個回合島上部隊超過補給容量，攻防各 −1。']);
-  keys.push([Math.abs(b.as-b.ds)/3,'地面兵力：結束時攻方島上 '+b.as+' 步、守方 '+b.ds+' 步；攻方地面損失 '+landL+' 步，守方總損失 '+defL+' 步，守方後備旅動員 '+st.reserves+' 個。']);
+  const landM=menLost('atk',h=>!h.sea),defM=menLost('def');
+  keys.push([Math.abs(b.as-b.ds)/3,'地面兵力：結束時攻方島上'+(menOnTW('atk')?'約 '+ppl(menOnTW('atk')):'已無部隊')+'、守方'+(menOnTW('def')?'約 '+ppl(menOnTW('def')):'已無部隊')+'；攻方地面傷亡約 '+ppl(landM.n)+'，守方地面部隊傷亡約 '+ppl(defM.n)+'，守方後備旅動員 '+st.reserves+' 個。']);
   keys.sort((x,y)=>y[0]-x[0]);
   const atkTips=[],defTips=[];
   const ssmLeft=S.units.some(u=>u.side==='def'&&u.type==='ssm');
@@ -1103,10 +1226,10 @@ function afterAction(win){
   if(!defTips.length)defTips.push('守方防線大致穩固：保持機動預備隊，並持續打擊海上增援。');
   const yours=S.sim?null:(S.ctrl.atk==='human'&&S.ctrl.def!=='human'?'atk':S.ctrl.def==='human'&&S.ctrl.atk!=='human'?'def':null);
   const tipBlock=side=>'<div class="aar-col"><div class="eyebrow">'+SIDE[side]+(yours===side?'（你的陣營）':'')+(win===side?' · 勝方：可保持的做法':' · 改進措施')+'</div><ul>'+(side==='atk'?atkTips:defTips).map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
-  const lossList=(side,label)=>{const l=lossBy(side);return '<div><b>'+label+'</b>：'+(l.length?l.map(([k,v])=>k+' '+v).join('、'):'無')+'</div>';};
+  const lossList=(side,label)=>{const l=lossBy(side).map(([k])=>[k,menLost(side,h=>lossCat(h)===k).n]).sort((a,b)=>b[1]-a[1]);return '<div><b>'+label+'</b>：'+(l.length?l.map(([k,v])=>k+' 約 '+ppl(v)).join('、'):'無')+'</div>';};
   return '<div class="aar"><div class="eyebrow" style="margin-top:16px">戰後檢討報告 · 參戰情境：'+FXSCEN[S.fxScen]+'</div>'+
     '<h4>勝負關鍵</h4><ol>'+keys.slice(0,5).map(k=>'<li>'+k[1]+'</li>').join('')+'</ol>'+
-    '<h4>損失來源（步）</h4><div class="dd aar-loss">'+lossList('atk','攻方（海上 '+seaL+'、陸上 '+landL+'）')+lossList('def','守方（共 '+defL+'）')+'</div>'+
+    costReport(win)+'<h4>部隊傷亡來源（不含空軍、海軍、防空）</h4><div class="dd aar-loss">'+lossList('atk','攻方')+lossList('def','守方')+'</div>'+
     '<div class="aar-grid">'+(yours==='def'?tipBlock('def')+tipBlock('atk'):tipBlock('atk')+tipBlock('def'))+'</div></div>';
 }
 
@@ -1127,6 +1250,7 @@ function buildNews(){
   if(!items.length)items.push(b.as?'島上激戰持續，雙方陷入膠著':'攻方船團仍在海峽渡海集結');
   return {t,items,a,b,weather:S.weather.n};
 }
+function menOnTW(side){return S.units.filter(u=>u.side===side&&onTW(u)).reduce((a,u)=>a+PERS[u.type]/TYPES[u.type].hp*u.hp,0);}
 function newsArt(t){
   const [x0]=center(2,0);let o='';
   for(const h of Object.values(TER)){if(!isLand(h))continue;const [x,y]=center(h.c,h.r);
@@ -1145,9 +1269,10 @@ function newsBody(n){
   const a=n.a,b=n.b,dlt=(v,p)=>v===p?'':'（'+(v>p?'+':'')+(v-p)+'）',left=S.T-n.t;
   return '<div class="news"><div class="nbar"><span class="live">● 即時</span><span>海峽快訊</span><span>'+dayLabel(n.t)+' · 第 '+n.t+' 回合結束</span></div>'+newsArt(n.t)+
     '<h3>'+n.items[0]+'</h3><div class="dek">天候'+n.weather+'。距離判定還有 '+left+' 回合。</div><ul>'+
-    '<li><b>地面</b>：攻方島上 '+b.as+' 步'+dlt(b.as,a.as)+'、守方 '+b.ds+' 步'+dlt(b.ds,a.ds)+'；攻方控制港口 '+b.ports+' / 3，台北由'+(b.taipei?'攻方':'守方')+'控制。</li>'+
+    '<li><b>地面</b>：攻方島上兵力約 '+ppl(menOnTW('atk'))+'、守方約 '+ppl(menOnTW('def'))+'；攻方控制港口 '+b.ports+' / 3，台北由'+(b.taipei?'攻方':'守方')+'控制。</li>'+
     '<li><b>海空</b>：攻方空軍 '+b.plaAir+dlt(b.plaAir,a.plaAir)+'、守方與盟國空軍 '+b.ally+dlt(b.ally,a.ally)+'；攻方護航艦隊 '+b.navy+dlt(b.navy,a.navy)+'、火箭軍存量 '+S.pools.rf+'。</li>'+
     '<li><b>國際</b>：'+b.fx+'。</li>'+
+    (()=>{const c=costSummary();return '<li><b>代價</b>：雙方軍人傷亡約 '+ppl(c.mil.atk.n+c.mil.def.n+c.mil.US.n+c.mil.JP.n)+'，台灣平民傷亡約 '+ppl(c.civ.TW)+'；全球股市累計 '+c.mkt.toFixed(1)+'%。</li>';})()+
     '<li><b>情勢</b>：若現在判定，攻方達成 '+b.n+' / 3 →「'+verdict(b.n).t+'」。</li></ul>'+
     (n.items.length>1?'<div class="ticker">其他消息：'+n.items.slice(1).join('　｜　')+'</div>':'')+'</div>';
 }
@@ -1206,6 +1331,7 @@ async function beginPhase(side){
 async function endPhase(){
   if(S.over||!S.started)return;
   if(S.phase==='atk')return beginPhase('def');
+  econTick();
   if(S.turn>=S.T)return endGame();
   const n=buildNews();S.news.push(n);
   if(S.newsOn){S.busy=true;render();await showNews(n);S.busy=false;}
@@ -1241,7 +1367,27 @@ async function runAI(side){
   S.busy=false;
   if(!S.over){await sleep(250);endPhase();}
 }
+// Attacker AI picks one landing zone for the whole game so the force lands together instead of piecemeal.
+function aiPlan(){
+  if(S.plan)return S.plan;
+  let best='central',bs=1e9;
+  for(const z of ['north','central']){
+    let s=0;
+    // defenders near the beaches, anti-ship missiles covering the approach, minus the victory objectives within reach
+    for(const d of S.units)if(d.side==='def'&&onTW(d)&&d.type!=='ssm'&&ZONES[z].some(k=>hd(TER[k],hexOf(d))<=2))s+=d.hp*(effDef(d)+terrDef(hexOf(d)));
+    s+=S.units.filter(d=>d.side==='def'&&d.type==='ssm'&&ZONES[z].some(k=>hd(TER[k],hexOf(d))<=4)).reduce((a,d)=>a+d.hp*4,0);
+    s-=OBJ.filter(o=>ZONES[z].some(k=>hd(TER[k],TER[o])<=3)).length*12;
+    s+=Math.random()*2;
+    if(s<bs){bs=s;best=z;}
+  }
+  S.plan={zone:best};if(S.ctrl.def!=='human')log('攻方主登陸區：'+(best==='north'?'北部（林口、桃園）':'中部（新竹、苗栗、台中港）'));
+  return S.plan;
+}
+function friendAdj(k,side){const h=TER[k];let n=0;for(const x of nbrs(h.c,h.r)){const u=unitAt(x.k);if(u&&u.side===side&&isLand(x))n++;else if(x.isl==='TW'&&S.owner[x.k]===side)n+=.3;}return n;}
+function ssmThreat(k){const h=TER[k];return S.units.filter(d=>d.side==='def'&&d.type==='ssm'&&hd(hexOf(d),h)<=4).length;}
 async function aiAtk(){
+  const plan=aiPlan();
+  S.units.forEach(u=>{if(u.side==='atk'&&(u.type==='amph'||u.type==='mar'))u.zone=plan.zone;});
   aiBaseStrikes();render();
   while(S.fire>0&&!S.over){
     const t=pickStrike();if(!t)break;strike(t);render();await sleep(260);
@@ -1270,8 +1416,8 @@ async function aiAtkUnit(u){
   const h=hexOf(u);
   if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
     if(!S.weather.air||S.turn>3)return;
-    const rc=reach(u);let best=null,bs=1e9;const g=TER[ABN_GOAL[u.goal||0]];
-    for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)+Math.random()*.4;if(s<bs){bs=s;best=k;}}
+    const rc=reach(u);let best=null,bs=1e9;const g=TER[ABN_GOAL[aiPlan().zone][u.goal||0]];
+    for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+Math.random()*.4;if(s<bs){bs=s;best=k;}}
     if(best){doMove(u,best,'drop');render();await sleep(380);}
     return;
   }
@@ -1282,7 +1428,7 @@ async function aiAtkUnit(u){
     const goals=open.length?open:OBJ;
     let g=goals[0],gd=1e9;for(const k of goals){if(OBJD[k][h.k]<gd){gd=OBJD[k][h.k];g=k;}}
     const rc=reach(u);let best=null,bs=OBJD[g][h.k];
-    for(const [k,v] of rc){if(v.kind!=='move')continue;const s=OBJD[g][k]+enemyAdj(k,'atk')*.3;if(s<bs){bs=s;best=k;}}
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const ea=enemyAdj(k,'atk'),fa=friendAdj(k,'atk');const s=OBJD[g][k]+ea*.3+(ea>=2&&fa<1?2:0)-Math.min(fa,2)*.2;if(s<bs){bs=s;best=k;}}
     if(best){doMove(u,best,'move');render();await sleep(300);}
     await aiTryAttack(u,0);return;
   }
@@ -1292,19 +1438,24 @@ async function aiAtkUnit(u){
     goals=PORTS.concat(['13,6']).filter(k=>S.owner[k]==='atk');
     if(!goals.length)return;
   } else {
-    if(u.zone==='penghu'&&S.owner['7,8']==='atk'&&S.owner['7,9']==='atk')u.zone='central';
-    goals=ZONES[u.zone||'central'];
+    goals=ZONES[u.zone||aiPlan().zone];
   }
   const rc=reach(u);
   let best=null,bs=1e9;
   for(const [k,v] of rc){
     if(v.kind!=='land')continue;const md=minD(k,goals);if(md>3)continue;
-    const s=md*2+enemyAdj(k,'atk')*1.2+Math.random()*.3;if(s<bs){bs=s;best=k;}
+    const s=md*2+enemyAdj(k,'atk')*1.2-Math.min(friendAdj(k,'atk'),2)*.8+Math.random()*.3;if(s<bs){bs=s;best=k;}
   }
   if(best){doMove(u,best,'land');render();await sleep(340);return;}
   if(h.t==='sea'&&await aiTryAttack(u,0))return;
-  const cur=minD(h.k,goals);bs=h.t==='sea'?cur:1e9;best=null;
-  for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+Math.random()*.3;if(s<bs){bs=s;best=k;}}
+  if(h.isl==='CN'&&u.type!=='arm'&&S.turn>1&&S.turn<S.T-1){
+    // hold reinforcements on the coast until at least two can cross together
+    const ready=S.units.filter(x=>x.side==='atk'&&(x.type==='amph'||x.type==='mar')&&hexOf(x).isl==='CN'&&!x.moved).length;
+    const afloat=S.units.some(x=>x.side==='atk'&&atSea(x));
+    if(ready<2&&!afloat)return;
+  }
+  const cur=minD(h.k,goals);bs=h.t==='sea'?cur+ssmThreat(h.k)*.6:1e9;best=null;
+  for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+ssmThreat(k)*.6+Math.random()*.3;if(s<bs){bs=s;best=k;}}
   if(best){doMove(u,best,'sail');render();await sleep(300);}
   if(atSea(u))await aiTryAttack(u,1);
 }
@@ -1456,7 +1607,7 @@ function renderVC(){
 function renderLog(){
   $('#log').innerHTML=S.log.length?S.log.map(l=>'<li><span class="tn">T'+l.t+(l.p==='atk'?'攻':'守')+'</span>'+l.msg+'</li>').join(''):'<li>尚無戰報。</li>';
 }
-function render(){renderMap();renderStatus();renderCtrl();renderInfo();renderVC();renderNodes();renderLog();renderTheater();}
+function render(){renderMap();renderStatus();renderCtrl();renderInfo();renderVC();renderNodes();renderLog();renderTheater();renderCost();}
 
 /* ---------- input ---------- */
 $('#map').addEventListener('click',e=>{
