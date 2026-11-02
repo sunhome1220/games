@@ -22,7 +22,7 @@
 | HIMARS／ATACMS | 長程飛彈與岸置飛彈單位 | 先前已交付首批（本次查證未核對確切數量），另 18 套預計 2026 年底前到貨；2026 年 4 月另有約 39 億美元的遠程精準打擊系統合約，預計 2032 年完成 |
 | 魚叉岸防 | 岸置反艦飛彈單位 | 2026 年起陸續到貨 |
 | F-16V Block 70 | 空軍點數 | 首批 2 架於 2026 年 10 月 2 日交付，共 66 架，預計 2028 年完成 |
-| 海鯤潛艦 | 海軍點數 | 交付一再延遲，2026 年秋季尚在交付前後 |
+| 海鯤潛艦 | 「潛艦（海鯤）」點數，加入海上交戰：2026 年 0、2028 年 1、2030 年 1 | 交付一再延遲，2026 年秋季尚在交付前後；遊戲只算實際可作戰的艘數 |
 | 特別預算 | 2028、2030 年代的成長 | 原提案約 400 億美元（新台幣 1.25 兆，2026～2033）；立法院通過的版本縮減，無人機未編列、T-Dome 需重新規劃 |
 | 無人機與巡飛彈 | 「無人機與巡飛彈」點數 | 無人機未獲編列，Altius 等巡飛彈保留，故 2026 年只有 1 點 |
 
@@ -48,6 +48,10 @@
 - 東風-26 數量：<https://www.tandfonline.com/doi/full/10.1080/00963402.2025.2467011>（Bulletin of the Atomic Scientists, Chinese nuclear weapons, 2025）
 - PHL-16／PCH-191：<https://en.wikipedia.org/wiki/PHL-16>、<https://ssi.armywarcollege.edu/SSI-Media/Recent-Publications/Article/3622541/china-maritime-report-no-32-the-pch191-modular-long-range-rocket-launcher-resha/>
 - 美國國防部 2025 年中國軍力報告摘要：<https://fas.org/publication/the-pentagons-slimmed-down-2025-china-military-power-report/>
+
+## 美軍立場的基本假設
+
+台灣與美軍共用不少飛彈與魚雷（例如魚叉、MK-48 型魚雷、海馬斯／ATACMS），外觀與編號相同，戰時很難分辨是誰發射。因此遊戲中除了選「只提供情報」與「不介入（台灣孤軍）」外，美軍開戰起至少是「代理打擊」：潛艦與轟炸機以台灣、日本名義出手，火力較公開參戰低；傷亡過高時才退縮為「隱蔽支援」。這是遊戲設定，不是公開資料。
 
 ## 空戰與海戰的處理
 
