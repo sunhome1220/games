@@ -127,7 +127,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .mtn-g{stroke:var(--mtn-ink);fill:none;stroke-width:1.2;pointer-events:none}
 .lbl{font-size:8.5px;fill:var(--ink);text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:500}
 .lbl.obj{fill:var(--accent);font-weight:700}
-.far{opacity:.8} .fclick{cursor:pointer;pointer-events:all} .tl-far.fclick:hover{filter:brightness(1.08)} .far-lbl{font-size:8.5px;text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:600;fill:var(--ink)}
+.mine{opacity:.95} .far{opacity:.8} .fclick{cursor:pointer;pointer-events:all} .tl-far.fclick:hover{filter:brightness(1.08)} .far-lbl{font-size:8.5px;text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:600;fill:var(--ink)}
 .far-tag{font-size:7px;text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:700}
 .playbox{fill:none;stroke:var(--ink);stroke-opacity:.28;stroke-width:1;stroke-dasharray:7 5;pointer-events:none}
 .big{font-family:var(--f-display);font-weight:700;fill:var(--ink);opacity:.35;pointer-events:none;letter-spacing:.3em}
@@ -503,7 +503,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
             <select id="optT"><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option><option value="12">12</option></select>
             <select id="optBuild"><option value="open">open</option><option value="exercise" selected>exercise</option><option value="surprise">surprise</option></select>
             <select id="optFx"><option value="dice" selected>dice</option><option value="intel">intel</option><option value="none">none</option><option value="full">full</option></select>
-            <select id="optEra"><option value="2026" selected>2026</option><option value="2028">2028</option><option value="2030">2030</option></select>
+            <select id="optEra"><option value="2026" selected>2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option></select>
             <select id="optNews"><option value="1" selected>on</option><option value="0">off</option></select>
           </div>
         </div>
@@ -550,7 +550,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
         <div class="card rules">
           <h2>規則摘要</h2>
           <details class="rg" open><summary>基本規則</summary><ul><li><b>步（戰力）：</b>每個單位的戰力分成幾「步」，就是棋子下方的圓點。旅級單位多為 3 步，空降旅、後備旅、反艦飛彈為 2 步。每損失 1 步約失去三分之一戰力（在海上就是部分船艦連同人員裝備被擊沉）；只剩 1 步時攻防各 −1，歸零即被殲滅。戰況與報告中的「兵力 X 步」是各單位剩餘步數的加總，約 3 步相當於一個旅。</li><li>每回合先攻方、後守方。每個單位每階段可移動一次，之後可攻擊一次。</li><li><b>渡海：</b>兩棲旅、陸戰旅可從大陸任一沿岸格出航；裝甲旅只能從港口出航，且只能在攻方已控制的港口上岸。海上移動力依天候：良好 3、普通 2、惡劣 1。登陸後該單位本階段結束。</li><li><b>搶灘突擊：</b>從海上直接攻擊岸上敵軍，攻擊 −2（陸戰旅 −1）。守方若被消滅，突擊單位可直接上岸。</li><li><b>戰鬥：</b>攻擊值＋骰 對 防禦值＋地形＋骰。差 ≥4 守方失 2 步；1～3 失 1 步；0 雙方各失 1；−1～−3 攻方失 1；≤−4 攻方失 2。每多一支友軍與目標相鄰 +1（最多 +2）。只剩 1 步的單位攻防各 −1。</li><li><b>控制區：</b>移動進入與敵軍相鄰的陸地格必須停下。</li><li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；每次空投擲骰，擲 1 因防空攔截損失 1 步；落在敵軍旁時擲 1～3 就損失 1 步。惡劣天候不能空降。</li><li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 2、港口 4、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1。</li><li><b>增援：</b>攻方第 2～5 回合於大陸沿岸到達；守方後備旅第 2～4 回合在城市動員。</li></ul></details>
-          <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>兵力年代：</b>開局可選 2026 現況、2028 近期、2030 中期。2026 依公開報導概略設定（台灣：雲峰與雄風IIE 長程飛彈、HIMARS／ATACMS、魚叉岸防、F-16V、天弓與愛國者；共軍：東風-15／16 與 PCH-191 長程火箭、東風-17 高超音速、東風-26／21D）；2028、2030 是依已規劃的採購與特別預算所做的推估，雙方都會成長。東風-17 的火力不受守方防空削減；東風-26／21D 讓打擊美日基地與艦艇的門檻 −1；無人機與巡飛彈每階段增加反艦攻擊。數字為遊戲的抽象點數，實際數量並不公開，各來源也有出入，詳見 DATA.md。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li><li><b>制空與防空壓制：</b>每回合先比較攻方陸基空軍＋艦載機與守方、盟國空軍：差 3 以上算「優勢」。攻方優勢時美日空軍的反艦命中門檻 +1，守方優勢時 −1；守方防空降到 2 以下算「遭壓制」，攻方火力 +1，攻方防空降到 2 以下則大陸基地更容易被打。</li><li><b>海上交戰：</b>每回合守方階段，攻方護航艦隊與航艦會與守方海軍、美日水面艦及潛艦交戰；潛艦（美日，以及台灣自製的海鯤，2028 年起 1 艘、2030 年 1 艘以上）可能擊沉護航艦或重創航艦，也可能遭反潛。共軍航艦（遼寧、山東、福建）提供艦載機制空，被反艦攻擊命中護航艦時，可能連帶被重創。</li><li><b>巡弋飛彈：</b>長劍、鷹擊等巡弋飛彈每回合最多 1～2 點，守方防空強（≥5）時少 1 點；東風-17 仍不受防空影響。</li></ul></details>
+          <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>兵力年代：</b>開局可選 2026 現況、2028 近期、2030 中期。2026 依公開報導概略設定（台灣：雲峰與雄風IIE 長程飛彈、HIMARS／ATACMS、魚叉岸防、F-16V、天弓與愛國者；共軍：東風-15／16 與 PCH-191 長程火箭、東風-17 高超音速、東風-26／21D）；2028、2030 是依已規劃的採購與特別預算所做的推估，雙方都會成長。東風-17 的火力不受守方防空削減；東風-26／21D 讓打擊美日基地與艦艇的門檻 −1；無人機與巡飛彈每階段增加反艦攻擊。數字為遊戲的抽象點數，實際數量並不公開，各來源也有出入，詳見 DATA.md。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li><li><b>制空與防空壓制：</b>每回合先比較攻方陸基空軍＋艦載機與守方、盟國空軍：差 3 以上算「優勢」。攻方優勢時美日空軍的反艦命中門檻 +1，守方優勢時 −1；守方防空降到 2 以下算「遭壓制」，攻方火力 +1，攻方防空降到 2 以下則大陸基地更容易被打。</li><li><b>海上交戰：</b>每回合守方階段，攻方護航艦隊與航艦會與守方海軍、美日水面艦及潛艦交戰；潛艦（美日，以及台灣自製的海鯤，2028 年起 1 艘、2030 年 1 艘以上）可能擊沉護航艦或重創航艦，也可能遭反潛。共軍航艦（遼寧、山東、福建）提供艦載機制空，被反艦攻擊命中護航艦時，可能連帶被重創。</li><li><b>布雷：</b>守方開戰前依年代預先在西岸灘頭（火山布雷車，14 套最新報導預計 2027 年交付）與近海（水雷）布雷，地圖上以黑色圓點標示；攻方部隊進入布雷格要擲骰，3 以下觸雷損失 1 步並清除該處布雷。攻方護航艦隊每回合開始掃雷（最多 1～2 處），掃雷艦有 1/6 觸雷損失。</li><li><b>巡弋飛彈：</b>長劍、鷹擊等巡弋飛彈每回合最多 1～2 點，守方防空強（≥5）時少 1 點；東風-17 仍不受防空影響。</li></ul></details>
           <details class="rg"><summary>國際與集結</summary><ul><li><b>美軍立場：</b>美國有三種立場：<b>隱蔽支援</b>（傷亡過高後的退縮立場：提供情報、補給，反艦飛彈命中門檻 −1，第 2 回合起有不具名的潛艦行動）、<b>代理打擊</b>（開戰起的基本立場；轟炸機、潛艦以台灣、日本名義發射遠程飛彈，火力約四成半到六成，載人戰機與航艦撤出，中方不報復美軍）、<b>公開參戰</b>（全數投入）。非台灣孤軍、也不是「只提供情報」的情境下，開戰起美軍至少是代理打擊（台灣與美軍共用不少飛彈與魚雷，外觀、編號相同，很難分辨是誰發射），參戰程度決定會不會公開參戰。美軍累計傷亡達 6 步與 11 步時（美軍兵力共 14 步），每個守方階段擲骰（1d6≥4）決定是否降一級；美國本土（關島）遭攻擊會民意凝聚，擲骰 −2 並恢復一級。</li><li><b>美日參戰：</b>開局可選參戰情境：擲骰決定（預設）、只提供情報（美國只給情報與目標資料，不補給、不出兵、不公開參戰，日本中立，基地不能被打擊）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li><li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li></ul></details>
           <details class="rg"><summary>戰爭代價</summary><ul><li><b>戰爭代價：</b>側欄的「戰爭代價」依部隊編制把損失換算成傷亡人數（合成旅約 5,000 人；在海上被擊沉的死亡比例高於陸戰），並累計火力打擊與城市戰鬥造成的平民傷亡、各國經濟損失、全球股市與晶片供應。結算時依 Bloomberg Economics 2024 年的估算（台海戰爭約使全球 GDP 減少 10%，封鎖約 5%）推估一年期衝擊。所有數字都是遊戲依公開資料的粗估。</li></ul></details>
           <details class="rg"><summary>推演與判定</summary><ul><li><b>純模擬（影片）：</b>全程由電腦操作並自動決策與擲骰：先瞬間跑完整場戰爭並錄下每個動作，再以戰棋地圖為背景播放。地圖下方的字幕區顯示雙方動作與影響，並有戰況、傷亡與經濟摘要；可暫停、變速（1～8×）、拖曳時間軸或跳回合，地圖上的圈標出這一步發生變化的位置。結束後可看戰後檢討、回頭看影片或再模擬一次。</li><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>電腦代打：</b>你操作的階段，可以按「電腦代打剩餘單位」，還沒行動的單位交給電腦處理，然後自動結束階段。</li><li><b>統計：</b>在設定頁或影片模式按「跑統計」，電腦自動模擬 50／100／300 局（雙方由電腦操作、決策與擲骰隨機），列出攻方勝率與信賴區間、各條件達成率、代價範圍，以及美國參戰程度與各項決策對勝率的影響。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。只達成「首都」一項時：台北已連續被攻方控制至少 2 個回合結束，判「僵局」；最後一回合才占領，視為暫時占領，判守方勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
@@ -648,7 +648,7 @@ function newState(){
   S={turn:1,phase:'atk',T:8,ctrl:{atk:'human',def:'ai'},weather:WEATHER.good,fire:0,units:[],owner:{},log:[],
      sel:null,mode:null,busy:false,over:false,started:false,nid:1,hover:null,zoneFlip:0,
      sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods(),
-     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,tpHold:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
+     pools:null,mines:{},fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,tpHold:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
   for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
   const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
     ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],
@@ -774,14 +774,14 @@ function doMove(u,k,kind){
   u.c=h.c;u.r=h.r;u.moved=true;
   if(isLand(h))S.owner[k]=u.side;
   if((kind==='land'||kind==='drop')&&S.stats.firstLand===null&&h.isl==='TW')S.stats.firstLand=S.turn;
-  if(kind==='land'){fxq({t:'land',at:[h.c,h.r]});u.acted=true;log(uname(u)+' 於 '+hname(h)+' 登陸');}
+  if(kind==='land'){fxq({t:'land',at:[h.c,h.r]});u.acted=true;log(uname(u)+' 於 '+hname(h)+' 登陸');mineCheck(u,h);}
   else if(kind==='drop'){
     u.acted=true;u.dropped=true;
     let msg=uname(u)+' 空降 '+hname(h);
     const hot=inZOC(u.side,h),r=d6();
     if(r<=(hot?3:1)){msg+='，'+(hot?'落點遭地面火力壓制':'運輸機群遭防空攔截')+'（擲 '+r+'）損失 1 步';log(msg);damage(u,1,'空降損失');return;}
     log(msg);
-  } else if(kind==='sail'&&from.t!=='sea')log(uname(u)+' 自 '+hname(from)+' 出航');
+  } else{if(kind==='sail'&&from.t!=='sea')log(uname(u)+' 自 '+hname(from)+' 出航');if(kind==='sail'||kind==='move')mineCheck(u,h);}
 }
 function attack(u,t){
   const th=hexOf(t);if(th.isl==='TW'||th.isl==='PH')civHit('TW',th,'combat');
@@ -892,19 +892,55 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 
 /* ---------- theater: pools, foreign forces ---------- */
 // baseline (2026) force pools, abstract points built from public reporting; see DATA.md
-const POOL0={plaAir:8,plaCV:2,plaAD:6,plaNavy:8,rf:22,plaCM:5,plaLR:6,plaHS:3,rocAir:4,rocNavy:4,rocSub:0,rocAD:4,rocMsl:10,rocDrone:1};
+const POOL0={plaAir:8,plaCV:2,plaAD:6,plaNavy:8,rf:22,plaCM:5,plaLR:6,plaHS:3,rocAir:4,rocNavy:4,rocSub:0,rocAD:4,rocMsl:10,rocDrone:1,rocMine:1};
 const ERA={
-  '2026':{n:'2026 現況',pools:{},ssm:[],dfire:2},
-  '2028':{n:'2028 近期',pools:{plaAir:8,plaCV:3,plaAD:6,plaNavy:9,rf:24,plaCM:6,plaLR:8,plaHS:4,rocAir:5,rocNavy:5,rocSub:1,rocAD:5,rocMsl:12,rocDrone:1},ssm:['9,8'],dfire:3},
-  '2030':{n:'2030 中期',pools:{plaAir:8,plaCV:4,plaAD:7,plaNavy:10,rf:28,plaCM:6,plaLR:10,plaHS:5,rocAir:6,rocNavy:6,rocSub:1,rocAD:6,rocMsl:15,rocDrone:2},ssm:['9,8','10,3'],dfire:4}
+  '2026':{n:'2026 現況',d:'依 2025～2026 公開報導：台灣剛收到首批 F-16V、HIMARS 陸續到貨、雲峰尚未大量生產、火山布雷車尚未交付；共軍有約 250 具東風-26 發射器、東風-17 與 PCH-191 長程火箭，福建艦剛服役。',short:'2026 現況',pools:{},ssm:[],dfire:2},
+  '2027':{n:'2027（推估）',d:'火山布雷車 14 套預計到位（交付多次延後，最新報導為 2027 年）；福建艦達完整戰力；F-16V 持續交付、雲峰開始量產。',short:'2027',pools:{plaAir:8,plaCV:2,plaAD:6,plaNavy:8,rf:23,plaCM:5,plaLR:7,plaHS:3,rocAir:4,rocNavy:4,rocSub:0,rocAD:4,rocMsl:11,rocDrone:1,rocMine:3},ssm:[],dfire:2},
+  '2028':{n:'2028（推估）',d:'假設預定交付到位：F-16V 66 架、HIMARS 與魚叉岸防增加、第一艘海鯤潛艦服役；共軍增加東風-26 旅與長程火箭。',short:'2028',pools:{plaAir:8,plaCV:3,plaAD:6,plaNavy:9,rf:25,plaCM:6,plaLR:8,plaHS:4,rocAir:5,rocNavy:5,rocSub:1,rocAD:5,rocMsl:12,rocDrone:1,rocMine:3},ssm:['9,8'],dfire:3},
+  '2029':{n:'2029（推估）',d:'特別預算（立法院縮減版）逐步採購：更多長程精準火力與防空，無人機與巡飛彈開始補上；共軍持續擴編。',short:'2029',pools:{plaAir:8,plaCV:3,plaAD:7,plaNavy:9,rf:27,plaCM:6,plaLR:9,plaHS:4,rocAir:5,rocNavy:5,rocSub:1,rocAD:5,rocMsl:13,rocDrone:2,rocMine:4},ssm:['9,8'],dfire:3},
+  '2030':{n:'2030（推估）',d:'假設特別預算與自製武器落實：多層防空、更多長程精準火力；共軍第四艘航艦在建、火箭軍擴編。',short:'2030',pools:{plaAir:8,plaCV:4,plaAD:7,plaNavy:10,rf:30,plaCM:6,plaLR:10,plaHS:5,rocAir:6,rocNavy:6,rocSub:1,rocAD:6,rocMsl:15,rocDrone:2,rocMine:5},ssm:['9,8','10,3'],dfire:4},
+  '2031':{n:'2031（推估）',d:'NASAMS 合約預計 2031 年交付，防空明顯增強；海鯤潛艦增為 2 艘（計畫共 8 艘，進度不確定）。',short:'2031',pools:{plaAir:8,plaCV:4,plaAD:7,plaNavy:10,rf:33,plaCM:7,plaLR:11,plaHS:6,rocAir:6,rocNavy:6,rocSub:2,rocAD:7,rocMsl:16,rocDrone:3,rocMine:5},ssm:['9,8','10,3'],dfire:4},
+  '2032':{n:'2032（推估）',d:'特別預算期程（2026～2033）接近尾聲，雙方都明顯成長；數值為推估，不確定性最高。',short:'2032',pools:{plaAir:8,plaCV:4,plaAD:8,plaNavy:11,rf:35,plaCM:7,plaLR:12,plaHS:7,rocAir:6,rocNavy:6,rocSub:2,rocAD:7,rocMsl:17,rocDrone:3,rocMine:6},ssm:['9,8','10,3'],dfire:4}
 };
 function previewEra(){const e=ERA[S.era]||ERA['2026'];S.p0=Object.assign({},POOL0,e.pools);S.pools=Object.assign({},S.p0);S.dfireMax=e.dfire;}
 function applyEra(){
   previewEra();const e=ERA[S.era]||ERA['2026'];
   e.ssm.forEach(k=>{if(TER[k]&&!unitAt(k))S.units.push(mkUnit('def','ssm',k,{}));});
   log('兵力年代：'+e.n+'。');
+  layMines();
 }
-const POOLN={plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程飛彈（雲峰等）',rocDrone:'無人機與巡飛彈'};
+// 守方預先布雷：在可能的西岸灘頭與近海布設（火山布雷車用於灘頭，水雷用於近海）；攻方掃雷要耗費時間
+function layMines(){
+  S.mines={};let n=S.pools.rocMine||0;if(n<=0)return;
+  const cand=Object.values(TER).filter(h=>h.isl==='TW'&&(h.t==='plain'||h.t==='port'||h.t==='city')&&!h.cliff&&!h.mud&&nbrs(h.c,h.r).some(x=>x.t==='sea'&&x.c<h.c));
+  const dp=h=>Math.min(...PORTS.map(k=>hd(h,TER[k])));
+  const beach=cand.filter(h=>h.c<=10).sort((a,b)=>dp(a)-dp(b)||a.r-b.r);
+  const seaS=new Set();beach.forEach(h=>nbrs(h.c,h.r).filter(x=>x.t==='sea'&&x.c<h.c).forEach(x=>seaS.add(x.k)));
+  const sea=[...seaS].map(k=>TER[k]).sort((a,b)=>dp(a)-dp(b)||a.r-b.r);
+  const land=beach.filter(h=>!unitAt(h.k));
+  for(let i=0;n>0&&(sea.length||land.length);i++,n--){
+    const h=(i%2===0?sea:land).shift()||sea.shift()||land.shift();if(!h)break;
+    if(!S.mines[h.k])S.mines[h.k]=1;
+  }
+  syncMines();log('守方預先布雷：'+Object.keys(S.mines).length+' 處（灘頭與近海）。');
+}
+const syncMines=()=>{if(S.pools)S.pools.rocMine=Object.keys(S.mines).length;};
+function mineCheck(u,h){
+  if(u.side!=='atk'||!S.mines||!S.mines[h.k])return;
+  const r=d6();
+  if(r<=3){delete S.mines[h.k];syncMines();log(uname(u)+' 在 '+hname(h)+' 觸雷（擲 '+r+'）');fxq({t:'txt',at:[h.c,h.r],s:'觸雷',col:'atk'});damage(u,1,'水雷');}
+  else log(uname(u)+' 通過 '+hname(h)+' 布雷區，未觸雷（擲 '+r+'）');
+}
+function sweepMines(){
+  const ks=Object.keys(S.mines||{});if(!ks.length)return;
+  const P=S.pools;if(P.plaNavy<2||S.turn<2)return; // 開戰第 1 回合來不及掃雷
+  const sw=Math.min(ks.length,P.plaNavy>=6?2:1),got=[];
+  const sea=S.units.filter(u=>u.side==='atk');
+  ks.sort((a,b)=>{const f=k=>Math.min(99,...sea.map(u=>hd(TER[k],hexOf(u))));return f(a)-f(b);});
+  for(let i=0;i<sw;i++){const k=ks[i];delete S.mines[k];got.push(hname(TER[k]));if(d6()===1){P.plaNavy--;got.push('掃雷艦觸雷（攻方護航艦 −1）');}}
+  syncMines();log('攻方掃雷：清除 '+got.join('、')+'。');
+}
+const POOLN={rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程飛彈（雲峰等）',rocDrone:'無人機與巡飛彈'};
 const CN={US:'美國',JP:'日本'};
 const LV={US:['不介入','情報支援','有限介入','全面參戰'],JP:['中立','後方支援','全面參戰']};
 
@@ -1523,7 +1559,7 @@ function renderTheater(){
     dt('cnb',false,'<b>中方基地</b><span class="dd">運作中 '+cnN+' / '+Object.keys(CNB).length+'　◆火箭軍 ▲空軍 ■海軍 ●集結港</span>',
       Object.entries(CNB).map(([id,B])=>'<div class="fu cnrow'+(S.cnSel===id?' hl':'')+'"><div><b>'+KIND_S[B.kind]+' '+B.n+'</b> <span class="dd">'+KIND_N[B.kind]+'</span></div><div class="fst"><span class="pips">'+
         Array.from({length:B.hp},(_,i)=>'<i class="'+(i<S.cn[id]?'f':'')+'"></i>').join('')+'</span><span class="st'+(S.cn[id]>0?'':' off')+'">'+(S.cn[id]>0?'運作中':'已癱瘓')+'</span></div></div>').join(''))+
-    dt('def',true,'<b>守方</b>',['rocAir','rocNavy','rocSub','rocAD','rocMsl','rocDrone'].filter(k=>S.p0[k]>0||S.pools[k]>0).map(k=>bar(k,'def')).join(''));
+    dt('def',true,'<b>守方</b>',['rocAir','rocNavy','rocSub','rocAD','rocMsl','rocDrone','rocMine'].filter(k=>S.p0[k]>0||S.pools[k]>0).map(k=>bar(k,'def')).join(''));
   ['US','JP'].forEach(c=>{
     const lv=S.fx.lv[c],pst=c==='US'&&usIdx()>=0;
     let inner=pst?'<div class="fu dd">'+pd(usIdx())+'。美軍傷亡累計 '+usCas()+' 步'+(S.us.drop?'（已因傷亡退縮）':'')+'</div>':'';
@@ -1791,7 +1827,7 @@ async function beginPhase(side){
   render();await runEvents(side);if(S.over)return;
   if(side==='atk'){
     S.weather=S.turn===1&&S.mods.wxT1?WEATHER[S.mods.wxT1]:rollWeather();if(S.weather.id==='bad')S.stats.badWx++;
-    airBattle();S.fire=computeFire();doRetaliation();
+    airBattle();S.fire=computeFire();doRetaliation();sweepMines();
     (ATK_REINF[S.turn]||[]).forEach(([t,z])=>{
       const h=t==='arm'?placeNear('4,4',x=>x.isl==='CN'&&x.t==='port'):placeNear('4,4',x=>x.isl==='CN'&&x.coastal);
       if(h){if(!z){z=S.zoneFlip++%2?'central':'north';}S.units.push(mkUnit('atk',t,h.k,{zone:z}));log('攻方增援 '+TYPES[t].n+' 抵達 '+hname(h));}
@@ -2202,6 +2238,7 @@ function renderMap(){
     for(const [k,v] of reach(S.sel)){const [x,y]=cen(TER[k].c,TER[k].r);o+='<polygon class="hl '+v.kind+'" points="'+hexPts(x,y,R-2)+'"/>';}
   }
   S.units.slice().sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
+  Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<g class="mine" pointer-events="none"><circle cx="'+x.toFixed(1)+'" cy="'+(y+8).toFixed(1)+'" r="4.5" fill="#222" stroke="#ffd45a" stroke-width="1.2"/><path d="M'+(x-7).toFixed(1)+' '+(y+8).toFixed(1)+'h14M'+x.toFixed(1)+' '+(y+1).toFixed(1)+'v14" stroke="#ffd45a" stroke-width="1"/></g>';});
   (S.focus||[]).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<ellipse class="vfocus" cx="'+x.toFixed(1)+'" cy="'+(y+4).toFixed(1)+'" rx="27" ry="20"/>';});
   if(humanTurn()){
     let rings=[];
@@ -2653,7 +2690,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.18';
+const VERSION='2026-11-02.19';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
@@ -2683,7 +2720,7 @@ const SETUP_PAGES=[
   {sel:'optSpeed',q:'推演速度',when:()=>isSim(),opts:{'1':['一般','每個動作有短暫停頓，方便看清楚。'],'0.35':['快速','縮短動作之間的停頓。']}}]},
  {t:'判定回合與兵力年代',s:'回合',d:'戰爭持續到指定回合結束，才依三項條件判定勝負，攻方達成 2 項以上獲勝：① 台北由攻方控制 ② 基隆、台中港、高雄至少 2 個港口由攻方控制 ③ 攻方島上兵力步數不少於守方。只拿下台北且連續控制 2 個回合以上，判「僵局」（首都陷落但攻方孤立）；到最後才占領則視為暫時占領，仍判守方勝。每回合約半天。',fields:[
   {sel:'optT',q:'幾回合後判定？',opts:{'6':['第 6 回合','約 3 天。時間很緊，攻方多半來不及站穩。'],'8':['第 8 回合','約 4 天。基準設定。'],'10':['第 10 回合','約 5 天。攻方有較多時間奪港。'],'12':['第 12 回合','約 6 天。長期戰，攻方較有機會站穩。']}},
-  {sel:'optEra',q:'兵力年代',opts:{'2026':['2026 現況','依 2025～2026 公開報導：台灣剛收到首批 F-16V、HIMARS 陸續到貨、雲峰尚未大量生產；共軍有約 250 具東風-26 發射器、東風-17 高超音速與 PCH-191 長程火箭。','2026 現況'],'2028':['2028 近期（推估）','假設預定交付到位：F-16V 66 架、HIMARS 與魚叉岸防增加、海鯤潛艦與雲峰量產；共軍也增加東風-26 旅與長程火箭。','2028 近期'],'2030':['2030 中期（推估）','假設特別預算與自製武器落實：多層防空（T-Dome）、更多長程精準火力與無人機；共軍同步擴編。','2030 中期']}}]},
+  {sel:'optEra',q:'兵力年代（年份）',opts:Object.fromEntries(Object.entries(ERA).map(([y,e])=>[y,[e.n,e.d,e.short]]))}]},
  {t:'戰前集結',s:'集結',d:'渡海前要先集結船團與兵員，很難完全隱藏。集結越公開，台灣與美日越早準備。',fields:[
   {sel:'optBuild',q:'攻方怎麼集結？',when:()=>!isSim(),opts:{open:['公開全面集結','兵力最多（+2 兩棲旅、+1 重型旅、護航艦隊 +2），但守方提早動員、美國航艦已在附近、各國參戰擲骰 +1。'],exercise:['演習掩護','以軍演名義集結，雙方都只有部分預警。基準設定。'],surprise:['戰略突襲','兵力少一截（−2 兩棲旅、−1 重型旅），換取守方動員延後、各國參戰擲骰 −1。']}}],
   note:()=>isSim()?'推演模式的集結會在第一個事件節點由你選擇，這一頁不用設定。':''},
