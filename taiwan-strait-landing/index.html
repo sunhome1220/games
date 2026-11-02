@@ -197,7 +197,6 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .sbar em{display:block;height:100%;background:var(--muted)} .sbar em.atk{background:var(--atk)} .sbar em.def{background:var(--def)}
 .sbar b{font-family:var(--f-mono);text-align:right}
 .stk{padding-left:18px;margin:8px 0;font-size:13.5px} .stk li{margin:3px 0}
-.wz-stat{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
 .wz-statrow{display:flex;gap:8px;margin-top:6px} .wz-statrow button{flex:1;width:auto}
 .mbar{display:none}
 @media (max-width:960px){
@@ -248,18 +247,55 @@ body.mapfs .mbar{display:none!important}
 .tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .tabpane{display:flex;flex-direction:column;gap:14px}
 .tabpane[hidden]{display:none}
+.mbox.fin{max-width:780px;padding:0;overflow:hidden;display:flex;flex-direction:column}
+.finw{display:flex;flex-direction:column;min-height:0;max-height:90vh}
+.fin-head{padding:18px 22px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+.fin-head h3{margin:2px 0 4px;font-size:28px}
+.fvd{margin:0;font-size:14px;color:var(--muted)}
+.fin-conds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.fc{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:4px;padding:7px 9px;background:var(--bg);font-size:13px}
+.fc .fi{font-weight:900;font-size:16px;line-height:1.15}
+.fc.ok{border-color:var(--atk)} .fc.ok .fi{color:var(--atk)} .fc.no .fi{color:var(--def)}
+.fc .dd{display:block;margin-top:1px}
+.fin-score{font-size:13px;color:var(--muted);margin-top:8px}
+.fin-body{overflow-y:auto;padding:6px 22px 14px;min-height:0;flex:1 1 auto}
+.fin-tools{display:flex;justify-content:flex-end;gap:14px;margin:4px 0 2px}
+.fin-eb{margin:8px 0 2px}
+.fin-foot{display:flex;flex-wrap:wrap;gap:8px;padding:12px 22px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel)}
+.lnk{background:none;border:0;color:var(--accent);padding:2px 0;font-size:12.5px;font-weight:500;text-decoration:underline;cursor:pointer}
+.acc{border:1px solid var(--line);border-radius:4px;margin:8px 0;background:var(--bg)}
+.acc>summary{display:flex;align-items:baseline;gap:10px;padding:10px 12px;cursor:pointer;list-style:none}
+.acc>summary::-webkit-details-marker{display:none}
+.acc>summary::before{content:'▸';color:var(--muted);transition:transform .15s}
+.acc[open]>summary::before{transform:rotate(90deg)}
+.acc>summary b{font-size:14px}
+.acc>summary .sum{margin-left:auto;font-size:12px;color:var(--muted);text-align:right}
+.acc[open]>summary{border-bottom:1px solid var(--line)}
+.accb{padding:10px 12px 12px}
+.accb ol,.accb ul{margin:0;padding-left:20px;font-size:13.5px} .accb li{margin:4px 0}
+@media (max-width:620px){.fin-head{padding-top:14px;padding-bottom:10px}.fin-head h3{font-size:24px}.fin-conds{gap:6px}.fc{flex-direction:column;align-items:center;text-align:center;gap:0;padding:6px 4px}.fc .dd{display:none}.fc b{font-size:12.5px}.fin-head,.fin-foot{padding-left:14px;padding-right:14px}.fin-body{padding-left:14px;padding-right:14px}.acc>summary{flex-wrap:wrap}.acc>summary .sum{margin-left:0;flex:1 0 100%;text-align:left}}
+@media (prefers-reduced-motion:reduce){.acc>summary::before{transition:none}}
 .wz-chips{display:flex;gap:6px;margin:6px 0 10px}
-.wz-chips button{flex:1;padding:5px 0;font-size:12px;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:3px}
+.wz-chips button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 0;font-size:11px;line-height:1.25;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:3px}
 .wz-chips button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .wz-chips button.ok:not(.on){color:var(--ok);border-color:var(--ok)}
 .wz-desc{font-size:13px;color:var(--muted);margin:0 0 10px}
 .wz-q{font-weight:700;font-size:13px;margin:12px 0 6px}
+.wz-chips button i{font-style:normal;font-weight:700;font-size:13px}
 .opt.on{border-color:var(--accent);background:var(--hl-land)}
+.seg{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:6px}
+.segb{padding:9px 6px;font-size:13.5px;font-weight:500;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px}
+.segb:hover{border-color:var(--accent)}
+.segb.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:700}
+.seg-desc{font-size:12.5px;color:var(--muted);margin-top:7px;min-height:3.2em;line-height:1.5}
+.seg-desc b{color:var(--ink)}
+details.wz-more{margin-top:12px;border-top:1px dashed var(--line);padding-top:8px;font-size:13px}
+details.wz-more>summary{cursor:pointer;color:var(--muted)}
+.wz-foot{position:sticky;bottom:0;z-index:2;background:var(--panel);margin:14px -14px -14px;padding:10px 14px 12px;border-top:1px solid var(--line)}
+.wz-sub{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px}
+.wz-sub .hint{margin:0;flex:1}
 .opt .dd{display:block;font-weight:400}
-.wz-nav{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
-.wz-start{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
-.wz-start button{width:100%}
-.wz-start #btnDefault{margin-top:8px}
+.wz-nav{display:flex;gap:6px;margin-top:0} .wz-nav #btnStart{flex:1 1 auto;width:auto;white-space:nowrap} .wz-nav .ghost{white-space:nowrap}
 .wz-sum{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
 .wz-sum td{padding:4px 0;border-top:1px solid var(--line);vertical-align:top}
 .wz-sum td:first-child{color:var(--muted);width:6.5em}
@@ -445,12 +481,14 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
           <div class="wz-chips" id="wzChips"></div>
           <p class="wz-desc" id="wzDesc"></p>
           <div id="wzBody"></div>
-          <div class="wz-nav"><button class="ghost" id="wzPrev">← 上一步</button><button class="ghost" id="wzNext">下一步 →</button></div>
-          <div class="wz-start"><button id="btnStart">開始作戰</button><div class="hint" id="wzHint"></div>
-            <button class="ghost" id="btnDefault">依預設值直接開始</button>
-            <div class="wz-stat"><div class="hint">想知道這組設定誰比較有利？讓電腦自動模擬多局，統計勝率、代價與決策的影響。</div>
-              <div class="wz-statrow"><select id="statN" aria-label="統計局數"><option value="50">50 局</option><option value="100" selected>100 局</option><option value="300">300 局</option></select><button class="ghost" id="btnStats">用目前設定跑統計</button></div></div>
-            <div class="hint">預設：對戰、你操作攻方（電腦守方）、第 8 回合判定、演習掩護、擲骰決定參戰、快訊開啟。不會改掉你已記錄的設定。</div></div>
+          <details class="wz-more"><summary>進階：用目前設定跑統計</summary>
+            <div class="hint">想知道這組設定誰比較有利？讓電腦自動模擬多局，統計勝率、代價與決策的影響。</div>
+            <div class="wz-statrow"><select id="statN" aria-label="統計局數"><option value="50">50 局</option><option value="100" selected>100 局</option><option value="300">300 局</option></select><button class="ghost" id="btnStats">開始統計</button></div>
+          </details>
+          <div class="wz-foot">
+            <div class="wz-nav"><button class="ghost" id="wzPrev">← 上一步</button><button class="ghost" id="wzNext">下一步 →</button><button id="btnStart">開始作戰</button></div>
+            <div class="wz-sub"><div class="hint" id="wzHint"></div><button class="lnk" id="btnDefault" title="預設：對戰、你操作攻方（電腦守方）、第 8 回合判定、演習掩護、擲骰決定參戰、快訊開啟。不會改掉你已記錄的設定。">依預設值直接開始</button></div>
+          </div>
           <div id="wzStore" hidden>
             <select id="optMode"><option value="play">對戰</option><option value="sim">電腦推演</option><option value="video">純模擬</option></select>
             <select id="optVSpeed"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option></select>
@@ -806,18 +844,22 @@ function endGame(early,side){
   const v=early?{s:side,t:side==='atk'?'攻方勝利':'守方勝利',d:early}:verdict(n,true);
   log('作戰結束：'+v.t);
   S.result={side:v.s,n,early:!!early};
-  const html='<div class="eyebrow">'+(early?'提前結束 · 第 '+S.turn+' 回合':'第 '+S.T+' 回合 判定')+'</div>'+
-    '<h3 class="verdict '+v.s+'">'+v.t+'</h3><p>'+v.d+'</p>'+
-    cs.map((c,i)=>'<div class="vc"><span class="n">'+(i+1)+'</span><div><div class="t">'+c.title+'</div><div class="d">'+c.now+'</div></div><span class="pill '+(c.atk?'atk':'def')+'">'+(c.atk?'攻方達成':'守方確保')+'</span></div>').join('')+
-    '<div class="proj">攻方達成 <b>'+n+'</b> / 3 項（需 2 項以上獲勝）</div>'+
-    afterAction(v.s)+(S.sim||S.video?timelineHTML():'')+newsRecap()+
-    '<div class="btns" style="margin-top:14px"><button id="btnAgain">'+(S.video?'再模擬一次':'重新開局')+'</button><button class="ghost" id="btnClose">'+(S.video?'回頭看影片':'檢視地圖')+'</button>'+(S.video?'<button class="ghost" id="btnBack">回到設定</button><button class="ghost" id="btnStats2">跑 100 次統計</button>':'')+'</div>';
+  const chips=cs.map(c=>'<div class="fc '+(c.atk?'ok':'no')+'"><span class="fi">'+(c.atk?'✓':'✕')+'</span><div><b>'+c.title+'</b><span class="dd">'+c.now+'</span></div></div>').join('');
+  const html='<div class="finw"><div class="fin-head"><div class="eyebrow">'+(early?'提前結束 · 第 '+S.turn+' 回合':'第 '+S.T+' 回合 判定')+'</div>'+
+    '<h3 class="verdict '+v.s+'">'+v.t+'</h3><p class="fvd">'+v.d+'</p>'+
+    '<div class="fin-conds">'+chips+'</div><div class="fin-score">攻方達成 <b>'+n+'</b> / 3 項（需 2 項以上獲勝）</div></div>'+
+    '<div class="fin-body"><div class="fin-tools"><button class="lnk" id="accAll">全部展開</button><button class="lnk" id="accNone">全部收合</button></div>'+
+    afterAction(v.s)+(S.sim||S.video?timelineHTML():'')+newsRecap()+'</div>'+
+    '<div class="fin-foot"><button id="btnAgain">'+(S.video?'再模擬一次':'重新開局')+'</button><button class="ghost" id="btnClose">'+(S.video?'回頭看影片':'檢視地圖')+'</button>'+(S.video?'<button class="ghost" id="btnBack">回到設定</button><button class="ghost" id="btnStats2">跑 100 次統計</button>':'')+'</div></div>';
   if(S.rec){REC.final=html;recordFrame();REC.closed=true;if(REC.resolve)REC.resolve();return;}
   showFinal(html);
   render();
 }
+function mboxSet(cls){const b=$('#mbox');b.classList.remove('ev','fin');if(cls)b.classList.add(cls);return b;}
+function acc(title,sum,html,open){return '<details class="acc"'+(open?' open':'')+'><summary><b>'+title+'</b><span class="sum">'+sum+'</span></summary><div class="accb">'+html+'</div></details>';}
+function accTools(){const tog=o=>document.querySelectorAll('#mbox details.acc').forEach(d=>{d.open=o;});const a=$('#accAll'),n=$('#accNone');if(a)a.onclick=()=>tog(true);if(n)n.onclick=()=>tog(false);}
 function showFinal(html){
-  $('#mbox').innerHTML=html;$('#mbox').classList.remove('ev');$('#resume').hidden=true;$('#modal').hidden=false;
+  mboxSet('fin').innerHTML=html;accTools();$('#resume').hidden=true;$('#modal').hidden=false;
   $('#btnAgain').onclick=()=>{$('#modal').hidden=true;if(S.video)startVideo();else reset();};
   $('#btnClose').onclick=()=>{$('#modal').hidden=true;};
   const bb=$('#btnBack');if(bb)bb.onclick=()=>{$('#modal').hidden=true;backToSetup();};
@@ -1234,7 +1276,7 @@ function finishRec(ev,rec,choice,rolls){
 }
 function playEvent(ev,i){
   return new Promise(done=>{
-    const box=$('#mbox');box.classList.add('ev');$('#modal').hidden=false;$('#resume').hidden=true;
+    const box=mboxSet('ev');$('#modal').hidden=false;$('#resume').hidden=true;
     const rec={turn:S.turn,phase:S.phase,title:ev.title,id:ev.id};
     const specs=(ev.dice||[]).filter(d=>!d.skip||!d.skip());
     const finish=(choice,rolls)=>{
@@ -1313,10 +1355,10 @@ function renderNodes(){
 }
 function timelineHTML(){
   if(!S.events.length)return '';
-  return '<div class="eyebrow" style="margin-top:16px">推演時間軸</div><ul class="tl">'+S.events.map(e=>
+  return acc('推演時間軸',S.events.length+' 個事件節點','<ul class="tl">'+S.events.map(e=>
     '<li><b>T'+e.turn+' '+e.title+'</b><div class="dd">'+recLine(e)+'</div>'+
     '<div>'+e.effects.join('、')+'</div><div class="dd">當時：攻方島上 '+e.snap.as+' 步、守方 '+e.snap.ds+' 步、港口 '+e.snap.ports+'/3、台北'+(e.snap.taipei?'攻方':'守方')+'控制、'+e.snap.fx+'，攻方達成 '+e.snap.n+'/3</div></li>').join('')+
-    '<li><b>T'+S.turn+' 最終判定</b><div class="dd">攻方島上 '+snap().as+' 步、守方 '+snap().ds+' 步；'+snap().fx+'</div></li></ul>';
+    '<li><b>T'+S.turn+' 最終判定</b><div class="dd">攻方島上 '+snap().as+' 步、守方 '+snap().ds+' 步；'+snap().fx+'</div></li></ul>',false);
 }
 
 /* ---------- theater rendering ---------- */
@@ -1483,22 +1525,23 @@ function lossBy(side,sea){
 function costReport(win){
   const c=costSummary(),g=gdpProjection(win),tr=(a,b,d)=>'<tr><td>'+a+'</td><td>'+b+'</td><td>'+(d||'')+'</td></tr>';
   const m=c.mil,cv=c.civ;
-  return '<h4>軍民傷亡（估算，含死亡、受傷、失蹤）</h4><div class="tbl"><table class="ctable"><thead><tr><th></th><th>傷亡</th><th>其中死亡或失蹤</th></tr></thead><tbody>'+
+  const casSum='軍人 攻 '+fmt(m.atk.n)+'・守 '+fmt(m.def.n)+'；台灣平民 '+fmt(cv.TW),ecoSum='全球 GDP −'+g.o.W.pct.toFixed(1)+'%・股市 '+c.mkt.toFixed(1)+'%';
+  return acc('軍民傷亡',casSum,'<div class="tbl"><table class="ctable"><thead><tr><th></th><th>傷亡</th><th>其中死亡或失蹤</th></tr></thead><tbody>'+
     tr('攻方軍人','約 '+ppl(m.atk.n),'約 '+ppl(m.atk.dead))+
     tr('守方軍人','約 '+ppl(m.def.n),'約 '+ppl(m.def.dead))+
     (m.US.n?tr('美軍','約 '+ppl(m.US.n),'約 '+ppl(m.US.dead)):'')+(m.JP.n?tr('日本自衛隊','約 '+ppl(m.JP.n),'約 '+ppl(m.JP.dead)):'')+
     tr('台灣平民','約 '+ppl(cv.TW),'約 '+ppl(cv.TW*.3))+
     (cv.CN?tr('中國大陸平民（軍事設施周邊）','約 '+fmt(cv.CN)+' 人','約 '+fmt(cv.CN*.3)+' 人'):'')+(cv.JP?tr('日本平民（沖繩等）','約 '+ppl(cv.JP),'約 '+ppl(cv.JP*.3)):'')+(cv.PH?tr('菲律賓平民','約 '+ppl(cv.PH),'約 '+ppl(cv.PH*.3)):'')+(cv.US?tr('關島居民','約 '+ppl(cv.US),'約 '+ppl(cv.US*.3)):'')+
     '</tbody></table></div>'+
-    '<div class="dd">裝備：'+[c.plaP.what.length?'攻方 '+c.plaP.what.join('、'):'',c.rocP.what.length?'守方 '+c.rocP.what.join('、'):''].filter(Boolean).join('；')+(POOL0.rf-S.pools.rf?'；火箭軍發射約 '+fmt((POOL0.rf-S.pools.rf)*40)+' 枚飛彈':'')+(S.stats.cn.strikes?'。大陸平民傷亡只計入軍事設施周邊的波及':'。中國大陸本土未遭打擊，本遊戲不計大陸平民傷亡')+'。</div>'+
-    '<h4>經濟代價</h4><div class="tbl"><table class="ctable"><thead><tr><th></th><th>戰事期間直接損失</th><th>若戰事與制裁延續一年，GDP 衝擊</th></tr></thead><tbody>'+
+    '<div class="dd">裝備：'+[c.plaP.what.length?'攻方 '+c.plaP.what.join('、'):'',c.rocP.what.length?'守方 '+c.rocP.what.join('、'):''].filter(Boolean).join('；')+(POOL0.rf-S.pools.rf?'；火箭軍發射約 '+fmt((POOL0.rf-S.pools.rf)*40)+' 枚飛彈':'')+(S.stats.cn.strikes?'。大陸平民傷亡只計入軍事設施周邊的波及':'。中國大陸本土未遭打擊，本遊戲不計大陸平民傷亡')+'。</div>'
+    ,false)+acc('經濟代價',ecoSum,'<div class="tbl"><table class="ctable"><thead><tr><th></th><th>戰事期間直接損失</th><th>若戰事與制裁延續一年，GDP 衝擊</th></tr></thead><tbody>'+
     tr('台灣',money(c.econ.TW),'−'+g.o.TW.pct.toFixed(1)+'%（約 '+money(g.o.TW.usd*1000)+'）')+
     tr('中國',money(c.econ.CN),'−'+g.o.CN.pct.toFixed(1)+'%（約 '+money(g.o.CN.usd*1000)+'）')+
     tr('美國',money(c.econ.US),'−'+g.o.US.pct.toFixed(1)+'%（約 '+money(g.o.US.usd*1000)+'）')+
     tr('日本',money(c.econ.JP),'無公開估算')+
     tr('全球','股市累計 '+c.mkt.toFixed(1)+'%','−'+g.o.W.pct.toFixed(1)+'%（約 '+money(g.o.W.usd*1000)+'）')+
     '</tbody></table></div>'+
-    '<div class="dd">先進晶片：台灣生產全球約九成的先進製程晶片，戰事期間供應中斷，汽車、手機、AI 伺服器等產業首當其衝。一年期 GDP 衝擊以 Bloomberg Economics 2024 年的估算為基準（'+g.kind+'情境），依本局戰事規模與結果換算 '+Math.round(g.k*100)+'%。所有數字為遊戲依公開資料的粗估，僅供參考。</div>';
+    '<div class="dd">先進晶片：台灣生產全球約九成的先進製程晶片，戰事期間供應中斷，汽車、手機、AI 伺服器等產業首當其衝。一年期 GDP 衝擊以 Bloomberg Economics 2024 年的估算為基準（'+g.kind+'情境），依本局戰事規模與結果換算 '+Math.round(g.k*100)+'%。所有數字為遊戲依公開資料的粗估，僅供參考。</div>',false);
 }
 function afterAction(win){
   const st=S.stats,b=snap(),P=S.pools,sum=a=>a.reduce((x,y)=>x+y[1],0);
@@ -1551,10 +1594,12 @@ function afterAction(win){
   const yours=S.sim?null:(S.ctrl.atk==='human'&&S.ctrl.def!=='human'?'atk':S.ctrl.def==='human'&&S.ctrl.atk!=='human'?'def':null);
   const tipBlock=side=>'<div class="aar-col"><div class="eyebrow">'+SIDE[side]+(yours===side?'（你的陣營）':'')+(win===side?' · 勝方：可保持的做法':' · 改進措施')+'</div><ul>'+(side==='atk'?atkTips:defTips).map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
   const lossList=(side,label)=>{const l=lossBy(side).map(([k])=>[k,menLost(side,h=>lossCat(h)===k).n]).sort((a,b)=>b[1]-a[1]);return '<div><b>'+label+'</b>：'+(l.length?l.map(([k,v])=>k+' 約 '+ppl(v)).join('、'):'無')+'</div>';};
-  return '<div class="aar"><div class="eyebrow" style="margin-top:16px">戰後檢討報告 · 參戰情境：'+FXSCEN[S.fxScen]+'</div>'+
-    '<h4>勝負關鍵</h4><ol>'+keys.slice(0,5).map(k=>'<li>'+k[1]+'</li>').join('')+'</ol>'+
-    costReport(win)+'<h4>部隊傷亡來源（不含空軍、海軍、防空）</h4><div class="dd aar-loss">'+lossList('atk','攻方')+lossList('def','守方')+'</div>'+
-    '<div class="aar-grid">'+(yours==='def'?tipBlock('def')+tipBlock('atk'):tipBlock('atk')+tipBlock('def'))+'</div></div>';
+  const top=lossBy('atk')[0];
+  return '<div class="aar"><div class="eyebrow fin-eb">戰後檢討報告 · 參戰情境：'+FXSCEN[S.fxScen]+'</div>'+
+    acc('勝負關鍵',Math.min(5,keys.length)+' 項重點（'+keys[0][1].split('：')[0]+' 等）','<ol>'+keys.slice(0,5).map(k=>'<li>'+k[1]+'</li>').join('')+'</ol>',true)+
+    costReport(win)+
+    acc('部隊傷亡來源（不含空軍、海軍、防空）',top?'攻方最大來源：'+top[0]:'—','<div class="aar-loss">'+lossList('atk','攻方')+lossList('def','守方')+'</div>',false)+
+    acc('檢討與改進措施','攻方 '+atkTips.length+' 項・守方 '+defTips.length+' 項','<div class="aar-grid">'+(yours==='def'?tipBlock('def')+tipBlock('atk'):tipBlock('atk')+tipBlock('def'))+'</div>',false)+'</div>';
 }
 
 /* ---------- news ---------- */
@@ -1603,7 +1648,7 @@ function newsBody(n){
 }
 function showNews(n){
   return new Promise(done=>{
-    const box=$('#mbox');box.classList.add('ev');
+    const box=mboxSet('ev');
     box.innerHTML=newsBody(n)+'<div class="btns" style="margin-top:14px"><button id="nwGo">下一回合 ▶</button><button class="ghost" id="nwMap">看地圖</button></div>';
     $('#modal').hidden=false;$('#resume').hidden=true;
     $('#nwMap').onclick=()=>{$('#modal').hidden=true;$('#resume').hidden=false;};
@@ -1613,7 +1658,7 @@ function showNews(n){
 }
 function newsRecap(){
   if(!S.news.length)return '';
-  return '<div class="eyebrow" style="margin-top:16px">快訊回顧</div><ul class="tl">'+S.news.map(n=>'<li><b>'+dayLabel(n.t)+'</b>　'+n.items.join('；')+'</li>').join('')+'</ul>';
+  return acc('每回合快訊回顧',S.news.length+' 則','<ul class="tl">'+S.news.map(n=>'<li><b>'+dayLabel(n.t)+'</b>　'+n.items.join('；')+'</li>').join('')+'</ul>',false);
 }
 
 /* ---------- turn flow ---------- */
@@ -2273,24 +2318,28 @@ function statsHTML(rows){
   if(D)takeaways.push('有 '+D+' 局（'+pct(D,N)+'%）判僵局：首都已連續被占 2 個回合以上，但攻方孤立。');
   if(brief)takeaways.push('有 '+brief+' 局（'+pct(brief,N)+'%）首都在最後一刻才被占領（暫時占領），判守方獲勝。');
   const usFull=rows.filter(r=>r.us>=3);if(usFull.length>=8&&usFull.length<N-7)takeaways.push('美國全面參戰時攻方勝率約 '+pct(usFull.filter(r=>r.win).length,usFull.length)+'%，其他情況約 '+pct(rows.filter(r=>r.us<3&&r.win).length,rows.filter(r=>r.us<3).length)+'%。');
-  return '<div class="eyebrow">統計結果 · '+N+' 局</div><h3>攻方勝率 '+pct(W,N)+'%　<span class="dd">僵局 '+pct(rows.filter(r=>r.draw).length,N)+'%・守方勝 '+pct(N-W-rows.filter(r=>r.draw).length,N)+'%</span></h3>'+
+  const outs='<h3>攻方勝率 '+pct(W,N)+'%　<span class="dd">僵局 '+pct(rows.filter(r=>r.draw).length,N)+'%・守方勝 '+pct(N-W-rows.filter(r=>r.draw).length,N)+'%</span></h3>';
+  const costT='<table class="ctable"><tbody><tr><td>攻方軍人傷亡</td><td>'+range('milA',v=>ppl(v))+'</td></tr><tr><td>守方軍人傷亡</td><td>'+range('milD',v=>ppl(v))+'</td></tr><tr><td>台灣平民傷亡</td><td>'+range('civ',v=>ppl(v))+'</td></tr><tr><td>全球股市</td><td>'+range('mkt',v=>v.toFixed(1)+'%')+'</td></tr></tbody></table>';
+  const usT='<table class="ctable"><tbody>'+us.sort((a,b)=>LV.US.indexOf(a.k)-LV.US.indexOf(b.k)).map(x=>'<tr><td>'+x.k+'</td><td>'+x.n+' 局</td><td>攻方勝率 '+pct(x.w,x.n)+'%'+(x.n<8?'<span class="dd">（樣本少）</span>':'')+'</td></tr>').join('')+'</tbody></table>';
+  return '<div class="finw"><div class="fin-head"><div class="eyebrow">統計結果 · '+N+' 局</div>'+outs+
     '<div class="dd">95% 信賴區間約 '+Math.round(lo*100)+'%～'+Math.round(hi*100)+'%。設定：第 '+$('#optT').value+' 回合判定、'+optLabel('optBuild',$('#optBuild').value)+'、'+optLabel('optFx',$('#optFx').value)+'。雙方由電腦操作，事件決策與擲骰隨機。</div>'+
-    '<ul class="stk">'+takeaways.map(t=>'<li>'+t+'</li>').join('')+'</ul>'+
-    '<div class="eyebrow" style="margin-top:12px">攻方達成幾項條件</div>'+[0,1,2,3].map(k=>statBar(k+' 項'+(k>=2?'（獲勝）':''),pct(rows.filter(r=>r.n===k).length,N),k>=2?'atk':'def')).join('')+
-    '<div class="eyebrow" style="margin-top:12px">各項條件達成率</div>'+statBar('首都台北',pct(rows.filter(r=>r.tp).length,N),'atk')+statBar('主要港口',pct(rows.filter(r=>r.pt).length,N),'atk')+statBar('島上戰力',pct(rows.filter(r=>r.fo).length,N),'atk')+
-    '<div class="eyebrow" style="margin-top:12px">代價（粗估）</div><table class="ctable"><tbody>'+
-    '<tr><td>攻方軍人傷亡</td><td>'+range('milA',v=>ppl(v))+'</td></tr><tr><td>守方軍人傷亡</td><td>'+range('milD',v=>ppl(v))+'</td></tr>'+
-    '<tr><td>台灣平民傷亡</td><td>'+range('civ',v=>ppl(v))+'</td></tr><tr><td>全球股市</td><td>'+range('mkt',v=>v.toFixed(1)+'%')+'</td></tr></tbody></table>'+
-    '<div class="eyebrow" style="margin-top:12px">美國參戰程度與攻方勝率</div><table class="ctable"><tbody>'+us.sort((a,b)=>LV.US.indexOf(a.k)-LV.US.indexOf(b.k)).map(x=>'<tr><td>'+x.k+'</td><td>'+x.n+' 局</td><td>攻方勝率 '+pct(x.w,x.n)+'%'+(x.n<8?'<span class="dd">（樣本少）</span>':'')+'</td></tr>').join('')+'</tbody></table>'+
-    (tables.length?'<div class="eyebrow" style="margin-top:12px">決策與攻方勝率</div><table class="ctable"><tbody>'+tables.join('')+'</tbody></table>':'')+
-    '<div class="dd" style="margin-top:8px">電腦的決策是隨機抽樣，不代表最佳策略；樣本越多越準，局數少時勝率可能有明顯誤差。</div>'+
-    '<div class="btns" style="margin-top:14px"><button id="stClose">關閉</button><button class="ghost" id="stAgain">再跑一次</button></div>';
+    '<ul class="stk">'+takeaways.map(t=>'<li>'+t+'</li>').join('')+'</ul></div>'+
+    '<div class="fin-body"><div class="fin-tools"><button class="lnk" id="accAll">全部展開</button><button class="lnk" id="accNone">全部收合</button></div>'+
+    acc('攻方達成幾項條件','獲勝 '+pct(W,N)+'%・首都 '+pct(rows.filter(r=>r.tp).length,N)+'%・港口 '+pct(rows.filter(r=>r.pt).length,N)+'%・戰力 '+pct(rows.filter(r=>r.fo).length,N)+'%',
+      [0,1,2,3].map(k=>statBar(k+' 項'+(k>=2?'（獲勝）':''),pct(rows.filter(r=>r.n===k).length,N),k>=2?'atk':'def')).join('')+'<div class="eyebrow" style="margin-top:10px">各項條件達成率</div>'+
+      statBar('首都台北',pct(rows.filter(r=>r.tp).length,N),'atk')+statBar('主要港口',pct(rows.filter(r=>r.pt).length,N),'atk')+statBar('島上戰力',pct(rows.filter(r=>r.fo).length,N),'atk'),true)+
+    acc('代價（粗估）','攻方傷亡約 '+ppl(rows.reduce((a,r)=>a+r.milA,0)/N)+'・台灣平民約 '+ppl(rows.reduce((a,r)=>a+r.civ,0)/N),costT,false)+
+    acc('美國參戰程度與攻方勝率',us.length+' 種情況',usT,false)+
+    (tables.length?acc('決策與攻方勝率',best&&best.gap>=15?'影響最大：'+best.name:'各項決策差異不大','<table class="ctable"><tbody>'+tables.join('')+'</tbody></table>',false):'')+
+    '<div class="dd" style="margin-top:8px">電腦的決策是隨機抽樣，不代表最佳策略；樣本越多越準，局數少時勝率可能有明顯誤差。</div></div>'+
+    '<div class="fin-foot"><button id="stClose">關閉</button><button class="ghost" id="stAgain">再跑一次</button></div></div>';
+
 }
 async function runStats(N){
   if(STAT.running)return;
   STAT.running=true;STAT.cancel=false;clearTimeout(V.t);V.playing=false;if(V.fr.length)vBtn();
   const keep={S,final:REC.final,frames:REC.frames,prev:REC.prev};
-  const box=$('#mbox');box.classList.add('ev');$('#resume').hidden=true;$('#modal').hidden=false;
+  const box=mboxSet('ev');$('#resume').hidden=true;$('#modal').hidden=false;
   const rows=[];
   const prog=i=>{box.innerHTML='<div class="eyebrow">統計中</div><h3>正在模擬 '+i+' / '+N+' 局</h3><div class="pbar"><i style="width:'+Math.round(i/N*100)+'%"></i></div><p class="dd">雙方由電腦操作，事件決策與擲骰隨機；通常不到一分鐘。</p><div class="btns"><button class="ghost" id="stCancel">取消並顯示目前結果</button></div>';$('#stCancel').onclick=()=>{STAT.cancel=true;};};
   prog(0);await new Promise(r=>setTimeout(r,30));
@@ -2301,8 +2350,8 @@ async function runStats(N){
   S=keep.S;REC.final=keep.final;REC.frames=keep.frames;REC.prev=keep.prev;REC.quiet=false;STAT.running=false;
   if(S.started||S.over)renderAll();
   if(rows.length<5){box.innerHTML='<h3>局數太少</h3><p>至少需要 5 局才能統計。</p><div class="btns"><button id="stClose">關閉</button></div>';}
-  else box.innerHTML=statsHTML(rows);
-  $('#stClose').onclick=()=>{$('#modal').hidden=true;box.classList.remove('ev');if(S.over&&S.video&&REC.final&&V.fr.length)showFinal(REC.final);};
+  else{mboxSet('fin');box.innerHTML=statsHTML(rows);accTools();}
+  $('#stClose').onclick=()=>{$('#modal').hidden=true;mboxSet('');if(S.over&&S.video&&REC.final&&V.fr.length)showFinal(REC.final);};
   const ag=$('#stAgain');if(ag)ag.onclick=()=>runStats(N);
 }
 
@@ -2355,7 +2404,7 @@ function startGame(){
   S.lastSnap=snap();
   log((S.sim?'推演開始':'作戰開始')+'。判定回合：第 '+S.T+' 回合。');beginPhase('atk');
 }
-function confirmBox(msg){return new Promise(res=>{const box=$('#mbox');box.classList.remove('ev');
+function confirmBox(msg){return new Promise(res=>{const box=mboxSet('');
   box.innerHTML='<div class="eyebrow">確認打擊</div><h3>升級戰事？</h3><p>'+msg+'</p><div class="btns"><button id="cfY">確定打擊</button><button class="ghost" id="cfN">取消</button></div>';
   $('#modal').hidden=false;$('#cfY').onclick=()=>{$('#modal').hidden=true;res(true);};$('#cfN').onclick=()=>{$('#modal').hidden=true;res(false);};$('#cfN').focus();});}
 $('#tmap').addEventListener('click',async e=>{
@@ -2377,7 +2426,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.09';
+const VERSION='2026-11-02.10';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
@@ -2400,19 +2449,19 @@ $('#btnStart').addEventListener('click',()=>{if(!newverBtn.hidden)updateLabel();
 const isSim=()=>$('#optMode').value==='sim';
 const isVideo=()=>$('#optMode').value==='video';
 const SETUP_PAGES=[
- {t:'對戰方式',d:'先決定怎麼玩：自己指揮，或交給電腦推演整場戰爭。',fields:[
-  {sel:'optMode',q:'模式',opts:{play:['對戰','由你下令移動、攻擊與打擊，隨時掌握戰場。'],sim:['電腦推演','雙方由電腦操作，途中在 7 個關鍵節點暫停，由你做決策或擲骰，最後產出推演時間軸與檢討報告。'],video:['純模擬（看影片）','全程由電腦操作，並自動決策與擲骰，像看攻防影片：以戰棋地圖為背景播放，雙方動作與影響顯示在下方字幕區。可暫停、變速、拖曳時間軸，結束後附戰後檢討。']}},
-  {sel:'optSide',q:'你要操作哪一方？',when:()=>$('#optMode').value==='play',opts:{atk:['攻方（紅）','你指揮渡海登陸，電腦防守台灣。'],def:['守方（藍）','你防守台灣，電腦負責進攻。'],both:['雙方都操作','同一台裝置輪流操作兩方。'],none:['都不操作（觀戰）','兩邊都由電腦操作，看戰局演變。']}},
+ {t:'對戰方式',s:'方式',d:'先決定怎麼玩：自己指揮，或交給電腦推演整場戰爭。',fields:[
+  {sel:'optMode',q:'模式',opts:{play:['對戰','由你下令移動、攻擊與打擊，隨時掌握戰場。'],sim:['電腦推演','雙方由電腦操作，途中在 7 個關鍵節點暫停，由你做決策或擲骰，最後產出推演時間軸與檢討報告。','電腦推演'],video:['純模擬（看影片）','全程由電腦操作，並自動決策與擲骰，像看攻防影片：以戰棋地圖為背景播放，雙方動作與影響顯示在下方字幕區。可暫停、變速、拖曳時間軸，結束後附戰後檢討。','純模擬']}},
+  {sel:'optSide',q:'你要操作哪一方？',when:()=>$('#optMode').value==='play',opts:{atk:['攻方（紅）','你指揮渡海登陸，電腦防守台灣。'],def:['守方（藍）','你防守台灣，電腦負責進攻。'],both:['雙方都操作','同一台裝置輪流操作兩方。'],none:['都不操作（觀戰）','兩邊都由電腦操作，看戰局演變。','觀戰']}},
   {sel:'optVSpeed',q:'播放速度',when:()=>isVideo(),opts:{'1':['1×','逐步閱讀，一場約需數分鐘。'],'2':['2×','建議速度。'],'4':['4×','快轉，適合只看結果與重點。']}},
   {sel:'optSpeed',q:'推演速度',when:()=>isSim(),opts:{'1':['一般','每個動作有短暫停頓，方便看清楚。'],'0.35':['快速','縮短動作之間的停頓。']}}]},
- {t:'判定回合',d:'戰爭持續到指定回合結束，才依三項條件判定勝負，攻方達成 2 項以上獲勝：① 台北由攻方控制 ② 基隆、台中港、高雄至少 2 個港口由攻方控制 ③ 攻方島上兵力步數不少於守方。只拿下台北且連續控制 2 個回合以上，判「僵局」（首都陷落但攻方孤立）；到最後才占領則視為暫時占領，仍判守方勝。每回合約半天。',fields:[
+ {t:'判定回合',s:'回合',d:'戰爭持續到指定回合結束，才依三項條件判定勝負，攻方達成 2 項以上獲勝：① 台北由攻方控制 ② 基隆、台中港、高雄至少 2 個港口由攻方控制 ③ 攻方島上兵力步數不少於守方。只拿下台北且連續控制 2 個回合以上，判「僵局」（首都陷落但攻方孤立）；到最後才占領則視為暫時占領，仍判守方勝。每回合約半天。',fields:[
   {sel:'optT',q:'幾回合後判定？',opts:{'6':['第 6 回合','約 3 天。時間很緊，攻方多半來不及站穩。'],'8':['第 8 回合','約 4 天。基準設定。'],'10':['第 10 回合','約 5 天。攻方有較多時間奪港。'],'12':['第 12 回合','約 6 天。長期戰，攻方較有機會站穩。']}}]},
- {t:'戰前集結',d:'渡海前要先集結船團與兵員，很難完全隱藏。集結越公開，台灣與美日越早準備。',fields:[
+ {t:'戰前集結',s:'集結',d:'渡海前要先集結船團與兵員，很難完全隱藏。集結越公開，台灣與美日越早準備。',fields:[
   {sel:'optBuild',q:'攻方怎麼集結？',when:()=>!isSim(),opts:{open:['公開全面集結','兵力最多（+2 兩棲旅、+1 重型旅、護航艦隊 +2），但守方提早動員、美國航艦已在附近、各國參戰擲骰 +1。'],exercise:['演習掩護','以軍演名義集結，雙方都只有部分預警。基準設定。'],surprise:['戰略突襲','兵力少一截（−2 兩棲旅、−1 重型旅），換取守方動員延後、各國參戰擲骰 −1。']}}],
   note:()=>isSim()?'推演模式的集結會在第一個事件節點由你選擇，這一頁不用設定。':''},
- {t:'美日菲參戰',d:'美國、日本、菲律賓是否參戰，會大幅改變戰局。',fields:[
+ {t:'美日菲參戰',s:'參戰',d:'美國、日本、菲律賓是否參戰，會大幅改變戰局。',fields:[
   {sel:'optFx',q:'參戰情境',opts:{dice:['擲骰決定','第 3 回合各國擲骰決定態度，第 5 回合再擲一次；攻方打擊基地會讓該國升級參戰。'],none:['不介入（台灣孤軍）','三國全程不參戰，戰區基地也不能被打擊。'],full:['開戰即全面介入','三國第 1 回合就參戰，航艦仍要 2 回合才抵達。']}}]},
- {t:'快訊與確認',d:'最後確認設定。任何一頁都可以回去修改，所有頁面看過之後，在哪一頁都能開始作戰。',fields:[
+ {t:'快訊與確認',s:'確認',d:'最後確認設定。任何一頁都可以回去修改，所有頁面看過之後，在哪一頁都能開始作戰。',fields:[
   {sel:'optNews',q:'每回合結束時顯示國際快訊',opts:{'1':['開啟','戰場插圖、頭條與戰況摘要。'],'0':['關閉','直接進入下一回合。']}}],summary:true}
 ];
 const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
@@ -2428,11 +2477,12 @@ function renderWizard(){
   const pg=SETUP_PAGES[WZ.i],N=SETUP_PAGES.length;WZ.done[WZ.i]=true;
   $('#wzStep').textContent='作戰設定 · 第 '+(WZ.i+1)+' / '+N+' 頁';
   $('#wzTitle').textContent=pg.t;$('#wzDesc').textContent=pg.d;
-  $('#wzChips').innerHTML=SETUP_PAGES.map((x,i)=>'<button data-i="'+i+'" class="'+(i===WZ.i?'on':'')+(WZ.done[i]?' ok':'')+'" title="'+x.t+'" aria-label="第 '+(i+1)+' 頁 '+x.t+'">'+(WZ.done[i]&&i!==WZ.i?'✓':i+1)+'</button>').join('');
+  $('#wzChips').innerHTML=SETUP_PAGES.map((x,i)=>'<button data-i="'+i+'" class="'+(i===WZ.i?'on':'')+(WZ.done[i]?' ok':'')+'" title="'+x.t+'" aria-label="第 '+(i+1)+' 頁 '+x.t+'" aria-current="'+(i===WZ.i?'step':'false')+'"><i>'+(WZ.done[i]&&i!==WZ.i?'✓':i+1)+'</i><span>'+x.s+'</span></button>').join('');
   let h='';
   pg.fields.filter(f=>!f.when||f.when()).forEach(f=>{
     const cur=$('#'+f.sel).value;
-    h+='<div class="wz-q">'+f.q+'</div><div class="opts">'+Object.entries(f.opts).map(([v,[l,d]])=>'<button class="opt'+(v===cur?' on':'')+'" data-sel="'+f.sel+'" data-v="'+v+'" aria-pressed="'+(v===cur)+'"><b>'+l+'</b><span class="dd">'+d+'</span></button>').join('')+'</div>';
+    const ent=Object.entries(f.opts);
+    h+='<div class="wz-q">'+f.q+'</div><div class="seg" role="radiogroup" aria-label="'+f.q+'" style="--n:'+(ent.length<=3?ent.length:2)+'">'+ent.map(([v,o])=>'<button class="segb'+(v===cur?' on':'')+'" role="radio" aria-checked="'+(v===cur)+'" data-sel="'+f.sel+'" data-v="'+v+'">'+(o[2]||o[0])+'</button>').join('')+'</div><div class="seg-desc"><b>'+(f.opts[cur]?f.opts[cur][0]:'')+'</b>　'+(f.opts[cur]?f.opts[cur][1]:'')+'</div>';
   });
   const note=pg.note&&pg.note();if(note)h+='<div class="wz-note">'+note+'</div>';
   if(pg.summary){
@@ -2454,7 +2504,7 @@ $('#wzChips').addEventListener('click',e=>{const b=e.target.closest('[data-i]');
 $('#wzPrev').onclick=()=>{if(WZ.i>0){WZ.i--;renderWizard();}};
 $('#wzNext').onclick=()=>{if(WZ.i<SETUP_PAGES.length-1){WZ.i++;renderWizard();}};
 $('#wzBody').addEventListener('click',e=>{
-  const b=e.target.closest('.opt[data-sel]');if(!b)return;
+  const b=e.target.closest('.segb[data-sel]');if(!b)return;
   const el=$('#'+b.dataset.sel);el.value=b.dataset.v;el.dispatchEvent(new Event('change'));
 });
 /* ---------- side tabs ---------- */
