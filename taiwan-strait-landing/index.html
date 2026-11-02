@@ -236,6 +236,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
         <span><i style="background:var(--atk);opacity:.4"></i>攻方控制</span>
         <span>虛線邊＝斷崖海岸、點線邊＝泥灘潮間帶，皆不可登陸</span>
         <span style="color:var(--accent)">★ 勝負目標</span>
+        <span><i style="background:var(--accent);border-radius:50%"></i>棋子下方圓點＝戰力「步」，實心為剩餘、空心為已損失</span>
       </div>
       <div class="card theater">
         <div class="th-head"><h2>西太平洋戰區</h2><span class="hint" id="thHint"></span></div>
@@ -282,6 +283,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
         <details>
           <summary>規則摘要</summary>
           <ul>
+            <li><b>步（戰力）：</b>每個單位的戰力分成幾「步」，就是棋子下方的圓點。旅級單位多為 3 步，空降旅、後備旅、反艦飛彈為 2 步。每損失 1 步約失去三分之一戰力（在海上就是部分船艦連同人員裝備被擊沉）；只剩 1 步時攻防各 −1，歸零即被殲滅。戰況與報告中的「兵力 X 步」是各單位剩餘步數的加總，約 3 步相當於一個旅。</li>
             <li>每回合先攻方、後守方。每個單位每階段可移動一次，之後可攻擊一次。</li>
             <li><b>渡海：</b>兩棲旅、陸戰旅可從大陸任一沿岸格出航；裝甲旅只能從港口出航，且只能在攻方已控制的港口上岸。海上移動力依天候：良好 3、普通 2、惡劣 1。登陸後該單位本階段結束。</li>
             <li><b>搶灘突擊：</b>從海上直接攻擊岸上敵軍，攻擊 −2（陸戰旅 −1）。守方若被消滅，突擊單位可直接上岸。</li>
