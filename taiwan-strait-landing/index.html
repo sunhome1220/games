@@ -97,6 +97,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .hx.city{fill:var(--city);stroke:var(--land-edge)}
 .hx.mtn{fill:var(--mtn);stroke:var(--land-edge)}
 .ov-atk{fill:var(--atk);opacity:.22;pointer-events:none}
+.mud{stroke:var(--sea-edge);stroke-width:2.6;stroke-dasharray:1 3;stroke-linecap:round;fill:none;pointer-events:none}
 .cliff{stroke:var(--mtn-ink);stroke-width:2.2;stroke-dasharray:2 2;fill:none;pointer-events:none}
 .mtn-g{stroke:var(--mtn-ink);fill:none;stroke-width:1.2;pointer-events:none}
 .lbl{font-size:8.5px;fill:var(--ink);text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:500}
@@ -180,7 +181,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
         <span><i style="background:var(--mtn)"></i>山地（防禦 +2，移動 2）</span>
         <span><i style="background:var(--main)"></i>大陸沿海</span>
         <span><i style="background:var(--atk);opacity:.4"></i>攻方控制</span>
-        <span>虛線邊＝斷崖海岸，不可登陸</span>
+        <span>虛線邊＝斷崖海岸、點線邊＝泥灘潮間帶，皆不可登陸</span>
         <span style="color:var(--accent)">★ 勝負目標</span>
       </div>
     </section>
@@ -225,8 +226,8 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
             <li><b>搶灘突擊：</b>從海上直接攻擊岸上敵軍，攻擊 −2（陸戰旅 −1）。守方若被消滅，突擊單位可直接上岸。</li>
             <li><b>戰鬥：</b>攻擊值＋骰 對 防禦值＋地形＋骰。差 ≥4 守方失 2 步；1～3 失 1 步；0 雙方各失 1；−1～−3 攻方失 1；≤−4 攻方失 2。每多一支友軍與目標相鄰 +1（最多 +2）。只剩 1 步的單位攻防各 −1。</li>
             <li><b>控制區：</b>移動進入與敵軍相鄰的陸地格必須停下。</li>
-            <li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；落在敵軍旁時擲 1～2 損失 1 步。惡劣天候不能空降。</li>
-            <li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。第 1～2 回合 8 點、第 3～4 回合 5 點、之後 4 點；惡劣天候 −2。</li>
+            <li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；每次空投擲骰，擲 1 因防空攔截損失 1 步；落在敵軍旁時擲 1～3 就損失 1 步。惡劣天候不能空降。</li>
+            <li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。第 1～2 回合 8 點、第 3～4 回合 6 點、之後 5 點；惡劣天候 −2。</li>
             <li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li>
             <li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 2、港口 4、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1。</li>
             <li><b>增援：</b>攻方第 2～5 回合於大陸沿岸到達；守方後備旅第 2～4 回合在城市動員。</li>
@@ -260,7 +261,7 @@ const TYPES={
   mar:{n:'陸戰旅',s:'陸戰',atk:3,def:3,mv:2,hp:3},
   abn:{n:'空降旅',s:'空降',atk:3,def:2,mv:2,hp:2},
   arm:{n:'重型合成旅',s:'裝甲',atk:5,def:3,mv:3,hp:3},
-  inf:{n:'聯兵旅',s:'步兵',atk:2,def:2,mv:2,hp:3},
+  inf:{n:'聯兵旅',s:'步兵',atk:2,def:3,mv:2,hp:3},
   tank:{n:'裝甲旅',s:'裝甲',atk:4,def:3,mv:3,hp:3},
   res:{n:'後備旅',s:'後備',atk:2,def:2,mv:2,hp:2},
   ssm:{n:'岸置反艦飛彈',s:'飛彈',atk:0,def:1,mv:2,hp:2}
@@ -285,14 +286,14 @@ const TW=[
  [9,4,'city','新竹'],[10,4,'plain','湖口'],[11,4,'mtn'],[12,4,'mtn'],[13,4,'plain',null,1],
  [9,5,'plain','苗栗'],[10,5,'plain'],[11,5,'mtn'],[12,5,'mtn'],[13,5,'plain',null,1],
  [9,6,'port','台中港'],[10,6,'city','台中'],[11,6,'mtn'],[12,6,'mtn'],[13,6,'port','花蓮'],
- [9,7,'plain','彰化'],[10,7,'plain'],[11,7,'mtn'],[12,7,'mtn'],[13,7,'plain',null,1],
- [9,8,'plain','雲林'],[10,8,'city','嘉義'],[11,8,'mtn'],[12,8,'mtn'],[13,8,'plain',null,1],
+ [9,7,'plain','彰化',null,0,1],[10,7,'plain'],[11,7,'mtn'],[12,7,'mtn'],[13,7,'plain',null,1],
+ [9,8,'plain','雲林',null,0,1],[10,8,'city','嘉義'],[11,8,'mtn'],[12,8,'mtn'],[13,8,'plain',null,1],
  [9,9,'city','台南'],[10,9,'plain'],[11,9,'mtn'],[12,9,'city','台東',1],
  [10,10,'port','高雄'],[11,10,'mtn'],[12,10,'plain',null,1],
  [10,11,'plain','屏東'],[11,11,'mtn'],
  [11,12,'plain','恆春']
 ];
-TW.forEach(([c,r,t,n,cl])=>Object.assign(TER[K(c,r)],{t,name:n||null,cliff:!!cl,isl:'TW'}));
+TW.forEach(([c,r,t,n,cl,mud])=>Object.assign(TER[K(c,r)],{t,name:n||null,cliff:!!cl,mud:!!mud,isl:'TW'}));
 [[7,8,'port','馬公'],[7,9,'plain','澎湖']].forEach(([c,r,t,n])=>Object.assign(TER[K(c,r)],{t,name:n,isl:'PH'}));
 
 function nbrs(c,r){
@@ -305,7 +306,7 @@ const isLand=h=>h.t!=='sea';
 Object.values(TER).forEach(h=>{h.coastal=isLand(h)&&nbrs(h.c,h.r).some(n=>n.t==='sea');});
 
 const TAIPEI='11,2', PORTS=['12,1','9,6','10,10'], MAGONG='7,8';
-const ZONES={north:['10,2','11,1','10,3'],central:['9,5','9,7','9,8'],penghu:['7,9','7,8']};
+const ZONES={north:['10,2','11,1','10,3'],central:['9,5','9,4','9,6'],penghu:['7,9','7,8']};
 const ABN_GOAL=['10,3','9,5'];
 
 /* ---------- state ---------- */
@@ -368,7 +369,7 @@ function canEmbark(u,h){
   return h.t==='port'||(u.type!=='arm'&&h.isl==='CN');
 }
 function validLanding(u,h){
-  if(!isLand(h)||!h.coastal||h.cliff||h.t==='mtn'||h.k===TAIPEI)return false;
+  if(!isLand(h)||!h.coastal||h.cliff||h.mud||h.t==='mtn'||h.k===TAIPEI)return false;
   if(u.type==='arm')return h.t==='port'&&S.owner[h.k]==='atk';
   return true;
 }
@@ -442,7 +443,8 @@ function doMove(u,k,kind){
   else if(kind==='drop'){
     u.acted=true;u.dropped=true;
     let msg=uname(u)+' 空降 '+hname(h);
-    if(inZOC(u.side,h)){const r=d6();if(r<=2){msg+='，落點遭火力壓制（擲 '+r+'）損失 1 步';log(msg);damage(u,1,'空降損失');return;}}
+    const hot=inZOC(u.side,h),r=d6();
+    if(r<=(hot?3:1)){msg+='，'+(hot?'落點遭地面火力壓制':'運輸機群遭防空攔截')+'（擲 '+r+'）損失 1 步';log(msg);damage(u,1,'空降損失');return;}
     log(msg);
   } else if(kind==='sail'&&from.t!=='sea')log(uname(u)+' 自 '+hname(from)+' 出航');
 }
@@ -726,7 +728,7 @@ async function beginPhase(side){
   if(S.sim){render();await runEvents(side);if(S.over)return;}
   if(side==='atk'){
     S.weather=S.turn===1&&S.mods.wxT1?WEATHER[S.mods.wxT1]:rollWeather();
-    S.fire=Math.max(1,(S.turn<=2?8:S.turn<=4?5:4)+S.weather.fire+(S.mods.fireAdd[S.turn]||0)-S.mods.fireMinus);
+    S.fire=Math.max(1,(S.turn<=2?8:S.turn<=4?6:5)+S.weather.fire+(S.mods.fireAdd[S.turn]||0)-S.mods.fireMinus);
     if(S.mods.atkReinfCut&&ATK_REINF[S.turn]&&S.turn>=4)log('外國全面介入封鎖海峽，攻方第 '+S.turn+' 回合增援無法出發');
     else (ATK_REINF[S.turn]||[]).forEach(([t,z])=>{
       const h=t==='arm'?placeNear('4,4',x=>x.isl==='CN'&&x.t==='port'):placeNear('4,4',x=>x.isl==='CN'&&x.coastal);
@@ -928,6 +930,7 @@ function renderMap(){
     if(!isLand(h))continue;const [x,y]=center(h.c,h.r);
     if(h.isl!=='CN'&&S.owner[h.k]==='atk')o+='<polygon class="ov-atk" points="'+hexPts(x,y,R-1)+'"/>';
     if(h.cliff)o+='<polygon class="cliff" points="'+hexPts(x,y,R-3)+'"/>';
+    if(h.mud)o+='<polygon class="mud" points="'+hexPts(x,y,R-3)+'"/>';
     if(h.t==='mtn')o+='<path class="mtn-g" d="M'+(x-10)+' '+(y+8)+'l5 -8l5 8m-3 0l5 -7l5 7"/>';
     if(h.name){const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':'')+'" x="'+x+'" y="'+(y-15)+'">'+(ob?'★':'')+h.name+'</text>';}
   }
@@ -977,7 +980,7 @@ function renderInfo(){
   const u=S.sel&&alive(S.sel)?S.sel:(S.hover?unitAt(S.hover):null);
   const h=u?hexOf(u):(S.hover?TER[S.hover]:null);
   if(!h){el.innerHTML='<div class="k">點選地圖上的單位或地格查看資料。</div>';return;}
-  let o='<div class="eyebrow">'+hname(h)+' · '+TERN[h.t]+(h.cliff?' · 斷崖':'')+(isLand(h)?' · '+SIDE[S.owner[h.k]]+'控制':'')+'</div>';
+  let o='<div class="eyebrow">'+hname(h)+' · '+TERN[h.t]+(h.cliff?' · 斷崖':'')+(h.mud?' · 泥灘潮間帶':'')+(isLand(h)?' · '+SIDE[S.owner[h.k]]+'控制':'')+'</div>';
   if(u){
     const T=TYPES[u.type];
     o+='<h2 style="color:var(--'+u.side+')">'+T.n+'</h2>';
@@ -990,7 +993,7 @@ function renderInfo(){
     if(S.started&&u.side===S.phase)st.push(u.acted?'本階段已完成':u.moved?'已移動，仍可攻擊':'可行動');
     if(terrDef(h))st.push('地形防禦 +'+terrDef(h));
     o+='<div class="hint">'+st.join(' · ')+'</div>';
-  } else o+='<div class="hint">'+(terrDef(h)?'地形防禦 +'+terrDef(h)+'。':'')+(h.coastal&&!h.cliff&&h.t!=='mtn'&&h.isl!=='CN'&&h.k!==TAIPEI?'可供登陸。':'')+'</div>';
+  } else o+='<div class="hint">'+(terrDef(h)?'地形防禦 +'+terrDef(h)+'。':'')+(h.coastal&&!h.cliff&&!h.mud&&h.t!=='mtn'&&h.isl!=='CN'&&h.k!==TAIPEI?'可供登陸。':'')+'</div>';
   el.innerHTML=o;
 }
 function renderVC(){
