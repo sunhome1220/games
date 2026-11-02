@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>台海登陸戰棋</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#14303b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="台海登陸">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,7 +60,8 @@ h1{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,4vw,38px);l
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
 @media (max-width:960px){.layout{grid-template-columns:minmax(0,1fr)}}
 .board{min-width:0}
-.mapwrap{touch-action:pan-x pan-y;overflow:auto;border:1px solid var(--line);background:var(--sea);border-radius:4px}
+#map{margin:0 auto}
+.mapwrap{background:var(--sea);background:linear-gradient(color-mix(in srgb,var(--sea) 78%,#fff),color-mix(in srgb,var(--sea) 94%,#000));touch-action:pan-x pan-y;overflow:auto;border:1px solid var(--line);background:var(--sea);border-radius:4px}
 #map{display:block;width:100%;min-width:640px;height:auto;user-select:none;-webkit-user-select:none}
 .mapbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-bottom:6px;font-size:13px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin-top:8px}
@@ -91,6 +101,20 @@ details ul{padding-left:18px;margin:8px 0 0;font-size:12.5px}
 details li{margin:4px 0}
 footer{color:var(--muted);font-size:12px;margin-top:18px}
 /* svg */
+.tl-sea{fill:var(--sea);stroke:var(--sea-edge);stroke-width:.5}
+.tl-sea.d1{fill:color-mix(in srgb,var(--sea) 80%,#fff)} .tl-sea.d2{fill:color-mix(in srgb,var(--sea) 92%,#fff)} .tl-sea.d3{fill:color-mix(in srgb,var(--sea) 93%,#000)}
+.wv{fill:none;stroke:#fff;stroke-opacity:.3;stroke-width:1.1;stroke-linecap:round;animation:swell 5.5s ease-in-out infinite alternate;pointer-events:none}
+@keyframes swell{from{transform:translateX(-3px)}to{transform:translateX(3px)}}
+.tl-sh{fill:#000;opacity:.2;pointer-events:none}
+.tile{--tile:var(--land)} .tile.t-city{--tile:var(--city)} .tile.t-mtn{--tile:var(--mtn)} .tile.t-main{--tile:var(--main)}
+.sd{stroke:none} .sd.l{fill:var(--land-edge);fill:color-mix(in srgb,var(--tile) 74%,#000)} .sd.r{fill:var(--land-edge);fill:color-mix(in srgb,var(--tile) 58%,#000)}
+.tt{stroke:var(--land-edge);stroke:color-mix(in srgb,var(--tile) 68%,#000);stroke-width:.8}
+.tg{fill:none;stroke:#fff;stroke-opacity:.38;stroke-width:1.3;pointer-events:none}
+.bd .bf{fill:#cdbf93;fill:color-mix(in srgb,var(--city) 82%,#fff)} .bd .bs{fill:color-mix(in srgb,var(--city) 55%,#000)} .bd .br{fill:color-mix(in srgb,var(--city) 60%,#fff)}
+.bd{pointer-events:none}
+.pkL{fill:color-mix(in srgb,var(--mtn) 58%,#000)} .pkR{fill:color-mix(in srgb,var(--mtn) 90%,#fff)} .pkS{fill:#f4f1e6;opacity:.95} .pkL,.pkR,.pkS{pointer-events:none}
+.pier{fill:#7a6a4d;pointer-events:none} .cont{pointer-events:none} .cont.c1{fill:#6c8793} .cont.c2{fill:#c28a4a} .crane{fill:none;stroke:#555;stroke-width:1.4;pointer-events:none}
+.rwy{fill:#4b4f52;pointer-events:none} .rwl{stroke:#fff;stroke-width:1;stroke-dasharray:3 2;pointer-events:none}
 .hx{stroke-width:1}
 .hx.sea{fill:var(--sea);stroke:var(--sea-edge)}
 .hx.main,.hx.air.cn,.hx.port.cn{fill:var(--main);stroke:var(--main-edge)}
@@ -109,7 +133,15 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .ring{fill:none;stroke:var(--accent);stroke-width:2.5;pointer-events:none}
 .ring.strike{stroke:var(--atk);stroke-dasharray:4 3}
 .u{cursor:pointer}
-.u .body.atk{fill:var(--atk)} .u .body.def{fill:var(--def)}
+.u .body.atk{fill:url(#gu-atk)} .u .body.def{fill:url(#gu-def)}
+.u .uside.atk{fill:color-mix(in srgb,var(--atk) 55%,#000)} .u .uside.def{fill:color-mix(in srgb,var(--def) 55%,#000)}
+.u .uside{fill:#444;stroke:none} .u .ush{fill:#000;opacity:.28;pointer-events:none} .u .uhi{fill:#fff;opacity:.28;pointer-events:none}
+.u .wk{fill:none;stroke:#fff;stroke-opacity:.55;stroke-width:1.3;transform-box:fill-box;transform-origin:center;animation:wake 2.6s ease-out infinite;pointer-events:none}
+.u .wk.w2{animation-delay:-1.3s}
+@keyframes wake{from{transform:scale(.7);opacity:.8}to{transform:scale(1.5);opacity:0}}
+.fxt{font-size:13px;font-weight:900;stroke:#fff;stroke-width:3px;paint-order:stroke;font-family:var(--f-body)}
+.fxt.atk{fill:#c8372d} .fxt.def{fill:#1f5aa6} .fxt.dead{fill:#7a1810;font-size:15px}
+.tfx{pointer-events:none}
 .u .body{stroke:var(--ink);stroke-width:.8}
 .u.sel .body{stroke:var(--accent);stroke-width:2.6}
 .u.done{opacity:.5}
@@ -157,6 +189,31 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .nodes .dd{display:block;color:var(--muted);font-size:12px}
 .nodes li.done .tn{color:var(--accent)}
 #resume{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:25;background:var(--accent);border-color:var(--accent);color:#1b1408;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+/* video mode */
+.vfocus{fill:none;stroke:var(--accent);stroke-width:3;pointer-events:none;animation:vpulse 1.1s ease-in-out infinite}
+@keyframes vpulse{0%,100%{opacity:.95}50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.wv,.u .wk,.vfocus{animation:none}}
+.vcap{margin-top:8px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 10px}
+.vcap[hidden]{display:none}
+.vctl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.vctl button{padding:5px 10px;min-width:2.4em}
+.vctl input[type=range]{flex:1;min-width:120px;accent-color:var(--accent)}
+.vtime{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.vlines{margin-top:8px;min-height:84px}
+.vl{font-size:13px;padding:2px 0;color:var(--muted)}
+.vl .tn{font-family:var(--f-mono);margin-right:6px}
+.vl.cur{color:var(--ink);font-weight:700;font-size:15px}
+.vl.cur .tn{color:var(--accent)}
+.vchips{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
+.vchips span{font-size:12px;border:1px solid var(--line);border-radius:3px;padding:2px 8px;background:var(--bg)}
+.vchips b{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.vcard{position:fixed;left:50%;top:14%;transform:translateX(-50%);z-index:18;width:min(560px,calc(100% - 32px));max-height:72vh;overflow:auto;background:var(--panel);border:2px solid var(--ink);border-radius:4px;padding:16px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35);pointer-events:none}
+.vcard[hidden]{display:none}
+.vcard h3{font-family:var(--f-display);font-size:22px;margin:4px 0 6px}
+.vcard ul{padding-left:18px;margin:6px 0 0;font-size:13.5px}
+.vcard .nart{height:190px}
+#vbusy{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:#fff;font-size:20px;font-weight:700}
+#vbusy[hidden]{display:none}
 /* tabs, wizard */
 .side{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow-y:auto;padding-right:2px}
 @media (max-width:960px){.side{position:static;max-height:none}}
@@ -317,7 +374,19 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
         <button class="ghost" id="btnFs">⛶ 全螢幕</button>
         <span class="dd">Ctrl＋滾輪可縮放，放大後可拖曳或捲動</span>
       </div>
-      <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"></svg></div>
+      <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"><defs id="mdefs"></defs><g id="gS"></g><g id="gD"></g><g id="gF" style="pointer-events:none"></g></svg></div>
+      <div class="vcap" id="vcap" hidden>
+        <div class="vctl">
+          <button class="ghost" id="vPrevT" title="上一回合" aria-label="上一回合">⏮</button>
+          <button id="vPlay" aria-label="播放或暫停">⏸</button>
+          <button class="ghost" id="vNextT" title="下一回合" aria-label="下一回合">⏭</button>
+          <input type="range" id="vScrub" min="0" max="0" value="0" aria-label="時間軸">
+          <span id="vTime" class="vtime"></span>
+          <select id="vSpeed" aria-label="播放速度"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select>
+        </div>
+        <div class="vlines" id="vLines"></div>
+        <div class="vchips" id="vChips"></div>
+      </div>
       <div class="legend">
         <span><i style="background:var(--land)"></i>平原</span>
         <span><i style="background:var(--city)"></i>城市（防禦 +2）</span>
@@ -356,7 +425,8 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
             <button class="ghost" id="btnDefault">依預設值直接開始</button>
             <div class="hint">預設：對戰、你操作攻方（電腦守方）、第 8 回合判定、演習掩護、擲骰決定參戰、快訊開啟。不會改掉你已記錄的設定。</div></div>
           <div id="wzStore" hidden>
-            <select id="optMode"><option value="play">對戰</option><option value="sim">電腦推演</option></select>
+            <select id="optMode"><option value="play">對戰</option><option value="sim">電腦推演</option><option value="video">純模擬</option></select>
+            <select id="optVSpeed"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option></select>
             <select id="optSide"><option value="atk">攻方</option><option value="def">守方</option><option value="both">雙方</option><option value="none">觀戰</option></select>
             <select id="optSpeed"><option value="1">一般</option><option value="0.35">快速</option></select>
             <select id="optT"><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option><option value="12">12</option></select>
@@ -373,6 +443,11 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
           </div>
           <div class="hint" id="hint"></div>
           <div class="proj" id="miniGoal"></div>
+        </div>
+        <div class="card" id="vbarCard" hidden>
+          <h2>影片模式</h2>
+          <div class="hint">全程由電腦操作，並自動決策與擲骰。地圖下方的字幕區會顯示雙方動作與影響，可暫停、變速、拖曳時間軸或跳回合（空白鍵暫停、左右鍵逐步）。</div>
+          <div class="btns" style="margin-top:8px"><button class="ghost" id="vAgain">重新模擬</button><button class="ghost" id="vBack">回到設定</button></div>
         </div>
         <div class="card info" id="info"><div class="k">點選地圖上的單位或地格查看資料。</div></div>
       </div>
@@ -405,7 +480,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
           <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li></ul></details>
           <details class="rg"><summary>國際與集結</summary><ul><li><b>美日菲參戰：</b>開局可選參戰情境：擲骰決定（預設）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊，菲律賓決定北呂宋基地。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li><li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li></ul></details>
           <details class="rg"><summary>戰爭代價</summary><ul><li><b>戰爭代價：</b>側欄的「戰爭代價」依部隊編制把損失換算成傷亡人數（合成旅約 5,000 人；在海上被擊沉的死亡比例高於陸戰），並累計火力打擊與城市戰鬥造成的平民傷亡、各國經濟損失、全球股市與晶片供應。結算時依 Bloomberg Economics 2024 年的估算（台海戰爭約使全球 GDP 減少 10%，封鎖約 5%）推估一年期衝擊。所有數字都是遊戲依公開資料的粗估。</li></ul></details>
-          <details class="rg"><summary>推演與判定</summary><ul><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
+          <details class="rg"><summary>推演與判定</summary><ul><li><b>純模擬（影片）：</b>全程由電腦操作並自動決策與擲骰：先瞬間跑完整場戰爭並錄下每個動作，再以戰棋地圖為背景播放。地圖下方的字幕區顯示雙方動作與影響，並有戰況、傷亡與經濟摘要；可暫停、變速（1～8×）、拖曳時間軸或跳回合，地圖上的圈標出這一步發生變化的位置。結束後可看戰後檢討、回頭看影片或再模擬一次。</li><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
           
         </div>
       </div>
@@ -414,6 +489,8 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
   <footer>抽象化的兵棋遊戲。地圖比例、部隊與數值皆為遊戲設定，不代表真實兵力或作戰計畫。<span id="ver"></span></footer>
 </div>
 <button id="newver" hidden>🔔 有新版本，點此重新整理</button>
+<div id="vcard" class="vcard" hidden></div>
+<div id="vbusy" hidden>正在模擬戰局…</div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
@@ -423,10 +500,10 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 'use strict';
 // coordinates may be negative: columns COL0..COL1-1, rows ROW0..ROW1-1 (original Taiwan coordinates are unchanged)
 const COL0=-1, COL1=16, ROW0=-2, ROW1=16, R=26, W=Math.sqrt(3)*R, PAD=6;
-const VBW=W*(COL1-COL0)+W/2+PAD*2, VBH=1.5*R*(ROW1-ROW0-1)+2*R+PAD*2;
+const VBW=W*(COL1-COL0)+W/2+PAD*2, VBH=1.5*R*(ROW1-ROW0-1)+2*R+PAD*2+12;
 const K=(c,r)=>c+','+r;
 const $=s=>document.querySelector(s);
-const sleep=ms=>new Promise(r=>setTimeout(r,ms*(S&&S.speed||1)));
+const sleep=ms=>S&&S.rec?Promise.resolve():new Promise(r=>setTimeout(r,ms*(S&&S.speed||1)));
 const d6=()=>1+Math.floor(Math.random()*6);
 const SIDE={atk:'攻方',def:'守方'};
 const TERN={sea:'海域',main:'大陸',plain:'平原',city:'城市',mtn:'山地',port:'港口',air:'機場'};
@@ -495,7 +572,7 @@ function newState(){
   S={turn:1,phase:'atk',T:8,ctrl:{atk:'human',def:'ai'},weather:WEATHER.good,fire:0,units:[],owner:{},log:[],
      sel:null,mode:null,busy:false,over:false,started:false,nid:1,hover:null,zoneFlip:0,
      sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods(),
-     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,plan:null,cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
+     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
   for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
   const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
     ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],
@@ -513,8 +590,9 @@ const atSea=u=>hexOf(u).t==='sea';
 const onTW=u=>hexOf(u).isl==='TW';
 const alive=u=>S.units.includes(u);
 
-function log(msg){S.log.unshift({t:S.turn,p:S.phase,msg});if(S.log.length>300)S.log.pop();}
-function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),1500);}
+let LOGN=0;
+function log(msg){S.log.unshift({t:S.turn,p:S.phase,msg,n:++LOGN});if(S.log.length>300)S.log.pop();}
+function toast(msg){if(S&&S.rec)return;const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),1500);}
 function hname(h){return h.name||(TERN[h.t]+' '+h.c+'-'+h.r);}
 function uname(u){return TYPES[u.type].n+'（'+SIDE[u.side]+'）';}
 
@@ -610,8 +688,9 @@ function targets(u){
 
 function damage(u,n,why){
   S.hits.push({c:u.c,r:u.r,t:S.turn,side:u.side,type:u.type,n:Math.min(n,u.hp),sea:atSea(u),why:why||'地面戰鬥'});
+  fxq({t:'dmg',id:u.id,at:[u.c,u.r],n:Math.min(n,u.hp),side:u.side});
   u.hp-=n;
-  if(u.hp<=0){S.units=S.units.filter(x=>x!==u);log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));return true;}
+  if(u.hp<=0){fxq({t:'dead',at:[u.c,u.r],type:u.type,side:u.side});S.units=S.units.filter(x=>x!==u);log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));return true;}
   return false;
 }
 function doMove(u,k,kind){
@@ -619,7 +698,7 @@ function doMove(u,k,kind){
   u.c=h.c;u.r=h.r;u.moved=true;
   if(isLand(h))S.owner[k]=u.side;
   if((kind==='land'||kind==='drop')&&S.stats.firstLand===null&&h.isl==='TW')S.stats.firstLand=S.turn;
-  if(kind==='land'){u.acted=true;log(uname(u)+' 於 '+hname(h)+' 登陸');}
+  if(kind==='land'){fxq({t:'land',at:[h.c,h.r]});u.acted=true;log(uname(u)+' 於 '+hname(h)+' 登陸');}
   else if(kind==='drop'){
     u.acted=true;u.dropped=true;
     let msg=uname(u)+' 空降 '+hname(h);
@@ -637,6 +716,7 @@ function attack(u,t){
   if(diff>=4){ld=2;res='守方失 2 步';}else if(diff>=1){ld=1;res='守方失 1 步';}
   else if(diff===0){la=1;ld=1;res='雙方各失 1 步';}else if(diff>=-3){la=1;res='攻擊方失 1 步';}else{la=2;res='攻擊方失 2 步';}
   log((pen?'搶灘突擊：':'')+uname(u)+' 攻擊 '+hname(th)+' 的 '+TYPES[t.type].n+'：'+A+' 對 '+D+' → '+res);
+  fxq({t:'atk',from:[u.c,u.r],to:[t.c,t.r],hit:ld>0,sea:atSea(u),tsea:atSea(t)});if(!ld)fxq({t:'txt',at:[t.c,t.r],s:'擋住',col:'def'});
   u.acted=true;u.moved=true;
   const tDead=ld?damage(t,ld):false;
   const uDead=la?damage(u,la):false;
@@ -650,12 +730,14 @@ function fireMissile(m,t){
   m.shots--;if(m.shots<=0)m.acted=true;
   const r=d6();
   const need=S.mods.ssmNeed+escortMod();
+  fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit:r>=need});
   if(r>=need){log('反艦飛彈命中海上的 '+TYPES[t.type].n+'（擲 '+r+'）');damage(t,1,'反艦飛彈');}
   else log('反艦飛彈未命中（擲 '+r+'，需 '+need+'）');
   checkInstant();
 }
 function strike(t){
   S.fire--;S.stats.fire++;const h=hexOf(t);civHit('TW',h,'strike');const need=(h.t==='city'||h.t==='mtn')?6:5;const r=d6();
+  fxq({t:'air',at:[t.c,t.r],hit:r>=need,tsea:atSea(t),src:'w'});
   if(r>=need){log('火力打擊命中 '+hname(h)+' 的 '+TYPES[t.type].n+'（擲 '+r+'）');damage(t,1,'火力打擊');}
   else log('火力打擊 '+hname(h)+' 未命中（擲 '+r+'，需 '+need+'）');
   checkInstant();
@@ -688,16 +770,21 @@ function endGame(early,side){
   const cs=conditions();const n=cs.filter(c=>c.atk).length;
   const v=early?{s:side,t:side==='atk'?'攻方勝利':'守方勝利',d:early}:verdict(n);
   log('作戰結束：'+v.t);
-  $('#mbox').innerHTML='<div class="eyebrow">'+(early?'提前結束 · 第 '+S.turn+' 回合':'第 '+S.T+' 回合 判定')+'</div>'+
+  const html='<div class="eyebrow">'+(early?'提前結束 · 第 '+S.turn+' 回合':'第 '+S.T+' 回合 判定')+'</div>'+
     '<h3 class="verdict '+v.s+'">'+v.t+'</h3><p>'+v.d+'</p>'+
     cs.map((c,i)=>'<div class="vc"><span class="n">'+(i+1)+'</span><div><div class="t">'+c.title+'</div><div class="d">'+c.now+'</div></div><span class="pill '+(c.atk?'atk':'def')+'">'+(c.atk?'攻方達成':'守方確保')+'</span></div>').join('')+
     '<div class="proj">攻方達成 <b>'+n+'</b> / 3 項（需 2 項以上獲勝）</div>'+
-    afterAction(v.s)+(S.sim?timelineHTML():'')+newsRecap()+
-    '<div class="btns" style="margin-top:14px"><button id="btnAgain">重新開局</button><button class="ghost" id="btnClose">檢視地圖</button></div>';
-  $('#resume').hidden=true;$('#modal').hidden=false;
-  $('#btnAgain').onclick=()=>{$('#modal').hidden=true;reset();};
-  $('#btnClose').onclick=()=>{$('#modal').hidden=true;};
+    afterAction(v.s)+(S.sim||S.video?timelineHTML():'')+newsRecap()+
+    '<div class="btns" style="margin-top:14px"><button id="btnAgain">'+(S.video?'再模擬一次':'重新開局')+'</button><button class="ghost" id="btnClose">'+(S.video?'回頭看影片':'檢視地圖')+'</button>'+(S.video?'<button class="ghost" id="btnBack">回到設定</button>':'')+'</div>';
+  if(S.rec){REC.final=html;recordFrame();REC.closed=true;if(REC.resolve)REC.resolve();return;}
+  showFinal(html);
   render();
+}
+function showFinal(html){
+  $('#mbox').innerHTML=html;$('#mbox').classList.remove('ev');$('#resume').hidden=true;$('#modal').hidden=false;
+  $('#btnAgain').onclick=()=>{$('#modal').hidden=true;if(S.video)startVideo();else reset();};
+  $('#btnClose').onclick=()=>{$('#modal').hidden=true;};
+  const bb=$('#btnBack');if(bb)bb.onclick=()=>{$('#modal').hidden=true;backToSetup();};
 }
 
 
@@ -814,11 +901,11 @@ function antiShip(who,shots,need,canLand){
   const P=S.pools;let hc=0,he=0,hl=0;
   for(let i=0;i<shots;i++){
     const fleet=S.units.filter(u=>u.side==='atk'&&atSea(u));
-    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){if(d6()>=need+escortMod()){hc++;damage(pick(fleet),1,who);}}
+    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pick(fleet),ok=d6()>=need+escortMod();fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,src:'e'});if(ok){hc++;damage(tg,1,who);}}
     else if(P.plaNavy>0){if(d6()>=need){he++;P.plaNavy--;}}
     else if(canLand){
       const land=S.units.filter(u=>u.side==='atk'&&onTW(u));if(!land.length)break;
-      const t=pick(land),h=hexOf(t);if(d6()>=(h.t==='city'||h.t==='mtn'?6:5)){hl++;damage(t,1,who);}
+      const t=pick(land),h=hexOf(t),ok=d6()>=(h.t==='city'||h.t==='mtn'?6:5);fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:false,src:'e'});if(ok){hl++;damage(t,1,who);}
     } else break;
   }
   const parts=[];if(hc)parts.push('命中船團 '+hc);if(he)parts.push('擊傷護航艦 '+he);if(hl)parts.push('命中島上部隊 '+hl);
@@ -854,6 +941,7 @@ function strikeBase(b){
   const tg=baseTargets(b);
   if(!tg.length){log('火力打擊 '+B.n+'：沒有可打擊的目標');return;}
   const need=baseNeed(b),r=d6();
+  fxq({t:'tfa',a:Object.keys(CNB).find(id=>CNB[id].kind==='rf'&&S.cn[id]>0)||'yongan',b,hit:r>=need});
   if(r>=need){const f=pick(tg);f.hp--;log('火力打擊 '+B.n+' 命中 '+f.n+'（擲 '+r+'）'+(f.hp<=0?'，已失去戰力':''));}
   else log('火力打擊 '+B.n+' 未命中（擲 '+r+'，需 '+need+'）');
 }
@@ -881,6 +969,7 @@ function strikeCN(id,by){
   S.cost.civ.CN+=Math.round((B.kind==='stg'?120:B.kind==='navy'?90:B.kind==='air'?50:35)*(.7+Math.random()*.6));S.cost.dmg.CN+=B.kind==='stg'?.5:.3;
   S.stats.cn.strikes++;
   const hit=r>=need;let fx='';
+  fxq({t:'tfa',a:by==='roc'?'tw':by==='US'?(Math.random()<.5?'guam':'sea'):'sakishima',b:id,hit});
   if(hit){
     S.cn[id]--;S.stats.cn.hits++;
     if(B.kind==='rf'){const d=Math.min(3,P.rf);P.rf-=d;fx='火箭軍飛彈存量 −'+d;}
@@ -928,6 +1017,7 @@ function doRetaliation(){
     const ck=B.c==='JP'?'JP':b==='nluzon'?'PH':b==='guam'?'US':null;
     if(ck){S.cost.civ[ck]+=Math.round(30+Math.random()*60);S.cost.dmg[ck]+=.5;}
     S.stats.retal.strikes++;
+    fxq({t:'tfa',a:'yongan',b,hit:r>=need});
     if(r>=need){f.hp--;S.stats.retal.hits++;log('中方報復打擊 '+B.n+' 命中 '+f.n+'（擲 '+r+'）'+(f.hp<=0?'，已失去戰力':''));}
     else log('中方報復打擊 '+B.n+' 未命中（擲 '+r+'，需 '+need+'）');
   }
@@ -1167,6 +1257,7 @@ async function runEvents(side){
     if(t!==S.turn||p!==side||S.events.some(e=>e.id===ev.id))continue;
     if(ev.dice&&!ev.choice&&ev.dice.every(d=>d.skip&&d.skip()))continue;
     if(S.sim){toast('事件節點：'+ev.title);await playEvent(ev,i);}
+    else if(S.video){if(ev.id!=='buildup')autoEvent(ev,i);}
     else if(ev.auto){
       const rec={turn:S.turn,phase:S.phase,title:ev.title,id:ev.id};
       finishRec(ev,rec,null,ev.dice.filter(d=>!d.skip||!d.skip()).map(rollSpec));toast(ev.title+'：'+snap().fx);
@@ -1175,8 +1266,8 @@ async function runEvents(side){
   }
 }
 function renderNodes(){
-  $('#simCard').hidden=!S.sim;if(!S.sim)return;
-  $('#nodes').innerHTML=EVENTS.map(ev=>{
+  $('#simCard').hidden=!(S.sim||S.video);if(!(S.sim||S.video))return;
+  $('#nodes').innerHTML=EVENTS.filter(ev=>!(S.video&&ev.id==='buildup')).map(ev=>{
     const [t,p]=ev.at(S.T),r=S.events.find(e=>e.id===ev.id);
     const kind=ev.choice&&ev.dice?'決策＋擲骰':ev.choice?SIDE[ev.choice.who]+'決策':'擲骰';
     return '<li class="'+(r?'done':'')+'"><span class="tn">T'+t+(p==='atk'?'攻':'守')+'</span><div><b>'+ev.title+'</b> <span class="dd" style="display:inline">'+kind+'</span>'+
@@ -1235,7 +1326,7 @@ function renderTheater(){
       '<text class="tnum" x="'+x+'" y="'+(+y+4)+'">'+live+'</text>'+(tg?'<circle class="ttg" cx="'+x+'" cy="'+y+'" r="15"/>':'')+
       '<text class="tlb b" x="'+(+x+(b==='guam'||b==='sasebo'?-14:14))+'" y="'+(+y+4)+'"'+(b==='guam'||b==='sasebo'?' text-anchor="end"':'')+'>'+B.n+'</text></g>';
   }
-  const svg=$('#tmap');svg.setAttribute('viewBox','-28 0 408 533');svg.innerHTML=o;
+  const svg=$('#tmap');svg.setAttribute('viewBox','-28 0 408 533');svg.innerHTML=o;svg.appendChild(tfxGroup());
   const P=S.pools,bar=(k,side)=>'<div class="pool"><span>'+POOLN[k]+'</span><i><em class="'+side+'" style="width:'+Math.round(100*Math.max(0,P[k])/Math.max(POOL0[k],P[k]))+'%"></em></i><b>'+P[k]+'</b></div>';
   const dt=(key,def,head,body)=>'<details class="fside" data-f="'+key+'"'+((FOLD[key]===undefined?def:FOLD[key])?' open':'')+'><summary class="fh">'+head+'</summary>'+body+'</details>';
   const cnN=Object.keys(CNB).filter(id=>S.cn[id]>0).length;
@@ -1530,7 +1621,8 @@ async function endPhase(){
   econTick();
   if(S.turn>=S.T)return endGame();
   const n=buildNews();S.news.push(n);
-  if(S.newsOn){S.busy=true;render();await showNews(n);S.busy=false;}
+  if(S.rec){render();if(S.newsOn)recordFrame({html:newsBody(n),kind:'news',dur:6500});}
+  else if(S.newsOn){S.busy=true;render();await showNews(n);S.busy=false;}
   if(S.over)return;
   S.turn++;beginPhase('atk');
 }
@@ -1703,10 +1795,75 @@ async function aiDefUnit(u){
 function center(c,r){return [W*(c-COL0+.5*(r&1))+W/2+PAD,(r-ROW0)*1.5*R+R+PAD];}
 function hexPts(x,y,rr){let p=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);p.push((x+rr*Math.cos(a)).toFixed(1)+','+(y+rr*Math.sin(a)).toFixed(1));}return p.join(' ');}
 const humanTurn=()=>S.started&&!S.over&&!S.busy&&S.ctrl[S.phase]==='human';
+/* ---------- 3D map: static terrain layer + dynamic layer + effects ---------- */
+const DEPTH={plain:5,city:6,port:4,air:4,mtn:11,main:4};
+const elev=h=>isLand(h)?(DEPTH[h.t]||4):0;
+function cen(c,r){const [x,y]=center(c,r);return [x,y-elev(TER[K(c,r)])];}
+function hexV(x,y,rr){const o=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);o.push([x+rr*Math.cos(a),y+rr*Math.sin(a)]);}return o;}
+const ptsStr=v=>v.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+const STATIC={built:false};
+const ANIM={pos:new Map(),gid:null,ok:true};
+function tileGrad(id,v,fb){return '<linearGradient id="'+id+'" x1=".1" y1="0" x2=".85" y2="1"><stop offset="0" stop-color="'+fb+'" style="stop-color:color-mix(in srgb,var(--'+v+') 76%,#fff)"/><stop offset="1" stop-color="'+fb+'" style="stop-color:color-mix(in srgb,var(--'+v+') 93%,#000)"/></linearGradient>';}
+function bldg(cx,cy,w,hh){ // small isometric building: front, right side, roof
+  const d=w*.45;
+  return '<g class="bd"><polygon class="bf" points="'+[cx-w/2,cy,cx+w/2,cy,cx+w/2,cy-hh,cx-w/2,cy-hh].join(',')+'"/>'+
+    '<polygon class="bs" points="'+[cx+w/2,cy,cx+w/2+d,cy-d*.6,cx+w/2+d,cy-hh-d*.6,cx+w/2,cy-hh].join(',')+'"/>'+
+    '<polygon class="br" points="'+[cx-w/2,cy-hh,cx+w/2,cy-hh,cx+w/2+d,cy-hh-d*.6,cx-w/2+d,cy-hh-d*.6].join(',')+'"/></g>';
+}
+function peak(px,py,w,h){
+  return '<polygon class="pkL" points="'+[px,py-h,px-w/2,py,px+w*.12,py+w*.16].join(',')+'"/>'+
+    '<polygon class="pkR" points="'+[px,py-h,px+w*.12,py+w*.16,px+w/2,py].join(',')+'"/>'+
+    '<polygon class="pkS" points="'+[px,py-h,px-w*.14,py-h+h*.28,px+w*.02,py-h+h*.2,px+w*.13,py-h+h*.3].join(',')+'"/>';
+}
+function tileDetail(h,x,y){
+  if(h.t==='city')return bldg(x-9,y+7,8,11)+bldg(x+2,y+8,9,16)+bldg(x+11,y+5,7,9);
+  if(h.t==='mtn')return peak(x-6,y+8,24,22)+peak(x+9,y+10,17,14);
+  if(h.t==='port')return '<rect class="pier" x="'+(x-3)+'" y="'+(y+3)+'" width="6" height="14" rx="1"/><rect class="cont c1" x="'+(x-12)+'" y="'+(y+2)+'" width="8" height="5"/><rect class="cont c2" x="'+(x+5)+'" y="'+(y+6)+'" width="8" height="5"/><path class="crane" d="M'+(x+9)+' '+(y+4)+'V'+(y-10)+'H'+(x-2)+'"/>';
+  if(h.t==='air')return '<polygon class="rwy" points="'+[x-15,y+2,x+13,y-4,x+15,y,x-13,y+6].join(',')+'"/><path class="rwl" d="M'+(x-11)+' '+(y+3)+'L'+(x+11)+' '+(y-2)+'"/>';
+  return '';
+}
+function buildStatic(){
+  const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+
+    '<linearGradient id="gu-atk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d4574d" style="stop-color:color-mix(in srgb,var(--atk) 72%,#fff)"/><stop offset="1" stop-color="#a02a24" style="stop-color:color-mix(in srgb,var(--atk) 90%,#000)"/></linearGradient>'+
+    '<linearGradient id="gu-def" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a82c8" style="stop-color:color-mix(in srgb,var(--def) 72%,#fff)"/><stop offset="1" stop-color="#18457d" style="stop-color:color-mix(in srgb,var(--def) 90%,#000)"/></linearGradient>'+
+    '<linearGradient id="gSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9c5ce" style="stop-color:color-mix(in srgb,var(--sea) 78%,#fff)"/><stop offset="1" stop-color="#8fb0bb" style="stop-color:color-mix(in srgb,var(--sea) 94%,#000)"/></linearGradient>';
+  $('#mdefs').innerHTML=defs;
+  const sea=[],land=[];Object.values(TER).forEach(h=>(isLand(h)?land:sea).push(h));
+  land.sort((a,b)=>a.r-b.r||a.c-b.c);
+  // distance from land for shallow-water shading
+  const dist=new Map();let q=[];land.forEach(h=>{dist.set(h.k,0);q.push(h);});
+  while(q.length){const h=q.shift();for(const n of nbrs(h.c,h.r)){if(!dist.has(n.k)){dist.set(n.k,dist.get(h.k)+1);q.push(n);}}}
+  let o='<rect x="-10" y="-10" width="'+(VBW+20).toFixed(0)+'" height="'+(VBH+20).toFixed(0)+'" fill="url(#gSea)"/>';
+  let wi=0;
+  for(const h of sea){const [x,y]=center(h.c,h.r),d=Math.min(3,dist.get(h.k)||3);
+    o+='<polygon class="tl-sea d'+d+'" points="'+hexPts(x,y,R)+'" data-k="'+h.k+'"/>';
+    if(d>=2&&(h.c+h.r)%2===0){o+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(x-9)+' '+(y+2)+'q4.5 -4 9 0t9 0"/>';}
+  }
+  for(const h of land){const [x,y]=center(h.c,h.r),d=elev(h);o+='<polygon class="tl-sh" points="'+ptsStr(hexV(x+3,y+d+4,R))+'"/>';}
+  for(const h of land){
+    const [x,y0]=center(h.c,h.r),d=elev(h),y=y0-d,v=hexV(x,y,R),b=v.map(p=>[p[0],p[1]+d]);
+    const key=h.isl==='CN'||h.t==='main'?'main':(h.t==='city'?'city':h.t==='mtn'?'mtn':'plain');
+    o+='<g class="tile t-'+key+'">';
+    [[3,4,'l'],[2,3,'l'],[1,2,'r'],[0,1,'r']].forEach(([i,j,s])=>{o+='<polygon class="sd '+s+'" points="'+ptsStr([v[i],v[j],b[j],b[i]])+'"/>';});
+    o+='<polygon class="tt" fill="url(#gt-'+key+')" points="'+ptsStr(v)+'" data-k="'+h.k+'"/>';
+    o+='<polyline class="tg" points="'+ptsStr([v[3],v[4],v[5],v[0]])+'"/>';
+    if(h.cliff)o+='<polygon class="cliff" points="'+hexPts(x,y,R-3)+'"/>';
+    if(h.mud)o+='<polygon class="mud" points="'+hexPts(x,y,R-3)+'"/>';
+    o+=tileDetail(h,x,y);
+    if(h.name){const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':'')+'" x="'+x+'" y="'+(y-(h.t==='mtn'?18:16))+'">'+(ob?'★':'')+h.name+'</text>';}
+    o+='</g>';
+  }
+  o+='<text class="big" font-size="15" x="'+center(6,3)[0]+'" y="'+center(6,3)[1]+'" writing-mode="tb">台灣海峽</text>';
+  o+='<text class="big" font-size="13" x="'+center(15,7)[0]+'" y="'+center(15,7)[1]+'" writing-mode="tb">太平洋</text>';
+  o+='<text class="big" font-size="12" x="'+center(1,1)[0]+'" y="'+center(1,1)[1]+'" writing-mode="tb">大陸沿海</text>';
+  $('#gS').innerHTML=o;
+  const svg=$('#map');svg.setAttribute('viewBox','0 0 '+VBW.toFixed(1)+' '+VBH.toFixed(1));
+  STATIC.built=true;
+}
 function unitSVG(u){
-  const [x,y]=center(u.c,u.r);const T=TYPES[u.type];
-  const done=S.started&&u.side===S.phase&&u.acted;
-  let sym='';const bx=x-9,by=y-10,bw=18,bh=10;
+  const [x,y]=cen(u.c,u.r),T=TYPES[u.type];
+  const done=S.started&&u.side===S.phase&&u.acted,sel=S.sel===u,yy=y-2;
+  let sym='';const bx=x-9,by=yy-10,bw=18,bh=10;
   const box='<rect class="sym" x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'"'+(u.type==='res'?' stroke-dasharray="2 1.5"':'')+'/>';
   const X='<path class="sym" d="M'+bx+' '+by+'L'+(bx+bw)+' '+(by+bh)+'M'+(bx+bw)+' '+by+'L'+bx+' '+(by+bh)+'"/>';
   if(u.type==='arm'||u.type==='tank')sym=box+'<ellipse class="sym" cx="'+x+'" cy="'+(by+5)+'" rx="6" ry="3"/>';
@@ -1714,41 +1871,122 @@ function unitSVG(u){
   else if(u.type==='abn')sym=box+X+'<path class="sym" d="M'+(x-5)+' '+(by+bh)+'Q'+x+' '+(by+4)+' '+(x+5)+' '+(by+bh)+'"/>';
   else if(u.type==='amph'||u.type==='mar')sym=box+X+'<path class="sym" d="M'+(bx+1)+' '+(by+bh-1.5)+'q2.5 -2 5 0t5 0t5 0"/>';
   else sym=box+X;
-  let pips='';const n=T.hp;for(let i=0;i<n;i++){const px=x-(n-1)*3.5+i*7;pips+='<circle class="pip '+(i<u.hp?'full':'lost')+'" cx="'+px+'" cy="'+(y+15.5)+'" r="2"/>';}
-  const sea=atSea(u)?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-11)+'" r="2.6"/>':'';
-  return '<g class="u'+(S.sel===u?' sel':'')+(done?' done':'')+'" data-k="'+K(u.c,u.r)+'">'+
-    '<rect class="body '+u.side+'" x="'+(x-15)+'" y="'+(y-12)+'" width="30" height="24" rx="2"/>'+sym+
-    '<text class="tx" x="'+x+'" y="'+(y+9)+'">'+T.s+'</text>'+pips+sea+'</g>';
+  let pips='';const n=T.hp;for(let i=0;i<n;i++){const px=x-(n-1)*3.5+i*7;pips+='<circle class="pip '+(i<u.hp?'full':'lost')+'" cx="'+px+'" cy="'+(y+17.5)+'" r="2"/>';}
+  const sea=atSea(u);
+  const wake=sea?'<ellipse class="wk" cx="'+x+'" cy="'+(y+12)+'" rx="14" ry="4"/><ellipse class="wk w2" cx="'+x+'" cy="'+(y+12)+'" rx="14" ry="4"/>':'';
+  return '<g class="u'+(sel?' sel':'')+(done?' done':'')+'" data-k="'+K(u.c,u.r)+'" data-id="'+u.id+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+wake+
+    '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'><ellipse class="ush" cx="'+x+'" cy="'+(y+11)+'" rx="16" ry="5"/>'+
+    '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
+    '<rect class="body '+u.side+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="23" rx="3"/>'+
+    '<rect class="uhi" x="'+(x-13)+'" y="'+(y-13)+'" width="26" height="3" rx="1.5"/>'+sym+
+    '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+T.s+'</text>'+pips+(sea?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-12)+'" r="2.6"/>':'')+'</g></g>';
 }
 function renderMap(){
+  if(!STATIC.built)buildStatic();
   let o='';
   for(const h of Object.values(TER)){
-    const [x,y]=center(h.c,h.r);
-    o+='<polygon class="hx '+h.t+(h.isl==='CN'?' cn':'')+'" points="'+hexPts(x,y,R)+'" data-k="'+h.k+'"/>';
+    if(!isLand(h)||h.isl==='CN'||S.owner[h.k]!=='atk')continue;
+    const [x,y]=cen(h.c,h.r);o+='<polygon class="ov-atk" points="'+hexPts(x,y,R-1)+'"/>';
   }
-  for(const h of Object.values(TER)){
-    if(!isLand(h))continue;const [x,y]=center(h.c,h.r);
-    if(h.isl!=='CN'&&S.owner[h.k]==='atk')o+='<polygon class="ov-atk" points="'+hexPts(x,y,R-1)+'"/>';
-    if(h.cliff)o+='<polygon class="cliff" points="'+hexPts(x,y,R-3)+'"/>';
-    if(h.mud)o+='<polygon class="mud" points="'+hexPts(x,y,R-3)+'"/>';
-    if(h.t==='mtn')o+='<path class="mtn-g" d="M'+(x-10)+' '+(y+8)+'l5 -8l5 8m-3 0l5 -7l5 7"/>';
-    if(h.name){const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':'')+'" x="'+x+'" y="'+(y-15)+'">'+(ob?'★':'')+h.name+'</text>';}
-  }
-  o+='<text class="big" font-size="15" x="'+center(6,3)[0]+'" y="'+center(6,3)[1]+'" writing-mode="tb">台灣海峽</text>';
-  o+='<text class="big" font-size="13" x="'+center(15,7)[0]+'" y="'+center(15,7)[1]+'" writing-mode="tb">太平洋</text>';
-  o+='<text class="big" font-size="12" x="'+center(1,1)[0]+'" y="'+center(1,1)[1]+'" writing-mode="tb">大陸沿海</text>';
   if(humanTurn()&&S.sel&&alive(S.sel)&&S.sel.side===S.phase){
-    for(const [k,v] of reach(S.sel)){const [x,y]=center(TER[k].c,TER[k].r);o+='<polygon class="hl '+v.kind+'" points="'+hexPts(x,y,R-2)+'"/>';}
+    for(const [k,v] of reach(S.sel)){const [x,y]=cen(TER[k].c,TER[k].r);o+='<polygon class="hl '+v.kind+'" points="'+hexPts(x,y,R-2)+'"/>';}
   }
-  S.units.forEach(u=>{o+=unitSVG(u);});
+  S.units.slice().sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
+  (S.focus||[]).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<ellipse class="vfocus" cx="'+x.toFixed(1)+'" cy="'+(y+4).toFixed(1)+'" rx="27" ry="20"/>';});
   if(humanTurn()){
     let rings=[];
     if(S.mode==='strike')rings=S.units.filter(u=>u.side==='def').map(u=>[u,'strike']);
     else if(S.sel&&alive(S.sel)&&S.sel.side===S.phase)rings=targets(S.sel).map(u=>[u,'']);
-    rings.forEach(([u,c])=>{const [x,y]=center(u.c,u.r);o+='<circle class="ring '+c+'" cx="'+x+'" cy="'+y+'" r="21"/>';});
+    rings.forEach(([u,c])=>{const [x,y]=cen(u.c,u.r);o+='<circle class="ring '+c+'" cx="'+x+'" cy="'+y+'" r="21"/>';});
   }
-  const svg=$('#map');svg.setAttribute('viewBox','0 0 '+VBW.toFixed(1)+' '+VBH.toFixed(1));svg.innerHTML=o;
+  $('#gD').innerHTML=o;
+  // slide units that moved since the previous render, pop in new ones
+  const now=new Map(),k=fxK();
+  document.querySelectorAll('#gD .u[data-id]').forEach(e=>{
+    const id=+e.dataset.id,x=+e.dataset.x,y=+e.dataset.y;now.set(id,[x,y]);
+    if(!ANIM.ok||ANIM.gid!==S.gid||reduce())return;
+    const p=ANIM.pos.get(id);
+    if(p){const dx=p[0]-x,dy=p[1]-y,dd=Math.hypot(dx,dy);if(dd>1&&dd<W*8)e.animate([{transform:'translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)'},{transform:'translate(0,0)'}],{duration:280*k,easing:'cubic-bezier(.2,.7,.2,1)'});}
+    else if(ANIM.pos.size)e.animate([{opacity:0,transform:'translateY(-14px)'},{opacity:1,transform:'translateY(0)'}],{duration:360*k,easing:'ease-out'});
+  });
+  ANIM.pos=now;ANIM.gid=S.gid;
 }
+/* ---------- effects ---------- */
+const FXQ=[];
+const SVGNS='http://www.w3.org/2000/svg';
+const fxq=o=>{FXQ.push(o);};
+const reduce=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+const fxK=()=>(S&&S.video&&V.sp)?Math.max(.2,1/V.sp):1;
+function el(tag,at,parent){const e=document.createElementNS(SVGNS,tag);for(const k in at)e.setAttribute(k,at[k]);(parent||document.getElementById('gF')).appendChild(e);return e;}
+function tween(ms,fn,end){ms*=fxK();const t0=performance.now();(function f(t){const k=Math.min(1,Math.max(0,(t-t0)/ms));fn(k);if(k<1)requestAnimationFrame(f);else if(end)end();})(t0);}
+function bez(a,c,b,t){const u=1-t;return [u*u*a[0]+2*u*t*c[0]+t*t*b[0],u*u*a[1]+2*u*t*c[1]+t*t*b[1]];}
+function fxFlash(p,r1,r2,col,ms,par){const e=el('circle',{cx:p[0],cy:p[1],r:r1,fill:col,opacity:.9},par);tween(ms,k=>{e.setAttribute('r',r1+(r2-r1)*k);e.setAttribute('opacity',.9*(1-k));},()=>e.remove());}
+function fxRing(p,r1,r2,col,ms,w,par){const e=el('circle',{cx:p[0],cy:p[1],r:r1,fill:'none',stroke:col,'stroke-width':w||2},par);tween(ms,k=>{e.setAttribute('r',r1+(r2-r1)*k);e.setAttribute('opacity',1-k);},()=>e.remove());}
+function fxSparks(p,n,len,col,ms){const ls=[];for(let i=0;i<n;i++)ls.push([el('line',{stroke:col,'stroke-width':2,'stroke-linecap':'round'}),Math.PI*2*i/n+Math.random()*.6]);
+  tween(ms,k=>{ls.forEach(([l,a])=>{const r0=4+len*k*.55,r1=4+len*k;l.setAttribute('x1',p[0]+Math.cos(a)*r0);l.setAttribute('y1',p[1]+Math.sin(a)*r0*.8);l.setAttribute('x2',p[0]+Math.cos(a)*r1);l.setAttribute('y2',p[1]+Math.sin(a)*r1*.8);l.setAttribute('opacity',1-k);});},()=>ls.forEach(([l])=>l.remove()));}
+function fxText(p,s,cls,ms){const t=el('text',{x:p[0],y:p[1]-18,class:'fxt '+cls,'text-anchor':'middle'});t.textContent=s;
+  tween(ms||950,k=>{t.setAttribute('y',p[1]-18-18*k);t.setAttribute('opacity',k<.65?1:1-(k-.65)/.35);},()=>t.remove());}
+function fxImpact(p,hit,sea,big){
+  if(hit){fxFlash(p,3,big?26:16,'#ffb347',380);fxFlash(p,2,big?14:9,'#fff3c4',260);fxRing(p,4,big?32:21,'#ff7a3d',440,2.5);fxSparks(p,big?10:6,big?28:17,'#ffd45a',440);}
+  else if(sea){fxRing(p,3,17,'#ffffff',560,2);fxRing(p,2,10,'#cfeaf5',440,1.5);}
+  else fxFlash(p,3,13,'#cfc7ae',440);
+}
+function fxShot(a,b,o){
+  const c=[(a[0]+b[0])/2,(a[1]+b[1])/2-(o.arc||0)];
+  const dot=el('circle',{r:o.r||3,fill:o.color||'#ffe08a'}),trail=el('path',{fill:'none',stroke:o.trail||'#ffb347','stroke-width':o.w||2,'stroke-linecap':'round',opacity:.85});
+  tween(o.dur||300,k=>{const p=bez(a,c,b,k),q=bez(a,c,b,Math.max(0,k-.28));dot.setAttribute('cx',p[0]);dot.setAttribute('cy',p[1]);trail.setAttribute('d','M'+q[0].toFixed(1)+','+q[1].toFixed(1)+'L'+p[0].toFixed(1)+','+p[1].toFixed(1));},()=>{dot.remove();trail.remove();if(o.end)o.end();});
+}
+function fxSmoke(a,b,arc,n,ms){for(let i=1;i<=n;i++)setTimeout(()=>{const p=bez(a,[(a[0]+b[0])/2,(a[1]+b[1])/2-arc],b,i/(n+1));fxFlash(p,2,7,'#e8e8e8',520);},ms*i/(n+1)*fxK());}
+function fxShake(id,hit){const e=document.querySelector('#gD .u[data-id="'+id+'"]');if(!e)return;
+  e.animate([{transform:'translate(0,0)'},{transform:'translate(-3px,1px)'},{transform:'translate(3px,-1px)'},{transform:'translate(-2px,0)'},{transform:'translate(0,0)'}],{duration:280*fxK()});
+  if(hit)e.animate([{opacity:1},{opacity:.35},{opacity:1}],{duration:260*fxK(),iterations:2});}
+let TFXG=null;
+const tfxGroup=()=>{if(!TFXG){TFXG=document.createElementNS(SVGNS,'g');TFXG.setAttribute('class','tfx');}return TFXG;};
+function tpos(key){const B=CNB[key]||BASES[key];const q=B?TPROJ(B.lon,B.lat):TPROJ(121,23.7);return [+q[0],+q[1]];}
+function fxTheater(o){
+  const a=tpos(o.a),b=tpos(o.b),g=tfxGroup(),c=[(a[0]+b[0])/2,(a[1]+b[1])/2-30];
+  const path=el('path',{d:'M'+a[0]+','+a[1]+' Q'+c[0]+','+c[1]+' '+b[0]+','+b[1],fill:'none',stroke:o.hit?'#ff7a3d':'#9aa5aa','stroke-width':1.6,'stroke-dasharray':'4 4',opacity:.8},g);
+  const dot=el('circle',{r:3.5,fill:'#fff3c4',stroke:'#ff7a3d','stroke-width':1},g);
+  tween(560,k=>{const p=bez(a,c,b,k);dot.setAttribute('cx',p[0]);dot.setAttribute('cy',p[1]);path.setAttribute('opacity',.8*(1-k*.4));},()=>{
+    dot.remove();fxRing(b,3,o.hit?24:14,o.hit?'#ff5a3a':'#cfd6d8',620,o.hit?3:2,g);if(o.hit)fxFlash(b,2,14,'#ffb347',420,g);
+    tween(500,k=>path.setAttribute('opacity',.5*(1-k)),()=>path.remove());});
+}
+function runFx(o){
+  const P=h=>cen(h[0],h[1]);
+  if(o.t==='atk'){
+    const a=P(o.from),b=P(o.to),n=o.sea?1:3;
+    for(let i=0;i<n;i++)setTimeout(()=>{fxFlash(a,2,9,'#ffe08a',150);fxShot(a,b,{arc:o.sea?42:8,dur:o.sea?340:170,end:()=>fxImpact(b,o.hit&&i===n-1,o.tsea,false)});},i*95*fxK());
+  }else if(o.t==='msl'){
+    const a=P(o.from),b=P(o.to);fxFlash(a,3,12,'#fff',240);fxSmoke(a,b,62,6,480);
+    fxShot(a,b,{arc:62,dur:480,color:'#fff',trail:'#ffb347',w:3,r:3.5,end:()=>fxImpact(b,o.hit,true,true)});
+  }else if(o.t==='air'){
+    const b=P(o.at),src=o.src||'w',s=src==='w'?[b[0]-200,b[1]-150]:src==='e'?[b[0]+200,b[1]-165]:[b[0],b[1]-230];
+    fxShot(s,b,{arc:-12,dur:420,color:'#fff',trail:'#ff9a3c',w:3,r:3.5,end:()=>fxImpact(b,o.hit,o.tsea,true)});
+  }else if(o.t==='dmg'){
+    const p=P(o.at);fxText(p,'−'+o.n,o.side);fxShake(o.id,true);
+  }else if(o.t==='dead'){
+    const p=P(o.at);fxFlash(p,4,34,'#ff9a3c',520);fxFlash(p,2,18,'#fff3c4',360);fxRing(p,6,42,'#ff5a3a',620,3);fxSparks(p,12,34,'#ffd45a',560);
+    for(let i=0;i<4;i++)setTimeout(()=>fxFlash([p[0]+(Math.random()-.5)*20,p[1]-6-i*5],3,11,'#6b6b6b',700),i*90*fxK());
+    const gh=document.createElementNS(SVGNS,'g');gh.innerHTML=unitSVG({id:-1,c:o.at[0],r:o.at[1],type:o.type,side:o.side,hp:1,moved:true,acted:false});document.getElementById('gF').appendChild(gh);
+    tween(620,k=>{gh.setAttribute('opacity',1-k);gh.setAttribute('transform','translate(0,'+(-6*k).toFixed(1)+')');},()=>gh.remove());
+    fxText(p,'殲滅','dead',1100);
+  }else if(o.t==='txt'){fxText(P(o.at),o.s,o.col||'def',900);
+  }else if(o.t==='land'){const p=P(o.at);fxRing(p,4,24,'#ffffff',620,2.5);fxRing(p,2,15,'#cfeaf5',480,2);
+  }else if(o.t==='tfa'){fxTheater(o);}
+}
+function playFx(list){
+  if(!list||!list.length||reduce())return;
+  const g=document.getElementById('gF');while(g.childNodes.length>70)g.removeChild(g.firstChild);
+  let t=0,last=0;const k=fxK();
+  list.forEach(o=>{
+    let start;
+    if(o.t==='atk'||o.t==='msl'||o.t==='air'||o.t==='tfa'){start=t;last=t;t+=(o.t==='air'?170:o.t==='atk'?70:110);}
+    else if(o.t==='dmg'||o.t==='dead'||o.t==='txt')start=last+(o.t==='atk'?0:(list.some(x=>x.t==='msl')?500:360));
+    else start=0;
+    if(start>0)setTimeout(()=>runFx(o),start*k);else runFx(o);
+  });
+}
+
 function renderStatus(){
   if(!S.started){$('#status').innerHTML='<span class="chip">尚未開始 · 判定回合 <b>'+S.T+'</b></span>';$('#fsStatus').textContent='';return;}
   const sp=supply();
@@ -1760,7 +1998,7 @@ function renderStatus(){
   $('#fsStatus').textContent='第 '+S.turn+' / '+S.T+' 回合 · '+SIDE[S.phase]+'階段 · 天候'+S.weather.n+' · 火力 '+S.fire+' · 補給 '+sp.used+'/'+sp.cap;
 }
 function renderCtrl(){
-  $('#setup').hidden=S.started;$('#ctrl').hidden=!S.started;
+  $('#setup').hidden=S.started;$('#ctrl').hidden=!S.started||S.video;$('#vbarCard').hidden=!(S.started&&S.video);$('#vcap').hidden=!(S.started&&S.video&&V.fr.length>0);
   if(!S.started)return;
   const h=humanTurn();
   $('#phaseTitle').textContent=S.over?'作戰結束':'第 '+S.turn+' 回合 · '+SIDE[S.phase]+'指揮';
@@ -1775,7 +2013,7 @@ function renderCtrl(){
   else if(S.sel)hint='綠色＝可移動，橘色＝可登陸，紫色＝可空降；橘圈＝可攻擊目標。再點一次單位可取消選取。';
   else hint=S.phase==='atk'?'點選紅色單位下令。先把兩棲部隊從沿岸出航，下一回合搶灘。':'點選藍色單位下令。飛彈單位可射擊 4 格內海上的攻方船團。';
   $('#hint').textContent=hint;$('#fsHint').textContent=hint;
-  const fs1=$('#fsStrike'),fs2=$('#fsEnd');fs1.hidden=bs.hidden;fs1.disabled=bs.disabled;fs1.textContent=bs.textContent;fs1.classList.toggle('on',bs.classList.contains('on'));fs2.hidden=$('#btnEnd').hidden;fs2.disabled=$('#btnEnd').disabled;
+  const fs1=$('#fsStrike'),fs2=$('#fsEnd');fs1.hidden=bs.hidden;fs1.disabled=bs.disabled;fs1.textContent=bs.textContent;fs1.classList.toggle('on',bs.classList.contains('on'));fs2.hidden=$('#btnEnd').hidden;fs2.disabled=$('#btnEnd').disabled;if(S.video){fs1.hidden=true;fs2.hidden=true;}
 }
 function renderInfo(){
   const el=$('#info');
@@ -1807,7 +2045,141 @@ function renderVC(){
 function renderLog(){
   $('#log').innerHTML=S.log.length?S.log.map(l=>'<li><span class="tn">T'+l.t+(l.p==='atk'?'攻':'守')+'</span>'+l.msg+'</li>').join(''):'<li>尚無戰報。</li>';
 }
-function render(){renderMap();renderStatus();renderCtrl();renderInfo();renderVC();renderNodes();renderLog();renderTheater();renderCost();}
+function renderAll(){renderMap();renderStatus();renderCtrl();renderInfo();renderVC();renderNodes();renderLog();renderTheater();renderCost();}
+// while recording a video simulation, a render call stores a frame instead of drawing
+function render(){if(S.rec)recordFrame();else{renderAll();if(FXQ.length)playFx(FXQ.splice(0));}}
+
+
+/* ---------- video simulation: record the whole war instantly, then play it back ---------- */
+const REC={frames:[],prev:null,prevN:0,final:null,closed:false,resolve:null};
+const V={fr:[],i:0,playing:false,t:null,sp:2,turnStart:{}};
+function snapFrame(){
+  const o=Object.assign({},S);
+  o.units=S.units.map(u=>Object.assign({},u));o.owner=Object.assign({},S.owner);o.pools=Object.assign({},S.pools);
+  o.fx={lv:Object.assign({},S.fx.lv),reach:S.fx.reach,units:S.fx.units.map(f=>Object.assign({},f))};
+  o.cn=Object.assign({},S.cn);o.cost=JSON.parse(JSON.stringify(S.cost));
+  o.hits=S.hits.slice();o.log=S.log.slice(0,60);o.news=S.news.slice();o.events=S.events.slice();o.cnLog=S.cnLog.slice();
+  o.sel=null;o.hover=null;o.mode=null;o.rec=false;
+  return o;
+}
+function recordFrame(card){
+  if(REC.closed&&!REC.final)return;
+  const f=snapFrame(),prev=REC.prev;
+  const cap=S.log.filter(l=>l.n>REC.prevN).reverse();
+  const focus=[];
+  if(prev){
+    const pm=new Map(prev.units.map(u=>[u.id,u]));
+    f.units.forEach(u=>{const q=pm.get(u.id);if(!q||q.c!==u.c||q.r!==u.r||q.hp!==u.hp)focus.push(K(u.c,u.r));pm.delete(u.id);});
+    pm.forEach(q=>focus.push(K(q.c,q.r)));
+  }
+  if(!card&&!cap.length&&!focus.length&&!FXQ.length&&prev&&prev.turn===f.turn&&prev.phase===f.phase)return;
+  if(!card&&!cap.length&&REC.frames.length>2400)return;
+  f.focus=focus;REC.prevN=LOGN;
+  REC.frames.push({S:f,cap,card:card||null,fx:FXQ.splice(0),prevN:cap.length?cap[0].n-1:LOGN});
+  REC.prev=f;
+}
+// automatic decisions for the events in video mode
+function wpick(ws){let t=ws.reduce((a,w)=>a+w[1],0),r=Math.random()*t;for(const [v,w] of ws){if((r-=w)<=0)return v;}return ws[0][0];}
+function autoChoice(ev,opts){
+  const has=id=>opts.some(o=>o.id===id);let id;
+  if(ev.id==='timing')id=wpick([['apr',45],['oct',35],['winter',20]]);
+  else if(ev.id==='strike')id=wpick([['ssm',40],['c2',20],['air',30]].concat(has('okinawa')?[['okinawa',10]]:[]));
+  else if(ev.id==='mobilize')id=wpick([['full',40],['capital',30],['mobile',30]]);
+  else if(ev.id==='final')id=snap().n>=2?'hold':'allin';
+  else id=pick(opts).id;
+  return opts.find(o=>o.id===id)||opts[0];
+}
+function autoEvent(ev,i){
+  const rec={turn:S.turn,phase:S.phase,title:ev.title,id:ev.id};
+  let choice=null;
+  if(ev.choice){const opts=ev.choice.options.filter(o=>!o.hide||!o.hide());choice=autoChoice(ev,opts);rec.choice=choice.label;rec.who=ev.choice.who;}
+  const rolls=(ev.dice||[]).filter(d=>!d.skip||!d.skip()).map(rollSpec);
+  const fx=finishRec(ev,rec,choice,rolls);
+  const html='<div class="eyebrow">事件節點 '+(i+1)+' / '+EVENTS.length+' · 第 '+S.turn+' 回合 '+SIDE[S.phase]+'階段前</div><h3>'+ev.title+'</h3><p>'+ev.blurb+'</p>'+
+    (choice?'<p><span class="badge '+ev.choice.who+'">'+SIDE[ev.choice.who]+'決策</span>選擇「'+choice.label+'」</p>':'')+
+    rolls.map(r=>'<p><span class="badge dice">擲骰</span>'+r.label+'：<b>'+r.text+'</b> →「'+r.row.label+'」<span class="dd"> '+r.row.desc+'</span></p>').join('')+
+    '<ul>'+fx.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  recordFrame({html,kind:'event',dur:7000});
+}
+async function startVideo(){
+  vStop();
+  newState();readSetup();
+  S.started=true;S.rec=true;S.video=true;S.ctrl={atk:'ai',def:'ai'};
+  REC.frames=[];REC.prev=null;REC.prevN=LOGN;REC.final=null;REC.closed=false;
+  setTab('cmd');$('#setup').hidden=true;$('#vbusy').hidden=false;
+  await new Promise(r=>setTimeout(r,40));
+  applyFxScenario();
+  const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));
+  S.lastSnap=snap();log('純模擬開始。判定回合：第 '+S.T+' 回合。');
+  recordFrame();
+  const done=new Promise(r=>{REC.resolve=r;});
+  beginPhase('atk');
+  await done;
+  S.rec=false;
+  V.fr=REC.frames.slice();V.sp=+$('#optVSpeed').value||2;
+  V.turnStart={};V.fr.forEach((f,i)=>{if(V.turnStart[f.S.turn]===undefined)V.turnStart[f.S.turn]=i;});
+  $('#vSpeed').value=String(V.sp);$('#vScrub').max=V.fr.length-1;
+  $('#vbusy').hidden=true;
+  fitVideoZoom();vShow(0,true);V.playing=true;vBtn();vSchedule();
+}
+function fitVideoZoom(){
+  const w=document.querySelector('.mapwrap'),h1=w.clientWidth*VBH/VBW;
+  setZoom(Math.max(.5,Math.min(1,(innerHeight-330)/h1)));
+  document.querySelector('.board').scrollIntoView({block:'start'});
+}
+function vStop(){clearTimeout(V.t);V.playing=false;V.fr=[];$('#vcard').hidden=true;}
+function backToSetup(){vStop();reset();setTab('cmd');}
+function vBtn(){$('#vPlay').textContent=V.playing?'⏸':'▶';}
+function vLabel(f){return 'D+'+(Math.ceil(f.S.turn/2)-1)+(f.S.turn%2?' 白天':' 夜間')+'・第 '+f.S.turn+' 回合・'+SIDE[f.S.phase]+'階段';}
+function vShow(i,full,fxOk){
+  V.i=Math.max(0,Math.min(V.fr.length-1,i));const f=V.fr[V.i];S=f.S;ANIM.ok=!!fxOk;
+  if(full||f.cap.length||f.card||V.i%4===0||!V.playing)renderAll();else{renderMap();renderStatus();}
+  ANIM.ok=true;if(fxOk&&f.fx&&f.fx.length)playFx(f.fx);
+  $('#vcap').hidden=false;
+  $('#vScrub').value=V.i;$('#vTime').textContent=(V.i+1)+' / '+V.fr.length+'　'+vLabel(f);
+  const tag=l=>l.p==='atk'?'攻':'守';
+  const old=f.S.log.filter(l=>l.n<=f.prevN).slice(0,3);
+  $('#vLines').innerHTML=f.cap.map(l=>'<div class="vl cur"><span class="tn">T'+l.t+tag(l)+'</span>'+l.msg+'</div>').join('')+
+    old.map(l=>'<div class="vl"><span class="tn">T'+l.t+tag(l)+'</span>'+l.msg+'</div>').join('');
+  const b=snap(),c=costSummary();
+  $('#vChips').innerHTML=['<span>若現在判定 攻方 <b>'+b.n+'</b>/3 → <b>'+verdict(b.n).t+'</b></span>','<span>島上兵力 攻 <b>'+b.as+'</b>・守 <b>'+b.ds+'</b> 步</span>',
+    '<span>港口 <b>'+b.ports+'</b>/3・台北 <b>'+(b.taipei?'攻':'守')+'</b></span>','<span>空軍 攻 <b>'+b.plaAir+'</b>・守與盟 <b>'+b.ally+'</b></span>','<span>火箭軍存量 <b>'+S.pools.rf+'</b></span>',
+    '<span>軍人傷亡 攻 <b>'+fmt(c.mil.atk.n)+'</b>・守 <b>'+fmt(c.mil.def.n)+'</b></span>','<span>台灣平民 <b>'+fmt(c.civ.TW)+'</b></span>','<span>全球股市 <b>'+c.mkt.toFixed(1)+'%</b></span>'].join('');
+  const cd=$('#vcard');
+  if(f.card){cd.innerHTML=f.card.html;cd.className='vcard '+f.card.kind;cd.hidden=false;}else cd.hidden=true;
+}
+function vSchedule(){
+  clearTimeout(V.t);if(!V.playing)return;
+  const f=V.fr[V.i];let d=f.card?f.card.dur:(f.cap.length?1300:420);
+  V.t=setTimeout(()=>{
+    if(V.i>=V.fr.length-1){vEnd();return;}
+    vShow(V.i+1,false,true);vSchedule();
+  },d/V.sp);
+}
+function vEnd(){V.playing=false;vBtn();$('#vcard').hidden=true;if(REC.final)showFinal(REC.final);}
+$('#vPlay').onclick=()=>{
+  if(!V.fr.length)return;
+  if(!V.playing&&V.i>=V.fr.length-1)vShow(0,true);
+  V.playing=!V.playing;vBtn();if(V.playing)vSchedule();else{clearTimeout(V.t);vShow(V.i,true);}
+};
+$('#vScrub').addEventListener('input',e=>{vShow(+e.target.value,true);vSchedule();});
+$('#vSpeed').addEventListener('change',e=>{V.sp=+e.target.value;vSchedule();});
+function vTurnJump(dir){
+  if(!V.fr.length)return;const cur=V.fr[V.i].S.turn,turns=Object.keys(V.turnStart).map(Number).sort((a,b)=>a-b);
+  let target;
+  if(dir>0){target=turns.find(t=>t>cur);if(target===undefined)return vShow(V.fr.length-1,true);}
+  else{const start=V.turnStart[cur];target=V.i>start+1?cur:[...turns].reverse().find(t=>t<cur);if(target===undefined)target=turns[0];}
+  vShow(V.turnStart[target],true);vSchedule();
+}
+$('#vNextT').onclick=()=>vTurnJump(1);$('#vPrevT').onclick=()=>vTurnJump(-1);
+$('#vAgain').onclick=()=>startVideo();$('#vBack').onclick=backToSetup;
+addEventListener('keydown',e=>{
+  if(!S||!S.video||!V.fr.length||/INPUT|SELECT|TEXTAREA/.test((e.target||{}).tagName||'')&&e.key!==' ')return;
+  if(!$('#modal').hidden)return;
+  if(e.key===' '){e.preventDefault();$('#vPlay').click();}
+  else if(e.key==='ArrowRight'){vShow(V.i+1,true);vSchedule();}
+  else if(e.key==='ArrowLeft'){vShow(V.i-1,true);vSchedule();}
+});
 
 /* ---------- input ---------- */
 $('#map').addEventListener('click',e=>{
@@ -1834,13 +2206,13 @@ $('#map').addEventListener('mouseover',e=>{const el=e.target.closest('[data-k]')
 $('#btnStrike').onclick=()=>{if(!humanTurn())return;S.mode=S.mode==='strike'?null:'strike';S.sel=null;render();};
 $('#btnEnd').onclick=()=>{if(!humanTurn())return;endPhase();};
 function readSetup(){
-  S.T=+$('#optT').value;S.sim=$('#optMode').value==='sim';S.speed=S.sim?+$('#optSpeed').value:1;
+  S.T=+$('#optT').value;S.sim=$('#optMode').value==='sim';S.video=$('#optMode').value==='video';S.speed=S.sim?+$('#optSpeed').value:1;
   const sd=$('#optSide').value;
-  S.ctrl=S.sim?{atk:'ai',def:'ai'}:{atk:sd==='atk'||sd==='both'?'human':'ai',def:sd==='def'||sd==='both'?'human':'ai'};
+  S.ctrl=S.sim||S.video?{atk:'ai',def:'ai'}:{atk:sd==='atk'||sd==='both'?'human':'ai',def:sd==='def'||sd==='both'?'human':'ai'};
   S.newsOn=$('#optNews').value==='1';S.fxScen=$('#optFx').value;
 }
-['#optT','#optSide','#optMode','#optSpeed','#optBuild','#optNews','#optFx'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
-const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optT:'8',optBuild:'exercise',optFx:'dice',optNews:'1'};
+['#optT','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optNews','#optFx'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
+const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optBuild:'exercise',optFx:'dice',optNews:'1'};
 $('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
 // one-off start with the default settings; the saved setup choices are left as they were
 $('#btnDefault').onclick=()=>{
@@ -1850,7 +2222,8 @@ $('#btnDefault').onclick=()=>{
   renderWizard();
 };
 function startGame(){
-  readSetup();S.started=true;setTab('cmd');
+  readSetup();if(S.video){startVideo();return;}
+  S.started=true;setTab('cmd');
   applyFxScenario();
   if(!S.sim){const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));}
   S.lastSnap=snap();
@@ -1878,7 +2251,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.05';
+const VERSION='2026-11-02.07';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
@@ -1899,10 +2272,12 @@ $('#btnStart').addEventListener('click',()=>{if(!newverBtn.hidden)updateLabel();
 
 /* ---------- setup wizard ---------- */
 const isSim=()=>$('#optMode').value==='sim';
+const isVideo=()=>$('#optMode').value==='video';
 const SETUP_PAGES=[
  {t:'對戰方式',d:'先決定怎麼玩：自己指揮，或交給電腦推演整場戰爭。',fields:[
-  {sel:'optMode',q:'模式',opts:{play:['對戰','由你下令移動、攻擊與打擊，隨時掌握戰場。'],sim:['電腦推演','雙方由電腦操作，途中在 7 個關鍵節點暫停，由你做決策或擲骰，最後產出推演時間軸與檢討報告。']}},
-  {sel:'optSide',q:'你要操作哪一方？',when:()=>!isSim(),opts:{atk:['攻方（紅）','你指揮渡海登陸，電腦防守台灣。'],def:['守方（藍）','你防守台灣，電腦負責進攻。'],both:['雙方都操作','同一台裝置輪流操作兩方。'],none:['都不操作（觀戰）','兩邊都由電腦操作，看戰局演變。']}},
+  {sel:'optMode',q:'模式',opts:{play:['對戰','由你下令移動、攻擊與打擊，隨時掌握戰場。'],sim:['電腦推演','雙方由電腦操作，途中在 7 個關鍵節點暫停，由你做決策或擲骰，最後產出推演時間軸與檢討報告。'],video:['純模擬（看影片）','全程由電腦操作，並自動決策與擲骰，像看攻防影片：以戰棋地圖為背景播放，雙方動作與影響顯示在下方字幕區。可暫停、變速、拖曳時間軸，結束後附戰後檢討。']}},
+  {sel:'optSide',q:'你要操作哪一方？',when:()=>$('#optMode').value==='play',opts:{atk:['攻方（紅）','你指揮渡海登陸，電腦防守台灣。'],def:['守方（藍）','你防守台灣，電腦負責進攻。'],both:['雙方都操作','同一台裝置輪流操作兩方。'],none:['都不操作（觀戰）','兩邊都由電腦操作，看戰局演變。']}},
+  {sel:'optVSpeed',q:'播放速度',when:()=>isVideo(),opts:{'1':['1×','逐步閱讀，一場約需數分鐘。'],'2':['2×','建議速度。'],'4':['4×','快轉，適合只看結果與重點。']}},
   {sel:'optSpeed',q:'推演速度',when:()=>isSim(),opts:{'1':['一般','每個動作有短暫停頓，方便看清楚。'],'0.35':['快速','縮短動作之間的停頓。']}}]},
  {t:'判定回合',d:'戰爭持續到指定回合結束，才依三項條件判定勝負，攻方達成 2 項以上獲勝：① 台北由攻方控制 ② 基隆、台中港、高雄至少 2 個港口由攻方控制 ③ 攻方島上兵力步數不少於守方。每回合約半天。',fields:[
   {sel:'optT',q:'幾回合後判定？',opts:{'6':['第 6 回合','約 3 天。時間很緊，攻方多半來不及站穩。'],'8':['第 8 回合','約 4 天。基準設定。'],'10':['第 10 回合','約 5 天。攻方有較多時間奪港。'],'12':['第 12 回合','約 6 天。長期戰，攻方較有機會站穩。']}}]},
@@ -1916,7 +2291,7 @@ const SETUP_PAGES=[
 ];
 const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
 function optLabel(sel,v){for(const pg of SETUP_PAGES)for(const f of pg.fields)if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
-function saveSetup(){try{const cfg={};['optMode','optSide','optSpeed','optT','optBuild','optFx','optNews'].forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
+function saveSetup(){try{const cfg={};['optMode','optSide','optSpeed','optVSpeed','optT','optBuild','optFx','optNews'].forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
 function loadSetup(){
   try{const o=JSON.parse(localStorage.getItem('tsl-setup')||'null');if(!o)return;
     Object.entries(o.cfg||{}).forEach(([id,v])=>{const el=$('#'+id);if(el&&[...el.options].some(x=>x.value===v))el.value=v;});
@@ -1936,7 +2311,7 @@ function renderWizard(){
   const note=pg.note&&pg.note();if(note)h+='<div class="wz-note">'+note+'</div>';
   if(pg.summary){
     const sim=isSim(),rows=[['模式',optLabel('optMode',$('#optMode').value)]];
-    if(!sim)rows.push(['操作',optLabel('optSide',$('#optSide').value)]);else rows.push(['速度',optLabel('optSpeed',$('#optSpeed').value)]);
+    if(isVideo())rows.push(['操作','電腦自動（影片）'],['播放',optLabel('optVSpeed',$('#optVSpeed').value)]);else if(!sim)rows.push(['操作',optLabel('optSide',$('#optSide').value)]);else rows.push(['速度',optLabel('optSpeed',$('#optSpeed').value)]);
     rows.push(['判定',optLabel('optT',$('#optT').value)]);
     rows.push(['集結',sim?'推演中選擇':optLabel('optBuild',$('#optBuild').value)]);
     rows.push(['參戰',optLabel('optFx',$('#optFx').value)]);rows.push(['快訊',optLabel('optNews',$('#optNews').value)]);
@@ -1945,7 +2320,7 @@ function renderWizard(){
   $('#wzBody').innerHTML=h;
   $('#wzPrev').disabled=WZ.i===0;$('#wzNext').disabled=WZ.i===N-1;
   const left=WZ.done.map((d,i)=>d?null:i+1).filter(Boolean),b=$('#btnStart');
-  b.disabled=left.length>0;b.textContent=isSim()?'開始推演':'開始作戰';
+  b.disabled=left.length>0;b.textContent=isSim()?'開始推演':isVideo()?'開始播放':'開始作戰';
   $('#wzHint').textContent=left.length?'還有第 '+left.join('、')+' 頁沒看過，看過每一頁後才能開始。':'設定完成，在任何一頁都可以開始。';
   saveSetup();
 }
