@@ -219,6 +219,8 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .boom{fill:var(--accent);stroke:var(--atk);stroke-width:1}
 .ndot.atk{fill:var(--atk)} .ndot.def{fill:var(--def)}
 .nlbl{font-size:13px;font-weight:900;fill:var(--ink);font-family:var(--f-display)}
+#newver{position:fixed;left:50%;top:calc(56px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:15;background:var(--accent);border-color:var(--accent);color:#1b1408;border-radius:20px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.3);max-width:calc(100% - 32px)}
+#ver{font-family:var(--f-mono);margin-left:8px}
 #toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 18px;border-radius:3px;font-weight:700;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
@@ -320,8 +322,9 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
       </div>
     </aside>
   </main>
-  <footer>抽象化的兵棋遊戲。地圖比例、部隊與數值皆為遊戲設定，不代表真實兵力或作戰計畫。</footer>
+  <footer>抽象化的兵棋遊戲。地圖比例、部隊與數值皆為遊戲設定，不代表真實兵力或作戰計畫。<span id="ver"></span></footer>
 </div>
+<button id="newver" hidden>🔔 有新版本，點此重新整理</button>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
@@ -1661,6 +1664,26 @@ $('#tmap').addEventListener('click',async e=>{
   S.thSel=S.thSel===b?null:b;render();
 });
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
+/* ---------- 版本與更新提示 ---------- */
+// 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
+const VERSION='2026-11-02.01';
+$('#ver').textContent='版本 '+VERSION;
+const newverBtn=$('#newver');
+function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
+async function checkUpdate(){
+  try{
+    const txt=await (await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'})).text();
+    const v=(txt.match(/const VERSION='([^']+)'/)||[])[1];
+    newverBtn.hidden=!v||v===VERSION;if(!newverBtn.hidden)updateLabel();
+  }catch(e){/* 離線或無法取得時略過 */}
+}
+newverBtn.onclick=()=>location.replace(location.pathname+'?v='+Date.now());
+if(location.protocol.startsWith('http')){
+  checkUpdate();setInterval(checkUpdate,5*60*1000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate();});
+  addEventListener('focus',checkUpdate);addEventListener('pageshow',checkUpdate);
+}
+$('#btnStart').addEventListener('click',()=>{if(!newverBtn.hidden)updateLabel();});
 function reset(){newState();readSetup();render();}
 reset();
 })();
