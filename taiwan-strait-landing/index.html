@@ -177,6 +177,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .wz-nav{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
 .wz-start{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
 .wz-start button{width:100%}
+.wz-start #btnDefault{margin-top:8px}
 .wz-sum{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
 .wz-sum td{padding:4px 0;border-top:1px solid var(--line);vertical-align:top}
 .wz-sum td:first-child{color:var(--muted);width:6.5em}
@@ -351,7 +352,9 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
           <p class="wz-desc" id="wzDesc"></p>
           <div id="wzBody"></div>
           <div class="wz-nav"><button class="ghost" id="wzPrev">← 上一步</button><button class="ghost" id="wzNext">下一步 →</button></div>
-          <div class="wz-start"><button id="btnStart">開始作戰</button><div class="hint" id="wzHint"></div></div>
+          <div class="wz-start"><button id="btnStart">開始作戰</button><div class="hint" id="wzHint"></div>
+            <button class="ghost" id="btnDefault">依預設值直接開始</button>
+            <div class="hint">預設：對戰、你操作攻方（電腦守方）、第 8 回合判定、演習掩護、擲骰決定參戰、快訊開啟。不會改掉你已記錄的設定。</div></div>
           <div id="wzStore" hidden>
             <select id="optMode"><option value="play">對戰</option><option value="sim">電腦推演</option></select>
             <select id="optSide"><option value="atk">攻方</option><option value="def">守方</option><option value="both">雙方</option><option value="none">觀戰</option></select>
@@ -1837,14 +1840,22 @@ function readSetup(){
   S.newsOn=$('#optNews').value==='1';S.fxScen=$('#optFx').value;
 }
 ['#optT','#optSide','#optMode','#optSpeed','#optBuild','#optNews','#optFx'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
-$('#btnStart').onclick=()=>{
-  if($('#btnStart').disabled)return;
+const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optT:'8',optBuild:'exercise',optFx:'dice',optNews:'1'};
+$('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
+// one-off start with the default settings; the saved setup choices are left as they were
+$('#btnDefault').onclick=()=>{
+  const keep={};Object.keys(DEFAULT_CFG).forEach(id=>{keep[id]=$('#'+id).value;$('#'+id).value=DEFAULT_CFG[id];});
+  startGame();
+  Object.entries(keep).forEach(([id,v])=>{$('#'+id).value=v;});
+  renderWizard();
+};
+function startGame(){
   readSetup();S.started=true;setTab('cmd');
   applyFxScenario();
   if(!S.sim){const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));}
   S.lastSnap=snap();
   log((S.sim?'推演開始':'作戰開始')+'。判定回合：第 '+S.T+' 回合。');beginPhase('atk');
-};
+}
 function confirmBox(msg){return new Promise(res=>{const box=$('#mbox');box.classList.remove('ev');
   box.innerHTML='<div class="eyebrow">確認打擊</div><h3>升級戰事？</h3><p>'+msg+'</p><div class="btns"><button id="cfY">確定打擊</button><button class="ghost" id="cfN">取消</button></div>';
   $('#modal').hidden=false;$('#cfY').onclick=()=>{$('#modal').hidden=true;res(true);};$('#cfN').onclick=()=>{$('#modal').hidden=true;res(false);};$('#cfN').focus();});}
@@ -1867,7 +1878,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.04';
+const VERSION='2026-11-02.05';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
