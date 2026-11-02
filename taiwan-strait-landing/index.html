@@ -350,7 +350,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 .th-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;margin-top:8px;align-items:start}
 @media (max-width:720px){.th-grid{grid-template-columns:minmax(0,1fr)}}
 #tmap{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:3px}
-.tsea{fill:var(--sea)} .tcn{fill:var(--main);stroke:var(--main-edge)} .tland{fill:var(--land);stroke:var(--land-edge);stroke-width:.8}
+.tedca{fill:var(--us);stroke:#fff;stroke-width:1} .tsea{fill:var(--sea)} .tcn{fill:var(--main);stroke:var(--main-edge)} .tland{fill:var(--land);stroke:var(--land-edge);stroke-width:.8}
 .tbox{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:5 3}
 .tdist{stroke:var(--ink);stroke-width:.8;stroke-dasharray:2 3;opacity:.55}
 .tlb{font-size:10px;fill:var(--ink);opacity:.7;font-family:var(--f-body);pointer-events:none}
@@ -550,7 +550,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
         <div class="card rules">
           <h2>規則摘要</h2>
           <details class="rg" open><summary>基本規則</summary><ul><li><b>步（戰力）：</b>每個單位的戰力分成幾「步」，就是棋子下方的圓點。旅級單位多為 3 步，空降旅、後備旅、反艦飛彈為 2 步。每損失 1 步約失去三分之一戰力（在海上就是部分船艦連同人員裝備被擊沉）；只剩 1 步時攻防各 −1，歸零即被殲滅。戰況與報告中的「兵力 X 步」是各單位剩餘步數的加總，約 3 步相當於一個旅。</li><li>每回合先攻方、後守方。每個單位每階段可移動一次，之後可攻擊一次。</li><li><b>渡海：</b>兩棲旅、陸戰旅可從大陸任一沿岸格出航；裝甲旅只能從港口出航，且只能在攻方已控制的港口上岸。海上移動力依天候：良好 3、普通 2、惡劣 1。登陸後該單位本階段結束。</li><li><b>搶灘突擊：</b>從海上直接攻擊岸上敵軍，攻擊 −2（陸戰旅 −1）。守方若被消滅，突擊單位可直接上岸。</li><li><b>戰鬥：</b>攻擊值＋骰 對 防禦值＋地形＋骰。差 ≥4 守方失 2 步；1～3 失 1 步；0 雙方各失 1；−1～−3 攻方失 1；≤−4 攻方失 2。每多一支友軍與目標相鄰 +1（最多 +2）。只剩 1 步的單位攻防各 −1。</li><li><b>控制區：</b>移動進入與敵軍相鄰的陸地格必須停下。</li><li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；每次空投擲骰，擲 1 因防空攔截損失 1 步；落在敵軍旁時擲 1～3 就損失 1 步。惡劣天候不能空降。</li><li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 2、港口 4、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1。</li><li><b>增援：</b>攻方第 2～5 回合於大陸沿岸到達；守方後備旅第 2～4 回合在城市動員。</li></ul></details>
-          <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>兵力年代：</b>開局可選 2026 現況、2028 近期、2030 中期。2026 依公開報導概略設定（台灣：雲峰與雄風IIE 長程飛彈、HIMARS／ATACMS、魚叉岸防、F-16V、天弓與愛國者；共軍：東風-15／16 與 PCH-191 長程火箭、東風-17 高超音速、東風-26／21D）；2028、2030 是依已規劃的採購與特別預算所做的推估，雙方都會成長。東風-17 的火力不受守方防空削減；東風-26／21D 讓打擊美日基地與艦艇的門檻 −1；無人機與巡飛彈每階段增加反艦攻擊。數字為遊戲的抽象點數，實際數量並不公開，各來源也有出入，詳見 DATA.md。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li><li><b>制空與防空壓制：</b>每回合先比較攻方陸基空軍＋艦載機與守方、盟國空軍：差 3 以上算「優勢」。攻方優勢時美日空軍的反艦命中門檻 +1，守方優勢時 −1；守方防空降到 2 以下算「遭壓制」，攻方火力 +1，攻方防空降到 2 以下則大陸基地更容易被打。</li><li><b>海上交戰：</b>每回合守方階段，攻方護航艦隊與航艦會與守方海軍、美日水面艦及潛艦交戰；潛艦（美日，以及台灣自製的海鯤，2028 年起 1 艘、2030 年 1 艘以上）可能擊沉護航艦或重創航艦，也可能遭反潛。共軍航艦（遼寧、山東、福建）提供艦載機制空，被反艦攻擊命中護航艦時，可能連帶被重創。</li><li><b>台灣地形與機場：</b>台灣本島依真實海岸線、中央山脈與城市位置重畫；東岸多為斷崖不可登陸，宜蘭、花蓮、台東有小塊平原；西岸彰化、雲林一帶為泥灘。守方機場 11 座（桃園、新竹、清泉崗、嘉義、台南、岡山、屏東、花蓮佳山、台東志航等），共軍沿海機場 11 座；攻方占領守方機場時，守方空軍 −1。東岸另有岸置反艦飛彈（花蓮佳山一帶），可射擊台灣東側海域的共軍航艦群（地圖上的 2～4 艘，沉沒會減少航艦點數）。</li><li><b>雄二／雄三：</b>守方反艦飛彈存量約 1,000 枚（2026），以每年約 200 枚的產能增加（約 2031 年達 2,000 枚上下，官方沒有公布此目標，為推估）；每點約 100 枚，岸置飛彈單位每次射擊消耗約 0.2 點，存量用完就無法射擊。</li><li><b>細格地圖：</b>地圖格數加倍（每個舊格細分為 2×2，約 36×36 格），海岸線、山地、港口與機場位置更細；移動力、海上移動、飛彈射程、空降距離、相鄰（控制區、支援、攻擊距離）都隨之加倍，實際行進與作戰距離不變。攻占一格時，周圍沒有敵軍的陸地格一併易主（港口與台北需親自踏入）。單位圖示縮小，同格可疊 2 個。</li><li><b>水面艦艇：</b>共軍護航艦（紅色，最多 4 艘）在港口外海，可航行、貼近己方船團掩護（目標旁有護航艦時，守方反艦攻擊命中門檻 +1），也能砲擊海岸；守方艦艇群（藍色，停泊港口，最多 4 組）每階段有 1 發反艦飛彈，不能移動。兩者都只有 2 步、很容易被反艦飛彈或空襲擊沉；擊沉會連動減少海軍點數，海軍點數被海戰扣減時也會沉掉對應的艦艇。</li><li><b>堆疊：</b>每格最多 2 個友軍單位（飛彈單位也計入），不能與敵軍同格；同格時單位並排縮小顯示、被攻擊時防禦 −1（擁擠），空位的友軍格也會亮綠色（敵軍相鄰的陸地格不能再疊）。點選已選單位取消選取後，才能改選同一格的另一個單位；移入有友軍的格子，直接點那一格的友軍即可。攻擊後只有目標格已無敵軍才會推進占領。</li><li><b>布雷：</b>守方開戰前依年代預先在西岸灘頭（火山布雷車，14 套最新報導預計 2027 年交付）與近海（水雷）布雷，地圖上以黑色圓點標示；攻方部隊進入布雷格要擲骰，3 以下觸雷損失 1 步並清除該處布雷。攻方護航艦隊每回合開始掃雷（最多 1～2 處），掃雷艦有 1/6 觸雷損失。</li><li><b>共軍潛艦：</b>每回合守方階段，最多 3 艘共軍潛艦攻擊美日艦艇（航艦要擲 6）或守方海軍。美日、台灣的反潛兵力（護衛隊群、美軍潛艦、航艦、台灣海軍與潛艦）越多，潛艦越容易被擊沉；完全沒有反潛兵力時（例如台灣孤軍）命中門檻 −1，也不會被擊沉。</li><li><b>巡弋飛彈：</b>長劍、鷹擊等巡弋飛彈每回合最多 1～2 點，守方防空強（≥5）時少 1 點；東風-17 仍不受防空影響。</li></ul></details>
+          <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>兵力年代：</b>開局可選 2026 現況、2028 近期、2030 中期。2026 依公開報導概略設定（台灣：雲峰與雄風IIE 長程飛彈、HIMARS／ATACMS、魚叉岸防、F-16V、天弓與愛國者；共軍：東風-15／16 與 PCH-191 長程火箭、東風-17 高超音速、東風-26／21D）；2028、2030 是依已規劃的採購與特別預算所做的推估，雙方都會成長。東風-17 的火力不受守方防空削減；東風-26／21D 讓打擊美日基地與艦艇的門檻 −1；無人機與巡飛彈每階段增加反艦攻擊。數字為遊戲的抽象點數，實際數量並不公開，各來源也有出入，詳見 DATA.md。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li><li><b>制空與防空壓制：</b>每回合先比較攻方陸基空軍＋艦載機與守方、盟國空軍：差 3 以上算「優勢」。攻方優勢時美日空軍的反艦命中門檻 +1，守方優勢時 −1；守方防空降到 2 以下算「遭壓制」，攻方火力 +1，攻方防空降到 2 以下則大陸基地更容易被打。</li><li><b>海上交戰：</b>每回合守方階段，攻方護航艦隊與航艦會與守方海軍、美日水面艦及潛艦交戰；潛艦（美日，以及台灣自製的海鯤，2028 年起 1 艘、2030 年 1 艘以上）可能擊沉護航艦或重創航艦，也可能遭反潛。共軍航艦（遼寧、山東、福建）提供艦載機制空，被反艦攻擊命中護航艦時，可能連帶被重創。</li><li><b>台灣地形與機場：</b>台灣本島依真實海岸線、中央山脈與城市位置重畫；東岸多為斷崖不可登陸，宜蘭、花蓮、台東有小塊平原；西岸彰化、雲林一帶為泥灘。守方機場 11 座（桃園、新竹、清泉崗、嘉義、台南、岡山、屏東、花蓮佳山、台東志航等），共軍沿海機場 11 座；攻方占領守方機場時，守方空軍 −1。東岸另有岸置反艦飛彈（花蓮佳山一帶），可射擊台灣東側海域的共軍航艦群（地圖上的 2～4 艘，沉沒會減少航艦點數）。</li><li><b>雄二／雄三：</b>守方反艦飛彈存量約 1,000 枚（2026），以每年約 200 枚的產能增加（約 2031 年達 2,000 枚上下，官方沒有公布此目標，為推估）；每點約 100 枚，岸置飛彈單位每次射擊消耗約 0.2 點，存量用完就無法射擊。</li><li><b>細格地圖：</b>地圖格數加倍（每個舊格細分為 2×2，約 36×36 格），海岸線、山地、港口與機場位置更細；移動力、海上移動、飛彈射程、空降距離、相鄰（控制區、支援、攻擊距離）都隨之加倍，實際行進與作戰距離不變。攻占一格時，周圍沒有敵軍的陸地格一併易主（港口與台北需親自踏入）。單位圖示縮小，同格可疊 2 個。</li><li><b>艦艇移動與飽和攻擊：</b>守方艦艇群可出港航行，電腦會讓它們保持在反艦飛彈射程邊緣、避開共軍護航艦；出港後會被共軍海空兵力攻擊。共軍三艘航艦分散在東岸海域（各帶一艘護航艦、彼此保持距離），電腦會讓它們避開岸置飛彈威脅。航艦有點防禦（自身＋附近護航艦各抵擋一枚來襲飛彈），超出的飛彈使命中門檻逐枚 −1，多出 3 枚以上必中，且 2 枚以上超出時一次損失 2 步（飽和攻擊）。</li><li><b>水面艦艇：</b>共軍護航艦（紅色，最多 4 艘）在港口外海，可航行、貼近己方船團掩護（目標旁有護航艦時，守方反艦攻擊命中門檻 +1），也能砲擊海岸；守方艦艇群（藍色，停泊港口，最多 4 組）每階段有 1 發反艦飛彈，不能移動。兩者都只有 2 步、很容易被反艦飛彈或空襲擊沉；擊沉會連動減少海軍點數，海軍點數被海戰扣減時也會沉掉對應的艦艇。</li><li><b>堆疊：</b>每格最多 2 個友軍單位（飛彈單位也計入），不能與敵軍同格；同格時單位並排縮小顯示、被攻擊時防禦 −1（擁擠），空位的友軍格也會亮綠色（敵軍相鄰的陸地格不能再疊）。點選已選單位取消選取後，才能改選同一格的另一個單位；移入有友軍的格子，直接點那一格的友軍即可。攻擊後只有目標格已無敵軍才會推進占領。</li><li><b>布雷：</b>守方開戰前依年代預先在西岸灘頭（火山布雷車，14 套最新報導預計 2027 年交付）與近海（水雷）布雷，地圖上以黑色圓點標示；攻方部隊進入布雷格要擲骰，3 以下觸雷損失 1 步並清除該處布雷。攻方護航艦隊每回合開始掃雷（最多 1～2 處），掃雷艦有 1/6 觸雷損失。</li><li><b>共軍潛艦：</b>每回合守方階段，最多 3 艘共軍潛艦攻擊美日艦艇（航艦要擲 6）或守方海軍。美日、台灣的反潛兵力（護衛隊群、美軍潛艦、航艦、台灣海軍與潛艦）越多，潛艦越容易被擊沉；完全沒有反潛兵力時（例如台灣孤軍）命中門檻 −1，也不會被擊沉。</li><li><b>巡弋飛彈：</b>長劍、鷹擊等巡弋飛彈每回合最多 1～2 點，守方防空強（≥5）時少 1 點；東風-17 仍不受防空影響。</li></ul></details>
           <details class="rg"><summary>國際與集結</summary><ul><li><b>美軍立場：</b>美國有三種立場：<b>隱蔽支援</b>（傷亡過高後的退縮立場：提供情報、補給，反艦飛彈命中門檻 −1，第 2 回合起有不具名的潛艦行動）、<b>代理打擊</b>（開戰起的基本立場；轟炸機、潛艦以台灣、日本名義發射遠程飛彈，火力約四成半到六成，載人戰機與航艦撤出，中方不報復美軍）、<b>公開參戰</b>（全數投入）。非台灣孤軍、也不是「只提供情報」的情境下，開戰起美軍至少是代理打擊（台灣與美軍共用不少飛彈與魚雷，外觀、編號相同，很難分辨是誰發射），參戰程度決定會不會公開參戰。美軍累計傷亡達 6 步與 11 步時（美軍兵力共 14 步），每個守方階段擲骰（1d6≥4）決定是否降一級；美國本土（關島）遭攻擊會民意凝聚，擲骰 −2 並恢復一級。</li><li><b>美日參戰：</b>開局可選參戰情境：擲骰決定（預設）、只提供情報（美國只給情報與目標資料，不補給、不出兵、不公開參戰，日本中立，基地不能被打擊）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li><li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li></ul></details>
           <details class="rg"><summary>戰爭代價</summary><ul><li><b>戰爭代價：</b>側欄的「戰爭代價」依部隊編制把損失換算成傷亡人數（合成旅約 5,000 人；在海上被擊沉的死亡比例高於陸戰），並累計火力打擊與城市戰鬥造成的平民傷亡、各國經濟損失、全球股市與晶片供應。結算時依 Bloomberg Economics 2024 年的估算（台海戰爭約使全球 GDP 減少 10%，封鎖約 5%）推估一年期衝擊。所有數字都是遊戲依公開資料的粗估。</li></ul></details>
           <details class="rg"><summary>推演與判定</summary><ul><li><b>純模擬（影片）：</b>全程由電腦操作並自動決策與擲骰：先瞬間跑完整場戰爭並錄下每個動作，再以戰棋地圖為背景播放。地圖下方的字幕區顯示雙方動作與影響，並有戰況、傷亡與經濟摘要；可暫停、變速（1～8×）、拖曳時間軸或跳回合，地圖上的圈標出這一步發生變化的位置。結束後可看戰後檢討、回頭看影片或再模擬一次。</li><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>電腦代打：</b>你操作的階段，可以按「電腦代打剩餘單位」，還沒行動的單位交給電腦處理，然後自動結束階段。</li><li><b>統計：</b>在設定頁或影片模式按「跑統計」，電腦自動模擬 50／100／300 局（雙方由電腦操作、決策與擲骰隨機），列出攻方勝率與信賴區間、各條件達成率、代價範圍，以及美國參戰程度與各項決策對勝率的影響。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。只達成「首都」一項時：台北已連續被攻方控制至少 2 個回合結束，判「僵局」；最後一回合才占領，視為暫時占領，判守方勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
@@ -583,7 +583,7 @@ const COL0=-3, COL1=33, ROW0=-4, ROW1=32; // 細格索引範圍
 const VBW=OVBW*KS, VBH=OVBH*KS;
 const oCenter=(c,r)=>[OW*(c-OC0+.5*(r&1))+OW/2+OPAD,(r-OR0)*1.5*OR+OR+OPAD];
 // 外圍示意區（僅縮小時可見，不參與遊戲）：左／右／上／下的延伸量（舊座標系 px）
-const oMX0=150, oMX1=620, oMY0=170, oMY1=330;
+const oMX0=150, oMX1=620, oMY0=170, oMY1=400;
 const MX0=oMX0*KS, MX1=oMX1*KS, MY0=oMY0*KS, MY1=oMY1*KS, EVBW=VBW+MX0+MX1, EVBH=VBH+MY0+MY1, EXT=EVBW/VBW;
 const K=(c,r)=>c+','+r;
 const $=s=>document.querySelector(s);
@@ -603,7 +603,7 @@ const TYPES={
   ssm:{n:'岸置反艦飛彈',s:'飛彈',atk:0,def:1,mv:2,hp:2},
   dd:{n:'共軍護航艦',s:'護航',atk:2,def:1,mv:3,hp:2},
   cv:{n:'共軍航艦群',s:'航艦',atk:0,def:2,mv:3,hp:3},
-  ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:0,hp:2}
+  ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:3,hp:2}
 };
 const WEATHER={
   good:{id:'good',n:'良好',sea:6,air:true,fire:0},
@@ -810,8 +810,9 @@ function support(u,t){
   for(const h of ring2(t))for(const f of unitsAt(h.k))if(f!==u&&f.side===u.side&&!isMsl(f)&&!(h.isl==='CN'))n++;
   return Math.min(2,n);
 }
-const canSail=u=>u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm'||u.type==='dd'||u.type==='cv');
+const canSail=u=>u.type==='ff'||(u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm'||u.type==='dd'||u.type==='cv'));
 function canEmbark(u,h){
+  if(u.type==='ff')return h.t==='port'&&unitsAt(h.k).every(x=>x.side===u.side);
   if(!isLand(h)||!h.coastal||S.owner[h.k]!=='atk')return false;
   return h.t==='port'||(u.type!=='arm'&&h.isl==='CN');
 }
@@ -854,19 +855,19 @@ function seaReach(u,res){
     const [h,mp]=q.shift();if(mp<1)continue;
     for(const n of nbrs(h.c,h.r)){
       if(n.t==='sea')visitSea(n,mp-1);
-      else if(n!==here&&u.type!=='dd'&&validLanding(u,n)&&canStack(u,n.k)&&(!res.has(n.k)||res.get(n.k).kind!=='move'))res.set(n.k,{kind:'land'});
+      else if(n!==here&&!isShip(u)&&validLanding(u,n)&&canStack(u,n.k)&&(!res.has(n.k)||res.get(n.k).kind!=='move'))res.set(n.k,{kind:'land'});
     }
   }
 }
 function reach(u){
-  const res=new Map();if(u.moved||u.acted||u.type==='ff')return res;const h=hexOf(u);
+  const res=new Map();if(u.moved||u.acted)return res;const h=hexOf(u);
   if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
     if(S.weather.air)for(const t of Object.values(TER)){
       if((t.isl==='TW'||t.isl==='PH')&&t.t!=='mtn'&&canStack(u,t.k)&&hd(h,t)<=20)res.set(t.k,{kind:'drop'});
     }
     return res;
   }
-  if(isLand(h))landReach(u,res);
+  if(isLand(h)&&u.type!=='ff')landReach(u,res);
   if(canSail(u))seaReach(u,res);
   return res;
 }
@@ -924,13 +925,19 @@ function attack(u,t){
   }
   checkInstant();
 }
+// 航艦的點防禦：自身加附近護航艦；來襲飛彈超過防禦量就形成飽和攻擊（超出 3 枚必中）
+function satHit(t){
+  t.inc=(t.inc||0)+1;if(t.type!=='cv')return 0;
+  const pd=1+S.units.filter(x=>x.type==='dd'&&x.side==='atk'&&hd(hexOf(x),hexOf(t))<=2).length;
+  return Math.max(0,Math.min(3,t.inc-pd));
+}
 function fireMissile(m,t){
   if(m.type==='ssm'&&S.pools&&S.pools.rocAS!==undefined)S.pools.rocAS=Math.max(0,S.pools.rocAS-.2);
   m.shots--;if(m.shots<=0)m.acted=true;
   const r=d6();
-  const need=(m.type==='ff'?4+(S.mods.ssmNeed<4?0:0):S.mods.ssmNeed)+escortMod();
-  fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit:r>=need});
-  if(r>=need){log('反艦飛彈命中海上的 '+TYPES[t.type].n+'（擲 '+r+'）');damage(t,1,'反艦飛彈');}
+  const sat=satHit(t),need=(m.type==='ff'?4:S.mods.ssmNeed)+escortMod()-sat,hit=r>=need||sat>=3;
+  fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit});
+  if(hit){log('反艦飛彈命中海上的 '+TYPES[t.type].n+(sat>=2?'（飽和攻擊）':'（擲 '+r+'）'));damage(t,sat>=2?2:1,sat>=2?'飽和攻擊':'反艦飛彈');}
   else log('反艦飛彈未命中（擲 '+r+'，需 '+need+'）');
   checkInstant();
 }
@@ -1039,9 +1046,9 @@ function placeShips(){
   const P=S.pools;
   const nd=Math.min(4,Math.ceil(P.plaNavy/2)),ports=['4,4','3,3','3,7','2,9'].map(k=>TER[FK(k)]);
   const seaC=[];ports.forEach(h=>nbrs(h.c,h.r).filter(x=>x.t==='sea'&&x.c>h.c-1).forEach(x=>{if(!seaC.includes(x))seaC.push(x);}));
-  for(let i=0;i<nd&&i<seaC.length;i++){const h=seaC[i];S.units.push(mkUnit('atk','dd',h.k,{}));}
+  for(let i=0;i<Math.min(nd,3)&&i<seaC.length;i++){const h=seaC[i];S.units.push(mkUnit('atk','dd',h.k,{}));}
   // 共軍航艦群在台灣東側海域活動
-  [[122.9,24.2],[122.9,23.3],[122.9,22.4]].slice(0,Math.min(3,P.plaCV)).forEach(([lo,la])=>{const [c,r]=llToRC(lo,la),h=TER[K(c,r)];if(h&&h.t==='sea'&&canStack({side:'atk'},h.k))S.units.push(mkUnit('atk','cv',h.k,{}));});
+  [[122.9,24.2],[122.9,23.3],[122.9,22.4]].slice(0,Math.min(3,P.plaCV)).forEach(([lo,la])=>{const [c,r]=llToRC(lo,la),h=TER[K(c,r)];if(h&&h.t==='sea'&&canStack({side:'atk'},h.k)){S.units.push(mkUnit('atk','cv',h.k,{}));const e=nbrs(h.c,h.r).find(x=>x.t==='sea'&&x.c<=h.c&&canStack({side:'atk'},x.k));if(e&&S.units.filter(u=>u.type==='dd').length<P.plaNavy)S.units.push(mkUnit('atk','dd',e.k,{}));}});
   const nf=Math.min(4,P.rocNavy),fp=[SPOT.keelung,SPOT.tcport,SPOT.kaohsiung,SPOT.hualien,SPOT.magong];
   for(let i=0;i<nf;i++){const k=fp[i];if(TER[k]&&unitsAt(k).length<STACK_MAX)S.units.push(mkUnit('def','ff',k,{}));}
 }
@@ -1235,7 +1242,7 @@ function antiShip(who,shots,need,canLand,tag,ok0,fk){
   const P=S.pools;let hc=0,he=0,hl=0,cvh=0;
   for(let i=0;i<shots;i++){
     const fleet=S.units.filter(u=>u.side==='atk'&&atSea(u)&&(!isShip(u)||u.type==='cv'));
-    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pick(fleet),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&hd(hexOf(x),hexOf(tg))<=2)?1:0,ok=d6()>=need+escortMod()+cov;fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:orgPick(base),k:fk||'cm'});if(ok){hc++;damage(tg,1,who);}}
+    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pick(fleet),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&hd(hexOf(x),hexOf(tg))<=2)?1:0,sat=satHit(tg),ok=d6()>=need+escortMod()+cov-sat||sat>=3;fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:orgPick(base),k:fk||'cm'});if(ok){hc++;damage(tg,sat>=2?2:1,sat>=2?'飽和攻擊':who);}}
     else if(P.plaNavy>0){if(d6()>=need){he++;P.plaNavy--;if(P.plaCV>0&&d6()>=5+(P.plaNavy>=5?1:0)){P.plaCV--;cvh++;}}}
     else if(canLand){
       const land=S.units.filter(u=>u.side==='atk'&&onTW(u));if(!land.length)break;
@@ -1286,6 +1293,8 @@ function seaBattle(){
     }
     if(P.plaNavy>=4&&d6()>=5){P.rocSub--;out.push('海鯤潛艦遭反潛擊沉（守方潛艦 −1）');i--;}
   }
+  // 共軍海空兵力搜尋並攻擊出港的守方艦艇
+  S.units.filter(u=>u.type==='ff'&&atSea(u)).forEach(u=>{if(d6()<=3){out.push('共軍海空兵力擊中出港的守方艦艇');damage(u,1,'海空攻擊');}});
   // 共軍潛艦：在海峽與西太平洋攻擊美日艦艇與守方海軍；美日反潛兵力薄弱時幾乎不受壓力
   if(P.plaSub>0){
     const csg=act.find(f=>f.id==='csg'),jm=act.find(f=>f.id==='jmsdf'),ssn=act.find(f=>f.id==='ssn');
@@ -1694,13 +1703,16 @@ const LAND={
   tw:[[121.5,25.3],[122,25],[121.9,24.5],[121.6,23.5],[121.2,22.8],[120.85,21.9],[120.7,22.3],[120.3,22.6],[120.1,23.0],[120.15,23.6],[120.7,24.5],[121.0,25.0]],
   ky:[[129.8,33.3],[130.5,33.9],[131.0,33.9],[131.7,33.3],[131.6,32.5],[131.3,31.6],[130.8,31.0],[130.6,31.2],[130.2,31.3],[130.3,32.0],[129.8,32.6]],
   ok:[[127.65,26.08],[127.95,26.35],[128.3,26.85],[128.15,26.88],[127.7,26.5]],
+  ph:[[122.25,18.55],[122.40,17.90],[122.30,17.10],[122.05,16.30],[121.60,15.75],[121.55,15.00],[121.65,14.55],[121.95,14.05],[122.40,14.20],[122.90,14.15],[123.40,13.95],[124.05,12.70],[123.70,12.60],[123.20,13.00],[122.70,13.55],[122.20,13.50],[121.60,13.70],[121.00,13.70],[120.65,13.90],[120.60,14.40],[120.45,14.50],[120.55,14.90],[120.00,15.00],[119.95,15.80],[120.30,16.20],[120.35,16.75],[120.35,17.60],[120.55,18.20],[120.95,18.50],[121.40,18.65],[121.80,18.50]],
 };
+const EDCA=[[120.55,18.18,'拉婁'],[121.66,18.36,'卡米洛‧奧西亞斯'],[120.49,15.17,'巴薩'],[121.07,15.43,'馬格賽賽堡'],[120.27,14.82,'蘇比克灣'],[121.97,20.45,'巴丹（巴斯科）']];
 const ISLES=[[129.4,28.3,3],[125.3,24.75,2.5],[124.15,24.4,2.5],[123.0,24.45,2],[119.6,23.55,2],[121.95,20.45,2],[121.9,19.4,2.2],[130.95,30.5,2.5]];
 function renderTheater(){
   const T=(a,b)=>TPROJ(a,b);
-  let o='<rect class="tsea" x="-28" y="0" width="408" height="533"/>';
+  let o='<rect class="tsea" x="-28" y="0" width="408" height="570"/>';
   o+=TPOLY(LAND.cn,'tcn');
-  ['tw','ky','ok'].forEach(k=>{o+=TPOLY(LAND[k],'tland');});
+  ['tw','ky','ok','ph'].forEach(k=>{o+=TPOLY(LAND[k],'tland');});
+  EDCA.forEach(([a,b,n])=>{const [x,y]=T(a,b);o+='<circle class="tedca" cx="'+x+'" cy="'+y+'" r="3.2"/>';});
   ISLES.forEach(([a,b,r])=>{const [x,y]=T(a,b);o+='<circle class="tland" cx="'+x+'" cy="'+y+'" r="'+r+'"/>';});
   const [bx1,by1]=T(118.2,26.3),[bx2,by2]=T(123.2,21.7);
   o+='<rect class="tbox" x="'+bx1+'" y="'+by1+'" width="'+(bx2-bx1).toFixed(1)+'" height="'+(by2-by1).toFixed(1)+'"/>';
@@ -1709,7 +1721,7 @@ function renderTheater(){
   [[127.75,26.35,'約 650 km'],[123.0,24.45,'與那國 110 km']].forEach(([a,b,l])=>{
     const [x,y]=T(a,b);o+='<line class="tdist" x1="'+tpe[0]+'" y1="'+tpe[1]+'" x2="'+x+'" y2="'+y+'"/>';
     o+='<text class="tlb sm" x="'+((+tpe[0]+ +x)/2+3).toFixed(1)+'" y="'+((+tpe[1]+ +y)/2-3).toFixed(1)+'">'+l+'</text>';});
-  [['中國大陸',114.9,32.6],['東部戰區',114.9,27.4],['東海',124.5,29.5],['九州',131.9,31.9],['沖繩',128.4,27.3],['台灣',120.2,24.4],['菲律賓海',125,19.5],['南海',117.4,19]].forEach(([t,a,b])=>{const [x,y]=T(a,b);o+='<text class="tlb" x="'+x+'" y="'+y+'">'+t+'</text>';});
+  [['中國大陸',114.9,32.6],['東部戰區',114.9,27.4],['東海',124.5,29.5],['九州',131.9,31.9],['沖繩',128.4,27.3],['台灣',120.2,24.4],['菲律賓海',125.6,19.5],['呂宋',121.4,16.4],['南海',117.4,19]].forEach(([t,a,b])=>{const [x,y]=T(a,b);o+='<text class="tlb" x="'+x+'" y="'+y+'">'+t+'</text>';});
   const [yx,yy]=T(131.6,33.95);o+='<text class="tlb sm" x="'+yx+'" y="'+(+yy+9)+'" text-anchor="end">↗ 橫須賀（第 7 艦隊母港）</text>';
   const strikeOn=humanTurn()&&S.phase==='atk'&&S.mode==='strike',dStrikeOn=humanTurn()&&S.phase==='def'&&S.mode==='strike'&&S.dfire>0&&S.pools.rocMsl>0;
   for(const [id,B] of Object.entries(CNB)){
@@ -1728,7 +1740,7 @@ function renderTheater(){
       '<text class="tnum" x="'+x+'" y="'+(+y+4)+'">'+live+'</text>'+(tg?'<circle class="ttg" cx="'+x+'" cy="'+y+'" r="15"/>':'')+
       '<text class="tlb b" x="'+(+x+(b==='guam'||b==='sasebo'?-14:14))+'" y="'+(+y+4)+'"'+(b==='guam'||b==='sasebo'?' text-anchor="end"':'')+'>'+B.n+'</text></g>';
   }
-  const svg=$('#tmap');svg.setAttribute('viewBox','-28 0 408 533');svg.innerHTML=o;svg.appendChild(tfxGroup());
+  const svg=$('#tmap');svg.setAttribute('viewBox','-28 0 408 570');svg.innerHTML=o;svg.appendChild(tfxGroup());
   const P=S.pools,bar=(k,side)=>'<div class="pool"><span>'+POOLN[k]+'</span><i><em class="'+side+'" style="width:'+Math.round(100*Math.max(0,P[k])/Math.max(S.p0[k],P[k]))+'%"></em></i><b>'+Math.round(P[k]*10)/10+'</b></div>';
   const dt=(key,def,head,body)=>'<details class="fside" data-f="'+key+'"'+((FOLD[key]===undefined?def:FOLD[key])?' open':'')+'><summary class="fh">'+head+'</summary>'+body+'</details>';
   const cnN=Object.keys(CNB).filter(id=>S.cn[id]>0).length;
@@ -1999,6 +2011,7 @@ function placeNear(k,filter){
 function rollWeather(){const w=S.mods.wx,r=Math.random();return r<w[0]?WEATHER.good:r<w[0]+w[1]?WEATHER.fair:WEATHER.bad;}
 async function beginPhase(side){
   S.phase=side;S.sel=null;S.mode=null;
+  S.units.forEach(u=>{u.inc=0;});
   for(const u of S.units)if(u.side===side){u.moved=false;u.acted=false;if(isMsl(u))u.shots=(u.type==='ssm'&&S.pools&&S.pools.rocAS<=0)?0:u.type==='ff'?1:2;}
   if(side==='atk')S.turnStart={snap:snap(),lv:Object.assign({},S.fx.lv),owner:Object.assign({},S.owner)};
   render();await runEvents(side);if(S.over)return;
@@ -2115,8 +2128,10 @@ function pickStrike(){
 async function aiAtkUnit(u){
   const h=hexOf(u);
   if(u.type==='cv'){ // 航艦群：在東岸海域游弋，遇到岸置飛彈威脅就向外海退
-    const rc=reach(u);let best=null,bs=ssmThreat(h.k);
-    for(const [k,v] of rc){if(v.kind!=='sail')continue;const t=ssmThreat(k)+Math.random()*.1+(TER[k].c<h.c-1?.4:0);if(t<bs-.2){bs=t;best=k;}}
+    const rc=reach(u),others=S.units.filter(x=>x.type==='cv'&&x!==u);let best=null;
+    const sc=(k)=>ssmThreat(k)*3+others.reduce((a,x)=>a+Math.max(0,7-hd(TER[k],hexOf(x))),0)*.6+Math.abs(TER[k].c-31)*.15;
+    let bs=sc(h.k)-.6;
+    for(const [k,v] of rc){if(v.kind!=='sail')continue;const t=sc(k)+Math.random()*.8;if(t<bs){bs=t;best=k;}}
     if(best){doMove(u,best,'sail');render();await sleep(240);}
     return;
   }
@@ -2176,14 +2191,23 @@ async function aiDef(){
   await aiCnStrikes();
   for(const m of S.units.filter(u=>u.side==='def'&&isMsl(u))){
     if(S.over)return;if(!alive(m))continue;
-    if(enemyAdj(K(m.c,m.r),'def')){
+    if(m.type==='ff'){ // 艦艇出港，保持在飛彈射程（約 6 格）外圍，避開護航艦
+      const en=S.units.filter(e=>e.side==='atk'&&atSea(e)&&!isShip(e)||e.type==='cv'&&e.side==='atk');
+      if(en.length&&!m.moved){
+        const rc=reach(m);let best=null;const here=Math.min(...en.map(e=>hd(hexOf(m),hexOf(e)))),dd=k=>Math.min(99,...S.units.filter(e=>e.side==='atk'&&e.type==='dd').map(e=>hd(TER[k],hexOf(e))));
+        let bs=Math.abs(here-6)+(dd(K(m.c,m.r))<=3?2:0);
+        for(const [k,v] of rc){if(v.kind!=='sail')continue;const dm=Math.min(...en.map(e=>hd(TER[k],hexOf(e)))),sc=Math.abs(dm-6)+(dd(k)<=3?2:0)+Math.random()*.4;if(sc<bs-.3){bs=sc;best=k;}}
+        if(best){doMove(m,best,'sail');render();await sleep(260);}
+      }
+    }
+    if(enemyAdj(K(m.c,m.r),'def')&&m.type!=='ff'){
       const rc=reach(m);let best=null,bs=-1;
       for(const [k,v] of rc){if(v.kind!=='move')continue;const s=-enemyAdj(k,'def')*3+Math.min.apply(null,S.units.filter(e=>e.side==='atk').map(e=>hd(TER[k],hexOf(e))).concat([18]));if(s>bs){bs=s;best=k;}}
       if(best){doMove(m,best,'move');render();await sleep(250);}
     }
     while(alive(m)&&m.shots>0&&!S.over){
       const ts=targets(m);if(!ts.length)break;
-      ts.sort((a,b)=>a.hp-b.hp);fireMissile(m,ts[0]);render();await sleep(300);
+      ts.sort((a,b)=>(b.type==='cv')-(a.type==='cv')||a.hp-b.hp);fireMissile(m,ts[0]);render();await sleep(300);
     }
   }
   const pri={tank:0,res:1,inf:2};
@@ -2280,11 +2304,11 @@ function farSet(c,r,t,name,tag,who){FAR[K(c,r)]={c,r,t,name:name||null,tag:tag||
   farSet(27,-6,'port','佐世保','海自','jp'); farSet(28,-6,'plain'); farSet(28,-5,'plain'); farSet(27,-5,'plain');
   farSet(26,22,'air','關島','美空軍','us'); farSet(27,22,'plain'); farSet(26,23,'plain');
   // 呂宋海峽與呂宋北部（美軍 EDCA／部署）
-  farSet(12,16,'plain','伊特巴雅特','美軍','us'); farSet(12,17,'port','巴丹','美軍','us'); farSet(13,17,'plain');
-  farSet(10,20,'plain','巴布煙群島','美軍','us');
-  for(let c=1;c<=12;c++){farSet(c,23,'plain');}
-  for(let c=-2;c<=13;c++){farSet(c,24,'plain');}
-  farSet(7,23,'air','拉婁','美軍','us'); farSet(4,24,'port','卡米洛‧奧西亞斯','美軍','us'); farSet(1,23,'air','拉瓦格','美軍','us');
+  farSet(14,16,'plain','伊特巴雅特','美軍','us'); farSet(14,17,'port','巴丹','美軍','us'); farSet(15,17,'plain');
+  farSet(14,20,'plain','巴布煙群島','美軍','us');
+  // 呂宋北端海岸（只畫最北的一段）
+  for(let c=10;c<=14;c++)farSet(c,24,'plain'); for(let c=10;c<=15;c++)farSet(c,25,'plain'); for(let c=9;c<=15;c++)farSet(c,26,'plain');
+  farSet(10,24,'air','拉婁','美軍','us'); farSet(13,24,'port','卡米洛‧奧西亞斯','美軍','us');
 })();
 // 各方火力的出發位置（地圖座標），讓打擊不再憑空出現
 const FARINFO={
@@ -2307,7 +2331,6 @@ const FARINFO={
   '巴丹':{w:'us',t:'巴丹群島・巴丹島（美軍）',d:'呂宋海峽要點，EDCA 據點之一。',r:'距台灣南端約 200 公里。'},
   '巴布煙群島':{w:'us',t:'巴布煙群島（美軍）',d:'呂宋海峽以南的前沿島鏈。',r:'距台灣南端約 450 公里。'},
   '拉婁':{w:'us',t:'呂宋北部・拉婁（EDCA 據點）',d:'美軍可輪駐戰機。',r:'距台灣南端約 700 公里。'},
-  '拉瓦格':{w:'us',t:'呂宋北部・拉瓦格（EDCA 據點）',d:'美軍可輪駐戰機。',r:'距台灣南端約 800 公里。'},
   '卡米洛‧奧西亞斯':{w:'us',t:'呂宋北部・卡米洛‧奧西亞斯海軍基地',d:'美軍可使用的海軍設施。',r:'距台灣南端約 650 公里。'}
 };
 const FARWHO={atk:'共軍',us:'美軍',jp:'日本'};
@@ -2359,7 +2382,7 @@ function buildFar(){
     +Z(-4,5,62,300,'atk','共軍 大陸沿海投射區')+Z(8,-3.5,85,55,'atk','共軍 東海艦隊');
   o+=SH(21,11,'atk','共軍潛艦','太平洋・隱蔽',true)+SH(19,9,'us','第7艦隊','航艦打擊群')+SH(18,13,'us','美軍潛艦','隱蔽',true)+SH(16,15,'jp','海自潛艦','隱蔽',true);
   const T=(c,r,t,sz)=>{const [x,y]=center(c,r);return '<text class="big" font-size="'+(sz||12)+'" x="'+x+'" y="'+y+'" text-anchor="middle">'+t+'</text>';};
-  o+=T(23,8,'太平洋',13)+T(5,19,'南海',13)+T(10,12.5,'呂宋海峽',11)+T(14,-3,'東海',13)+T(8,21,'美軍 EDCA 範圍（示意）',10);
+  o+=T(23,8,'太平洋',13)+T(5,19,'南海',13)+T(15,14,'呂宋海峽',11)+T(14,-3,'東海',13);
   o+='<text class="far-tag" x="'+(VBW-6)+'" y="-6" text-anchor="end" fill="var(--muted)" style="text-anchor:end">▲ 虛線內為遊戲格；外圍僅為背景（可點選查看）</text></g><rect class="playbox" x="0" y="0" width="'+VBW.toFixed(1)+'" height="'+VBH.toFixed(1)+'" rx="6"/>';
   $('#gX').innerHTML='<g transform="scale('+KS+')">'+o+'</g>';
 }
@@ -2918,7 +2941,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.25';
+const VERSION='2026-11-02.26';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
