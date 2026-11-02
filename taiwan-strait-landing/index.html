@@ -154,7 +154,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
 .mbox{background:var(--panel);color:var(--ink);border:2px solid var(--ink);border-radius:4px;max-width:520px;width:100%;padding:22px;max-height:90vh;overflow-y:auto}
 .mbox h3{font-family:var(--f-display);font-size:26px;margin:4px 0 6px;font-weight:900}
-.verdict.atk{color:var(--atk)} .verdict.def{color:var(--def)}
+.verdict.atk{color:var(--atk)} .verdict.def{color:var(--def)} .verdict.draw{color:var(--accent)}
 .mbox.ev{max-width:600px}
 .badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:2px;color:var(--on-unit);margin-right:6px}
 .badge.atk{background:var(--atk)} .badge.def{background:var(--def)} .badge.dice{background:var(--accent);color:#1b1408}
@@ -189,6 +189,31 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .nodes .dd{display:block;color:var(--muted);font-size:12px}
 .nodes li.done .tn{color:var(--accent)}
 #resume{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:25;background:var(--accent);border-color:var(--accent);color:#1b1408;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+/* statistics, assist, phone layout */
+.pbar{height:10px;background:var(--line);border-radius:5px;overflow:hidden;margin:10px 0}
+.pbar i{display:block;height:100%;background:var(--accent);transition:width .15s}
+.sbar{display:grid;grid-template-columns:7.5em minmax(0,1fr) 3em;gap:8px;align-items:center;font-size:13px;margin:3px 0}
+.sbar i{display:block;height:9px;background:var(--line);border-radius:5px;overflow:hidden}
+.sbar em{display:block;height:100%;background:var(--muted)} .sbar em.atk{background:var(--atk)} .sbar em.def{background:var(--def)}
+.sbar b{font-family:var(--f-mono);text-align:right}
+.stk{padding-left:18px;margin:8px 0;font-size:13.5px} .stk li{margin:3px 0}
+.wz-stat{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+.wz-statrow{display:flex;gap:8px;margin-top:6px} .wz-statrow button{flex:1;width:auto}
+.mbar{display:none}
+@media (max-width:960px){
+  body.pre .side{order:-1}
+  body.playing{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  body.playing:not(.mapfs) .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:14;align-items:center;gap:6px 8px;flex-wrap:wrap;padding:8px max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(0,0,0,.18)}
+  .mbar #mbText{flex:1 0 100%;min-width:0;font-size:12.5px;font-weight:700;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mbar button{flex:1;padding:10px 6px;white-space:nowrap}
+  .vcap{position:sticky;bottom:0;z-index:6;padding:6px 8px}
+  .vcap .vchips,.vcap .vl:not(.cur){display:none}
+  .vcap .vlines{min-height:40px;margin-top:4px}
+  .vcap .vl.cur{font-size:13.5px}
+  .mapbar button{padding:8px 14px}
+}
+@media (hover:none){.mapbar .dd{display:none}}
+body.mapfs .mbar{display:none!important}
 /* video mode */
 .vfocus{fill:none;stroke:var(--accent);stroke-width:3;pointer-events:none;animation:vpulse 1.1s ease-in-out infinite}
 @keyframes vpulse{0%,100%{opacity:.95}50%{opacity:.35}}
@@ -363,7 +388,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
         <span id="fsStatus" class="fst-text"></span>
         <span class="sp"></span>
         <button class="ghost" id="fsStrike" hidden>火力打擊</button>
-        <button id="fsEnd" hidden>結束階段</button>
+        <button class="ghost" id="fsAssist" hidden>電腦代打</button><button id="fsEnd" hidden>結束階段</button>
         <button class="ghost zb" data-z="-1" aria-label="縮小">－</button><button class="ghost zv" id="fsZ">100%</button><button class="ghost zb" data-z="1" aria-label="放大">＋</button>
         <button class="ghost" id="fsExit">離開全螢幕</button>
       </div>
@@ -423,6 +448,8 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
           <div class="wz-nav"><button class="ghost" id="wzPrev">← 上一步</button><button class="ghost" id="wzNext">下一步 →</button></div>
           <div class="wz-start"><button id="btnStart">開始作戰</button><div class="hint" id="wzHint"></div>
             <button class="ghost" id="btnDefault">依預設值直接開始</button>
+            <div class="wz-stat"><div class="hint">想知道這組設定誰比較有利？讓電腦自動模擬多局，統計勝率、代價與決策的影響。</div>
+              <div class="wz-statrow"><select id="statN" aria-label="統計局數"><option value="50">50 局</option><option value="100" selected>100 局</option><option value="300">300 局</option></select><button class="ghost" id="btnStats">用目前設定跑統計</button></div></div>
             <div class="hint">預設：對戰、你操作攻方（電腦守方）、第 8 回合判定、演習掩護、擲骰決定參戰、快訊開啟。不會改掉你已記錄的設定。</div></div>
           <div id="wzStore" hidden>
             <select id="optMode"><option value="play">對戰</option><option value="sim">電腦推演</option><option value="video">純模擬</option></select>
@@ -440,6 +467,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
           <div class="btns">
             <button id="btnStrike" class="ghost">火力打擊</button>
             <button id="btnEnd">結束階段</button>
+            <button class="ghost" id="btnAssist" title="還沒行動的單位交給電腦處理，然後結束這個階段">電腦代打剩餘單位</button>
           </div>
           <div class="hint" id="hint"></div>
           <div class="proj" id="miniGoal"></div>
@@ -447,7 +475,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
         <div class="card" id="vbarCard" hidden>
           <h2>影片模式</h2>
           <div class="hint">全程由電腦操作，並自動決策與擲骰。地圖下方的字幕區會顯示雙方動作與影響，可暫停、變速、拖曳時間軸或跳回合（空白鍵暫停、左右鍵逐步）。</div>
-          <div class="btns" style="margin-top:8px"><button class="ghost" id="vAgain">重新模擬</button><button class="ghost" id="vBack">回到設定</button></div>
+          <div class="btns" style="margin-top:8px"><button class="ghost" id="vAgain">重新模擬</button><button class="ghost" id="vStats">跑 100 次統計</button><button class="ghost" id="vBack">回到設定</button></div>
         </div>
         <div class="card info" id="info"><div class="k">點選地圖上的單位或地格查看資料。</div></div>
       </div>
@@ -480,7 +508,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
           <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li></ul></details>
           <details class="rg"><summary>國際與集結</summary><ul><li><b>美日菲參戰：</b>開局可選參戰情境：擲骰決定（預設）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊，菲律賓決定北呂宋基地。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li><li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li></ul></details>
           <details class="rg"><summary>戰爭代價</summary><ul><li><b>戰爭代價：</b>側欄的「戰爭代價」依部隊編制把損失換算成傷亡人數（合成旅約 5,000 人；在海上被擊沉的死亡比例高於陸戰），並累計火力打擊與城市戰鬥造成的平民傷亡、各國經濟損失、全球股市與晶片供應。結算時依 Bloomberg Economics 2024 年的估算（台海戰爭約使全球 GDP 減少 10%，封鎖約 5%）推估一年期衝擊。所有數字都是遊戲依公開資料的粗估。</li></ul></details>
-          <details class="rg"><summary>推演與判定</summary><ul><li><b>純模擬（影片）：</b>全程由電腦操作並自動決策與擲骰：先瞬間跑完整場戰爭並錄下每個動作，再以戰棋地圖為背景播放。地圖下方的字幕區顯示雙方動作與影響，並有戰況、傷亡與經濟摘要；可暫停、變速（1～8×）、拖曳時間軸或跳回合，地圖上的圈標出這一步發生變化的位置。結束後可看戰後檢討、回頭看影片或再模擬一次。</li><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
+          <details class="rg"><summary>推演與判定</summary><ul><li><b>純模擬（影片）：</b>全程由電腦操作並自動決策與擲骰：先瞬間跑完整場戰爭並錄下每個動作，再以戰棋地圖為背景播放。地圖下方的字幕區顯示雙方動作與影響，並有戰況、傷亡與經濟摘要；可暫停、變速（1～8×）、拖曳時間軸或跳回合，地圖上的圈標出這一步發生變化的位置。結束後可看戰後檢討、回頭看影片或再模擬一次。</li><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>電腦代打：</b>你操作的階段，可以按「電腦代打剩餘單位」，還沒行動的單位交給電腦處理，然後自動結束階段。</li><li><b>統計：</b>在設定頁或影片模式按「跑統計」，電腦自動模擬 50／100／300 局（雙方由電腦操作、決策與擲骰隨機），列出攻方勝率與信賴區間、各條件達成率、代價範圍，以及美國參戰程度與各項決策對勝率的影響。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。只達成「首都」一項時：台北已連續被攻方控制至少 2 個回合結束，判「僵局」；最後一回合才占領，視為暫時占領，判守方勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
           
         </div>
       </div>
@@ -489,6 +517,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
   <footer>抽象化的兵棋遊戲。地圖比例、部隊與數值皆為遊戲設定，不代表真實兵力或作戰計畫。<span id="ver"></span></footer>
 </div>
 <button id="newver" hidden>🔔 有新版本，點此重新整理</button>
+<div class="mbar" id="mbar"><span id="mbText"></span><button class="ghost" id="mbStrike" hidden>火力打擊</button><button class="ghost" id="mbAssist" hidden>電腦代打</button><button id="mbEnd">結束階段</button></div>
 <div id="vcard" class="vcard" hidden></div>
 <div id="vbusy" hidden>正在模擬戰局…</div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
@@ -572,7 +601,7 @@ function newState(){
   S={turn:1,phase:'atk',T:8,ctrl:{atk:'human',def:'ai'},weather:WEATHER.good,fire:0,units:[],owner:{},log:[],
      sel:null,mode:null,busy:false,over:false,started:false,nid:1,hover:null,zoneFlip:0,
      sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods(),
-     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
+     pools:null,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,tpHold:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
   for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
   const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
     ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],
@@ -743,22 +772,28 @@ function strike(t){
   checkInstant();
 }
 
-function conditions(){
+function conditions(final){
   const tp=S.owner[TAIPEI]==='atk';
   const pc=PORTS.filter(k=>S.owner[k]==='atk').length;
   let as=0,ds=0;
   for(const u of S.units)if(onTW(u)){if(u.side==='atk')as+=u.hp;else ds+=u.hp;}
   return [
-    {title:'首都台北',desc:'判定時台北由攻方控制',atk:tp,now:'目前由'+(tp?'攻方':'守方')+'控制'},
+    {title:'首都台北',desc:'判定時台北由攻方控制',atk:tp,now:'目前由'+(tp?'攻方':'守方')+'控制'+(tp?'（已連續 '+tpHeldTurns(!!final)+' 個回合）':'')},
     {title:'主要港口',desc:'攻方控制基隆、台中港、高雄中至少 2 個',atk:pc>=2,now:'攻方控制 '+pc+' / 3'},
     {title:'島上戰力',desc:'攻方在本島的兵力步數不少於守方',atk:as>=ds&&as>0,now:'攻方 '+as+' 步 對 守方 '+ds+' 步'}
   ];
 }
-function verdict(n){
-  return n===3?{s:'atk',t:'攻方決定性勝利',d:'首都、港口與兵力優勢全數到手，守方防線崩潰。'}
-    :n===2?{s:'atk',t:'攻方勝利',d:'攻方達成兩項條件，已在島上站穩並取得戰略主動。'}
-    :n===1?{s:'def',t:'守方勝利',d:'攻方雖有斬獲，但未能同時達成兩項條件，攻勢頓挫。'}
-    :{s:'def',t:'守方決定性勝利',d:'攻方三項條件全部落空，登陸作戰失敗。'};
+// consecutive turn-ends the attacker has held Taipei; final=true at judgment time (the last turn-end is already counted)
+function tpHeldTurns(final){const h=S.stats.tpHold||0;return final?h:h+(S.owner[TAIPEI]==='atk'?1:0);}
+function verdict(n,final){
+  const tp=S.owner[TAIPEI]==='atk',hold=tpHeldTurns(final);
+  if(n===3)return {s:'atk',t:'攻方決定性勝利',d:'首都、港口與兵力優勢全數到手，守方防線崩潰。'};
+  if(n===2)return {s:'atk',t:'攻方勝利',d:'攻方達成兩項條件，已在島上站穩並取得戰略主動。'};
+  if(n===1&&tp)return hold>=2
+    ?{s:'draw',t:'僵局',d:'攻方占領首都已連續 '+hold+' 個回合，但沒有控制足夠的港口、島上兵力也不足以站穩，補給線孤立；守方預期會集結兵力收復，戰局尚未分出勝負。'}
+    :{s:'def',t:'守方勝利',d:'攻方直到最後才占領首都（只持續 '+hold+' 個回合），立足未穩、其他條件都落空，預期很快被收復，視為攻勢失敗。'};
+  if(n===1)return {s:'def',t:'守方勝利',d:'攻方雖有斬獲，但未能同時達成兩項條件，攻勢頓挫。'};
+  return {s:'def',t:'守方決定性勝利',d:'攻方三項條件全部落空，登陸作戰失敗。'};
 }
 function checkInstant(){
   if(S.over)return;
@@ -767,15 +802,16 @@ function checkInstant(){
 }
 function endGame(early,side){
   S.over=true;S.sel=null;S.mode=null;
-  const cs=conditions();const n=cs.filter(c=>c.atk).length;
-  const v=early?{s:side,t:side==='atk'?'攻方勝利':'守方勝利',d:early}:verdict(n);
+  const cs=conditions(true);const n=cs.filter(c=>c.atk).length;
+  const v=early?{s:side,t:side==='atk'?'攻方勝利':'守方勝利',d:early}:verdict(n,true);
   log('作戰結束：'+v.t);
+  S.result={side:v.s,n,early:!!early};
   const html='<div class="eyebrow">'+(early?'提前結束 · 第 '+S.turn+' 回合':'第 '+S.T+' 回合 判定')+'</div>'+
     '<h3 class="verdict '+v.s+'">'+v.t+'</h3><p>'+v.d+'</p>'+
     cs.map((c,i)=>'<div class="vc"><span class="n">'+(i+1)+'</span><div><div class="t">'+c.title+'</div><div class="d">'+c.now+'</div></div><span class="pill '+(c.atk?'atk':'def')+'">'+(c.atk?'攻方達成':'守方確保')+'</span></div>').join('')+
     '<div class="proj">攻方達成 <b>'+n+'</b> / 3 項（需 2 項以上獲勝）</div>'+
     afterAction(v.s)+(S.sim||S.video?timelineHTML():'')+newsRecap()+
-    '<div class="btns" style="margin-top:14px"><button id="btnAgain">'+(S.video?'再模擬一次':'重新開局')+'</button><button class="ghost" id="btnClose">'+(S.video?'回頭看影片':'檢視地圖')+'</button>'+(S.video?'<button class="ghost" id="btnBack">回到設定</button>':'')+'</div>';
+    '<div class="btns" style="margin-top:14px"><button id="btnAgain">'+(S.video?'再模擬一次':'重新開局')+'</button><button class="ghost" id="btnClose">'+(S.video?'回頭看影片':'檢視地圖')+'</button>'+(S.video?'<button class="ghost" id="btnBack">回到設定</button><button class="ghost" id="btnStats2">跑 100 次統計</button>':'')+'</div>';
   if(S.rec){REC.final=html;recordFrame();REC.closed=true;if(REC.resolve)REC.resolve();return;}
   showFinal(html);
   render();
@@ -785,6 +821,7 @@ function showFinal(html){
   $('#btnAgain').onclick=()=>{$('#modal').hidden=true;if(S.video)startVideo();else reset();};
   $('#btnClose').onclick=()=>{$('#modal').hidden=true;};
   const bb=$('#btnBack');if(bb)bb.onclick=()=>{$('#modal').hidden=true;backToSetup();};
+  const bs=$('#btnStats2');if(bs)bs.onclick=()=>runStats(100);
 }
 
 
@@ -1477,7 +1514,8 @@ function afterAction(win){
   else keys.push([3,'外國參戰有限：'+b.fx+'，戰局主要由兩岸兵力決定。']);
   if(st.cn.strikes)keys.push([st.cn.hits+3,'對大陸打擊：台灣與盟軍共發動 '+st.cn.strikes+' 次，命中 '+st.cn.hits+' 次，癱瘓 '+Object.keys(CNB).filter(id=>S.cn[id]<=0).length+' 處基地；火箭軍飛彈存量剩 '+P.rf+'／'+POOL0.rf+'。'+(st.retal.strikes?'中方報復 '+st.retal.strikes+' 次，命中 '+st.retal.hits+' 次。':'')]);
   keys.push([b.ports?b.ports*3:5,b.ports?'港口：攻方控制 '+b.ports+' 個主要港口，重型旅得以上岸、補給容量擴大。':'港口：攻方沒有拿下任何主要港口，重型旅無法上岸，補給只能靠灘頭。']);
-  keys.push([b.taipei?8:3,b.taipei?'首都：攻方攻入台北，守方指揮與政治中心失守。':'首都：台北始終由守方控制。']);
+  const hold=st.tpHold||0;
+  keys.push([b.taipei?8:3,b.taipei?'首都：攻方控制台北，已連續 '+hold+' 個回合'+(hold<2?'（直到最後才占領，視為暫時占領、立足未穩）':'')+'。':'首都：台北始終由守方控制，或已被收復。']);
   const airGap=b.plaAir-b.ally;
   keys.push([Math.abs(airGap)+1,'制空：結束時攻方空軍 '+b.plaAir+'、守方與盟國空軍 '+b.ally+'，'+(airGap>=3?'攻方掌握空優，火力打擊得以持續。':airGap<=-3?'守方與盟國奪回空優，攻方火力受限。':'雙方空中力量拉鋸。')+'攻方共使用火力 '+st.fire+' 點，火箭軍存量剩 '+P.rf+'。']);
   if(P.plaNavy<=2)keys.push([5,'制海：攻方護航艦隊幾乎耗盡（剩 '+P.plaNavy+'），後續船團失去掩護。']);
@@ -1618,6 +1656,7 @@ async function beginPhase(side){
 async function endPhase(){
   if(S.over||!S.started)return;
   if(S.phase==='atk')return beginPhase('def');
+  S.stats.tpHold=S.owner[TAIPEI]==='atk'?(S.stats.tpHold||0)+1:0;
   econTick();
   if(S.turn>=S.T)return endGame();
   const n=buildNews();S.news.push(n);
@@ -1640,11 +1679,12 @@ function landDist(sources){
 const OBJ=[TAIPEI].concat(PORTS);
 const OBJD={};OBJ.forEach(k=>OBJD[k]=landDist([k]));
 function est(u,t){return effAtk(u)+support(u,t)+seaPen(u)-(effDef(t)+terrDef(hexOf(t)))+(TYPES[t.type].hp-t.hp)*.5;}
-async function aiTryAttack(u,thr){
+async function aiTryAttack(u,thr,focus){
   if(!alive(u)||S.over)return false;
   const ts=targets(u);if(!ts.length)return false;
-  let best=null,bs=-99;for(const t of ts){const e=est(u,t);if(e>bs){bs=e;best=t;}}
-  if(bs>=thr){attack(u,best);render();await sleep(380);return true;}
+  let best=null,bs=-99,braw=-99;
+  for(const t of ts){const e=est(u,t),f=focus&&focus.includes(hexOf(t).k),adj=e+(f?3:0);if(adj>bs){bs=adj;best=t;braw=e+(f?2:0);}}
+  if(braw>=thr){attack(u,best);render();await sleep(380);return true;}
   return false;
 }
 function enemyAdj(k,side){const h=TER[k];return nbrs(h.c,h.r).filter(n=>{const e=unitAt(n.k);return e&&e.side!==side;}).length;}
@@ -1766,13 +1806,21 @@ async function aiDef(){
   for(const u of order){if(S.over)return;if(alive(u))await aiDefUnit(u);}
 }
 async function aiDefUnit(u){
-  const thr=u.type==='tank'?0:1;
-  if(await aiTryAttack(u,thr))return;
+  // when Taipei or a main port has fallen, defenders counterattack more readily and converge on it
+  const lost=OBJ.filter(k=>S.owner[k]==='atk'),thr=u.type==='tank'?0:1;
+  if(await aiTryAttack(u,thr,lost))return;
   if(u.garrison||S.mods.defFreeze[S.turn])return;
   const h=hexOf(u);if(h.isl!=='TW')return;
   const rc=reach(u);if(!rc.size)return;
   // retake an empty objective in reach
   for(const k of OBJ){if(S.owner[k]==='atk'&&rc.has(k)&&rc.get(k).kind==='move'){doMove(u,k,'move');log(TYPES[u.type].n+' 收復 '+hname(TER[k]));render();await sleep(300);return;}}
+  if(lost.length){
+    const od=landDist(lost);let bs0=od[h.k]===undefined?1e9:od[h.k],pick0=null;
+    if(bs0<=1)return;
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<bs0){bs0=sc;pick0=k;}}
+    if(pick0){doMove(u,pick0,'move');render();await sleep(280);await aiTryAttack(u,thr,lost);}
+    return;
+  }
   const foes=S.units.filter(e=>e.side==='atk'&&onTW(e));
   let best=null;
   if(foes.length){
@@ -1998,6 +2046,7 @@ function renderStatus(){
   $('#fsStatus').textContent='第 '+S.turn+' / '+S.T+' 回合 · '+SIDE[S.phase]+'階段 · 天候'+S.weather.n+' · 火力 '+S.fire+' · 補給 '+sp.used+'/'+sp.cap;
 }
 function renderCtrl(){
+  document.body.classList.toggle('pre',!S.started);document.body.classList.toggle('playing',!!(S.started&&!S.video&&!S.over));
   $('#setup').hidden=S.started;$('#ctrl').hidden=!S.started||S.video;$('#vbarCard').hidden=!(S.started&&S.video);$('#vcap').hidden=!(S.started&&S.video&&V.fr.length>0);
   if(!S.started)return;
   const h=humanTurn();
@@ -2005,6 +2054,7 @@ function renderCtrl(){
   const bs=$('#btnStrike'),atkP=S.phase==='atk',pts=atkP?S.fire:Math.min(S.dfire,S.pools.rocMsl);bs.hidden=false;bs.disabled=!h||pts<=0;bs.classList.toggle('on',S.mode==='strike');
   bs.textContent=S.mode==='strike'?'取消打擊（剩 '+pts+'）':(atkP?'火力打擊（':'長程打擊（')+pts+' 點）';
   $('#btnEnd').disabled=!h;$('#btnEnd').hidden=S.sim;if(S.sim)bs.hidden=true;
+  const ba=$('#btnAssist');ba.disabled=!h;ba.hidden=S.sim||S.video;
   let hint;
   if(S.over)hint='作戰已結束，可在戰報中回顧過程。';
   else if(S.sim)hint=S.busy?'電腦推演中：'+SIDE[S.phase]+'正在行動…':'推演暫停，等待事件節點的決定。';
@@ -2014,6 +2064,9 @@ function renderCtrl(){
   else hint=S.phase==='atk'?'點選紅色單位下令。先把兩棲部隊從沿岸出航，下一回合搶灘。':'點選藍色單位下令。飛彈單位可射擊 4 格內海上的攻方船團。';
   $('#hint').textContent=hint;$('#fsHint').textContent=hint;
   const fs1=$('#fsStrike'),fs2=$('#fsEnd');fs1.hidden=bs.hidden;fs1.disabled=bs.disabled;fs1.textContent=bs.textContent;fs1.classList.toggle('on',bs.classList.contains('on'));fs2.hidden=$('#btnEnd').hidden;fs2.disabled=$('#btnEnd').disabled;if(S.video){fs1.hidden=true;fs2.hidden=true;}
+  const fa=$('#fsAssist');fa.hidden=ba.hidden;fa.disabled=ba.disabled;
+  $('#mbText').textContent=$('#phaseTitle').textContent;const m1=$('#mbStrike'),m2=$('#mbAssist'),m3=$('#mbEnd');
+  m1.hidden=fs1.hidden;m1.disabled=fs1.disabled;m1.textContent=bs.textContent;m1.classList.toggle('on',bs.classList.contains('on'));m2.hidden=ba.hidden;m2.disabled=ba.disabled;m3.hidden=$('#btnEnd').hidden;m3.disabled=$('#btnEnd').disabled;
 }
 function renderInfo(){
   const el=$('#info');
@@ -2051,7 +2104,7 @@ function render(){if(S.rec)recordFrame();else{renderAll();if(FXQ.length)playFx(F
 
 
 /* ---------- video simulation: record the whole war instantly, then play it back ---------- */
-const REC={frames:[],prev:null,prevN:0,final:null,closed:false,resolve:null};
+const REC={frames:[],prev:null,prevN:0,final:null,closed:false,resolve:null,quiet:false};
 const V={fr:[],i:0,playing:false,t:null,sp:2,turnStart:{}};
 function snapFrame(){
   const o=Object.assign({},S);
@@ -2059,10 +2112,11 @@ function snapFrame(){
   o.fx={lv:Object.assign({},S.fx.lv),reach:S.fx.reach,units:S.fx.units.map(f=>Object.assign({},f))};
   o.cn=Object.assign({},S.cn);o.cost=JSON.parse(JSON.stringify(S.cost));
   o.hits=S.hits.slice();o.log=S.log.slice(0,60);o.news=S.news.slice();o.events=S.events.slice();o.cnLog=S.cnLog.slice();
-  o.sel=null;o.hover=null;o.mode=null;o.rec=false;
+  o.sel=null;o.hover=null;o.mode=null;o.rec=false;o.stats=Object.assign({},S.stats);
   return o;
 }
 function recordFrame(card){
+  if(REC.quiet){FXQ.length=0;return;}
   if(REC.closed&&!REC.final)return;
   const f=snapFrame(),prev=REC.prev;
   const cap=S.log.filter(l=>l.n>REC.prevN).reverse();
@@ -2085,7 +2139,7 @@ function autoChoice(ev,opts){
   if(ev.id==='timing')id=wpick([['apr',45],['oct',35],['winter',20]]);
   else if(ev.id==='strike')id=wpick([['ssm',40],['c2',20],['air',30]].concat(has('okinawa')?[['okinawa',10]]:[]));
   else if(ev.id==='mobilize')id=wpick([['full',40],['capital',30],['mobile',30]]);
-  else if(ev.id==='final')id=snap().n>=2?'hold':'allin';
+  else if(ev.id==='final')id=REC.quiet?pick(opts).id:(snap().n>=2?'hold':'allin'); // statistics: choose at random so the choice is not tied to who is already ahead
   else id=pick(opts).id;
   return opts.find(o=>o.id===id)||opts[0];
 }
@@ -2101,21 +2155,26 @@ function autoEvent(ev,i){
     '<ul>'+fx.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
   recordFrame({html,kind:'event',dur:7000});
 }
-async function startVideo(){
-  vStop();
+// run one complete simulation with both sides on AI and automatic event decisions; quiet=true skips frame recording
+async function simRun(quiet){
   newState();readSetup();
-  S.started=true;S.rec=true;S.video=true;S.ctrl={atk:'ai',def:'ai'};
-  REC.frames=[];REC.prev=null;REC.prevN=LOGN;REC.final=null;REC.closed=false;
-  setTab('cmd');$('#setup').hidden=true;$('#vbusy').hidden=false;
-  await new Promise(r=>setTimeout(r,40));
+  S.sim=false;S.started=true;S.rec=true;S.video=true;S.ctrl={atk:'ai',def:'ai'};
+  REC.frames=[];REC.prev=null;REC.prevN=LOGN;REC.final=null;REC.closed=false;REC.quiet=!!quiet;FXQ.length=0;
   applyFxScenario();
   const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));
   S.lastSnap=snap();log('純模擬開始。判定回合：第 '+S.T+' 回合。');
-  recordFrame();
+  if(!quiet)recordFrame();
   const done=new Promise(r=>{REC.resolve=r;});
   beginPhase('atk');
   await done;
-  S.rec=false;
+  S.rec=false;REC.quiet=false;
+  return S;
+}
+async function startVideo(){
+  vStop();
+  setTab('cmd');$('#setup').hidden=true;$('#vbusy').hidden=false;
+  await new Promise(r=>setTimeout(r,40));
+  await simRun(false);
   V.fr=REC.frames.slice();V.sp=+$('#optVSpeed').value||2;
   V.turnStart={};V.fr.forEach((f,i)=>{if(V.turnStart[f.S.turn]===undefined)V.turnStart[f.S.turn]=i;});
   $('#vSpeed').value=String(V.sp);$('#vScrub').max=V.fr.length-1;
@@ -2172,7 +2231,7 @@ function vTurnJump(dir){
   vShow(V.turnStart[target],true);vSchedule();
 }
 $('#vNextT').onclick=()=>vTurnJump(1);$('#vPrevT').onclick=()=>vTurnJump(-1);
-$('#vAgain').onclick=()=>startVideo();$('#vBack').onclick=backToSetup;
+$('#vAgain').onclick=()=>startVideo();$('#vStats').onclick=()=>runStats(100);$('#vBack').onclick=backToSetup;
 addEventListener('keydown',e=>{
   if(!S||!S.video||!V.fr.length||/INPUT|SELECT|TEXTAREA/.test((e.target||{}).tagName||'')&&e.key!==' ')return;
   if(!$('#modal').hidden)return;
@@ -2180,6 +2239,72 @@ addEventListener('keydown',e=>{
   else if(e.key==='ArrowRight'){vShow(V.i+1,true);vSchedule();}
   else if(e.key==='ArrowLeft'){vShow(V.i-1,true);vSchedule();}
 });
+
+
+/* ---------- statistics: many simulated games ---------- */
+const STAT={running:false,cancel:false};
+function pct(a,b){return b?Math.round(a/b*100):0;}
+function wilson(k,n){if(!n)return [0,0];const z=1.96,p=k/n,d=1+z*z/n,c=(p+z*z/(2*n))/d,h=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/d;return [Math.max(0,c-h),Math.min(1,c+h)];}
+function quant(a,q){if(!a.length)return 0;const b=a.slice().sort((x,y)=>x-y),i=(b.length-1)*q,lo=Math.floor(i),hi=Math.ceil(i);return b[lo]+(b[hi]-b[lo])*(i-lo);}
+function collectRun(){
+  const cs=conditions(),n=cs.filter(c=>c.atk).length,R=S.result||{side:n>=2?'atk':'def',n},c=costSummary(),ev={};
+  S.events.forEach(e=>{if(e.choice)ev[e.id]=e.choice;});
+  return {win:R.side==='atk',draw:R.side==='draw',n:R.n,early:!!R.early,tp:cs[0].atk,pt:cs[1].atk,fo:cs[2].atk,milA:c.mil.atk.n,milD:c.mil.def.n,civ:c.civ.TW,mkt:c.mkt,us:S.fx.lv.US,ev};
+}
+function statBar(label,p,cls){return '<div class="sbar"><span>'+label+'</span><i><em class="'+(cls||'')+'" style="width:'+p+'%"></em></i><b>'+p+'%</b></div>';}
+function statsHTML(rows){
+  const N=rows.length,W=rows.filter(r=>r.win).length,[lo,hi]=wilson(W,N);
+  const range=(k,f)=>{const a=rows.map(r=>r[k]),lo=quant(a,.1),hi=quant(a,.9);return '平均約 '+f(a.reduce((x,y)=>x+y,0)/N)+(Math.abs(hi-lo)<1e-6?'（每局都相同，已到模型上下限）':'（八成的局落在 '+f(lo)+' ～ '+f(hi)+'）');};
+  const grp=(key,labelOf)=>{const m={};rows.forEach(r=>{const k=labelOf(r);if(k===undefined)return;(m[k]=m[k]||[]).push(r);});return Object.entries(m).map(([k,a])=>({k,n:a.length,w:a.filter(r=>r.win).length}));};
+  const tables=[];let best=null;
+  [['timing','發起時機'],['strike','先制打擊重點'],['mobilize','守方動員方針'],['final','最後攻勢']].forEach(([id,name])=>{
+    const g=grp(id,r=>r.ev[id]);if(g.length<2)return;
+    tables.push('<tr><td colspan="3"><b>'+name+'</b></td></tr>'+g.sort((a,b)=>b.n-a.n).map(x=>'<tr><td>'+x.k+'</td><td>'+x.n+' 局</td><td>攻方勝率 '+pct(x.w,x.n)+'%'+(x.n<8?'<span class="dd">（樣本少）</span>':'')+'</td></tr>').join(''));
+    const ok=g.filter(x=>x.n>=8);if(ok.length>=2){const hiG=ok.reduce((a,b)=>pct(a.w,a.n)>=pct(b.w,b.n)?a:b),loG=ok.reduce((a,b)=>pct(a.w,a.n)<=pct(b.w,b.n)?a:b),gap=pct(hiG.w,hiG.n)-pct(loG.w,loG.n);
+      if(!best||gap>best.gap)best={name,gap,hi:hiG,lo:loG};}
+  });
+  const us=grp('us',r=>LV.US[r.us]);
+  const takeaways=[];
+  takeaways.push(W/N>=.6?'這組設定對攻方有利：約 '+pct(W,N)+'% 的局攻方達成勝利條件。':W/N<=.25?'這組設定對守方有利：攻方只有約 '+pct(W,N)+'% 的局達成勝利條件。':'這組設定雙方互有勝負：攻方約 '+pct(W,N)+'% 的局獲勝。');
+  const cond=[['首都台北',rows.filter(r=>r.tp).length],['主要港口',rows.filter(r=>r.pt).length],['島上戰力',rows.filter(r=>r.fo).length]].sort((a,b)=>a[1]-b[1]);
+  takeaways.push('三項條件中最難達成的是「'+cond[0][0]+'」（'+pct(cond[0][1],N)+'%），最容易的是「'+cond[2][0]+'」（'+pct(cond[2][1],N)+'%）。');
+  if(best&&best.gap>=15)takeaways.push('決策中影響最大的是「'+best.name+'」：選「'+best.hi.k+'」時攻方勝率約 '+pct(best.hi.w,best.hi.n)+'%，選「'+best.lo.k+'」時約 '+pct(best.lo.w,best.lo.n)+'%。');
+  const D=rows.filter(r=>r.draw).length,brief=rows.filter(r=>r.tp&&!r.win&&!r.draw).length;
+  if(D)takeaways.push('有 '+D+' 局（'+pct(D,N)+'%）判僵局：首都已連續被占 2 個回合以上，但攻方孤立。');
+  if(brief)takeaways.push('有 '+brief+' 局（'+pct(brief,N)+'%）首都在最後一刻才被占領（暫時占領），判守方獲勝。');
+  const usFull=rows.filter(r=>r.us>=3);if(usFull.length>=8&&usFull.length<N-7)takeaways.push('美國全面參戰時攻方勝率約 '+pct(usFull.filter(r=>r.win).length,usFull.length)+'%，其他情況約 '+pct(rows.filter(r=>r.us<3&&r.win).length,rows.filter(r=>r.us<3).length)+'%。');
+  return '<div class="eyebrow">統計結果 · '+N+' 局</div><h3>攻方勝率 '+pct(W,N)+'%　<span class="dd">僵局 '+pct(rows.filter(r=>r.draw).length,N)+'%・守方勝 '+pct(N-W-rows.filter(r=>r.draw).length,N)+'%</span></h3>'+
+    '<div class="dd">95% 信賴區間約 '+Math.round(lo*100)+'%～'+Math.round(hi*100)+'%。設定：第 '+$('#optT').value+' 回合判定、'+optLabel('optBuild',$('#optBuild').value)+'、'+optLabel('optFx',$('#optFx').value)+'。雙方由電腦操作，事件決策與擲骰隨機。</div>'+
+    '<ul class="stk">'+takeaways.map(t=>'<li>'+t+'</li>').join('')+'</ul>'+
+    '<div class="eyebrow" style="margin-top:12px">攻方達成幾項條件</div>'+[0,1,2,3].map(k=>statBar(k+' 項'+(k>=2?'（獲勝）':''),pct(rows.filter(r=>r.n===k).length,N),k>=2?'atk':'def')).join('')+
+    '<div class="eyebrow" style="margin-top:12px">各項條件達成率</div>'+statBar('首都台北',pct(rows.filter(r=>r.tp).length,N),'atk')+statBar('主要港口',pct(rows.filter(r=>r.pt).length,N),'atk')+statBar('島上戰力',pct(rows.filter(r=>r.fo).length,N),'atk')+
+    '<div class="eyebrow" style="margin-top:12px">代價（粗估）</div><table class="ctable"><tbody>'+
+    '<tr><td>攻方軍人傷亡</td><td>'+range('milA',v=>ppl(v))+'</td></tr><tr><td>守方軍人傷亡</td><td>'+range('milD',v=>ppl(v))+'</td></tr>'+
+    '<tr><td>台灣平民傷亡</td><td>'+range('civ',v=>ppl(v))+'</td></tr><tr><td>全球股市</td><td>'+range('mkt',v=>v.toFixed(1)+'%')+'</td></tr></tbody></table>'+
+    '<div class="eyebrow" style="margin-top:12px">美國參戰程度與攻方勝率</div><table class="ctable"><tbody>'+us.sort((a,b)=>LV.US.indexOf(a.k)-LV.US.indexOf(b.k)).map(x=>'<tr><td>'+x.k+'</td><td>'+x.n+' 局</td><td>攻方勝率 '+pct(x.w,x.n)+'%'+(x.n<8?'<span class="dd">（樣本少）</span>':'')+'</td></tr>').join('')+'</tbody></table>'+
+    (tables.length?'<div class="eyebrow" style="margin-top:12px">決策與攻方勝率</div><table class="ctable"><tbody>'+tables.join('')+'</tbody></table>':'')+
+    '<div class="dd" style="margin-top:8px">電腦的決策是隨機抽樣，不代表最佳策略；樣本越多越準，局數少時勝率可能有明顯誤差。</div>'+
+    '<div class="btns" style="margin-top:14px"><button id="stClose">關閉</button><button class="ghost" id="stAgain">再跑一次</button></div>';
+}
+async function runStats(N){
+  if(STAT.running)return;
+  STAT.running=true;STAT.cancel=false;clearTimeout(V.t);V.playing=false;if(V.fr.length)vBtn();
+  const keep={S,final:REC.final,frames:REC.frames,prev:REC.prev};
+  const box=$('#mbox');box.classList.add('ev');$('#resume').hidden=true;$('#modal').hidden=false;
+  const rows=[];
+  const prog=i=>{box.innerHTML='<div class="eyebrow">統計中</div><h3>正在模擬 '+i+' / '+N+' 局</h3><div class="pbar"><i style="width:'+Math.round(i/N*100)+'%"></i></div><p class="dd">雙方由電腦操作，事件決策與擲骰隨機；通常不到一分鐘。</p><div class="btns"><button class="ghost" id="stCancel">取消並顯示目前結果</button></div>';$('#stCancel').onclick=()=>{STAT.cancel=true;};};
+  prog(0);await new Promise(r=>setTimeout(r,30));
+  for(let i=0;i<N&&!STAT.cancel;i++){
+    try{await simRun(true);rows.push(collectRun());}catch(e){console.error(e);break;}
+    if(i%3===2||i===N-1){prog(i+1);await new Promise(r=>setTimeout(r,0));}
+  }
+  S=keep.S;REC.final=keep.final;REC.frames=keep.frames;REC.prev=keep.prev;REC.quiet=false;STAT.running=false;
+  if(S.started||S.over)renderAll();
+  if(rows.length<5){box.innerHTML='<h3>局數太少</h3><p>至少需要 5 局才能統計。</p><div class="btns"><button id="stClose">關閉</button></div>';}
+  else box.innerHTML=statsHTML(rows);
+  $('#stClose').onclick=()=>{$('#modal').hidden=true;box.classList.remove('ev');if(S.over&&S.video&&REC.final&&V.fr.length)showFinal(REC.final);};
+  const ag=$('#stAgain');if(ag)ag.onclick=()=>runStats(N);
+}
 
 /* ---------- input ---------- */
 $('#map').addEventListener('click',e=>{
@@ -2215,6 +2340,7 @@ function readSetup(){
 const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optBuild:'exercise',optFx:'dice',optNews:'1'};
 $('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
 // one-off start with the default settings; the saved setup choices are left as they were
+$('#btnStats').onclick=()=>{readSetup();runStats(+$('#statN').value);};
 $('#btnDefault').onclick=()=>{
   const keep={};Object.keys(DEFAULT_CFG).forEach(id=>{keep[id]=$('#'+id).value;$('#'+id).value=DEFAULT_CFG[id];});
   startGame();
@@ -2251,7 +2377,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.07';
+const VERSION='2026-11-02.09';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
@@ -2279,7 +2405,7 @@ const SETUP_PAGES=[
   {sel:'optSide',q:'你要操作哪一方？',when:()=>$('#optMode').value==='play',opts:{atk:['攻方（紅）','你指揮渡海登陸，電腦防守台灣。'],def:['守方（藍）','你防守台灣，電腦負責進攻。'],both:['雙方都操作','同一台裝置輪流操作兩方。'],none:['都不操作（觀戰）','兩邊都由電腦操作，看戰局演變。']}},
   {sel:'optVSpeed',q:'播放速度',when:()=>isVideo(),opts:{'1':['1×','逐步閱讀，一場約需數分鐘。'],'2':['2×','建議速度。'],'4':['4×','快轉，適合只看結果與重點。']}},
   {sel:'optSpeed',q:'推演速度',when:()=>isSim(),opts:{'1':['一般','每個動作有短暫停頓，方便看清楚。'],'0.35':['快速','縮短動作之間的停頓。']}}]},
- {t:'判定回合',d:'戰爭持續到指定回合結束，才依三項條件判定勝負，攻方達成 2 項以上獲勝：① 台北由攻方控制 ② 基隆、台中港、高雄至少 2 個港口由攻方控制 ③ 攻方島上兵力步數不少於守方。每回合約半天。',fields:[
+ {t:'判定回合',d:'戰爭持續到指定回合結束，才依三項條件判定勝負，攻方達成 2 項以上獲勝：① 台北由攻方控制 ② 基隆、台中港、高雄至少 2 個港口由攻方控制 ③ 攻方島上兵力步數不少於守方。只拿下台北且連續控制 2 個回合以上，判「僵局」（首都陷落但攻方孤立）；到最後才占領則視為暫時占領，仍判守方勝。每回合約半天。',fields:[
   {sel:'optT',q:'幾回合後判定？',opts:{'6':['第 6 回合','約 3 天。時間很緊，攻方多半來不及站穩。'],'8':['第 8 回合','約 4 天。基準設定。'],'10':['第 10 回合','約 5 天。攻方有較多時間奪港。'],'12':['第 12 回合','約 6 天。長期戰，攻方較有機會站穩。']}}]},
  {t:'戰前集結',d:'渡海前要先集結船團與兵員，很難完全隱藏。集結越公開，台灣與美日越早準備。',fields:[
   {sel:'optBuild',q:'攻方怎麼集結？',when:()=>!isSim(),opts:{open:['公開全面集結','兵力最多（+2 兩棲旅、+1 重型旅、護航艦隊 +2），但守方提早動員、美國航艦已在附近、各國參戰擲骰 +1。'],exercise:['演習掩護','以軍演名義集結，雙方都只有部分預警。基準設定。'],surprise:['戰略突襲','兵力少一截（−2 兩棲旅、−1 重型旅），換取守方動員延後、各國參戰擲骰 −1。']}}],
@@ -2384,9 +2510,19 @@ document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement
 addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('mapfs'))setFs(false);});
 $('#fsStrike').onclick=()=>$('#btnStrike').click();$('#fsEnd').onclick=()=>$('#btnEnd').click();
 
+// let the computer finish this phase for the player: every unit that has not acted yet is handled by the AI, then the phase ends
+async function assistPhase(){
+  if(!humanTurn())return;
+  const side=S.phase;S.busy=true;S.sel=null;S.mode=null;render();
+  try{if(side==='atk')await aiAtk();else await aiDef();}catch(e){console.error(e);}
+  S.busy=false;render();
+  if(!S.over)endPhase();
+}
+$('#btnAssist').onclick=assistPhase;$('#fsAssist').onclick=assistPhase;$('#mbAssist').onclick=assistPhase;
+$('#mbEnd').onclick=()=>$('#btnEnd').click();$('#mbStrike').onclick=()=>$('#btnStrike').click();
 function reset(){newState();readSetup();render();renderWizard();}
 loadSetup();
-try{const z=+localStorage.getItem('tsl-zoom');if(z)ZOOM=Math.max(.5,Math.min(3,z));}catch(e){}
+try{const z=+localStorage.getItem('tsl-zoom');if(z)ZOOM=Math.max(.5,Math.min(3,z));else if(innerWidth<700)ZOOM=1.6;}catch(e){if(innerWidth<700)ZOOM=1.6;}
 reset();setZoom(ZOOM);
 })();
 </script>
