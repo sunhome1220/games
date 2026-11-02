@@ -127,7 +127,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .mtn-g{stroke:var(--mtn-ink);fill:none;stroke-width:1.2;pointer-events:none}
 .lbl{font-size:8.5px;fill:var(--ink);text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:500}
 .lbl.obj{fill:var(--accent);font-weight:700}
-.far{opacity:.8} .far-lbl{font-size:8.5px;text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:600;fill:var(--ink)}
+.far{opacity:.8} .fclick{cursor:pointer;pointer-events:all} .tl-far.fclick:hover{filter:brightness(1.08)} .far-lbl{font-size:8.5px;text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:600;fill:var(--ink)}
 .far-tag{font-size:7px;text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:700}
 .playbox{fill:none;stroke:var(--ink);stroke-opacity:.28;stroke-width:1;stroke-dasharray:7 5;pointer-events:none}
 .big{font-family:var(--f-display);font-weight:700;fill:var(--ink);opacity:.35;pointer-events:none;letter-spacing:.3em}
@@ -2024,6 +2024,29 @@ function farSet(c,r,t,name,tag,who){FAR[K(c,r)]={c,r,t,name:name||null,tag:tag||
   farSet(7,23,'air','拉婁','美軍','us'); farSet(4,24,'port','卡米洛‧奧西亞斯','美軍','us'); farSet(1,23,'air','拉瓦格','美軍','us');
 })();
 // 各方火力的出發位置（地圖座標），讓打擊不再憑空出現
+const FARINFO={
+  '嘉手納':{w:'us',t:'沖繩・嘉手納（美空軍 第18聯隊）',d:'F-15EX、F-35A。美日聯合作戰的前進空軍基地。',r:'距台灣約 600 公里，戰機可直接涵蓋台灣海峽。'},
+  '那霸':{w:'jp',t:'沖繩・那霸（空自 第9航空團）',d:'F-15J 戰機。',r:'距台灣約 650 公里。'},
+  '與那國':{w:'jp',t:'與那國島（陸自）',d:'地對艦飛彈連隊、監視雷達。',r:'距台灣東部僅約 110 公里，12 式地對艦飛彈可涵蓋台灣東側海域。'},
+  '石垣':{w:'jp',t:'石垣島（陸自）',d:'地對艦飛彈連隊駐地。',r:'距台灣約 270 公里。'},
+  '宮古島':{w:'jp',t:'宮古島（陸自、空自）',d:'地對艦飛彈、防空與雷達；扼守宮古海峽。',r:'距台灣約 400 公里，也是共軍艦隊進出西太平洋的要道。'},
+  '佐世保':{w:'jp',t:'九州・佐世保（海自、美海軍）',d:'護衛隊群母港，參戰後需 1 回合抵達。',r:'距台灣約 1,100 公里。'},
+  '關島':{w:'us',t:'關島・安德森（美空軍）',d:'B-1B、B-52 轟炸機，可攜長程反艦飛彈。',r:'距台灣約 2,800 公里，靠空中加油與長程飛彈打擊；共軍東風-26 可涵蓋（打擊可能引發升級）。'},
+  '第7艦隊':{w:'us',t:'美海軍 第7艦隊（航艦打擊群）',d:'參戰後 2 回合抵達西太平洋海域，艦載機與艦艇出擊。',r:'在台灣東側海域活動，受共軍反艦飛彈威脅。'},
+  '美軍潛艦':{w:'us',t:'美軍攻擊潛艦（隱蔽）',d:'無法被火力打擊；隱蔽支援階段就可能行動。',r:'位置不公開，圖上僅為示意。'},
+  '海自潛艦':{w:'jp',t:'海自潛艦（隱蔽）',d:'無法被火力打擊。',r:'位置不公開，圖上僅為示意。'},
+  '黃山':{w:'atk',t:'黃山（火箭軍基地，安徽）',d:'火箭軍飛彈旅駐地，可發射短程彈道飛彈與長程火箭。',r:'距台北約 750 公里；其中遠程型飛彈（東風-26 等）可打擊沖繩與關島。'},
+  '梅州':{w:'atk',t:'梅州（火箭軍基地，廣東）',d:'火箭軍飛彈旅駐地。',r:'距台灣南部約 450 公里。'},
+  '舟山':{w:'atk',t:'舟山（東海艦隊基地，浙江）',d:'東海艦隊艦艇與海軍航空兵駐地。',r:'距台北約 650 公里。'},
+  '伊特巴雅特':{w:'us',t:'巴丹群島・伊特巴雅特（美軍）',d:'呂宋海峽要點，美軍可能部署岸置反艦飛彈。',r:'距台灣南端約 200 公里。'},
+  '巴丹':{w:'us',t:'巴丹群島・巴丹島（美軍）',d:'呂宋海峽要點，EDCA 據點之一。',r:'距台灣南端約 200 公里。'},
+  '巴布煙群島':{w:'us',t:'巴布煙群島（美軍）',d:'呂宋海峽以南的前沿島鏈。',r:'距台灣南端約 450 公里。'},
+  '拉婁':{w:'us',t:'呂宋北部・拉婁（EDCA 據點）',d:'美軍可輪駐戰機。',r:'距台灣南端約 700 公里。'},
+  '拉瓦格':{w:'us',t:'呂宋北部・拉瓦格（EDCA 據點）',d:'美軍可輪駐戰機。',r:'距台灣南端約 800 公里。'},
+  '卡米洛‧奧西亞斯':{w:'us',t:'呂宋北部・卡米洛‧奧西亞斯海軍基地',d:'美軍可使用的海軍設施。',r:'距台灣南端約 650 公里。'}
+};
+const FARWHO={atk:'共軍',us:'美軍',jp:'日本'};
+let FARSEL=null;
 const ORG={okinawa:[[26,-1],[27,-1]],sakishima:[[20,3],[18,5]],sasebo:[[27,-6]],guam:[[26,22]],sea:[[19,9],[18,13]],
   pla:[[2,2],[2,4],[2,6],[-3,-4],[-3,11],[7,-4]],roc:[[13,6],[10,10],[12,1],[9,6]]};
 const orgPick=k=>{const a=ORG[k];return a?a[Math.floor(Math.random()*a.length)].slice():null;};
@@ -2048,7 +2071,7 @@ function buildFar(){
   for(const [c,r,x,y,f] of tiles){
     if(f){
       const key=f.t==='main'?'main':'plain';
-      o+='<polygon class="tl-far" fill="url(#gt-'+key+')" stroke="var(--land-edge)" stroke-width=".6" points="'+hexPts(x,y,R)+'"/>';
+      o+='<polygon class="tl-far'+(f.name&&FARINFO[f.name]?' fclick':'')+'" fill="url(#gt-'+key+')" stroke="var(--land-edge)" stroke-width=".6" points="'+hexPts(x,y,R)+'"'+(f.name&&FARINFO[f.name]?' data-far="'+f.name+'"':'')+'/>';
     }else{
       const d=Math.min(3,dist.get(K(c,r))||3);
       o+='<polygon class="tl-sea d'+d+'" points="'+hexPts(x,y,R)+'"/>';
@@ -2058,18 +2081,18 @@ function buildFar(){
   const col={atk:'var(--atk)',jp:'var(--jp)',us:'var(--us)'};
   for(const [c,r,x,y,f] of tiles){
     if(!f||!f.name)continue;
-    if(f.who)o+='<circle cx="'+x+'" cy="'+(y+4)+'" r="4.5" fill="'+col[f.who]+'" stroke="#fff" stroke-width="1"/>';
+    if(f.who)o+='<circle pointer-events="none" cx="'+x+'" cy="'+(y+4)+'" r="4.5" fill="'+col[f.who]+'" stroke="#fff" stroke-width="1"/>';
     o+='<text class="far-lbl" x="'+x+'" y="'+(y-9)+'">'+f.name+'</text>';
     if(f.tag)o+='<text class="far-tag" x="'+x+'" y="'+(y+18)+'" fill="'+col[f.who]+'">'+f.tag+'</text>';
   }
-  const Z=(c,r,rx,ry,who,t)=>{const [x,y]=center(c,r);return '<ellipse cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" fill="'+col[who]+'" fill-opacity=".10" stroke="'+col[who]+'" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="6 4"/>'+(t?'<text class="far-tag" x="'+x+'" y="'+(y+ry+10)+'" fill="'+col[who]+'">'+t+'</text>':'');};
-  const SH=(c,r,who,t,sub,dash)=>{const [x,y]=center(c,r);return '<g><ellipse cx="'+x+'" cy="'+(y+5)+'" rx="15" ry="5" fill="#000" opacity=".15"/><path d="M'+(x-14)+' '+y+'h28l-4 7h-20z" fill="'+col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".45"':'')+'/><rect x="'+(x-5)+'" y="'+(y-6)+'" width="10" height="6" fill="'+col[who]+'" stroke="#fff" stroke-width=".8"/></g><text class="far-lbl" x="'+x+'" y="'+(y-10)+'">'+t+'</text><text class="far-tag" x="'+x+'" y="'+(y+19)+'" fill="'+col[who]+'">'+sub+'</text>';};
+  const Z=(c,r,rx,ry,who,t)=>{const [x,y]=center(c,r);return '<ellipse pointer-events="none" cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" fill="'+col[who]+'" fill-opacity=".10" stroke="'+col[who]+'" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="6 4"/>'+(t?'<text class="far-tag" x="'+x+'" y="'+(y+ry+10)+'" fill="'+col[who]+'">'+t+'</text>':'');};
+  const SH=(c,r,who,t,sub,dash)=>{const [x,y]=center(c,r);return '<g class="fclick" data-far="'+t+(who==='us'&&t==='潛艦'?'':'')+'"><ellipse cx="'+x+'" cy="'+(y+5)+'" rx="15" ry="5" fill="#000" opacity=".15"/><path d="M'+(x-14)+' '+y+'h28l-4 7h-20z" fill="'+col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".45"':'')+'/><rect x="'+(x-5)+'" y="'+(y-6)+'" width="10" height="6" fill="'+col[who]+'" stroke="#fff" stroke-width=".8"/></g><text class="far-lbl" x="'+x+'" y="'+(y-10)+'">'+t+'</text><text class="far-tag" x="'+x+'" y="'+(y+19)+'" fill="'+col[who]+'">'+sub+'</text>';};
   o+=Z(26.5,-1,115,70,'us','美日 沖繩投射區')+Z(19.5,4,150,95,'jp','日本 先島投射區')+Z(26.5,22,95,60,'us','美軍 關島投射區')+Z(27.5,-5.5,95,50,'jp','日本 九州')
     +Z(-4,5,62,300,'atk','共軍 大陸沿海投射區')+Z(8,-3.5,85,55,'atk','共軍 東海艦隊');
-  o+=SH(19,9,'us','第7艦隊','航艦打擊群')+SH(18,13,'us','潛艦','美軍・隱蔽',true)+SH(16,15,'jp','潛艦','海自・隱蔽',true);
+  o+=SH(19,9,'us','第7艦隊','航艦打擊群')+SH(18,13,'us','美軍潛艦','隱蔽',true)+SH(16,15,'jp','海自潛艦','隱蔽',true);
   const T=(c,r,t,sz)=>{const [x,y]=center(c,r);return '<text class="big" font-size="'+(sz||12)+'" x="'+x+'" y="'+y+'" text-anchor="middle">'+t+'</text>';};
   o+=T(23,8,'太平洋',13)+T(5,19,'南海',13)+T(10,12.5,'呂宋海峽',11)+T(14,-3,'東海',13)+T(8,21,'美軍 EDCA 範圍（示意）',10);
-  o+='</g><rect class="playbox" x="0" y="0" width="'+VBW.toFixed(1)+'" height="'+VBH.toFixed(1)+'" rx="6"/>';
+  o+='<text class="far-tag" x="'+(VBW-6)+'" y="-6" text-anchor="end" fill="var(--muted)" style="text-anchor:end">▲ 虛線內為遊戲格；外圍僅為背景（可點選查看）</text></g><rect class="playbox" x="0" y="0" width="'+VBW.toFixed(1)+'" height="'+VBH.toFixed(1)+'" rx="6"/>';
   $('#gX').innerHTML=o;
 }
 function buildStatic(){
@@ -2274,6 +2297,8 @@ function renderCtrl(){
 }
 function renderInfo(){
   const el=$('#info');
+  if(FARSEL&&FARINFO[FARSEL]&&!S.sel){const f=FARINFO[FARSEL];
+    el.innerHTML='<div class="eyebrow">外圍示意區 · '+FARWHO[f.w]+'</div><h2 style="color:var(--'+(f.w==='atk'?'atk':f.w==='us'?'us':'jp')+')">'+f.t+'</h2><div class="k">'+f.d+'<br>'+f.r+'</div><div class="k" style="margin-top:6px">這裡不是遊戲格，不能操作，只顯示各方火力的出發位置；距離為概略值，圖上位置為示意。</div>';return;}
   const u=S.sel&&alive(S.sel)?S.sel:(S.hover?unitAt(S.hover):null);
   const h=u?hexOf(u):(S.hover?TER[S.hover]:null);
   if(!h){el.innerHTML='<div class="k">點選地圖上的單位或地格查看資料。</div>';return;}
@@ -2519,7 +2544,9 @@ async function runStats(N){
 
 /* ---------- input ---------- */
 $('#map').addEventListener('click',e=>{
-  const el=e.target.closest('[data-k]');if(!el)return;const k=el.getAttribute('data-k');
+  const fe=e.target.closest('[data-far]');
+  if(fe){FARSEL=fe.getAttribute('data-far');S.sel=null;S.hover=null;renderInfo();return;}
+  const el=e.target.closest('[data-k]');if(!el)return;const k=el.getAttribute('data-k');FARSEL=null;
   S.hover=k;
   if(!humanTurn()){S.sel=unitAt(k)||null;render();return;}
   const u=unitAt(k);
@@ -2538,7 +2565,7 @@ $('#map').addEventListener('click',e=>{
   if(sel){const rc=reach(sel);if(rc.has(k)){doMove(sel,k,rc.get(k).kind);if(!alive(sel)||(sel.acted&&!targets(sel).length))S.sel=null;render();return;}}
   S.sel=null;render();
 });
-$('#map').addEventListener('mouseover',e=>{const el=e.target.closest('[data-k]');if(!el||S.sel)return;const k=el.getAttribute('data-k');if(k!==S.hover){S.hover=k;renderInfo();}});
+$('#map').addEventListener('mouseover',e=>{const el=e.target.closest('[data-k]');if(!el||S.sel)return;const k=el.getAttribute('data-k');if(k!==S.hover){S.hover=k;if(FARSEL)FARSEL=null;renderInfo();}});
 $('#btnStrike').onclick=()=>{if(!humanTurn())return;S.mode=S.mode==='strike'?null:'strike';S.sel=null;render();};
 $('#btnEnd').onclick=()=>{if(!humanTurn())return;endPhase();};
 function readSetup(){
@@ -2589,7 +2616,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.15';
+const VERSION='2026-11-02.16';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
@@ -2713,6 +2740,12 @@ $('#zLabel').onclick=()=>setZoom(1,true);$('#fsZ').onclick=()=>setZoom(1,true);
   const end=()=>{st=null;w.classList.remove('drag');};
   w.addEventListener('pointerup',end);w.addEventListener('pointerleave',end);w.addEventListener('pointercancel',end);
   w.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);
+  // 手機雙指縮放
+  let pd=0,pz=1,raf=0;
+  const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  w.addEventListener('touchstart',e=>{if(e.touches.length===2){pd=dist(e.touches);pz=ZOOM;}},{passive:true});
+  w.addEventListener('touchmove',e=>{if(e.touches.length!==2||!pd)return;const z=pz*dist(e.touches)/pd;if(raf)return;raf=requestAnimationFrame(()=>{raf=0;setZoom(z);});},{passive:true});
+  w.addEventListener('touchend',e=>{if(e.touches.length<2)pd=0;},{passive:true});
 })();
 function setFs(on){
   document.body.classList.toggle('mapfs',on);
