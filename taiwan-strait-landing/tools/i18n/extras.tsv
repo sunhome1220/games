@@ -25,11 +25,11 @@
 戰報語音播放	Spoken battle reports	戦報の音声読み上げ
 不播放	Off	オフ
 自動播放	Auto-play	自動再生
-安靜閱讀（預設）。	Read silently (default).	静かに読む（既定）。
-用瀏覽器內建語音唸出戰報與快訊，語言隨介面語言；也可隨時用地圖上方的「語音」按鈕開關。	Reads the battle log and flash news aloud with the browser's built-in voice, in the interface language; you can also toggle it any time with the Voice button above the map.	ブラウザ内蔵の音声で戦報とニュース速報を読み上げます（言語は表示言語に連動）。マップ上の「音声」ボタンでいつでも切り替えられます。
+安靜閱讀。	Read silently.	静かに読む。
+（預設）每回合結束的「海峽快訊」統整，以新聞播報的口吻用瀏覽器內建語音唸出（其他戰報不唸），語言隨介面語言；也可隨時用地圖上方的「語音」按鈕開關。	(Default) At the end of each turn the "Strait news flash" summary is read aloud in a news-anchor style with the browser's built-in voice (other log lines are not read), in the interface language; you can also toggle it any time with the Voice button above the map.	（既定）ブラウザ内蔵の音声で戦報とニュース速報を読み上げます（言語は表示言語に連動）。マップ上の「音声」ボタンでいつでも切り替えられます。
 語音	Voice	音声
 🔊 語音：開	🔊 Voice: on	🔊 音声：オン
 🔈 語音：關	🔈 Voice: off	🔈 音声：オフ
 語音播報已開啟	Voice narration on	音声読み上げをオンにしました
 語音播報：	Voice narration:	音声読み上げ：
-設定最後一頁（或地圖上方的「語音」按鈕）可開啟自動播放，用瀏覽器內建的語音唸出戰報與每回合快訊，語言隨介面語言；影片模式會等唸完再進下一步，隨時可關閉。預設關閉；是否有語音與音質取決於瀏覽器與裝置。	On the last setup page (or with the Voice button above the map) you can turn on auto-play, which reads the battle log and each turn's flash news aloud with the browser's built-in voice, in the interface language; video mode waits for the speech to finish before the next step, and you can turn it off at any time. Off by default; whether a voice exists and its quality depend on the browser and device.	セットアップ最終ページ（またはマップ上の「音声」ボタン）で自動再生をオンにでき、ブラウザ内蔵の音声で戦報と各ターンのニュース速報を表示言語で読み上げます。ビデオモードでは読み上げが終わってから次のステップへ進み、いつでもオフにできます。既定はオフ。音声の有無や品質はブラウザと端末によります。
+設定最後一頁（或地圖上方的「語音」按鈕）可開啟自動播放，每回合結束的「海峽快訊」統整會以新聞播報的口吻，用瀏覽器內建的語音唸出（其他戰報不唸），語言隨介面語言；影片模式會等唸完再進下一步，隨時可關閉。預設開啟（可在設定或地圖上方「語音」按鈕關閉）；是否有語音與音質取決於瀏覽器與裝置。	On the last setup page (or with the Voice button above the map) you can turn on auto-play, which reads each turn-end "Strait news flash" summary aloud in a news-anchor style with the browser's built-in voice (other log lines are not read), in the interface language; video mode waits for the speech to finish before the next step, and you can turn it off at any time. On by default (turn it off in setup or with the Voice button above the map); whether a voice exists and its quality depend on the browser and device.	セットアップ最終ページ（またはマップ上の「音声」ボタン）で自動再生をオンにでき、（既定）各ターン終了時の「海峡ニュース速報」の要約を、ニュースキャスター調でブラウザ内蔵の音声により表示言語で読み上げます（その他の戦報は読み上げません）。ビデオモードでは読み上げが終わってから次のステップへ進み、いつでもオフにできます。既定はオン（設定またはマップ上の「音声」ボタンでオフにできます）。音声の有無や品質はブラウザと端末によります。
