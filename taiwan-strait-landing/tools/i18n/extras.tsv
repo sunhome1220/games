@@ -168,3 +168,4 @@
 語言設定：繁體中文、English、日本語、简体中文，可隨時切換	Language setting: Traditional Chinese, English, Japanese, Simplified Chinese, switchable at any time	言語設定：繁体字中国語・English・日本語・簡体字中国語、いつでも切り替え可能
 按鈕與霧化層調整，新版本提示全畫面可見	Smaller buttons, haze layer removed, and the new-version notice is visible on every screen	ボタンの縮小、霞み層の除去、新バージョン通知を全画面で表示
 更版後第一次開啟會顯示這次的更新內容，頁尾「更新內容」可隨時重看	After an update, the first visit shows what changed; the "What's new" link in the footer reopens it any time	更新後の初回起動時に更新内容を表示します。フッターの「更新内容」からいつでも再表示できます
+戰後檢討與統計結果改為全螢幕顯示（不再是占 9 成的卡片），開啟時暫停繪製後方的大地圖，減少卡頓；統計標題排版整理	The after-action review and statistics now open full screen (no longer a card covering about 90%), and the map behind is no longer painted while they are open, which reduces lag; the statistics heading layout is tidied up	戦後検討と統計結果を全画面表示に変更（画面の約9割を占めるカードではなくなりました）。開いている間は背後の大きな地図を描画しないため、動作が軽くなります。統計の見出しのレイアウトも整理
