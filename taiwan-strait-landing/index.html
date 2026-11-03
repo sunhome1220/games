@@ -241,10 +241,15 @@ body.mapfs .mbar{display:none!important}
 .vcard[hidden]{display:none}
 .vcard h3{font-family:var(--f-display);font-size:22px;margin:4px 0 6px}
 .vcard ul{padding-left:18px;margin:6px 0 0;font-size:13.5px}
-.vcard{left:auto;right:16px;top:132px;transform:none;width:min(340px,calc(100% - 32px));max-height:62vh;background:color-mix(in srgb,var(--panel) 80%,transparent);border-width:1px;padding:10px 14px;box-shadow:0 4px 16px rgba(0,0,0,.22)}
+.vcard{left:50%;right:auto;top:14%;transform:translateX(-50%);width:min(440px,calc(100% - 32px));max-height:62vh;pointer-events:auto;touch-action:none;cursor:grab;background:color-mix(in srgb,var(--panel) 80%,transparent);border-width:1px;padding:10px 14px;box-shadow:0 4px 16px rgba(0,0,0,.22)}
 .vcard h3{font-size:18px}.vcard ul{font-size:12.5px}
 .vcard .nart{height:110px}
-@media (max-width:960px){.vcard{left:8px;right:8px;top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));width:auto;max-height:34vh}.vcard .nart{height:72px}}
+.vcard.moved{transform:none;right:auto;bottom:auto}
+.vcard:active{cursor:grabbing}
+.vcard .vc-x{position:absolute;top:3px;right:5px;width:26px;height:26px;padding:0;line-height:1;font-size:18px;background:transparent;color:var(--ink);border:none;cursor:pointer;opacity:.7}
+.vcard .vc-x:hover{opacity:1}
+.vcard .vc-body{padding-right:18px}
+@media (max-width:960px){.vcard:not(.moved){left:8px;right:8px;top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:none;width:auto;max-height:34vh}.vcard .nart{height:72px}}
 #vbusy{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:#fff;font-size:20px;font-weight:700}
 #vbusy[hidden]{display:none}
 /* tabs, wizard */
@@ -574,7 +579,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 </div>
 <button id="newver" hidden>🔔 有新版本，點此更新</button>
 <div class="mbar" id="mbar"><span id="mbText"></span><button class="ghost" id="mbStrike" hidden>火力打擊</button><button class="ghost" id="mbAssist" hidden>電腦代打</button><button id="mbEnd">結束階段</button></div>
-<div id="vcard" class="vcard" hidden></div>
+<div id="vcard" class="vcard" hidden><button class="vc-x" id="vcClose" aria-label="關閉" title="關閉">✕</button><div class="vc-body" id="vcBody"></div></div>
 <div id="vbusy" hidden>正在模擬戰局…</div>
 <div id="modal" hidden><div class="mbox" id="mbox"></div></div>
 <button id="resume" hidden>回到事件 ▲</button>
@@ -3103,7 +3108,7 @@ function render(){if(S.rec)recordFrame();else{renderAll();if(FXQ.length)playFx(F
 
 /* ---------- video simulation: record the whole war instantly, then play it back ---------- */
 const REC={frames:[],prev:null,prevN:0,final:null,closed:false,resolve:null,quiet:false};
-const V={fr:[],i:0,playing:false,t:null,sp:2,turnStart:{}};
+const V={fr:[],i:0,playing:false,t:null,sp:2,turnStart:{},cardClosed:-1};
 function snapFrame(){
   const o=Object.assign({},S);
   o.units=S.units.map(u=>Object.assign({},u));o.owner=Object.assign({},S.owner);o.pools=Object.assign({},S.pools);
@@ -3185,7 +3190,7 @@ function fitVideoZoom(){
   setZoom(Math.max(ZMIN,Math.min(1,(innerHeight-330)/h1)),true);
   document.querySelector('.board').scrollIntoView({block:'start'});
 }
-function vStop(){clearTimeout(V.t);VOICE.stop();V.playing=false;V.fr=[];$('#vcard').hidden=true;}
+function vStop(){V.cardClosed=-1;clearTimeout(V.t);VOICE.stop();V.playing=false;V.fr=[];$('#vcard').hidden=true;}
 function backToSetup(){vStop();reset();setTab('cmd');}
 function vBtn(){$('#vPlay').textContent=V.playing?'⏸':'▶';}
 function vLabel(f){return 'D+'+(Math.ceil(f.S.turn/2)-1)+(f.S.turn%2?' 白天':' 夜間')+'・第 '+f.S.turn+' 回合・'+SIDE[f.S.phase]+'階段';}
@@ -3208,7 +3213,7 @@ function vShow(i,full,fxOk){
     if(f.card&&f.card.kind==='news')VOICE.speak(f.card.html,{flush:true,rate:Math.min(2,1+(V.sp-1)*0.2)}); // 只播每回合的統整快訊
   }else if(!fxOk)VOICE.stop();
   const cd=$('#vcard');
-  if(f.card){cd.innerHTML=f.card.html;cd.className='vcard '+f.card.kind;cd.hidden=false;}else cd.hidden=true;
+  if(f.card&&V.cardClosed!==V.i){$('#vcBody').innerHTML=f.card.html;cd.className='vcard '+f.card.kind+(cd.classList.contains('moved')?' moved':'');cd.hidden=false;vcardPlace();}else cd.hidden=true;
 }
 /* ---------- 語音播報（Web Speech API；預設關閉） ---------- */
 const VOICE={n:0,
@@ -3234,6 +3239,32 @@ function voiceBtn(){const b=$('#btnVoice');if(!window.speechSynthesis){b.hidden=
 $('#btnVoice').onclick=()=>{const e=$('#optVoice');e.value=e.value==='1'?'0':'1';e.dispatchEvent(new Event('change'));if(e.value==='1')VOICE.speak('語音播報已開啟',{flush:true});};
 $('#optVoice').addEventListener('change',()=>{try{localStorage.setItem('tsl-voice-user','1');}catch(e){}voiceBtn();});
 voiceBtn();
+/* ---------- 事件卡：可拖曳（位置會記住）、可按右上 ✕ 關閉 ---------- */
+function vcardPlace(){
+  const cd=$('#vcard');let pos=null;try{pos=JSON.parse(localStorage.getItem('tsl-vcard-pos')||'null');}catch(e){}
+  if(!pos||typeof pos.x!=='number'){cd.classList.remove('moved');cd.style.left=cd.style.top='';return;}
+  cd.classList.add('moved');
+  const w=cd.offsetWidth||320,h=cd.offsetHeight||160;
+  cd.style.left=Math.max(4,Math.min(innerWidth-w-4,pos.x))+'px';cd.style.top=Math.max(4,Math.min(innerHeight-h-4,pos.y))+'px';
+}
+(function(){
+  const cd=$('#vcard');let d=null;
+  cd.addEventListener('pointerdown',e=>{
+    if(e.target.closest('#vcClose'))return;
+    const r=cd.getBoundingClientRect();d={dx:e.clientX-r.left,dy:e.clientY-r.top,moved:false};
+    try{cd.setPointerCapture(e.pointerId);}catch(x){}
+  });
+  cd.addEventListener('pointermove',e=>{
+    if(!d)return;d.moved=true;cd.classList.add('moved');
+    const w=cd.offsetWidth,h=cd.offsetHeight;
+    cd.style.left=Math.max(4,Math.min(innerWidth-w-4,e.clientX-d.dx))+'px';cd.style.top=Math.max(4,Math.min(innerHeight-h-4,e.clientY-d.dy))+'px';
+  });
+  const end=()=>{if(!d)return;if(d.moved){try{localStorage.setItem('tsl-vcard-pos',JSON.stringify({x:parseFloat(cd.style.left),y:parseFloat(cd.style.top)}));}catch(e){}}d=null;};
+  cd.addEventListener('pointerup',end);cd.addEventListener('pointercancel',end);
+  $('#vcClose').onclick=()=>{V.cardClosed=V.i;cd.hidden=true;};
+  cd.addEventListener('dblclick',()=>{try{localStorage.removeItem('tsl-vcard-pos');}catch(e){}cd.classList.remove('moved');cd.style.left=cd.style.top='';}); // 連點兩下回到預設位置
+  addEventListener('resize',()=>{if(!cd.hidden)vcardPlace();});
+})();
 function vSchedule(){
   clearTimeout(V.t);if(!V.playing)return;
   const f=V.fr[V.i];let d=f.card?f.card.dur:(f.cap.length?1300:420);
@@ -3421,7 +3452,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-03.20';
+const VERSION='2026-11-03.21';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此更新（對局將結束）':'🔔 有新版本，點此更新';}
