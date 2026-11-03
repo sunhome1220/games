@@ -501,6 +501,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
             <select id="optSide"><option value="atk">攻方</option><option value="def">守方</option><option value="both">雙方</option><option value="none">觀戰</option></select>
             <select id="optSpeed"><option value="1">一般</option><option value="0.35">快速</option></select>
             <select id="optT"><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option><option value="12">12</option></select>
+            <select id="optAxN"><option value="0" selected>0</option><option value="1">1</option></select><select id="optAxC"><option value="0" selected>0</option><option value="1">1</option></select><select id="optAxP"><option value="0">0</option><option value="1" selected>1</option></select><select id="optAxK"><option value="0" selected>0</option><option value="1">1</option></select>
             <select id="optBuild"><option value="open">open</option><option value="exercise" selected>exercise</option><option value="surprise">surprise</option></select>
             <select id="optFx"><option value="dice" selected>dice</option><option value="interest">interest</option><option value="intel">intel</option><option value="none">none</option><option value="full">full</option></select>
             <select id="optEra"><option value="2026" selected>2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option></select>
@@ -550,7 +551,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
         <div class="card rules">
           <h2>規則摘要</h2>
           <details class="rg" open><summary>基本規則</summary><ul><li><b>步（戰力）：</b>每個單位的戰力分成幾「步」，就是棋子下方的圓點。旅級單位多為 3 步，空降旅、後備旅、反艦飛彈為 2 步。每損失 1 步約失去三分之一戰力（在海上就是部分船艦連同人員裝備被擊沉）；只剩 1 步時攻防各 −1，歸零即被殲滅。戰況與報告中的「兵力 X 步」是各單位剩餘步數的加總，約 3 步相當於一個旅。</li><li>每回合先攻方、後守方。每個單位每階段可移動一次，之後可攻擊一次。</li><li><b>渡海：</b>兩棲旅、陸戰旅可從大陸任一沿岸格出航；裝甲旅只能從港口出航，且只能在攻方已控制的港口上岸。海上移動力依天候：良好 3、普通 2、惡劣 1。登陸後該單位本階段結束。</li><li><b>搶灘突擊：</b>從海上直接攻擊岸上敵軍，攻擊 −2（陸戰旅 −1）。守方若被消滅，突擊單位可直接上岸。</li><li><b>戰鬥：</b>攻擊值＋骰 對 防禦值＋地形＋骰。差 ≥4 守方失 2 步；1～3 失 1 步；0 雙方各失 1；−1～−3 攻方失 1；≤−4 攻方失 2。每多一支友軍與目標相鄰 +1（最多 +2）。只剩 1 步的單位攻防各 −1。</li><li><b>控制區：</b>移動進入與敵軍相鄰的陸地格必須停下。</li><li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；每次空投擲骰，擲 1 因防空攔截損失 1 步；落在敵軍旁時擲 1～3 就損失 1 步。惡劣天候不能空降。</li><li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 2、港口 4、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1。</li><li><b>增援：</b>攻方第 2～5 回合於大陸沿岸到達；守方後備旅第 2～4 回合在城市動員。</li></ul></details>
-          <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>兵力年代：</b>開局可選 2026 現況、2028 近期、2030 中期。2026 依公開報導概略設定（台灣：雲峰與雄風IIE 長程飛彈、HIMARS／ATACMS、魚叉岸防、F-16V、天弓與愛國者；共軍：東風-15／16 與 PCH-191 長程火箭、東風-17 高超音速、東風-26／21D）；2028、2030 是依已規劃的採購與特別預算所做的推估，雙方都會成長。東風-17 的火力不受守方防空削減；東風-26／21D 讓打擊美日基地與艦艇的門檻 −1；無人機與巡飛彈每階段增加反艦攻擊。數字為遊戲的抽象點數，實際數量並不公開，各來源也有出入，詳見 DATA.md。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li><li><b>制空與防空壓制：</b>每回合先比較攻方陸基空軍＋艦載機與守方、盟國空軍：差 3 以上算「優勢」。攻方優勢時美日空軍的反艦命中門檻 +1，守方優勢時 −1；守方防空降到 2 以下算「遭壓制」，攻方火力 +1，攻方防空降到 2 以下則大陸基地更容易被打。</li><li><b>海上交戰：</b>每回合守方階段，攻方護航艦隊與航艦會與守方海軍、美日水面艦及潛艦交戰；潛艦（美日，以及台灣自製的海鯤，2028 年起 1 艘、2030 年 1 艘以上）可能擊沉護航艦或重創航艦，也可能遭反潛。共軍航艦（遼寧、山東、福建）提供艦載機制空，被反艦攻擊命中護航艦時，可能連帶被重創。</li><li><b>台灣地形與機場：</b>台灣本島依真實海岸線、中央山脈與城市位置重畫；東岸多為斷崖不可登陸，宜蘭、花蓮、台東有小塊平原；西岸彰化、雲林一帶為泥灘。守方機場 11 座（桃園、新竹、清泉崗、嘉義、台南、岡山、屏東、花蓮佳山、台東志航等），共軍沿海機場 11 座；攻方占領守方機場時，守方空軍 −1。東岸另有岸置反艦飛彈（花蓮佳山一帶），可射擊台灣東側海域的共軍航艦群（地圖上的 2～4 艘，沉沒會減少航艦點數）。</li><li><b>雄二／雄三：</b>守方反艦飛彈存量約 1,000 枚（2026），以每年約 200 枚的產能增加（約 2031 年達 2,000 枚上下，官方沒有公布此目標，為推估）；每點約 100 枚，岸置飛彈單位每次射擊消耗約 0.2 點，存量用完就無法射擊。</li><li><b>細格地圖：</b>地圖格數加倍（每個舊格細分為 2×2，約 36×36 格），海岸線、山地、港口與機場位置更細；移動力、海上移動、飛彈射程、空降距離、相鄰（控制區、支援、攻擊距離）都隨之加倍，實際行進與作戰距離不變。攻占一格時，周圍沒有敵軍的陸地格一併易主（港口與台北需親自踏入）。單位圖示縮小，同格可疊 2 個。</li><li><b>港口破壞：</b>守方港口即將失守（守軍只剩 1 步以下、攻方地面部隊在 2 格內）時，守方階段開始前可選擇破壞港口：攻方即使占領也無法從該港卸載重型旅、補給容量只剩 +1，且不計入「控制港口」，攻方占領並整修 2 個回合後恢復；每個港口只問一次，電腦守方約八成會破壞。地圖上以紅色 ✕ 標示。</li><li><b>勝負判定（調整後）：</b>達成條件需「站穩」：島上戰力要不少於守方且至少 4 步；連續兩個回合同時達成三項條件會提前判定攻方取勝。攻方只在最後一回合才達成兩項條件為「險勝」，只有 1 項但控制首都（連續 2 回合）或在島上站穩 6 步以上並控制至少 1 個港口為「僵局／灘頭堡僵持」；三項全落空且島上無部隊為守方決定性勝利。結果另依代價標註「慘勝」：守方平民傷亡達 3 萬人以上或自行破壞 2 個以上港口；攻方軍人傷亡 12 萬人以上、全球股市 −20% 以下或使用核武。</li><li><b>停戰／放棄評估：</b>當攻方陷入困境（第 4 回合起，沒有港口與台北、島上兵力遠遜守方）或守方瀕臨崩潰（傷亡慘重且外援退縮或民意低落）時，該方階段開始前彈出評估，同一局各最多 2 次、間隔 2 回合。攻方可選：接受現況停戰、有限撤退、增兵再搏、提高賭注（升級）、戰術核武；守方可選：停火談判、投降、繼續抵抗、尋求外援（擲骰）。★為系統建議。停戰依達成條件數判定（2 項以上攻方勝、1 項僵局、0 項守方勝）；使用核武會讓美日全面介入、全球股市暴跌，即使獲勝也標註代價。人類操作的一方自己選，電腦方依評估自動選；推演模式由你替雙方選。</li><li><b>機動發射車：</b>岸置飛彈單位是機動的，未暴露時共軍火力打擊多半打到誘餌與空車（掌握空優時機率較低），命中門檻也 +1；開火後暴露，到守方下個階段開始前都是顯眼目標。開火後可以機動轉移，電腦會讓它們打了就跑，轉移到山區或離敵軍較遠的陣地並重新隱蔽。</li><li><b>台灣反艦火力（依發射平台）：</b>岸置與車載（雄二、雄三、魚叉岸防，地圖上 7 組，每階段 3→2 輪）、艦載（艦艇群與守方海軍）、空射（F-16V 掛魚叉、雄三空射型，守方空軍每階段出擊、空優被攻方掌握時不出擊）、潛艦（海鯤）、無人機與巡飛彈，各自獨立結算。戰報與統計會列出攻方海上損失的來源：台灣岸置與艦載反艦飛彈、台灣海空軍與無人機、美軍、日本。</li><li><b>艦艇移動與飽和攻擊：</b>守方艦艇群可出港航行，電腦會讓它們保持在反艦飛彈射程邊緣、避開共軍護航艦；出港後會被共軍海空兵力攻擊。共軍三艘航艦分散在東岸海域（各帶一艘護航艦、彼此保持距離），電腦會讓它們避開岸置飛彈威脅。航艦有點防禦（自身＋附近護航艦各抵擋一枚來襲飛彈），超出的飛彈使命中門檻逐枚 −1，多出 3 枚以上必中，且 2 枚以上超出時一次損失 2 步（飽和攻擊）。</li><li><b>水面艦艇：</b>共軍護航艦（紅色，最多 4 艘）在港口外海，可航行、貼近己方船團掩護（目標旁有護航艦時，守方反艦攻擊命中門檻 +1），也能砲擊海岸；守方艦艇群（藍色，停泊港口，最多 4 組）每階段有 1 發反艦飛彈，不能移動。兩者都只有 2 步、很容易被反艦飛彈或空襲擊沉；擊沉會連動減少海軍點數，海軍點數被海戰扣減時也會沉掉對應的艦艇。</li><li><b>堆疊：</b>每格最多 2 個友軍單位（飛彈單位也計入），不能與敵軍同格；同格時單位並排縮小顯示、被攻擊時防禦 −1（擁擠），空位的友軍格也會亮綠色（敵軍相鄰的陸地格不能再疊）。點選已選單位取消選取後，才能改選同一格的另一個單位；移入有友軍的格子，直接點那一格的友軍即可。攻擊後只有目標格已無敵軍才會推進占領。</li><li><b>布雷：</b>守方開戰前依年代預先在西岸灘頭（火山布雷車，14 套最新報導預計 2027 年交付）與近海（水雷）布雷，地圖上以黑色圓點標示；攻方部隊進入布雷格要擲骰，3 以下觸雷損失 1 步並清除該處布雷。攻方護航艦隊每回合開始掃雷（最多 1～2 處），掃雷艦有 1/6 觸雷損失。</li><li><b>共軍潛艦：</b>每回合守方階段，最多 3 艘共軍潛艦攻擊美日艦艇（航艦要擲 6）或守方海軍。美日、台灣的反潛兵力（護衛隊群、美軍潛艦、航艦、台灣海軍與潛艦）越多，潛艦越容易被擊沉；完全沒有反潛兵力時（例如台灣孤軍）命中門檻 −1，也不會被擊沉。</li><li><b>巡弋飛彈：</b>長劍、鷹擊等巡弋飛彈每回合最多 1～2 點，守方防空強（≥5）時少 1 點；東風-17 仍不受防空影響。</li></ul></details>
+          <details class="rg"><summary>火力與戰區</summary><ul><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>兵力年代：</b>開局可選 2026 現況、2028 近期、2030 中期。2026 依公開報導概略設定（台灣：雲峰與雄風IIE 長程飛彈、HIMARS／ATACMS、魚叉岸防、F-16V、天弓與愛國者；共軍：東風-15／16 與 PCH-191 長程火箭、東風-17 高超音速、東風-26／21D）；2028、2030 是依已規劃的採購與特別預算所做的推估，雙方都會成長。東風-17 的火力不受守方防空削減；東風-26／21D 讓打擊美日基地與艦艇的門檻 −1；無人機與巡飛彈每階段增加反艦攻擊。數字為遊戲的抽象點數，實際數量並不公開，各來源也有出入，詳見 DATA.md。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段有最多 2 發長程對地飛彈（總量 10）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自擲骰決定要不要對大陸出手（美軍 4 以上、自衛隊 5 以上才出手），出手時自動打擊大陸基地。每發擲 4 以上命中（火箭軍基地加固需 5；機場、海軍基地與集結港在大陸防空強時需 5）：打中火箭軍基地減少飛彈存量 3、空軍基地減少 1 點空軍、海軍基地減少 1 點護航艦隊、集結港讓一個停在大陸的攻方部隊損失 1 步。每處基地承受命中後會癱瘓。</li><li><b>中方報復：</b>每次對大陸的打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li><li><b>制空與防空壓制：</b>每回合先比較攻方陸基空軍＋艦載機與守方、盟國空軍：差 3 以上算「優勢」。攻方優勢時美日空軍的反艦命中門檻 +1，守方優勢時 −1；守方防空降到 2 以下算「遭壓制」，攻方火力 +1，攻方防空降到 2 以下則大陸基地更容易被打。</li><li><b>海上交戰：</b>每回合守方階段，攻方護航艦隊與航艦會與守方海軍、美日水面艦及潛艦交戰；潛艦（美日，以及台灣自製的海鯤，2028 年起 1 艘、2030 年 1 艘以上）可能擊沉護航艦或重創航艦，也可能遭反潛。共軍航艦（遼寧、山東、福建）提供艦載機制空，被反艦攻擊命中護航艦時，可能連帶被重創。</li><li><b>台灣地形與機場：</b>台灣本島依真實海岸線、中央山脈與城市位置重畫；東岸多為斷崖不可登陸，宜蘭、花蓮、台東有小塊平原；西岸彰化、雲林一帶為泥灘。守方機場 11 座（桃園、新竹、清泉崗、嘉義、台南、岡山、屏東、花蓮佳山、台東志航等），共軍沿海機場 11 座；攻方占領守方機場時，守方空軍 −1。東岸另有岸置反艦飛彈（花蓮佳山一帶），可射擊台灣東側海域的共軍航艦群（地圖上的 2～4 艘，沉沒會減少航艦點數）。</li><li><b>雄二／雄三：</b>守方反艦飛彈存量約 1,000 枚（2026），以每年約 200 枚的產能增加（約 2031 年達 2,000 枚上下，官方沒有公布此目標，為推估）；每點約 100 枚，岸置飛彈單位每次射擊消耗約 0.2 點，存量用完就無法射擊。</li><li><b>細格地圖：</b>地圖格數加倍（每個舊格細分為 2×2，約 36×36 格），海岸線、山地、港口與機場位置更細；移動力、海上移動、飛彈射程、空降距離、相鄰（控制區、支援、攻擊距離）都隨之加倍，實際行進與作戰距離不變。攻占一格時，周圍沒有敵軍的陸地格一併易主（港口與台北需親自踏入）。單位圖示縮小，同格可疊 2 個。</li><li><b>港口破壞：</b>守方港口即將失守（守軍只剩 1 步以下、攻方地面部隊在 2 格內）時，守方階段開始前可選擇破壞港口：攻方即使占領也無法從該港卸載重型旅、補給容量只剩 +1，且不計入「控制港口」，攻方占領並整修 2 個回合後恢復；每個港口只問一次，電腦守方約八成會破壞。地圖上以紅色 ✕ 標示。</li><li><b>勝負判定（調整後）：</b>達成條件需「站穩」：島上戰力要不少於守方且至少 4 步；連續兩個回合同時達成三項條件會提前判定攻方取勝。攻方只在最後一回合才達成兩項條件為「險勝」，只有 1 項但控制首都（連續 2 回合）或在島上站穩 6 步以上並控制至少 1 個港口為「僵局／灘頭堡僵持」；三項全落空且島上無部隊為守方決定性勝利。結果另依代價標註「慘勝」：守方平民傷亡達 3 萬人以上或自行破壞 2 個以上港口；攻方軍人傷亡 12 萬人以上、全球股市 −20% 以下或使用核武。</li><li><b>攻擊計畫（可多選軸線）：</b>開局可勾選攻擊軸線：北部、中部、澎湖、金馬。只有單一本島軸線（澎湖算 0.5 條、金馬算 1 條）時有「集中突擊」：第 1～3 回合攻方攻擊 +1；北、中並進沒有加成；軸線太多（合計 3.5 以上）兵力分散：第 1～3 回合攻擊 −1。北、中都不勾時由電腦選一個主攻區並集中。</li><li><b>金門、馬祖：</b>地圖上金門（2 個細格）與馬祖（1～2 個細格）緊鄰大陸沿岸，守軍只有後備旅（金門 2 個、馬祖 1 個），攻擊金馬沒有一般的搶灘懲罰。電腦攻方預設無視金馬（打下來意義有限、強攻造成重大傷亡反而招致國際反彈）；人類攻方可在開局「攻擊軸線」選擇金馬，或在停戰評估選「轉攻金馬」。金馬戰事累計傷亡達 8 步以上會讓美國提高參戰程度、台灣民心凝聚，且不再判「有限勝利」。兩者都攻占而本島條件落空時判「攻方有限勝利（金馬）」。</li><li><b>停戰／放棄評估：</b>當攻方陷入困境（第 4 回合起，沒有港口與台北、島上兵力遠遜守方）或守方瀕臨崩潰（傷亡慘重且外援退縮或民意低落）時，該方階段開始前彈出評估，同一局各最多 2 次、間隔 2 回合。攻方可選：接受現況停戰、有限撤退、增兵再搏、提高賭注（升級）、戰術核武；守方可選：停火談判、投降、繼續抵抗、尋求外援（擲骰）。★為系統建議。停戰依達成條件數判定（2 項以上攻方勝、1 項僵局、0 項守方勝）；使用核武會讓美日全面介入、全球股市暴跌，即使獲勝也標註代價。人類操作的一方自己選，電腦方依評估自動選；推演模式由你替雙方選。</li><li><b>機動發射車：</b>岸置飛彈單位是機動的，未暴露時共軍火力打擊多半打到誘餌與空車（掌握空優時機率較低），命中門檻也 +1；開火後暴露，到守方下個階段開始前都是顯眼目標。開火後可以機動轉移，電腦會讓它們打了就跑，轉移到山區或離敵軍較遠的陣地並重新隱蔽。</li><li><b>台灣反艦火力（依發射平台）：</b>岸置與車載（雄二、雄三、魚叉岸防，地圖上 7 組，每階段 3→2 輪）、艦載（艦艇群與守方海軍）、空射（F-16V 掛魚叉、雄三空射型，守方空軍每階段出擊、空優被攻方掌握時不出擊）、潛艦（海鯤）、無人機與巡飛彈，各自獨立結算。戰報與統計會列出攻方海上損失的來源：台灣岸置與艦載反艦飛彈、台灣海空軍與無人機、美軍、日本。</li><li><b>艦艇移動與飽和攻擊：</b>守方艦艇群可出港航行，電腦會讓它們保持在反艦飛彈射程邊緣、避開共軍護航艦；出港後會被共軍海空兵力攻擊。共軍三艘航艦分散在東岸海域（各帶一艘護航艦、彼此保持距離），電腦會讓它們避開岸置飛彈威脅。航艦有點防禦（自身＋附近護航艦各抵擋一枚來襲飛彈），超出的飛彈使命中門檻逐枚 −1，多出 3 枚以上必中，且 2 枚以上超出時一次損失 2 步（飽和攻擊）。</li><li><b>水面艦艇：</b>共軍護航艦（紅色，最多 4 艘）在港口外海，可航行、貼近己方船團掩護（目標旁有護航艦時，守方反艦攻擊命中門檻 +1），也能砲擊海岸；守方艦艇群（藍色，停泊港口，最多 4 組）每階段有 1 發反艦飛彈，不能移動。兩者都只有 2 步、很容易被反艦飛彈或空襲擊沉；擊沉會連動減少海軍點數，海軍點數被海戰扣減時也會沉掉對應的艦艇。</li><li><b>堆疊：</b>每格最多 2 個友軍單位（飛彈單位也計入），不能與敵軍同格；同格時單位並排縮小顯示、被攻擊時防禦 −1（擁擠），空位的友軍格也會亮綠色（敵軍相鄰的陸地格不能再疊）。點選已選單位取消選取後，才能改選同一格的另一個單位；移入有友軍的格子，直接點那一格的友軍即可。攻擊後只有目標格已無敵軍才會推進占領。</li><li><b>布雷：</b>守方開戰前依年代預先在西岸灘頭（火山布雷車，14 套最新報導預計 2027 年交付）與近海（水雷）布雷，地圖上以黑色圓點標示；攻方部隊進入布雷格要擲骰，3 以下觸雷損失 1 步並清除該處布雷。攻方護航艦隊每回合開始掃雷（最多 1～2 處），掃雷艦有 1/6 觸雷損失。</li><li><b>共軍潛艦：</b>每回合守方階段，最多 3 艘共軍潛艦攻擊美日艦艇（航艦要擲 6）或守方海軍。美日、台灣的反潛兵力（護衛隊群、美軍潛艦、航艦、台灣海軍與潛艦）越多，潛艦越容易被擊沉；完全沒有反潛兵力時（例如台灣孤軍）命中門檻 −1，也不會被擊沉。</li><li><b>巡弋飛彈：</b>長劍、鷹擊等巡弋飛彈每回合最多 1～2 點，守方防空強（≥5）時少 1 點；東風-17 仍不受防空影響。</li></ul></details>
           <details class="rg"><summary>國際與集結</summary><ul><li><b>美軍立場：</b>美國有三種立場：<b>隱蔽支援</b>（傷亡過高後的退縮立場：提供情報、補給，反艦飛彈命中門檻 −1，第 2 回合起有不具名的潛艦行動）、<b>代理打擊</b>（開戰起的基本立場；轟炸機、潛艦以台灣、日本名義發射遠程飛彈，火力約四成半到六成，載人戰機與航艦撤出，中方不報復美軍）、<b>公開參戰</b>（全數投入）。非台灣孤軍、也不是「只提供情報」的情境下，開戰起美軍至少是代理打擊（台灣與美軍共用不少飛彈與魚雷，外觀、編號相同，很難分辨是誰發射），參戰程度決定會不會公開參戰。美軍累計傷亡達 6 步與 11 步時（美軍兵力共 14 步），每個守方階段擲骰（1d6≥4）決定是否降一級；美國本土（關島）遭攻擊會民意凝聚，擲骰 −2 並恢復一級。</li><li><b>美日參戰：</b>開局可選參戰情境：擲骰決定（預設）、只提供情報（美國只給情報與目標資料，不補給、不出兵、不公開參戰，日本中立，基地不能被打擊）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li><li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li></ul></details>
           <details class="rg"><summary>戰爭代價</summary><ul><li><b>戰爭代價：</b>側欄的「戰爭代價」依部隊編制把損失換算成傷亡人數（合成旅約 5,000 人；在海上被擊沉的死亡比例高於陸戰），並累計火力打擊與城市戰鬥造成的平民傷亡、各國經濟損失、全球股市與晶片供應。結算時依 Bloomberg Economics 2024 年的估算（台海戰爭約使全球 GDP 減少 10%，封鎖約 5%）推估一年期衝擊。所有數字都是遊戲依公開資料的粗估。</li></ul></details>
           <details class="rg"><summary>推演與判定</summary><ul><li><b>純模擬（影片）：</b>全程由電腦操作並自動決策與擲骰：先瞬間跑完整場戰爭並錄下每個動作，再以戰棋地圖為背景播放。地圖下方的字幕區顯示雙方動作與影響，並有戰況、傷亡與經濟摘要；可暫停、變速（1～8×）、拖曳時間軸或跳回合，地圖上的圈標出這一步發生變化的位置。結束後可看戰後檢討、回頭看影片或再模擬一次。</li><li><b>電腦推演：</b>雙方由電腦操作，推演途中會在 7 個關鍵節點暫停：戰前集結、發起時機、先制打擊、動員與社會韌性、各國參戰判斷、戰事延長、最後攻勢。屬於指揮官能決定的事由你替該方選擇；天候、攔截、民心、外國反應這類無法掌控的因素則擲骰決定。每個節點結束後顯示當下戰況，推演結束時列出完整的時間軸。</li><li><b>電腦代打：</b>你操作的階段，可以按「電腦代打剩餘單位」，還沒行動的單位交給電腦處理，然後自動結束階段。</li><li><b>統計：</b>在設定頁或影片模式按「跑統計」，電腦自動模擬 50／100／300 局（雙方由電腦操作、決策與擲骰隨機），列出攻方勝率與信賴區間、各條件達成率、代價範圍，以及美國參戰程度與各項決策對勝率的影響。</li><li><b>判定：</b>判定回合結束時檢查三項條件，攻方達成 2 項以上即獲勝。只達成「首都」一項時：台北已連續被攻方控制至少 2 個回合結束，判「僵局」；最後一回合才占領，視為暫時占領，判守方勝。守方本島部隊全滅時攻方立即獲勝；攻方部隊全滅時守方立即獲勝。</li></ul></details>
@@ -606,7 +607,7 @@ const TYPES={
   ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:3,hp:2}
 };
 const WEATHER={
-  good:{id:'good',n:'良好',sea:6,air:true,fire:0},
+  good:{id:'good',n:'良好',sea:5,air:true,fire:0},
   fair:{id:'fair',n:'普通',sea:4,air:true,fire:0},
   bad:{id:'bad',n:'惡劣',sea:2,air:false,fire:-2}
 };
@@ -654,7 +655,8 @@ for(let r=ROW0;r<ROW1;r++)for(let c=COL0;c<COL1;c++)TER[K(c,r)]={c,r,k:K(c,r),t:
   }
 })();
 // 粗格座標 → 細格座標（中心細格）
-const FK=k=>{const [c,r]=k.split(',').map(Number);return K(2*c+(r&1),2*r);};
+const MAINC={}; // 舊版大陸座標 → 新版（真實經緯度）大陸地點
+const FK=k=>{if(MAINC[k])return MAINC[k];const [c,r]=k.split(',').map(Number);return K(2*c+(r&1),2*r);};
 const FC=(c,r)=>[2*c+(r&1),2*r];
 const cc=(c,r)=>{const [a,b]=FC(c,r);return center(a,b);};
 function ring2(h){ // 距離 1～2 格（相當於舊版的「相鄰」）
@@ -731,19 +733,67 @@ const SPOT={};
   put('chiashan','佳山基地','air',121.58,24.00);
   put('taitung','台東','city',121.14,22.76);
   put('chihhang','志航基地','air',121.10,22.76);
-  // 澎湖
+  // 澎湖：馬公本島（2 格）與白沙（1 格，與本島隔海）；沒有駐軍的小島（望安、七美、西嶼等）不畫出
   const pc=llToRC(119.57,23.57),ph=TER[K(pc[0],pc[1])];
-  if(ph){[ph].concat(nbrs(ph.c,ph.r)).forEach(h=>{h.t='plain';h.isl='PH';});ph.t='port';ph.name='馬公';SPOT.magong=ph.k;
-    const pn=nbrs(ph.c,ph.r).find(h=>h.c>=ph.c);if(pn){pn.name='澎湖';SPOT.penghu=pn.k;}}
+  if(ph){
+    const sea=x=>x&&x.t==='sea';
+    ph.t='port';ph.isl='PH';ph.name='馬公';SPOT.magong=ph.k;
+    const m2=nbrs(ph.c,ph.r).find(h=>sea(h)&&h.c<=ph.c)||nbrs(ph.c,ph.r).find(sea);
+    if(m2){m2.t='plain';m2.isl='PH';}
+    const adj=new Set([ph.k,m2&&m2.k]);nbrs(ph.c,ph.r).forEach(h=>adj.add(h.k));if(m2)nbrs(m2.c,m2.r).forEach(h=>adj.add(h.k));
+    let bsha=null;
+    for(const h of Object.values(TER)){if(!sea(h)||adj.has(h.k)||Math.abs(h.c-ph.c)>3||Math.abs(h.r-ph.r)>3)continue;
+      if(h.r<=ph.r&&hd(h,ph)===2&&h.c>=ph.c){bsha=h;break;}}
+    if(!bsha)bsha=Object.values(TER).find(h=>sea(h)&&!adj.has(h.k)&&hd(h,ph)===2);
+    if(bsha){bsha.t='plain';bsha.isl='PH';bsha.name='白沙';SPOT.penghu=bsha.k;}
+  }
   tw.forEach(h=>{h.pc=h.c;h.pr=h.r;});
   // 同名的外島仍屬澎湖；補上需要的別名
   SPOT.tcity=SPOT.taichung;
+})();
+// ---- 大陸沿岸（福建、廣東）：依真實海岸線與地點經緯度重畫
+const SPOTC={};
+(function(){
+  const COASTL=[[120.35,26.8],[119.9,26.5],[119.62,26.25],[119.68,25.95],[119.8,25.62],[119.6,25.35],[119.15,25.25],[118.95,24.98],[118.65,24.62],[118.2,24.45],[117.95,24.3],[117.5,23.7],[117.0,23.4],[116.7,23.2],[116.0,22.85],[115.4,22.7],[114.9,22.3],[114.6,22.1]];
+  const poly=[[114.0,27.2],[120.5,27.2]].concat(COASTL,[[114.0,22.1]]);
+  const inPoly=(x,y,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;};
+  for(const h of Object.values(TER))if(h.isl==='CN'){h.t='sea';h.isl=null;h.name=null;h.cliff=false;h.mud=false;}
+  const cn=[];
+  for(const h of Object.values(TER)){
+    if(h.t!=='sea')continue;const [lon,lat]=rcToLL(h.c,h.r);
+    if(inPoly(lon,lat,poly)){h.t='main';h.isl='CN';h.lon=lon;h.lat=lat;cn.push(h);}
+  }
+  const coastalC=h=>nbrs(h.c,h.r).some(n=>n.t==='sea');
+  const dist=(h,lon,lat)=>Math.hypot((rcToLL(h.c,h.r)[0]-lon)/GEO.dlon,(rcToLL(h.c,h.r)[1]-lat)/GEO.dlat);
+  const nearC=(lon,lat,filter)=>{let best=null,bd=1e9;for(const h of cn){if(filter&&!filter(h))continue;const d=dist(h,lon,lat);if(d<bd){bd=d;best=h;}}return best;};
+  const put=(id,name,type,lon,lat,coast)=>{const h=nearC(lon,lat,x=>!x.named&&(!coast||coastalC(x)));if(!h)return;h.t=type;h.name=name;h.named=true;SPOTC[id]=h.k;SPOTC[name]=h.k;};
+  put('fuzhou','福州','port',119.62,26.0,1);put('pingtan','平潭','port',119.78,25.52,1);put('quanzhou','泉州','port',118.65,24.85,1);
+  put('xiamen','廈門','port',118.12,24.46,1);put('shantou','汕頭','port',116.72,23.36,1);
+  put('changle','長樂','air',119.66,25.93);put('longtian','龍田','air',119.45,25.7);put('huian','惠安','air',118.8,25.0);
+  put('liancheng','連城','air',116.75,25.7);put('longhai','龍海','air',117.82,24.43);put('gaoqi','高崎','air',118.1,24.56);put('chaoshan','潮汕','air',116.5,23.56);
+  const AN={fuding:[120.2,26.7],lianjiang:[119.6,26.25],fuzhou:[119.62,26.0],pingtan:[119.78,25.52],putian:[119.1,25.3],huian:[118.9,25.0],quanzhou:[118.65,24.85],jinjiang:[118.55,24.7],xiamen:[118.12,24.46],dongshan:[117.5,23.75],shantou:[116.72,23.36]};
+  const used={};
+  const pick=(an,i)=>{const [lon,lat]=AN[an];const list=cn.filter(h=>coastalC(h)).sort((a,b)=>dist(a,lon,lat)-dist(b,lon,lat));return list[i]||list[0];};
+  const M={'3,0':['fuding',0],'4,-1':['fuding',1],'4,-2':['fuding',2],'3,1':['lianjiang',0],'3,2':['fuzhou',1],'3,3':['fuzhou',0],'4,4':['pingtan',0],'3,4':['pingtan',1],'3,5':['putian',0],'3,6':['huian',0],'3,7':['quanzhou',0],'2,8':['jinjiang',0],'2,9':['xiamen',0],'2,10':['xiamen',1],'1,9':['xiamen',2],'1,10':['dongshan',0],'1,14':['shantou',1],'1,15':['shantou',0]};
+  for(const [k,[an,i]] of Object.entries(M)){const h=an==='fuzhou'&&i===0?TER[SPOTC.fuzhou]:an==='pingtan'&&i===0?TER[SPOTC.pingtan]:an==='quanzhou'&&i===0?TER[SPOTC.quanzhou]:an==='xiamen'&&i===0?TER[SPOTC.xiamen]:an==='shantou'&&i===0?TER[SPOTC.shantou]:pick(an,i);if(h)MAINC[k]=h.k;}
+  MAINC['2,4']=SPOTC['龍田'];MAINC['2,6']=SPOTC['惠安'];
+})();
+// ---- 金門、馬祖（外島，貼近大陸沿岸）：地圖上為小島，守軍少
+(function(){
+  const seaNear=(lon,lat)=>{const [c,r]=llToRC(lon,lat);let h=TER[K(c,r)];if(h&&h.t==='sea')return h;return Object.values(TER).filter(x=>x.t==='sea').sort((a,b)=>hd(a,TER[K(c,r)]||a)-hd(b,TER[K(c,r)]||b))[0];};
+  const mk=(id,name,base,n)=>{
+    base.t='port';base.isl='KM';base.name=name;base.kmId=id;SPOT[id]=base.k;
+    nbrs(base.c,base.r).filter(h=>h.t==='sea').slice(0,n).forEach((h,i)=>{h.t='plain';h.isl='KM';h.kmId=id;if(i===0)SPOT[id+'2']=h.k;});
+  };
+  mk('kinmen','金門',seaNear(118.37,24.45),2);
+  mk('matsu','馬祖',seaNear(119.97,26.18),1);
 })();
 
 Object.values(TER).forEach(h=>{h.coastal=isLand(h)&&nbrs(h.c,h.r).some(n=>n.t==='sea');});
 
 const TAIPEI=SPOT.taipei, PORTS=[SPOT.keelung,SPOT.tcport,SPOT.kaohsiung], MAGONG=SPOT.magong;
 const ZONES={north:[SPOT.linkou,SPOT.tamsui,SPOT.taoyuanap],central:[SPOT.miaoli,SPOT.hsinchu,SPOT.tcport],penghu:[SPOT.penghu,SPOT.magong]};
+ZONES.kinmen=[SPOT.kinmen];ZONES.matsu=[SPOT.matsu];
 const ABN_GOAL={north:[SPOT.taoyuanap,SPOT.taoyuan],central:[SPOT.miaoli,SPOT.changhua]};
 
 /* ---------- state ---------- */
@@ -758,14 +808,19 @@ function newState(){
      sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods(),
      pools:null,mines:{},baseStruck:{US:0,JP:0},afl:{},portDown:{},portAsked:{},truce:{atk:{n:0,t:-9},def:{n:0,t:-9}},nuke:false,fx:null,thSel:null,news:[],hits:[],newsOn:true,fxScen:'dice',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,tpHold:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
   for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
+  // 每個單位約一個旅（4,000～5,000 人）。共軍第一波約 40,000～55,000 人（兩棲艦隊首波運力估計 2～4 萬），後續波次由增援補上
   const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
-    ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],
-    ['mar','3,0','north'],['mar','2,10','penghu'],['amph','4,-1','north'],['amph','1,14','central'],['abn','2,4',null,0],['abn','2,6',null,1],
-    ['amph','3,4','north'],['amph','3,7','central'],['mar','2,9','central'],['arm','3,2'],['amph','3,5','north'],['arm','3,6']];
+    ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],['amph','3,7','central'],
+    ['mar','3,0','north'],['mar','2,10','penghu'],['mar','2,9','central'],['abn','2,4',null,0],['abn','2,6',null,1]];
   A.forEach(([t,k,z,g])=>S.units.push(mkUnit('atk',t,FK(k),{zone:z||null,goal:g})));
-  const D=[['inf',SPOT.taipei,1],['inf',SPOT.keelung,1],['inf',SPOT.taoyuan],['inf',SPOT.hsinchu],['inf',SPOT.tcport,1],['inf',SPOT.tainan],['inf',SPOT.kaohsiung,1],
-    ['inf',SPOT.yilan],['inf',SPOT.hualien],['inf',SPOT.magong,1],['tank',SPOT.hukou],['tank',SPOT.chiayi],
-    ['ssm',SPOT.miaoli],['ssm',SPOT.changhua],['ssm',SPOT.penghu],['ssm',SPOT.chiashan],['ssm',SPOT.tamsui],['ssm',SPOT.hsinchu],['ssm',SPOT.tainan]];
+  // 守方：陸軍作戰旅約 20 餘個（含裝甲、機械化、步兵、陸戰隊 2 個旅）加上快速動員的後備旅；岸置飛彈另計
+  const D=[['inf',SPOT.taipei,1],['inf',SPOT.taipei],['res',SPOT.taipei],
+    ['inf',SPOT.keelung,1],['inf',SPOT.taoyuan],['tank',SPOT.hukou],['tank',SPOT.hukou],
+    ['inf',SPOT.hsinchu],['inf',SPOT.tcport,1],['tank',SPOT.taichung],['res',SPOT.taichung],
+    ['tank',SPOT.chiayi],['inf',SPOT.tainan],['inf',SPOT.kaohsiung,1],['mar',SPOT.kaohsiung],['mar',SPOT.pingtung],
+    ['inf',SPOT.yilan],['inf',SPOT.hualien],['inf',SPOT.taitung],['inf',SPOT.magong,1],['inf',SPOT.magong],
+    ['ssm',SPOT.miaoli],['ssm',SPOT.changhua],['ssm',SPOT.penghu],['ssm',SPOT.chiashan],['ssm',SPOT.tamsui],['ssm',SPOT.hsinchu],['ssm',SPOT.tainan],
+    ['res',SPOT.kinmen,1],['res',SPOT.kinmen2],['res',SPOT.matsu,1]];
   D.forEach(([t,k,g])=>S.units.push(mkUnit('def',t,k,{garrison:!!g})));
   initTheater();
 }
@@ -909,7 +964,7 @@ function doMove(u,k,kind){
 }
 function attack(u,t){
   const th=hexOf(t);if(th.isl==='TW'||th.isl==='PH')civHit('TW',th,'combat');
-  const sup=support(u,t),pen=seaPen(u),ra=d6(),rd=d6();
+  const sup=support(u,t),pen=th.isl==='KM'?0:seaPen(u),ra=d6(),rd=d6(); // 金馬離岸很近，沒有一般的搶灘懲罰
   const A=effAtk(u)+sup+pen+ra, D=effDef(t)+terrDef(th)+rd;
   const diff=A-D;
   let res,la=0,ld=0;
@@ -917,6 +972,7 @@ function attack(u,t){
   else if(diff===0){la=1;ld=1;res='雙方各失 1 步';}else if(diff>=-3){la=1;res='攻擊方失 1 步';}else{la=2;res='攻擊方失 2 步';}
   log((pen?'搶灘突擊：':'')+uname(u)+' 攻擊 '+hname(th)+' 的 '+TYPES[t.type].n+'：'+A+' 對 '+D+' → '+res);
   fxq({t:'atk',from:[u.c,u.r],to:[t.c,t.r],hit:ld>0,sea:atSea(u),tsea:atSea(t)});if(!ld)fxq({t:'txt',at:[t.c,t.r],s:'擋住',col:'def'});
+  if(th.isl==='KM')S.km=S.km||{loss:0,back:false};if(th.isl==='KM')S.km.loss+=la+ld;
   u.acted=true;u.moved=true;
   const tDead=ld?damage(t,ld):false;
   const uDead=la?damage(u,la):false;
@@ -924,6 +980,7 @@ function attack(u,t){
     const can=(atSea(u)?validLanding(u,th):true)&&unitsAt(th.k).every(isShip);
     if(can){unitsAt(th.k).filter(isShip).forEach(x=>damage(x,x.hp,'港口失守'));u.c=th.c;u.r=th.r;claim(u.side,th);log(TYPES[u.type].n+' 推進佔領 '+hname(th));}
   }
+  if(th.isl==='KM'&&S.km&&S.km.loss>=8&&!S.km.back){S.km.back=true;log('金馬戰事造成重大傷亡，國際輿論強烈反彈、台灣民心凝聚。');setLevel('US',Math.min(3,S.fx.lv.US+1),'金馬強攻');S.mods.moraleHigh=true;}
   checkInstant();
 }
 // 航艦的點防禦：自身加附近護航艦；來襲飛彈超過防禦量就形成飽和攻擊（超出 3 枚必中）
@@ -990,10 +1047,14 @@ function verdict(n,final){
     :{s:'def',t:'守方勝利',d:'攻方三項條件全部落空；雖有少數部隊上岸，但無法站穩，登陸作戰失敗。'};
 }
 // 代價調整後的戰略評價：勝利不等於划算
-function strategicTag(v){
+const kmIsland=id=>{const hs=Object.values(TER).filter(h=>h.kmId===id);let a=false,d=false;for(const h of hs)for(const u of unitsAt(h.k)){if(isShip(u))continue;if(u.side==='atk')a=true;else d=true;}return a&&!d;};
+const kmTaken=()=>kmIsland('kinmen')&&kmIsland('matsu');
+function strategicTag(v,lim){
   const c=costSummary(),civ=c.civ.TW,milA=c.mil.atk.n,mkt=c.mkt,pd=Object.keys(S.portDown||{}).length;
   const lines=[];let tag='';
-  if(v.s==='def'){
+  if(lim){lines.push('攻方以有限的代價拿下金門與馬祖，但沒有達成登陸台灣本島的主要目標。');}
+  else if(v.s==='def'&&S.km&&S.km.back){tag='';lines.push('攻方強攻金馬造成重大傷亡，反而招致國際反彈、讓台灣民心凝聚，金馬的戰果得不償失。');}
+  else if(v.s==='def'){
     if(civ>=30000||pd>=2){tag='（慘勝）';lines.push('守方雖然守住，但台灣平民傷亡約 '+Math.round(civ/1000)+' 千人'+(pd?'、'+pd+' 個港口遭自行破壞':'')+'，戰後重建與經濟復原代價沉重。');}
     else lines.push('守方在可承受的代價下守住台灣。');
   }else if(v.s==='atk'){
@@ -1013,13 +1074,15 @@ function endGame(early,side,label){
   const cs=conditions(true);const n=cs.filter(c=>c.atk).length;
   let v=early?{s:side,t:label||(side==='atk'?'攻方勝利':'守方勝利'),d:early}:verdict(n,true);
   if(S.nuke&&v.s==='atk'){v={s:'atk',t:v.t+'（核武代價）',d:v.d+' 攻方使用了戰術核武，美日全面介入、全球經濟重創、國際孤立，這是無法持續的勝利。'};}
-  {const st=strategicTag(v);v={s:v.s,t:v.t+(/（.*代價）|慘勝/.test(v.t)?'':st.tag),d:v.d+' '+st.text};}
+  let lim=false;
+  if(v.s==='def'&&kmTaken()&&!(S.km&&S.km.back)){lim=true;v={s:'atk',t:'攻方有限勝利（金馬）',d:'台灣本島攻勢失敗（'+v.t+'），但攻方拿下金門與馬祖，保住有限勝利；政治上不致空手而歸。'};}
+  {const st=strategicTag(v,lim);v={s:v.s,t:v.t+(/（.*代價）|慘勝/.test(v.t)||lim?'':st.tag),d:v.d+' '+st.text};}
   log('作戰結束：'+v.t);
-  S.result={side:v.s,n,early:!!early};
+  S.result={side:v.s,n,early:!!early,limited:lim};
   const chips=cs.map(c=>'<div class="fc '+(c.atk?'ok':'no')+'"><span class="fi">'+(c.atk?'✓':'✕')+'</span><div><b>'+c.title+'</b><span class="dd">'+c.now+'</span></div></div>').join('');
   const html='<div class="finw"><div class="fin-head"><div class="eyebrow">'+(early?'提前結束 · 第 '+S.turn+' 回合':'第 '+S.T+' 回合 判定')+'</div>'+
     '<h3 class="verdict '+v.s+'">'+v.t+'</h3><p class="fvd">'+v.d+'</p>'+
-    '<div class="fin-conds">'+chips+'</div><div class="fin-score">攻方達成 <b>'+n+'</b> / 3 項（需 2 項以上獲勝）　<span class="dd">參考：制空 '+AIRCTL[S.airCtl||'mid']+'、攻方護航艦隊 '+S.pools.plaNavy+'、航艦 '+S.pools.plaCV+'</span></div></div>'+
+    '<div class="fin-conds">'+chips+'</div><div class="fin-score">攻方達成 <b>'+n+'</b> / 3 項（需 2 項以上獲勝）　<span class="dd">參考：制空 '+AIRCTL[S.airCtl||'mid']+'、攻方護航艦隊 '+S.pools.plaNavy+'、航艦 '+S.pools.plaCV+'；金門 '+(kmIsland('kinmen')?'已攻占':'守方控制')+'、馬祖 '+(kmIsland('matsu')?'已攻占':'守方控制')+'</span></div></div>'+
     '<div class="fin-body"><div class="fin-tools"><button class="lnk" id="accAll">全部展開</button><button class="lnk" id="accNone">全部收合</button></div>'+
     afterAction(v.s)+(S.sim||S.video?timelineHTML():'')+newsRecap()+'</div>'+
     '<div class="fin-foot"><button id="btnAgain">'+(S.video?'再模擬一次':'重新開局')+'</button><button class="ghost" id="btnClose">'+(S.video?'回頭看影片':'檢視地圖')+'</button>'+(S.video?'<button class="ghost" id="btnBack">回到設定</button><button class="ghost" id="btnStats2">跑 100 次統計</button>':'')+'</div></div>';
@@ -1055,15 +1118,15 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 
 /* ---------- theater: pools, foreign forces ---------- */
 // baseline (2026) force pools, abstract points built from public reporting; see DATA.md
-const POOL0={plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:8,rf:26,plaCM:5,plaLR:6,plaHS:3,rocAir:4,rocNavy:4,rocSub:0,rocAD:4,rocMsl:10,rocDrone:1,rocMine:1,rocAS:10};
+const POOL0={plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:8,rf:32,plaCM:5,plaLR:6,plaHS:3,rocAir:4,rocNavy:4,rocSub:0,rocAD:4,rocMsl:10,rocDrone:1,rocMine:1,rocAS:10};
 const ERA={
   '2026':{n:'2026 現況',d:'依 2025～2026 公開報導：台灣剛收到首批 F-16V、HIMARS 陸續到貨、雲峰尚未大量生產、火山布雷車尚未交付；共軍有約 250 具東風-26 發射器、東風-17 與 PCH-191 長程火箭，福建艦剛服役。',short:'2026 現況',pools:{},ssm:[],dfire:2},
-  '2027':{n:'2027（推估）',d:'火山布雷車 14 套預計到位（交付多次延後，最新報導為 2027 年）；福建艦達完整戰力；F-16V 持續交付、雲峰開始量產。',short:'2027',pools:{plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:8,rf:27,plaCM:5,plaLR:7,plaHS:3,rocAir:4,rocNavy:4,rocSub:0,rocAD:4,rocMsl:11,rocDrone:1,rocAS:12,rocMine:3},ssm:[],dfire:2},
-  '2028':{n:'2028（推估）',d:'假設預定交付到位：F-16V 66 架、HIMARS 與魚叉岸防增加、第一艘海鯤潛艦服役；共軍增加東風-26 旅與長程火箭。',short:'2028',pools:{plaAir:8,plaSub:4,plaCV:3,plaAD:6,plaNavy:9,rf:29,plaCM:6,plaLR:8,plaHS:4,rocAir:5,rocNavy:5,rocSub:1,rocAD:5,rocMsl:12,rocDrone:1,rocAS:14,rocMine:3},ssm:[],dfire:3},
-  '2029':{n:'2029（推估）',d:'特別預算（立法院縮減版）逐步採購：更多長程精準火力與防空，無人機與巡飛彈開始補上；共軍持續擴編。',short:'2029',pools:{plaAir:8,plaSub:4,plaCV:3,plaAD:7,plaNavy:9,rf:31,plaCM:6,plaLR:9,plaHS:4,rocAir:5,rocNavy:5,rocSub:1,rocAD:5,rocMsl:13,rocDrone:2,rocAS:16,rocMine:4},ssm:[],dfire:3},
-  '2030':{n:'2030（推估）',d:'假設特別預算與自製武器落實：多層防空、更多長程精準火力；共軍第四艘航艦在建、火箭軍擴編。',short:'2030',pools:{plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:10,rf:34,plaCM:6,plaLR:10,plaHS:5,rocAir:6,rocNavy:6,rocSub:1,rocAD:6,rocMsl:15,rocDrone:2,rocAS:18,rocMine:5},ssm:['taitung'],dfire:4},
-  '2031':{n:'2031（推估）',d:'NASAMS 合約預計 2031 年交付，防空明顯增強；海鯤潛艦增為 2 艘（計畫共 8 艘，進度不確定）。',short:'2031',pools:{plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:10,rf:37,plaCM:7,plaLR:11,plaHS:6,rocAir:6,rocNavy:6,rocSub:2,rocAD:7,rocMsl:16,rocDrone:3,rocAS:20,rocMine:5},ssm:['taitung'],dfire:4},
-  '2032':{n:'2032（推估）',d:'特別預算期程（2026～2033）接近尾聲，雙方都明顯成長；數值為推估，不確定性最高。',short:'2032',pools:{plaAir:8,plaSub:6,plaCV:4,plaAD:8,plaNavy:11,rf:39,plaCM:7,plaLR:12,plaHS:7,rocAir:6,rocNavy:6,rocSub:2,rocAD:7,rocMsl:17,rocDrone:3,rocAS:22,rocMine:6},ssm:['taitung','yunlin'],dfire:4}
+  '2027':{n:'2027（推估）',d:'火山布雷車 14 套預計到位（交付多次延後，最新報導為 2027 年）；福建艦達完整戰力；F-16V 持續交付、雲峰開始量產。',short:'2027',pools:{plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:8,rf:33,plaCM:5,plaLR:7,plaHS:3,rocAir:4,rocNavy:4,rocSub:0,rocAD:4,rocMsl:11,rocDrone:1,rocAS:12,rocMine:3},ssm:[],dfire:2},
+  '2028':{n:'2028（推估）',d:'假設預定交付到位：F-16V 66 架、HIMARS 與魚叉岸防增加、第一艘海鯤潛艦服役；共軍增加東風-26 旅與長程火箭。',short:'2028',pools:{plaAir:8,plaSub:4,plaCV:3,plaAD:6,plaNavy:9,rf:35,plaCM:6,plaLR:8,plaHS:4,rocAir:5,rocNavy:5,rocSub:1,rocAD:5,rocMsl:12,rocDrone:1,rocAS:14,rocMine:3},ssm:[],dfire:3},
+  '2029':{n:'2029（推估）',d:'特別預算（立法院縮減版）逐步採購：更多長程精準火力與防空，無人機與巡飛彈開始補上；共軍持續擴編。',short:'2029',pools:{plaAir:8,plaSub:4,plaCV:3,plaAD:7,plaNavy:9,rf:37,plaCM:6,plaLR:9,plaHS:4,rocAir:5,rocNavy:5,rocSub:1,rocAD:5,rocMsl:13,rocDrone:2,rocAS:16,rocMine:4},ssm:[],dfire:3},
+  '2030':{n:'2030（推估）',d:'假設特別預算與自製武器落實：多層防空、更多長程精準火力；共軍第四艘航艦在建、火箭軍擴編。',short:'2030',pools:{plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:10,rf:40,plaCM:6,plaLR:10,plaHS:5,rocAir:6,rocNavy:6,rocSub:1,rocAD:6,rocMsl:15,rocDrone:2,rocAS:18,rocMine:5},ssm:['taitung'],dfire:4},
+  '2031':{n:'2031（推估）',d:'NASAMS 合約預計 2031 年交付，防空明顯增強；海鯤潛艦增為 2 艘（計畫共 8 艘，進度不確定）。',short:'2031',pools:{plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:10,rf:43,plaCM:7,plaLR:11,plaHS:6,rocAir:6,rocNavy:6,rocSub:2,rocAD:7,rocMsl:16,rocDrone:3,rocAS:20,rocMine:5},ssm:['taitung'],dfire:4},
+  '2032':{n:'2032（推估）',d:'特別預算期程（2026～2033）接近尾聲，雙方都明顯成長；數值為推估，不確定性最高。',short:'2032',pools:{plaAir:8,plaSub:6,plaCV:4,plaAD:8,plaNavy:11,rf:45,plaCM:7,plaLR:12,plaHS:7,rocAir:6,rocNavy:6,rocSub:2,rocAD:7,rocMsl:17,rocDrone:3,rocAS:22,rocMine:6},ssm:['taitung','yunlin'],dfire:4}
 };
 function previewEra(){const e=ERA[S.era]||ERA['2026'];S.p0=Object.assign({},POOL0,e.pools);S.pools=Object.assign({},S.p0);S.dfireMax=e.dfire;}
 function applyEra(){
@@ -2042,7 +2105,7 @@ function newsRecap(){
 }
 
 /* ---------- turn flow ---------- */
-const ATK_REINF={2:[['amph','north'],['amph','central'],['arm']],3:[['mar','central'],['amph','north']],4:[['amph','north'],['amph','central'],['arm']],5:[['amph','north'],['amph','central'],['arm']]};
+const ATK_REINF={2:[['amph','north'],['amph','central'],['arm'],['mar','north']],3:[['mar','central'],['amph','north'],['amph','central'],['arm']],4:[['amph','north'],['amph','central'],['arm'],['amph','north']],5:[['amph','north'],['amph','central'],['arm'],['amph','central']],6:[['amph','north'],['amph','central'],['mar','central'],['arm']],7:[['amph','north'],['amph','central'],['arm'],['amph','north']],8:[['amph','north'],['amph','central'],['amph','central']]};
 const DEF_REINF={2:[SPOT.taipei,SPOT.taichung],3:[SPOT.taoyuan,SPOT.tainan],4:[SPOT.hsinchu,SPOT.kaohsiung]};
 function placeNear(k,filter){
   const base=TER[k];
@@ -2128,6 +2191,7 @@ function truceOptions(side){
       {id:'truce',label:'接受現況停戰',desc:'雙方停火，依目前控制的位置判定。',est:'結果：'+tv.t+'；成本與傷亡不再擴大',rec:rec==='truce'},
       {id:'retreat',label:'有限撤退、保存實力',desc:'撤回島上與海上兵力，不再擴大損失與國際壓力。',est:'結果：守方勝利；攻方損失止血',rec:false},
       {id:'reinforce',label:'增兵再搏',desc:'立即投入 2 個預備旅，本回合火力 +3。',est:'勝算約 '+clamp01(ol+9)+'%；成本與國際壓力上升',rec:rec==='reinforce'},
+      ...(kmTaken()?[]:[{id:'kinmen',label:'轉攻金馬（有限目標）',desc:'把部分兵力轉向金門、馬祖：投入 2 個兩棲預備旅並提供火力支援（本回合火力 +2）；拿下金馬時，即使本島失敗也可判「攻方有限勝利」。注意：強攻造成重大傷亡（約 8 步以上）會招致國際反彈，反而有反效果。',est:'金馬守軍很少，但共軍多半無視；強攻傷亡過大得不償失',rec:false}]),
       {id:'escalate',label:'提高賭注（升級）',desc:'擴大戰事：本回合火力 +3，美日參戰程度各 +1（若情境允許）。',est:'短期勝算約 '+clamp01(ol+12)+'%；但美日更快介入，全球股市再受衝擊',rec:false},
       {id:'nuke',label:'戰術核武',desc:'使用戰術核武打擊守軍：島上守軍大幅損失，但美日全面介入、全球經濟與國際孤立的代價極大，核禁忌被打破。',est:'短期戰果大，長期代價近乎無法承擔',rec:false}]};
   }
@@ -2151,7 +2215,7 @@ function askTruce(info){
 }
 function truceAuto(side,info){
   const ol=atkOutlook(),dl=defOutlook();let w;
-  if(side==='atk')w=ol<12?[['truce',18],['retreat',8],['reinforce',48],['escalate',24],['nuke',2]]:[['truce',8],['retreat',4],['reinforce',58],['escalate',29],['nuke',1]];
+  if(side==='atk')w=ol<12?[['truce',14],['retreat',6],['reinforce',44],['kinmen',0],['escalate',24],['nuke',2]]:[['truce',6],['retreat',3],['reinforce',58],['kinmen',0],['escalate',29],['nuke',1]];
   else{const bad=S.owner[TAIPEI]==='atk'&&PORTS.filter(k=>S.owner[k]==='atk').length>=2;w=bad?[['talks',50],['surrender',15],['resist',25],['seek',10]]:[['talks',25],['surrender',5],['resist',50],['seek',20]];}
   const id=wpick(w);return info.opts.find(o=>o.id===id)||info.opts[0];
 }
@@ -2174,6 +2238,10 @@ function applyTruce(side,o){
     addTurns(m.fireAdd,t,t,3);
     ['amph','arm'].forEach(ty=>{const h=ty==='arm'?placeNear(FK('4,4'),x=>x.isl==='CN'&&x.t==='port'):placeNear(FK('4,4'),x=>x.isl==='CN'&&x.coastal);if(h){S.units.push(mkUnit('atk',ty,h.k,{zone:ty==='arm'?null:'central'}));eff.push('增援 '+TYPES[ty].n+' 抵達 '+hname(h));}});
     S.cost.econ.CN+=0;eff.push('本回合火力 +3');
+  }else if(o.id==='kinmen'){
+    addTurns(m.fireAdd,t,t,2);
+    [['kinmen','2,9'],['matsu','3,3']].forEach(([z,k])=>{const h=placeNear(FK(k),x=>x.isl==='CN'&&x.coastal);if(h){S.units.push(mkUnit('atk','amph',h.k,{zone:z}));eff.push('增援 兩棲旅 抵達 '+hname(h)+'（目標：'+(z==='kinmen'?'金門':'馬祖')+'）');}});
+    eff.push('本回合火力 +2');
   }else if(o.id==='escalate'){
     addTurns(m.fireAdd,t,t,3);setLevel('JP',Math.min(2,S.fx.lv.JP+1),'攻方升級');setLevel('US',Math.min(3,S.fx.lv.US+1),'攻方升級');
     S.cost.mkt=Math.max(-35,S.cost.mkt-2);eff.push('本回合火力 +3','美日參戰程度升高（若情境允許）');
@@ -2216,7 +2284,7 @@ async function beginPhase(side){
     airBattle();S.fire=computeFire();doRetaliation();sweepMines();
     (ATK_REINF[S.turn]||[]).forEach(([t,z])=>{
       const h=t==='arm'?placeNear(FK('4,4'),x=>x.isl==='CN'&&x.t==='port'):placeNear(FK('4,4'),x=>x.isl==='CN'&&x.coastal);
-      if(h){if(!z){z=S.zoneFlip++%2?'central':'north';}S.units.push(mkUnit('atk',t,h.k,{zone:z}));log('攻方增援 '+TYPES[t].n+' 抵達 '+hname(h));}
+      if(h){if(!z){const ax=(S.plan&&S.plan.axes)||['north','central'];z=ax[S.zoneFlip++%ax.length];}S.units.push(mkUnit('atk',t,h.k,{zone:z}));log('攻方增援 '+TYPES[t].n+' 抵達 '+hname(h));}
     });
     log('第 '+S.turn+' 回合開始，天候'+S.weather.n+'（海上移動 '+S.weather.sea+'，火力 '+S.fire+' 點'+(S.weather.air?'':'，無法空降')+'）');
   } else {
@@ -2264,7 +2332,9 @@ const OBJD={};OBJ.forEach(k=>OBJD[k]=landDist([k]));
 function est(u,t){return effAtk(u)+support(u,t)+seaPen(u)-(effDef(t)+terrDef(hexOf(t)))+(TYPES[t.type].hp-t.hp)*.5;}
 async function aiTryAttack(u,thr,focus){
   if(!alive(u)||S.over)return false;
-  const ts=targets(u);if(!ts.length)return false;
+  let ts=targets(u);
+  if(u.side==='atk'&&u.zone!=='kinmen'&&u.zone!=='matsu')ts=ts.filter(t=>hexOf(t).isl!=='KM'); // 共軍無視金馬
+  if(!ts.length)return false;
   let best=null,bs=-99,braw=-99;
   for(const t of ts){const e=est(u,t),f=focus&&focus.includes(hexOf(t).k),adj=e+(f?3:0);if(adj>bs){bs=adj;best=t;braw=e+(f?2:0);}}
   if(braw>=thr){attack(u,best);render();await sleep(380);return true;}
@@ -2279,7 +2349,31 @@ async function runAI(side){
   if(!S.over){await sleep(250);endPhase();}
 }
 // Attacker AI picks one landing zone for the whole game so the force lands together instead of piecemeal.
+
+// 攻擊計畫（可多選軸線）：集中兵力有突擊效果，軸線越多越分散
+function applyPlan(){
+  const N=$('#optAxN').value==='1',C=$('#optAxC').value==='1',P=$('#optAxP').value==='1',K=$('#optAxK').value==='1',m=S.mods;
+  let isl=[];if(N)isl.push('north');if(C)isl.push('central');
+  if(!isl.length)isl=[aiPlan().zone];
+  S.plan={zone:isl[0],axes:isl,penghu:P,kinmen:K};
+  // 集中到單一軸線：所有本島登陸單位改派該軸線；兩條軸線則維持北、中各一半
+  if(isl.length===1)S.units.forEach(u=>{if(u.side==='atk'&&(u.zone==='north'||u.zone==='central'))u.zone=isl[0];});
+  if(!P)S.units.forEach(u=>{if(u.side==='atk'&&u.zone==='penghu')u.zone=isl[0];});
+  const load=isl.length+(P?.5:0)+(K?1:0);
+  const out=[];
+  if(K){
+    // 金馬抽調兵力：中部第一波拿走 2 個兩棲旅，另編金馬突擊群
+    let cut=0;S.units=S.units.filter(u=>{if(u.side==='atk'&&cut<2&&u.type==='amph'&&u.zone===isl[0]){cut++;return false;}return true;});
+    [['amph','2,9','kinmen'],['amph','2,8','kinmen'],['mar','2,10','kinmen'],['amph','1,9','kinmen'],['amph','3,3','matsu'],['mar','3,2','matsu']].forEach(([t,k,z])=>{const h=placeNear(FK(k),x=>x.isl==='CN'&&x.coastal);if(h)S.units.push(mkUnit('atk',t,h.k,{zone:z}));});
+    out.push('抽調 2 個兩棲旅，另編金馬突擊群');
+  }
+  if(load<=1.5){addTurns(m.atkAtk,1,3,1);out.push('集中突擊：第 1～3 回合攻方攻擊 +1');}
+  else if(load>=3.5){addTurns(m.atkAtk,1,3,-1);out.push('兵力分散於多條軸線：第 1～3 回合攻方攻擊 −1');}
+  else out.push('兩條軸線並進：沒有集中突擊的加成');
+  log('攻擊計畫：'+isl.map(z=>z==='north'?'北部':'中部').join('＋')+(P?'＋澎湖':'')+(K?'＋金馬':'')+'。'+out.join('；'));
+}
 function aiPlan(){
+  if(S.plan&&S.plan.axes)return S.plan;
   if(S.plan)return S.plan;
   let best='central',bs=1e9;
   for(const z of ['north','central']){
@@ -2313,6 +2407,7 @@ function pickStrike(){
   let best=null,bs=-1;
   for(const d of S.units){
     if(d.side!=='def')continue;const h=hexOf(d);
+    if(h.isl==='KM'&&!(S.plan&&S.plan.kinmen))continue; // 共軍預設無視金馬
     let s=Math.random();
     if(d.type==='ssm')s+=9;else if(d.type==='ff')s-=3;
     if(atkLand.some(a=>hd(hexOf(a),h)<=2))s+=7+(TYPES[d.type].hp-d.hp);
@@ -2347,6 +2442,7 @@ async function aiAtkUnit(u){
     if(best){doMove(u,best,'drop');render();await sleep(380);}
     return;
   }
+  if(h.isl==='KM'){await aiTryAttack(u,0);return;} // 已登上金馬：就地作戰
   if(h.isl==='TW'||h.isl==='PH'){
     if(await aiTryAttack(u,0))return;
     if(h.isl==='PH')return;
@@ -2369,12 +2465,12 @@ async function aiAtkUnit(u){
   const rc=reach(u);
   let best=null,bs=1e9;
   for(const [k,v] of rc){
-    if(v.kind!=='land')continue;const md=minD(k,goals);if(md>6)continue;
+    if(v.kind!=='land')continue;if(TER[k].isl==='KM'&&u.zone!=='kinmen'&&u.zone!=='matsu')continue;const md=minD(k,goals);if(md>6)continue;
     const s=md+enemyAdj(k,'atk')*1.2-Math.min(friendAdj(k,'atk'),2)*.8+Math.random()*.3;if(s<bs){bs=s;best=k;}
   }
   if(best){doMove(u,best,'land');render();await sleep(340);return;}
   if(h.t==='sea'&&await aiTryAttack(u,0))return;
-  if(h.isl==='CN'&&u.type!=='arm'&&S.turn>1&&S.turn<S.T-1){
+  if(h.isl==='CN'&&u.type!=='arm'&&u.zone!=='kinmen'&&u.zone!=='matsu'&&S.turn>1&&S.turn<S.T-1){
     // hold reinforcements on the coast until at least two can cross together
     const ready=S.units.filter(x=>x.side==='atk'&&(x.type==='amph'||x.type==='mar')&&hexOf(x).isl==='CN'&&!x.moved).length;
     const afloat=S.units.some(x=>x.side==='atk'&&atSea(x)&&!isShip(x));
@@ -2491,12 +2587,13 @@ const FAR={};
 function farSet(c,r,t,name,tag,who){FAR[K(c,r)]={c,r,t,name:name||null,tag:tag||null,who:who||null};}
 (function(){
   // 大陸沿海延伸（北側與西側、南側）
-  const northCoast={'-3':5,'-4':5,'-5':6,'-6':6};
+  const northCoast={'-3':8,'-4':9,'-5':9,'-6':10};
   for(const r in northCoast)for(let c=-4;c<=northCoast[r];c++)farSet(c,+r,'main');
   for(let r=-2;r<OR1;r++)for(let c=-4;c<OC0;c++)farSet(c,r,'main');
   const south={16:0,17:-1,18:-2,19:-3,20:-4};
   for(const r in south)for(let c=-4;c<=south[r];c++)farSet(c,+r,'main');
-  farSet(-3,-4,'air','黃山','火箭軍','atk'); farSet(-3,11,'air','梅州','火箭軍','atk');
+  farSet(-3,-4,'air','黃山','火箭軍','atk'); farSet(-3,4,'air','梅州','火箭軍','atk');
+  farSet(8,-5,'air','櫟社','東部戰區','atk'); farSet(7,-6,'air','路橋','東部戰區','atk'); farSet(5,-6,'air','龍灣','東部戰區','atk'); farSet(-1,-3,'air','武夷山','東部戰區','atk');
   // 舟山
   farSet(7,-4,'port','舟山','東部戰區','atk'); farSet(8,-4,'plain'); farSet(7,-3,'plain');
   // 先島群島（日本）
@@ -2543,35 +2640,43 @@ const ORG={okinawa:[[26,-1],[27,-1]],sakishima:[[20,3],[18,5]],sasebo:[[27,-6]],
   pla:[[2,2],[2,4],[2,6],[-3,-4],[-3,11],[7,-4]],plaCV:[[17,7]],roc:[[13,6],[10,10],[12,1],[9,6]]};
 const orgPick=k=>{const a=ORG[k];return a?a[Math.floor(Math.random()*a.length)].slice():null;};
 function farKeyInGrid(c,r){return c>=OC0&&c<OC1&&r>=OR0&&r<OR1;}
+const TERF=(c,r)=>TER[K(c,r)];
+const fineCenter=(c,r)=>center(c,r),FINE={R,c0:COL0,c1:COL1,r0:ROW0,r1:ROW1};
 function buildFar(){
-  // 外圍示意區使用舊座標系（粗格），最後整組縮放 KS 後與細格地圖對齊
+  // 外圍示意區：地形一律用與遊戲格相同的細格；標示、投射區仍用舊座標系（粗格）再整組縮放 KS 對齊
   const center=oCenter,VBW=OVBW,VBH=OVBH,W=OW,R=OR,COL0=OC0,COL1=OC1,ROW0=OR0,ROW1=OR1,MX0=oMX0,MX1=oMX1,MY0=oMY0,MY1=oMY1,EVBW=OVBW+oMX0+oMX1,EVBH=OVBH+oMY0+oMY1,TER=TERC;
-  const tiles=[];
-  for(let r=ROW0-5;r<=ROW1+10;r++)for(let c=COL0-5;c<=COL1+18;c++){
-    if(farKeyInGrid(c,r))continue;
-    const [x,y]=center(c,r);
-    if(x<-MX0-W||x>VBW+MX1+W||y<-MY0-R||y>VBH+MY1+R)continue;
-    tiles.push([c,r,x,y,FAR[K(c,r)]||null]);
+  const RF=FINE.R,fx0=-oMX0*KS-RF*2,fx1=(OVBW+oMX1)*KS+RF*2,fy0=-oMY0*KS-RF*2,fy1=(OVBH+oMY1)*KS+RF*2;
+  const POLY=[[112,31.5],[122.3,31.5],[122.0,30.8],[122.2,30.0],[121.9,29.6],[121.8,29.0],[121.5,28.5],[120.9,27.9],[120.5,27.4],[120.35,26.8],[119.9,26.5],[119.62,26.25],[119.68,25.95],[119.8,25.62],[119.6,25.35],[119.15,25.25],[118.95,24.98],[118.65,24.62],[118.2,24.45],[117.95,24.3],[117.5,23.7],[117.0,23.4],[116.7,23.2],[116.0,22.85],[115.4,22.7],[114.9,22.3],[114.6,22.1],[113.8,22.3],[112,22.3]];
+  const inPoly=(x,y,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;};
+  const farL=Object.values(FAR).filter(f=>f.t!=='main').map(f=>{const q=oCenter(f.c,f.r);return [q[0]*KS,q[1]*KS,f];});
+  const fine=new Map();
+  for(let r=-60;r<=90;r++)for(let c=-70;c<=110;c++){
+    if(c>=FINE.c0&&c<FINE.c1&&r>=FINE.r0&&r<FINE.r1)continue;
+    const [x,y]=fineCenter(c,r);if(x<fx0||x>fx1||y<fy0||y>fy1)continue;
+    const [lon,lat]=rcToLL(c,r);let t='sea',name=null;
+    if(inPoly(lon,lat,POLY))t='main';
+    else for(const [px,py,f] of farL){if(Math.hypot(x-px,y-py)<=OW*KS*.52){t=f.t==='main'?'main':'plain';break;}}
+    fine.set(K(c,r),{c,r,x,y,t});
   }
-  // shallow-water shading: distance to any land (grid or far)
-  const landSet=new Set();
-  Object.values(TER).forEach(h=>{if(isLand(h))landSet.add(K(h.c,h.r));});
-  Object.values(FAR).forEach(f=>landSet.add(K(f.c,f.r)));
+  // 每個有名稱的外圍地點：最近的細格負責點選
+  const clickOf={};
+  for(const [px,py,f] of farL){if(!(f.name&&FARINFO[f.name]))continue;let best=null,bd=1e9;for(const h of fine.values()){if(h.t==='sea')continue;const d=Math.hypot(h.x-px,h.y-py);if(d<bd){bd=d;best=h;}}if(best)clickOf[K(best.c,best.r)]=f.name;}
   const nb=(c,r)=>((r&1)?[[1,0],[1,-1],[0,-1],[-1,0],[0,1],[1,1]]:[[1,0],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1]]).map(([a,b])=>[c+a,r+b]);
-  const dist=new Map();let q=[];landSet.forEach(k=>{dist.set(k,0);const [c,r]=k.split(',').map(Number);q.push([c,r]);});
+  const dist=new Map();let q=[];
+  fine.forEach(h=>{if(h.t!=='sea'){dist.set(K(h.c,h.r),0);q.push([h.c,h.r]);}});
+  Object.values(TERC).forEach(()=>{});
+  // 遊戲格內的陸地也算（讓外圍緊鄰的海格有淺水色）
+  for(let r=FINE.r0;r<FINE.r1;r++)for(let c=FINE.c0;c<FINE.c1;c++){const h=TERF(c,r);if(h&&h.t!=='sea'){dist.set(K(c,r),0);q.push([c,r]);}}
   while(q.length){const [c,r]=q.shift(),d=dist.get(K(c,r));if(d>=3)continue;for(const [a,b] of nb(c,r)){const k=K(a,b);if(!dist.has(k)){dist.set(k,d+1);q.push([a,b]);}}}
-  let o='<rect x="'+(-MX0-10)+'" y="'+(-MY0-10)+'" width="'+(EVBW+20).toFixed(0)+'" height="'+(EVBH+20).toFixed(0)+'" fill="url(#gSea)"/><g class="far">';
-  let wi=0;
-  for(const [c,r,x,y,f] of tiles){
-    if(f){
-      const key=f.t==='main'?'main':'plain';
-      o+='<polygon class="tl-far'+(f.name&&FARINFO[f.name]?' fclick':'')+'" fill="url(#gt-'+key+')" stroke="var(--land-edge)" stroke-width=".6" points="'+hexPts(x,y,R)+'"'+(f.name&&FARINFO[f.name]?' data-far="'+f.name+'"':'')+'/>';
-    }else{
-      const d=Math.min(3,dist.get(K(c,r))||3);
-      o+='<polygon class="tl-sea d'+d+'" points="'+hexPts(x,y,R)+'"/>';
-      if(d>=2&&(c+r)%2===0)o+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(x-9)+' '+(y+2)+'q4.5 -4 9 0t9 0"/>';
-    }
+  let fineSvg='';let wi=0;
+  for(const h of fine.values()){
+    if(h.t==='sea'){const d=Math.min(3,dist.get(K(h.c,h.r))||3);fineSvg+='<polygon class="tl-sea d'+d+'" points="'+hexPts(h.x,h.y,RF)+'"/>';
+      if(d>=2&&(h.c+h.r)%2===0)fineSvg+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0"/>';}
+    else{const nm=clickOf[K(h.c,h.r)];fineSvg+='<polygon class="tl-far'+(nm?' fclick':'')+'" fill="url(#gt-'+(h.t==='main'?'main':'plain')+')" stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'"'+(nm?' data-far="'+nm+'"':'')+'/>';}
   }
+  const bg='<rect x="'+(-oMX0*KS-10)+'" y="'+(-oMY0*KS-10)+'" width="'+((OVBW+oMX0+oMX1)*KS+20).toFixed(0)+'" height="'+((OVBH+oMY0+oMY1)*KS+20).toFixed(0)+'" fill="url(#gSea)"/>';
+  const tiles=Object.values(FAR).filter(f=>f.name).map(f=>{const [x,y]=oCenter(f.c,f.r);return [f.c,f.r,x,y,f];});
+  let o='<g class="far">';
   const col={atk:'var(--atk)',jp:'var(--jp)',us:'var(--us)'};
   for(const [c,r,x,y,f] of tiles){
     if(!f||!f.name)continue;
@@ -2588,7 +2693,7 @@ function buildFar(){
   const T=(c,r,t,sz)=>{const [x,y]=center(c,r);return '<text class="big" font-size="'+(sz||12)+'" x="'+x+'" y="'+y+'" text-anchor="middle">'+t+'</text>';};
   o+=T(23,8,'太平洋',13)+T(5,19,'南海',13)+T(15,14,'呂宋海峽',11)+T(14,-3,'東海',13);
   o+='<text class="far-tag" x="'+(VBW-6)+'" y="-6" text-anchor="end" fill="var(--muted)" style="text-anchor:end">▲ 虛線內為遊戲格；外圍僅為背景（可點選查看）</text></g><rect class="playbox" x="0" y="0" width="'+VBW.toFixed(1)+'" height="'+VBH.toFixed(1)+'" rx="6"/>';
-  $('#gX').innerHTML='<g transform="scale('+KS+')">'+o+'</g>';
+  $('#gX').innerHTML=bg+fineSvg+'<g transform="scale('+KS+')">'+o+'</g>';
 }
 function buildStatic(){
   const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+
@@ -2921,6 +3026,7 @@ async function simRun(quiet){
   REC.frames=[];REC.prev=null;REC.prevN=LOGN;REC.final=null;REC.closed=false;REC.quiet=!!quiet;FXQ.length=0;
   applyEra();applyFxScenario();
   const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));
+  applyPlan();
   S.lastSnap=snap();log('純模擬開始。判定回合：第 '+S.T+' 回合。');
   if(!quiet)recordFrame();
   const done=new Promise(r=>{REC.resolve=r;});
@@ -3011,7 +3117,7 @@ function collectRun(){
   S.events.forEach(e=>{if(e.choice)ev[e.id]=e.choice;});
   const src=(side)=>{const o={TW:0,US:0,JP:0,GND:0,OTH:0};S.hits.forEach(h=>{if(h.side!==side)return;const w=h.why,f=S.fx.units.find(x=>x.n===w);
     if(f)o[f.c==='US'?'US':'JP']+=h.n;else if(/反艦飛彈|守方|無人機|飽和|海空攻擊/.test(w))o.TW+=h.n;else if(w==='地面戰鬥'||w==='空降損失')o.GND+=h.n;else o.OTH+=h.n;});return o;};
-  return {srcA:src('atk'),srcD:src('def'),win:R.side==='atk',draw:R.side==='draw',n:R.n,early:!!R.early,tp:cs[0].atk,pt:cs[1].atk,fo:cs[2].atk,milA:c.mil.atk.n,milD:c.mil.def.n,civ:c.civ.TW,mkt:c.mkt,us:S.fx.lv.US,usPost:usIdx(),usRet:S.us.hist.some(h=>h.retreat),ev};
+  return {km:kmTaken(),k1:kmIsland('kinmen'),k2:kmIsland('matsu'),srcA:src('atk'),srcD:src('def'),lim:!!R.limited,win:R.side==='atk'&&!R.limited,draw:R.side==='draw',n:R.n,early:!!R.early,tp:cs[0].atk,pt:cs[1].atk,fo:cs[2].atk,milA:c.mil.atk.n,milD:c.mil.def.n,civ:c.civ.TW,mkt:c.mkt,us:S.fx.lv.US,usPost:usIdx(),usRet:S.us.hist.some(h=>h.retreat),ev};
 }
 function statBar(label,p,cls){return '<div class="sbar"><span>'+label+'</span><i><em class="'+(cls||'')+'" style="width:'+p+'%"></em></i><b>'+p+'%</b></div>';}
 function statsHTML(rows){
@@ -3029,6 +3135,7 @@ function statsHTML(rows){
   const takeaways=[];
   takeaways.push(W/N>=.6?'這組設定對攻方有利：約 '+pct(W,N)+'% 的局攻方達成勝利條件。':W/N<=.25?'這組設定對守方有利：攻方只有約 '+pct(W,N)+'% 的局達成勝利條件。':'這組設定雙方互有勝負：攻方約 '+pct(W,N)+'% 的局獲勝。');
   const cond=[['首都台北',rows.filter(r=>r.tp).length],['主要港口',rows.filter(r=>r.pt).length],['島上戰力',rows.filter(r=>r.fo).length]].sort((a,b)=>a[1]-b[1]);
+  takeaways.push('金門與馬祖都被攻方攻占的局約 '+pct(rows.filter(r=>r.km).length,N)+'%（金門 '+pct(rows.filter(r=>r.k1).length,N)+'%、馬祖 '+pct(rows.filter(r=>r.k2).length,N)+'%）。');
   {const av=(side,k)=>rows.reduce((x,r)=>x+r[side][k],0)/N,f1=v=>v.toFixed(1);
    takeaways.push('損失來源（每局平均步數）：攻方共 '+f1(['TW','US','JP','GND','OTH'].reduce((x,k)=>x+av('srcA',k),0))+' 步，其中台灣反艦飛彈與海空軍 '+f1(av('srcA','TW'))+'、美軍 '+f1(av('srcA','US'))+'、日本 '+f1(av('srcA','JP'))+'、地面戰鬥 '+f1(av('srcA','GND'))+'；守方共 '+f1(['TW','US','JP','GND','OTH'].reduce((x,k)=>x+av('srcD',k),0))+' 步，其中共軍火力打擊等 '+f1(av('srcD','OTH')+av('srcD','TW'))+'、地面戰鬥 '+f1(av('srcD','GND'))+'。');}
   takeaways.push('三項條件中最難達成的是「'+cond[0][0]+'」（'+pct(cond[0][1],N)+'%），最容易的是「'+cond[2][0]+'」（'+pct(cond[2][1],N)+'%）。');
@@ -3039,7 +3146,7 @@ function statsHTML(rows){
   const ret=rows.filter(r=>r.usRet),eng=rows.filter(r=>!r.usRet&&r.us>=2);
   if(ret.length>=5)takeaways.push('美軍因傷亡升高而退縮的有 '+ret.length+' 局（'+pct(ret.length,N)+'%），這些局攻方勝率約 '+pct(ret.filter(r=>r.win).length,ret.length)+'%'+(eng.length>=5?'；參戰且未退縮的局約 '+pct(eng.filter(r=>r.win).length,eng.length)+'%':'')+'。');
   const usFull=rows.filter(r=>r.us>=3);if(usFull.length>=8&&usFull.length<N-7)takeaways.push('美國全面參戰時攻方勝率約 '+pct(usFull.filter(r=>r.win).length,usFull.length)+'%，其他情況約 '+pct(rows.filter(r=>r.us<3&&r.win).length,rows.filter(r=>r.us<3).length)+'%。');
-  const outs='<h3>攻方勝率 '+pct(W,N)+'%　<span class="dd">僵局 '+pct(rows.filter(r=>r.draw).length,N)+'%・守方勝 '+pct(N-W-rows.filter(r=>r.draw).length,N)+'%</span></h3>';
+  const outs='<h3>攻方勝率 '+pct(W,N)+'%　<span class="dd">僵局 '+pct(rows.filter(r=>r.draw).length,N)+'%・攻方有限勝利（金馬）'+pct(rows.filter(r=>r.lim).length,N)+'%・守方勝 '+pct(N-W-rows.filter(r=>r.draw).length-rows.filter(r=>r.lim).length,N)+'%</span></h3>';
   const costT='<table class="ctable"><tbody><tr><td>攻方軍人傷亡</td><td>'+range('milA',v=>ppl(v))+'</td></tr><tr><td>守方軍人傷亡</td><td>'+range('milD',v=>ppl(v))+'</td></tr><tr><td>台灣平民傷亡</td><td>'+range('civ',v=>ppl(v))+'</td></tr><tr><td>全球股市</td><td>'+range('mkt',v=>v.toFixed(1)+'%')+'</td></tr></tbody></table>';
   const usT='<table class="ctable"><tbody><tr><td colspan="3"><b>最高參戰程度</b></td></tr>'+us.sort((a,b)=>LV.US.indexOf(a.k)-LV.US.indexOf(b.k)).map(x=>'<tr><td>'+x.k+'</td><td>'+x.n+' 局</td><td>攻方勝率 '+pct(x.w,x.n)+'%'+(x.n<8?'<span class="dd">（樣本少）</span>':'')+'</td></tr>').join('')+'<tr><td colspan="3"><b>結束時的立場</b></td></tr>'+up.sort((a,b)=>b.n-a.n).map(x=>'<tr><td>'+x.k+'</td><td>'+x.n+' 局</td><td>攻方勝率 '+pct(x.w,x.n)+'%'+(x.n<8?'<span class="dd">（樣本少）</span>':'')+'</td></tr>').join('')+'</tbody></table>';
   return '<div class="finw"><div class="fin-head"><div class="eyebrow">統計結果 · '+N+' 局</div>'+outs+
@@ -3110,8 +3217,8 @@ function readSetup(){
   S.ctrl=S.sim||S.video?{atk:'ai',def:'ai'}:{atk:sd==='atk'||sd==='both'?'human':'ai',def:sd==='def'||sd==='both'?'human':'ai'};
   S.newsOn=$('#optNews').value==='1';S.fxScen=$('#optFx').value;
 }
-['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optNews','#optFx'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
-const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optFx:'dice',optNews:'1'};
+['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optNews','#optFx','#optAxN','#optAxC','#optAxP','#optAxK'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
+const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optFx:'dice',optNews:'1',optAxN:'0',optAxC:'0',optAxP:'1',optAxK:'0'};
 $('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
 // one-off start with the default settings; the saved setup choices are left as they were
 $('#btnStats').onclick=()=>{readSetup();runStats(+$('#statN').value);};
@@ -3125,7 +3232,7 @@ function startGame(){
   readSetup();if(S.video){startVideo();return;}
   S.started=true;setTab('cmd');
   applyEra();applyFxScenario();
-  if(!S.sim){const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));}
+  if(!S.sim){const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));applyPlan();}
   S.lastSnap=snap();
   log((S.sim?'推演開始':'作戰開始')+'。判定回合：第 '+S.T+' 回合。');beginPhase('atk');
 }
@@ -3151,7 +3258,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-02.31';
+const VERSION='2026-11-03.02';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此重新整理（目前對局會結束）':'🔔 有新版本，點此重新整理';}
@@ -3183,7 +3290,11 @@ const SETUP_PAGES=[
   {sel:'optT',q:'幾回合後判定？',opts:{'6':['第 6 回合','約 3 天。時間很緊，攻方多半來不及站穩。'],'8':['第 8 回合','約 4 天。基準設定。'],'10':['第 10 回合','約 5 天。攻方有較多時間奪港。'],'12':['第 12 回合','約 6 天。長期戰，攻方較有機會站穩。']}},
   {sel:'optEra',q:'兵力年代（年份）',opts:Object.fromEntries(Object.entries(ERA).map(([y,e])=>[y,[e.n,e.d,e.short]]))}]},
  {t:'戰前集結',s:'集結',d:'渡海前要先集結船團與兵員，很難完全隱藏。集結越公開，台灣與美日越早準備。',fields:[
-  {sel:'optBuild',q:'攻方怎麼集結？',when:()=>!isSim(),opts:{open:['公開全面集結','兵力最多（+2 兩棲旅、+1 重型旅、護航艦隊 +2），但守方提早動員、美國航艦已在附近、各國參戰擲骰 +1。'],exercise:['演習掩護','以軍演名義集結，雙方都只有部分預警。基準設定。'],surprise:['戰略突襲','兵力少一截（−2 兩棲旅、−1 重型旅），換取守方動員延後、各國參戰擲骰 −1。']}}],
+  {sel:'optBuild',q:'攻方怎麼集結？',when:()=>!isSim(),opts:{open:['公開全面集結','兵力最多（+2 兩棲旅、+1 重型旅、護航艦隊 +2），但守方提早動員、美國航艦已在附近、各國參戰擲骰 +1。'],exercise:['演習掩護','以軍演名義集結，雙方都只有部分預警。基準設定。'],surprise:['戰略突襲','兵力少一截（−2 兩棲旅、−1 重型旅），換取守方動員延後、各國參戰擲骰 −1。']}},
+  {sel:'optAxN',q:'攻擊軸線：北部（林口、桃園，可多選）',when:()=>!isSim(),opts:{'0':['不指定／電腦決定','北、中部都不勾時，由電腦選一個主攻區並集中兵力。'],'1':['選擇北部','朝台北方向（林口、淡水、桃園）。']}},
+  {sel:'optAxC',q:'攻擊軸線：中部（新竹、苗栗、台中港）',when:()=>!isSim(),opts:{'0':['不選',''],'1':['選擇中部','朝台中港與新竹方向。']}},
+  {sel:'optAxP',q:'攻擊軸線：澎湖',when:()=>!isSim(),opts:{'0':['不選','澎湖不作為目標，陸戰旅改歸中部軸線。'],'1':['選擇澎湖','陸戰旅攻占馬公，作為跳板（基準設定）。']}},
+  {sel:'optAxK',q:'攻擊軸線：金門、馬祖（政治／有限目標）',when:()=>!isSim(),opts:{'0':['不選（共軍多半無視金馬）','金馬打下來意義有限，強攻造成重大傷亡反而招致國際反彈。'],'1':['選擇金馬','另編 5 個兩棲／陸戰單位攻金馬（從中部第一波抽調 2 個兩棲旅），分散兵力、失去集中突擊效果；傷亡過大反而有反效果。']}}],
   note:()=>isSim()?'推演模式的集結會在第一個事件節點由你選擇，這一頁不用設定。':''},
  {t:'美日參戰',s:'參戰',d:'美國、日本是否參戰、以什麼方式參戰，會大幅改變戰局。',fields:[
   {sel:'optFx',q:'參戰情境',opts:{interest:['依自身利益決定','美日不擲骰，依戰況與自身利益評估是否參戰：半導體與第一島鏈、攻方是否已拿下港口或台北、守軍撐不撐得住、美軍傷亡、日本與美國彼此的態度、本國基地是否被打。事件節點會列出評估理由。','依利益'],dice:['擲骰決定','美國開戰起至少是代理打擊（台美共用飛彈、魚雷，難分是誰發射）；第 3 回合各國擲骰決定參戰程度，第 5 回合再擲一次；攻方打擊基地會讓該國升級；美軍傷亡過高會退縮為隱蔽支援。'],intel:['只提供情報（不公開參戰）','美國只提供情報與目標資料（守方反艦飛彈命中門檻 −1），不補給、不出兵、不公開參戰；日本中立，戰區基地也不能被打擊。','只提供情報'],none:['不介入（台灣孤軍）','美日全程不參戰，戰區基地也不能被打擊。'],full:['開戰即全面介入','美日第 1 回合就參戰，航艦仍要 2 回合才抵達。']}}]},
@@ -3192,7 +3303,7 @@ const SETUP_PAGES=[
 ];
 const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
 function optLabel(sel,v){for(const pg of SETUP_PAGES)for(const f of pg.fields)if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
-function saveSetup(){try{const cfg={};['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optFx','optNews'].forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
+function saveSetup(){try{const cfg={};['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optFx','optNews','optAxN','optAxC','optAxP','optAxK'].forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
 function loadSetup(){
   try{const o=JSON.parse(localStorage.getItem('tsl-setup')||'null');if(!o)return;
     Object.entries(o.cfg||{}).forEach(([id,v])=>{const el=$('#'+id);if(el&&[...el.options].some(x=>x.value===v))el.value=v;});
