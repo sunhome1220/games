@@ -20,3 +20,5 @@
 不顯示	Off	オフ
 語言：	Language:	言語：
 設定第 1 頁可選繁體中文（預設）、English、日本語、简体中文，可隨時更改（更改後頁面會重新載入，進行中的對局會結束）；介面、規則、戰報、事件與報告都會隨之轉換（英、日文為翻譯字典，簡體中文為字形與用語轉換）。	On setup page 1 you can choose Traditional Chinese (default), English, Japanese or Simplified Chinese; it can be changed at any time (the page reloads and the current game ends). The interface, rules, logs, events and reports all follow (English and Japanese use a translation dictionary; Simplified Chinese is a character/term conversion).	設定の第1ページで繁体字中国語（既定）、English、日本語、簡体字中国語を選べます。いつでも変更できます（変更するとページが再読み込みされ、進行中の対局は終了します）。インターフェース、ルール、戦報、イベント、報告書がすべて切り替わります（英語・日本語は翻訳辞書、簡体字は字形・用語の変換）。
+展開戰區圖	Expand theater map	戦域図を展開
+收折戰區圖	Collapse theater map	戦域図を折りたたむ
