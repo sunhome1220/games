@@ -1,0 +1,340 @@
+420	Leping	楽平
+421	Rocket Force missile brigade base (Jiangxi)	ロケット軍ミサイル旅団駐屯地（江西）
+422	Shangrao	上饒
+423	Yong'an	永安
+424	Rocket Force missile brigade base (Fujian)	ロケット軍ミサイル旅団駐屯地（福建）
+425	Meizhou	梅州
+426	Rocket Force missile brigade base (Guangdong)	ロケット軍ミサイル旅団駐屯地（広東）
+427	Eastern Theater air force airfield (Zhejiang)	東部戦区空軍飛行場（浙江）
+428	Around Fuzhou Changle Airport (Fujian)	福州長楽空港一帯（福建）
+429	Around Quanzhou Hui'an Airport (Fujian)	泉州恵安空港一帯（福建）
+430	Around Shantou Waisha Airport (Guangdong)	汕頭外砂空港一帯（広東）
+431	Zhoushan	舟山
+432	East Sea Fleet base (Zhejiang)	東海艦隊基地（浙江）
+433	Xiamen naval base (Fujian)	アモイ海軍基地（福建）
+434	Fuzhou · Pingtan	福州・平潭
+435	Landing-fleet staging port (Fujian)	上陸船団集結港（福建）
+436	Okinawa Island	沖縄本島
+437	Kadena, Futenma, Naha	嘉手納、普天間、那覇
+438	Miyako · Ishigaki	宮古・石垣
+439	GSDF surface-to-ship missiles	陸自地対艦ミサイル
+440	Sasebo	佐世保
+441	JMSDF and US Navy base	海自・米海軍基地
+442	Guam	グアム
+443	Andersen Air Force Base, about 2,700 km off the map	アンダーセン空軍基地、図外約2,700km
+444	Philippine Sea	フィリピン海
+445	Carrier strike group (can strike only once on station; needs a 6)	空母打撃群（到着後のみ攻撃可能、6が必要）
+446	USAF 18th Wing	米空軍 第18航空団
+447	USMC 12th Marine Littoral Regiment	米海兵隊 第12海兵沿岸連隊
+448	NMESIS anti-ship missiles	NMESIS対艦ミサイル
+449	US Navy attack submarines	米海軍 攻撃潜水艦
+450	Cannot be struck by fire	火力攻撃の対象外
+451	USAF bombers	米空軍 爆撃機
+452	B-1B with LRASM	B-1B（LRASM搭載）
+453	US Navy carrier strike group	米海軍 空母打撃群
+454	7th Fleet; arrives 2 turns after intervening	第7艦隊、参戦後2ターンで到着
+455	US Army Multi-Domain Task Force	米陸軍 マルチドメイン・タスクフォース
+456	HIMARS, Typhon	ハイマース、タイフォン
+457	JASDF 9th Air Wing	空自 第9航空団
+458	F-15J (Naha)	F-15J（那覇）
+459	GSDF surface-to-ship missile regiment	陸自 地対艦ミサイル連隊
+460	Type 12 surface-to-ship missiles	12式地対艦誘導弾
+461	JMSDF escort flotilla	海自 護衛隊群
+462	Sorties from Sasebo (including Izumo-class, F-35B); arrives 1 turn after intervening	佐世保から出港（いずも型、F-35Bを含む）、参戦後1ターンで到着
+463	JMSDF submarine force	海自 潜水艦隊
+464	Intelligence only	情報提供のみ
+465	No open intervention: intelligence only (satellite, reconnaissance and targeting data), no supplies and no combat actions	公然参戦せず：情報提供のみ（衛星、偵察、目標データ）。補給も戦闘行動もなし
+466	Intervention not acknowledged: only intelligence, supplies and unattributed submarine operations remain	介入を認めない：情報、補給、所属不明の潜水艦作戦のみ
+467	Involvement not acknowledged: US-Taiwan shared missiles and torpedoes look and are numbered the same, so who fired is hard to tell; strikes are made in the name of Taiwan and Japan, and manned aircraft and ships leave the theater	参戦を認めない：台米共用のミサイル・魚雷は外観も番号も同じで誰が撃ったか区別しにくく、台湾・日本の名義で攻撃する。有人機と艦船は戦域から撤退
+468	Open acknowledged intervention: all forces committed	公然と参戦を認める：全戦力を投入
+469	US posture:	米国の姿勢：
+470	US territory (Guam) was attacked and public opinion rallied; posture restored	米国本土（グアム）が攻撃され、世論が結束して姿勢が回復
+471	Cumulative US casualties 	米軍の累積損害 
+472	 steps; political pressure rose, switching to a lower-profile approach	 ステップ。政治的圧力が高まり、より目立たない方式に転換
+473	US: cumulative US casualties 	米国：米軍の累積損害 
+474	 steps, but 	 ステップだが、
+475	the attack on US territory rallied public opinion	本土への攻撃で世論が結束した
+476	domestic support did not waver	国内の支持は揺らがなかった
+477	 (roll 	（出目 
+478	), existing posture maintained	）、現行の姿勢を維持
+479	US covert resupply: Taiwan's long-range missile stock +1	米国の秘密補給：台湾の長射程ミサイル在庫+1
+480	Out of action	戦力喪失
+481	Not engaged	未参戦
+482	Sortied	出撃中
+483	Proxy striking	代理攻撃中
+484	Covert operations (unacknowledged)	秘密作戦（非公表）
+485	Withdrawn (no longer openly participating)	撤退済み（公然参加せず）
+486	Not committed	未投入
+487	Waiting	待機
+488	Base use approved	基地使用に同意
+489	 arrival	 ターンで到着
+490	Intervention level raised to "	関与度が次に引き上げられた：「
+491	Alliance treaty	同盟条約
+492	Rocket Force 	ロケット軍 
+493	+ DF-17 	＋東風-17 
+494	+ cruise missiles 	＋巡航ミサイル 
+495	+ air force 	＋空軍 
+496	+ air-defense suppression 1	＋防空制圧 1
+497	− defender air defense 	−防衛側防空 
+498	− weather 	−天候 
+499	Event 	イベント 
+500	Attacker air force −1	攻撃側空軍−1
+501	Defender air force −1	防衛側空軍−1
+502	Defender air defense suppressed −1	防衛側防空が制圧された−1
+503	 hit by ASW −1	 対潜攻撃を受けた−1
+504	Attacker air defense −1	攻撃側防空−1
+505	 air-superiority contest:	 ターン 制空争い：
+506	Air superiority:	制空：
+507	; defender air defense	；防衛側防空
+508	suppressed, attacker fire +1	制圧、攻撃側火力+1
+509	holding; no bonus to attacker fire	維持、攻撃側火力にボーナスなし
+510	Attacker advantage	攻撃側優勢
+511	Even	互角
+512	Defender and allies advantage	防衛側・同盟国優勢
+513	hit the convoy 	船団に命中 
+514	damaged an escort 	護衛艦を損傷 
+515	badly damaged a carrier 	空母を大破 
+516	hit troops on the island 	島上部隊に命中 
+517	 sortied 	 出撃 
+518	 time(s)	 回
+519	, missed	、外れ
+520	Defender navy	防衛側海軍
+521	Defender navy struck by attacker naval and air forces −1	防衛側海軍が攻撃側の海空戦力に攻撃された−1
+522	Defender air force (Harpoon, air-launched Hsiung Feng III)	防衛側空軍（ハープーン、雄風III空中発射型）
+523	Defender air force sortie shot down by air defense −1	防衛側空軍の出撃が防空に撃墜された−1
+524	Drone swarm jammed and intercepted −1	無人機群が妨害・迎撃された−1
+525	US/Japanese forces sortie	日米部隊が出撃
+526	(proxy strike)	（代理攻撃）
+527	(unattributed action)	（所属不明の行動）
+528	Defender navy −1	防衛側海軍−1
+529	Attacker escort −1	攻撃側護衛艦−1
+530	Carrier damaged (PLA carrier −1)	空母を損傷（中国軍空母−1）
+531	Escort sunk (attacker escort −1)	護衛艦を撃沈（攻撃側護衛艦−1）
+532	hit by ASW −1	対潜攻撃を受けた−1
+533	Hai Kun submarine damaged a carrier (PLA carrier −1)	海鯤潜水艦が空母を損傷（中国軍空母−1）
+534	Hai Kun submarine sank an escort (attacker escort −1)	海鯤潜水艦が護衛艦を撃沈（攻撃側護衛艦−1）
+535	Hai Kun submarine sunk by ASW (defender submarine −1)	海鯤潜水艦が対潜攻撃で撃沈（防衛側潜水艦−1）
+536	PLA naval and air forces hit defender ships that left port	中国軍の海空戦力が出港した防衛側艦艇に命中
+537	Naval/air attack	海空攻撃
+538	PLA submarine damaged 	中国軍潜水艦が損傷させた： 
+539	PLA submarine sank a defender ship (defender navy −1)	中国軍潜水艦が防衛側艦艇を撃沈（防衛側海軍−1）
+540	ASW forces are thin; PLA submarines in the Pacific are under almost no pressure	対潜戦力が薄く、中国軍潜水艦は太平洋でほとんど圧迫を受けない
+541	PLA submarine sunk by ASW (attacker submarine −1)	中国軍潜水艦が対潜攻撃で撃沈（攻撃側潜水艦−1）
+542	 naval engagement:	 ターン 海上交戦：
+543	Strike	攻撃
+544	will cause	は次を引き起こす：
+545	escalates to "	次に格上げ：「
+546	struck by the attacker	攻撃側に攻撃された
+547	: no targets to strike	：攻撃できる標的がない
+548	(DF-26/21D)	（東風-26／21D）
+549	 hit 	 が命中： 
+550	, out of action	、戦力喪失
+551	Taiwan long-range missiles (Yunfeng and others)	台湾の長射程ミサイル（雲峰など）
+552	US forces (proxy strike)	米軍（代理攻撃）
+553	US forces	米軍
+554	JSDF	自衛隊
+555	Rocket Force missile stock −	ロケット軍ミサイル在庫−
+556	Attacker escort fleet −1	攻撃側護衛艦隊−1
+557	Mainland staging area struck	大陸の集結地が攻撃された
+558	 lost 1 step	 が1ステップ損失
+559	knocked out	機能停止
+560	Strike on mainland 	大陸攻撃 
+561	: hit	：命中
+562	: missed (	：外れ（
+563	Assessing mainland strike: rolled 	対大陸攻撃の評価：出目 
+564	, needed 	、必要 
+565	, holding fire this turn	、今ターンは見送り
+566	, decided to strike	、攻撃を決定
+567	Chinese retaliation: no allied units to strike, fire +1 this turn	中国の報復：攻撃できる同盟軍部隊がなく、今ターンの火力+1
+568	Chinese retaliatory strike	中国の報復攻撃
+569	Chinese retaliatory strike on 	中国の報復攻撃：
+570	Attacker first wave +2 amphibious brigades, +1 heavy brigade, escort fleet +2	攻撃側の第一波 水陸両用旅団+2、重旅団+1、護衛艦隊+2
+571	Defender reserves mobilize 1 turn early	防衛側予備が1ターン早く動員
+572	US carrier already standing by nearby (arrives on intervening)	米空母がすでに近海で待機中（参戦即到着）
+573	First-strike interception rolls and intervention rolls +1	先制攻撃の迎撃判定と参戦判定+1
+574	Attacker first wave −2 amphibious brigades, −1 heavy brigade, escort fleet −2	攻撃側の第一波 水陸両用旅団−2、重旅団−1、護衛艦隊−2
+575	Defender reserves mobilize 1 turn late	防衛側予備の動員が1ターン遅れる
+576	First-strike interception rolls and intervention rolls −1	先制攻撃の迎撃判定と参戦判定−1
+577	Both sides get only partial warning; baseline settings kept	双方とも部分的な警戒のみ。基準設定を維持
+578	Open full mobilization	公然たる全面集結
+579	Most force, but weeks of massing let Taiwan, the US and Japan prepare early.	兵力は最大だが、数週間の集結で台湾・米国・日本は早期に準備できる。
+580	Exercise cover	演習偽装
+581	Mass forces under the cover of an exercise; both sides get only partial warning (baseline).	演習を名目に集結し、双方とも部分的な警戒のみ（基準設定）。
+582	Strategic surprise	戦略的奇襲
+583	Somewhat less force, in exchange for the defender and allies reacting a beat late.	兵力は一段少ないが、防衛側と同盟国の対応が一拍遅れる。
+584	Does not approve US sorties from Japanese bases	米軍の日本基地からの出撃に同意しない
+585	Important Influence Situation: US forces may use Japanese bases	重要影響事態：米軍が日本の基地を使用可能
+586	Survival-Threatening Situation: the JSDF enters combat	存立危機事態：自衛隊が戦闘に参加
+587	Openly non-intervening, but with US-Taiwan shared missiles and torpedoes hard to attribute: submarines and bombers act as proxy strikers (about 45% firepower)	公然とは不介入だが、台米共用のミサイル・魚雷は発射元の区別が難しく、潜水艦と爆撃機が代理攻撃を行う（火力約45%）
+588	Expanded covert support and resupply; defender anti-ship missile hit threshold −1; proxy strikes continue	秘密支援と補給を拡大。防衛側対艦ミサイルの命中閾値−1。代理攻撃は継続
+589	"Proxy strike": long-range missiles fired in the name of Taiwan and Japan; manned aircraft and ships stay out of the theater; involvement not acknowledged	「代理攻撃」：台湾・日本の名義で長射程ミサイルを発射。有人機と艦船は戦域に入らず、参戦は認めない
+590	Open intervention: carriers, fighters, the Marine Littoral Regiment and the Multi-Domain Task Force all committed; may withdraw if casualties get too high	公然参戦：空母、戦闘機、海兵沿岸連隊、マルチドメイン・タスクフォースを全投入。損害が大きすぎると後退することがある
+591	's reaction	の反応
+592	Open mobilization	公然たる集結
+593	Winter surprise −1	冬季奇襲−1
+594	National unity +1	全国民の団結+1
+595	Japanese support +1	日本の支援+1
+596	Prolonged war +1	戦争の長期化+1
+597	Dice roll	サイコロ
+598	Dice decide	サイコロで決定
+599	Decide by own interest	自国の利益で決定
+600	Intelligence only (no open intervention)	情報提供のみ（公然参戦せず）
+601	Non-intervention (Taiwan alone)	不介入（台湾単独）
+602	Full intervention from the start	開戦即全面介入
+603	Opening scenario	開局シナリオ
+604	Intervention scenario:	参戦シナリオ：
+605	US posture: no intervention at all (Taiwan-alone scenario)	米国の姿勢：完全不介入（台湾単独シナリオ）
+606	Covertly provided intelligence and supplies before the war began, not openly acknowledged	開戦前から秘密裏に情報と補給を提供し、公には認めない
+607	US: 	米国：
+608	; Japan: 	；日本：
+609	US/Japanese forces on sortie:	出撃中の日米部隊：
+610	(turn 	（第 
+611	)	 ターン）
+612	None	なし
+613	Pre-war mobilization	開戦前の集結
+614	Crossing the strait requires massing convoys, troops and ammunition first, which is hard to hide completely. The more open and larger the buildup, the sooner Taiwan, the US and Japan notice and begin to prepare.	渡海にはまず船団・兵員・弾薬の集結が必要で、完全に隠すのは困難です。集結が公然で大規模なほど、台湾・米国・日本は早く察知して準備を始めます。
+615	Timing of the launch	発起時機
+616	The attacker must pick the season for crossing. The Taiwan Strait has only two fairly stable windows a year, spring and autumn; in winter the northeast monsoon raises waves, but the defender is harder pressed to predict it.	攻撃側は渡海の季節を選ばなければなりません。台湾海峡で比較的安定した時期は年に春と秋の2回だけです。冬は北東モンスーンで波が高い反面、防衛側は予測しにくくなります。
+617	April window	4月の窓
+618	The steadiest seas; turn 1 is always good weather. The defender is also best prepared.	海象が最も安定し、第1ターンは必ず好天。防衛側の備えも最も固い。
+619	October window	10月の窓
+620	Slightly worse weather, but autumn visibility is good; turn 1 fire +2.	天候はやや悪いが、秋は視界が良く、第1ターンの火力+2。
+621	Winter surprise	冬季奇襲
+622	Northeast monsoon, mostly bad weather; the defender's mobilization is delayed one turn and foreign reaction is slower.	北東モンスーンで悪天候が多い。防衛側の動員は1ターン遅れ、外国の反応も鈍くなる。
+623	Weather odds: good 65%, fair 25%, bad 10%	天候確率：良好65%、普通25%、悪天候10%
+624	Turn 1 weather is good	第1ターンの天候は良好
+625	Weather odds: good 50%, fair 30%, bad 20%	天候確率：良好50%、普通30%、悪天候20%
+626	Turn 1 fire +2	第1ターンの火力+2
+627	Weather odds: good 30%, fair 40%, bad 30% (turn 1 is also rolled)	天候確率：良好30%、普通40%、悪天候30%（第1ターンも判定する）
+628	Defender reserve mobilization delayed 1 turn	防衛側予備の動員が1ターン遅れる
+629	Later interception rolls and US/Japan intervention rolls favor the attacker by 1 point	以後の迎撃判定と日米参戦判定が攻撃側に1ポイント有利
+630	First strike	先制攻撃
+631	The war's first wave of missiles and air raids. The attacker chooses the focus of the strike; the actual effect depends on the defender's air-defense interception and warning, which the attacker cannot control.	開戦第一波のミサイルと空襲。攻撃側は攻撃の重点を選びますが、実際の効果は防衛側の防空迎撃と警戒次第で、攻撃側は制御できません。
+632	Anti-ship missile sites	対艦ミサイル陣地
+633	Weaken the defender's shore-based anti-ship missiles to make the crossing safer.	防衛側の沿岸配備対艦ミサイルを弱め、渡海を安全にする。
+634	Command and communications	指揮と通信
+635	Paralyze the defender's command so its mobile forces cannot be moved.	防衛側の指揮を麻痺させ、機動部隊を動かせなくする。
+636	Airfields and air defense	飛行場と防空
+637	Destroy the defender's air force and air defense in exchange for fire in later turns.	防衛側の空軍と防空を破壊し、後続ターンの火力を得る。
+638	Okinawa US/Japanese bases	沖縄の日米基地
+639	Destroy aircraft at Kadena and other bases first, but Japan and the US will enter fully at once.	嘉手納などの基地の戦闘機を先に潰すが、日本と米国は直ちに全面参戦する。
+640	Defender and allied air-defense interception and warning	防衛側・同盟国の防空迎撃と警戒
+641	Interception failed	迎撃失敗
+642	The strike largely worked	攻撃はおおむね奏功
+643	Partly intercepted	一部迎撃
+644	Effect reduced	効果減少
+645	Mostly intercepted	大半が迎撃された
+646	Effect limited	効果は限定的
+647	Open mobilization +1	公然たる集結+1
+648	Strategic surprise −1	戦略的奇襲−1
+649	 missile site 	 ミサイル陣地 
+650	destroyed	破壊された
+651	Lost 	損失： 
+652	No missile sites to strike	攻撃できるミサイル陣地がない
+653	Defender mobile forces cannot be moved on turns 1–2 (they can still counterattack in place)	防衛側機動部隊は第1～2ターン移動できない（その場での反撃は可能）
+654	Later social-resilience rolls −1	以後の社会レジリエンス判定−1
+655	Defender mobile forces cannot be moved on turn 1	防衛側機動部隊は第1ターン移動できない
+656	Defender attack −1 on turn 1	防衛側の第1ターン攻撃−1
+657	Defender air force −	防衛側空軍−
+658	, air defense −	、防空−
+659	Turn 1 fire +	第1ターンの火力+
+660	No extra fire bonus	火力の追加ボーナスなし
+661	Okinawa struck in the first strike	沖縄が先制攻撃を受けた
+662	US forces in Japan struck in the first strike	在日米軍が先制攻撃を受けた
+663	Japan: full intervention	日本：全面参戦
+664	US: full intervention	米国：全面参戦
+665	Mobilization and social resilience	動員と社会のレジリエンス
+666	The defender issues a mobilization order and decides where to focus force. Whether society keeps functioning after the grid, networks and transport are damaged is not something the government can fully control.	防衛側は動員令を発し、兵力の重点を決めます。送電網・ネットワーク・交通が破壊された後も社会が機能し続けるかは、政府が完全には制御できません。
+667	Full mobilization	全面動員
+668	One more reserve brigade in each wave.	各波の予備旅団が1個増える。
+669	Fortify the capital	首都の要塞化
+670	Taipei garrison defense +1 until the end of the simulation.	台北守備隊の防御+1、推演終了まで。
+671	Mobile counterattack	機動反撃
+672	All armored brigades attack +1 until the end of the simulation.	すべての機甲旅団の攻撃+1、推演終了まで。
+673	Social resilience (after grid, network and transport damage)	社会のレジリエンス（送電網・ネットワーク・交通の被害後）
+674	Grid down, morale low	停電、士気低下
+675	Reserve brigades halved; defender attack −1 on turns 2–3	予備旅団が半減。防衛側の第2～3ターン攻撃−1
+676	Mobilization delayed	動員の遅延
+677	Reserve brigades arrive 1 turn late	予備旅団の到着が1ターン遅れる
+678	Functioning normally	正常に機能
+679	No extra effect	追加の影響なし
+680	National unity	全国民の団結
+681	Defender defense +1 on turns 2–3; US/Japan intervention rolls +1	防衛側の第2～3ターン防御+1。日米参戦判定+1
+682	Command and communications badly hit −1	指揮通信が大打撃を受けた−1
+683	One more reserve brigade in each wave +1	各波の予備旅団+1
+684	Taipei garrison defense +1	台北守備隊の防御+1
+685	Armored brigade attack +1	機甲旅団の攻撃+1
+686	Reserve brigades halved	予備旅団が半減
+687	Defender attack −1 on turns 2–3	防衛側の第2～3ターン攻撃−1
+688	Defender defense +1 on turns 2–3	防衛側の第2～3ターン防御+1
+689	US/Japan intervention rolls +1	日米参戦判定+1
+690	Society functioning normally	社会は正常に機能
+691	Intervention decisions	各国の参戦判断
+692	The war enters turn 3. Japan and then the US decide in turn whether to intervene: Japan decides whether US forces may use Japanese bases, and the US decision takes Japan's attitude into account.	戦争は第3ターンに入ります。日本、米国の順に参戦するかを判断します。日本は米軍が日本の基地を使えるかを決め、米国の判断は日本の態度を参考にします。
+693	Prolonged war	戦争の長期化
+694	The war drags past two days and international pressure and casualties keep rising. Countries not yet fully intervening reassess; the level of intervention can only rise, never fall. US/Japan rolls +1.	戦争は2日を超えて長引き、国際的圧力と損害は増え続けます。まだ全面参戦していない国は再評価し、関与度は上がるだけで下がりません。日米の判定+1。
+695	Final offensive	最後の攻勢
+696	The judgment turn has arrived. The attacker's commander must decide whether to throw everything into seizing objectives on the last turn or hold the gains already made.	判定ターンが来ました。攻撃側指揮官は、最終ターンに全力で目標を奪取するか、すでに得た戦果を守るかを決めなければなりません。
+697	All-in gamble	一か八かの賭け
+698	This turn the attacker attack +1, fire +3, but defense −1.	今ターン、攻撃側は攻撃+1、火力+3、ただし防御−1。
+699	Consolidate gains	戦果の固め
+700	This turn the attacker defense +1, holding the objectives already occupied.	今ターン、攻撃側は防御+1、すでに占領した目標を守る。
+701	Attacker attack +1, fire +3 this turn	攻撃側は今ターン攻撃+1、火力+3
+702	Attacker defense −1 this turn	攻撃側は今ターン防御−1
+703	Attacker defense +1 this turn	攻撃側は今ターン防御+1
+704	US 	米 
+705	 · Japan 	・日 
+706	Attacker force on the island	攻撃側の島上戦力
+707	Defender force on the island	防衛側の島上戦力
+708	Attacker sea units	攻撃側の海上ユニット
+709	Attacker-controlled ports	攻撃側支配の港
+710	Defender missile sites	防衛側ミサイル陣地
+711	Attacker air force	攻撃側空軍
+712	Defender and allied air forces	防衛側・同盟国空軍
+713	Attacker escort fleet	攻撃側護衛艦隊
+714	Intervention by country	各国の参戦
+715	If judged now: attacker meets 	いま判定すれば：攻撃側の達成 
+716	Event checkpoint 	イベント節点 
+717	 · turn 	 · 第 
+718	 	 ターン 
+719	 before phase	 フェーズ前
+720	Semiconductor and First Island Chain interests +1	半導体と第一列島線の利益+1
+721	Attacker already controls 	攻撃側がすでに支配： 
+722	 port(s)	 つの港
+723	; failing to intervene now means losing Taiwan +1	；いま介入しなければ台湾を失う+1
+724	The attacker has not yet landed; no need to rush to intervene −1	攻撃側はまだ上陸しておらず、急いで介入する必要はない−1
+725	The defenders can still hold; intervening has a chance of success +1	守備隊はまだ持ちこたえており、介入すれば勝算がある+1
+726	The defenders are nearly collapsed; intervening may be too late −1	守備隊は崩壊寸前で、介入は手遅れかもしれない−1
+727	US casualties 	米軍の損害 
+728	 steps; domestic backlash −1	 ステップ、国内の反発−1
+729	Japan has agreed to base use +1	日本が基地使用に同意済み+1
+730	The US has intervened openly; alliance pressure +1	米国が公然と介入済み、同盟の圧力+1
+731	The US has not intervened openly; Japan is unwilling to take risks alone −1	米国がまだ公然と介入しておらず、日本は単独で危険を冒したがらない−1
+732	Own bases struck by the attacker +1	自国の基地が攻撃側に攻撃された+1
+733	PLA submarines threaten sea lanes; Japan grows cautious −1	中国軍潜水艦が航路を脅かし、日本は慎重になる−1
+734	Chose "	選択：「
+735	Interest assessment 	利益評価 
+736	Dice roll 	サイコロ 
+737	Result	結果
+738	Current situation	現在の戦況
+739	Continue simulation ▶	推演を続ける ▶
+740	View map	マップを見る
+741	Decision	決定
+742	Chose "	選択済み：「
+743	Judged by interest	利益で判断
+744	Uncontrollable · dice roll	制御不能 · サイコロ
+745	Probability 	確率 
+746	% (unmodified)	%（修正前）
+747	Assessment	評価
+748	 (in order 	（順に 
+749	 dice)	 個）
+750	 (modifier 	（修正 
+751	Assessment 	評価 
+752	, after modifiers 	、修正後 
+753	Rolled 	出目 
+754	You decide for 	あなたが決める：
+755	The commander decides:	指揮官の決定：
+756	Event checkpoint:	イベント節点：
+757	Decision + dice roll	決定＋サイコロ
+758	Atk	攻
+759	Def	守
