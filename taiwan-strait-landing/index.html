@@ -2711,34 +2711,52 @@ function tileDetail0(h,x,y){
 
 /* ---------- 外圍示意區：宮古／先島、舟山、黃山、梅州、呂宋北部（縮小地圖時可見） ---------- */
 const FAR={};
-function farSet(c,r,t,name,tag,who){FAR[K(c,r)]={c,r,t,name:name||null,tag:tag||null,who:who||null};}
+// 外圍示意區的地標：以真實經緯度定位（粗格座標 = 細格像素 / KS），陸地形狀見 ISLANDS
+const llPx=(lon,lat)=>{const o=center(GEO.c0,GEO.r0),ox=center(GEO.c0+1,GEO.r0)[0]-o[0],oy=center(GEO.c0,GEO.r0+1)[1]-o[1];
+  return [o[0]+(lon-GEO.lon0)/GEO.dlon*ox,o[1]+(GEO.lat0-lat)/GEO.dlat*oy];};
+function farPlace(lon,lat,t,name,tag,who){const [x,y]=llPx(lon,lat);FAR[name]={lon,lat,x:x/KS,y:y/KS,t,name,tag:tag||null,who:who||null};}
+function farSchem(c,r,t,name,tag,who){const [x,y]=oCenter(c,r);FAR[name]={x,y,t,name,tag:tag||null,who:who||null,schem:true};} // 圖外的地點：示意位置（粗格座標）
+const llInv=(px,py)=>{const o=center(GEO.c0,GEO.r0),ox=center(GEO.c0+1,GEO.r0)[0]-o[0],oy=center(GEO.c0,GEO.r0+1)[1]-o[1];return [GEO.lon0+(px-o[0])/ox*GEO.dlon,GEO.lat0-(py-o[1])/oy*GEO.dlat];};
 (function(){
-  // 大陸沿海延伸（北側與西側、南側）
-  const northCoast={'-3':8,'-4':9,'-5':9,'-6':10};
-  for(const r in northCoast)for(let c=-4;c<=northCoast[r];c++)farSet(c,+r,'main');
-  for(let r=-2;r<OR1;r++)for(let c=-4;c<OC0;c++)farSet(c,r,'main');
-  const south={16:0,17:-1,18:-2,19:-3,20:-4};
-  for(const r in south)for(let c=-4;c<=south[r];c++)farSet(c,+r,'main');
-  farSet(-3,-4,'air','黃山','火箭軍','atk'); farSet(-3,4,'air','梅州','火箭軍','atk');
-  farSet(8,-5,'air','櫟社','東部戰區','atk'); farSet(7,-6,'air','路橋','東部戰區','atk'); farSet(5,-6,'air','龍灣','東部戰區','atk'); farSet(-1,-3,'air','武夷山','東部戰區','atk');
-  // 舟山
-  farSet(7,-4,'port','舟山','東部戰區','atk'); farSet(8,-4,'plain'); farSet(7,-3,'plain');
-  // 先島群島（日本）
-  farSet(16,5,'plain','與那國','自衛隊','jp');
-  farSet(18,5,'plain','石垣','自衛隊','jp'); farSet(19,5,'plain');
-  farSet(20,3,'air','宮古島','自衛隊','jp'); farSet(21,3,'plain');
-  // 沖繩（美日基地）、九州（佐世保）、關島（美軍）
-  farSet(26,-1,'air','嘉手納','美空軍','us'); farSet(27,-1,'plain','那霸','空自','jp'); farSet(27,-2,'plain'); farSet(28,-2,'plain'); farSet(25,0,'plain');
-  farSet(27,-6,'port','佐世保','海自','jp'); farSet(28,-6,'plain'); farSet(28,-5,'plain'); farSet(27,-5,'plain');
-  farSet(26,22,'air','關島','美空軍','us'); farSet(27,22,'plain'); farSet(26,23,'plain');
-  // 呂宋海峽與呂宋北部（美軍 EDCA／部署）
-  farSet(14,16,'plain','伊特巴雅特','美軍','us'); farSet(14,17,'port','巴丹','美軍','us'); farSet(15,17,'plain');
-  farSet(14,20,'plain','巴布煙群島','美軍','us');
-  // 呂宋北端海岸（只畫最北的一段）
-  for(let c=10;c<=14;c++)farSet(c,24,'plain'); for(let c=10;c<=15;c++)farSet(c,25,'plain'); for(let c=9;c<=15;c++)farSet(c,26,'plain');
-  farSet(10,24,'air','拉婁','美軍','us'); farSet(13,24,'port','卡米洛‧奧西亞斯','美軍','us');
+  // 大陸機場與基地：實際位置在圖外北側，以示意位置標示
+  farSchem(-3,-4,'air','黃山','火箭軍','atk'); farSchem(-3,4,'air','梅州','火箭軍','atk');
+  farSchem(8,-5,'air','櫟社','東部戰區','atk'); farSchem(7,-6,'air','路橋','東部戰區','atk'); farSchem(5,-6,'air','龍灣','東部戰區','atk'); farSchem(-1,-3,'air','武夷山','東部戰區','atk');
+  farSchem(8,-3,'port','舟山','東部戰區','atk');
+  // 先島群島、沖繩（圖內，真實位置）；與那國在遊戲格內，改標在遊戲格東緣外側
+  farPlace(123.62,24.46,'plain','與那國','自衛隊','jp'); farPlace(124.17,24.4,'plain','石垣','自衛隊','jp'); farPlace(125.3,24.78,'air','宮古島','自衛隊','jp');
+  farPlace(127.86,26.42,'air','嘉手納','美空軍','us'); farPlace(127.6,26.14,'plain','那霸','空自','jp');
+  // 九州、關島在圖外：示意位置
+  farSchem(27,-6,'port','佐世保','海自','jp'); farSchem(26,22,'air','關島','美空軍','us');
+  // 呂宋海峽與呂宋北部（真實位置；伊特巴雅特略南移以免被遊戲格蓋住）
+  farPlace(121.83,20.6,'plain','伊特巴雅特','美軍','us'); farPlace(121.97,20.4,'port','巴丹','美軍','us'); farPlace(121.95,19.45,'plain','巴布煙群島','美軍','us');
+  farPlace(120.55,18.18,'air','拉婁','美軍','us'); farPlace(122.13,18.46,'port','卡米洛‧奧西亞斯','美軍','us');
 })();
-// 各方火力的出發位置（地圖座標），讓打擊不再憑空出現
+// 外圍陸地：島鏈用「線段＋半徑」(度)，大島用多邊形；畫在細格上（半徑已留一點寬度讓窄島至少占一格）
+const ISL_CAP=[ // [lon1,lat1,lon2,lat2,半徑]
+  [128.28,26.86,127.68,26.12,.13], // 沖繩本島（東北—西南向細長）
+  [129.5,28.5,129.25,28.12,.1],[128.95,27.85,128.9,27.75,.08],[128.6,27.4,128.55,27.33,.07], // 奄美、德之島、沖永良部
+  [126.8,26.36,126.75,26.32,.08], // 久米島
+  [125.33,24.8,125.25,24.74,.11],[124.3,24.5,124.1,24.38,.11],[123.85,24.38,123.75,24.3,.1],[123.65,24.47,123.6,24.45,.07], // 宮古、石垣、西表、與那國
+  [130.55,30.4,130.45,30.3,.1],[131.05,30.62,130.95,30.4,.08], // 屋久島、種子島
+  [121.97,20.4,121.99,20.36,.1],[121.83,20.6,121.85,20.56,.1],[121.87,20.25,121.89,20.22,.06], // 巴丹、伊特巴雅特、薩布坦
+  [121.95,19.5,121.95,19.45,.1],[121.47,19.35,121.45,19.3,.1],[121.9,18.95,121.9,18.93,.07],[121.35,18.87,121.33,18.86,.06], // 巴布煙群島
+];
+const ISL_POLY=[
+  [[120.55,18.5],[120.9,18.55],[121.35,18.62],[121.7,18.52],[122.1,18.5],[122.3,18.3],[122.25,17.9],[122.4,17.4],[122.25,16.9],[122.0,16.3],[121.6,15.85],[121.5,15.4],[120.9,15.4],[120.4,15.8],[120.3,16.15],[120.4,16.6],[120.35,17.1],[120.4,17.6],[120.5,18.1]] // 呂宋北部
+];
+// 圖外地點的示意形狀：以示意位置為錨點，縮小後畫出（九州 0.5 倍、關島原尺寸、舟山群島）
+(function(){
+  const sch=(name,pts,sc,cap)=>{const f=FAR[name];if(!f)return;const [aL,aB]=llInv(f.x*KS,f.y*KS),[rL,rB]=cap||[0,0];
+    return pts.map(([x,y])=>[aL+(x-rL)*sc,aB+(y-rB)*sc]);};
+  ISL_POLY.push(sch('佐世保',[[129.65,33.2],[129.9,33.6],[130.3,33.65],[130.9,33.95],[131.1,33.6],[131.7,33.3],[131.9,32.6],[131.65,31.7],[131.35,31.15],[131.05,31.0],[130.7,31.0],[130.2,31.1],[130.2,31.6],[130.2,32.3],[129.95,32.55],[129.6,32.9]],.5,[129.72,33.17]));
+  const g=sch('關島',[[144.78,13.62],[144.9,13.28]],1,[144.85,13.5]);ISL_CAP.push([g[0][0],g[0][1],g[1][0],g[1][1],.1]);
+  const z=sch('舟山',[[122.15,30.02],[122.35,29.92]],1.6,[122.2,30.0]);ISL_CAP.push([z[0][0],z[0][1],z[1][0],z[1][1],.2]);
+})();
+const inIsl=(lon,lat)=>{
+  const k=Math.cos(lat*Math.PI/180);
+  for(const [x1,y1,x2,y2,r] of ISL_CAP){const dx=(x2-x1)*k,dy=y2-y1,px=(lon-x1)*k,py=lat-y1,L=dx*dx+dy*dy,t=L?Math.max(0,Math.min(1,(px*dx+py*dy)/L)):0;if(Math.hypot(px-t*dx,py-t*dy)<=r)return true;}
+  for(const P of ISL_POLY){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if((yi>lat)!==(yj>lat)&&lon<(xj-xi)*(lat-yi)/(yj-yi)+xi)c=!c;}if(c)return true;}
+  return false;};
 const FARINFO={
   '嘉手納':{w:'us',t:'沖繩・嘉手納（美空軍 第18聯隊）',d:'F-15EX、F-35A。美日聯合作戰的前進空軍基地。',r:'距台灣約 600 公里，戰機可直接涵蓋台灣海峽。'},
   '那霸':{w:'jp',t:'沖繩・那霸（空自 第9航空團）',d:'F-15J 戰機。',r:'距台灣約 650 公里。'},
@@ -2775,14 +2793,14 @@ function buildFar(){
   const RF=FINE.R,fx0=-oMX0*KS-RF*2,fx1=(OVBW+oMX1)*KS+RF*2,fy0=-oMY0*KS-RF*2,fy1=(OVBH+oMY1)*KS+RF*2;
   const POLY=[[112,31.5],[122.3,31.5],[122.0,30.8],[122.2,30.0],[121.9,29.6],[121.8,29.0],[121.5,28.5],[120.9,27.9],[120.5,27.4],[120.35,26.8],[119.9,26.5],[119.62,26.25],[119.68,25.95],[119.8,25.62],[119.6,25.35],[119.15,25.25],[118.95,24.98],[118.65,24.62],[118.2,24.45],[117.95,24.3],[117.5,23.7],[117.0,23.4],[116.7,23.2],[116.0,22.85],[115.4,22.7],[114.9,22.3],[114.6,22.1],[113.8,22.3],[112,22.3]];
   const inPoly=(x,y,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;};
-  const farL=Object.values(FAR).filter(f=>f.t!=='main').map(f=>{const q=oCenter(f.c,f.r);return [q[0]*KS,q[1]*KS,f];});
+  const farL=Object.values(FAR).map(f=>[f.x*KS,f.y*KS,f]);
   const fine=new Map();
   for(let r=-60;r<=90;r++)for(let c=-70;c<=110;c++){
     if(c>=FINE.c0&&c<FINE.c1&&r>=FINE.r0&&r<FINE.r1)continue;
     const [x,y]=fineCenter(c,r);if(x<fx0||x>fx1||y<fy0||y>fy1)continue;
     const [lon,lat]=rcToLL(c,r);let t='sea',name=null;
     if(inPoly(lon,lat,POLY))t='main';
-    else for(const [px,py,f] of farL){if(Math.hypot(x-px,y-py)<=OW*KS*.52){t=f.t==='main'?'main':'plain';break;}}
+    else if(inIsl(lon,lat))t='plain';
     fine.set(K(c,r),{c,r,x,y,t});
   }
   // 每個有名稱的外圍地點：最近的細格負責點選
@@ -2802,7 +2820,7 @@ function buildFar(){
     else{const nm=clickOf[K(h.c,h.r)];fineSvg+='<polygon class="tl-far'+(nm?' fclick':'')+'" fill="url(#gt-'+(h.t==='main'?'main':'plain')+')" stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'"'+(nm?' data-far="'+nm+'"':'')+'/>';}
   }
   const bg='<rect x="'+(-oMX0*KS-10)+'" y="'+(-oMY0*KS-10)+'" width="'+((OVBW+oMX0+oMX1)*KS+20).toFixed(0)+'" height="'+((OVBH+oMY0+oMY1)*KS+20).toFixed(0)+'" fill="url(#gSea)"/>';
-  const tiles=Object.values(FAR).filter(f=>f.name).map(f=>{const [x,y]=oCenter(f.c,f.r);return [f.c,f.r,x,y,f];});
+  const tiles=Object.values(FAR).filter(f=>f.name).map(f=>[0,0,f.x,f.y,f]);
   let o='<g class="far">';
   const col={atk:'var(--atk)',jp:'var(--jp)',us:'var(--us)'};
   for(const [c,r,x,y,f] of tiles){
@@ -3452,7 +3470,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-03.21';
+const VERSION='2026-11-03.22';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此更新（對局將結束）':'🔔 有新版本，點此更新';}
