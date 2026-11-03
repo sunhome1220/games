@@ -23,6 +23,7 @@
   --bg:#e6eae7; --panel:#f6f7f5; --ink:#1b2320; --muted:#5a6660; --line:#c3cbc6;
   --sea:#9fbcc6; --sea-edge:#8eaeb9; --land:#d9d1ad; --land-edge:#b9b08a; --mtn:#b5a47c; --mtn-ink:#7b6a45;
   --main:#c8c4b8; --main-edge:#aaa597; --city:#cfc4a0;
+  --land2:#d3d0a8; --land3:#dfd5b3; --hill:#c9bd92; --main2:#c3c6b6; --main3:#cec8b8; --mainhill:#b9b3a1; --mainmtn:#a39d8c; --maincity:#d4cfc2;
   --atk:#b3302a; --def:#1e4f8f; --us:#2c6e8f; --jp:#7b4ea3; --ph:#a57f0d; --accent:#c88710; --on-unit:#ffffff; --ok:#2f7d4f;
   --hl-move:rgba(47,125,79,.38); --hl-land:rgba(200,135,16,.5); --hl-drop:rgba(110,70,160,.38);
   --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
@@ -33,6 +34,7 @@
   --bg:#121816; --panel:#1a221f; --ink:#e2e8e4; --muted:#8e9a94; --line:#2d3833;
   --sea:#1e3a44; --sea-edge:#26474f; --land:#59553f; --land-edge:#6b664c; --mtn:#4a4230; --mtn-ink:#a08f66;
   --main:#34352f; --main-edge:#44453d; --city:#66603f;
+  --land2:#555a3f; --land3:#5e5942; --hill:#4f4a38; --main2:#32362f; --main3:#383630; --mainhill:#3d3d35; --mainmtn:#2b2b26; --maincity:#4a4b43;
   --atk:#d9534a; --def:#4b86d4; --us:#5aa6c8; --jp:#a77fd0; --ph:#d4a92e; --accent:#e3a63a; --on-unit:#ffffff; --ok:#5cb57f;
   --hl-move:rgba(92,181,127,.38); --hl-land:rgba(227,166,58,.5); --hl-drop:rgba(160,120,220,.4);
   color-scheme:dark;
@@ -41,6 +43,7 @@
   --bg:#121816; --panel:#1a221f; --ink:#e2e8e4; --muted:#8e9a94; --line:#2d3833;
   --sea:#1e3a44; --sea-edge:#26474f; --land:#59553f; --land-edge:#6b664c; --mtn:#4a4230; --mtn-ink:#a08f66;
   --main:#34352f; --main-edge:#44453d; --city:#66603f;
+  --land2:#555a3f; --land3:#5e5942; --hill:#4f4a38; --main2:#32362f; --main3:#383630; --mainhill:#3d3d35; --mainmtn:#2b2b26; --maincity:#4a4b43;
   --atk:#d9534a; --def:#4b86d4; --us:#5aa6c8; --jp:#a77fd0; --ph:#d4a92e; --accent:#e3a63a; --on-unit:#ffffff; --ok:#5cb57f;
   --hl-move:rgba(92,181,127,.38); --hl-land:rgba(227,166,58,.5); --hl-drop:rgba(160,120,220,.4);
   color-scheme:dark;
@@ -106,7 +109,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .wv{fill:none;stroke:#fff;stroke-opacity:.3;stroke-width:1.1;stroke-linecap:round;animation:swell 5.5s ease-in-out infinite alternate;pointer-events:none}
 @keyframes swell{from{transform:translateX(-3px)}to{transform:translateX(3px)}}
 .tl-sh{fill:#000;opacity:.2;pointer-events:none}
-.tile{--tile:var(--land)} .tile.t-city{--tile:var(--city)} .tile.t-mtn{--tile:var(--mtn)} .tile.t-main{--tile:var(--main)}
+.tile.t-plain2,.tile.t-plain3,.tile.t-hill{--tile:var(--land)} .tile.t-mainhill,.tile.t-mainmtn,.tile.t-maincity,.tile.t-main2,.tile.t-main3{--tile:var(--main)} .tile{--tile:var(--land)} .tile.t-city{--tile:var(--city)} .tile.t-mtn{--tile:var(--mtn)} .tile.t-main{--tile:var(--main)}
 .sd{stroke:none} .sd.l{fill:var(--land-edge);fill:color-mix(in srgb,var(--tile) 74%,#000)} .sd.r{fill:var(--land-edge);fill:color-mix(in srgb,var(--tile) 58%,#000)}
 .tt{stroke:var(--land-edge);stroke:color-mix(in srgb,var(--tile) 68%,#000);stroke-width:.8}
 .tg{fill:none;stroke:#fff;stroke-opacity:.38;stroke-width:1.3;pointer-events:none}
@@ -2702,8 +2705,10 @@ function peak(px,py,w,h){
 }
 function tileDetail(h,x,y){const o=tileDetail0(h,x,y);return o?'<g transform="translate('+x+' '+y+') scale(.6) translate('+(-x)+' '+(-y)+')">'+o+'</g>':'';}
 function tileDetail0(h,x,y){
-  if(h.t==='city')return bldg(x-9,y+7,8,11)+bldg(x+2,y+8,9,16)+bldg(x+11,y+5,7,9);
-  if(h.t==='mtn')return peak(x-6,y+8,24,22)+peak(x+9,y+10,17,14);
+  const tt=h.t==='main'&&h.vt?h.vt:h.t;
+  if(tt==='hill')return peak(x-3,y+9,20,12)+peak(x+9,y+10,13,8);
+  if(tt==='city')return bldg(x-9,y+7,8,11)+bldg(x+2,y+8,9,16)+bldg(x+11,y+5,7,9);
+  if(tt==='mtn')return peak(x-6,y+8,24,22)+peak(x+9,y+10,17,14);
   if(h.t==='port')return '<rect class="pier" x="'+(x-3)+'" y="'+(y+3)+'" width="6" height="14" rx="1"/><rect class="cont c1" x="'+(x-12)+'" y="'+(y+2)+'" width="8" height="5"/><rect class="cont c2" x="'+(x+5)+'" y="'+(y+6)+'" width="8" height="5"/><path class="crane" d="M'+(x+9)+' '+(y+4)+'V'+(y-10)+'H'+(x-2)+'"/>';
   if(h.t==='air')return '<polygon class="rwy" points="'+[x-15,y+2,x+13,y-4,x+15,y,x-13,y+6].join(',')+'"/><path class="rwl" d="M'+(x-11)+' '+(y+3)+'L'+(x+11)+' '+(y-2)+'"/>';
   return '';
@@ -2769,6 +2774,10 @@ const orgPick=k=>{const a=ORG[k];return a?a[Math.floor(Math.random()*a.length)].
 function farKeyInGrid(c,r){return c>=OC0&&c<OC1&&r>=OR0&&r<OR1;}
 const TERF=(c,r)=>TER[K(c,r)];
 const fineCenter=(c,r)=>center(c,r),FINE={R,c0:COL0,c1:COL1,r0:ROW0,r1:ROW1};
+// 地形分類 → 色塊 key（mainland=大陸色系，否則為島嶼色系）
+function VTKEY(vt,main){const m=main?'main':'';
+  if(vt==='mtn')return main?'mainmtn':'mtn'; if(vt==='hill')return main?'mainhill':'hill'; if(vt==='city')return main?'maincity':'city';
+  if(vt==='plain2')return main?'main2':'plain2'; if(vt==='plain3')return main?'main3':'plain3'; return main?'main':'plain';}
 function buildFar(){
   // 外圍示意區：地形一律用與遊戲格相同的細格；標示、投射區仍用舊座標系（粗格）再整組縮放 KS 對齊
   const center=oCenter,VBW=OVBW,VBH=OVBH,W=OW,R=OR,COL0=OC0,COL1=OC1,ROW0=OR0,ROW1=OR1,MX0=oMX0,MX1=oMX1,MY0=oMY0,MY1=oMY1,EVBW=OVBW+oMX0+oMX1,EVBH=OVBH+oMY0+oMY1,TER=TERC;
@@ -2795,11 +2804,41 @@ function buildFar(){
   // 遊戲格內的陸地也算（讓外圍緊鄰的海格有淺水色）
   for(let r=FINE.r0;r<FINE.r1;r++)for(let c=FINE.c0;c<FINE.c1;c++){const h=TERF(c,r);if(h&&h.t!=='sea'){dist.set(K(c,r),0);q.push([c,r]);}}
   while(q.length){const [c,r]=q.shift(),d=dist.get(K(c,r));if(d>=3)continue;for(const [a,b] of nb(c,r)){const k=K(a,b);if(!dist.has(k)){dist.set(k,d+1);q.push([a,b]);}}}
+  // ---- 地形分類（非台灣的陸地）：離岸距離＋實際山脈／城市，給平地、丘陵、山地、城市不同色塊與符號 ----
+  (function(){
+    const land=new Map(),isSea=(c,r)=>{const f=fine.get(K(c,r));if(f)return f.t==='sea';const g=TERF(c,r);return g?g.t==='sea':false;};
+    fine.forEach(h=>{if(h.t!=='sea'){const [lon,lat]=rcToLL(h.c,h.r);land.set(K(h.c,h.r),{c:h.c,r:h.r,lon,lat,ref:h,main:h.t==='main'});}});
+    for(let r=FINE.r0;r<FINE.r1;r++)for(let c=FINE.c0;c<FINE.c1;c++){const g=TERF(c,r);if(g&&(g.isl==='CN'||g.t==='main')){const [lon,lat]=rcToLL(c,r);land.set(K(c,r),{c,r,lon,lat,ref:g,main:true});}}
+    const ld=new Map();let qq=[];
+    land.forEach((v,k)=>{if(nb(v.c,v.r).some(([a,b])=>isSea(a,b))){ld.set(k,1);qq.push(v);}});
+    while(qq.length){const v=qq.shift(),d=ld.get(K(v.c,v.r));for(const [a,b] of nb(v.c,v.r)){const k=K(a,b);if(land.has(k)&&!ld.has(k)){ld.set(k,d+1);qq.push(land.get(k));}}}
+    const CITY=[[119.3,26.08],[118.1,24.48],[118.6,24.9],[117.65,24.52],[119.0,25.43],[119.55,26.66],[120.7,28.0],[121.42,28.66],[116.7,23.37],[116.62,23.66],[117.02,25.08],[117.64,26.26],[118.17,26.64],[116.1,24.3],[119.92,28.45],[118.65,24.6],
+      [127.68,26.21],[127.98,26.59],[125.28,24.8],[124.16,24.34],[120.59,18.2],[121.73,17.62],[121.64,18.36],[120.39,17.57],[120.6,16.4]];
+    const cityKeys=new Set();
+    for(const [lo,la] of CITY){let best=null,bd=1e9;land.forEach((v,k)=>{const d=Math.hypot((v.lon-lo)*Math.cos(la*Math.PI/180),v.lat-la);if(d<bd){bd=d;best=k;}});if(best&&bd<.35)cityKeys.add(best);}
+    const hash=(c,r)=>((c*73856093)^(r*19349663))>>>0;
+    land.forEach((v,k)=>{
+      const d=ld.get(k)||1,{lon,lat}=v;let t;
+      if(cityKeys.has(k))t='city';
+      else if(v.main){const n=hash(v.c*3+1,v.r*7+2)%100;
+        if(d<=3)t='plain';
+        else if(lon<118.6&&lat>25.3&&lat<28.4)t=d>=5?(n<60?'mtn':'hill'):'hill';              // 武夷山脈
+        else if(d<=5)t=n<70?'plain':'hill';
+        else t=n<50?'hill':n<82?'plain':'mtn';}                                              // 內陸：丘陵、平地、零星山地交錯
+      else if(lat>=16.2&&lat<=18.4&&lon>=120.4&&lon<=121.35)t=d>=2?'mtn':'hill';          // 呂宋 科迪勒拉山脈
+      else if(lon>=121.85&&lat<=18.2&&lat>=15.5)t=d>=2?'mtn':'hill';                       // 呂宋 馬德雷山脈
+      else if(lat>26.5&&lon>127.5&&lon<128.6)t=d>=2?'mtn':'hill';                          // 沖繩北部山地
+      else t=d>=4?'mtn':d>=2?'hill':'plain';
+      if(t==='plain'){const m=hash(v.c,v.r)%3;t=m===0?'plain':m===1?'plain2':'plain3';}
+      v.ref.vt=t;
+    });
+  })();
   let fineSvg='';let wi=0;
   for(const h of fine.values()){
     if(h.t==='sea'){const d=Math.min(3,dist.get(K(h.c,h.r))||3);fineSvg+='<polygon class="tl-sea d'+d+'" points="'+hexPts(h.x,h.y,RF)+'"/>';
       if(d>=2&&(h.c+h.r)%2===0)fineSvg+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0"/>';}
-    else{const nm=clickOf[K(h.c,h.r)];fineSvg+='<polygon class="tl-far'+(nm?' fclick':'')+'" fill="url(#gt-'+(h.t==='main'?'main':'plain')+')" stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'"'+(nm?' data-far="'+nm+'"':'')+'/>';}
+    else{const nm=clickOf[K(h.c,h.r)];fineSvg+='<polygon class="tl-far'+(nm?' fclick':'')+'" fill="url(#gt-'+VTKEY(h.vt,h.t==='main')+')" stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'"'+(nm?' data-far="'+nm+'"':'')+'/>';
+      if(h.vt==='mtn'||h.vt==='city'||(h.vt==='hill'&&((h.c*7+h.r*13)&3)!==0))fineSvg+='<g pointer-events="none" opacity=".9">'+tileDetail({t:h.vt},h.x,h.y)+'</g>';}
   }
   const bg='<rect x="'+(-oMX0*KS-10)+'" y="'+(-oMY0*KS-10)+'" width="'+((OVBW+oMX0+oMX1)*KS+20).toFixed(0)+'" height="'+((OVBH+oMY0+oMY1)*KS+20).toFixed(0)+'" fill="url(#gSea)"/>';
   const tiles=Object.values(FAR).filter(f=>f.name).map(f=>{const [x,y]=oCenter(f.c,f.r);return [f.c,f.r,x,y,f];});
@@ -2834,7 +2873,7 @@ function buildFar(){
   $('#gX').innerHTML=bg+fineSvg+'<g transform="scale('+KS+')">'+o+'</g>';
 }
 function buildStatic(){
-  const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+
+  const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+tileGrad('gt-plain2','land2','#d3d0a8')+tileGrad('gt-plain3','land3','#dfd5b3')+tileGrad('gt-hill','hill','#c9bd92')+tileGrad('gt-main2','main2','#c3c6b6')+tileGrad('gt-main3','main3','#cec8b8')+tileGrad('gt-mainhill','mainhill','#b9b3a1')+tileGrad('gt-mainmtn','mainmtn','#a39d8c')+tileGrad('gt-maincity','maincity','#d4cfc2')+
     '<linearGradient id="gu-atk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d4574d" style="stop-color:color-mix(in srgb,var(--atk) 72%,#fff)"/><stop offset="1" stop-color="#a02a24" style="stop-color:color-mix(in srgb,var(--atk) 90%,#000)"/></linearGradient>'+
     '<linearGradient id="gu-def" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a82c8" style="stop-color:color-mix(in srgb,var(--def) 72%,#fff)"/><stop offset="1" stop-color="#18457d" style="stop-color:color-mix(in srgb,var(--def) 90%,#000)"/></linearGradient>'+
     '<linearGradient id="gSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9c5ce" style="stop-color:color-mix(in srgb,var(--sea) 78%,#fff)"/><stop offset="1" stop-color="#8fb0bb" style="stop-color:color-mix(in srgb,var(--sea) 94%,#000)"/></linearGradient>';
@@ -2854,7 +2893,7 @@ function buildStatic(){
   for(const h of land){const [x,y]=center(h.c,h.r),d=elev(h);o+='<polygon class="tl-sh" points="'+ptsStr(hexV(x+3,y+d+4,R))+'"/>';}
   for(const h of land){
     const [x,y0]=center(h.c,h.r),d=elev(h),y=y0-d,v=hexV(x,y,R),b=v.map(p=>[p[0],p[1]+d]);
-    const key=h.isl==='CN'||h.t==='main'?'main':(h.t==='city'?'city':h.t==='mtn'?'mtn':'plain');
+    const key=h.isl==='CN'||h.t==='main'?VTKEY(h.vt,true):(h.t==='city'?'city':h.t==='mtn'?'mtn':'plain');
     o+='<g class="tile t-'+key+'">';
     [[3,4,'l'],[2,3,'l'],[1,2,'r'],[0,1,'r']].forEach(([i,j,s])=>{o+='<polygon class="sd '+s+'" points="'+ptsStr([v[i],v[j],b[j],b[i]])+'"/>';});
     o+='<polygon class="tt" fill="url(#gt-'+key+')" points="'+ptsStr(v)+'" data-k="'+h.k+'"/>';
@@ -3452,7 +3491,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-03.21';
+const VERSION='2026-11-03.23';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此更新（對局將結束）':'🔔 有新版本，點此更新';}
