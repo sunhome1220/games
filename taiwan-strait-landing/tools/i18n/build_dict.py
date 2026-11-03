@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Build the i18n dictionary embedded in index.html (<script id="tsl-dict">).
 Inputs: segs.json (source Chinese segments, indexed), c*.tsv (idx<TAB>en<TAB>ja), extras.tsv (key<TAB>en<TAB>ja).
+(Write ∅ in the ja column for a deliberately empty Japanese text.)
+The ja column may be left empty (or omitted): the Japanese UI then shows the English text instead of Chinese, and the key is listed in ja_todo.txt for a later batch translation.
 zh-CN: character map (OpenCC t2s) + phrase overrides where phrase conversion differs from char-by-char.
 Usage: python3 build_dict.py   (needs: pip install opencc-python-reimplemented)"""
 import json, glob, os, re, sys
@@ -21,9 +23,9 @@ for f in sorted(glob.glob(os.path.join(here, 'c0*.tsv'))):
     for ln in lines:
         if not ln.strip('\n'): continue
         parts = ln.split('\t')
-        if len(parts) < 3 or not parts[0].isdigit():
+        if len(parts) < 2 or not parts[0].isdigit():
             print('BAD LINE', f, repr(ln[:60])); sys.exit(1)
-        rows[int(parts[0])] = (parts[1], parts[2])
+        rows[int(parts[0])] = (parts[1], parts[2] if len(parts) > 2 else '')
 for i, sg in enumerate(segs):
     if i not in rows: missing.append(i); continue
     e, j = OVR.get(i, rows[i])
@@ -31,8 +33,15 @@ for i, sg in enumerate(segs):
     en.setdefault(k, e); ja.setdefault(k, j)
 for ln in open(os.path.join(here, 'extras.tsv'), encoding='utf-8').read().split('\n'):
     if ln.strip():
-        k, e, j = ln.split('\t'); en[k] = e; ja[k] = j
+        p = ln.split('\t'); k, e, j = p[0], p[1], (p[2] if len(p) > 2 else ''); en[k] = e; ja[k] = j
 if missing: print('MISSING', missing[:20], len(missing)); sys.exit(1)
+# 日文缺字（第三欄空白或沒有）時，顯示英文，不要顯示中文；待補清單寫到 ja_todo.txt，累積後再一起補譯
+todo = [(k, en[k]) for k in en if not ja[k].strip() and en[k].strip()]
+for k, e in todo: ja[k] = e
+for k in ja:
+    if ja[k] == '∅': ja[k] = ''  # 「∅」＝日文刻意留空（不是缺字）
+open(os.path.join(here, 'ja_todo.txt'), 'w', encoding='utf-8').write(''.join(k + '\t' + e + '\n' for k, e in todo))
+print('ja fallback to English:', len(todo), '(see ja_todo.txt)')
 cc = opencc.OpenCC('t2s'); cp = opencc.OpenCC('tw2sp')
 allc = set()
 for sg in list(en.keys()) + [open(page, encoding='utf-8').read()]:

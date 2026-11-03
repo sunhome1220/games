@@ -209,7 +209,7 @@
 1308	" gives the attacker a win rate of about 	」を選ぶと攻撃側勝率は約 
 1309	%, choosing "	%、「
 1310	" about 	」を選ぶと約 
-1311	There were 	
+1311	There were 	∅
 1312	 game(s) (	 局（
 1313	%) judged stalemate: the capital was held for 2+ consecutive turns, but the attacker was isolated.	%）が膠着と判定：首都を2ターン以上連続で占領したが、攻撃側は孤立した。
 1314	%) took the capital only at the last moment (temporary occupation) and were judged defender victories.	%）は最後の瞬間にようやく首都を占領（一時的占領）し、防衛側の勝利と判定された。
