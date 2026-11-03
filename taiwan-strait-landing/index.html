@@ -2789,7 +2789,15 @@ function buildFar(){
   }
   const Z=(c,r,rx,ry,who,t)=>{const [x,y]=center(c,r);return '<ellipse pointer-events="none" cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" fill="none" stroke="'+col[who]+'" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="6 4"/>'+(t?'<text class="far-tag" x="'+x+'" y="'+(y+ry+10)+'" fill="'+col[who]+'">'+t+'</text>':'');};
   const SUBG=(x,y,who,dash)=>'<g><ellipse cx="'+x+'" cy="'+(y+7)+'" rx="16" ry="4" fill="#000" opacity=".15"/><path d="M'+(x-17)+' '+(y+2)+'q0 -6 8 -6h18q9 0 9 6q0 6 -9 6h-18q-8 0 -8 -6z" fill="'+col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".55"':'')+'/><path d="M'+(x-4)+' '+(y-4)+'v-5h8v5" fill="'+col[who]+'" stroke="#fff" stroke-width="1"/><path d="M'+(x+2)+' '+(y-9)+'v-5h4" fill="none" stroke="#fff" stroke-width="1.2"/><path d="M'+(x-17)+' '+(y+2)+'l-4 -3m4 3l-4 4" stroke="'+col[who]+'" stroke-width="1.5"/></g>';
-  const SH=(c,r,who,t,sub,dash)=>{const [x,y]=center(c,r);const isSub=/潛艦/.test(t);return '<g class="fclick" data-far="'+t+(who==='us'&&t==='潛艦'?'':'')+'">'+(isSub?SUBG(x,y,who,dash):'<ellipse cx="'+x+'" cy="'+(y+5)+'" rx="15" ry="5" fill="#000" opacity=".15"/><path d="M'+(x-14)+' '+y+'h28l-4 7h-20z" fill="'+col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".45"':'')+'/><rect x="'+(x-5)+'" y="'+(y-6)+'" width="10" height="6" fill="'+col[who]+'" stroke="#fff" stroke-width=".8"/>')+'</g><text class="far-lbl" x="'+x+'" y="'+(y-10)+'">'+t+'</text><text class="far-tag" x="'+x+'" y="'+(y+19)+'" fill="'+col[who]+'">'+sub+'</text>';};
+  // 航艦打擊群：側視剪影（平甲板、艦島、桅桿）加兩艘護衛艦，線條簡潔、不用卡通式陰影
+  const CVG=(x,y,who)=>{const f=col[who],ln='stroke="#fff" stroke-width=".8" stroke-linejoin="round"';
+    return '<g><path d="M'+(x-34)+' '+(y+8)+'h68" stroke="#fff" stroke-opacity=".3" stroke-width=".6" fill="none"/>'+
+    '<path d="M'+(x-27)+' '+(y+1.5)+'l-3 -3h50l9 0l-2 3l-3 4.5h-44l-4 -2z" fill="'+f+'" '+ln+'/>'+ // 飛行甲板＋艦艏
+    '<path d="M'+(x-24)+' '+(y-1.5)+'h46" stroke="#fff" stroke-opacity=".6" stroke-width=".5" fill="none"/>'+
+    '<path d="M'+(x-17)+' '+(y-1.5)+'l14 -3" stroke="#fff" stroke-opacity=".5" stroke-width=".5" fill="none"/>'+ // 斜角甲板暗示
+    '<path d="M'+(x+8)+' '+(y-3)+'v-4h5v4" fill="'+f+'" '+ln+'/><path d="M'+(x+10.5)+' '+(y-7)+'v-2" stroke="#fff" stroke-width=".7" fill="none"/>'+
+    '<path d="M'+(x-42)+' '+(y+4)+'h9l-1.3 2.8h-6.4z" fill="'+f+'" '+ln+'/><path d="M'+(x+34)+' '+(y+4)+'h9l-1.3 2.8h-6.4z" fill="'+f+'" '+ln+'/></g>';};
+  const SH=(c,r,who,t,sub,dash)=>{const [x,y]=center(c,r);const isSub=/潛艦/.test(t);return '<g class="fclick" data-far="'+t+(who==='us'&&t==='潛艦'?'':'')+'">'+(isSub?SUBG(x,y,who,dash):/航艦/.test(sub)?CVG(x,y,who):'<ellipse cx="'+x+'" cy="'+(y+5)+'" rx="15" ry="5" fill="#000" opacity=".15"/><path d="M'+(x-14)+' '+y+'h28l-4 7h-20z" fill="'+col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".45"':'')+'/><rect x="'+(x-5)+'" y="'+(y-6)+'" width="10" height="6" fill="'+col[who]+'" stroke="#fff" stroke-width=".8"/>')+'</g><text class="far-lbl" x="'+x+'" y="'+(y-10)+'">'+t+'</text><text class="far-tag" x="'+x+'" y="'+(y+19)+'" fill="'+col[who]+'">'+sub+'</text>';};
   o+=Z(26.5,-1,115,70,'us','美日 沖繩投射區')+Z(19.5,4,150,95,'jp','日本 先島投射區')+Z(26.5,22,95,60,'us','美軍 關島投射區')+Z(27.5,-5.5,95,50,'jp','日本 九州')
     +Z(-4,5,62,300,'atk','共軍 大陸沿海投射區')+Z(8,-3.5,85,55,'atk','共軍 東海艦隊');
   o+=SH(21,11,'atk','共軍潛艦','太平洋・隱蔽',true)+SH(19,9,'us','第7艦隊','航艦打擊群')+SH(18,13,'us','美軍潛艦','隱蔽',true)+SH(16,15,'jp','海自潛艦','隱蔽',true);
@@ -2844,7 +2852,8 @@ function unitSVG(u){
   const box='<rect class="sym" x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'"'+(u.type==='res'?' stroke-dasharray="2 1.5"':'')+'/>';
   const X='<path class="sym" d="M'+bx+' '+by+'L'+(bx+bw)+' '+(by+bh)+'M'+(bx+bw)+' '+by+'L'+bx+' '+(by+bh)+'"/>';
   if(u.type==='arm'||u.type==='tank')sym=box+'<ellipse class="sym" cx="'+x+'" cy="'+(by+5)+'" rx="6" ry="3"/>';
-  else if(u.type==='dd'||u.type==='ff'||u.type==='cv')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+6)+'h14l-2 3h-10z"/><path class="sym" d="M'+(x-2)+' '+(by+6)+'v-3h4v3"/>';
+  else if(u.type==='cv')sym=box+'<path class="sym" d="M'+(x-8)+' '+(by+5.5)+'h16l-1.2 3h-13.6z"/><path class="sym" d="M'+(x+2)+' '+(by+5.5)+'v-2.6h3v2.6"/>';
+  else if(u.type==='dd'||u.type==='ff')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+6)+'h14l-2 3h-10z"/><path class="sym" d="M'+(x-2)+' '+(by+6)+'v-3h4v3"/>';
   else if(u.type==='ssm')sym=box+'<path class="sym" d="M'+(x-5)+' '+(by+8)+'L'+x+' '+(by+2)+'L'+(x+5)+' '+(by+8)+'M'+x+' '+(by+2)+'V'+(by+9)+'"/>';
   else if(u.type==='abn')sym=box+X+'<path class="sym" d="M'+(x-5)+' '+(by+bh)+'Q'+x+' '+(by+4)+' '+(x+5)+' '+(by+bh)+'"/>';
   else if(u.type==='amph'||u.type==='mar')sym=box+X+'<path class="sym" d="M'+(bx+1)+' '+(by+bh-1.5)+'q2.5 -2 5 0t5 0t5 0"/>';
@@ -3389,7 +3398,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-03.13';
+const VERSION='2026-11-03.16';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此更新（對局將結束）':'🔔 有新版本，點此更新';}
