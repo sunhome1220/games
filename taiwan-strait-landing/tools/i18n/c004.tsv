@@ -1,0 +1,363 @@
+1100	 begins, weather	 ターン開始、天候
+1101	(sea movement 	（海上移動 
+1102	, fire 	、火力 
+1103	 point(s)	 ポイント
+1104	, no airborne drops	、空挺降下不可
+1105	Defender reserve brigades completed mobilization on 	防衛側予備旅団の動員完了： 
+1106	 	 
+1107	 phase	フェーズ
+1108	The attacker held the capital and main ports and gained a force advantage for two consecutive turns; the attacker is judged the winner early.	攻撃側が2ターン連続で首都と主要港を支配し戦力優勢を得たため、攻撃側の勝利が早期に判定された。
+1109	Attacker wins early	攻撃側が早期勝利
+1110	2 amphibious brigades detached to form a separate Kinmen/Matsu assault group	水陸両用旅団2個を抽出し、金馬突撃群を別途編成
+1111	Concentrated assault: attacker attack +1 on turns 1–3	集中突撃：第1～3ターン攻撃側の攻撃+1
+1112	Forces scattered across several axes: attacker attack −1 on turns 1–3	兵力が複数軸線に分散：第1～3ターン攻撃側の攻撃−1
+1113	Two axes advancing together: no concentrated-assault bonus	2軸線が並進：集中突撃のボーナスなし
+1114	Attack plan:	攻撃計画：
+1115	North	北部
+1116	Central	中部
+1117	+ Penghu	＋澎湖
+1118	+ Kinmen/Matsu	＋金馬
+1119	Attacker main landing area:	攻撃側の主上陸地区：
+1120	North (Linkou, Taoyuan)	北部（林口、桃園）
+1121	Central (Hsinchu, Miaoli, Taichung Port)	中部（新竹、苗栗、台中港）
+1122	 retook 	 が奪還： 
+1123	Yonaguni	与那国
+1124	Ishigaki	石垣
+1125	Miyako Island	宮古島
+1126	Kadena	嘉手納
+1127	USAF	米空軍
+1128	Naha	那覇
+1129	JASDF	空自
+1130	JMSDF	海自
+1131	Itbayat	イトバヤト
+1132	Batan	バタン
+1133	Babuyan Islands	バブヤン諸島
+1134	Okinawa · Kadena (USAF 18th Wing)	沖縄・嘉手納（米空軍 第18航空団）
+1135	F-15EX, F-35A. Forward air base for joint US-Japan operations.	F-15EX、F-35A。日米共同作戦の前進空軍基地。
+1136	About 600 km from Taiwan; fighters can cover the Taiwan Strait directly.	台湾から約600km。戦闘機が台湾海峡を直接カバーできる。
+1137	Okinawa · Naha (JASDF 9th Air Wing)	沖縄・那覇（空自 第9航空団）
+1138	F-15J fighters.	F-15J戦闘機。
+1139	About 650 km from Taiwan.	台湾から約650km。
+1140	Yonaguni Island (GSDF)	与那国島（陸自）
+1141	Surface-to-ship missile regiment, surveillance radar.	地対艦ミサイル連隊、監視レーダー。
+1142	Only about 110 km from eastern Taiwan; Type 12 surface-to-ship missiles can cover the waters east of Taiwan.	台湾東部からわずか約110km。12式地対艦誘導弾が台湾東方海域をカバーできる。
+1143	Ishigaki Island (GSDF)	石垣島（陸自）
+1144	Surface-to-ship missile regiment garrison.	地対艦ミサイル連隊駐屯地。
+1145	About 270 km from Taiwan.	台湾から約270km。
+1146	Miyako Island (GSDF, JASDF)	宮古島（陸自、空自）
+1147	Surface-to-ship missiles, air defense and radar; guards the Miyako Strait.	地対艦ミサイル、防空、レーダー。宮古海峡を扼する。
+1148	About 400 km from Taiwan, and the key route for PLA fleets into the western Pacific.	台湾から約400km。中国軍艦隊が西太平洋へ出入りする要路でもある。
+1149	Kyushu · Sasebo (JMSDF, US Navy)	九州・佐世保（海自、米海軍）
+1150	Home port of an escort flotilla; arrives 1 turn after intervening.	護衛隊群の母港。参戦後1ターンで到着。
+1151	About 1,100 km from Taiwan.	台湾から約1,100km。
+1152	Guam · Andersen (USAF)	グアム・アンダーセン（米空軍）
+1153	B-1B and B-52 bombers, which can carry long-range anti-ship missiles.	B-1B、B-52爆撃機。長射程対艦ミサイルを搭載可能。
+1154	About 2,800 km from Taiwan; strikes rely on aerial refueling and long-range missiles; the PLA's DF-26 can reach it (striking may cause escalation).	台湾から約2,800km。空中給油と長射程ミサイルで攻撃。中国軍の東風-26が到達可能（攻撃するとエスカレーションの可能性）。
+1155	PLA carrier groups (Liaoning, Shandong, Fujian)	中国軍空母群（遼寧、山東、福建）
+1156	Three carriers (Fujian entered service in November 2025 and is still reaching full capability); carrier aircraft join the air-superiority fight; they may be badly hit by US/Japanese anti-ship attacks.	空母3隻（「福建」は2025年11月に就役、完全戦力化の途上）。艦載機が制空戦に加わる。日米の対艦攻撃で大破する可能性がある。
+1157	Operating in the waters east of Taiwan; carrier numbers grow with the era (3 in 2028, 4 in 2030, the fourth under construction).	台湾東方海域で活動。空母の数は年代とともに増加（2028年は3隻、2030年は4隻、4隻目は建造中）。
+1158	PLA submarines	中国軍潜水艦
+1159	PLA submarines (including nuclear attack submarines)	中国軍潜水艦（原子力攻撃潜水艦を含む）
+1160	Attack US/Japanese ships and the defender navy in the strait and the western Pacific; when US/Japanese ASW (JMSDF escort flotillas, US submarines, carrier helicopters, Taiwan's navy and submarines) is thin they are under almost no pressure, and the more ASW there is, the easier they are to sink.	海峡と西太平洋で日米の艦艇と防衛側海軍を攻撃する。日米の対潜戦力（海自護衛隊群、米軍潜水艦、空母搭載ヘリ、台湾海軍と潜水艦）が薄いとほぼ圧迫を受けず、対潜戦力が多いほど撃沈されやすい。
+1161	Public reporting puts the PLA's total submarines above 60; the game takes only the relative scale committed to the Taiwan Strait and western Pacific, and positions are schematic.	公開報道では中国軍の潜水艦総数は60隻超とされる。ゲームでは台湾海峡と西太平洋に投入される相対規模のみを採り、位置は模式的。
+1162	7th Fleet	第7艦隊
+1163	US Navy 7th Fleet (carrier strike group)	米海軍 第7艦隊（空母打撃群）
+1164	Arrives in the western Pacific 2 turns after intervening; carrier aircraft and ships sortie.	参戦後2ターンで西太平洋海域に到着し、艦載機と艦艇が出撃する。
+1165	Operates in the waters east of Taiwan, threatened by PLA anti-ship missiles.	台湾東方海域で活動し、中国軍の対艦ミサイルの脅威にさらされる。
+1166	US submarines	米軍潜水艦
+1167	US attack submarines (covert)	米軍攻撃潜水艦（秘匿）
+1168	Cannot be struck by fire; may act even in the covert-support phase.	火力攻撃の対象外。秘密支援の段階から行動することがある。
+1169	Positions are not public; shown only schematically on the map.	位置は非公開で、図上では模式的に示すのみ。
+1170	JMSDF submarines	海自潜水艦
+1171	JMSDF submarines (covert)	海自潜水艦（秘匿）
+1172	Cannot be struck by fire.	火力攻撃の対象外。
+1173	Huangshan (Rocket Force base, Anhui)	黄山（ロケット軍基地、安徽）
+1174	Rocket Force missile brigade base; can fire short-range ballistic missiles and long-range rockets.	ロケット軍ミサイル旅団駐屯地。短距離弾道ミサイルと長射程ロケットを発射できる。
+1175	About 750 km from Taipei; its long-range missiles (DF-26 and others) can strike Okinawa and Guam.	台北から約750km。長射程型ミサイル（東風-26など）は沖縄とグアムを攻撃できる。
+1176	Meizhou (Rocket Force base, Guangdong)	梅州（ロケット軍基地、広東）
+1177	Rocket Force missile brigade base.	ロケット軍ミサイル旅団駐屯地。
+1178	About 450 km from southern Taiwan.	台湾南部から約450km。
+1179	Zhoushan (East Sea Fleet base, Zhejiang)	舟山（東海艦隊基地、浙江）
+1180	Base of East Sea Fleet ships and naval aviation.	東海艦隊の艦艇と海軍航空隊の基地。
+1181	About 650 km from Taipei.	台北から約650km。
+1182	Batanes · Itbayat (US forces)	バタン諸島・イトバヤト（米軍）
+1183	A key point on the Luzon Strait where US forces may deploy shore-based anti-ship missiles.	ルソン海峡の要点で、米軍が沿岸配備対艦ミサイルを展開する可能性がある。
+1184	About 200 km from Taiwan's southern tip.	台湾南端から約200km。
+1185	Batanes · Batan Island (US forces)	バタン諸島・バタン島（米軍）
+1186	A key point on the Luzon Strait, one of the EDCA sites.	ルソン海峡の要点で、EDCA拠点の一つ。
+1187	Babuyan Islands (US forces)	バブヤン諸島（米軍）
+1188	A forward island chain south of the Luzon Strait.	ルソン海峡の南にある前方の列島線。
+1189	About 450 km from Taiwan's southern tip.	台湾南端から約450km。
+1190	Northern Luzon · Laoag (EDCA site)	ルソン島北部・ラワグ（EDCA拠点）
+1191	US forces may rotate aircraft here.	米軍が戦闘機を輪番配備できる。
+1192	About 700 km from Taiwan's southern tip.	台湾南端から約700km。
+1193	Northern Luzon · Camilo Osias Naval Base	ルソン島北部・カミーロ・オシアス海軍基地
+1194	Naval facilities US forces may use.	米軍が使用できる海軍施設。
+1195	About 650 km from Taiwan's southern tip.	台湾南端から約650km。
+1196	PLA	中国軍
+1197	Submarines	潜水艦
+1198	US/Japan Okinawa projection zone	日米 沖縄投射区
+1199	Japan Sakishima projection zone	日本 先島投射区
+1200	US Guam projection zone	米軍 グアム投射区
+1201	Japan Kyushu	日本 九州
+1202	PLA mainland coastal projection zone	中国軍 大陸沿岸投射区
+1203	PLA East Sea Fleet	中国軍 東海艦隊
+1204	Pacific · covert	太平洋・秘匿
+1205	Carrier strike group	空母打撃群
+1206	Covert	秘匿
+1207	Pacific	太平洋
+1208	Luzon Strait	ルソン海峡
+1209	▲ Inside the dashed line is the game grid; the outer area is background only (click to view)	▲ 破線の内側がゲームのマス。外周は背景のみ（クリックで確認）
+1210	Taiwan Strait	台湾海峡
+1211	Pacific	太平洋
+1212	Mainland coast	大陸沿岸
+1213	Annihilated	全滅
+1214	Not started · judgment turn 	未開始 · 判定ターン 
+1215	Turn 	ターン 
+1216	 · AI	 · AI
+1217	Weather 	天候 
+1218	 · sea movement 	 · 海上移動 
+1219	Fire 	火力 
+1220	Air sup. 	制空 
+1221	Atk adv.	攻優
+1222	Even	互角
+1223	Def adv.	守優
+1224	 · air-defense suppression	 · 防空制圧
+1225	Supply 	補給 
+1226	phase · weather	フェーズ · 天候
+1227	 · fire 	 · 火力 
+1228	 · supply 	 · 補給 
+1229	Operation ended	作戦終了
+1230	Cancel strike (	攻撃を取り消す（残り 
+1231	Fire strike (	火力攻撃（
+1232	Long-range strike (	長射程攻撃（
+1233	 point(s))	 ポイント）
+1234	The operation has ended; you can review the course of the battle in the log.	作戦は終了しました。戦報で経過を振り返れます。
+1235	AI simulating:	AI推演中：
+1236	Acting…	行動中…
+1237	Simulation paused, waiting for the checkpoint decision.	推演は一時停止中。節目の決定を待っています。
+1238	(AI) acting…	（AI）行動中…
+1239	Click any defender unit, or a US/Japanese base on the theater map, to fire; each shot costs 1 point.	防衛側ユニット、または戦域図上の日米基地をクリックして火力攻撃。1回につき1ポイント消費。
+1240	Click a mainland base (red shape) on the theater map for a long-range strike; each costs 1 long-range missile, and the strike brings Chinese retaliation.	戦域図上の大陸基地（赤い図形）をクリックして長射程攻撃。1回につき長射程ミサイル1発を消費し、攻撃は中国の報復を招く。
+1241	Green = can move, orange = can land, purple = can airdrop; orange circle = attackable target. Click a unit again to deselect.	緑＝移動可、橙＝上陸可、紫＝空挺降下可。橙の円＝攻撃可能な標的。ユニットを再度クリックで選択解除。
+1242	Click a red unit to give orders. First sail amphibious forces out from the coast; they storm the beaches next turn.	赤いユニットをクリックして命令。まず水陸両用部隊を沿岸から出航させ、次ターンに上陸。
+1243	Click a blue unit to give orders. Missile units can fire at attacker convoys at sea within 4 tiles.	青いユニットをクリックして命令。ミサイルユニットは4マス以内の海上の攻撃側船団を攻撃できる。
+1244	Outer schematic area · 	外周の概略図 · 
+1245	This is not game grid and cannot be operated; it only shows where each side's fires come from. Distances are approximate and positions on the map are schematic.	ここはゲームのマスではなく操作できません。各軍の火力の出発位置のみを表示します。距離は概算で、図上の位置は模式的です。
+1246	 · cliff	 · 断崖
+1247	 · mudflat	 · 干潟
+1248	Attack	攻撃
+1249	Defense	防御
+1250	Move	移動
+1251	Steps	ステップ
+1252	At sea	航行中
+1253	Exposed (fired last phase)	露出（前フェーズに発砲）
+1254	Concealed: fire strikes mostly hit decoys	秘匿中：火力攻撃の多くは囮に当たる
+1255	Remaining this phase: 	このフェーズの残り： 
+1256	 shot(s), range 4	 発、射程4
+1257	On standby for airdrop	空挺降下待機
+1258	Garrison	守備部隊
+1259	Done this phase	このフェーズは完了
+1260	Moved; can still attack	移動済み、攻撃可能
+1261	Can act	行動可能
+1262	Terrain defense +	地形防御+
+1263	Can be landed on.	上陸可能。
+1264	 judgment at the end of the turn. If judged now: attacker 	 ターン終了時に判定。いま判定すれば：攻撃側 
+1265	If judged now: attacker 	いま判定すれば：攻撃側 
+1266	(see the "Result" tab)	（「勝敗」タブ参照）
+1267	No log yet.	戦報はまだありません。
+1268	Pure simulation started. Judgment turn: turn 	純シミュレーション開始。判定ターン：第 
+1269	 · turn 	 · 第 
+1270	 · 	 ターン · 
+1271	If judged now: attacker 	いま判定すれば：攻撃側 
+1272	Island force atk 	島上戦力 攻 
+1273	Ports 	港 
+1274	/3 · Taipei 	/3・台北 
+1275	Air force atk 	空軍 攻 
+1276	 · def+allies 	・守と同盟 
+1277	Rocket Force stock 	ロケット軍在庫 
+1278	Military casualties atk 	軍人死傷 攻 
+1279	Taiwanese civilians 	台湾民間人 
+1280	Global stocks 	世界株価 
+1281	average about 	平均 約 
+1282	(the same every game; at the model's upper/lower bound)	（全局同じ。モデルの上限／下限に達している）
+1283	(80% of games fall in 	（8割の局は次の範囲： 
+1284	First-strike focus	先制攻撃の重点
+1285	Defender mobilization policy	防衛側の動員方針
+1286	 games	 局
+1287	Attacker win rate 	攻撃側勝率 
+1288	(small sample)	（サンプル少）
+1289	Not intervening	不介入
+1290	This setup favors the attacker: about 	この設定は攻撃側に有利：約 
+1291	% of games end with the attacker meeting the victory conditions.	%の局で攻撃側が勝利条件を達成。
+1292	This setup favors the defender: only about 	この設定は防衛側に有利：攻撃側が勝利条件を達成したのは約 
+1293	% of games had the attacker meeting the victory conditions.	%の局のみ。
+1294	This setup is balanced: the attacker wins about 	この設定は互角：攻撃側の勝利は約 
+1295	% of games.	%の局。
+1296	Games where the attacker took both Kinmen and Matsu: about 	攻撃側が金門と馬祖の両方を攻略した局：約 
+1297	% (Kinmen 	%（金門 
+1298	%, Matsu 	%、馬祖 
+1299	Source of losses (average steps per game): attacker total 	損失の出所（1局あたり平均ステップ）：攻撃側は合計 
+1300	 steps, of which Taiwan's anti-ship missiles and air/naval forces 	 ステップ、うち台湾の対艦ミサイルと海空軍 
+1301	, ground combat 	、地上戦闘 
+1302	; defender total 	；防衛側は合計 
+1303	 steps, of which PLA fire strikes and others 	 ステップ、うち中国軍の火力攻撃など 
+1304	Of the three conditions the hardest to meet is "	3条件のうち最も達成しにくいのは「
+1305	%), the easiest is "	%）、最も達成しやすいのは「
+1306	The most influential decision is "	影響が最も大きい判断は「
+1307	": choosing "	」：「
+1308	" gives the attacker a win rate of about 	」を選ぶと攻撃側勝率は約 
+1309	%, choosing "	%、「
+1310	" about 	」を選ぶと約 
+1311	There were 	
+1312	 game(s) (	 局（
+1313	%) judged stalemate: the capital was held for 2+ consecutive turns, but the attacker was isolated.	%）が膠着と判定：首都を2ターン以上連続で占領したが、攻撃側は孤立した。
+1314	%) took the capital only at the last moment (temporary occupation) and were judged defender victories.	%）は最後の瞬間にようやく首都を占領（一時的占領）し、防衛側の勝利と判定された。
+1315	US forces pulled back because of rising casualties in 	米軍が損害の増大で後退した局：
+1316	%); the attacker's win rate in those games was about 	%）、それらの局での攻撃側勝率は約 
+1317	; in games with intervention and no pullback about 	；参戦して後退しなかった局は約 
+1318	When the US fully intervened the attacker's win rate was about 	米国が全面参戦した場合の攻撃側勝率は約 
+1319	%, otherwise about 	%、それ以外は約 
+1320	Stalemate 	膠着 
+1321	% · Attacker limited victory (Kinmen/Matsu)	%・攻撃側限定勝利（金馬）
+1322	% · Defender wins 	%・防衛側勝利 
+1323	Attacker military casualties	攻撃側軍人死傷
+1324	Defender military casualties	防衛側軍人死傷
+1325	Taiwanese civilian casualties	台湾民間人死傷
+1326	Highest intervention level	最高関与度
+1327	Posture at the end	終了時の姿勢
+1328	Statistics · 	統計結果 · 
+1329	95% confidence interval about 	95%信頼区間 約 
+1330	%. Settings: judged at turn 	%。設定：第 
+1331	 judgment, 	 ターンで判定、
+1332	. Both sides AI-played; event decisions and dice random.	。双方AI操作、イベント判断とサイコロはランダム。
+1333	Number of conditions the attacker met	攻撃側が達成した条件数
+1334	Win 	勝利 
+1335	% · Capital 	%・首都 
+1336	% · Ports 	%・港 
+1337	% · Force 	%・戦力 
+1338	(win)	（勝利）
+1339	Rate each condition was met	各条件の達成率
+1340	Cost (rough)	代償（概算）
+1341	Attacker casualties about 	攻撃側の死傷 約 
+1342	 · Taiwanese civilians about 	・台湾民間人 約 
+1343	US intervention level, posture and attacker win rate	米国の関与度・姿勢と攻撃側勝率
+1344	 level(s)	 段階
+1345	Decisions and attacker win rate	判断と攻撃側勝率
+1346	Most influential:	最も影響が大きい：
+1347	Decisions make little difference	各判断の差は小さい
+1348	The AI's decisions are random samples and do not represent the best strategy; the more samples, the more accurate, and with few games the win rate may be noticeably off.	AIの判断はランダムサンプルであり最適戦略を表すものではありません。サンプルが多いほど正確で、局数が少ないと勝率にかなりの誤差が出ることがあります。
+1349	Close	閉じる
+1350	Run again	もう一度実行
+1351	Running statistics	統計実行中
+1352	Simulating 	シミュレート中： 
+1353	Both sides are AI-played; event decisions and dice are random; usually under a minute.	双方AI操作、イベント判断とサイコロはランダム。通常1分未満です。
+1354	Cancel and show current results	キャンセルして現在の結果を表示
+1355	Too few games	局数が少なすぎます
+1356	At least 5 games are needed for statistics.	統計には少なくとも5局が必要です。
+1357	Simulation started	推演開始
+1358	Operation started	作戦開始
+1359	. Judgment turn: turn 	。判定ターン：第 
+1360	Confirm strike	攻撃を確認
+1361	Escalate the war?	戦争を拡大しますか？
+1362	Confirm strike	攻撃を実行
+1363	Cancel	キャンセル
+1364	Version 	バージョン 
+1365	🔔 New version available — click to refresh (the current game will end)	🔔 新バージョンあり — クリックして更新（現在の対局は終了します）
+1366	Game mode	対戦方式
+1367	Mode	方式
+1368	First decide how to play: command yourself, or let the AI simulate the whole war.	まず遊び方を決めます：自分で指揮するか、AIに戦争全体を推演させるか。
+1369	Mode	モード
+1370	You order moves, attacks and strikes and keep control of the battlefield at all times.	移動・攻撃・火力攻撃をあなたが命令し、常に戦場を掌握します。
+1371	Both sides are played by the AI, pausing at 7 key checkpoints for your decisions or dice rolls; at the end it produces a simulation timeline and review report.	双方をAIが操作し、7つの重要な節目で一時停止してあなたの判断やサイコロを求めます。最後に推演タイムラインと検討報告を出力します。
+1372	Pure simulation (watch video)	純シミュレーション（ビデオ視聴）
+1373	The AI plays everything and makes decisions and dice rolls automatically, like watching a video of the battle: it plays over the wargame map with both sides' actions and effects shown in the caption area below. You can pause, change speed and drag the timeline, and a post-battle review is attached at the end.	すべてAIが操作し、判断とサイコロも自動で行います。戦闘のビデオを見るように、ウォーゲームのマップを背景に再生し、双方の行動と影響が下の字幕欄に表示されます。一時停止・速度変更・タイムラインのドラッグができ、終了後に戦後検討が付きます。
+1374	Which side do you command?	どちらの側を操作しますか？
+1375	Attacker (red)	攻撃側（赤）
+1376	You command the crossing and landing; the AI defends Taiwan.	あなたが渡海上陸を指揮し、AIが台湾を防衛します。
+1377	Defender (blue)	防衛側（青）
+1378	You defend Taiwan; the AI attacks.	あなたが台湾を防衛し、AIが攻撃します。
+1379	Both sides	両軍を操作
+1380	Take turns operating both sides on the same device.	同じ端末で交代で両軍を操作します。
+1381	Neither (spectate)	どちらも操作しない（観戦）
+1382	The AI plays both sides while you watch the war unfold.	両軍ともAIが操作し、戦局の推移を観戦します。
+1383	Read step by step; a game takes a few minutes.	じっくり読み進めます。1局は数分かかります。
+1384	Recommended speed.	推奨速度。
+1385	Fast-forward, good for just results and highlights.	早送り。結果と見どころだけ見たい人向け。
+1386	Simulation speed	推演速度
+1387	A short pause after each action so it is easy to follow.	各動作の後に短い間があり、見やすくなります。
+1388	Shorter pauses between actions.	動作間の間を短縮します。
+1389	Judgment turn and force era	判定ターンと戦力年代
+1390	Turn	ターン
+1391	The war runs until the chosen turn ends, then three conditions decide the winner; the attacker wins by meeting 2 or more: ① Taipei is attacker-controlled ② at least 2 of Keelung, Taichung Port and Kaohsiung are attacker-controlled ③ attacker island force steps are no less than the defender's. Taking only Taipei and holding it 2+ consecutive turns is a "stalemate" (capital fallen but the attacker isolated); taking it only at the end counts as a temporary occupation and is still a defender win. Each turn is about half a day.	戦争は指定したターンの終了まで続き、その時点で3つの条件により勝敗を判定します。攻撃側は2つ以上達成すれば勝利：① 台北を攻撃側が支配 ② 基隆・台中港・高雄のうち少なくとも2つの港を攻撃側が支配 ③ 攻撃側の島上戦力ステップが防衛側以上。台北だけを取り、2ターン以上連続で支配した場合は「膠着」（首都は陥落したが攻撃側は孤立）。最後になって占領した場合は一時的占領とみなされ、防衛側の勝ちです。1ターンは約半日です。
+1392	Judge after how many turns?	何ターン後に判定？
+1393	Turn 6	第6ターン
+1394	About 3 days. Time is tight; the attacker mostly cannot settle in.	約3日。時間が非常に厳しく、攻撃側は定着しきれないことが多い。
+1395	Turn 8	第8ターン
+1396	About 4 days. Baseline.	約4日。基準設定。
+1397	Turn 10	第10ターン
+1398	About 5 days. The attacker has more time to take ports.	約5日。攻撃側が港を奪う時間に余裕がある。
+1399	Turn 12	第12ターン
+1400	About 6 days. A long war; the attacker has a better chance to settle in.	約6日。長期戦で、攻撃側が定着する可能性が高い。
+1401	Force era (year)	戦力年代（年）
+1402	Mobilization	集結
+1403	Convoys and troops must be massed before the crossing, which is hard to hide completely. The more open the buildup, the sooner Taiwan, the US and Japan prepare.	渡海の前に船団と兵員を集結させる必要があり、完全に隠すのは困難です。集結が公然なほど、台湾・米国・日本は早く準備します。
+1404	How does the attacker mass?	攻撃側はどう集結する？
+1405	Most force (+2 amphibious brigades, +1 heavy brigade, escort fleet +2), but the defender mobilizes early, a US carrier is already nearby, and intervention rolls are +1.	兵力最大（水陸両用旅団+2、重旅団+1、護衛艦隊+2）だが、防衛側は早期に動員し、米空母はすでに近海にいて、各国の参戦判定は+1。
+1406	Mass under the cover of an exercise; both sides get only partial warning. Baseline.	演習を名目に集結し、双方とも部分的な警戒のみ。基準設定。
+1407	Somewhat less force (−2 amphibious brigades, −1 heavy brigade), in exchange for delayed defender mobilization and intervention rolls −1.	兵力は一段少ない（水陸両用旅団−2、重旅団−1）が、防衛側の動員が遅れ、各国の参戦判定は−1。
+1408	Attack axis: north (Linkou, Taoyuan; multiple allowed)	攻撃軸線：北部（林口、桃園、複数選択可）
+1409	Not specified / AI decides	指定しない／AIが決定
+1410	If neither north nor central is ticked, the AI picks one main area and concentrates force.	北部も中部も選ばない場合、AIが主攻地区を1つ選んで兵力を集中します。
+1411	Choose north	北部を選択
+1412	Toward Taipei (Linkou, Tamsui, Taoyuan).	台北方面（林口、淡水、桃園）。
+1413	Attack axis: central (Hsinchu, Miaoli, Taichung Port)	攻撃軸線：中部（新竹、苗栗、台中港）
+1414	Do not choose	選ばない
+1415	Choose central	中部を選択
+1416	Toward Taichung Port and Hsinchu.	台中港と新竹方面。
+1417	Attack axis: Penghu	攻撃軸線：澎湖
+1418	Penghu is not a target; the marine brigade joins the central axis.	澎湖は目標にせず、海兵旅団は中部軸線に加わる。
+1419	Choose Penghu	澎湖を選択
+1420	The marine brigade takes Magong as a springboard (baseline).	海兵旅団が馬公を攻略して足がかりとする（基準設定）。
+1421	Attack axis: Kinmen and Matsu (political / limited objective)	攻撃軸線：金門・馬祖（政治的／限定目標）
+1422	Do not choose (the PLA mostly ignores Kinmen/Matsu)	選ばない（中国軍は多くの場合金馬を無視）
+1423	Taking Kinmen/Matsu has limited meaning; an assault with heavy casualties only invites international backlash.	金馬を取っても意義は限定的で、強攻で大きな犠牲が出ればかえって国際的反発を招く。
+1424	Choose Kinmen/Matsu	金馬を選択
+1425	Forms 5 separate amphibious/marine units to attack Kinmen/Matsu (detaching 2 amphibious brigades from the central first wave), scattering force and losing the concentrated-assault effect; heavy casualties backfire.	金馬攻撃のため水陸両用／海兵ユニット5つを別途編成（中部第一波から水陸両用旅団2個を抽出）。兵力が分散し集中突撃の効果を失う。犠牲が大きいと逆効果。
+1426	In simulation mode you choose the mobilization at the first event checkpoint; nothing to set on this page.	推演モードでは集結を最初のイベント節点で選ぶため、このページでは設定不要です。
+1427	US/Japan intervention	日米の参戦
+1428	Intervention	参戦
+1429	Whether and how the US and Japan intervene will greatly change the course of the war.	米国と日本が参戦するか、どのように参戦するかで戦局は大きく変わります。
+1430	Intervention scenario	参戦シナリオ
+1431	The US and Japan do not roll dice but assess intervention by the war situation and their own interests: semiconductors and the First Island Chain, whether the attacker has taken ports or Taipei, whether the defenders can hold, US casualties, each other's attitude, and whether their own bases are hit. Event checkpoints list the reasons.	日米はサイコロを振らず、戦況と自国の利益から参戦を評価します：半導体と第一列島線、攻撃側が港や台北を奪ったか、守備隊が持ちこたえられるか、米軍の損害、日米相互の態度、自国基地が攻撃されたか。イベント節点に評価理由が一覧されます。
+1432	By interest	利益で判断
+1433	The US is at least a proxy striker from the start of the war (US-Taiwan shared missiles and torpedoes make it hard to tell who fired); each country rolls for its level on turn 3 and again on turn 5; an attacker strike on its bases escalates that country; heavy US casualties make it withdraw to covert support.	米国は開戦時から少なくとも代理攻撃を行う（台米共用のミサイル・魚雷は誰が発射したか区別しにくい）。第3ターンに各国が関与度をサイコロで決め、第5ターンにもう一度振る。攻撃側が基地を攻撃するとその国が格上げされ、米軍の損害が大きいと秘密支援に後退する。
+1434	The US provides only intelligence and targeting data (defender anti-ship missile hit threshold −1), with no supplies, no troops and no open intervention; Japan is neutral and theater bases cannot be struck.	米国は情報と目標データのみを提供し（防衛側対艦ミサイルの命中閾値−1）、補給も派兵も公然参戦もしない。日本は中立で、戦域の基地も攻撃できない。
+1435	Intelligence only	情報提供のみ
+1436	The US and Japan stay out throughout, and theater bases cannot be struck.	日米は終始参戦せず、戦域の基地も攻撃できない。
+1437	The US and Japan intervene on turn 1; carriers still take 2 turns to arrive.	日米は第1ターンから参戦するが、空母の到着には引き続き2ターンかかる。
+1438	Flash news and confirmation	ニュース速報と確認
+1439	Confirm	確認
+1440	Final check of settings. You can go back to any page to change them, and once all pages have been seen you can start the battle from any page.	設定の最終確認です。どのページにも戻って変更でき、すべてのページを見たら、どのページからでも作戦を開始できます。
+1441	Show international flash news at the end of each turn	各ターン終了時に国際ニュース速報を表示
+1442	On	オン
+1443	Battlefield illustration, headlines and situation summary.	戦場のイラスト、見出し、戦況要約。
+1444	Go straight to the next turn.	すぐに次のターンへ進む。
+1445	Setup · Page 	作戦設定 · 第 
+1446	 	 ページ
+1447	Page 	第 
+1448	: 	 ：
+1449	Control	操作
+1450	AI automatic (video)	AI自動（ビデオ）
+1451	Playback	再生
+1452	Speed	速度
+1453	Judgment	判定
+1454	Era	年代
+1455	Chosen during the simulation	推演中に選択
+1456	Flash news	ニュース速報
+1457	Start simulation	推演開始
+1458	Start playback	再生開始
+1459	Pages not yet seen: 	まだ見ていないページ： 
+1460	. You can start only after seeing every page.	。すべてのページを見ないと開始できません。
+1461	Setup complete; you can start from any page.	設定完了。どのページからでも開始できます。
+1462	Shrink theater map	戦域図を縮小

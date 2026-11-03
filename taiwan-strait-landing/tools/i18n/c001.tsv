@@ -1,0 +1,270 @@
+150	Cost of war:	戦争の代償：
+151	The "Cost of war" side panel converts losses into casualties by force structure (a combined brigade is about 5,000 people; the death ratio is higher for units sunk at sea than in ground combat), and accumulates civilian casualties from fire strikes and city fighting, each country's economic loss, global stocks and chip supply. At settlement it projects a one-year impact from Bloomberg Economics' 2024 estimates (a Taiwan Strait war cuts global GDP by about 10%, a blockade about 5%). All figures are rough game estimates from public data.	サイドバーの「戦争の代償」は、部隊編制に応じて損失を死傷者数に換算し（合成旅団は約5,000人、海上で撃沈された場合は陸戦より死亡率が高い）、火力攻撃と市街戦による民間人被害、各国の経済損失、世界株価、半導体供給を累積します。精算時にはBloomberg Economicsの2024年推計（台湾海峡戦争で世界GDPが約10%減、封鎖で約5%減）に基づき1年間の影響を推計します。数値はすべて公開データに基づくゲーム上の概算です。
+152	Simulation and judgment	推演と判定
+153	Pure simulation (video):	純シミュレーション（ビデオ）：
+154	The AI plays everything and makes decisions and dice rolls automatically: it first runs the whole war instantly and records every action, then plays it back over the wargame map. The caption area below the map shows both sides' actions and effects, with situation, casualty and economy summaries; you can pause, change speed (1–8×), drag the timeline or jump turns, and circles on the map mark where this step changed things. Afterwards you can see the after-action review, watch the video again or simulate once more.	すべてAIが操作し、判断とサイコロも自動で行います。まず戦争全体を一瞬で実行して全行動を記録し、その後ウォーゲームのマップを背景に再生します。マップ下の字幕欄に両軍の行動と影響、戦況・死傷・経済の要約が表示され、一時停止・速度変更（1～8倍）・タイムラインのドラッグ・ターンジャンプができ、マップ上の丸がこのステップで変化した場所を示します。終了後は戦後検討を見たり、ビデオを見返したり、もう一度シミュレートできます。
+155	AI simulation:	AI推演：
+156	Both sides are played by the AI, which pauses at 7 key checkpoints: pre-war mobilization, timing of the launch, first strike, mobilization and social resilience, each country's intervention decision, prolonging the war, and the final offensive. Matters a commander can decide are chosen by you for that side; factors beyond anyone's control such as weather, interception, public morale and foreign reaction are decided by dice. After each checkpoint the current situation is shown, and at the end a full timeline is listed.	双方をAIが操作し、推演の途中で7つの重要な節目で一時停止します：開戦前の集結、開始時機、先制攻撃、動員と社会のレジリエンス、各国の参戦判断、戦争の長期化、最後の攻勢。指揮官が決められる事柄はあなたがその側のために選び、天候・迎撃・民心・外国の反応など制御できない要素はサイコロで決まります。各節目の後に現在の戦況が表示され、推演終了時に完全なタイムラインが一覧されます。
+157	AI auto-play:	AIに任せる：
+158	In a phase you control, press "AI plays remaining units"; units that have not acted are handled by the AI and the phase then ends automatically.	あなたが操作するフェーズで「残りのユニットをAIに任せる」を押すと、未行動のユニットをAIが処理し、フェーズが自動的に終了します。
+159	Statistics:	統計：
+160	Press "Run statistics" on the setup page or in video mode and the AI simulates 50/100/300 games automatically (both sides AI-played, decisions and dice random), listing the attacker's win rate with confidence interval, the rate at which each condition is met, the cost ranges, and the effect of US intervention level and each decision on win rate.	設定ページまたはビデオモードで「統計を実行」を押すと、AIが50／100／300局を自動でシミュレートし（双方AI操作、判断とサイコロはランダム）、攻撃側の勝率と信頼区間、各条件の達成率、代償の範囲、米国の関与度と各判断が勝率に与える影響を一覧します。
+161	Judgment:	判定：
+162	At the end of the judgment turn, three conditions are checked; the attacker wins by meeting 2 or more. If only "capital" is met: Taipei held by the attacker for at least 2 consecutive turn-ends is a "stalemate"; captured only on the last turn it counts as a temporary occupation and the defender wins. If the defender's main-island forces are wiped out the attacker wins immediately; if the attacker's forces are wiped out the defender wins immediately.	判定ターン終了時に3つの条件を確認し、攻撃側は2つ以上達成すれば勝利です。「首都」のみ達成の場合：台北を攻撃側が少なくとも2ターン連続で支配していれば「膠着」。最終ターンになってはじめて占領した場合は一時的占領とみなし、防衛側の勝ちです。防衛側の本島部隊が全滅すれば攻撃側が即勝利、攻撃側部隊が全滅すれば防衛側が即勝利です。
+163	An abstracted wargame. Map scale, forces and values are game settings and do not represent real force levels or operational plans.	抽象化されたウォーゲームです。マップの縮尺、部隊、数値はゲーム設定であり、実際の戦力や作戦計画を表すものではありません。
+164	🔔 New version available — click to refresh	🔔 新バージョンあり — クリックして更新
+165	Simulating the war…	戦局をシミュレート中…
+166	Back to events ▲	イベントに戻る ▲
+167	Base 	基礎 
+168	% · luck 	%・運 
+169	% (roll 	%（出目 
+170	Sea	海域
+171	Mainland	大陸
+172	City	都市
+173	Mountain	山地
+174	Port	港
+175	Airfield	飛行場
+176	Amphibious combined brigade	水陸両用合成旅団
+177	Amphibious	水陸
+178	Marine brigade	海兵旅団
+179	Marine	海兵
+180	Airborne brigade	空挺旅団
+181	Airborne	空挺
+182	Heavy combined brigade	重合成旅団
+183	Armor	機甲
+184	Combined-arms brigade	諸兵科連合旅団
+185	Infantry	歩兵
+186	Armored brigade	機甲旅団
+187	Reserve brigade	予備旅団
+188	Reserve	予備
+189	Shore-based anti-ship missiles	沿岸配備対艦ミサイル
+190	Missile	ミサイル
+191	PLA escort	中国軍護衛艦
+192	Escort	護衛
+193	PLA carrier group	中国軍空母群
+194	Carrier	空母
+195	Defender ship group (frigates, missile boats)	防衛側艦艇群（フリゲート、ミサイル艇）
+196	Ships	艦艇
+197	Good	良好
+198	Fair	普通
+199	Bad	悪天候
+200	Fuzhou	福州
+201	Pingtan	平潭
+202	Longtian	龍田
+203	Quanzhou	泉州
+204	Xiamen	アモイ
+205	Ningbo	寧波
+206	Shantou	汕頭
+207	Changle	長楽
+208	Hui'an	恵安
+209	Lishe	櫟社
+210	Luqiao	路橋
+211	Longwan	龍湾
+212	Wuyishan	武夷山
+213	Liancheng	連城
+214	Longhai	龍海
+215	Gaoqi	高崎
+216	Chaoshan	潮汕
+217	Tamsui	淡水
+218	Keelung	基隆
+219	Linkou	林口
+220	Taipei	台北
+221	Taoyuan Airport	桃園空港
+222	Taoyuan	桃園
+223	Yilan	宜蘭
+224	Hsinchu	新竹
+225	Hukou	湖口
+226	Miaoli	苗栗
+227	Taichung Port	台中港
+228	Taichung	台中
+229	Hualien	花蓮
+230	Changhua	彰化
+231	Yunlin	雲林
+232	Chiayi	嘉義
+233	Tainan	台南
+234	Taitung	台東
+235	Kaohsiung	高雄
+236	Pingtung	屏東
+237	Hengchun	恆春
+238	Magong	馬公
+239	Penghu	澎湖
+240	Hsinchu Base	新竹基地
+241	Ching Chuan Kang	清泉崗
+242	Chiayi Base	嘉義基地
+243	Tainan Base	台南基地
+244	Gangshan Base	岡山基地
+245	Pingtung Base	屏東基地
+246	Su'ao	蘇澳
+247	Chiashan Base	佳山基地
+248	Zhihang Base	志航基地
+249	Baisha	白沙
+250	Kinmen	金門
+251	Matsu	馬祖
+252	Ground combat	地上戦闘
+253	 lost with the fall of the port	 港の陥落に伴い損失
+254	 at 	 / 
+255	 annihilated	 全滅
+256	Attacker captured 	攻撃側が占領：
+257	, defender air force −1	、防衛側空軍−1
+258	 at 	 / 
+259	 landed	 上陸
+260	 airborne drop 	 空挺降下 
+261	Drop zone suppressed by ground fire	降下地点が地上砲火で制圧された
+262	Transport formation intercepted by air defense	輸送機群が防空に迎撃された
+263	) lost 1 step	）1ステップ損失
+264	Airborne losses	空挺損失
+265	 from 	 / 
+266	 sailed	 出航
+267	Both sides took losses (defender −	双方に損失（防衛側−
+268	, attacker −	、攻撃側−
+269	Defender lost 	防衛側の損失：
+270	 step(s)	 ステップ
+271	Attacker lost 	攻撃側の損失：
+272	 attacks 	 が攻撃：
+273	 's 	 の 
+274	 vs 	 対 
+275	 (suppression probability 	（制圧確率 
+276	 held	 阻止
+277	Port fell	港が陥落
+278	 advanced and occupied 	 が進出して占領：
+279	The Kinmen/Matsu fighting caused heavy casualties, provoking strong international backlash and rallying Taiwanese morale.	金馬戦で大きな犠牲が出て、国際世論が強く反発し、台湾の民心が結束した。
+280	Kinmen/Matsu assault	金馬強攻
+281	Anti-ship missiles hit the sea unit 	対艦ミサイルが海上の標的に命中：
+282	 (saturation attack)	（飽和攻撃）
+283	Saturation attack	飽和攻撃
+284	Anti-ship missiles	対艦ミサイル
+285	Anti-ship missiles missed (	対艦ミサイルは外れた（
+286	Fire strike 	火力攻撃 
+287	: hit decoys and empty vehicles; the real launchers had already relocated	：囮と空の車両に命中。本物の発射車はすでに移動転進済み
+288	Fire strike hit 	火力攻撃が命中：
+289	 missed (	 は外れた（
+290	Capital Taipei	首都台北
+291	Taipei is attacker-controlled at judgment	判定時に台北が攻撃側の支配下にある
+292	Currently 	現在は
+293	 controlled	 が支配
+294	 (held for 	（連続 
+295	 turns)	 ターン）
+296	Main ports	主要港
+297	The attacker controls at least 2 of Keelung, Taichung Port and Kaohsiung	攻撃側が基隆、台中港、高雄のうち少なくとも2つを支配
+298	Attacker controls 	攻撃側の支配：
+299	Force on the island	島上戦力
+300	The attacker's main-island force is no less than the defender's and at least 4 steps (enough to hold)	攻撃側の本島戦力が防衛側以上で、かつ4ステップ以上（定着に十分）
+301	Attacker 	攻撃側 
+302	 steps vs defender 	 ステップ 対 防衛側 
+303	Attacker decisive victory	攻撃側の決定的勝利
+304	Capital, ports and force superiority all secured and held for several consecutive turns; the defender's line has collapsed.	首都・港・戦力優勢をすべて確保し、複数ターン連続で定着。防衛側の防衛線は崩壊した。
+305	Attacker victory	攻撃側の勝利
+306	All three conditions were met, but only together at the very end; the foothold is not yet fully secure.	3条件すべてを達成したが、同時に揃ったのは最後になってからで、足場はまだ完全には固まっていない。
+307	The attacker met two conditions and held them for consecutive turns, seizing the strategic initiative.	攻撃側は2条件を達成して連続して定着させ、戦略的主導権を握った。
+308	Attacker narrow win	攻撃側の辛勝
+309	The attacker met two conditions, but only on the final turn; the foothold is unsteady and the defender is expected to mass for a counterattack.	攻撃側は2条件を達成したが、最終ターンになってからで、足場は不安定。防衛側は反攻の態勢を整えると見られる。
+310	Stalemate	膠着
+311	The attacker has held the capital for 	攻撃側は首都を連続 
+312	 consecutive turns, but does not control enough ports and the island force is too small to hold; the supply line is isolated. The defender is expected to mass forces to retake it, and the outcome is still undecided.	 ターン占領しているが、十分な港を支配しておらず島上戦力も定着に足りず、補給線は孤立している。防衛側は兵力を集結して奪還すると見られ、戦局の勝敗はまだ決まっていない。
+313	Defender victory	防衛側の勝利
+314	The attacker took the capital only at the very end (held for only 	攻撃側は最後になってようやく首都を占領した（保持したのはわずか 
+315	 turns); the foothold is unsteady, all other conditions failed, and it is expected to be retaken quickly — the offensive is deemed a failure.	 ターン）。足場は不安定で他の条件はすべて未達成、すぐに奪還されると見られ、攻勢は失敗とみなされる。
+316	Beachhead standoff	橋頭堡膠着
+317	Although the attacker did not meet two conditions, it holds 	攻撃側は2条件を達成していないが、島上に 
+318	 steps of force on the island and controls 	 ステップの戦力を定着させ、 
+319	 port(s); the defender cannot dislodge it for now. The war is a tug-of-war with no winner decided yet.	 つの港を支配しており、防衛側は当面これを排除できない。戦局は一進一退で、勝敗はまだ決していない。
+320	The attacker made gains but failed to meet two conditions at once; the offensive stalled.	攻撃側は戦果を挙げたが、2条件を同時に達成できず、攻勢は頓挫した。
+321	Defender decisive victory	防衛側の決定的勝利
+322	The attacker failed all three conditions and left no troops on the island; the landing operation failed.	攻撃側は3条件すべてを達成できず、島に部隊も残らなかった。上陸作戦は失敗。
+323	The attacker failed all three conditions; although a few units landed, they cannot hold, and the landing operation failed.	攻撃側は3条件すべてを達成できなかった。少数の部隊が上陸したものの定着できず、上陸作戦は失敗。
+324	The attacker took Kinmen and Matsu at limited cost but did not achieve the main goal of landing on Taiwan proper.	攻撃側は限られた代償で金門と馬祖を奪取したが、台湾本島上陸という主目標は達成できなかった。
+325	The attacker's assault on Kinmen/Matsu caused heavy casualties, provoking international backlash and rallying Taiwanese morale; the gains at Kinmen/Matsu were not worth the cost.	攻撃側の金馬強攻は大きな犠牲を出し、かえって国際的反発を招き台湾の民心を結束させた。金馬の戦果は割に合わない。
+326	(Pyrrhic)	（ピュロスの勝利）
+327	Although the defender held, Taiwanese civilian casualties were about 	防衛側は持ちこたえたが、台湾の民間人死傷は約 
+328	 thousand	 千人
+329	 port(s) self-demolished	 つの港が自ら破壊された
+330	; postwar reconstruction and economic recovery will be costly.	。戦後の復興と経済回復の負担は重い。
+331	The defender held Taiwan at a bearable cost.	防衛側は耐えうる代償で台湾を守り抜いた。
+332	Although the attacker reached its goals, military casualties were about 	攻撃側は目標を達成したが、軍人死傷は約 
+333	 thousand, global stocks fell a cumulative 	 千人、世界株価は累計 
+334	, and nuclear weapons were used	、さらに核兵器が使用された
+335	, facing long-term sanctions and isolation; strategically it was not worth the cost.	。長期的な制裁と孤立に直面し、戦略的には割に合わない。
+336	The attacker reached its goals at a relatively controllable cost.	攻撃側は比較的抑えられた代償で目標を達成した。
+337	Neither side achieved a decisive result; the strategic assessment depends on later negotiations and each side's staying power.	どちらも決定的な結果を得られず、戦略的評価は今後の交渉と双方の持久力次第である。
+338	The defender's main-island forces were wiped out; the attacker wins immediately.	防衛側の本島部隊が全滅し、攻撃側が即勝利。
+339	The attacker's forces were wiped out; the defender wins immediately.	攻撃側部隊が全滅し、防衛側が即勝利。
+340	(Nuclear cost)	（核の代償）
+341	 The attacker used tactical nuclear weapons: the US and Japan intervened fully, the global economy was badly hit and international isolation followed — this is an unsustainable victory.	 攻撃側が戦術核兵器を使用した。日米が全面介入し、世界経済は大打撃を受け、国際的に孤立した。持続不可能な勝利である。
+342	Attacker limited victory (Kinmen/Matsu)	攻撃側の限定勝利（金馬）
+343	The main-island offensive on Taiwan failed (	台湾本島への攻勢は失敗した（
+344	), but the attacker took Kinmen and Matsu and keeps a limited victory; politically it does not come away empty-handed.	）が、攻撃側は金門と馬祖を奪取して限定勝利を確保した。政治的には手ぶらでは帰らない。
+345	Operation ended:	作戦終了：
+346	Ended early · turn 	早期終了 · 第 
+347		ターン
+348	Turn 	第 
+349	 judgment	 ターン 判定
+350	Attacker met 	攻撃側の達成： 
+351	 / 3 conditions (2 or more needed to win)  	 / 3 条件（勝利には2つ以上必要）　
+352	For reference: air superiority 	参考：制空 
+353	, attacker escort fleet 	、攻撃側護衛艦隊 
+354	, carriers 	、空母 
+355	; Kinmen 	；金門 
+356	captured	攻略済み
+357	defender-controlled	防衛側支配
+358	, Matsu 	、馬祖 
+359	Expand all	すべて展開
+360	Collapse all	すべて折りたたむ
+361	Simulate again	もう一度シミュレート
+362	New game	最初からやり直す
+363	Watch video again	ビデオを見返す
+364	View map	マップを見る
+365	2026 present	2026年 現況
+366	From 2025–2026 public reporting: Taiwan has just received its first F-16Vs, HIMARS deliveries are arriving, Yunfeng is not yet in volume production and the volcano mine-laying vehicles are not yet delivered; the PLA has about 250 DF-26 launchers, the DF-17 and PCH-191 long-range rockets, and the Fujian has just entered service.	2025～2026年の公開報道に基づく：台湾は最初のF-16Vを受領したばかりで、HIMARSが順次到着、雲峰はまだ量産されておらず、ボルケーノ撒布車も未納入。中国軍は東風-26発射器を約250基、東風-17とPCH-191長射程ロケットを保有し、「福建」が就役したばかり。
+367	2027 (estimate)	2027年（推計）
+368	14 volcano mine-laying sets expected to be in place (deliveries repeatedly delayed; latest reports say 2027); Fujian at full capability; F-16V deliveries continue and Yunfeng starts production.	ボルケーノ撒布車14セットが配備予定（納入は何度も延期、最新報道では2027年）。「福建」が完全戦力に。F-16Vの納入が続き、雲峰が量産開始。
+369	2028 (estimate)	2028年（推計）
+370	Assuming scheduled deliveries arrive: 66 F-16Vs, more HIMARS and Harpoon coastal defense, the first Hai Kun submarine in service; the PLA adds DF-26 brigades and long-range rockets.	予定通りの納入を仮定：F-16V 66機、HIMARSとハープーン沿岸防衛の増加、海鯤潜水艦1番艦の就役。中国軍は東風-26旅団と長射程ロケットを増強。
+371	2029 (estimate)	2029年（推計）
+372	The special budget (the Legislative Yuan's reduced version) buys progressively: more long-range precision fires and air defense, with drones and loitering munitions starting to fill the gap; the PLA keeps expanding.	特別予算（立法院の縮小版）による段階的な調達：長射程精密火力と防空の増強、無人機と徘徊型弾薬の補充が始まる。中国軍も拡大を続ける。
+373	2030 (estimate)	2030年（推計）
+374	Assuming the special budget and domestic weapons are delivered: layered air defense and more long-range precision fires; the PLA's fourth carrier is under construction and the Rocket Force expands.	特別予算と国産兵器が実現すると仮定：多層防空と長射程精密火力の増強。中国軍は4隻目の空母を建造中で、ロケット軍も拡大。
+375	2031 (estimate)	2031年（推計）
+376	The NASAMS contract is expected to deliver in 2031, markedly strengthening air defense; Hai Kun submarines rise to 2 (8 planned in all; schedule uncertain).	NASAMS契約は2031年に納入予定で、防空が大きく強化される。海鯤潜水艦は2隻に増加（計画は計8隻、進捗は不確実）。
+377	2032 (estimate)	2032年（推計）
+378	The special-budget period (2026–2033) nears its end and both sides have grown markedly; figures are estimates with the highest uncertainty.	特別予算の期間（2026～2033年）が終盤に近づき、双方とも大きく成長。数値は推計で、不確実性が最も高い。
+379	 sunk (naval engagement)	 撃沈（海上交戦）
+380	Defender pre-laid mines: 	防衛側の事前敷設機雷：
+381	 spot(s) (beaches and offshore).	 か所（海岸と沿海）。
+382	 hit a mine (	 触雷（
+383	Mine strike	触雷
+384	Naval mine	機雷
+385	 passed through the 	 が通過：
+386	 minefield without hitting a mine (	 の機雷原、触雷せず（
+387	Minesweeper hit a mine (attacker escort −1)	掃海艦が触雷（攻撃側護衛艦−1）
+388	Attacker minesweeping: cleared 	攻撃側の掃海：除去 
+389	Hsiung Feng II/III anti-ship missiles (about 100 each point)	雄風II／III対艦ミサイル（1ポイント約100発）
+390	Submarines (including nuclear attack submarines)	潜水艦（原子力攻撃潜水艦を含む）
+391	Mines (volcano mine-laying vehicles, naval mines)	機雷（ボルケーノ撒布車、機雷）
+392	Land-based air force (Eastern Theater)	陸上空軍（東部戦区）
+393	Carriers (including carrier aircraft)	空母（艦載機を含む）
+394	Cruise missiles (Changjian, Yingji)	巡航ミサイル（長剣、鷹撃）
+395	Air defense	防空
+396	Naval escort fleet	海軍護衛艦隊
+397	Short-range ballistic missiles and long-range rockets	短距離弾道ミサイルと長射程ロケット
+398	DF-26/21D	東風-26／21D
+399	DF-17 hypersonic	東風-17極超音速
+400	Air force (F-16V and others)	空軍（F-16Vなど）
+401	Navy	海軍
+402	Submarines (Hai Kun)	潜水艦（海鯤）
+403	Air defense (Tien Kung and others)	防空（天弓など）
+404	Long-range missiles (Yunfeng and others)	長射程ミサイル（雲峰など）
+405	Drones and loitering munitions	無人機と徘徊型弾薬
+406	United States	米国
+407	Japan	日本
+408	Non-intervention	不介入
+409	Intelligence support	情報支援
+410	Limited intervention	限定的関与
+411	Full intervention	全面参戦
+412	Neutral	中立
+413	Rear support	後方支援
+414	Rocket Force	ロケット軍
+415	Air base	空軍基地
+416	Naval base	海軍基地
+417	Staging port	集結港
+418	Huangshan	黄山
+419	Rocket Force missile brigade base (Anhui)	ロケット軍ミサイル旅団駐屯地（安徽）

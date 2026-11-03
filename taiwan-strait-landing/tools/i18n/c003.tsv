@@ -1,0 +1,340 @@
+760	Skipped per opening scenario (	開局シナリオにより省略（
+761	Has not occurred	未発生
+762	Simulation timeline	推演タイムライン
+763	 event checkpoint(s)	 個のイベント節点
+764	At the time: attacker on island 	当時：攻撃側の島上 
+765	 steps, defender 	 ステップ、防衛側 
+766	 steps, ports 	 ステップ、港 
+767	/3, Taipei	/3、台北
+768	 controlled, 	 支配、
+769	, attacker met 	、攻撃側の達成 
+770	 Final judgment	 最終判定
+771	Attacker on island 	攻撃側の島上 
+772	 steps; 	 ステップ；
+773	Laoag	ラワグ
+774	Camilo Osias	カミーロ・オシアス
+775	Basa	バサ
+776	Magsaysay Fort	マグサイサイ砦
+777	Subic Bay	スービック湾
+778	Batanes (Basco)	バタン諸島（バスコ）
+779	Taiwan Strait theater (map above)	台湾海峡戦場（上の地図）
+780	about 650 km	約650km
+781	Yonaguni 110 km	与那国 110km
+782	Mainland China	中国大陸
+783	Eastern Theater	東部戦区
+784	East China Sea	東シナ海
+785	Kyushu	九州
+786	Okinawa	沖縄
+787	Taiwan	台湾
+788	Luzon	ルソン
+789	South China Sea	南シナ海
+790	↗ Yokosuka (7th Fleet home port)	↗ 横須賀（第7艦隊の母港）
+791	Chinese bases	中国側基地
+792	Operating 	稼働中 
+793	  ◆Rocket Force ▲Air Force ■Navy ●Staging port	　◆ロケット軍 ▲空軍 ■海軍 ●集結港
+794	Operating	稼働中
+795	. Cumulative US casualties 	。米軍の累積損害 
+796	(withdrawn due to casualties)	（損害により後退済み）
+797	Long-range strike mode: click a mainland base (red shape); roll 4–6 or higher. A hit weakens the Rocket Force, air force or escort fleet, but China will retaliate.	長射程攻撃モード：大陸の基地（赤い図形）をクリック。4～6以上が必要。命中するとロケット軍・空軍・護衛艦隊が弱体化するが、中国が報復する。
+798	, integrity 	、健全度 
+799	, needs a roll of 	、攻撃には出目 
+800	 or higher to hit	 以上が必要
+801	, knocked out	、機能停止
+802	Fire strike mode: click a base to strike (needs 	火力攻撃モード：基地をクリックして攻撃（必要 
+803	4–6). Striking a neutral country's base brings it into the war.	4～6）。中立国の基地を攻撃するとその国が参戦する。
+804	, needs a roll of 	、攻撃には出目 
+805	Click a base to see its garrison. After US/Japanese forces intervene, the AI sorties them automatically in the defender phase.	基地をクリックして駐留部隊を確認。日米部隊が参戦すると、AIが防衛側フェーズに自動で出撃させる。
+806	 submarine(s)	 隻の潜水艦
+807	 carrier(s)	 隻の空母
+808	 aircraft	 機の戦闘機
+809	 warship(s)	 隻の戦闘艦
+810	 air-defense site(s)	 か所の防空陣地
+811	0,000	万
+812	 people	人
+813	 people	人
+814	 trillion USD	 兆ドル
+815	 hundred million USD	 億ドル
+816	Loss about 	損失 約 
+817	War	戦争
+818	Blockade and limited operations	封鎖と局地戦
+819	From the start of the war, this accumulates casualties on both sides (military and civilian), economic losses and the global market reaction. Figures are game conversions roughly estimated from public data.	開戦後、ここに双方の軍民死傷、経済損失、世界市場の反応が累積されます。数値は公開データに基づくゲーム上の概算換算です。
+820	Casualties (killed, wounded, missing)	死傷者（死亡・負傷・行方不明）
+821	Attacker military	攻撃側軍人
+822	about 	約 
+823	Defender military	防衛側軍人
+824	US forces / JSDF	米軍／自衛隊
+825	Taiwanese civilians	台湾民間人
+826	Mainland civilians (around facilities)	大陸民間人（施設周辺）
+827	Japanese and Guam civilians	日本・グアムの民間人
+828	Economic loss (cumulative)	経済損失（累計）
+829	China	中国
+830	US / Japan	米国／日本
+831	Global stocks	世界株価
+832	Advanced chip supply	先端半導体供給
+833	Disrupted (Taiwan produces about 90% of the world's supply)	途絶（台湾の生産能力は世界の約9割）
+834	Normal	正常
+835	Assault landing	強襲上陸
+836	Military: atk 	軍人：攻 
+837	 · def 	・守 
+838	; Taiwanese civilians 	；台湾民間人 
+839	Global GDP −	世界GDP −
+840	% · stocks 	%・株価 
+841	Military and civilian casualties	軍民死傷
+842	Casualties	死傷
+843	of which killed or missing	うち死亡・行方不明
+844	Japan Self-Defense Forces	日本自衛隊
+845	Mainland civilians (around military facilities)	中国大陸民間人（軍事施設周辺）
+846	Japanese civilians (Okinawa and elsewhere)	日本民間人（沖縄など）
+847	Guam residents	グアム住民
+848	Equipment:	装備：
+849	Defender 	防衛側 
+850	; Rocket Force fired about 	；ロケット軍の発射 約 
+851	 missiles	 発のミサイル
+852	. Mainland civilian casualties count only collateral around military facilities	。大陸民間人の死傷は軍事施設周辺の巻き添えのみ計上
+853	. Mainland China was not struck; this game does not count mainland civilian casualties	。中国大陸本土は攻撃を受けておらず、本ゲームでは大陸民間人の死傷を計上しない
+854	Economic cost	経済的代償
+855	Direct loss during the war	戦時中の直接損失
+856	If the war and sanctions continue for a year, GDP impact	戦争と制裁が1年続いた場合のGDP影響
+857	% (about 	%（約 
+858	No public estimate	公的推計なし
+859	Global	世界
+860	Stocks cumulative 	株価の累計 
+861	Advanced chips: Taiwan produces about 90% of the world's advanced-process chips; supply is interrupted during the war, and the auto, phone and AI-server industries are hit first. The one-year GDP impact is based on Bloomberg Economics' 2024 estimates (	先端半導体：台湾は世界の先端プロセス半導体の約9割を生産しており、戦時中は供給が途絶し、自動車・スマートフォン・AIサーバー産業が真っ先に打撃を受けます。1年間のGDP影響はBloomberg Economicsの2024年推計を基準としています（
+862	scenario), converted by this game's war scale and outcome 	シナリオ）。本局の戦争規模と結果で換算： 
+863	%. All figures are rough game estimates from public data, for reference only.	%。数値はすべて公開データに基づくゲーム上の概算で、参考値です。
+864	Sources of sea losses (steps): Taiwan's shore-based and ship-launched anti-ship missiles 	海上損失の出所（ステップ）：台湾の岸置・艦載対艦ミサイル 
+865	, Taiwan's air/naval forces and drones 	、台湾海空軍と無人機 
+866	, US forces 	、米軍 
+867	, Japan 	、日本 
+868	Crossing losses: about 	渡海損失：攻撃側の約 
+869	 brigade(s) of the attacker lost fighting strength during the crossing, with casualties of about 	 個旅団が渡海中に戦力を失い、死傷は約 
+870	 (of which about 	（うち約 
+871	 killed or missing)	 が死亡・行方不明）
+872	, about 	、約 
+873	 caused by US/Japanese forces	 は日米部隊によるもの
+874	, about 	、約 
+875	 caused by the defender's anti-ship missiles and navy	 は防衛側の対艦ミサイルと海軍によるもの
+876	Foreign intervention:	外国の参戦：
+877	US/Japanese forces together caused about 	日米部隊が攻撃側に与えた損害は合計約 
+878	 attacker casualties.	 の死傷。
+879	but actual results were limited.	が、実際の戦果は限定的だった。
+880	Attacker strikes on bases triggered escalation:	攻撃側の基地攻撃がエスカレーションを招いた：
+881	Foreign intervention limited:	外国の参戦は限定的：
+882	; the war was decided mainly by cross-strait forces.	。戦局は主に両岸の戦力で決まった。
+883	Strikes on the mainland: Taiwan and allied forces launched 	大陸への攻撃：台湾と同盟軍が 
+884	 times, hit 	 回実施し、命中 
+885	 times, knocked out 	 回、機能停止 
+886	 base(s); Rocket Force missile stock down to 	 か所。ロケット軍ミサイル在庫は残り 
+887	Chinese retaliation 	中国の報復 
+888	 time(s).	 回。
+889	Ports: the attacker controls 	港：攻撃側が主要港 
+890	 main port(s); heavy brigades can land and supply capacity is expanded.	 つを支配し、重旅団が上陸でき、補給容量が拡大。
+891	Ports: the attacker took no main port; heavy brigades cannot land and supply depends on the beaches alone.	港：攻撃側は主要港を1つも奪えず、重旅団は上陸できず、補給は海岸のみに依存。
+892	Capital: the attacker controls Taipei, for 	首都：攻撃側が台北を支配、連続 
+893	 consecutive turns	 ターン
+894	(taken only at the very end; counted as a temporary occupation with an unsteady foothold)	（最後になってようやく占領。一時的占領とみなされ、足場は不安定）
+895	Capital: Taipei stayed under the defender's control throughout, or has been retaken.	首都：台北は終始防衛側の支配下にあるか、すでに奪還された。
+896	Air superiority: at the end, attacker air force 	制空：終了時、攻撃側空軍 
+897	, defender and allied air forces 	、防衛側・同盟国空軍 
+898	The attacker held air superiority and fire strikes continued.	攻撃側が制空権を握り、火力攻撃が継続した。
+899	The defender and allies regained air superiority and the attacker's fire was limited.	防衛側と同盟国が制空権を取り戻し、攻撃側の火力は制限された。
+900	Air power was in a tug-of-war.	空中戦力は一進一退だった。
+901	The attacker used a total of 	攻撃側が使用した火力は合計 
+902	 fire points; Rocket Force stock down to 	 ポイント、ロケット軍在庫は残り 
+903	Carriers: PLA carrier losses 	空母：中国軍空母の損耗 
+904	 (	 隻（残り 
+905	 left); carrier-aircraft air cover and fire support declined.	 隻）。艦載機の制空と火力支援が低下した。
+906	Sea control: the attacker's escort fleet was nearly exhausted (	制海：攻撃側護衛艦隊はほぼ枯渇（残り 
+907	 left); later convoys lost their cover.	 ）。後続船団は掩護を失った。
+908	Landing timeline: no attacker unit ever set foot on Taiwan proper.	上陸の時間経過：攻撃側部隊は一度も台湾本島に上陸しなかった。
+909	Landing timeline: the attacker's first unit landed only on turn 	上陸の時間経過：攻撃側の最初の部隊が上陸したのは第 
+910	, giving the defender time to mobilize and allies time to react.	 ターンで、防衛側の動員と同盟国の対応に時間を与えた。
+911	Weather: there were 	天候：悪天候のターンが 
+912	 turn(s) of bad weather, limiting the crossing and fire.	 回あり、渡海と火力が制限された。
+913	Supply: for 	補給：攻撃側の島上部隊が補給容量を超えたターンが 
+914	 turn(s) the attacker's island force exceeded supply capacity, attack and defense each −1.	 回あり、攻防とも−1。
+915	Ground forces: at the end, attacker on the island 	地上戦力：終了時、攻撃側の島上 
+916	has no units	部隊なし
+917	, defender 	、防衛側 
+918	; attacker ground casualties about 	；攻撃側の地上死傷 約 
+919	, defender ground casualties about 	、防衛側の地上死傷 約 
+920	, defender reserve brigades mobilized 	、防衛側予備旅団の動員 
+921	.	個。
+922	Complete the landing before the US and Japan intervene: consider "strategic surprise" or a winter launch so that the whole first wave lands within turn 2; or strike the Okinawa bases at the outset, accepting the cost of US/Japanese intervention in exchange for weakening them.	日米が参戦する前に上陸を完了させる：「戦略的奇襲」または冬季発起を検討し、第一波を第2ターン以内にすべて上陸させる。あるいは開戦時に沖縄基地を先に攻撃し、日米参戦という代償と引き換えに戦力を削ぐ。
+923	Choose "anti-ship missile sites" for the first strike, and use fire to hit the defender's missile units first before the convoy sails.	先制攻撃は「対艦ミサイル陣地」を選び、船団の出航前に火力で防衛側ミサイルユニットを優先して叩く。
+924	Striking a neutral country's base triggered escalation (	中立国の基地への攻撃でエスカレーションが起きた（
+925	); unless it can cripple their forces in one blow, this is not worth the cost.	）。一撃でその戦力に大打撃を与えられない限り、割に合わない。
+926	Concentrate forces to land near Taichung Port or Keelung, seize a port early so heavy brigades can land, and expand supply capacity.	兵力を集中して台中港または基隆付近に上陸し、早期に港を奪って重旅団を上陸させ、補給容量を拡大する。
+927	Expand the beachhead before reinforcing: each controlled beach tile gives +2 and each port +4 supply capacity, so island forces are not overloaded.	増援の前に橋頭堡を拡大する：支配した海岸マス1つにつき補給容量+2、港は+4で、島上部隊の過負荷を避ける。
+928	Choose the April window to lower the chance that bad weather slows the crossing and fire.	4月の窓を選び、悪天候で渡海と火力が遅れる確率を下げる。
+929	When behind in air superiority, fire points drop sharply; concentrate fire on weakening the enemy air force and air defense rather than scattering it on ground troops.	制空で劣勢だと火力ポイントが大きく減るため、地上部隊に分散せず、敵の空軍と防空の弱体化に火力を集中する。
+930	Sail the first wave from Pingtan and Fuzhou, closest to Taiwan, to shorten the crossing.	第一波は台湾に最も近い平潭・福州から出航させ、渡海時間を短縮する。
+931	The mainland's Rocket Force and airfields are under sustained attack (hits: 	大陸のロケット軍と飛行場が継続的に攻撃されている（命中 
+932	): disperse and harden launch sites, strengthen air defense, and consider countering allied long-range strike platforms.	 回）：発射陣地を分散・強化し、防空を強化し、同盟軍の長射程攻撃プラットフォームへの対抗も検討する。
+933	The current approach works: keep up the pace of concentrated landings and early port seizure, and keep fire in reserve to handle the defender's counterattack.	現在のやり方は有効：集中上陸と早期の港奪取のテンポを維持し、防衛側の反撃に備えて火力を温存する。
+934	Taipei fell: when mobilizing, consider "fortify the capital", and keep an armored brigade around Taipei as a reserve.	台北が陥落：動員時に「首都の要塞化」を検討し、台北周辺に機甲旅団1個を予備隊として残す。
+935	Ports were seized: strengthen port defense, and station armored brigades near ports to counterattack at once before the attacker settles in.	港が奪われた：港の守備を強化し、機甲旅団を港の近くに配置して、攻撃側が定着する前に直ちに反撃する。
+936	All anti-ship missile sites were lost: disperse missiles and deploy them mobile, shooting and relocating to avoid being cleared by first strikes and fire strikes.	対艦ミサイル陣地を全損：ミサイルを分散・機動配備し、撃ったら陣地を移して、先制攻撃や火力攻撃で一掃されるのを避ける。
+937	Reserve forces arrived in insufficient numbers (	予備部隊の到着が不足（
+938	 brigades): strengthen the resilience of key facilities such as the grid and communications, and issue the mobilization order early.	 個旅団）：送電網や通信など重要施設の強靭性を高め、動員令を早めに発する。
+939	The air force and air defense were suppressed in the opening of the war: strengthen hardened shelters, disperse runways and mobile air defense, and save strength for when the attacker crosses.	空軍と防空が開戦初期に制圧された：掩体壕を強化し、滑走路と機動防空を分散させ、攻撃側が渡海するときまで戦力を温存する。
+940	In this game the US provided intelligence only and did not intervene openly: intelligence made the defender's anti-ship missiles more accurate, but no troops or supplies came, and the defender still has to rely on its own missiles, air and naval forces and reserve mobilization.	本局では米国は情報提供のみで公然とは参戦しなかった。情報は防衛側対艦ミサイルの精度を高めたが、派兵も補給もなく、防衛側は自らのミサイル・海空軍・予備動員に頼るほかない。
+941	This game is set as Taiwan fighting alone: the defender can rely only on its own anti-ship missiles, air and naval forces and reserve mobilization, and should concentrate fire on the crossing convoys.	本局は台湾単独戦の設定：防衛側は自らの対艦ミサイル、海空軍、予備動員に頼るしかなく、火力を渡海船団に集中させるべき。
+942	Allies did not intervene in substance: pre-war diplomacy and early warning are critical, and the chance of intervention is clearly higher when the attacker masses openly.	同盟国は実質的に参戦しなかった：戦前の外交と早期警戒が鍵で、攻撃側が公然と集結した場合は参戦確率が明らかに高い。
+943	Destroying the enemy at sea is the most effective defense: keep concentrating anti-ship missiles, naval and allied fire on the crossing convoys.	海上での敵殲滅が最も効果的な防衛：対艦ミサイル、海軍、同盟軍の火力を渡海船団に集中し続ける。
+944	Long-range land-attack missiles were never used: China's Rocket Force and airfields are the main threat, and you could consider striking the Rocket Force and staging ports before the crossing, but must accept retaliation.	長射程対地ミサイルは一度も使われなかった：中国のロケット軍と飛行場が主な脅威で、渡海前にロケット軍と集結港を攻撃することも考えられるが、報復を覚悟する必要がある。
+945	The defender's line is largely steady: keep a mobile reserve and keep striking maritime reinforcements.	防衛側の防衛線はおおむね堅固：機動予備隊を保持し、海上増援への攻撃を続ける。
+946	(your side)	（あなたの陣営）
+947	 · Winner: what to keep doing	 · 勝者：続けるべきこと
+948	 · Improvements	 · 改善策
+949	 about 	 約 
+950	After-action review · Intervention scenario:	戦後検討報告 · 参戦シナリオ：
+951	Keys to victory or defeat	勝敗の鍵
+952	 key point(s) (	 項目の重点（
+953	 and others)	 など）
+954	Sources of unit casualties (excluding air force, navy and air defense)	部隊損害の出所（空軍・海軍・防空を除く）
+955	Attacker's largest source:	攻撃側の最大の出所：
+956	Review and improvements	検討と改善策
+957	 item(s) · defender 	 項目・防衛側 
+958	 item(s)	 項目
+959	Taipei fell and attacker troops entered the capital	台北が陥落し、攻撃側部隊が首都に突入
+960	Defenders retook Taipei	守備隊が台北を奪還
+961	The US declared full intervention and a carrier strike group steamed toward the Taiwan Strait	米国が全面参戦を宣言し、空母打撃群が台湾海峡へ向かった
+962	US forces began to intervene, committing submarines and bombers	米軍が介入を開始し、潜水艦と爆撃機を投入
+963	The US announced intelligence support to Taiwan	米国が台湾への情報支援を発表
+964	Japan recognized a survival-threatening situation and the JSDF entered combat	日本が存立危機事態を認定し、自衛隊が戦闘に参加
+965	Japan agreed to US use of bases in Japan	日本が在日米軍基地の使用に同意
+966	The US switched to "	米国は損害の増大により次の姿勢に転換：「
+967	" due to rising casualties and no longer openly acknowledges participation	」、公然とは参戦を認めなくなった
+968	The attacker seized 	攻撃側が奪取： 
+969	, gaining a port to unload	、荷揚げ港を確保
+970	Defenders retook 	守備隊が奪還： 
+971	Attacker troops landed on Taiwan and fierce beach fighting began	攻撃側部隊が台湾に上陸し、海岸で激戦
+972	The strait convoy was badly hit,	海峡の船団が大打撃を受け、
+973	 attack(s) hit	 回の攻撃が命中
+974	The defenders suffered heavy casualties; island force fell to 	守備隊は甚大な損害を受け、島上戦力は次に低下： 
+975	The attacker's landing forces were checked; island force down to 	攻撃側上陸部隊は阻まれ、島上戦力は残り 
+976	PLA carriers were badly hit; only 	中国軍空母が大打撃を受け、残り 
+977	 left	 隻
+978	The attacker's escort fleet lost 	攻撃側護衛艦隊の損耗： 
+979	 ship-times	 隻次
+980	Taiwan and allied forces launched 	台湾と同盟軍が大陸基地に 
+981	 strikes on mainland bases, hitting 	 回の攻撃を実施し、命中 
+982	Fierce fighting on the island continued and both sides bogged down	島上の激戦が続き、双方が膠着
+983	The attacker's convoys are still massing for the crossing in the strait	攻撃側の船団は依然として海峡で渡海のため集結中
+984	 day	 昼
+985	 night	 夜
+986	● Live	● 速報
+987	Strait flash news	海峡ニュース速報
+988	 ended	 ターン終了
+989	Weather	天候
+990	. Turns left until judgment: 	。判定まで残り 
+991	 turn(s).	 ターン。
+992	Ground	地上
+993	: attacker on the island about 	：攻撃側の島上戦力 約 
+994	, defender about 	、防衛側 約 
+995	; attacker controls ports 	；攻撃側支配の港 
+996	 / 3, Taipei controlled by	 / 3、台北の支配：
+997	.	。
+998	Sea & air	海空
+999	: attacker air force 	：攻撃側空軍 
+1000	; attacker escort fleet 	；攻撃側護衛艦隊 
+1001	, Rocket Force stock 	、ロケット軍在庫 
+1002	International	国際
+1003	: military casualties on both sides about 	：双方の軍人死傷 約 
+1004	, Taiwanese civilian casualties about 	、台湾民間人死傷 約 
+1005	; global stocks cumulative 	；世界株価の累計 
+1006	Situation	情勢
+1007	: if judged now, the attacker meets 	：いま判定すれば、攻撃側の達成 
+1008	Other news:	その他の情報：
+1009	Next turn ▶	次のターン ▶
+1010	Per-turn flash-news review	各ターンのニュース速報の振り返り
+1011	 item(s)	 件
+1012	Port demolition assessment (defender)	港湾破壊の評価（防衛側）
+1013	The garrison has only 	守備隊は残り 
+1014	 step(s) and attacker ground units are closing in; the port is about to fall. Demolish the port facilities before it falls? (★ = system recommendation)	 ステップのみで、攻撃側地上部隊が迫っており、港は陥落寸前です。陥落前に港湾施設を破壊しますか？（★はシステムの推奨）
+1015	Demolish port facilities	港湾施設を破壊する
+1016	Blow up the wharves, cranes and channel: even if captured, the attacker cannot use it, heavy brigades cannot land there, supply capacity is only +1, and it does not count as an attacker "controlled port"; it recovers only after the attacker holds and repairs it for 2 turns.	埠頭・クレーン・航路を爆破：占領されても攻撃側は使用できず、重旅団は上陸できず、補給容量は+1のみで、攻撃側の「支配港」にも数えられない。攻撃側が2ターン保持・修復して初めて回復する。
+1017	Slows the attacker and may keep the "main ports" condition out of reach	攻撃側を遅らせ、「主要港」条件の達成を阻める可能性がある
+1018	Keep the port	港を残す
+1019	Facilities fully preserved; if it falls, the attacker immediately gets full port function.	施設は完全に保全。陥落すれば攻撃側は直ちに港の機能を完全に得る。
+1020	After taking the port the attacker can unload heavy brigades at once, supply capacity +4	港を奪えば攻撃側は直ちに重旅団を揚陸でき、補給容量+4
+1021	Port demolition assessment (	港湾破壊の評価（
+1022	] The defender chose "	】防衛側が選択：「
+1023	Facilities destroyed: heavy brigades cannot unload, supply capacity +1, not counted as a controlled port; the attacker needs 2 turns to repair	施設破壊：重旅団は揚陸不可、補給容量+1、支配港に数えず、攻撃側の修復には2ターン必要
+1024	Demolish	破壊
+1025	Attacker repair complete:	攻撃側の修復完了：
+1026	back in operation	稼働再開
+1027	Defender surrenders	防衛側降伏
+1028	The defender gives up resistance and hands over Taipei; the attacker takes the capital; the war ends, and civilian casualties and destruction no longer grow.	防衛側は抵抗を放棄して台北を明け渡し、攻撃側が首都を獲得。戦争は終結し、民間人被害と破壊はこれ以上拡大しない。
+1029	Attacker withdraws	攻撃側撤退
+1030	After the offensive stalls the attacker makes a limited withdrawal to preserve strength; the landing failed to achieve its goals and the defender holds Taiwan.	攻勢が頓挫した後、攻撃側は戦力温存のため限定撤退。上陸は目標を達成できず、防衛側が台湾を守り抜いた。
+1031	Ceasefire	停戦
+1032	Ceasefire talks	停戦交渉
+1033	International mediated ceasefire	国際仲介による停戦
+1034	Ceasefire	停戦
+1035	: attacker keeps its gains	：攻撃側が戦果を保持
+1036	Both sides cease fire on the current lines; the attacker met 	双方が現状で停戦。攻撃側は 
+1037	 condition(s) and effectively controls key positions; the defender is forced to accept on unfavorable terms.	 条件を達成して重要拠点を実効支配し、防衛側は不利な条件で受け入れを余儀なくされる。
+1038	: stalemate	：膠着
+1039	Both sides cease fire; the attacker met only 1 condition, neither holding firmly nor withdrawing; in effect a stalemate, with the next steps depending on negotiation.	双方が停戦。攻撃側は1条件のみ達成し、定着も撤退もしていない。実質的に膠着で、今後は交渉次第。
+1040	: defender holds	：防衛側が守り抜く
+1041	At the ceasefire the attacker had met none of the conditions; the defender kept sovereignty and the main cities.	停戦時、攻撃側はどの条件も達成しておらず、防衛側は主権と主要都市を守った。
+1042	Ceasefire assessment (attacker)	停戦評価（攻撃側）
+1043	The offensive has made no progress: no ports or Taipei, and island force far below the defender's. Command assesses the chance of winning at about 	攻勢は進展せず、港も台北もなく、島上戦力は防衛側をはるかに下回る。司令部は現在の勝算を約 
+1044	%. Choose the next step (★ = the system's best recommendation).	%と評価。次の一手を選んでください（★はシステム推奨の最善策）。
+1045	Accept ceasefire on current lines	現状での停戦を受諾
+1046	Both sides cease fire; judged by the positions currently held.	双方が停戦し、現在の支配位置で判定する。
+1047	Result:	結果：
+1048	; costs and casualties stop growing	；コストと死傷はこれ以上拡大しない
+1049	Limited withdrawal, preserve strength	限定撤退、戦力温存
+1050	Pull back island and sea forces; stop growing losses and international pressure.	島上と海上の戦力を引き揚げ、損失と国際的圧力の拡大を止める。
+1051	Result: defender victory; attacker's losses stanched	結果：防衛側の勝利。攻撃側の損失に歯止め
+1052	Reinforce and try again	増援して再挑戦
+1053	Commit 2 reserve brigades immediately; fire +3 this turn.	予備旅団2個を直ちに投入。今ターンの火力+3。
+1054	Chance of winning about 	勝算 約 
+1055	%; costs and international pressure rise	%；コストと国際的圧力が上昇
+1056	Switch to Kinmen/Matsu (limited objective)	金馬へ転進（限定目標）
+1057	Shift part of the force to Kinmen and Matsu: commit 2 amphibious reserve brigades with fire support (fire +2 this turn); if Kinmen/Matsu are taken, even a failure on the main island can be judged an "attacker limited victory". Note: an assault with heavy casualties (about 8 steps or more) will provoke international backlash and backfire.	兵力の一部を金門・馬祖へ転用：水陸両用予備旅団2個を投入し火力支援を行う（今ターンの火力+2）。金馬を奪えば、本島で失敗しても「攻撃側限定勝利」と判定できる。注意：強攻で大きな犠牲（約8ステップ以上）が出ると国際的反発を招き、逆効果になる。
+1058	Kinmen/Matsu are lightly held, but the PLA mostly ignores them; an assault with too many casualties is not worth it	金馬の守備は薄いが、中国軍は多くの場合これを無視する。強攻は損害が大きすぎて割に合わない
+1059	Raise the stakes (escalate)	賭け金の引き上げ（エスカレーション）
+1060	Widen the war: fire +3 this turn, and US and Japanese intervention levels +1 each (if the scenario allows).	戦争を拡大：今ターンの火力+3、日米の関与度が各+1（シナリオが許す場合）。
+1061	Short-term chance of winning about 	短期的な勝算 約 
+1062	%; but the US and Japan intervene faster and global stocks take another hit	%；ただし日米の介入が早まり、世界株価が再び打撃を受ける
+1063	Tactical nuclear weapons	戦術核兵器
+1064	Use tactical nuclear weapons on the defenders: island defenders suffer heavy losses, but the cost of full US/Japanese intervention, global economic damage and international isolation is enormous, and the nuclear taboo is broken.	守備隊に戦術核兵器を使用：島上守備隊は大損害を受けるが、日米の全面介入、世界経済への打撃、国際的孤立という代償は極めて大きく、核のタブーが破られる。
+1065	Large short-term gains; long-term cost nearly unbearable	短期の戦果は大きいが、長期の代償はほぼ耐えがたい
+1066	Abandonment assessment (defender)	断念の評価（防衛側）
+1067	The defenders have suffered heavy casualties and outside help and public support are draining away. The government assesses the chance of holding on at about 	守備隊は甚大な損害を受け、外部支援も世論も失われつつある。政府は持ちこたえる見込みを約 
+1068	Ceasefire talks (accept some terms)	停戦交渉（一部条件を受け入れ）
+1069	Cease fire on current lines, keeping the government and most territory, but accepting some terms and sovereignty concessions.	現状で停戦し、政府と大部分の領土を保つが、一部の条件と主権上の譲歩を受け入れる。
+1070	; civilian casualties stop growing	；民間人被害はこれ以上拡大しない
+1071	Surrender / hand over Taipei	降伏／台北の明け渡し
+1072	Give up resistance; the attacker immediately gets the capital.	抵抗を放棄し、攻撃側が直ちに首都を得る。
+1073	Result: defender surrenders; the war ends	結果：防衛側降伏。戦争終結
+1074	Keep resisting	抵抗を継続
+1075	Refuse to give up: defender defense +1 this turn and next, but military and civilian losses keep accumulating.	放棄を拒否：今ターンと次ターンの防衛側防御+1。ただし軍民の損失は積み重なり続ける。
+1076	Chance of holding about 	持ちこたえる確率 約 
+1077	Seek outside help / international mediation	外部支援／国際仲介を求める
+1078	Dice roll: 5–6 mediation succeeds and a ceasefire is forced; 3–4 US/Japan raise their involvement; 1–2 no response and morale takes another hit.	サイコロ：5～6で仲介成功・強制停戦、3～4で日米が関与を強化、1～2で反応なし・民心がさらに打撃を受ける。
+1079	Outside factors are uncontrollable	外部要因は制御不能
+1080	 · 	 ターン · 
+1081	Estimate:	見込み：
+1082	The attacker used tactical nuclear weapons: island defenders suffered heavy losses and the international community was shocked.	攻撃側が戦術核兵器を使用：島上の守備隊は大損害を受け、国際社会は衝撃を受けた。
+1083	Nuclear weapons	核兵器
+1084	Nuclear use	核使用
+1085	Reinforcements 	増援 
+1086	 arrived 	 到着 
+1087	Fire +3 this turn	今ターンの火力+3
+1088	Reinforcement amphibious brigade arrived 	増援の水陸両用旅団が到着 
+1089	(target: 	（目標：
+1090	Fire +2 this turn	今ターンの火力+2
+1091	Attacker escalated	攻撃側がエスカレーション
+1092	US/Japanese intervention levels rise (if the scenario allows)	日米の関与度が上昇（シナリオが許す場合）
+1093	Island defenders suffered heavy losses	島上守備隊が大損害を受けた
+1094	Full US/Japanese intervention, global stock crash, international isolation	日米の全面介入、世界株価の暴落、国際的孤立
+1095	Defender defense +1 (this turn and next)	防衛側の防御+1（今ターンと次ターン）
+1096	Seek outside help	外部支援を求める
+1097	US/Japan raise their intervention level (if the scenario allows)	日米が関与度を引き上げる（シナリオが許す場合）
+1098	No response; defender morale hit (attack −1)	反応なし、防衛側の士気が低下（攻撃−1）
+1099	Attacker reinforcements	攻撃側の増援

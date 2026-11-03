@@ -1,0 +1,150 @@
+0	Zoom out	縮小
+1	Zoom in	拡大
+2	Reset to 100%	100%にリセット
+3	Taiwan Strait hex map	台湾海峡ヘックスマップ
+4	Previous turn	前のターン
+5	Play or pause	再生／一時停止
+6	Next turn	次のターン
+7	Timeline	タイムライン
+8	Playback speed	再生速度
+9	Western Pacific theater map: Kyushu, Ryukyus, Okinawa, Taiwan and US/Japan bases	西太平洋戦域図：九州・琉球・沖縄・台湾と日米の基地
+10	Games run	統計ゲーム数
+11	Defaults: Play, you command the attacker (AI defends), judged at turn 8, exercise cover, dice decide intervention, flash news on. Settings you already saved are not changed.	初期値：対戦、攻撃側を操作（AIが防衛）、第8ターンで判定、演習偽装、サイコロで参戦決定、ニュース速報オン。保存済みの設定は変更されません。
+12	Leave units that have not acted to the AI, then end this phase	未行動のユニットをAIに任せ、このフェーズを終了する
+13	Taiwan Strait Landing	台湾海峡上陸戦
+14	Amphibious operations · Wargame	水陸両用作戦 · ウォーゲーム
+15	The attacker crosses the strait and storms the beaches; the defender holds the island. At the judgment turn, three victory conditions decide the winner.	攻撃側は海峡を渡って上陸し、防衛側は島で防御する。判定ターン終了時に3つの勝利条件で勝敗を決める。
+16	Fire strike	火力攻撃
+17	AI auto-play	AIに任せる
+18	End phase	フェーズ終了
+19	Exit full screen	全画面を終了
+20	Map	マップ
+21	⛶ Full screen	⛶ 全画面
+22	Ctrl + wheel to zoom; zoom out to see the outer schematic area (bases and waters from which the US, China and Japan project force); zoom in to drag	Ctrl＋ホイールで拡大縮小。縮小すると外周の概略図（日米中が戦力を投射する基地と海域）が見え、拡大するとドラッグできます
+23	Plain	平地
+24	City (defense +2)	都市（防御+2）
+25	Mountain (defense +2, movement 2)	山地（防御+2、移動2）
+26	Mainland coast	大陸沿岸
+27	Attacker-controlled	攻撃側支配
+28	Dashed edge = cliff coast, dotted edge = tidal mudflat; neither can be landed on	破線の縁＝断崖海岸、点線の縁＝干潟。いずれも上陸不可
+29	★ Objective	★ 勝利目標
+30	Dots below a piece = strength "steps"; filled = remaining, hollow = lost	駒の下の丸＝戦力の「ステップ」。塗りつぶしは残り、白抜きは損失
+31	Western Pacific theater	西太平洋戦域
+32	Enlarge theater map	戦域図を拡大
+33	Command	指揮
+34	Result	勝敗
+35	Cost	代償
+36	Log	戦報
+37	Rules	ルール
+38	Advanced: run statistics with current settings	上級：現在の設定で統計を実行
+39	Want to know which side this setup favors? Let the AI simulate many games and tally win rates, costs and the effect of decisions.	この設定でどちらが有利か知りたいですか？AIに多数のゲームをシミュレートさせ、勝率・代償・判断の影響を集計します。
+40	50 games	50局
+41	100 games	100局
+42	300 games	300局
+43	Start statistics	統計を開始
+44	← Back	← 戻る
+45	Next →	次へ →
+46	Start battle	作戦開始
+47	Start now with defaults	初期値ですぐに開始
+48	Play	対戦
+49	AI simulation	AI推演
+50	Pure simulation	純シミュレーション
+51	Attacker	攻撃側
+52	Defender	防衛側
+53	Both sides	両軍
+54	Spectate	観戦
+55	Normal	標準
+56	Fast	高速
+57	AI plays remaining units	残りのユニットをAIに任せる
+58	Video mode	ビデオモード
+59	The AI plays everything and makes decisions and dice rolls automatically. The caption area below the map shows both sides' actions and effects; you can pause, change speed, drag the timeline or jump turns (Space pauses, Left/Right steps).	すべてAIが操作し、判断とサイコロも自動で行います。マップ下の字幕欄に両軍の行動と影響が表示され、一時停止・速度変更・タイムラインのドラッグ・ターンジャンプができます（スペースで一時停止、左右キーでコマ送り）。
+60	Re-simulate	再シミュレーション
+61	Run 100-game statistics	100回の統計を実行
+62	Back to setup	設定に戻る
+63	Click a unit or tile on the map to see its details.	マップ上のユニットまたはマスをクリックすると詳細が表示されます。
+64	Simulation checkpoints	推演の節目
+65	Victory conditions	勝利条件
+66	Cost of war	戦争の代償
+67	Rules summary	ルール概要
+68	Basic rules	基本ルール
+69	Steps (strength):	ステップ（戦力）：
+70	Each unit's strength is split into "steps", shown as the dots under the piece. Brigades are mostly 3 steps; airborne, reserve brigades and anti-ship missile units are 2. Each step lost removes about a third of strength (at sea, some ships are sunk along with their people and equipment); at 1 step attack and defense are each −1, and at zero the unit is destroyed. "Force X steps" in situation reports is the sum of remaining steps; about 3 steps equal one brigade.	各ユニットの戦力は「ステップ」に分かれ、駒の下の丸で示されます。旅団は多くが3ステップ、空挺旅団・予備旅団・対艦ミサイルは2ステップです。1ステップ失うごとに戦力が約3分の1減ります（海上では一部の艦船が人員・装備ごと撃沈）。残り1ステップでは攻防とも−1、ゼロで全滅です。状況や報告の「兵力Xステップ」は各ユニットの残りステップの合計で、約3ステップが旅団1個に相当します。
+71	Each turn the attacker moves first, then the defender. Each unit may move once per phase and then attack once.	毎ターン攻撃側が先、防衛側が後に行動します。各ユニットは1フェーズに1回移動でき、その後1回攻撃できます。
+72	Crossing the strait:	渡海：
+73	Amphibious and marine brigades may sail from any mainland coast tile; armored brigades may only sail from ports and may only land at ports the attacker already controls. Sea movement depends on weather: good 3, fair 2, bad 1. After landing, the unit's phase ends.	水陸両用旅団・海兵旅団は大陸の任意の沿岸マスから出航できます。機甲旅団は港からのみ出航でき、攻撃側が支配済みの港にしか上陸できません。海上移動力は天候次第で、良好3・普通2・悪天候1です。上陸後、そのユニットのフェーズは終了します。
+74	Assault landing:	強襲上陸：
+75	Attack shore troops directly from the sea at attack −2 (marines −1). If the defender is eliminated, the assaulting unit may land immediately.	海上から岸の敵を直接攻撃します。攻撃−2（海兵旅団は−1）。防衛側を排除すれば、強襲ユニットはそのまま上陸できます。
+76	Combat:	戦闘：
+77	Attack value + die vs. defense value + terrain + die. Difference ≥4: defender loses 2 steps; 1–3: loses 1; 0: each loses 1; −1 to −3: attacker loses 1; ≤−4: attacker loses 2. Each additional friendly unit adjacent to the target gives +1 (max +2). Units at 1 step attack and defend at −1.	攻撃値＋サイコロ 対 防御値＋地形＋サイコロ。差が+4以上で防衛側が2ステップ損失、+1～+3で1損失、0で双方1損失、−1～−3で攻撃側1損失、−4以下で攻撃側2損失。標的に隣接する友軍が1つ増えるごとに+1（最大+2）。残り1ステップのユニットは攻防とも−1。
+78	Zone of control:	支配地域：
+79	Moving into a land tile adjacent to an enemy unit forces a stop.	敵ユニットに隣接する陸地マスに入ると停止しなければなりません。
+80	Airborne:	空挺：
+81	Airborne brigades may drop from the mainland onto non-mountain empty tiles on the island within 10 tiles; each drop rolls a die: a 1 loses 1 step to air defense interception; landing next to enemy troops loses 1 step on a roll of 1–3. No airborne drops in bad weather.	空挺旅団は大陸から10マス以内の島の非山地の空きマスに降下できます。降下ごとにサイコロを振り、1が出ると防空迎撃で1ステップ損失。敵部隊の隣に降りると1～3で1ステップ損失。悪天候では空挺降下できません。
+82	Supply:	補給：
+83	The attacker's units on Taiwan proper may not exceed supply capacity (2 per controlled beach tile, 4 per port, +2 for controlling Magong in Penghu); beyond that, the attacker's units on the island get −1 to attack and defense.	台湾本島の攻撃側ユニット数は補給容量を超えられません（支配した海岸マス1つにつき2、港4、澎湖・馬公の支配で+2）。超過すると島上の攻撃側ユニットは攻防とも−1。
+84	Reinforcements:	増援：
+85	The attacker arrives on the mainland coast on turns 2–5; the defender's reserve brigades mobilize in cities on turns 2–4.	攻撃側は第2～5ターンに大陸沿岸に到着し、防衛側の予備旅団は第2～4ターンに都市で動員されます。
+86	Fires and theater	火力と戦域
+87	Fire strike (attacker):	火力攻撃（攻撃側）：
+88	Each point rolls one die; 5+ hits (6 if the target is in a city or mountain). Points = Rocket Force (5 on turns 1–2, 3 on turns 3–4, 2 after, until the stock of 36 is used up) + air force (0–4 by air superiority) − defender air defense (half its strength); bad weather −2.	1点ごとにサイコロ1個、5以上で命中（標的が都市・山地なら6）。点数＝ロケット軍（第1～2ターン5、第3～4ターン3、以降2、在庫36を使い切るまで）＋空軍（制空に応じて0～4）−防衛側防空（強度の半分）。悪天候は−2。
+89	Force era:	戦力年代：
+90	Choose 2026 present, 2028 near-term or 2030 mid-term at the start. 2026 is set roughly from public reporting (Taiwan: Yunfeng and Hsiung Feng IIE long-range missiles, HIMARS/ATACMS, Harpoon coastal defense, F-16V, Tien Kung and Patriot; PLA: DF-15/16 and PCH-191 long-range rockets, DF-17 hypersonic, DF-26/21D). 2028 and 2030 are projections from planned procurement and special budgets, and both sides grow. DF-17 fire is not reduced by defender air defense; DF-26/21D lower the threshold for striking US/Japanese bases and ships by 1; drones and loitering munitions add anti-ship attacks each phase. Numbers are abstract game points; actual quantities are not public and sources differ — see DATA.md.	開始時に2026年現況・2028年近未来・2030年中期から選べます。2026年は公開報道に基づく概略設定です（台湾：雲峰と雄風IIE長射程ミサイル、HIMARS／ATACMS、ハープーン沿岸防衛、F-16V、天弓とパトリオット。中国軍：東風-15／16とPCH-191長射程ロケット、東風-17極超音速、東風-26／21D）。2028・2030年は計画済みの調達と特別予算に基づく推計で、双方とも増強されます。東風-17の火力は防衛側防空で減りません。東風-26／21Dは日米基地・艦艇への攻撃の閾値を−1します。無人機と徘徊型弾薬は毎フェーズ対艦攻撃を追加します。数値はゲーム上の抽象的なポイントで、実際の数量は非公開であり出典によっても差があります。詳細はDATA.mdを参照。
+91	Theater and naval/air forces:	戦域と各軍の海空戦力：
+92	Each attacker phase begins with a contest for air superiority; both air forces, air defenses and submarines suffer attrition. In each defender phase, the defender's navy and committed US/Japanese forces attack the sea convoy or the attacker's escort fleet; when escort fleet strength is 5+, the hit threshold against the convoy rises by 1. When US/Japanese air forces face attacker air defense of 4+, their hit threshold also rises by 1.	攻撃側フェーズごとに、まず制空権争いが行われ、双方の空軍・防空・潜水艦に損耗が出ます。防衛側フェーズごとに、防衛側海軍と参戦中の日米部隊が海上船団または攻撃側護衛艦隊を攻撃します。護衛艦隊の強度が5以上だと、船団への命中閾値が+1されます。日米空軍が攻撃側防空強度4以上に遭遇した場合も、命中閾値が+1されます。
+93	Shore-based anti-ship missiles (defender):	沿岸配備対艦ミサイル（防衛側）：
+94	2 shots per phase, range 4 tiles, 4+ hits a sea unit.	1フェーズ2発、射程4マス、4以上で海上ユニットに命中。
+95	Chinese bases and strikes on the mainland:	中国側基地と対地攻撃：
+96	The theater map marks Rocket Force missile brigades (◆), Eastern Theater airfields (▲), naval bases (■) and landing-fleet staging ports (●); positions are approximate from public reporting and the number is integrity. The defender has up to 2 long-range land-attack missiles per phase (total 10). The US (after full intervention) and the JSDF (after both US and Japan intervene) each roll per phase for whether their bombers, carriers, submarines and missile units strike the mainland (US 4+, JSDF 5+ to act), automatically hitting mainland bases when they do. Each shot hits on 4+ (hardened Rocket Force bases need 5; airfields, naval bases and staging ports need 5 when mainland air defense is strong): a hit on a Rocket Force base cuts missile stock by 3, an air base cuts 1 air point, a naval base cuts 1 escort-fleet point, and a staging port makes one attacker unit still on the mainland lose 1 step. A base that takes a hit is knocked out.	戦域図には中国側のロケット軍ミサイル旅団（◆）、東部戦区の飛行場（▲）、海軍基地（■）、上陸船団の集結港（●）が示されます。位置は公開報道に基づく概略で、数字は健全度です。防衛側は毎フェーズ最大2発の長射程対地ミサイルを持ちます（総数10）。米軍（全面参戦後）と自衛隊（日米とも参戦後）の爆撃機・空母・潜水艦・ミサイル部隊は、毎フェーズそれぞれサイコロで大陸攻撃の可否を決め（米軍4以上、自衛隊5以上で出撃）、出撃時は自動的に大陸の基地を攻撃します。各発は4以上で命中（ロケット軍基地は強化されており5が必要。飛行場・海軍基地・集結港は大陸防空が強いと5が必要）。ロケット軍基地への命中はミサイル在庫を3減らし、空軍基地は空軍1点、海軍基地は護衛艦隊1点を減らし、集結港は大陸にいる攻撃側ユニット1つに1ステップ損失を与えます。命中を受けた基地は機能停止します。
+97	Chinese retaliation:	中国の報復：
+98	Each strike on the mainland builds retaliation points (US/Japan 0.5, defender 0.25). In the next attacker phase, every full point lets China strike the base of one US/Japanese unit that has sortied; the country struck escalates into the war even if it was neutral, and local civilian casualties accrue. With no allied target available, this turn's fire strike gets +1 instead.	大陸への攻撃ごとに報復ポイントが蓄積します（日米0.5、防衛側0.25）。次の攻撃側フェーズで1点たまるごとに、中国は出撃した日米部隊1つの基地を攻撃します。攻撃を受けた国は、もともと中立でも参戦に格上げされ、現地の民間人被害が累積します。攻撃できる同盟軍がいない場合は、代わりに今ターンの火力+1。
+99	Air superiority and air-defense suppression:	制空と防空制圧：
+100	Each turn, first compare the attacker's land-based air + carrier aircraft against the defender and allied air forces: a gap of 3+ counts as "superiority". When the attacker has superiority, US/Japanese anti-ship hit thresholds rise by 1; when the defender has it, −1. Defender air defense at 2 or below is "suppressed" and gives the attacker fire +1; attacker air defense at 2 or below makes mainland bases easier to hit.	毎ターン、まず攻撃側の陸上空軍＋艦載機と、防衛側・同盟国空軍を比較し、差3以上で「優勢」となります。攻撃側が優勢なら日米空軍の対艦命中閾値+1、防衛側が優勢なら−1。防衛側防空が2以下になると「制圧」され、攻撃側の火力+1。攻撃側防空が2以下になると大陸基地が攻撃されやすくなります。
+101	Naval engagement:	海上交戦：
+102	Each defender phase, the attacker's escort fleet and carriers fight the defender's navy and US/Japanese surface ships and submarines; submarines (US/Japan, plus Taiwan's own Hai Kun: 1 from 2028, 1+ in 2030) may sink escorts or cripple carriers, and may themselves be hunted by ASW. PLA carriers (Liaoning, Shandong, Fujian) provide carrier air cover; when an anti-ship strike hits an escort, the carrier may be crippled along with it.	防衛側フェーズごとに、攻撃側の護衛艦隊と空母が、防衛側海軍および日米の水上艦・潜水艦と交戦します。潜水艦（日米、および台湾自製の海鯤：2028年から1隻、2030年に1隻以上）は護衛艦を撃沈し空母を大破させる可能性があり、対潜攻撃を受けることもあります。中国軍空母（遼寧・山東・福建）は艦載機による制空を提供し、対艦攻撃が護衛艦に命中すると、空母も巻き込まれて大破することがあります。
+103	Taiwan terrain and airfields:	台湾の地形と飛行場：
+104	Taiwan proper is redrawn from the real coastline, the Central Mountain Range and city locations; the east coast is mostly cliffs and unlandable, with small plains at Yilan, Hualien and Taitung; the west coast around Changhua and Yunlin is mudflat. The defender has 11 airfields (Taoyuan, Hsinchu, Ching Chuan Kang, Chiayi, Tainan, Gangshan, Pingtung, Hualien Chiashan, Taitung Zhihang and others) and the PLA has 11 coastal airfields; when the attacker captures a defender airfield, defender air force −1. The east coast also has shore-based anti-ship missiles (around Hualien Chiashan) that can fire on PLA carrier groups in the waters east of Taiwan (2–4 ships on the map; a sinking reduces carrier points).	台湾本島は実際の海岸線、中央山脈、都市の位置に基づいて描き直されています。東岸は大半が断崖で上陸不可、宜蘭・花蓮・台東に小さな平野があり、西岸の彰化・雲林一帯は干潟です。防衛側の飛行場は11か所（桃園、新竹、清泉崗、嘉義、台南、岡山、屏東、花蓮佳山、台東志航など）、中国軍の沿岸飛行場は11か所です。攻撃側が防衛側飛行場を占領すると、防衛側空軍−1。東岸には沿岸配備対艦ミサイル（花蓮佳山一帯）もあり、台湾東方海域の中国軍空母群（マップ上2～4隻、沈没すると空母ポイントが減少）を攻撃できます。
+105	Hsiung Feng II/III:	雄風II／III：
+106	The defender's anti-ship missile stock is about 1,000 (2026), growing by about 200 a year (reaching roughly 2,000 around 2031; no official target is published, this is an estimate). Each point is about 100 missiles; a shore-based missile unit uses about 0.2 point per shot, and cannot fire once stock runs out.	防衛側の対艦ミサイル在庫は約1,000発（2026年）で、年産約200発ずつ増加します（2031年頃に2,000発前後。公式目標は公表されておらず推計です）。1ポイント約100発に相当し、沿岸配備ミサイルユニットは1回の射撃で約0.2ポイントを消費し、在庫が尽きると射撃できません。
+107	Fine-grid map:	細格子マップ：
+108	The tile count is doubled (each old tile split 2×2, about 36×36), giving finer coastlines, mountains, ports and airfields; movement, sea movement, missile range, airborne distance and adjacency (zone of control, support, attack range) all double with it, so actual travel and combat distances are unchanged. When a tile is taken, land tiles around it with no enemy nearby change hands too (ports and Taipei must be entered in person). Unit icons are smaller and a tile can stack 2.	マス数が倍になり（旧マス1つを2×2に分割、約36×36）、海岸線・山地・港・飛行場の位置がより細かくなりました。移動力、海上移動、ミサイル射程、空挺距離、隣接（支配地域・支援・攻撃距離）もすべて倍になるため、実際の進軍距離と戦闘距離は変わりません。1マスを占領すると、周囲の敵のいない陸地マスも同時に支配が移ります（港と台北は自ら進入する必要があります）。ユニットアイコンは小さくなり、1マスに2つ重ねられます。
+109	Port demolition:	港湾破壊：
+110	When a defender port is about to fall (garrison at 1 step or less and attacker ground units within 2 tiles), the defender may choose to demolish it before the defender phase: even if captured, the attacker cannot unload heavy brigades there, supply capacity is only +1, and it does not count as a "controlled port" until the attacker holds and repairs it for 2 turns. Each port is asked only once; the AI defender demolishes about 80% of the time. Marked with a red ✕ on the map.	防衛側の港が陥落寸前（守備隊が1ステップ以下で、攻撃側地上部隊が2マス以内）になると、防衛側フェーズの前に港湾破壊を選べます。破壊すると、攻撃側は占領しても重旅団を揚陸できず、補給容量は+1のみで、攻撃側が2ターン保持・修復するまで「支配港」に数えられません。各港で確認されるのは1回だけで、AI防衛側は約8割の確率で破壊します。マップ上に赤い✕で表示されます。
+111	Victory judgment (adjusted):	勝敗判定（調整後）：
+112	A condition counts only if it is "held": attacker strength on the island must be at least the defender's and at least 4 steps; meeting all three conditions for two consecutive turns ends the game early in the attacker's favor. If the attacker meets two conditions only on the final turn, it is a "narrow win"; with only 1 condition but holding the capital (2 consecutive turns) or holding 6+ steps on the island and at least 1 port, it is a "stalemate / beachhead standoff"; if all three fail and no attacker units remain on the island, it is a decisive defender victory. Results are also tagged "Pyrrhic" by cost: defender civilian casualties of 30,000+ or 2+ ports self-demolished; attacker military casualties of 120,000+, global stocks −20% or worse, or use of nuclear weapons.	条件の達成には「定着」が必要です。島上の戦力が防衛側以上で、かつ4ステップ以上であること。2ターン連続で3条件すべてを満たすと、攻撃側の勝利で早期に判定されます。最終ターンにはじめて2条件を満たした場合は「辛勝」。1条件のみでも首都を（2ターン連続で）支配、または島上に6ステップ以上定着し港を1つ以上支配していれば「膠着／橋頭堡膠着」。3条件とも満たさず島上に攻撃側部隊がいなければ、防衛側の決定的勝利です。結果にはさらに代償に応じて「ピュロスの勝利」が付きます：防衛側の民間人死傷3万人以上、または港2つ以上の自爆破壊。攻撃側の軍人死傷12万人以上、世界株価−20%以下、または核兵器の使用。
+113	Attack plan (multiple axes may be chosen):	攻撃計画（複数の軸線を選択可）：
+114	At the start, tick the attack axes: north, central, Penghu, Kinmen/Matsu. With only a single main-island axis (Penghu counts 0.5, Kinmen/Matsu counts 1) there is a "concentrated assault": attacker attack +1 on turns 1–3; north plus central together get no bonus; with too many axes (total 3.5+) forces are scattered: attack −1 on turns 1–3. If neither north nor central is ticked, the AI picks one main area and concentrates.	開始時に攻撃軸線（北部・中部・澎湖・金門馬祖）を選べます。本島軸線が1本だけ（澎湖は0.5本、金門馬祖は1本として数える）なら「集中突撃」となり、第1～3ターンの攻撃側攻撃+1。北部と中部の同時進攻にボーナスはありません。軸線が多すぎる（合計3.5以上）と兵力が分散し、第1～3ターンの攻撃−1。北部も中部も選ばない場合、AIが主攻地区を1つ選んで集中します。
+115	Kinmen and Matsu:	金門・馬祖：
+116	On the map, Kinmen (2 fine tiles) and Matsu (1–2 fine tiles) lie right off the mainland coast, garrisoned only by reserve brigades (2 at Kinmen, 1 at Matsu); attacking them carries no ordinary landing penalty. The AI attacker ignores Kinmen/Matsu by default (little value in taking them; a costly assault would only invite international backlash); a human attacker may choose Kinmen/Matsu as an attack axis at the start, or "switch to Kinmen/Matsu" in the ceasefire assessment. Cumulative Kinmen/Matsu casualties of 8+ steps make the US raise its level of involvement, rally Taiwanese public morale, and rule out a "limited victory". If both are taken but the main-island conditions fail, the result is "Attacker limited victory (Kinmen/Matsu)".	マップ上の金門（細格子2マス）と馬祖（細格子1～2マス）は大陸沿岸のすぐ近くにあり、守備隊は予備旅団のみ（金門2、馬祖1）です。攻撃に通常の強襲上陸ペナルティはありません。AI攻撃側は既定で金馬を無視します（占領しても意義が小さく、強攻は大きな犠牲と国際的反発を招くだけ）。人間の攻撃側は開始時に攻撃軸線で金馬を選ぶか、停戦評価で「金馬へ転進」を選べます。金馬戦の累積損害が8ステップ以上になると、米国が関与度を引き上げ、台湾の世論が結束し、「限定勝利」は判定されなくなります。両島を占領しても本島の条件が満たされなければ「攻撃側限定勝利（金馬）」となります。
+117	Hit rate and luck:	命中率と運：
+118	Each shot, interception or engagement first computes a "base hit rate" (set by weapon, target, escort and air defense, intelligence, air superiority and so on; see DATA.md), and the dice contribute only limited luck: final hit rate = base × (1 + 0.22 × luck), where luck is converted from a d6 (roll 1 = −1, roll 6 = +1), capped at 100%. Example: base 90% with a 1 → 70%, with a 6 → 100%; base 10% with a 1 → 7.8%, with a 6 → 12.2%. The log shows "Base X% · luck ±Y% (roll N) → Z%". Ground combat now computes a "suppression probability" from the force ratio of both sides, then applies the same luck. External events such as US/Japanese intervention and weather still use the original d6 tables.	射撃・迎撃・交戦のたびに、まず「基礎命中率」を算出します（兵器・標的・護衛と防空・情報・制空などで決まる。DATA.md参照）。サイコロがもたらすのは限定的な運だけです。最終命中率＝基礎×（1＋0.22×運）。運はd6から換算し（1＝−1、6＝＋1）、上限は100%です。例：基礎90%で1→70%、6→100%。基礎10%で1→7.8%、6→12.2%。戦報には「基礎X%・運±Y%（出目N）→Z%」と表示されます。地上戦闘は双方の戦力比から「制圧確率」を算出し、同じ運を適用します。日米参戦や天候などの外部イベントは従来のd6表を使います。
+119	Ceasefire / abandonment assessment:	停戦／断念の評価：
+120	When the attacker is in trouble (from turn 4, no ports or Taipei, island force far below the defender) or the defender is near collapse (heavy casualties with external support wavering or morale low), an assessment pops up before that side's phase, at most 2 times each per game, 2 turns apart. The attacker may choose: accept the status quo ceasefire, limited withdrawal, reinforce and try again, raise the stakes (escalate), tactical nuclear weapons; the defender may choose: ceasefire talks, surrender, keep resisting, seek outside help (dice roll). ★ marks the system recommendation. A ceasefire is judged by the number of conditions met (2+ attacker wins, 1 stalemate, 0 defender wins); using nuclear weapons brings full US/Japanese intervention and a global stock crash, and a victory is tagged with its cost. A human-controlled side chooses for itself and the AI side chooses automatically from the assessment; in simulation mode you choose for both sides.	攻撃側が苦境に陥った（第4ターン以降、港も台北もなく島上戦力が防衛側をはるかに下回る）場合、または防衛側が崩壊寸前（損害が甚大で外部支援が後退または世論が低下）の場合、その側のフェーズ前に評価が表示されます。同一ゲームで各側最大2回、2ターン間隔です。攻撃側の選択肢：現状での停戦受諾、限定撤退、増援して再挑戦、賭け金の引き上げ（エスカレーション）、戦術核兵器。防衛側の選択肢：停戦交渉、降伏、抵抗継続、外部支援を求める（サイコロ）。★はシステムの推奨です。停戦は達成した条件数で判定されます（2つ以上で攻撃側の勝ち、1つで膠着、0で防衛側の勝ち）。核兵器を使うと日米が全面介入し世界株価が暴落し、勝っても代償が表示されます。人間が操作する側は自分で選び、AI側は評価に基づき自動選択します。推演モードでは両軍分をあなたが選びます。
+121	Mobile launchers:	機動発射車：
+122	Shore-based missile units are mobile: while unexposed, most Chinese fire strikes hit decoys and empty vehicles (less likely when you hold air superiority) and the hit threshold is also +1; after firing they are exposed and are conspicuous targets until the start of the defender's next phase. After firing they may relocate, and the AI makes them shoot and scoot, moving to mountains or positions farther from the enemy and re-concealing.	沿岸配備ミサイルユニットは機動式です。秘匿中は中国軍の火力攻撃の多くが囮や空の車両に当たり（制空を握っていると確率は低下）、命中閾値も+1されます。発射後は露出し、防衛側の次フェーズ開始まで目立つ標的になります。発射後に移動転進でき、AIは撃ったらすぐ移動し、山間部や敵から遠い陣地へ転進して再び秘匿します。
+123	Taiwan's anti-ship fires (by launch platform):	台湾の対艦火力（発射プラットフォーム別）：
+124	Shore-based and truck-mounted (Hsiung Feng II/III, Harpoon coastal defense; 7 groups on the map, 3→2 salvos per phase), ship-launched (ship groups and the defender navy), air-launched (F-16V with Harpoon, air-launched Hsiung Feng III; the defender air force sorties each phase, but not when the attacker holds air superiority), submarines (Hai Kun), and drones and loitering munitions are each resolved independently. Reports and statistics list the sources of the attacker's sea losses: Taiwan's shore-based and ship-launched anti-ship missiles, Taiwan's air/naval forces and drones, US forces, Japan.	岸置・車載（雄風II・III、ハープーン沿岸防衛、マップ上7組、1フェーズ3→2斉射）、艦載（艦艇群と防衛側海軍）、空中発射（F-16Vのハープーン、雄風III空中発射型。防衛側空軍は毎フェーズ出撃するが、攻撃側が制空を握っていると出撃しない）、潜水艦（海鯤）、無人機と徘徊型弾薬が、それぞれ独立して処理されます。戦報と統計には攻撃側の海上損失の出所が列挙されます：台湾の岸置・艦載対艦ミサイル、台湾海空軍と無人機、米軍、日本。
+125	Ship movement and saturation attack:	艦艇の移動と飽和攻撃：
+126	Defender ship groups may leave port and sail; the AI keeps them at the edge of anti-ship missile range and away from PLA escorts. Once out of port they can be attacked by PLA naval and air forces. The three PLA carriers are spread across the waters off the east coast (each with one escort, keeping their distance from each other), and the AI keeps them clear of the threat from shore-based missiles. A carrier has point defense (itself plus each nearby escort stops one incoming missile); missiles beyond that lower the hit threshold by 1 each, 3+ extra always hit, and with 2+ extra missiles it loses 2 steps at once (saturation attack).	防衛側の艦艇群は出港して航行できます。AIは対艦ミサイル射程の縁にとどまり、中国軍護衛艦を避けるよう動かします。出港後は中国軍の海空戦力に攻撃されます。中国軍の空母3隻は東岸海域に分散し（各1隻の護衛艦を伴い、互いに距離を取る）、AIは岸置ミサイルの脅威を避けさせます。空母には点防御があり（自艦＋付近の護衛艦各1隻が飛来ミサイル1発を阻止）、超過分のミサイル1発ごとに命中閾値が−1され、超過3発以上は必中で、超過2発以上なら一度に2ステップ損失します（飽和攻撃）。
+127	Surface ships:	水上艦艇：
+128	PLA escorts (red, up to 4) sit off the ports; they can sail, close in to cover their own convoy (with an escort next to the target, the hit threshold of defender anti-ship attacks rises by 1), and can shell the coast. Defender ship groups (blue, in port, up to 4 groups) each have 1 anti-ship missile per phase and cannot move. Both have only 2 steps and sink easily to anti-ship missiles or air strikes; a sinking also reduces navy points, and when naval combat reduces navy points the corresponding ships are sunk.	中国軍護衛艦（赤、最大4隻）は港の沖合にいて、航行したり、自軍船団に寄り添って掩護したり（標的の隣に護衛艦がいると、防衛側の対艦攻撃の命中閾値+1）、海岸を砲撃したりできます。防衛側艦艇群（青、港に停泊、最大4組）は毎フェーズ対艦ミサイル1発を持ち、移動できません。どちらも2ステップしかなく、対艦ミサイルや空襲で容易に撃沈されます。撃沈は海軍ポイントの減少に連動し、海戦で海軍ポイントが減ると対応する艦艇も沈みます。
+129	Stacking:	スタック：
+130	At most 2 friendly units per tile (missile units count), and never with an enemy on the same tile; stacked units are drawn side by side and smaller, and defend at −1 when attacked (crowding); empty friendly tiles also light up green (a land tile adjacent to an enemy cannot be stacked further). Deselect a selected unit by clicking it before you can choose the other unit on the same tile; to move into a tile with a friendly unit, click that friendly unit directly. After an attack, you advance and occupy only if no enemy remains on the target tile.	1マスにつき友軍ユニット最大2つ（ミサイルユニットも数える）で、敵と同じマスには入れません。同マスのユニットは小さく並べて表示され、攻撃を受けると防御−1（密集）となります。空きのある友軍マスも緑に光ります（敵に隣接する陸地マスにはこれ以上重ねられません）。選択中のユニットをクリックして選択解除してから、同じマスのもう一方のユニットを選べます。友軍のいるマスに移動するには、そのマスの友軍を直接クリックします。攻撃後は、標的マスに敵が残っていない場合にのみ進出して占領します。
+131	Mine warfare:	機雷戦：
+132	Before the war the defender lays mines by era on the west-coast beaches (volcano mine-laying vehicles, 14 sets reportedly due in 2027) and offshore (naval mines), shown as black dots on the map; an attacker unit entering a mined tile rolls a die: 3 or less hits a mine, losing 1 step and clearing that mine. The attacker's escort fleet sweeps mines at the start of each turn (1–2 spots at most); a minesweeper has a 1/6 chance of hitting a mine and losing a step.	防衛側は開戦前に、年代に応じて西岸の海岸（ボルケーノ撒布車、最新報道では14セットが2027年に納入予定）と沿海（機雷）に機雷を敷設します。マップ上に黒い丸で表示されます。攻撃側ユニットが機雷マスに入るとサイコロを振り、3以下で触雷して1ステップ損失し、その機雷は除去されます。攻撃側護衛艦隊は毎ターン開始時に掃海を行い（最大1～2か所）、掃海艦は1/6の確率で触雷して1ステップ損失します。
+133	PLA submarines:	中国軍潜水艦：
+134	Each defender phase, up to 3 PLA submarines attack US/Japanese ships (a carrier needs a 6) or the defender navy. The more anti-submarine forces US/Japan and Taiwan have (escort groups, US submarines, carriers, Taiwan's navy and submarines), the easier it is to sink the submarines; with no ASW at all (for example Taiwan alone) the hit threshold is −1 and they are never sunk.	防衛側フェーズごとに、最大3隻の中国軍潜水艦が日米の艦艇（空母には6が必要）または防衛側海軍を攻撃します。日米・台湾の対潜戦力（護衛隊群、米軍潜水艦、空母、台湾海軍と潜水艦）が多いほど潜水艦は撃沈されやすくなります。対潜戦力が全くない場合（例：台湾の単独戦）は命中閾値−1で、撃沈されることもありません。
+135	Cruise missiles:	巡航ミサイル：
+136	Long-range cruise missiles such as Changjian and Yingji add at most 1–2 points per turn, 1 fewer when defender air defense is strong (≥5); the DF-17 is still unaffected by air defense.	長剣、鷹撃などの巡航ミサイルは毎ターン最大1～2ポイント。防衛側防空が強い（5以上）と1ポイント減ります。東風-17は引き続き防空の影響を受けません。
+137	International and mobilization	国際情勢と集結
+138	US posture:	米軍の姿勢：
+139	The US has three postures:	米国の姿勢は3種類あります：
+140	Covert support	秘密支援
+141	(the withdrawn posture after heavy casualties: provides intelligence and supplies, anti-ship hit threshold −1, and unattributed submarine operations from turn 2),	（損害が大きくなった後の後退姿勢：情報と補給を提供し、対艦ミサイル命中閾値−1、第2ターンから所属不明の潜水艦作戦）、
+142	Proxy strike	代理攻撃
+143	(the basic posture from the start of the war: bombers and submarines fire long-range missiles in the name of Taiwan and Japan at roughly 45–60% strength, manned fighters and carriers stay out, and China does not retaliate against US forces),	（開戦時の基本姿勢：爆撃機と潜水艦が台湾・日本の名義で長射程ミサイルを撃ち、火力は約45～60%。有人戦闘機と空母は出ず、中国は米軍に報復しない）、
+144	Open intervention	公然参戦
+145	(everything committed). Except in the "Taiwan alone" or "intelligence only" scenarios, the US is at least a proxy striker from the start (Taiwan and the US share many missiles and torpedoes with identical appearance and serial numbers, making it hard to tell who fired); the level of intervention decides whether it joins openly. When cumulative US casualties reach 6 and 11 steps (US force 14 steps total), each defender phase rolls (1d6 ≥4) to decide whether to drop one level; an attack on US territory (Guam) rallies public opinion: roll −2 and restore one level.	（全戦力投入）。「台湾単独」や「情報提供のみ」のシナリオを除き、米軍は開戦時から少なくとも代理攻撃を行います（台湾と米軍は多くのミサイルや魚雷を共用し、外観も番号も同じで、誰が発射したか区別しにくい）。関与の度合いが公然参戦するかを決めます。米軍の累積損害が6ステップと11ステップに達したとき（米軍戦力は計14ステップ）、毎防衛側フェーズにサイコロ（1d6≥4）で1段階下げるかを決めます。米国本土（グアム）が攻撃されると世論が結束し、出目−2で1段階回復します。
+146	US/Japan intervention:	日米の参戦：
+147	At the start you can choose the intervention scenario: dice decide (default); intelligence only (the US supplies only intelligence and targeting data, no supplies, no troops, no open intervention, Japan neutral, bases cannot be struck); non-intervention (Taiwan alone, bases cannot be struck either); full intervention from the start (all three countries enter on turn 1; carriers still take 2 turns to arrive). In the dice scenario, each country rolls for its attitude on turn 3, and countries not yet fully intervening roll again on turn 5; the level of intervention only rises, never falls. Japan decides whether US forces may sortie from Japanese bases. The attacker can strike bases on the theater map with fire strikes, but the country struck escalates into the war immediately. Intervening forces are operated by the AI.	開始時に参戦シナリオを選べます：サイコロで決定（既定）、情報提供のみ（米国は情報と目標データだけを提供し、補給・派兵・公然参戦はせず、日本は中立、基地は攻撃不可）、不介入（台湾単独、基地も攻撃不可）、開戦即全面介入（3か国が第1ターンから参戦、空母の到着には引き続き2ターン必要）。サイコロのシナリオでは、第3ターンに各国が態度をサイコロで決め、全面参戦していない国は第5ターンにもう一度振ります。関与の度合いは上がるだけで下がりません。日本は米軍が日本の基地から出撃できるかを決めます。攻撃側は戦域図上の基地を火力で攻撃できますが、攻撃された国は直ちに参戦に格上げされます。参戦部隊はAIが操作します。
+148	Pre-war mobilization:	開戦前の集結：
+149	Open full mobilization gives the most force, but the defender and allies prepare early; a strategic surprise has less force, but the other side reacts a beat late.	公然たる全面集結は最大の兵力を得られますが、防衛側と同盟国も早期に準備します。戦略的奇襲は兵力が少ない代わりに、相手の対応が一拍遅れます。
