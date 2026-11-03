@@ -145,7 +145,7 @@
 - 遊戲邏輯與原始碼文字維持繁體中文；顯示時由 `<script id="tsl-i18n">` 依語言轉換（文字節點與 title／aria-label，並以 MutationObserver 處理動態內容）。
 - English、日本語：`tools/i18n/` 內的詞條表（`segs.json` 為原文片段、`c*.tsv` 為對應翻譯、`extras.tsv` 為補充），以 `python3 tools/i18n/build_dict.py` 嵌入 `index.html`。譯文為機器輔助翻譯，專有名詞（飛彈、部隊、地名）採通行譯名，可能仍有不自然處。
 - 简体中文：以 OpenCC（t2s／tw2sp）產生字表與少數用語覆寫（如「螢幕→屏幕」）。
-- 語言選擇存於 localStorage（`tsl-lang`、`tsl-lang-lock`），選定後固定；數字、金額格式依語言切換。
+- 語言選擇存於 localStorage（`tsl-lang`），可隨時更改；數字、金額格式依語言切換。
 - 新增遊戲文字後須重新擷取片段並補翻譯，否則該文字在非繁中語言會顯示原文（開發時可檢查 `window.TSL_MISS`）。
 
 ## 限制
