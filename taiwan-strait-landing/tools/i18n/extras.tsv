@@ -168,3 +168,44 @@
 語言設定：繁體中文、English、日本語、简体中文，可隨時切換	Language setting: Traditional Chinese, English, Japanese, Simplified Chinese, switchable at any time	言語設定：繁体字中国語・English・日本語・簡体字中国語、いつでも切り替え可能
 按鈕與霧化層調整，新版本提示全畫面可見	Smaller buttons, haze layer removed, and the new-version notice is visible on every screen	ボタンの縮小、霞み層の除去、新バージョン通知を全画面で表示
 更版後第一次開啟會顯示這次的更新內容，頁尾「更新內容」可隨時重看	After an update, the first visit shows what changed; the "What's new" link in the footer reopens it any time	更新後の初回起動時に更新内容を表示します。フッターの「更新内容」からいつでも再表示できます
+夢幻裝備：採購或研發	Dream gear: buy or develop	夢の装備：調達または開発
+有些武器對守方堪稱絕品，但賣不賣、做不做得出來都沒把握。守方可以押注其中一項：成功就大幅改變戰局，失敗則白白耗掉資源。	Some weapons would be perfect for the defender, but whether anyone will sell them, or whether they can be built at all, is far from certain. The defender may bet on one: success changes the war, failure just burns resources.	守備側にとって理想的な兵器もありますが、売ってもらえるか、そもそも作れるかは不確かです。どれか1つに賭けられます：成功すれば戦局が大きく変わり、失敗すれば資源が無駄になります。
+多層防空「鐵穹」式系統	Layered "Iron Dome"-class air defense	多層防空「アイアンドーム」級システム
+向盟友爭取量產型多層防空系統。成功機率約 1/3（擲 5 以上）：守方防空 +3；失敗：預算白費，反艦飛彈存量 −1。	Try to obtain a mass-produced layered air-defense system from allies. About 1/3 chance (roll 5+): defender air defense +3; on failure the budget is wasted and anti-ship missile stock −1.	同盟国から量産型の多層防空システムを入手しようとします。成功率は約1/3（5以上）：防衛側の防空+3。失敗すると予算が無駄になり、対艦ミサイル在庫−1。
+（需 5 以上）→ 取得：守方防空 +3	(needs 5+) → obtained: defender air defense +3	（5以上が必要）→ 入手：防衛側の防空+3
+（需 5 以上）→ 買不到：預算白費，反艦飛彈存量 −1	(needs 5+) → could not buy: budget wasted, anti-ship missile stock −1	（5以上が必要）→ 入手できず：予算が無駄に、対艦ミサイル在庫−1
+大量長程精準反艦飛彈	Mass long-range precision anti-ship missiles	長射程精密対艦ミサイルの大量調達
+下大單採購最新反艦飛彈。成功機率約 1/2（擲 4 以上）：反艦飛彈存量 +6；失敗：只拿到少量，存量 +1。	Place a large order for the latest anti-ship missiles. About 1/2 chance (roll 4+): anti-ship missile stock +6; on failure only a few arrive, stock +1.	最新の対艦ミサイルを大量発注します。成功率は約1/2（4以上）：対艦ミサイル在庫+6。失敗すると少数しか届かず、在庫+1。
+（需 4 以上）→ 到貨：反艦飛彈存量 +6	(needs 4+) → delivered: anti-ship missile stock +6	（4以上が必要）→ 到着：対艦ミサイル在庫+6
+（需 4 以上）→ 只到少量：反艦飛彈存量 +1	(needs 4+) → only a few arrive: anti-ship missile stock +1	（4以上が必要）→ 少数のみ到着：対艦ミサイル在庫+1
+本土研發無人機蜂群	Home-grown drone swarms	国産ドローン群の開発
+把賭注押在自製的低成本蜂群。成功機率約 1/2（擲 4 以上）：無人機與巡飛彈 +2；失敗：研發延誤，長程飛彈存量 −1。	Bet on cheap home-built swarms. About 1/2 chance (roll 4+): drones and loitering munitions +2; on failure development slips and long-range missile stock −1.	国産の低コストなドローン群に賭けます。成功率は約1/2（4以上）：無人機・徘徊型弾薬+2。失敗すると開発が遅れ、長射程ミサイル在庫−1。
+（需 4 以上）→ 研發成功：無人機與巡飛彈 +2	(needs 4+) → development succeeds: drones and loitering munitions +2	（4以上が必要）→ 開発成功：無人機・徘徊型弾薬+2
+（需 4 以上）→ 研發延誤：長程飛彈存量 −1	(needs 4+) → development slips: long-range missile stock −1	（4以上が必要）→ 開発が遅れる：長射程ミサイル在庫−1
+隱形戰機一批	A batch of stealth fighters	ステルス戦闘機の一群
+希望買到一批隱形戰機。成功機率只有約 1/6（擲 6）：守方空軍 +3；失敗：款項被凍結，長程飛彈存量 −1。	Hope to buy a batch of stealth fighters. Only about a 1/6 chance (roll 6): defender air force +3; on failure the funds are frozen and long-range missile stock −1.	ステルス戦闘機の一群を購入したい。成功率は約1/6（6）：防衛側の空軍+3。失敗すると資金が凍結され、長射程ミサイル在庫−1。
+（需 6）→ 交機：守方空軍 +3	(needs 6) → delivered: defender air force +3	（6が必要）→ 引き渡し：防衛側の空軍+3
+（需 6）→ 款項被凍結：長程飛彈存量 −1	(needs 6) → funds frozen: long-range missile stock −1	（6が必要）→ 資金凍結：長射程ミサイル在庫−1
+高能雷射近防系統	High-energy laser point defense	高出力レーザー近接防御システム
+押注尚在研發的雷射防空。成功機率約 1/3（擲 5 以上）：守方防空 +2，攻方第 1～3 回合火力 −1；失敗：反艦飛彈存量 −1。	Bet on laser air defense still in development. About 1/3 chance (roll 5+): defender air defense +2 and attacker fire −1 on turns 1–3; on failure anti-ship missile stock −1.	開発中のレーザー防空に賭けます。成功率は約1/3（5以上）：防衛側の防空+2、攻撃側の第1～3ターン火力−1。失敗すると対艦ミサイル在庫−1。
+（需 5 以上）→ 成軍：守方防空 +2、攻方第 1～3 回合火力 −1	(needs 5+) → fielded: defender air defense +2, attacker fire −1 on turns 1–3	（5以上が必要）→ 実戦配備：防衛側の防空+2、攻撃側の第1～3ターン火力−1
+（需 5 以上）→ 研發失敗：反艦飛彈存量 −1	(needs 5+) → development fails: anti-ship missile stock −1	（5以上が必要）→ 開発失敗：対艦ミサイル在庫−1
+緊急軍援與秘密武器	Emergency aid and secret weapons	緊急支援と秘密兵器
+戰事拖入第 3 回合。盟友也許願意偷偷送來更強的武器，也可能口頭答應卻送不到。	The war reaches turn 3. Allies may quietly send stronger weapons, or promise them and fail to deliver.	戦争は第3ターンに入りました。同盟国がより強力な兵器をこっそり送ってくれるかもしれませんが、口約束だけで届かないこともあります。
+大批岸置反艦飛彈空運	Airlift a large batch of shore-based anti-ship missiles	沿岸配備対艦ミサイルの大量空輸
+成功機率約 1/2（擲 4 以上）：反艦飛彈存量 +5；失敗：運輸機被攔截，長程飛彈存量 −1。	About 1/2 chance (roll 4+): anti-ship missile stock +5; on failure the transports are intercepted and long-range missile stock −1.	成功率は約1/2（4以上）：対艦ミサイル在庫+5。失敗すると輸送機が迎撃され、長射程ミサイル在庫−1。
+（需 4 以上）→ 空運抵達：反艦飛彈存量 +5	(needs 4+) → airlift arrives: anti-ship missile stock +5	（4以上が必要）→ 空輸到着：対艦ミサイル在庫+5
+（需 4 以上）→ 運輸機被攔截：長程飛彈存量 −1	(needs 4+) → transports intercepted: long-range missile stock −1	（4以上が必要）→ 輸送機が迎撃される：長射程ミサイル在庫−1
+衛星偵察與目標資料網	Satellite reconnaissance and targeting network	衛星偵察と目標データ網
+成功機率約 2/3（擲 3 以上）：攻方第 3～6 回合火力 −1（預警與反制）；失敗：資料延遲，守方第 3 回合攻擊 −1。	About 2/3 chance (roll 3+): attacker fire −1 on turns 3–6 (warning and counter-fires); on failure the data is late and defender attack −1 on turn 3.	成功率は約2/3（3以上）：攻撃側の第3～6ターン火力−1（警戒と対処）。失敗するとデータが遅れ、防衛側の第3ターン攻撃−1。
+（需 3 以上）→ 網路上線：攻方第 3～6 回合火力 −1	(needs 3+) → network online: attacker fire −1 on turns 3–6	（3以上が必要）→ ネットワーク稼働：攻撃側の第3～6ターン火力−1
+（需 3 以上）→ 資料延遲：守方第 3 回合攻擊 −1	(needs 3+) → data delayed: defender attack −1 on turn 3	（3以上が必要）→ データ遅延：防衛側の第3ターン攻撃−1
+大批自殺無人艇	A large batch of attack drone boats	自爆型無人艇の大量投入
+成功機率約 1/3（擲 5 以上）：攻方護航艦隊 −2；失敗：無人艇被攔截，守方艦艇 −1。	About 1/3 chance (roll 5+): attacker escort fleet −2; on failure the boats are intercepted and defender ships −1.	成功率は約1/3（5以上）：攻撃側護衛艦隊−2。失敗すると無人艇が迎撃され、防衛側の艦艇−1。
+（需 5 以上）→ 突擊成功：攻方護航艦隊 −2	(needs 5+) → raid succeeds: attacker escort fleet −2	（5以上が必要）→ 突撃成功：攻撃側護衛艦隊−2
+（需 5 以上）→ 被攔截：守方艦艇 −1	(needs 5+) → intercepted: defender ships −1	（5以上が必要）→ 迎撃される：防衛側の艦艇−1
+末段高空防禦系統	Terminal high-altitude defense system	終末高高度防衛システム
+成功機率只有約 1/6（擲 6）：守方防空 +4；失敗：外交壓力升高，美日參戰擲骰 −1。	Only about a 1/6 chance (roll 6): defender air defense +4; on failure diplomatic pressure rises and US/Japan intervention rolls −1.	成功率は約1/6（6）：防衛側の防空+4。失敗すると外交的圧力が高まり、日米の参戦判定−1。
+（需 6）→ 部署成功：守方防空 +4	(needs 6) → deployed: defender air defense +4	（6が必要）→ 配備成功：防衛側の防空+4
+（需 6）→ 外交壓力：美日參戰擲骰 −1	(needs 6) → diplomatic pressure: US/Japan intervention rolls −1	（6が必要）→ 外交的圧力：日米の参戦判定−1
+守方決策新增「夢幻裝備」：開戰前押注鐵穹式防空、大量反艦飛彈、無人機蜂群、隱形戰機或雷射近防；第 3 回合還有緊急軍援與秘密武器。成功機率各不相同，買不到或做不出來就白費資源	New defender decisions, "Dream gear": before the war, bet on Iron Dome-class air defense, mass anti-ship missiles, drone swarms, stealth fighters or laser point defense; on turn 3 there is also emergency aid and secret weapons. Odds of success vary, and if it cannot be bought or built the resources are wasted	守備側の決定に「夢の装備」を追加：開戦前にアイアンドーム級防空、対艦ミサイルの大量調達、ドローン群、ステルス機、レーザー近接防御のどれかに賭けられます。第3ターンには緊急支援と秘密兵器もあります。成功率はそれぞれ異なり、入手や開発に失敗すれば資源は無駄になります

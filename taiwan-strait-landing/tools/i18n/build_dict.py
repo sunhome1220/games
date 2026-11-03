@@ -28,6 +28,7 @@ for i, sg in enumerate(segs):
     if i not in rows: missing.append(i); continue
     e, j = OVR.get(i, rows[i])
     k = clean(sg)
+    if re.fullmatch(r'第 \d+ 回合', k): continue  # 避免蓋過「第 」＋數字＋「 回合開始…」等較長片段的拆分翻譯
     en.setdefault(k, e); ja.setdefault(k, j)
 for ln in open(os.path.join(here, 'extras.tsv'), encoding='utf-8').read().split('\n'):
     if ln.strip():
