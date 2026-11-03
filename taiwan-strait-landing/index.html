@@ -105,7 +105,7 @@ details li{margin:4px 0}
 footer{color:var(--muted);font-size:12px;margin-top:18px}
 /* svg */
 .tl-sea{fill:var(--sea);stroke:var(--sea-edge);stroke-width:.5}
-.tl-sea.d1{fill:color-mix(in srgb,var(--sea) 80%,#fff)} .tl-sea.d2{fill:color-mix(in srgb,var(--sea) 92%,#fff)} .tl-sea.d3{fill:color-mix(in srgb,var(--sea) 93%,#000)}
+.tl-sea.sh{fill:color-mix(in srgb,var(--sea) 89%,#fff)} .tl-sea.d4{fill:color-mix(in srgb,var(--sea) 91%,#000)} .tl-sea.d1{fill:color-mix(in srgb,var(--sea) 80%,#fff)} .tl-sea.d2{fill:color-mix(in srgb,var(--sea) 92%,#fff)} .tl-sea.d3{fill:color-mix(in srgb,var(--sea) 93%,#000)}
 .wv{fill:none;stroke:#fff;stroke-opacity:.3;stroke-width:1.1;stroke-linecap:round;animation:swell 5.5s ease-in-out infinite alternate;pointer-events:none}
 @keyframes swell{from{transform:translateX(-3px)}to{transform:translateX(3px)}}
 .tl-sh{fill:#000;opacity:.2;pointer-events:none}
@@ -2716,6 +2716,7 @@ function tileDetail0(h,x,y){
 
 /* ---------- 外圍示意區：宮古／先島、舟山、黃山、梅州、呂宋北部（縮小地圖時可見） ---------- */
 const FAR={};
+let GUAM_LL=null; // 關島示意位置（供海底地形判斷）
 // 外圍示意區的地標：以真實經緯度定位（粗格座標 = 細格像素 / KS），陸地形狀見 ISLANDS
 const llPx=(lon,lat)=>{const o=center(GEO.c0,GEO.r0),ox=center(GEO.c0+1,GEO.r0)[0]-o[0],oy=center(GEO.c0,GEO.r0+1)[1]-o[1];
   return [o[0]+(lon-GEO.lon0)/GEO.dlon*ox,o[1]+(GEO.lat0-lat)/GEO.dlat*oy];};
@@ -2754,7 +2755,7 @@ const ISL_POLY=[
   const sch=(name,pts,sc,cap)=>{const f=FAR[name];if(!f)return;const [aL,aB]=llInv(f.x*KS,f.y*KS),[rL,rB]=cap||[0,0];
     return pts.map(([x,y])=>[aL+(x-rL)*sc,aB+(y-rB)*sc]);};
   ISL_POLY.push(sch('佐世保',[[129.65,33.2],[129.9,33.6],[130.3,33.65],[130.9,33.95],[131.1,33.6],[131.7,33.3],[131.9,32.6],[131.65,31.7],[131.35,31.15],[131.05,31.0],[130.7,31.0],[130.2,31.1],[130.2,31.6],[130.2,32.3],[129.95,32.55],[129.6,32.9]],.5,[129.72,33.17]));
-  const g=sch('關島',[[144.78,13.62],[144.9,13.28]],1,[144.85,13.5]);ISL_CAP.push([g[0][0],g[0][1],g[1][0],g[1][1],.1]);
+  const g=sch('關島',[[144.78,13.62],[144.9,13.28]],1,[144.85,13.5]);GUAM_LL=[(g[0][0]+g[1][0])/2,(g[0][1]+g[1][1])/2];ISL_CAP.push([g[0][0],g[0][1],g[1][0],g[1][1],.1]);
   const z=sch('舟山',[[122.15,30.02],[122.35,29.92]],1.6,[122.2,30.0]);ISL_CAP.push([z[0][0],z[0][1],z[1][0],z[1][1],.2]);
 })();
 const inIsl=(lon,lat)=>{
@@ -2792,6 +2793,29 @@ const orgPick=k=>{const a=ORG[k];return a?a[Math.floor(Math.random()*a.length)].
 function farKeyInGrid(c,r){return c>=OC0&&c<OC1&&r>=OR0&&r<OR1;}
 const TERF=(c,r)=>TER[K(c,r)];
 const fineCenter=(c,r)=>center(c,r),FINE={R,c0:COL0,c1:COL1,r0:ROW0,r1:ROW1};
+// 海底地形（依文獻概略）：台灣東岸陸棚不到 2 km 即陡降深海（無淺水漸層）；台灣海峽、閩粵沿海、東海與南海北部為寬廣淺陸棚；
+// 琉球群島太平洋側（琉球海溝）、巴士海峽／巴丹群島、呂宋東岸、關島周邊都是近岸即深水；其餘為一般漸層。
+const midLonTW=lat=>120.85+(lat-21.9)*.17;
+function seaZone(lon,lat){
+  if(GUAM_LL&&Math.hypot((lon-GUAM_LL[0])*Math.cos(lat*Math.PI/180),lat-GUAM_LL[1])<2.2)return 'steep';
+  if(lat>=21.5&&lat<=25.4&&lon>midLonTW(lat))return 'steep';          // 台灣東岸與東南外海
+  if(lat<22&&lon>=119.8&&lat>=19)return 'steep';                       // 恆春以南、巴士海峽
+  if(lat>=18.3&&lat<22&&lon>=120.4&&lon<=123.6)return 'steep';         // 呂宋海峽、巴丹與巴布煙群島周邊
+  if(lat<18.3&&lon>=122.0)return 'steep';                              // 呂宋東岸（菲律賓海）
+  if(lon>=122.6&&lat>=22.5&&lat<=28.5&&(5.3*(lat-24.4)-2.5*(lon-123))<0)return 'steep'; // 琉球群島太平洋側
+  if(lat>=22&&lat<=27.6&&lon<midLonTW(lat))return 'shelf12';           // 台灣海峽與閩粵沿海（陸棚約 250 km）
+  if(lat>25.3&&lat<=33&&lon<=124.3+(lat-26)*.5)return 'shelf19';       // 東海陸棚（約 400 km）
+  if(lat>=17.5&&lat<22&&lon<=119.5)return 'shelf12';                   // 南海北部陸棚
+  return 'norm';}
+function seaClass(lon,lat,dist){
+  const z=seaZone(lon,lat),d=dist==null?99:dist;
+  if(z==='steep')return d>10?'d4':'d3';                                // 陡降：近岸即深水，不做淺水漸層
+  if(d<=1)return 'd1';
+  if(z==='norm')return d===2?'d2':d>10?'d4':'d3';
+  const W=+z.slice(5);                                                  // 陸棚寬度（細格數）
+  if(d<=W)return d===2?'d2':'sh';
+  if(d===W+1)return 'd2';
+  return d>W+10?'d4':'d3';}
 // 地形分類 → 色塊 key（mainland=大陸色系，否則為島嶼色系）
 function VTKEY(vt,main){const m=main?'main':'';
   if(vt==='mtn')return main?'mainmtn':'mtn'; if(vt==='hill')return main?'mainhill':'hill'; if(vt==='city')return main?'maincity':'city';
@@ -2821,7 +2845,7 @@ function buildFar(){
   Object.values(TERC).forEach(()=>{});
   // 遊戲格內的陸地也算（讓外圍緊鄰的海格有淺水色）
   for(let r=FINE.r0;r<FINE.r1;r++)for(let c=FINE.c0;c<FINE.c1;c++){const h=TERF(c,r);if(h&&h.t!=='sea'){dist.set(K(c,r),0);q.push([c,r]);}}
-  while(q.length){const [c,r]=q.shift(),d=dist.get(K(c,r));if(d>=3)continue;for(const [a,b] of nb(c,r)){const k=K(a,b);if(!dist.has(k)){dist.set(k,d+1);q.push([a,b]);}}}
+  while(q.length){const [c,r]=q.shift(),d=dist.get(K(c,r));if(d>=34)continue;for(const [a,b] of nb(c,r)){const k=K(a,b);if(!dist.has(k)){dist.set(k,d+1);q.push([a,b]);}}}
   // ---- 地形分類（非台灣的陸地）：離岸距離＋實際山脈／城市，給平地、丘陵、山地、城市不同色塊與符號 ----
   (function(){
     const land=new Map(),isSea=(c,r)=>{const f=fine.get(K(c,r));if(f)return f.t==='sea';const g=TERF(c,r);return g?g.t==='sea':false;};
@@ -2853,8 +2877,8 @@ function buildFar(){
   })();
   let fineSvg='';let wi=0;
   for(const h of fine.values()){
-    if(h.t==='sea'){const d=Math.min(3,dist.get(K(h.c,h.r))||3);fineSvg+='<polygon class="tl-sea d'+d+'" points="'+hexPts(h.x,h.y,RF)+'"/>';
-      if(d>=2&&(h.c+h.r)%2===0)fineSvg+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0"/>';}
+    if(h.t==='sea'){const [slon,slat]=rcToLL(h.c,h.r),dd=dist.get(K(h.c,h.r)),sc=seaClass(slon,slat,dd);fineSvg+='<polygon class="tl-sea '+sc+'" points="'+hexPts(h.x,h.y,RF)+'"/>';
+      if(sc!=='d1'&&(h.c+h.r)%2===0)fineSvg+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0"/>';}
     else{const nm=clickOf[K(h.c,h.r)];fineSvg+='<polygon class="tl-far'+(nm?' fclick':'')+'" fill="url(#gt-'+VTKEY(h.vt,h.t==='main')+')" stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'"'+(nm?' data-far="'+nm+'"':'')+'/>';
       if(h.vt==='mtn'||h.vt==='city'||(h.vt==='hill'&&((h.c*7+h.r*13)&3)!==0))fineSvg+='<g pointer-events="none" opacity=".9">'+tileDetail({t:h.vt},h.x,h.y)+'</g>';}
   }
@@ -2904,9 +2928,9 @@ function buildStatic(){
   buildFar();
   let o='';
   let wi=0;
-  for(const h of sea){const [x,y]=center(h.c,h.r),d=Math.min(3,dist.get(h.k)||3);
-    o+='<polygon class="tl-sea d'+d+'" points="'+hexPts(x,y,R)+'" data-k="'+h.k+'"/>';
-    if(d>=2&&(h.c+h.r)%2===0){o+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(x-9)+' '+(y+2)+'q4.5 -4 9 0t9 0"/>';}
+  for(const h of sea){const [x,y]=center(h.c,h.r),[slon,slat]=rcToLL(h.c,h.r),sc=seaClass(slon,slat,dist.get(h.k));
+    o+='<polygon class="tl-sea '+sc+'" points="'+hexPts(x,y,R)+'" data-k="'+h.k+'"/>';
+    if(sc!=='d1'&&(h.c+h.r)%2===0){o+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(x-9)+' '+(y+2)+'q4.5 -4 9 0t9 0"/>';}
   }
   for(const h of land){const [x,y]=center(h.c,h.r),d=elev(h);o+='<polygon class="tl-sh" points="'+ptsStr(hexV(x+3,y+d+4,R))+'"/>';}
   for(const h of land){
@@ -3509,7 +3533,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-03.24';
+const VERSION='2026-11-03.25';
 $('#ver').textContent='版本 '+VERSION;
 const newverBtn=$('#newver');
 function updateLabel(){newverBtn.textContent=S&&S.started&&!S.over?'🔔 有新版本，點此更新（對局將結束）':'🔔 有新版本，點此更新';}
