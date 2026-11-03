@@ -152,3 +152,19 @@
 決策：	Decision: 	決定：
 守方決策節點：	Defender decision points:	守備側の意思決定ポイント：
 守方在不同階段有 8 個決策：開戰前（平時外交與盟友、戰備整備重點）、攻方集結期間（預警後的反應、預先部署重點）、開戰初期（反制先制打擊、民防與社會韌性）、中段與後期（外交與外援、持久戰策略）。你當守方（或「雙方都操作」）時會停下來選擇，電腦推演模式由你替守方選，電腦守方、影片與統計模式則隨機抽一項。每個選項都有好處也有代價（例如公開深化美日合作會讓美日更願意參戰，但攻方也提前戒備），效果多為小幅修正。	The defender has 8 decisions across the stages: before the war (peacetime diplomacy and allies, readiness priorities), while the attacker masses (reaction to early warning, forward deployment), early in the war (answering the first strike, civil defense and resilience), and the middle and late stages (diplomacy and outside help, strategy for a long war). When you play the defender (or both sides) the game stops for you to choose; in AI simulation mode you choose for the defender, and for an AI defender, video and statistics modes one option is drawn at random. Every option has benefits and costs (for example openly deepening US-Japan cooperation makes them more willing to intervene, but the attacker also readies early); effects are mostly small adjustments.	守備側には段階ごとに8つの決定があります：開戦前（平時の外交と同盟、戦備整備の重点）、攻撃側の集結中（警戒情報への対応、事前配置の重点）、開戦初期（先制攻撃への対応、民間防衛とレジリエンス）、中盤・終盤（外交と外部支援、持久戦の戦略）。あなたが守備側（または両軍）を操作する場合は一時停止して選択し、AI推演モードでは守備側の分をあなたが選び、AI守備側・ビデオ・統計モードではランダムに1つ選ばれます。どの選択肢にも利点と代償があり（例：日米協力を公然と深めると日米は参戦しやすくなるが、攻撃側も早めに警戒する）、効果はおもに小さな補正です。
+更新內容	What's new	更新内容
+版本 	Version 	バージョン 
+知道了	Got it	了解
+守方新增 8 個決策節點：開戰前（外交與盟友、戰備整備）、集結期間（預警反應、預先部署）、開戰初期（反制先制打擊、民防）、中段與後期（外交與外援、持久戰策略）	The defender gains 8 decision points: before the war (diplomacy and allies, readiness), while the attacker masses (reaction to warning, forward deployment), early in the war (answering the first strike, civil defense), and the middle and late stages (diplomacy and outside help, long-war strategy)	守備側に8つの決定ポイントを追加：開戦前（外交と同盟、戦備整備）、集結中（警戒への対応、事前配置）、開戦初期（先制攻撃への対応、民間防衛）、中盤・終盤（外交と外部支援、持久戦の戦略）
+你當守方時會停下來選擇，每個選項都有好處與代價	When you play the defender the game stops for you to choose; every option has benefits and costs	守備側を操作するときは一時停止して選択します。どの選択肢にも利点と代償があります
+守方新增海馬士（HIMARS）火箭砲棋子：機動發射車，火箭彈與陸軍戰術飛彈打陸上目標	The defender gains HIMARS rocket-launcher pieces: mobile launchers firing rockets and ATACMS tactical missiles at land targets	守備側にハイマース（HIMARS）ロケット砲の駒を追加：機動発射車で、ロケット弾と陸軍戦術ミサイルが陸上目標を攻撃
+外圍地圖（日本、菲律賓）依真實位置與形狀重畫	The outer map (Japan, Philippines) is redrawn with real positions and shapes	外周マップ（日本・フィリピン）を実際の位置と形で描き直し
+大陸、日本、菲律賓陸地加入平地、丘陵、山地、城市的色塊與符號	Land on the mainland, Japan and the Philippines now has plains, hills, mountains and cities with distinct colors and symbols	大陸・日本・フィリピンの陸地に、平地・丘陵・山地・都市の色と記号を追加
+海面深淺依海底地形：台灣東岸陡降深海，台灣海峽與東海為淺陸棚	Sea shading follows seabed topography: the east coast of Taiwan drops straight into deep water, while the Taiwan Strait and East China Sea are shallow shelf	海面の深さを海底地形に準拠：台湾東岸は急に深くなり、台湾海峡と東シナ海は浅い大陸棚
+影片模式的事件卡半透明，可拖曳、記住位置，右上 ✕ 可關閉	Video-mode event cards are semi-transparent, draggable, remember their position, and can be closed with the ✕ at top right	ビデオモードのイベントカードを半透明にし、ドラッグ可能・位置を記憶・右上の✕で閉じられるように
+航艦打擊群圖像改為專業的剪影，美、共軍略有差異	Carrier strike group icons are now cleaner silhouettes, slightly different for the US and PLA	空母打撃群のアイコンをすっきりしたシルエットに変更し、米軍と中国軍で少し違いを付けた
+修正 iPhone 主畫面頂部標題被狀態列模糊	Fixed the title being blurred under the status bar in the iPhone home-screen app	iPhoneのホーム画面アプリで、タイトルがステータスバーでぼやける問題を修正
+新增語音播報（預設關閉）：每回合結束用口語短句唸出重點	Added voice narration (off by default): short spoken key points at the end of each turn	音声読み上げを追加（既定はオフ）：各ターン終了時に要点を短い口語で読み上げ
+語言設定：繁體中文、English、日本語、简体中文，可隨時切換	Language setting: Traditional Chinese, English, Japanese, Simplified Chinese, switchable at any time	言語設定：繁体字中国語・English・日本語・簡体字中国語、いつでも切り替え可能
+按鈕與霧化層調整，新版本提示全畫面可見	Smaller buttons, haze layer removed, and the new-version notice is visible on every screen	ボタンの縮小、霞み層の除去、新バージョン通知を全画面で表示
+更版後第一次開啟會顯示這次的更新內容，頁尾「更新內容」可隨時重看	After an update, the first visit shows what changed; the "What's new" link in the footer reopens it any time	更新後の初回起動時に更新内容を表示します。フッターの「更新内容」からいつでも再表示できます
