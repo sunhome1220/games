@@ -1,0 +1,1 @@
+影片模式的事件卡不透明度提高（卡片可拖曳，不必再靠透明看後方），文字更清楚	Video-mode event cards are now nearly opaque (they can be dragged, so there is no need to see through them), making the text easier to read
