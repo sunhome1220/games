@@ -43,3 +43,128 @@
  發：火箭彈射程 4 格，陸軍戰術飛彈射程 14 格（動用長程飛彈存量）	 shots: rockets reach 4 tiles, ATACMS tactical missiles reach 14 tiles (uses the long-range missile stock)	 発：ロケット弾の射程は4マス、陸軍戦術ミサイルは14マス（長射程ミサイル在庫を消費）
 海馬士（HIMARS）：	HIMARS:	ハイマース（HIMARS）：
 守方有海馬士火箭砲棋子：2026 年 3 組、2028 年 4 組、2030 年 5 組、2032 年 6 組（依 2024 年起交付 11 套、2026 年底前再 18 套的報導與特別預算推估，1 組約代表一個營）。屬機動發射車，隱蔽、開火後暴露、打了就跑的規則與岸置飛彈相同；每階段 1 發，只打陸上目標：火箭彈射程 4 格（約 80 km，擲 4 以上）、陸軍戰術飛彈射程 14 格（約 300 km，擲 5 以上，動用 0.5 點長程飛彈存量），目標在城市或山地再 +1，命中使對方損失 1 步。大陸沿岸集結中的部隊不在射程內（那由長程對地打擊處理）。	The defender has HIMARS rocket-launcher pieces: 3 groups in 2026, 4 in 2028, 5 in 2030 and 6 in 2032 (estimated from reports of 11 sets delivered from 2024 and 18 more by the end of 2026, plus the special budget; one group stands for roughly a battalion). They are mobile launchers, with the same concealment, exposure after firing and shoot-and-scoot rules as the shore-based missiles; 1 shot per phase, land targets only: rockets reach 4 tiles (about 80 km, hit on 4+), ATACMS tactical missiles reach 14 tiles (about 300 km, hit on 5+, using 0.5 point of the long-range missile stock), +1 against targets in cities or mountains, and a hit costs the target 1 step. Units massing on the mainland coast are out of reach (that is handled by long-range land-attack strikes).	守備側にはハイマース・ロケット砲の駒があります：2026年は3組、2028年は4組、2030年は5組、2032年は6組です（2024年から11セットが納入され2026年末までにさらに18セットという報道と特別予算に基づく推計で、1組はおよそ1個大隊に相当）。機動発射車で、秘匿・発射後の露出・撃ったら移動のルールは沿岸配備ミサイルと同じです。毎フェーズ1発で、陸上目標のみ：ロケット弾は射程4マス（約80km、4以上で命中）、陸軍戦術ミサイルは射程14マス（約300km、5以上で命中、長射程ミサイル在庫を0.5ポイント消費）、都市・山地の標的には+1、命中すると相手は1ステップ損失します。大陸沿岸に集結中の部隊は射程外です（それは長射程対地攻撃で処理されます）。
+平時外交與盟友	Peacetime diplomacy and allies	平時の外交と同盟
+攻方尚未開始集結。守方可在平時決定外交路線：公開深化與美日的安全合作、低調務實，或釋出善意爭取時間。每種做法都有好處，也有代價。	The attacker has not begun massing yet. In peacetime the defender can choose a diplomatic line: openly deepen security cooperation with the US and Japan, stay low-key and practical, or extend goodwill to buy time. Each approach has benefits and costs.	攻撃側はまだ集結を始めていません。守備側は平時のうちに外交路線を選べます：日米との安全保障協力を公然と深める、控えめに実務を進める、あるいは善意を示して時間を稼ぐ。どの選択にも利点と代償があります。
+公開深化美日合作	Openly deepen US-Japan cooperation	日米協力を公然と深化
+聯合演訓、公開表態。美日參戰擲骰 +1；但攻方受刺激提前戒備，第 1 回合火力 +1。	Joint exercises and public statements. US/Japan intervention rolls +1; but the provoked attacker readies early: fire +1 on turn 1.	合同演習と公式表明。日米の参戦判定+1。ただし攻撃側が刺激されて早めに警戒し、第1ターンの火力+1。
+美日參戰擲骰 +1	US/Japan intervention rolls +1	日米の参戦判定+1
+攻方第 1 回合火力 +1	Attacker fire +1 on turn 1	攻撃側の第1ターン火力+1
+低調務實	Stay low-key and practical	控えめに実務を進める
+不做公開動作，把資源用在備彈。反艦飛彈存量 +1。	No public moves; resources go to ammunition. Anti-ship missile stock +1.	公開の動きはせず、資源を弾薬備蓄に回す。対艦ミサイル在庫+1。
+反艦飛彈存量 +1	Anti-ship missile stock +1	対艦ミサイル在庫+1
+釋出善意、爭取時間	Extend goodwill, buy time	善意を示して時間を稼ぐ
+攻方第 1 回合火力 −1；但盟國更不確定，美日參戰擲骰 −1。	Attacker fire −1 on turn 1; but allies grow less certain: US/Japan intervention rolls −1.	攻撃側の第1ターン火力−1。ただし同盟国は態度が定まらず、日米の参戦判定−1。
+攻方第 1 回合火力 −1	Attacker fire −1 on turn 1	攻撃側の第1ターン火力−1
+美日參戰擲骰 −1	US/Japan intervention rolls −1	日米の参戦判定−1
+戰備整備重點	Readiness priorities	戦備整備の重点
+在攻方行動之前，有限的預算與時間要用在哪一項？	Before the attacker moves, where should limited budget and time go?	攻撃側が動く前に、限られた予算と時間をどこに使いますか？
+加強反艦飛彈備彈	Stockpile more anti-ship missiles	対艦ミサイルの備蓄を強化
+反艦飛彈存量 +3；但防空建設延後，守方防空 −1。	Anti-ship missile stock +3; but air-defense construction slips: defender air defense −1.	対艦ミサイル在庫+3。ただし防空整備が遅れ、防衛側の防空−1。
+反艦飛彈存量 +3	Anti-ship missile stock +3	対艦ミサイル在庫+3
+守方防空 −1	Defender air defense −1	防衛側の防空−1
+強化防空與機場加固	Strengthen air defense and harden airfields	防空強化と飛行場の掩体化
+守方防空 +1；但備彈縮減，反艦飛彈存量 −2。	Defender air defense +1; but ammunition is cut: anti-ship missile stock −2.	防衛側の防空+1。ただし弾薬が削られ、対艦ミサイル在庫−2。
+守方防空 +1	Defender air defense +1	防衛側の防空+1
+反艦飛彈存量 −2	Anti-ship missile stock −2	対艦ミサイル在庫−2
+擴大後備與訓練	Expand reserves and training	予備役と訓練の拡大
+每一梯次後備旅 +1；但長程飛彈存量 −1。	One more reserve brigade in each wave; but long-range missile stock −1.	各波の予備旅団+1。ただし長射程ミサイル在庫−1。
+每一梯次後備旅 +1	One more reserve brigade in each wave	各波の予備旅団+1
+長程飛彈存量 −1	Long-range missile stock −1	長射程ミサイル在庫−1
+預警後的反應	Reaction to early warning	警戒情報への対応
+守方要決定如何反應。	The defender must decide how to react.	守備側は対応を決めなければなりません。
+提高戰備等級	Raise the readiness level	戦備態勢を引き上げる
+守方第 1～2 回合防禦 +1；但戰備消耗，反艦飛彈存量 −1。	Defender defense +1 on turns 1–2; but readiness costs supplies: anti-ship missile stock −1.	防衛側の第1～2ターン防御+1。ただし戦備で消耗し、対艦ミサイル在庫−1。
+守方第 1～2 回合防禦 +1	Defender defense +1 on turns 1–2	防衛側の第1～2ターン防御+1
+反艦飛彈存量 −1	Anti-ship missile stock −1	対艦ミサイル在庫−1
+疏散民眾與重要設施	Evacuate civilians and key facilities	住民と重要施設の疏開
+台灣平民傷亡 −30%；但交通管制使後備旅延後 1 回合到達。	Taiwanese civilian casualties −30%; but traffic control delays reserve brigades by 1 turn.	台湾の民間人死傷−30%。ただし交通規制で予備旅団の到着が1ターン遅れる。
+台灣平民傷亡 −30%	Taiwanese civilian casualties −30%	台湾の民間人死傷−30%
+後備旅延後 1 回合到達	Reserve brigades arrive 1 turn late	予備旅団の到着が1ターン遅れる
+欺敵與分散機動發射車	Deception and dispersed mobile launchers	欺瞞と機動発射車の分散
+發射車被火力打擊時更常打到誘餌；但分散部署使守方第 1 回合攻擊 −1。	Fire strikes hit decoys more often; but dispersal lowers defender attack by 1 on turn 1.	火力攻撃が囮に当たりやすくなる。ただし分散配置で防衛側の第1ターン攻撃−1。
+火力打擊更常打到誘餌	Fire strikes hit decoys more often	火力攻撃が囮に当たりやすい
+守方第 1 回合攻擊 −1	Defender attack −1 on turn 1	防衛側の第1ターン攻撃−1
+預先部署重點	Forward deployment priorities	事前配置の重点
+攻方船團可能從北、中部渡海。守方要決定兵力放在哪裡。	The attacker may cross from the north or center. The defender must decide where to place its forces.	攻撃側の船団は北部か中部から渡海するかもしれません。守備側は兵力をどこに置くか決めます。
+前推到海岸線	Push forward to the coastline	海岸線まで前進
+守方第 1～3 回合防禦 +1（灘頭交戰）；但兵力暴露，攻方第 1 回合火力 +1。	Defender defense +1 on turns 1–3 (beach fighting); but forces are exposed: attacker fire +1 on turn 1.	防衛側の第1～3ターン防御+1（海岸戦）。ただし兵力が露出し、攻撃側の第1ターン火力+1。
+守方第 1～3 回合防禦 +1	Defender defense +1 on turns 1–3	防衛側の第1～3ターン防御+1
+縱深機動、保存實力	Defense in depth, preserve strength	縦深機動で戦力温存
+守方第 2～4 回合攻擊 +1（反擊）；但灘頭薄弱，第 1～2 回合防禦 −1。	Defender attack +1 on turns 2–4 (counterattack); but the beaches are thin: defense −1 on turns 1–2.	防衛側の第2～4ターン攻撃+1（反撃）。ただし海岸は手薄で、第1～2ターン防御−1。
+守方第 2～4 回合攻擊 +1	Defender attack +1 on turns 2–4	防衛側の第2～4ターン攻撃+1
+守方第 1～2 回合防禦 −1	Defender defense −1 on turns 1–2	防衛側の第1～2ターン防御−1
+疏散戰機與裝備、隱蔽	Disperse aircraft and equipment, conceal	航空機と装備の疎開・秘匿
+守方空軍 +1；但地面支援較少，守方第 1 回合攻擊 −1。	Defender air force +1; but less ground support: defender attack −1 on turn 1.	防衛側の空軍+1。ただし地上支援が減り、防衛側の第1ターン攻撃−1。
+守方空軍 +1	Defender air force +1	防衛側の空軍+1
+反制先制打擊	Answering the first strike	先制攻撃への対応
+攻方的第一波飛彈與空襲已經結束，守方要決定如何反制。	The attacker's first wave of missiles and air raids is over. The defender must decide how to respond.	攻撃側の第一波のミサイルと空襲が終わりました。守備側は対応を決めます。
+啟用備援指揮與通信	Activate backup command and communications	予備の指揮・通信を起動
+若指揮通信被重創就恢復；否則守方第 2～3 回合攻擊 +1。但備援耗用，反艦飛彈存量 −1。	Restores command and communications if they were badly hit; otherwise defender attack +1 on turns 2–3. But the backup is costly: anti-ship missile stock −1.	指揮通信が大打撃を受けていれば回復、そうでなければ防衛側の第2～3ターン攻撃+1。ただし予備の運用で対艦ミサイル在庫−1。
+指揮通信恢復	Command and communications restored	指揮通信が回復
+守方第 2～3 回合攻擊 +1	Defender attack +1 on turns 2–3	防衛側の第2～3ターン攻撃+1
+戰機升空疏散並出擊	Scramble and disperse aircraft	航空機を緊急発進・疎開
+守方空軍 +1；但地面失去掩護，守方第 1～2 回合防禦 −1。	Defender air force +1; but the ground loses cover: defender defense −1 on turns 1–2.	防衛側の空軍+1。ただし地上が掩護を失い、防衛側の第1～2ターン防御−1。
+立即反擊大陸基地	Strike mainland bases at once	直ちに大陸の基地へ反撃
+火箭軍存量 −2、攻方空軍 −1；但長程飛彈存量 −2，且中方報復使攻方第 2 回合火力 +1。	Rocket Force stock −2 and attacker air force −1; but long-range missile stock −2, and Chinese retaliation gives the attacker +1 fire on turn 2.	ロケット軍在庫−2、攻撃側空軍−1。ただし長射程ミサイル在庫−2、中国の報復で攻撃側の第2ターン火力+1。
+火箭軍存量 −2、攻方空軍 −1	Rocket Force stock −2, attacker air force −1	ロケット軍在庫−2、攻撃側空軍−1
+長程飛彈存量 −2	Long-range missile stock −2	長射程ミサイル在庫−2
+攻方第 2 回合火力 +1	Attacker fire +1 on turn 2	攻撃側の第2ターン火力+1
+民防與社會韌性	Civil defense and societal resilience	民間防衛と社会のレジリエンス
+戰事進入第二回合，電網、通信與交通承受壓力。守方要決定如何維持社會運作。	The war enters turn 2, and the grid, communications and transport are under strain. The defender must decide how to keep society running.	戦争は第2ターンに入り、送電網・通信・交通に負荷がかかっています。守備側は社会の機能維持の方法を決めます。
+全面疏散與避難	Full evacuation and sheltering	全面的な疎開と避難
+台灣平民傷亡 −30%；但交通管制影響機動，守方第 2～3 回合攻擊 −1。	Taiwanese civilian casualties −30%; but traffic control hampers movement: defender attack −1 on turns 2–3.	台湾の民間人死傷−30%。ただし交通規制で機動が妨げられ、防衛側の第2～3ターン攻撃−1。
+守方第 2～3 回合攻擊 −1	Defender attack −1 on turns 2–3	防衛側の第2～3ターン攻撃−1
+動員民間後勤與民防隊	Mobilize civilian logistics and civil-defense teams	民間の後方支援と民防隊を動員
+守方第 2～4 回合防禦 +1；但平民更靠近戰場，台灣平民傷亡 +20%。	Defender defense +1 on turns 2–4; but civilians are closer to the fighting: Taiwanese civilian casualties +20%.	防衛側の第2～4ターン防御+1。ただし民間人が戦場に近づき、台湾の民間人死傷+20%。
+守方第 2～4 回合防禦 +1	Defender defense +1 on turns 2–4	防衛側の第2～4ターン防御+1
+台灣平民傷亡 +20%	Taiwanese civilian casualties +20%	台湾の民間人死傷+20%
+資訊戰與國際宣傳	Information warfare and international messaging	情報戦と国際広報
+美日參戰擲骰 +1；但資源挪出前線，守方第 2 回合攻擊 −1。	US/Japan intervention rolls +1; but resources leave the front: defender attack −1 on turn 2.	日米の参戦判定+1。ただし資源が前線から離れ、防衛側の第2ターン攻撃−1。
+守方第 2 回合攻擊 −1	Defender attack −1 on turn 2	防衛側の第2ターン攻撃−1
+外交與外援	Diplomacy and outside help	外交と外部支援
+戰事拖入中段。守方要決定外交路線，爭取外援或凝聚民心。	The war drags into its middle stage. The defender must choose a diplomatic line, seeking outside help or rallying public morale.	戦争は中盤に入りました。守備側は外交路線を決め、外部支援を求めるか民心を固めます。
+公開向美日求援	Publicly appeal to the US and Japan	日米へ公然と支援を要請
+美日參戰擲骰 +1；但示弱使守方第 4～5 回合防禦 −1。	US/Japan intervention rolls +1; but showing weakness lowers defender defense by 1 on turns 4–5.	日米の参戦判定+1。ただし弱さを見せることになり、防衛側の第4～5ターン防御−1。
+守方第 4～5 回合防禦 −1	Defender defense −1 on turns 4–5	防衛側の第4～5ターン防御−1
+秘密請求補給	Quietly request supplies	秘密裏に補給を要請
+反艦飛彈存量 +3、長程飛彈存量 +2；但外交上受制，美日參戰擲骰 −1。	Anti-ship missile stock +3 and long-range missile stock +2; but diplomatically constrained: US/Japan intervention rolls −1.	対艦ミサイル在庫+3、長射程ミサイル在庫+2。ただし外交的に制約され、日米の参戦判定−1。
+反艦飛彈存量 +3、長程飛彈存量 +2	Anti-ship missile stock +3, long-range missile stock +2	対艦ミサイル在庫+3、長射程ミサイル在庫+2
+公開表明決不談判	Publicly rule out negotiation	交渉しないと公に表明
+守方第 4～6 回合防禦 +1；但外交空間縮小，美日參戰擲骰 −1。	Defender defense +1 on turns 4–6; but diplomatic room shrinks: US/Japan intervention rolls −1.	防衛側の第4～6ターン防御+1。ただし外交の余地が狭まり、日米の参戦判定−1。
+守方第 4～6 回合防禦 +1	Defender defense +1 on turns 4–6	防衛側の第4～6ターン防御+1
+持久戰策略	Strategy for a long war	持久戦の戦略
+距離判定只剩兩個回合。守方要決定最後階段的策略。	Only two turns remain until judgment. The defender must decide its strategy for the final stage.	判定まであと2ターンです。守備側は最終段階の戦略を決めます。
+全力反攻收復失地	All-out counterattack to retake ground	全力で反攻し失地を回復
+守方未來兩回合攻擊 +1；但防禦 −1。	Defender attack +1 for the next two turns; but defense −1.	防衛側は今後2ターンの攻撃+1。ただし防御−1。
+守方未來兩回合攻擊 +1	Defender attack +1 for the next two turns	防衛側は今後2ターンの攻撃+1
+守方未來兩回合防禦 −1	Defender defense −1 for the next two turns	防衛側は今後2ターンの防御−1
+固守要點、節省兵力	Hold key points, conserve forces	要点を固守し兵力を温存
+守方未來兩回合防禦 +1；但攻擊 −1。	Defender defense +1 for the next two turns; but attack −1.	防衛側は今後2ターンの防御+1。ただし攻撃−1。
+守方未來兩回合防禦 +1	Defender defense +1 for the next two turns	防衛側は今後2ターンの防御+1
+守方未來兩回合攻擊 −1	Defender attack −1 for the next two turns	防衛側は今後2ターンの攻撃−1
+襲擾補給線與海上增援	Harass supply lines and sea reinforcement	補給線と海上増援を妨害
+攻方未來兩回合攻擊 −1；但反艦飛彈存量 −2。	Attacker attack −1 for the next two turns; but anti-ship missile stock −2.	攻撃側は今後2ターンの攻撃−1。ただし対艦ミサイル在庫−2。
+攻方未來兩回合攻擊 −1	Attacker attack −1 for the next two turns	攻撃側は今後2ターンの攻撃−1
+攻方公開大規模集結，預警充分。	The attacker is massing openly on a large scale, with ample warning. 	攻撃側は大規模に公然と集結しており、警戒情報は十分です。
+攻方採戰略突襲，預警有限。	The attacker is using strategic surprise, with limited warning. 	攻撃側は戦略的奇襲を採り、警戒情報は限られています。
+攻方以演習名義集結，只有部分預警。	The attacker is massing under the cover of an exercise, with only partial warning. 	攻撃側は演習を名目に集結しており、警戒情報は部分的です。
+守方要決定如何反應。	The defender must decide how to react.	守備側は対応を決めなければなりません。
+決策：	Decision: 	決定：
+守方決策節點：	Defender decision points:	守備側の意思決定ポイント：
+守方在不同階段有 8 個決策：開戰前（平時外交與盟友、戰備整備重點）、攻方集結期間（預警後的反應、預先部署重點）、開戰初期（反制先制打擊、民防與社會韌性）、中段與後期（外交與外援、持久戰策略）。你當守方（或「雙方都操作」）時會停下來選擇，電腦推演模式由你替守方選，電腦守方、影片與統計模式則隨機抽一項。每個選項都有好處也有代價（例如公開深化美日合作會讓美日更願意參戰，但攻方也提前戒備），效果多為小幅修正。	The defender has 8 decisions across the stages: before the war (peacetime diplomacy and allies, readiness priorities), while the attacker masses (reaction to early warning, forward deployment), early in the war (answering the first strike, civil defense and resilience), and the middle and late stages (diplomacy and outside help, strategy for a long war). When you play the defender (or both sides) the game stops for you to choose; in AI simulation mode you choose for the defender, and for an AI defender, video and statistics modes one option is drawn at random. Every option has benefits and costs (for example openly deepening US-Japan cooperation makes them more willing to intervene, but the attacker also readies early); effects are mostly small adjustments.	守備側には段階ごとに8つの決定があります：開戦前（平時の外交と同盟、戦備整備の重点）、攻撃側の集結中（警戒情報への対応、事前配置の重点）、開戦初期（先制攻撃への対応、民間防衛とレジリエンス）、中盤・終盤（外交と外部支援、持久戦の戦略）。あなたが守備側（または両軍）を操作する場合は一時停止して選択し、AI推演モードでは守備側の分をあなたが選び、AI守備側・ビデオ・統計モードではランダムに1つ選ばれます。どの選択肢にも利点と代償があり（例：日米協力を公然と深めると日米は参戦しやすくなるが、攻撃側も早めに警戒する）、効果はおもに小さな補正です。
+更新內容	What's new	更新内容
+版本 	Version 	バージョン 
+知道了	Got it	了解
+守方新增 8 個決策節點：開戰前（外交與盟友、戰備整備）、集結期間（預警反應、預先部署）、開戰初期（反制先制打擊、民防）、中段與後期（外交與外援、持久戰策略）	The defender gains 8 decision points: before the war (diplomacy and allies, readiness), while the attacker masses (reaction to warning, forward deployment), early in the war (answering the first strike, civil defense), and the middle and late stages (diplomacy and outside help, long-war strategy)	守備側に8つの決定ポイントを追加：開戦前（外交と同盟、戦備整備）、集結中（警戒への対応、事前配置）、開戦初期（先制攻撃への対応、民間防衛）、中盤・終盤（外交と外部支援、持久戦の戦略）
+你當守方時會停下來選擇，每個選項都有好處與代價	When you play the defender the game stops for you to choose; every option has benefits and costs	守備側を操作するときは一時停止して選択します。どの選択肢にも利点と代償があります
+守方新增海馬士（HIMARS）火箭砲棋子：機動發射車，火箭彈與陸軍戰術飛彈打陸上目標	The defender gains HIMARS rocket-launcher pieces: mobile launchers firing rockets and ATACMS tactical missiles at land targets	守備側にハイマース（HIMARS）ロケット砲の駒を追加：機動発射車で、ロケット弾と陸軍戦術ミサイルが陸上目標を攻撃
+外圍地圖（日本、菲律賓）依真實位置與形狀重畫	The outer map (Japan, Philippines) is redrawn with real positions and shapes	外周マップ（日本・フィリピン）を実際の位置と形で描き直し
+大陸、日本、菲律賓陸地加入平地、丘陵、山地、城市的色塊與符號	Land on the mainland, Japan and the Philippines now has plains, hills, mountains and cities with distinct colors and symbols	大陸・日本・フィリピンの陸地に、平地・丘陵・山地・都市の色と記号を追加
+海面深淺依海底地形：台灣東岸陡降深海，台灣海峽與東海為淺陸棚	Sea shading follows seabed topography: the east coast of Taiwan drops straight into deep water, while the Taiwan Strait and East China Sea are shallow shelf	海面の深さを海底地形に準拠：台湾東岸は急に深くなり、台湾海峡と東シナ海は浅い大陸棚
+影片模式的事件卡半透明，可拖曳、記住位置，右上 ✕ 可關閉	Video-mode event cards are semi-transparent, draggable, remember their position, and can be closed with the ✕ at top right	ビデオモードのイベントカードを半透明にし、ドラッグ可能・位置を記憶・右上の✕で閉じられるように
+航艦打擊群圖像改為專業的剪影，美、共軍略有差異	Carrier strike group icons are now cleaner silhouettes, slightly different for the US and PLA	空母打撃群のアイコンをすっきりしたシルエットに変更し、米軍と中国軍で少し違いを付けた
+修正 iPhone 主畫面頂部標題被狀態列模糊	Fixed the title being blurred under the status bar in the iPhone home-screen app	iPhoneのホーム画面アプリで、タイトルがステータスバーでぼやける問題を修正
+新增語音播報（預設關閉）：每回合結束用口語短句唸出重點	Added voice narration (off by default): short spoken key points at the end of each turn	音声読み上げを追加（既定はオフ）：各ターン終了時に要点を短い口語で読み上げ
+語言設定：繁體中文、English、日本語、简体中文，可隨時切換	Language setting: Traditional Chinese, English, Japanese, Simplified Chinese, switchable at any time	言語設定：繁体字中国語・English・日本語・簡体字中国語、いつでも切り替え可能
+按鈕與霧化層調整，新版本提示全畫面可見	Smaller buttons, haze layer removed, and the new-version notice is visible on every screen	ボタンの縮小、霞み層の除去、新バージョン通知を全画面で表示
+更版後第一次開啟會顯示這次的更新內容，頁尾「更新內容」可隨時重看	After an update, the first visit shows what changed; the "What's new" link in the footer reopens it any time	更新後の初回起動時に更新内容を表示します。フッターの「更新内容」からいつでも再表示できます
