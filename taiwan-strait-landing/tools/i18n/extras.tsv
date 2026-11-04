@@ -190,3 +190,55 @@
 戰爭代價	Cost of war	
 若現在判定：攻方達成 	If judged now: attacker meets 	
 遊戲更名為「台海兵棋推演」（主畫面簡稱「台海兵推」），副標「兩棲登陸兵棋」；換上新的 App 圖示（含桌面／主畫面圖示與可遮罩圖示）	The game is renamed "Taiwan Strait Wargame" (home-screen short name "台海兵推"), subtitle "amphibious landing wargame", with a new app icon (including the home-screen and maskable icons)	
+移除「戰術核武」選項：攻方停戰評估不再有核武，結算也不再有「核武代價」	The "tactical nuclear weapons" option is removed: the attacker's ceasefire assessment no longer offers nuclear weapons, and there is no longer a "nuclear cost" in the result	
+📲 安裝 App	📲 Install app	
+📲 加入主畫面	📲 Add to Home Screen	
+加入主畫面	Add to Home Screen	
+把遊戲加到主畫面，可以全螢幕開啟、不用每次輸入網址：	Add the game to your home screen to open it full screen without typing the address each time:	
+點 Safari 下方（或右上角）的「分享」按鈕	Tap the Share button at the bottom (or top right) of Safari	
+在選單中往下找並點「加入主畫面」	Scroll down in the menu and tap "Add to Home Screen"	
+按「新增」，之後就能像 App 一樣從主畫面開啟	Tap "Add"; afterwards you can open it from the home screen like an app	
+點瀏覽器右上角的選單（⋮）	Tap the browser menu (⋮) at the top right	
+選「安裝應用程式」或「加到主畫面」	Choose "Install app" or "Add to Home screen"	
+確認後，之後就能像 App 一樣從主畫面開啟	Confirm, and afterwards you can open it from the home screen like an app	
+標題旁新增「📲 安裝 App／加入主畫面」按鈕：支援安裝的瀏覽器直接安裝，iPhone 與其他手機顯示加入主畫面的步驟；已安裝（全螢幕開啟）時不顯示	Added an "Install app / Add to Home Screen" button next to the title: browsers that support installation install directly, while iPhone and other phones show the add-to-home-screen steps; it is hidden once installed (opened full screen)	
+重新開始？目前的進度會消失，回到作戰設定。	Restart? Your current progress will be lost and you will return to the setup.	
+↺ 重新開始	↺ Restart	
+⏩ 直接推演到結局	⏩ Simulate to the end	
+遊戲開始後可以「↺ 重新開始」（指揮面板，以及電腦推演的每個視窗）；電腦推演新增「⏩ 直接推演到結局」，之後的事件、停戰與港口評估、快訊都自動處理	You can now "↺ Restart" after a game starts (in the command panel and in every AI-simulation window); AI simulation also gets "⏩ Simulate to the end", which handles later events, ceasefire and port assessments and flash news automatically	
+點選項即可預覽影響，可隨時改選；按「繼續推演」才會正式生效。	Click an option to preview its effects; you can switch any time. It only takes effect when you press "Continue".	
+預估影響 · 	Estimated effects · 	
+戰況變化（對照目前）	Change in the situation (vs. now)	
+此決策之後還要擲骰，結果在確認後才會揭曉。	A die roll follows this decision; the result is revealed after you confirm.	
+決策視窗改成「先預覽、再決定」：點選項會立刻顯示該選擇的影響與戰況變化，可隨時改選；按「繼續推演 ▶」才正式生效並進入下一步	Decision windows now preview first: clicking an option instantly shows its effects and the change in the situation, and you can switch freely; the choice only takes effect when you press "Continue ▶"	
+先制打擊不再擲骰：攔截效果改依守方的防空、戰機、預警與備戰配置判定，並在預覽中列出原因；原本的「評估」字樣改為「判定」	First strike no longer uses dice: interception now follows the defender's air defense, aircraft, warning and readiness, with the reasons shown in the preview; "evaluate" wording changed to "ruling"	
+開戰第一波飛彈與空襲。攻方選擇打擊重點，實際效果取決於守方的防空、戰機、預警與備戰配置（不擲骰），這是攻方無法掌控的。	The opening wave of missiles and air raids. The attacker picks the focus; the actual effect depends on the defender's air defense, aircraft, warning and readiness (no dice) — outside the attacker's control.	
+守方防空充足 +2	Strong air defense +2	
+守方防空較強 +1	Solid air defense +1	
+守方防空薄弱 −1	Weak air defense −1	
+攻方公開集結，預警充分 +1	Open buildup, ample warning +1	
+戰略突襲，預警有限 −1	Strategic surprise, limited warning −1	
+與美日深化合作，情資共享 +1	Deeper US/Japan cooperation, shared intel +1	
+與美日合作較少 −1	Less US/Japan cooperation −1	
+飛彈車分散、誘餌 +1	Dispersed launchers, decoys +1	
+守方戰機充足 +1	Ample defender aircraft +1	
+守方戰機不多 −1	Few defender aircraft −1	
+美日基地防空嚴密 +1	US/Japan bases tightly defended +1	
+依守方配置	By defender posture	
+ → 判定 	 → ruling 	
+依情勢判定 	By situation, ruling 	
+依情勢判定	By situation	
+判定	Ruling	
+判定 	Ruling 	
+最後攻勢的選項改依戰況：沒有戰果時不再提供「鞏固戰果」，新增「轉取金馬、宣布統一進程」（增派兩棲旅攻金馬、火力 +2）	Final-assault options now depend on the situation: "Consolidate gains" is hidden when nothing has been taken, and a new "Take Kinmen/Matsu and announce the unification process" option (extra amphibious brigades, fire +2) is added	
+（尚未登陸、沒有戰果時不提供）	(not offered when nothing has been landed or taken)	
+轉取金馬、宣布「統一進程」	Take Kinmen/Matsu, announce the "unification process"	
+本島已難奪取，改取政治象徵：增派 2 個兩棲旅攻金門、馬祖，本回合火力 +2。拿下兩島可保住「有限勝利」；強攻傷亡過大則招致國際反彈。	The main island is out of reach; settle for a political symbol: send 2 more amphibious brigades at Kinmen and Matsu, fire +2 this turn. Taking both islands secures a "limited victory"; heavy losses there provoke international backlash.	
+最後攻勢新增「繼續進攻（延長 2 回合）」與「改由電腦接手指揮」	Final assault adds "Press on (extend 2 turns)" and "Hand command over to the computer"	
+繼續進攻（延長 2 回合）	Press on (extend 2 turns)	
+不在此判定，判定回合延後 2 回合，並補上增援、本回合火力 +1。代價：戰事拖長，全球股市再 −2%，守方也多 2 回合動員與外援。只能延長一次。	Skip the ruling and push it back 2 turns, with reinforcements and fire +1 this turn. Cost: a longer war, global markets −2% more, and the defender gets 2 more turns of mobilization and aid. Can be used once.	
+改由電腦接手指揮	Hand command over to the computer	
+你不再親自操作攻方，之後的回合由電腦指揮攻方（守方設定不變）。本回合比照「孤注一擲」：攻擊 +1、火力 +3、防禦 −1。	You stop operating the attacker; the computer commands it from now on (defender setup unchanged). This turn works like "All in": attack +1, fire +3, defense −1.	
+判定回合延後為第 	Ruling turn pushed back to turn 	
+攻方改由電腦指揮	Attacker now commanded by the computer	
+全球股市再 −2%	Global markets −2% more	
