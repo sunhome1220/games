@@ -75,6 +75,20 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   </form>
 </dialog>
 
+<dialog id="openDlg">
+  <form method="dialog" id="openForm">
+    <h3 style="margin:0" id="openTitle">開封</h3>
+    <div class="hint" id="openSub"></div>
+    <div class="row">
+      <div><label>開封日期</label><input id="oDate" type="date" required></div>
+      <div><label>開封後可放幾天</label><input id="oDays" type="number" min="1" max="3650" placeholder="例：7"></div>
+    </div>
+    <div class="quick" id="oQuick"></div>
+    <div class="hint" id="oHint"></div>
+    <div class="btns"><button type="button" class="ghost" id="oUndo" hidden>取消開封</button><button type="button" class="ghost" id="oCancel">關閉</button><button type="submit">確定</button></div>
+  </form>
+</dialog>
+
 <dialog id="menuDlg">
   <h3 style="margin:0 0 8px">選單</h3>
   <div class="row"><button class="ghost" id="addManual">手動新增</button><button class="ghost" id="notifBtn">開啟到期提醒</button></div>
@@ -85,7 +99,7 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-04.04"></script>
+<script src="js/version.js?v=2026-11-04.05"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -97,23 +111,26 @@ let presets=ls.get('fe.presets',DEF_DAYS);
 const save=()=>{ls.set('fe.items',items);ls.set('fe.known',known);ls.set('fe.soon',soonDays);ls.set('fe.presets',presets)};
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 const toISO=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+const addDays=(iso,n)=>{const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);return toISO(d)};
+const eff=it=>it.opened&&it.openDays?(addDays(it.opened,it.openDays)<it.exp?addDays(it.opened,it.openDays):it.exp):it.exp;
 const daysLeft=e=>Math.round((new Date(e+'T00:00:00')-today())/864e5);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function render(){
-  const L=items.slice().sort((a,b)=>a.exp.localeCompare(b.exp));
+  const L=items.slice().sort((a,b)=>eff(a).localeCompare(eff(b)));
   let ne=0,ns=0;
   $('#list').innerHTML=L.length?L.map(it=>{
-    const d=daysLeft(it.exp),cls=d<0?'exp':d<=soonDays?'soon':'';
+    const E=eff(it),d=daysLeft(E),cls=d<0?'exp':d<=soonDays?'soon':'';
     if(d<0)ne++;else if(d<=soonDays)ns++;
     const t=d<0?`過期 ${-d} 天`:d===0?'今天到期':`剩 ${d} 天`;
-    return `<div class="item ${cls}"><div class="info"><div class="nm">${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div><button class="sm ghost" data-edit="${it.id}">編輯</button><button class="sm" data-done="${it.id}">用完</button></div>`}).join('')
+    return `<div class="item ${cls}"><div class="info"><div class="nm">${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.opened?`🔓 ${it.opened} 開封${it.openDays?`，限 ${it.openDays} 天內吃完`:''}${E!==it.exp?'（原效期 '+it.exp+'）':''}`:'效期 '+it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div><button class="sm ghost" data-open="${it.id}">${it.opened?'開封中':'開封'}</button><button class="sm ghost" data-edit="${it.id}">編輯</button><button class="sm" data-done="${it.id}">用完</button></div>`}).join('')
     :'<div class="empty">還沒有記錄<br>按下方「掃描條碼」開始</div>';
   $('#nExp').textContent=ne;$('#nSoon').textContent=ns;$('#nAll').textContent=items.length;
 }
 $('#list').onclick=e=>{
   const d=e.target.dataset;
   if(d.done){const it=items.find(x=>x.id==d.done);if(confirm(`「${it.name}」已用完／丟棄？`)){items=items.filter(x=>x!==it);save();render()}}
+  if(d.open)openOpened(items.find(x=>x.id==d.open));
   if(d.edit)openItem(items.find(x=>x.id==d.edit));
 };
 
@@ -217,7 +234,31 @@ $('#itemForm').onsubmit=()=>{
   if(!name||!exp)return;
   if(editing)Object.assign(editing,{code,name,exp,qty});
   else items.push({id:Date.now()+Math.random().toString(36).slice(2,6),code,name,exp,qty});
-  if(code)known[code]={name,days:Math.max(1,daysLeft(exp))};
+  if(code)known[code]=Object.assign(known[code]||{},{name,days:Math.max(1,daysLeft(exp))});
+  save();render();
+};
+/* ---- 開封 ---- */
+let opening=null;
+const OPEN_PRE=[1,3,5,7,14,30];
+function openOpened(it){
+  opening=it;
+  $('#openTitle').textContent='開封：'+it.name;
+  $('#openSub').textContent='原效期 '+it.exp+'；開封後以「開封日＋天數」與原效期較早者為準';
+  const k=known[it.code]||{};
+  $('#oDate').value=it.opened||toISO(new Date());
+  $('#oDays').value=it.openDays||k.openDays||'';
+  $('#oHint').textContent=!it.openDays&&k.openDays?'已套用上次記錄的開封後天數':'';
+  $('#oQuick').innerHTML='<span class="hint" style="align-self:center">開封後：</span>'+OPEN_PRE.map(d=>`<button type="button" class="sm ghost" data-d="${d}">${dayLabel(d)}</button>`).join('');
+  $('#oUndo').hidden=!it.opened;
+  $('#openDlg').showModal();
+}
+$('#oQuick').onclick=e=>{if(e.target.dataset.d)$('#oDays').value=e.target.dataset.d};
+$('#oCancel').onclick=()=>$('#openDlg').close();
+$('#oUndo').onclick=()=>{delete opening.opened;delete opening.openDays;save();render();$('#openDlg').close()};
+$('#openForm').onsubmit=()=>{
+  const days=Math.round(+$('#oDays').value)||0;
+  opening.opened=$('#oDate').value;if(days)opening.openDays=days;else delete opening.openDays;
+  if(opening.code&&days){known[opening.code]=Object.assign(known[opening.code]||{name:opening.name},{openDays:days})}
   save();render();
 };
 $('#addManual').onclick=()=>{$('#menuDlg').close();openItem(null)};
@@ -238,7 +279,7 @@ $('#importFile').onchange=async e=>{
   }catch{alert('檔案格式不正確')}e.target.value=''};
 function notifyDue(){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
-  const due=items.filter(i=>daysLeft(i.exp)<=soonDays);
+  const due=items.filter(i=>daysLeft(eff(i))<=soonDays);
   if(due.length&&ls.get('fe.lastNotify')!==toISO(new Date())){
     ls.set('fe.lastNotify',toISO(new Date()));
     new Notification('食品效期提醒',{body:due.slice(0,5).map(i=>i.name).join('、')+(due.length>5?` 等 ${due.length} 項`:'')+' 即將或已經到期',icon:'icon.svg'})}
@@ -251,6 +292,6 @@ $('#notifBtn').onclick=async()=>{
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 render();notifyDue();
 </script>
-<script src="js/update.js?v=2026-11-04.04"></script>
+<script src="js/update.js?v=2026-11-04.05"></script>
 </body>
 </html>
