@@ -31,3 +31,7 @@
 選「安裝應用程式」或「加到主畫面」	Choose "Install app" or "Add to Home screen"
 確認後，之後就能像 App 一樣從主畫面開啟	Confirm, and afterwards you can open it from the home screen like an app
 標題旁新增「📲 安裝 App／加入主畫面」按鈕：支援安裝的瀏覽器直接安裝，iPhone 與其他手機顯示加入主畫面的步驟；已安裝（全螢幕開啟）時不顯示	Added an "Install app / Add to Home Screen" button next to the title: browsers that support installation install directly, while iPhone and other phones show the add-to-home-screen steps; it is hidden once installed (opened full screen)
+重新開始？目前的進度會消失，回到作戰設定。	Restart? Your current progress will be lost and you will return to the setup.
+↺ 重新開始	↺ Restart
+⏩ 直接推演到結局	⏩ Simulate to the end
+遊戲開始後可以「↺ 重新開始」（指揮面板，以及電腦推演的每個視窗）；電腦推演新增「⏩ 直接推演到結局」，之後的事件、停戰與港口評估、快訊都自動處理	You can now "↺ Restart" after a game starts (in the command panel and in every AI-simulation window); AI simulation also gets "⏩ Simulate to the end", which handles later events, ceasefire and port assessments and flash news automatically
