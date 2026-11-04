@@ -79,19 +79,22 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   <h3 style="margin:0 0 8px">選單</h3>
   <div class="row"><button class="ghost" id="addManual">手動新增</button><button class="ghost" id="notifBtn">開啟到期提醒</button></div>
   <div class="row" style="margin-top:8px"><button class="ghost" id="exportBtn">匯出備份</button><button class="ghost" id="importBtn">匯入備份</button></div>
+  <label>常用保存天數（天，用逗號分隔）</label><input id="presetIn" placeholder="3,7,14,30,45,60,90,180,365">
   <label>幾天內算「快到期」</label><input id="soonDays" type="number" min="1" max="30">
   <input type="file" id="importFile" accept="application/json" hidden>
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-04.03"></script>
+<script src="js/version.js?v=2026-11-04.04"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 let items=ls.get('fe.items',[]);      // {id,code,name,exp,qty}
 let known=ls.get('fe.known',{});      // code -> {name,days}
 let soonDays=ls.get('fe.soon',3);
-const save=()=>{ls.set('fe.items',items);ls.set('fe.known',known);ls.set('fe.soon',soonDays)};
+const DEF_DAYS=[3,7,14,30,45,60,90,180,365];
+let presets=ls.get('fe.presets',DEF_DAYS);
+const save=()=>{ls.set('fe.items',items);ls.set('fe.known',known);ls.set('fe.soon',soonDays);ls.set('fe.presets',presets)};
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 const toISO=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
 const daysLeft=e=>Math.round((new Date(e+'T00:00:00')-today())/864e5);
@@ -191,15 +194,23 @@ async function lookupName(code){
   }catch{}
   return{name:'',err};
 }
+const dayLabel=d=>d%365===0?d/365+'年':d%30===0&&d>=30?d/30+'個月':d%7===0&&d>=7?d/7+'週':d+'天';
+function renderQuick(){
+  $('#quick').innerHTML='<span class="hint" style="align-self:center">保存天數：</span>'+presets.map(d=>`<button type="button" class="sm ghost" data-d="${d}">${dayLabel(d)}</button>`).join('')
+    +'<span style="display:flex;gap:4px;align-items:center"><input id="customDays" type="number" min="1" max="3650" placeholder="自訂" style="width:80px;padding:5px"><span class="hint">天</span><button type="button" class="sm" id="customGo">套用</button></span>';
+}
 function setExp(days){const d=today();d.setDate(d.getDate()+days);$('#fExp').value=toISO(d)}
 function openItem(it,code=''){
   editing=it;lookupSeq++;
   $('#itemTitle').textContent=it?'編輯食品':'新增食品';
   $('#fCode').value=it?it.code:code;$('#fName').value=it?it.name:'';$('#fExp').value=it?it.exp:'';$('#fQty').value=it?it.qty:1;$('#fHint').textContent='';
-  $('#quick').innerHTML='<span class="hint" style="align-self:center">快速設定：</span>'+[[3,'3天'],[7,'1週'],[30,'1個月'],[90,'3個月'],[180,'6個月'],[365,'1年']].map(([d,t])=>`<button type="button" class="sm ghost" data-d="${d}">${t}後</button>`).join('');
+  renderQuick();
   $('#itemDlg').showModal();
 }
-$('#quick').onclick=e=>{if(e.target.dataset.d)setExp(+e.target.dataset.d)};
+$('#quick').onclick=e=>{
+  if(e.target.dataset.d)setExp(+e.target.dataset.d);
+  if(e.target.id==='customGo'){const n=Math.round(+$('#customDays').value);if(n>=1&&n<=3650){setExp(n);if(!presets.includes(n)&&confirm(`把「${n} 天」加入常用保存天數？`)){presets=[...presets,n].sort((a,b)=>a-b);save();renderQuick()}}}
+};
 $('#itemCancel').onclick=()=>$('#itemDlg').close();
 $('#itemForm').onsubmit=()=>{
   const code=$('#fCode').value.trim(),name=$('#fName').value.trim(),exp=$('#fExp').value,qty=Math.max(1,+$('#fQty').value||1);
@@ -212,8 +223,9 @@ $('#itemForm').onsubmit=()=>{
 $('#addManual').onclick=()=>{$('#menuDlg').close();openItem(null)};
 
 /* ---- 選單：備份／提醒 ---- */
-$('#menuBtn').onclick=()=>{$('#soonDays').value=soonDays;$('#menuDlg').showModal()};
-$('#menuClose').onclick=()=>{soonDays=Math.min(30,Math.max(1,+$('#soonDays').value||3));save();render();$('#menuDlg').close()};
+$('#menuBtn').onclick=()=>{$('#soonDays').value=soonDays;$('#presetIn').value=presets.join(',');$('#menuDlg').showModal()};
+$('#menuClose').onclick=()=>{soonDays=Math.min(30,Math.max(1,+$('#soonDays').value||3));
+  const ps=[...new Set($('#presetIn').value.split(/[,，、\s]+/).map(Number).filter(n=>n>=1&&n<=3650).map(Math.round))].sort((a,b)=>a-b);presets=ps.length?ps:DEF_DAYS;save();render();$('#menuDlg').close()};
 $('#exportBtn').onclick=()=>{
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([JSON.stringify({items,known},null,1)],{type:'application/json'}));
@@ -239,6 +251,6 @@ $('#notifBtn').onclick=async()=>{
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 render();notifyDue();
 </script>
-<script src="js/update.js?v=2026-11-04.03"></script>
+<script src="js/update.js?v=2026-11-04.04"></script>
 </body>
 </html>
