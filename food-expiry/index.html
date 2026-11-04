@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>食品效期記錄</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<meta name="theme-color" content="#e8590c">
+<style>
+:root{--bg:#fff8ef;--fg:#2b2118;--card:#fff;--mut:#8a7a6b;--pri:#e8590c;--ok:#2f9e44;--warn:#f08c00;--bad:#e03131;--line:#eadfce}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1713;--fg:#f4ebe0;--card:#2a231c;--mut:#a39382;--line:#3d3329}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,"Noto Sans TC",sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+header{background:var(--pri);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:19px}
+main{max-width:640px;margin:0 auto;padding:12px 16px 90px}
+button{font:inherit;border:0;border-radius:10px;padding:10px 14px;background:var(--pri);color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:var(--pri);border:1px solid var(--pri)}
+button.sm{padding:6px 10px;font-size:14px}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));padding:14px 20px;border-radius:30px;font-size:17px;box-shadow:0 4px 14px #0004;z-index:6}
+.sum{display:flex;gap:8px;margin:4px 0 12px}
+.sum div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;font-size:13px;color:var(--mut)}
+.sum b{display:block;font-size:22px}
+.item{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--ok);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.item.soon{border-left-color:var(--warn)}.item.exp{border-left-color:var(--bad)}
+.item .info{flex:1;min-width:0}
+.item .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .meta{font-size:13px;color:var(--mut)}
+.badge{font-weight:700;font-size:14px;white-space:nowrap}
+.soon .badge{color:var(--warn)}.exp .badge{color:var(--bad)}.item:not(.soon):not(.exp) .badge{color:var(--ok)}
+.empty{text-align:center;color:var(--mut);padding:40px 0}
+dialog{border:0;border-radius:14px;padding:16px;width:min(92vw,420px);background:var(--card);color:var(--fg)}
+dialog::backdrop{background:#0006}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.btns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+#cam{position:relative;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:4/3;margin-bottom:8px}
+#cam video{width:100%;height:100%;object-fit:cover}
+#cam:after{content:"";position:absolute;left:10%;right:10%;top:50%;height:2px;background:#f03e3eaa;box-shadow:0 0 8px #f03e3e}
+.hint{font-size:13px;color:var(--mut)}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+</style>
+</head>
+<body>
+<header><h1>🍱 食品效期記錄</h1><button class="ghost sm" style="color:#fff;border-color:#fff" id="menuBtn">⋯</button></header>
+<main>
+  <div class="sum"><div>已過期<b id="nExp">0</b></div><div>3 天內<b id="nSoon">0</b></div><div>全部<b id="nAll">0</b></div></div>
+  <div id="list"></div>
+</main>
+<button class="fab" id="scanBtn">📷 掃描條碼</button>
+
+<dialog id="scanDlg">
+  <div id="cam"><video playsinline muted></video></div>
+  <div class="hint" id="scanMsg">把條碼對準紅線（需 HTTPS 與相機權限）</div>
+  <label>或手動輸入條碼</label>
+  <div class="row"><input id="manual" inputmode="numeric" placeholder="例：4710088412345"><button id="manualGo" style="flex:0 0 auto">確定</button></div>
+  <div class="btns"><button class="ghost" id="scanClose">取消</button></div>
+</dialog>
+
+<dialog id="itemDlg">
+  <form method="dialog" id="itemForm">
+    <h3 style="margin:0" id="itemTitle">新增食品</h3>
+    <label>條碼</label><input id="fCode" inputmode="numeric">
+    <label>名稱</label><input id="fName" required placeholder="查詢中…可自行修改">
+    <div class="row">
+      <div><label>有效期限</label><input id="fExp" type="date" required></div>
+      <div><label>數量</label><input id="fQty" type="number" min="1" value="1"></div>
+    </div>
+    <div class="quick" id="quick"></div>
+    <div class="hint" id="fHint"></div>
+    <div class="btns"><button type="button" class="ghost" id="itemCancel">取消</button><button type="submit">儲存</button></div>
+  </form>
+</dialog>
+
+<dialog id="menuDlg">
+  <h3 style="margin:0 0 8px">選單</h3>
+  <div class="row"><button class="ghost" id="addManual">手動新增</button><button class="ghost" id="notifBtn">開啟到期提醒</button></div>
+  <div class="row" style="margin-top:8px"><button class="ghost" id="exportBtn">匯出備份</button><button class="ghost" id="importBtn">匯入備份</button></div>
+  <label>幾天內算「快到期」</label><input id="soonDays" type="number" min="1" max="30">
+  <input type="file" id="importFile" accept="application/json" hidden>
+  <div class="btns"><button id="menuClose">關閉</button></div>
+</dialog>
+
+<script>
+const $=s=>document.querySelector(s);
+const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+let items=ls.get('fe.items',[]);      // {id,code,name,exp,qty}
+let known=ls.get('fe.known',{});      // code -> {name,days}
+let soonDays=ls.get('fe.soon',3);
+const save=()=>{ls.set('fe.items',items);ls.set('fe.known',known);ls.set('fe.soon',soonDays)};
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const toISO=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+const daysLeft=e=>Math.round((new Date(e+'T00:00:00')-today())/864e5);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function render(){
+  const L=items.slice().sort((a,b)=>a.exp.localeCompare(b.exp));
+  let ne=0,ns=0;
+  $('#list').innerHTML=L.length?L.map(it=>{
+    const d=daysLeft(it.exp),cls=d<0?'exp':d<=soonDays?'soon':'';
+    if(d<0)ne++;else if(d<=soonDays)ns++;
+    const t=d<0?`過期 ${-d} 天`:d===0?'今天到期':`剩 ${d} 天`;
+    return `<div class="item ${cls}"><div class="info"><div class="nm">${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div><button class="sm ghost" data-edit="${it.id}">編輯</button><button class="sm" data-done="${it.id}">用完</button></div>`}).join('')
+    :'<div class="empty">還沒有記錄<br>按下方「掃描條碼」開始</div>';
+  $('#nExp').textContent=ne;$('#nSoon').textContent=ns;$('#nAll').textContent=items.length;
+}
+$('#list').onclick=e=>{
+  const d=e.target.dataset;
+  if(d.done){const it=items.find(x=>x.id==d.done);if(confirm(`「${it.name}」已用完／丟棄？`)){items=items.filter(x=>x!==it);save();render()}}
+  if(d.edit)openItem(items.find(x=>x.id==d.edit));
+};
+
+/* ---- 掃描 ---- */
+let stream=null,scanning=false,zx=null;
+async function startScan(){
+  $('#scanDlg').showModal();$('#manual').value='';
+  const msg=$('#scanMsg'),v=$('#cam video');
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+  }catch(e){msg.textContent='無法使用相機（'+(e.name||'錯誤')+'），請手動輸入條碼。';return}
+  v.srcObject=stream;await v.play().catch(()=>{});
+  msg.textContent='掃描中…';scanning=true;
+  if('BarcodeDetector' in window){
+    const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code']});
+    const loop=async()=>{if(!scanning)return;
+      try{const r=await det.detect(v);if(r.length){return found(r[0].rawValue)}}catch{}
+      setTimeout(loop,200)};loop();
+  }else{
+    msg.textContent='載入掃描元件…';
+    try{
+      if(!window.ZXing)await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+      zx=new ZXing.BrowserMultiFormatReader();msg.textContent='掃描中…';
+      const loop=async()=>{if(!scanning)return;
+        try{const r=await zx.decodeFromVideoElement(v);if(r)return found(r.getText())}catch{}
+        setTimeout(loop,200)};loop();
+    }catch{msg.textContent='此瀏覽器不支援掃描，請手動輸入條碼。'}
+  }
+}
+function stopScan(){scanning=false;try{zx&&zx.reset()}catch{}if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('#cam video').srcObject=null}
+function found(code){stopScan();navigator.vibrate&&navigator.vibrate(60);$('#scanDlg').close();newFromCode(code)}
+$('#scanBtn').onclick=startScan;
+$('#scanClose').onclick=()=>{stopScan();$('#scanDlg').close()};
+$('#scanDlg').addEventListener('cancel',stopScan);
+$('#manualGo').onclick=()=>{const c=$('#manual').value.trim();if(c){stopScan();$('#scanDlg').close();newFromCode(c)}};
+
+/* ---- 新增／編輯 ---- */
+let editing=null,lookupSeq=0;
+async function newFromCode(code){
+  openItem(null,code);
+  const k=known[code];
+  if(k){$('#fName').value=k.name;if(k.days)setExp(k.days);$('#fHint').textContent='已套用上次記錄的名稱與保存天數';return}
+  const seq=++lookupSeq;$('#fHint').textContent='查詢商品資料中…';
+  try{
+    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,product_name_zh,brands,quantity`);
+    const j=await r.json();
+    if(seq!==lookupSeq)return;
+    const p=j.product;
+    if(j.status===1&&p){const n=[p.brands&&p.brands.split(',')[0],p.product_name_zh||p.product_name,p.quantity].filter(Boolean).join(' ');
+      if(n&&!$('#fName').value){$('#fName').value=n;$('#fHint').textContent='名稱取自 Open Food Facts，可自行修改'}
+      else $('#fHint').textContent=''}
+    else $('#fHint').textContent='資料庫查無此商品，請自行輸入名稱（下次會記住）';
+  }catch{if(seq===lookupSeq)$('#fHint').textContent='無法連線查詢，請自行輸入名稱'}
+}
+function setExp(days){const d=today();d.setDate(d.getDate()+days);$('#fExp').value=toISO(d)}
+function openItem(it,code=''){
+  editing=it;lookupSeq++;
+  $('#itemTitle').textContent=it?'編輯食品':'新增食品';
+  $('#fCode').value=it?it.code:code;$('#fName').value=it?it.name:'';$('#fExp').value=it?it.exp:'';$('#fQty').value=it?it.qty:1;$('#fHint').textContent='';
+  $('#quick').innerHTML='<span class="hint" style="align-self:center">快速設定：</span>'+[[3,'3天'],[7,'1週'],[30,'1個月'],[90,'3個月'],[180,'6個月'],[365,'1年']].map(([d,t])=>`<button type="button" class="sm ghost" data-d="${d}">${t}後</button>`).join('');
+  $('#itemDlg').showModal();
+}
+$('#quick').onclick=e=>{if(e.target.dataset.d)setExp(+e.target.dataset.d)};
+$('#itemCancel').onclick=()=>$('#itemDlg').close();
+$('#itemForm').onsubmit=()=>{
+  const code=$('#fCode').value.trim(),name=$('#fName').value.trim(),exp=$('#fExp').value,qty=Math.max(1,+$('#fQty').value||1);
+  if(!name||!exp)return;
+  if(editing)Object.assign(editing,{code,name,exp,qty});
+  else items.push({id:Date.now()+Math.random().toString(36).slice(2,6),code,name,exp,qty});
+  if(code)known[code]={name,days:Math.max(1,daysLeft(exp))};
+  save();render();
+};
+$('#addManual').onclick=()=>{$('#menuDlg').close();openItem(null)};
+
+/* ---- 選單：備份／提醒 ---- */
+$('#menuBtn').onclick=()=>{$('#soonDays').value=soonDays;$('#menuDlg').showModal()};
+$('#menuClose').onclick=()=>{soonDays=Math.min(30,Math.max(1,+$('#soonDays').value||3));save();render();$('#menuDlg').close()};
+$('#exportBtn').onclick=()=>{
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify({items,known},null,1)],{type:'application/json'}));
+  a.download=`food-expiry-${toISO(new Date())}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)};
+$('#importBtn').onclick=()=>$('#importFile').click();
+$('#importFile').onchange=async e=>{
+  try{const j=JSON.parse(await e.target.files[0].text());
+    if(!Array.isArray(j.items))throw 0;
+    if(confirm(`匯入 ${j.items.length} 筆，會取代目前的記錄，確定？`)){items=j.items;known=j.known||{};save();render()}
+  }catch{alert('檔案格式不正確')}e.target.value=''};
+function notifyDue(){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const due=items.filter(i=>daysLeft(i.exp)<=soonDays);
+  if(due.length&&ls.get('fe.lastNotify')!==toISO(new Date())){
+    ls.set('fe.lastNotify',toISO(new Date()));
+    new Notification('食品效期提醒',{body:due.slice(0,5).map(i=>i.name).join('、')+(due.length>5?` 等 ${due.length} 項`:'')+' 即將或已經到期',icon:'icon.svg'})}
+}
+$('#notifBtn').onclick=async()=>{
+  if(!('Notification' in window))return alert('此瀏覽器不支援通知');
+  const p=await Notification.requestPermission();
+  alert(p==='granted'?'已開啟：每天第一次打開 App 時，會提醒快到期的食品':'未允許通知');notifyDue()};
+
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();notifyDue();
+</script>
+</body>
+</html>
