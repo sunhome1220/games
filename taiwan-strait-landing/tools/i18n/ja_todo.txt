@@ -63,3 +63,11 @@
 （尚未登陸、沒有戰果時不提供）	(not offered when nothing has been landed or taken)
 轉取金馬、宣布「統一進程」	Take Kinmen/Matsu, announce the "unification process"
 本島已難奪取，改取政治象徵：增派 2 個兩棲旅攻金門、馬祖，本回合火力 +2。拿下兩島可保住「有限勝利」；強攻傷亡過大則招致國際反彈。	The main island is out of reach; settle for a political symbol: send 2 more amphibious brigades at Kinmen and Matsu, fire +2 this turn. Taking both islands secures a "limited victory"; heavy losses there provoke international backlash.
+最後攻勢新增「繼續進攻（延長 2 回合）」與「改由電腦接手指揮」	Final assault adds "Press on (extend 2 turns)" and "Hand command over to the computer"
+繼續進攻（延長 2 回合）	Press on (extend 2 turns)
+不在此判定，判定回合延後 2 回合，並補上增援、本回合火力 +1。代價：戰事拖長，全球股市再 −2%，守方也多 2 回合動員與外援。只能延長一次。	Skip the ruling and push it back 2 turns, with reinforcements and fire +1 this turn. Cost: a longer war, global markets −2% more, and the defender gets 2 more turns of mobilization and aid. Can be used once.
+改由電腦接手指揮	Hand command over to the computer
+你不再親自操作攻方，之後的回合由電腦指揮攻方（守方設定不變）。本回合比照「孤注一擲」：攻擊 +1、火力 +3、防禦 −1。	You stop operating the attacker; the computer commands it from now on (defender setup unchanged). This turn works like "All in": attack +1, fire +3, defense −1.
+判定回合延後為第 	Ruling turn pushed back to turn 
+攻方改由電腦指揮	Attacker now commanded by the computer
+全球股市再 −2%	Global markets −2% more
