@@ -93,13 +93,16 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   <h3 style="margin:0 0 8px">選單</h3>
   <div class="row"><button class="ghost" id="addManual">手動新增</button><button class="ghost" id="notifBtn">開啟到期提醒</button></div>
   <div class="row" style="margin-top:8px"><button class="ghost" id="exportBtn">匯出備份</button><button class="ghost" id="importBtn">匯入備份</button></div>
+  <label>家庭共用（多人同步同一份清單）</label>
+  <div class="hint" id="famStatus"></div>
+  <div class="row" style="margin-top:6px"><button class="ghost" id="famJoin">加入／建立</button><button class="ghost" id="famShare" hidden>分享連結</button><button class="ghost" id="famLeave" hidden>離開</button></div>
   <label>常用保存天數（天，用逗號分隔）</label><input id="presetIn" placeholder="3,7,14,30,45,60,90,180,365">
   <label>幾天內算「快到期」</label><input id="soonDays" type="number" min="1" max="30">
   <input type="file" id="importFile" accept="application/json" hidden>
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-04.05"></script>
+<script src="js/version.js?v=2026-11-04.06"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -129,7 +132,7 @@ function render(){
 }
 $('#list').onclick=e=>{
   const d=e.target.dataset;
-  if(d.done){const it=items.find(x=>x.id==d.done);if(confirm(`「${it.name}」已用完／丟棄？`)){items=items.filter(x=>x!==it);save();render()}}
+  if(d.done){const it=items.find(x=>x.id==d.done);if(confirm(`「${it.name}」已用完／丟棄？`)){items=items.filter(x=>x!==it);Sync.delItem(it.id);save();render()}}
   if(d.open)openOpened(items.find(x=>x.id==d.open));
   if(d.edit)openItem(items.find(x=>x.id==d.edit));
 };
@@ -232,9 +235,11 @@ $('#itemCancel').onclick=()=>$('#itemDlg').close();
 $('#itemForm').onsubmit=()=>{
   const code=$('#fCode').value.trim(),name=$('#fName').value.trim(),exp=$('#fExp').value,qty=Math.max(1,+$('#fQty').value||1);
   if(!name||!exp)return;
-  if(editing)Object.assign(editing,{code,name,exp,qty});
-  else items.push({id:Date.now()+Math.random().toString(36).slice(2,6),code,name,exp,qty});
-  if(code)known[code]=Object.assign(known[code]||{},{name,days:Math.max(1,daysLeft(exp))});
+  let it=editing;
+  if(it)Object.assign(it,{code,name,exp,qty});
+  else{it={id:Date.now()+Math.random().toString(36).slice(2,6),code,name,exp,qty};items.push(it)}
+  Sync.setItem(it);
+  if(code){known[code]=Object.assign(known[code]||{},{name,days:Math.max(1,daysLeft(exp))});Sync.setKnown(code,known[code])}
   save();render();
 };
 /* ---- 開封 ---- */
@@ -254,11 +259,12 @@ function openOpened(it){
 }
 $('#oQuick').onclick=e=>{if(e.target.dataset.d)$('#oDays').value=e.target.dataset.d};
 $('#oCancel').onclick=()=>$('#openDlg').close();
-$('#oUndo').onclick=()=>{delete opening.opened;delete opening.openDays;save();render();$('#openDlg').close()};
+$('#oUndo').onclick=()=>{delete opening.opened;delete opening.openDays;Sync.setItem(opening);save();render();$('#openDlg').close()};
 $('#openForm').onsubmit=()=>{
   const days=Math.round(+$('#oDays').value)||0;
   opening.opened=$('#oDate').value;if(days)opening.openDays=days;else delete opening.openDays;
-  if(opening.code&&days){known[opening.code]=Object.assign(known[opening.code]||{name:opening.name},{openDays:days})}
+  Sync.setItem(opening);
+  if(opening.code&&days){known[opening.code]=Object.assign(known[opening.code]||{name:opening.name},{openDays:days});Sync.setKnown(opening.code,known[opening.code])}
   save();render();
 };
 $('#addManual').onclick=()=>{$('#menuDlg').close();openItem(null)};
@@ -275,7 +281,7 @@ $('#importBtn').onclick=()=>$('#importFile').click();
 $('#importFile').onchange=async e=>{
   try{const j=JSON.parse(await e.target.files[0].text());
     if(!Array.isArray(j.items))throw 0;
-    if(confirm(`匯入 ${j.items.length} 筆，會取代目前的記錄，確定？`)){items=j.items;known=j.known||{};save();render()}
+    if(confirm(`匯入 ${j.items.length} 筆，會取代目前的記錄，確定？`)){const old=items.map(i=>i.id);items=j.items;known=j.known||{};save();render();Sync.replaceAll(items,known,old)}
   }catch{alert('檔案格式不正確')}e.target.value=''};
 function notifyDue(){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
@@ -292,6 +298,9 @@ $('#notifBtn').onclick=async()=>{
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 render();notifyDue();
 </script>
-<script src="js/update.js?v=2026-11-04.05"></script>
+<script src="firebase-config.js"></script>
+<script src="js/sync.js?v=2026-11-04.06"></script>
+<script src="js/family.js?v=2026-11-04.06"></script>
+<script src="js/update.js?v=2026-11-04.06"></script>
 </body>
 </html>
