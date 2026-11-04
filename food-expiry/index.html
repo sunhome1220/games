@@ -118,7 +118,7 @@ async function startScan(){
   $('#scanDlg').showModal();$('#manual').value='';
   const msg=$('#scanMsg'),v=$('#cam video');
   try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
   }catch(e){msg.textContent='無法使用相機（'+(e.name||'錯誤')+'），請手動輸入條碼。';return}
   v.srcObject=stream;await v.play().catch(()=>{});
   msg.textContent='掃描中…';scanning=true;
@@ -130,15 +130,30 @@ async function startScan(){
   }else{
     msg.textContent='載入掃描元件…';
     try{
-      if(!window.ZXing)await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';s.onload=ok;s.onerror=no;document.head.appendChild(s)});
-      zx=new ZXing.BrowserMultiFormatReader();msg.textContent='掃描中…';
-      const loop=async()=>{if(!scanning)return;
-        try{const r=await zx.decodeFromVideoElement(v);if(r)return found(r.getText())}catch{}
-        setTimeout(loop,200)};loop();
+      if(!window.ZXing)await new Promise((ok,no)=>{const s=document.createElement('script');s.src='vendor/zxing.min.js';s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+      const H=new Map();
+      H.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.UPC_A,ZXing.BarcodeFormat.UPC_E,ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.CODE_39,ZXing.BarcodeFormat.QR_CODE]);
+      H.set(ZXing.DecodeHintType.TRY_HARDER,true);
+      zx=new ZXing.MultiFormatReader();zx.setHints(H);
+      const cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
+      let n=0;
+      const loop=()=>{if(!scanning)return;
+        const w=v.videoWidth,h=v.videoHeight;
+        if(w){
+          // 交替掃整個畫面與中間橫帶（橫帶解析度較高、干擾少）
+          const band=n++%2===1,sw=band?w*0.9:w,sh=band?h*0.4:h,sx=(w-sw)/2,sy=(h-sh)/2;
+          const sc=Math.min(1,1000/sw);cv.width=Math.round(sw*sc);cv.height=Math.round(sh*sc);
+          cx.drawImage(v,sx,sy,sw,sh,0,0,cv.width,cv.height);
+          try{
+            const bmp=new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(cv)));
+            const r=zx.decodeWithState(bmp);if(r)return found(r.getText());
+          }catch{}
+        }
+        setTimeout(loop,120)};loop();
     }catch{msg.textContent='此瀏覽器不支援掃描，請手動輸入條碼。'}
   }
 }
-function stopScan(){scanning=false;try{zx&&zx.reset()}catch{}if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('#cam video').srcObject=null}
+function stopScan(){scanning=false;zx=null;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('#cam video').srcObject=null}
 function found(code){stopScan();navigator.vibrate&&navigator.vibrate(60);$('#scanDlg').close();newFromCode(code)}
 $('#scanBtn').onclick=startScan;
 $('#scanClose').onclick=()=>{stopScan();$('#scanDlg').close()};
