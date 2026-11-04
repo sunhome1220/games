@@ -35,3 +35,8 @@
 ↺ 重新開始	↺ Restart
 ⏩ 直接推演到結局	⏩ Simulate to the end
 遊戲開始後可以「↺ 重新開始」（指揮面板，以及電腦推演的每個視窗）；電腦推演新增「⏩ 直接推演到結局」，之後的事件、停戰與港口評估、快訊都自動處理	You can now "↺ Restart" after a game starts (in the command panel and in every AI-simulation window); AI simulation also gets "⏩ Simulate to the end", which handles later events, ceasefire and port assessments and flash news automatically
+點選項即可預覽影響，可隨時改選；按「繼續推演」才會正式生效。	Click an option to preview its effects; you can switch any time. It only takes effect when you press "Continue".
+預估影響 · 	Estimated effects · 
+戰況變化（對照目前）	Change in the situation (vs. now)
+此決策之後還要擲骰，結果在確認後才會揭曉。	A die roll follows this decision; the result is revealed after you confirm.
+決策視窗改成「先預覽、再決定」：點選項會立刻顯示該選擇的影響與戰況變化，可隨時改選；按「繼續推演 ▶」才正式生效並進入下一步	Decision windows now preview first: clicking an option instantly shows its effects and the change in the situation, and you can switch freely; the choice only takes effect when you press "Continue ▶"
