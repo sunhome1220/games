@@ -242,3 +242,15 @@
 判定回合延後為第 	Ruling turn pushed back to turn 	
 攻方改由電腦指揮	Attacker now commanded by the computer	
 全球股市再 −2%	Global markets −2% more	
+指揮面板新增「🤖 改由電腦接手」：隨時把你操作的一方交給電腦，之後的回合自動進行	The command panel adds "🤖 Hand over to computer": give the side you control to the computer at any time and the following turns run automatically	
+🤖 改由電腦接手	🤖 Hand over to computer	
+你操作的一方改由電腦指揮，之後的回合自動進行	Give the side you control to the computer; later turns run automatically	
+改由電腦接手？你操作的一方（	Hand over to the computer? The side you control (	
+）之後都由電腦指揮，無法再取回。	) will be commanded by the computer from now on and cannot be taken back.	
+玩家改由電腦接手指揮（	Player handed command to the computer (	
+已改由電腦接手	Handed over to the computer	
+作戰結束的報告新增「匯出報告（圖片）」：結果、勝負條件與結束時的地圖合成一張 PNG	The end-of-game report adds "Export report (image)": the result, win conditions and the final map combined into one PNG	
+匯出報告（圖片）	Export report (image)	
+正在產生報告圖片…	Generating report image…	
+已匯出報告圖片	Report image exported	
+報告圖片產生失敗（地圖太大，請縮小瀏覽器視窗或換個瀏覽器）	Could not create the report image (the map is too large; shrink the window or try another browser)	
