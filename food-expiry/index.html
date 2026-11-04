@@ -44,7 +44,8 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
 </style>
 </head>
 <body>
-<header><h1>🍱 食品效期記錄</h1><button class="ghost sm" style="color:#fff;border-color:#fff" id="menuBtn">⋯</button></header>
+<header><h1>🍱 食品效期記錄 <small id="ver" style="font-size:11px;opacity:.8;font-weight:400"></small></h1><button class="ghost sm" style="color:#fff;border-color:#fff" id="menuBtn">⋯</button></header>
+<button id="newver" hidden style="width:100%;border-radius:0;background:#1971c2;position:sticky;top:48px;z-index:4">🔔 有新版本，點此更新</button>
 <main>
   <div class="sum"><div>已過期<b id="nExp">0</b></div><div>3 天內<b id="nSoon">0</b></div><div>全部<b id="nAll">0</b></div></div>
   <div id="list"></div>
@@ -83,6 +84,7 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
+<script src="js/version.js?v=2026-11-04.02"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -226,5 +228,6 @@ $('#notifBtn').onclick=async()=>{
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 render();notifyDue();
 </script>
+<script src="js/update.js?v=2026-11-04.02"></script>
 </body>
 </html>
