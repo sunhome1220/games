@@ -242,3 +242,10 @@
 判定回合延後為第 	Ruling turn pushed back to turn 	
 攻方改由電腦指揮	Attacker now commanded by the computer	
 全球股市再 −2%	Global markets −2% more	
+指揮面板新增「🤖 改由電腦接手」：隨時把你操作的一方交給電腦，之後的回合自動進行	The command panel adds "🤖 Hand over to computer": give the side you control to the computer at any time and the following turns run automatically	
+🤖 改由電腦接手	🤖 Hand over to computer	
+你操作的一方改由電腦指揮，之後的回合自動進行	Give the side you control to the computer; later turns run automatically	
+改由電腦接手？你操作的一方（	Hand over to the computer? The side you control (	
+）之後都由電腦指揮，無法再取回。	) will be commanded by the computer from now on and cannot be taken back.	
+玩家改由電腦接手指揮（	Player handed command to the computer (	
+已改由電腦接手	Handed over to the computer	
