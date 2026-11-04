@@ -11,8 +11,8 @@
 10	Games run	統計ゲーム数
 11	Defaults: Play, you command the attacker (AI defends), judged at turn 8, exercise cover, dice decide intervention, flash news on. Settings you already saved are not changed.	初期値：対戦、攻撃側を操作（AIが防衛）、第8ターンで判定、演習偽装、サイコロで参戦決定、ニュース速報オン。保存済みの設定は変更されません。
 12	Leave units that have not acted to the AI, then end this phase	未行動のユニットをAIに任せ、このフェーズを終了する
-13	Taiwan Strait Landing	台湾海峡上陸戦
-14	Amphibious operations · Wargame	水陸両用作戦 · ウォーゲーム
+13	Taiwan Strait Wargame	台湾海峡ウォーゲーム
+14	Amphibious landing wargame	水陸両用上陸ウォーゲーム
 15	The attacker crosses the strait and storms the beaches; the defender holds the island. At the judgment turn, three victory conditions decide the winner.	攻撃側は海峡を渡って上陸し、防衛側は島で防御する。判定ターン終了時に3つの勝利条件で勝敗を決める。
 16	Fire strike	火力攻撃
 17	AI auto-play	AIに任せる

@@ -18,3 +18,4 @@
 判定回合：第 	Judgment turn: 
 戰況	Situation
 事件節點	Event checkpoints
+遊戲更名為「台海兵棋推演」（主畫面簡稱「台海兵推」），副標「兩棲登陸兵棋」；換上新的 App 圖示（含桌面／主畫面圖示與可遮罩圖示）	The game is renamed "Taiwan Strait Wargame" (home-screen short name "台海兵推"), subtitle "amphibious landing wargame", with a new app icon (including the home-screen and maskable icons)
