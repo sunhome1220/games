@@ -53,10 +53,11 @@ function undoMove() {
 function cancelSelect(msg = '已取消，請重新選擇棋子。') {
   state = 'aim'; mover = null; targets = []; setSkip(false); setMsg(msg);
 }
-// 替身（傳統象棋「蓋住的子」）：帥／將被攻擊時，己方帥／將 2 格內的仕或象衝出來替它挨這一發——所有攻擊都算（含炮擊、火箭、霰彈）。
-// 象的防空攔截還是先發動；沒被攔下的才由替身承受。先上仕（價值較低），其次血量多的、離帥近的。沒有符合的仕／象才由帥自己挨
+// 替身（救駕，傳統象棋「蓋住的子」）：帥／將被攻擊、而且這一發會把它打死時，己方帥／將 2 格內的仕或象衝出來替它挨這一發——
+// 所有攻擊都算（含炮擊、火箭、霰彈）。不會打死帥的傷害，帥照常自己挨。象的防空攔截還是先發動；沒被攔下的才由替身承受。
+// 先上仕（價值較低），其次血量多的、離帥近的。沒有符合的仕／象才由帥自己挨
 const SUB_NEAR = 2 * C;
-const SUB_RULE = new URLSearchParams(location.search).get('sub') || 'all';   // 測試用：?sub=lethal（只在這一發會打死帥時才替身）／guards（只有仕）
+const SUB_RULE = new URLSearchParams(location.search).get('sub') || 'lethal';   // 預設：這一發會打死帥才替身；測試／評估用：?sub=all（每一發都替）／guards（每一發都替、但只有仕）
 function guardSub(k, attacker, dmg) {
   if (k.t !== 'K') return null;
   if (SUB_RULE === 'lethal' && !(dmg >= k.hp)) return null;
