@@ -1,2 +1,5 @@
+已選擇「	Chose "
 影片模式的事件卡不透明度提高（卡片可拖曳，不必再靠透明看後方），文字更清楚	Video-mode event cards are now nearly opaque (they can be dragged, so there is no need to see through them), making the text easier to read
 捲軸變細；地圖、側欄、分頁列不再顯示捲軸（仍可拖曳、滾輪或觸控捲動），畫面更清爽	Scrollbars are thinner, and the map, side panel and tab bar no longer show scrollbars (you can still drag, use the wheel or touch-scroll), for a cleaner screen
+全新使用者第一次開啟不再跳出更新內容	First-time users no longer see the What's new popup on their first visit
+對戰中的守方決策選完直接進入遊戲，不再多一個結果畫面（結果仍寫入戰報並以提示顯示）	Defender decisions in Play mode now go straight back to the game without an extra result screen (the result is still written to the log and shown as a toast)
