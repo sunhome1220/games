@@ -92,22 +92,43 @@ module.exports = [
     });
     t.assert.ok(/攔截/.test(r.msg)); t.assert.deepStrictEqual([r.hp1, r.cd, r.hp2, r.rocketHp, r.rocketCd], [4, 1, 2, 4, 1]);
   } },
-  { name: '仕：近距離手槍 1 心；帥被直射時走到射線上擋（炮擊、斜線擋不了）', async fn(t) {
+  { name: '仕：近距離手槍 1 心；帥／將被攻擊、這一發會打死它時，2 格內的仕或象衝出來替它挨（仕優先、含炮擊與霰彈、象防空仍先攔截）；不致命的傷害帥自己挨', async fn(t) {
     const pg = await t.open();
     const r = await pg.evaluate(() => {
-      const o = {};
-      let [g, e] = T_.place([{ s: 0, t: 'G', c: 3, r: 9 }, { s: 1, t: 'P', c: 4, r: 8 }]); o.pistol = scan(g).find(x => x.p === e).est;   // 敵兵在仕的護衛領域（斜鄰、帥 2 格內）：威力至少 4
-      { const [g2, e2] = T_.place([{ s: 0, t: 'G', c: 3, r: 9 }, { s: 1, t: 'P', c: 2, r: 9 }]); o.pistolOut = scan(g2).find(x => x.p === e2).est; }   // 橫向相鄰不是仕的傳統走法格子：維持 1 心
-      [g, e] = T_.place([{ s: 0, t: 'G', c: 3, r: 9 }, { s: 1, t: 'P', c: 4, r: 8 }]);
-      const [rk, K, g1, g2] = T_.place([{ s: 0, t: 'R', c: 4, r: 4 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'G', c: 3, r: 0 }, { s: 1, t: 'G', c: 5, r: 0 }]);
-      const bl = guardBlock(K, rk, rk.T); o.line = bl && T_.cell({ x: bl.x, y: bl.y }).join(',');
-      o.cannon = !!guardBlock(K, rk, TT[0].C);
-      T_.fire(rk, K); const moved = [g1, g2].find(g => T_.cell(g).join(',') === '4,1');
-      o.guard = !!moved && moved.hp === 1; o.king = K.hp;
-      const [rk2, K2] = T_.place([{ s: 0, t: 'R', c: 7, r: 3 }, { s: 1, t: 'K', c: 4, r: 0 }, { s: 1, t: 'G', c: 3, r: 0 }, { s: 1, t: 'G', c: 5, r: 0 }]);
-      o.diag = !guardBlock(K2, rk2, rk2.T); return o;
+      const o = {}, hp = p => p.hp, cell = p => T_.cell(p).join(',');
+      let [g, e] = T_.place([{ s: 0, t: 'G', c: 3, r: 9 }, { s: 1, t: 'P', c: 4, r: 8 }]); o.pistol = scan(g).find(x => x.p === e).est;
+      const black = (khp, extra = []) => [{ s: 1, t: 'K', c: 4, r: 0, hp: khp }, { s: 1, t: 'G', c: 3, r: 0 }, { s: 1, t: 'G', c: 5, r: 0 }, { s: 1, t: 'E', c: 2, r: 0 }, { s: 1, t: 'E', c: 6, r: 0 }, ...extra];
+      // 帥 3 心、俥 2 心：不致命，帥自己挨（沒有替身）
+      let ps = T_.place([{ s: 0, t: 'R', c: 4, r: 3 }, ...black(3)]); let [rk, K, g1, g2, e1, e2] = ps;
+      o.estSafe = [...predictAttack(rk, rk.x, rk.y, rk.T, K).keys()].map(p => p.t).join(); T_.fire(rk, K); o.safe = [hp(K), hp(g1), hp(g2)];
+      // 帥 2 心：這一發會打死它 → 仕之一替帥挨 2 心（沒有走位）、帥沒事
+      ps = T_.place([{ s: 0, t: 'R', c: 4, r: 3 }, ...black(2)]); [rk, K, g1, g2, e1, e2] = ps;
+      o.estLethal = [...predictAttack(rk, rk.x, rk.y, rk.T, K).keys()].map(p => p.t).join();   // 電腦預估：受傷的是仕、不是帥
+      T_.fire(rk, K); o.direct = [hp(K), [g1, g2].map(hp).sort().join(), hp(e1) + ',' + hp(e2), cell(g1), cell(g2)];
+      // 炮擊（曲射）：象冷卻中不攔截，仕替帥挨炮彈本體，緊鄰的帥只受波及 1 心；象在就先攔截（沒有人受傷）
+      ps = T_.place([{ s: 0, t: 'C', c: 4, r: 5 }, ...black(2)]); let [c, K2, ga, gb, ea, eb] = ps; ea.cd = 1; eb.cd = 1; T_.fire(c, K2); o.shell = [hp(K2), [ga, gb].map(hp).sort().join()];
+      ps = T_.place([{ s: 0, t: 'C', c: 4, r: 5 }, ...black(2)]); [c, K2, ga, gb, ea, eb] = ps; T_.fire(c, K2); o.intercepted = [hp(K2), hp(ga), hp(gb), hp(ea), hp(eb)];
+      // 只有象在 2 格內：象替身；仕、象都超過 2 格：帥自己挨（致命）
+      ps = T_.place([{ s: 0, t: 'R', c: 4, r: 3 }, { s: 1, t: 'K', c: 4, r: 0, hp: 2 }, { s: 1, t: 'E', c: 2, r: 0 }]); T_.fire(ps[0], ps[1]); o.eleOnly = [hp(ps[1]), hp(ps[2])];
+      ps = T_.place([{ s: 0, t: 'R', c: 4, r: 3 }, { s: 1, t: 'K', c: 4, r: 0, hp: 2 }, { s: 1, t: 'G', c: 4, r: 3 }]); ps[2].x = T_.X(8); ps[2].y = T_.Y(0); T_.fire(ps[0], ps[1]); o.far = [hp(ps[1]), hp(ps[2])];   // 仕在 (8,0)，離帥 4 格
+      // 霰彈（士官長）：致命時扇形對準替身，不出錯
+      ps = T_.place([{ s: 0, t: 'R', c: 4, r: 3, id: 'P2' }, ...black(2)]); ps[0].T = TT[0].P2; T_.fire(ps[0], ps[1]); o.pellets = [hp(ps[2]) < 3 || hp(ps[3]) < 3];
+      // 不是帥被打：不替身
+      ps = T_.place([{ s: 0, t: 'R', c: 4, r: 3 }, { s: 1, t: 'N', c: 4, r: 0 }, ...black(3).slice(1)]); T_.fire(ps[0], ps[1]); o.notKing = [hp(ps[1]), hp(ps[2]), hp(ps[3])];
+      return o;
     });
-    t.assert.deepStrictEqual(r, { pistol: 4, pistolOut: 1, line: '4,1', cannon: false, guard: true, king: 3, diag: true });
+    t.assert.strictEqual(r.pistol, 1);
+    t.assert.strictEqual(r.estSafe, 'K', '不致命：電腦預估帥自己受傷');
+    t.assert.deepStrictEqual(r.safe, [1, 3, 3], '不致命：帥自己挨 2 心，仕沒動作');
+    t.assert.strictEqual(r.estLethal, 'G', '致命：電腦預估受傷的是仕');
+    t.assert.deepStrictEqual(r.direct.slice(0, 3), [2, '1,3', '3,3'], '致命：一顆仕挨 2 心剩 1 心，另一顆、帥和兩隻象都沒受傷');
+    t.assert.deepStrictEqual(r.direct.slice(3), ['3,0', '5,0'], '替身不換位');
+    t.assert.deepStrictEqual(r.shell, [1, '1,3'], '炮擊：炮彈落在替身身上（挨 2 心），緊鄰的帥只受波及 1 心');
+    t.assert.deepStrictEqual(r.intercepted, [2, 3, 3, 3, 3], '象的防空先攔截炮彈，沒有人受傷');
+    t.assert.deepStrictEqual(r.eleOnly, [2, 1], '只有象在 2 格內：象替身挨 2 心');
+    t.assert.deepStrictEqual(r.far, [0, 3], '仕離帥超過 2 格：帥自己挨，被打死');
+    t.assert.deepStrictEqual(r.pellets, [true]);
+    t.assert.deepStrictEqual(r.notKing, [1, 3, 3], '被打的是傌：仕不替身');
   } },
   { name: '兵：未過河只能前進一格；過河後升士官長（3 心、霰彈槍、每次最多 2 格、不能後退）', async fn(t) {
     const pg = await t.open();
@@ -283,28 +304,6 @@ module.exports = [
       return o;
     });
     t.assert.deepStrictEqual(r, { none: 0, turn0: 2, turn1: 2, expired: 0 });
-  } },
-  { name: '護衛領域：敵人走到將／士／象傳統走法走得到、且在帥 2 格內的格子，會被威力最高的一顆自動射一槍（4 心）；領域外、象眼被塞、超過 2 格都不會', async fn(t) {
-    const pg = await t.open();
-    const r = await pg.evaluate(() => {
-      const o = {}, run = (specs, mover, c, r_, hp) => { const ps = T_.place(specs); const m = ps[mover]; if (hp) m.hp = hp; turn = 1; const st = T_.go(m, c, r_); return [m.hp, st]; };
-      const base = [{ s: 0, t: 'K', c: 4, r: 9 }, { s: 0, t: 'G', c: 3, r: 9 }, { s: 0, t: 'E', c: 2, r: 9 }];
-      o.inZone = run([...base, { s: 1, t: 'R', c: 4, r: 4 }, { s: 1, t: 'K', c: 4, r: 0 }], 3, 4, 8);   // 黑俥走到帥前一格 (4,8)：血量 4 被一槍打死
-      o.tough = run([...base, { s: 1, t: 'R', c: 4, r: 4, hp: 6 }, { s: 1, t: 'K', c: 4, r: 0 }], 3, 4, 8, 6);   // 血量 6 的俥撐得住，剩 2 心，仍可繼續行動（進入選目標）
-      o.out = run([...base, { s: 1, t: 'R', c: 4, r: 4 }, { s: 1, t: 'K', c: 4, r: 0 }], 3, 4, 6);   // (4,6) 離帥 3 格：不在領域
-      o.eleZone = run([...base, { s: 1, t: 'R', c: 4, r: 2 }, { s: 1, t: 'K', c: 4, r: 0 }], 3, 4, 7);   // (4,7)：象 (2,9) 的田字點且離帥正好 2 格 → 被象射
-      o.eyeBlocked = run([...base, { s: 0, t: 'P', c: 3, r: 8 }, { s: 1, t: 'R', c: 4, r: 2 }, { s: 1, t: 'K', c: 4, r: 0 }], 4, 4, 7);   // 象眼 (3,8) 有棋子：象蓋不到 (4,7)
-      o.tooFar = run([{ s: 0, t: 'K', c: 4, r: 9 }, { s: 0, t: 'E', c: 6, r: 9 }, { s: 1, t: 'R', c: 8, r: 2 }, { s: 1, t: 'K', c: 4, r: 0 }], 2, 8, 7);   // 象 (6,9) 的田字點 (8,7) 離帥 4 格：超過 2 格
-      // 自動射擊後不影響原本的流程：沒死的俥走完還能選目標
-      o.after = (() => { const ps = T_.place([...base, { s: 1, t: 'R', c: 4, r: 4, hp: 6 }, { s: 1, t: 'K', c: 4, r: 0 }]); turn = 1; return [T_.go(ps[3], 4, 8), ps[3].hp, targets.some(x => x.ok)]; })();
-      // 兩顆都蓋得到：選威力高的（帥帶「指揮官配槍」類加成時威力 2，先射）；同威力選最近的
-      T_.place([...base, { s: 1, t: 'R', c: 4, r: 4, hp: 9 }, { s: 1, t: 'K', c: 4, r: 0 }]); const rk = pieces.find(p => p.s === 1 && p.t === 'R'); rk.x = T_.X(3); rk.y = T_.Y(8);
-      const who = alive().filter(d => d.s === 0 && inGuardZone(d, rk)).map(d => d.t).sort().join(); o.cover = who;   // (3,8)：帥（斜鄰）、仕（4,9 的斜格…）蓋得到的有哪些
-      return o;
-    });
-    t.assert.deepStrictEqual([r.inZone[0], r.tough[0], r.out[0], r.eleZone[0], r.eyeBlocked[0], r.tooFar[0]], [0, 2, 4, 0, 4, 4]);
-    t.assert.deepStrictEqual(r.after, ['target', 2, true]);
-    t.assert.ok(/K/.test(r.cover), r.cover);
   } },
   { name: '強化卡牌：不可疊加、只影響自己這一方、卡表格式正確', async fn(t) {
     const pg = await t.open();

@@ -1,6 +1,6 @@
 // ===== 電腦對戰（AI） =====
 // 列舉電腦每顆棋子「原地或移到某個可走的點，再攻擊某個目標（或不攻擊）」的所有行動，
-// 用與實際規則相同的函式（scan、shotgunSim、guardBlock、interceptorFor）估算傷害來打分。
+// 用與實際規則相同的函式（scan、shotgunSim、guardSub、interceptorFor）估算傷害來打分。
 // 難度：1 新手＝隨機；2 簡單＝貪心但常失誤；
 //       3、4、5＝貪心後，對分數最高的前 N 個行動推算「對手最好的反擊」並扣分（3：前 6 個、4：前 12 個、5：前 20 個，隨機性遞減）。
 // 參數由電腦互打調校：再多看一步（我方追擊）與往前推進的位置分，實測都沒有幫助，預設關閉
@@ -16,17 +16,14 @@ const unitValue = p => p.T.id === 'P2' ? 6 : VALUE[p.t];
 function predictAttack(a, x, y, T, b) {
   const dm = new Map(), add = (p, d) => { d = effDmg(p, d); if (d > 0) dm.set(p, (dm.get(p) || 0) + d); }, from = { x, y };
   if (T.pellets) {
-    const bl = guardBlock(b, from, T), gx = bl && bl.g.x, gy = bl && bl.g.y;
-    if (bl) { bl.g.x = bl.x; bl.g.y = bl.y; }   // 仕先走到射線上再算彈丸
-    try { for (const [p, n] of shotgunSim(a, b, x, y, T).count) add(p, pelletDmg(n, T)); }
-    finally { if (bl) { bl.g.x = gx; bl.g.y = gy; } }
+    for (const [p, n] of shotgunSim(a, guardSub(b, a, effDmg(b, T.dmg)) || b, x, y, T).count) add(p, pelletDmg(n, T));   // 帥被打時扇形對準替身
     return dm;
   }
   if (flies(T) && interceptorFor(b.s, b.x, b.y)) return dm;   // 會被防空攔下
-  const bl = guardBlock(b, from, T), tgt = bl ? bl.g : b;
-  add(tgt, guardDmg(a, tgt, T.dmg, x, y));
+  const tgt = guardSub(b, a, effDmg(b, T.dmg)) || b;   // 帥被打：仕／象替身挨
+  add(tgt, T.dmg);
   if (T.splash) {
-    const cx = b.x, cy = b.y;
+    const cx = tgt.x, cy = tgt.y;
     for (const q of alive()) {
       if (q === tgt) continue;
       const d = Math.hypot(q.x - cx, q.y - cy);
@@ -57,18 +54,7 @@ function actionsFor(side) {
   }
   return acts;
 }
-// 走到對方將／士／象的護衛領域，會先挨一槍（威力 GUARD_DMG，見 turn.js 的 guardFire）；被打死就沒辦法攻擊了
-function guardHit(a) {
-  if (!a.mv) return null;
-  const tgt = { x: a.x, y: a.y, s: a.p.s };
-  if (!alive().some(d => d.s !== a.p.s && inGuardZone(d, tgt))) return null;
-  const d = effDmg(a.p, GUARD_DMG); return d > 0 ? { d: Math.min(d, a.p.hp), die: d >= a.p.hp } : null;
-}
-const attackValue = (a, side) => {
-  const g = guardHit(a), pen = g ? dmgValue(new Map([[a.p, g.d]]), side) : 0;
-  if (g && g.die) return pen;
-  return pen + (a.b ? dmgValue(predictAttack(a.p, a.x, a.y, a.T, a.b), side) : 0);
-};
+const attackValue = (a, side) => a.b ? dmgValue(predictAttack(a.p, a.x, a.y, a.T, a.b), side) : 0;
 // 位置分：攻擊棋子往敵帥推進；士守在帥旁；相待在帥附近約 2 格掩護
 function positional(a, side) {
   const p = a.p, ek = alive().find(q => q.s !== side && q.t === 'K'), mk = alive().find(q => q.s === side && q.t === 'K');
