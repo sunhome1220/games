@@ -249,3 +249,8 @@
 ）之後都由電腦指揮，無法再取回。	) will be commanded by the computer from now on and cannot be taken back.	
 玩家改由電腦接手指揮（	Player handed command to the computer (	
 已改由電腦接手	Handed over to the computer	
+作戰結束的報告新增「匯出報告（圖片）」：結果、勝負條件與結束時的地圖合成一張 PNG	The end-of-game report adds "Export report (image)": the result, win conditions and the final map combined into one PNG	
+匯出報告（圖片）	Export report (image)	
+正在產生報告圖片…	Generating report image…	
+已匯出報告圖片	Report image exported	
+報告圖片產生失敗（地圖太大，請縮小瀏覽器視窗或換個瀏覽器）	Could not create the report image (the map is too large; shrink the window or try another browser)	
