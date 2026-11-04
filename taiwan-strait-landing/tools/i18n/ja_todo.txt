@@ -83,3 +83,5 @@
 正在產生報告圖片…	Generating report image…
 已匯出報告圖片	Report image exported
 報告圖片產生失敗（地圖太大，請縮小瀏覽器視窗或換個瀏覽器）	Could not create the report image (the map is too large; shrink the window or try another browser)
+手機與觸控裝置：按鈕與分頁加大到至少 40px；地圖改精簡圖層（不畫持續動畫的海浪、減少細節），細格海面合併繪製，節點由 1.5 萬降到約 9 千、動畫由約 2,000 降到十幾個	Phones and touch devices: buttons and tabs are at least 40px; the map uses a lighter layer (no endlessly animated waves, less detail) and merges sea tiles, cutting nodes from ~15k to ~9k and animations from ~2,000 to a dozen
+美軍航艦打擊群參戰後會逐回合由菲律賓海駛向台灣東側；守方艦艇在海上交戰結算前先出港，不再一開打就在港內被擊沉	After the US joins, the carrier strike group now sails turn by turn from the Philippine Sea toward Taiwan's east; Taiwan's ships sortie before naval combat resolves instead of being sunk in port
