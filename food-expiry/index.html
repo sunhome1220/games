@@ -84,7 +84,7 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-04.02"></script>
+<script src="js/version.js?v=2026-11-04.03"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -168,17 +168,28 @@ async function newFromCode(code){
   openItem(null,code);
   const k=known[code];
   if(k){$('#fName').value=k.name;if(k.days)setExp(k.days);$('#fHint').textContent='已套用上次記錄的名稱與保存天數';return}
-  const seq=++lookupSeq;$('#fHint').textContent='查詢商品資料中…';
-  try{
-    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,product_name_zh,brands,quantity`);
-    const j=await r.json();
-    if(seq!==lookupSeq)return;
-    const p=j.product;
-    if(j.status===1&&p){const n=[p.brands&&p.brands.split(',')[0],p.product_name_zh||p.product_name,p.quantity].filter(Boolean).join(' ');
-      if(n&&!$('#fName').value){$('#fName').value=n;$('#fHint').textContent='名稱取自 Open Food Facts，可自行修改'}
-      else $('#fHint').textContent=''}
-    else $('#fHint').textContent='資料庫查無此商品，請自行輸入名稱（下次會記住）';
-  }catch{if(seq===lookupSeq)$('#fHint').textContent='無法連線查詢，請自行輸入名稱'}
+  const seq=++lookupSeq,H=$('#fHint');H.textContent='查詢商品資料中…';
+  const nm=await lookupName(code);
+  if(seq!==lookupSeq)return;
+  if(nm.name&&!$('#fName').value){$('#fName').value=nm.name;H.textContent='名稱取自 '+nm.src+'，可自行修改'}
+  else if(!nm.name){H.textContent=(nm.err?'無法連線查詢':'資料庫查無此商品（台灣商品收錄較少）')+'，請輸入名稱，下次掃同一條碼會自動帶出';$('#fName').focus()}
+}
+async function getJSON(u){const c=new AbortController(),t=setTimeout(()=>c.abort(),8000);try{const r=await fetch(u,{signal:c.signal});return await r.json()}finally{clearTimeout(t)}}
+async function lookupName(code){
+  let err=true;
+  try{ // Open Food Facts
+    const j=await getJSON(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`);err=false;
+    const p=j.status===1&&j.product;
+    if(p){const base=p.product_name_zh||p['product_name_zh-TW']||p['product_name_zh-Hant']||p.product_name||p.generic_name||p.abbreviated_product_name||'';
+      const n=[(p.brands||'').split(',')[0],base,p.quantity].filter(Boolean).join(' ').trim();
+      if(base)return{name:n,src:'Open Food Facts'}}
+  }catch{}
+  try{ // UPCitemdb（有些瀏覽器會擋跨網域，失敗就略過）
+    const j=await getJSON(`https://api.upcitemdb.com/prod/trial/lookup?upc=${encodeURIComponent(code)}`);err=false;
+    const it=j.items&&j.items[0];
+    if(it&&it.title)return{name:it.title,src:'UPCitemdb'}
+  }catch{}
+  return{name:'',err};
 }
 function setExp(days){const d=today();d.setDate(d.getDate()+days);$('#fExp').value=toISO(d)}
 function openItem(it,code=''){
@@ -228,6 +239,6 @@ $('#notifBtn').onclick=async()=>{
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 render();notifyDue();
 </script>
-<script src="js/update.js?v=2026-11-04.02"></script>
+<script src="js/update.js?v=2026-11-04.03"></script>
 </body>
 </html>
