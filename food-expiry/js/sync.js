@@ -2,11 +2,11 @@
 // 沒設定 firebase-config.js 時 Sync.available=false，App 當單機版使用。
 window.Sync = (() => {
   const cfg = window.FIREBASE_CONFIG;
-  const S = { available: !!(cfg && cfg.projectId), code: null, status: 'off', onItems() {}, onKnown() {}, onStatus() {} };
+  const S = { err: '', available: !!(cfg && cfg.projectId), code: null, status: 'off', onItems() {}, onKnown() {}, onStatus() {} };
   let db = null, unsubs = [], loading = null;
   const clean = o => JSON.parse(JSON.stringify(o));
   const kid = c => String(c).replace(/[\/.#$\[\]]/g, '_');
-  const setStatus = s => { S.status = s; S.onStatus(s); };
+  const setStatus = (s, e) => { S.status = s; S.err = e ? (e.code || e.message || String(e)) : ''; S.onStatus(s); };
   const load = src => new Promise((ok, no) => { const e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = no; document.head.appendChild(e); });
   async function init() {
     if (db) return;
@@ -14,6 +14,7 @@ window.Sync = (() => {
       if (!window.firebase) { await load('vendor/firebase-app-compat.js'); await load('vendor/firebase-firestore-compat.js'); }
       firebase.initializeApp(cfg);
       db = firebase.firestore();
+      try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (_) {}
       try { await db.enablePersistence({ synchronizeTabs: true }); } catch (_) { /* 不支援離線快取就略過 */ }
     })();
     await loading;
@@ -34,16 +35,17 @@ window.Sync = (() => {
         Object.entries(upload.known).forEach(([k, v]) => b.set(col('known').doc(kid(k)), clean({ ...v, code: k })));
         await b.commit();
       }
-      const onErr = () => setStatus('error');
+      const onErr = e => { console.warn(e); setStatus('error', e); };
+      setTimeout(() => { if (S.status === 'connecting') setStatus('error', { code: '逾時：10 秒內沒收到伺服器回應' }); }, 10000);
       unsubs.push(col('items').onSnapshot(sn => { S.onItems(sn.docs.map(d => ({ ...d.data(), id: d.data().id || d.id }))); setStatus(sn.metadata.fromCache && !navigator.onLine ? 'offline' : 'ok'); }, onErr));
       unsubs.push(col('known').onSnapshot(sn => { const m = {}; sn.docs.forEach(d => { const v = d.data(); m[v.code || d.id] = v; }); S.onKnown(m); }, onErr));
-    } catch (e) { console.warn(e); setStatus('error'); }
+    } catch (e) { console.warn(e); setStatus('error', e); }
   };
   S.leave = () => { stop(); S.code = null; setStatus('off'); };
   const on = () => S.available && S.code && db;
-  S.setItem = it => { if (on()) col('items').doc(String(it.id)).set(clean(it)).catch(() => setStatus('error')); };
-  S.delItem = id => { if (on()) col('items').doc(String(id)).delete().catch(() => setStatus('error')); };
-  S.setKnown = (code, v) => { if (on()) col('known').doc(kid(code)).set(clean({ ...v, code })).catch(() => setStatus('error')); };
+  S.setItem = it => { if (on()) col('items').doc(String(it.id)).set(clean(it)).catch(e => setStatus('error', e)); };
+  S.delItem = id => { if (on()) col('items').doc(String(id)).delete().catch(e => setStatus('error', e)); };
+  S.setKnown = (code, v) => { if (on()) col('known').doc(kid(code)).set(clean({ ...v, code })).catch(e => setStatus('error', e)); };
   S.replaceAll = async (items, known, oldIds) => {
     if (!on()) return;
     const b = db.batch(), keep = new Set(items.map(i => String(i.id)));

@@ -5,10 +5,10 @@
   const lsSet = v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} };
   const st = document.getElementById('famStatus'), bJoin = document.getElementById('famJoin'),
     bShare = document.getElementById('famShare'), bLeave = document.getElementById('famLeave');
-  const TXT = { off: '未啟用（只存在這支手機）', connecting: '⏳ 連線中…', ok: '✅ 同步中', offline: '📴 離線，連線後自動同步', error: '⚠️ 同步失敗，請檢查 Firebase 設定與規則' };
+  const TXT = { off: '未啟用（只存在這支手機）', connecting: '⏳ 連線中…', ok: '✅ 同步中', offline: '📴 離線，連線後自動同步', error: '⚠️ 同步失敗' };
   function ui() {
     if (!Sync.available) { st.textContent = '尚未設定 Firebase（見 food-expiry/FIREBASE.md）'; bJoin.disabled = true; return; }
-    st.textContent = TXT[Sync.status] + (Sync.code ? '　代碼：' + Sync.code : '');
+    st.textContent = TXT[Sync.status] + (Sync.err ? '（' + Sync.err + '）' : '') + (Sync.code ? '　代碼：' + Sync.code : '');
     bJoin.hidden = !!Sync.code; bShare.hidden = bLeave.hidden = !Sync.code;
   }
   Sync.onStatus = ui;
