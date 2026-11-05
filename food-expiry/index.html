@@ -24,11 +24,16 @@ button.sm{padding:6px 10px;font-size:14px}
 .sum b{display:block;font-size:22px}
 .item{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--ok);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
 .item.soon{border-left-color:var(--warn)}.item.exp{border-left-color:var(--bad)}
-.item .info{flex:1;min-width:0}
-.item .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item{flex-wrap:wrap}.item .info{flex:1 1 100%;min-width:0}.item .badge{margin-right:auto}
+.item .nm{font-weight:600}
 .item .meta{font-size:13px;color:var(--mut)}
 .badge{font-weight:700;font-size:14px;white-space:nowrap}
 .soon .badge{color:var(--warn)}.exp .badge{color:var(--bad)}.item:not(.soon):not(.exp) .badge{color:var(--ok)}
+.item{background:#eef6ff}.item.op{background:#fff1e0}
+@media(prefers-color-scheme:dark){.item{background:#1f2a36}.item.op{background:#3a2a18}}
+.tag{display:inline-block;font-size:12px;font-weight:600;border-radius:10px;padding:1px 8px;margin-right:6px;vertical-align:1px;background:#d0e6ff;color:#0b5cad}
+.tag.op{background:#ffd8a8;color:#a14a00}
+@media(prefers-color-scheme:dark){.tag{background:#264b73;color:#b8dcff}.tag.op{background:#6b4210;color:#ffd8a8}}
 .empty{text-align:center;color:var(--mut);padding:40px 0}
 dialog{border:0;border-radius:14px;padding:16px;width:min(92vw,420px);background:var(--card);color:var(--fg)}
 dialog::backdrop{background:#0006}
@@ -102,7 +107,7 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-05.03"></script>
+<script src="js/version.js?v=2026-11-05.05"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -126,7 +131,7 @@ function render(){
     const E=eff(it),d=daysLeft(E),cls=d<0?'exp':d<=soonDays?'soon':'';
     if(d<0)ne++;else if(d<=soonDays)ns++;
     const t=d<0?`過期 ${-d} 天`:d===0?'今天到期':`剩 ${d} 天`;
-    return `<div class="item ${cls}"><div class="info"><div class="nm">${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.opened?`🔓 ${it.opened} 開封${it.openDays?`，限 ${it.openDays} 天內吃完`:''}${E!==it.exp?'（原效期 '+it.exp+'）':''}`:'效期 '+it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div><button class="sm ghost" data-open="${it.id}">${it.opened?'開封中':'開封'}</button><button class="sm ghost" data-edit="${it.id}">編輯</button><button class="sm" data-done="${it.id}">用完</button></div>`}).join('')
+    return `<div class="item ${cls} ${it.opened?'op':''}"><div class="info"><div class="nm"><span class="tag ${it.opened?'op':''}">${it.opened?'已開封':'未開封'}</span>${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.opened?`🔓 ${it.opened} 開封${it.openDays?`，限 ${it.openDays} 天內吃完`:''}${E!==it.exp?'（原效期 '+it.exp+'）':''}`:'效期 '+it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div><button class="sm ghost" data-open="${it.id}">${it.opened?'開封中':'開封'}</button><button class="sm ghost" data-edit="${it.id}">編輯</button><button class="sm" data-done="${it.id}">用完</button></div>`}).join('')
     :'<div class="empty">還沒有記錄<br>按下方「掃描條碼」開始</div>';
   $('#nExp').textContent=ne;$('#nSoon').textContent=ns;$('#nAll').textContent=items.length;
 }
@@ -299,8 +304,8 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 render();notifyDue();
 </script>
 <script src="firebase-config.js"></script>
-<script src="js/sync.js?v=2026-11-05.03"></script>
-<script src="js/family.js?v=2026-11-05.03"></script>
-<script src="js/update.js?v=2026-11-05.03"></script>
+<script src="js/sync.js?v=2026-11-05.05"></script>
+<script src="js/family.js?v=2026-11-05.05"></script>
+<script src="js/update.js?v=2026-11-05.05"></script>
 </body>
 </html>
