@@ -6,61 +6,74 @@
 <title>食品效期記錄</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg">
-<meta name="theme-color" content="#e8590c">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <style>
-:root{--bg:#fff8ef;--fg:#2b2118;--card:#fff;--mut:#8a7a6b;--pri:#e8590c;--ok:#2f9e44;--warn:#f08c00;--bad:#e03131;--line:#eadfce}
-@media(prefers-color-scheme:dark){:root{--bg:#1c1713;--fg:#f4ebe0;--card:#2a231c;--mut:#a39382;--line:#3d3329}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,"Noto Sans TC",sans-serif;padding-bottom:env(safe-area-inset-bottom)}
-header{background:var(--pri);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
-header h1{margin:0;font-size:19px}
-main{max-width:640px;margin:0 auto;padding:12px 16px 90px}
-button{font:inherit;border:0;border-radius:10px;padding:10px 14px;background:var(--pri);color:#fff;cursor:pointer}
-button.ghost{background:transparent;color:var(--pri);border:1px solid var(--pri)}
-button.sm{padding:6px 10px;font-size:14px}
-.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));padding:14px 20px;border-radius:30px;font-size:17px;box-shadow:0 4px 14px #0004;z-index:6}
-.sum{display:flex;gap:8px;margin:4px 0 12px}
-.sum div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;font-size:13px;color:var(--mut)}
-.sum b{display:block;font-size:22px}
-.item{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--ok);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
-.item.soon{border-left-color:var(--warn)}.item.exp{border-left-color:var(--bad)}
-.item{flex-wrap:wrap}.item .info{flex:1 1 100%;min-width:0}.item .badge{margin-right:auto}
-.item .nm{font-weight:600}
-.item .meta{font-size:13px;color:var(--mut)}
-.badge{font-weight:700;font-size:14px;white-space:nowrap}
-.soon .badge{color:var(--warn)}.exp .badge{color:var(--bad)}.item:not(.soon):not(.exp) .badge{color:var(--ok)}
-.item{background:#eef6ff}.item.op{background:#fff1e0}
-@media(prefers-color-scheme:dark){.item{background:#1f2a36}.item.op{background:#3a2a18}}
-.tag{display:inline-block;font-size:12px;font-weight:600;border-radius:10px;padding:1px 8px;margin-right:6px;vertical-align:1px;background:#d0e6ff;color:#0b5cad}
-.tag.op{background:#ffd8a8;color:#a14a00}
-@media(prefers-color-scheme:dark){.tag{background:#264b73;color:#b8dcff}.tag.op{background:#6b4210;color:#ffd8a8}}
-.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:48px;z-index:4}
-.tabs button{flex:1;background:transparent;color:var(--mut);border-radius:0;border-bottom:3px solid transparent;padding:10px}
-.tabs button.on{color:var(--pri);border-bottom-color:var(--pri);font-weight:700}
-.item.st{background:#eefaf0;border-left-color:var(--ok)}.item.st.low{background:#ffecec;border-left-color:var(--bad)}
-@media(prefers-color-scheme:dark){.item.st{background:#1d2e22}.item.st.low{background:#3a1f1f}}
-.tag.ok{background:#c9f0d2;color:#1b6e2e}.tag.low{background:#ffc9c9;color:#a61e1e}
-@media(prefers-color-scheme:dark){.tag.ok{background:#1f5a2f;color:#c9f0d2}.tag.low{background:#7a2222;color:#ffc9c9}}
-.qbtn{width:40px;font-size:20px;padding:4px 0}
-#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;z-index:20;max-width:90vw;font-size:14px}
+:root{--bg:#f2f2f7;--fg:#000;--card:#fff;--mut:#8e8e93;--pri:#007aff;--ok:#34c759;--okt:#248a3d;--warn:#ff9500;--bad:#ff3b30;--line:#c6c6c8;--fill:rgba(118,118,128,.12);--tint:rgba(0,122,255,.12);--bar:rgba(249,249,249,.88)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#000;--fg:#fff;--card:#1c1c1e;--mut:#98989d;--pri:#0a84ff;--ok:#30d158;--okt:#30d158;--warn:#ff9f0a;--bad:#ff453a;--line:#38383a;--fill:rgba(118,118,128,.24);--tint:rgba(10,132,255,.22);--bar:rgba(22,22,24,.88)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC",system-ui,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+.top{position:sticky;top:0;z-index:5;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--line);padding-top:env(safe-area-inset-top)}
+header{padding:10px 16px 6px;display:flex;align-items:center;justify-content:space-between;max-width:640px;margin:0 auto}
+header h1{margin:0;font-size:26px;font-weight:700;letter-spacing:.2px}
+main{max-width:640px;margin:0 auto;padding:12px 16px 100px}
+button{font:inherit;font-weight:600;border:0;border-radius:12px;padding:11px 16px;background:var(--pri);color:#fff;cursor:pointer;transition:opacity .15s}
+button:active{opacity:.55}
+button.ghost{background:var(--tint);color:var(--pri)}
+button.sm{padding:7px 12px;font-size:15px;border-radius:9px}
+button:disabled{opacity:.4}
+#menuBtn{background:var(--tint);color:var(--pri);border-radius:50%;width:34px;height:34px;padding:0;font-size:18px;line-height:34px}
+.fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));padding:14px 22px;border-radius:30px;font-size:17px;box-shadow:0 6px 18px rgba(0,122,255,.35);z-index:6}
+.tabs{display:flex;margin:4px 16px 10px;padding:2px;background:var(--fill);border-radius:9px;max-width:608px}
+@media(min-width:640px){.tabs{margin-left:auto;margin-right:auto;width:608px}}
+.tabs button{flex:1;background:transparent;color:var(--fg);border-radius:7px;padding:6px 4px;font-size:14px;font-weight:500}
+.tabs button.on{background:var(--card);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.18),0 0 1px rgba(0,0,0,.1)}
+@media(prefers-color-scheme:dark){.tabs button.on{background:#636366}}
+#newver[hidden]{display:none}
+#newver{display:block;width:100%;border-radius:0;background:var(--pri);padding:8px;font-size:14px}
+.sum{display:flex;gap:10px;margin:4px 0 14px}
+.sum div{flex:1;background:var(--card);border-radius:14px;padding:10px 6px;text-align:center;font-size:13px;color:var(--mut)}
+.sum b{display:block;font-size:26px;font-weight:700;color:var(--fg)}
+.item{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.item{background-image:linear-gradient(rgba(0,122,255,.07),rgba(0,122,255,.07))}
+.item.op{background-image:linear-gradient(rgba(255,149,0,.14),rgba(255,149,0,.14))}
+.item.st{background-image:linear-gradient(rgba(52,199,89,.08),rgba(52,199,89,.08))}
+.item.st.low{background-image:linear-gradient(rgba(255,59,48,.12),rgba(255,59,48,.12))}
+.item .info{flex:1 1 100%;min-width:0}
+.item .nm{font-weight:600;font-size:17px}
+.item .meta{font-size:13px;color:var(--mut);margin-top:2px}
+.badge{font-weight:600;font-size:14px;white-space:nowrap;margin-right:auto;padding:3px 10px;border-radius:12px;background:rgba(52,199,89,.16);color:var(--okt)}
+.item.soon .badge{background:rgba(255,149,0,.18);color:#c76a00}
+.item.exp .badge,.item.st.low .badge{background:rgba(255,59,48,.16);color:var(--bad)}
+@media(prefers-color-scheme:dark){.item.soon .badge{color:var(--warn)}}
+.tag{display:inline-block;font-size:12px;font-weight:600;border-radius:10px;padding:1px 8px;margin-right:6px;vertical-align:2px;background:rgba(0,122,255,.16);color:var(--pri)}
+.tag.op{background:rgba(255,149,0,.22);color:#c76a00}
+.tag.ok{background:rgba(52,199,89,.18);color:var(--okt)}.tag.low{background:rgba(255,59,48,.18);color:var(--bad)}
+@media(prefers-color-scheme:dark){.tag.op{color:var(--warn)}}
+.qbtn{width:38px;font-size:20px;padding:4px 0}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:rgba(60,60,67,.92);color:#fff;padding:11px 18px;border-radius:22px;z-index:20;max-width:90vw;font-size:14px;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .empty{text-align:center;color:var(--mut);padding:40px 0}
-dialog{border:0;border-radius:14px;padding:16px;width:min(92vw,420px);background:var(--card);color:var(--fg)}
-dialog::backdrop{background:#0006}
-label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
-input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+dialog{border:0;border-radius:16px;padding:18px;width:min(92vw,420px);background:var(--card);color:var(--fg);box-shadow:0 10px 40px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+dialog h3{font-size:19px}
+label{display:block;font-size:13px;color:var(--mut);margin:12px 0 5px}
+input,select{width:100%;font:inherit;padding:11px 12px;border:0;border-radius:10px;background:var(--fill);color:var(--fg);outline:none}
+input:focus{box-shadow:0 0 0 2px var(--pri)}
 .row{display:flex;gap:8px}.row>*{flex:1}
-.btns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
-#cam{position:relative;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:4/3;margin-bottom:8px}
+.btns{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+#cam{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:4/3;margin-bottom:8px}
 #cam video{width:100%;height:100%;object-fit:cover}
-#cam:after{content:"";position:absolute;left:10%;right:10%;top:50%;height:2px;background:#f03e3eaa;box-shadow:0 0 8px #f03e3e}
+#cam:after{content:"";position:absolute;left:10%;right:10%;top:50%;height:2px;background:#ff3b30aa;box-shadow:0 0 8px #ff3b30}
 .hint{font-size:13px;color:var(--mut)}
-.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 </style>
 </head>
 <body>
-<header><h1>🍱 食品效期記錄 <small id="ver" style="font-size:11px;opacity:.8;font-weight:400"></small></h1><button class="ghost sm" style="color:#fff;border-color:#fff" id="menuBtn">⋯</button></header>
-<button id="newver" hidden style="width:100%;border-radius:0;background:#1971c2;position:sticky;top:48px;z-index:4">🔔 有新版本，點此更新</button>
+<div class="top">
+<header><h1>食品效期 <small id="ver" style="font-size:11px;color:var(--mut);font-weight:400"></small></h1><button id="menuBtn" aria-label="選單">⋯</button></header>
+<button id="newver" hidden>🔔 有新版本，點此更新</button>
 <nav class="tabs"><button data-tab="food" class="on">🍱 食品效期</button><button data-tab="stock">📦 必備庫存</button></nav>
+</div>
 <main>
  <div id="foodView">
   <div class="sum"><div>已過期<b id="nExp">0</b></div><div>3 天內<b id="nSoon">0</b></div><div>全部<b id="nAll">0</b></div></div>
@@ -121,9 +134,10 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
       <div><label>單位</label><input id="sUnit" list="units" placeholder="包" value="個"></div>
     </div>
     <label>警戒量（少於這個數量就提醒補貨）</label><input id="sMin" type="number" min="0" step="any" value="1">
+    <label>一鍵補貨量（卡片多一顆「＋N」按鈕；雞蛋可設 10，不需要就填 1）</label><input id="sStep" type="number" min="1" step="any" value="1">
     <label>條碼（選填，之後掃到就自動 +1）</label><input id="sCode" inputmode="numeric">
     <datalist id="units"><option>個</option><option>包</option><option>顆</option><option>瓶</option><option>盒</option><option>捲</option><option>袋</option><option>罐</option><option>片</option></datalist>
-    <div class="btns"><button type="button" class="ghost" id="stDel" hidden style="margin-right:auto;color:var(--bad);border-color:var(--bad)">刪除</button><button type="button" class="ghost" id="stCancel">取消</button><button type="submit">儲存</button></div>
+    <div class="btns"><button type="button" class="ghost" id="stDel" hidden style="margin-right:auto;color:var(--bad);background:rgba(255,59,48,.14)">刪除</button><button type="button" class="ghost" id="stCancel">取消</button><button type="submit">儲存</button></div>
   </form>
 </dialog>
 
@@ -140,7 +154,7 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-05.07"></script>
+<script src="js/version.js?v=2026-11-05.10"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -343,9 +357,9 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 render();notifyDue();
 </script>
 <script src="firebase-config.js"></script>
-<script src="js/sync.js?v=2026-11-05.07"></script>
-<script src="js/family.js?v=2026-11-05.07"></script>
-<script src="js/stock.js?v=2026-11-05.07"></script>
-<script src="js/update.js?v=2026-11-05.07"></script>
+<script src="js/sync.js?v=2026-11-05.10"></script>
+<script src="js/family.js?v=2026-11-05.10"></script>
+<script src="js/stock.js?v=2026-11-05.10"></script>
+<script src="js/update.js?v=2026-11-05.10"></script>
 </body>
 </html>

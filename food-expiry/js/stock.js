@@ -24,7 +24,7 @@
     document.querySelector('.tabs [data-tab=stock]').textContent = '📦 必備庫存' + (nLow ? ` (${nLow})` : '');
     $('#stList').innerHTML = L.length ? L.map(s => {
       const low = isLow(s);
-      return `<div class="item st ${low ? 'low' : ''}"><div class="info"><div class="nm"><span class="tag ${low ? 'low' : 'ok'}">${low ? '該補貨' : '充足'}</span>${esc(s.name)}</div><div class="meta">警戒量 ${fmt(s.min)} ${esc(s.unit || '')}${s.code ? ' · ' + esc(s.code) : ''}</div></div><div class="badge" style="color:${low ? 'var(--bad)' : 'var(--ok)'}">${low ? '只剩 ' : '庫存 '}${fmt(s.qty)} ${esc(s.unit || '')}</div><button class="sm ghost qbtn" data-minus="${s.id}">−</button><button class="sm qbtn" data-plus="${s.id}">＋</button><button class="sm ghost" data-stedit="${s.id}">編輯</button></div>`;
+      return `<div class="item st ${low ? 'low' : ''}"><div class="info"><div class="nm"><span class="tag ${low ? 'low' : 'ok'}">${low ? '該補貨' : '充足'}</span>${esc(s.name)}</div><div class="meta">警戒量 ${fmt(s.min)} ${esc(s.unit || '')}${s.code ? ' · ' + esc(s.code) : ''}</div></div><div class="badge">${low ? '只剩 ' : '庫存 '}${fmt(s.qty)} ${esc(s.unit || '')}</div><button class="sm ghost qbtn" data-minus="${s.id}">−</button><button class="sm qbtn" data-plus="${s.id}">＋</button>${Number(s.step) > 1 ? `<button class="sm" data-plusn="${s.id}">＋${fmt(s.step)}</button>` : ''}<button class="sm ghost" data-stedit="${s.id}">編輯</button></div>`;
     }).join('') : '<div class="empty">還沒有必備品<br>按「＋ 新增必備品」，例如衛生紙、雞蛋</div>';
   };
 
@@ -37,6 +37,7 @@
   $('#stList').onclick = e => {
     const d = e.target.dataset, find = id => stock.find(x => x.id == id);
     if (d.plus) change(find(d.plus), 1);
+    if (d.plusn) { const s = find(d.plusn); change(s, Number(s.step) || 1); }
     if (d.minus) change(find(d.minus), -1);
     if (d.stedit) openStock(find(d.stedit));
   };
@@ -48,7 +49,7 @@
     const k = !s && code && known[code];
     $('#sName').value = s ? s.name : (k ? k.name : '');
     $('#sQty').value = s ? s.qty : 1; $('#sUnit').value = s ? (s.unit || '') : '個';
-    $('#sMin').value = s ? s.min : 1; $('#sCode').value = s ? (s.code || '') : code;
+    $('#sMin').value = s ? s.min : 1; $('#sStep').value = s ? (s.step || 1) : 1; $('#sCode').value = s ? (s.code || '') : code;
     $('#stDel').hidden = !s;
     $('#stockDlg').showModal();
   }
@@ -60,7 +61,7 @@
   };
   $('#stockForm').onsubmit = () => {
     const name = $('#sName').value.trim(); if (!name) return;
-    const v = { name, qty: Math.max(0, +$('#sQty').value || 0), unit: $('#sUnit').value.trim(), min: Math.max(0, +$('#sMin').value || 0), code: $('#sCode').value.trim() };
+    const v = { name, qty: Math.max(0, +$('#sQty').value || 0), unit: $('#sUnit').value.trim(), min: Math.max(0, +$('#sMin').value || 0), step: Math.max(1, +$('#sStep').value || 1), code: $('#sCode').value.trim() };
     let s = editing;
     if (s) Object.assign(s, v); else { s = { id: Date.now() + Math.random().toString(36).slice(2, 6), ...v }; stock.push(s); }
     Sync.setStock(s); save(); render();
