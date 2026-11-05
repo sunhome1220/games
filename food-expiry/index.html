@@ -107,7 +107,7 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-05.05"></script>
+<script src="js/version.js?v=2026-11-05.06"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -131,7 +131,7 @@ function render(){
     const E=eff(it),d=daysLeft(E),cls=d<0?'exp':d<=soonDays?'soon':'';
     if(d<0)ne++;else if(d<=soonDays)ns++;
     const t=d<0?`過期 ${-d} 天`:d===0?'今天到期':`剩 ${d} 天`;
-    return `<div class="item ${cls} ${it.opened?'op':''}"><div class="info"><div class="nm"><span class="tag ${it.opened?'op':''}">${it.opened?'已開封':'未開封'}</span>${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.opened?`🔓 ${it.opened} 開封${it.openDays?`，限 ${it.openDays} 天內吃完`:''}${E!==it.exp?'（原效期 '+it.exp+'）':''}`:'效期 '+it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div><button class="sm ghost" data-open="${it.id}">${it.opened?'開封中':'開封'}</button><button class="sm ghost" data-edit="${it.id}">編輯</button><button class="sm" data-done="${it.id}">用完</button></div>`}).join('')
+    return `<div class="item ${cls} ${it.opened?'op':''}"><div class="info"><div class="nm"><span class="tag ${it.opened?'op':''}" ${it.opened?`data-open="${it.id}" style="cursor:pointer" title="點一下修改開封設定"`:''}>${it.opened?'已開封':'未開封'}</span>${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.opened?`🔓 ${it.opened} 開封${it.openDays?`，限 ${it.openDays} 天內吃完`:''}${E!==it.exp?'（原效期 '+it.exp+'）':''}`:'效期 '+it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div>${it.opened?'':`<button class="sm ghost" data-open="${it.id}">開封</button>`}<button class="sm ghost" data-edit="${it.id}">編輯</button><button class="sm" data-done="${it.id}">用完</button></div>`}).join('')
     :'<div class="empty">還沒有記錄<br>按下方「掃描條碼」開始</div>';
   $('#nExp').textContent=ne;$('#nSoon').textContent=ns;$('#nAll').textContent=items.length;
 }
@@ -304,8 +304,8 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 render();notifyDue();
 </script>
 <script src="firebase-config.js"></script>
-<script src="js/sync.js?v=2026-11-05.05"></script>
-<script src="js/family.js?v=2026-11-05.05"></script>
-<script src="js/update.js?v=2026-11-05.05"></script>
+<script src="js/sync.js?v=2026-11-05.06"></script>
+<script src="js/family.js?v=2026-11-05.06"></script>
+<script src="js/update.js?v=2026-11-05.06"></script>
 </body>
 </html>
