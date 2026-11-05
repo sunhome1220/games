@@ -21,7 +21,7 @@ main{max-width:640px;margin:0 auto;padding:12px 16px 100px}
 button{font:inherit;font-weight:600;border:0;border-radius:12px;padding:11px 16px;background:var(--pri);color:#fff;cursor:pointer;transition:opacity .15s}
 button:active{opacity:.55}
 button.ghost{background:var(--tint);color:var(--pri)}
-button.sm{padding:7px 12px;font-size:15px;border-radius:9px}
+button.sm{padding:7px 11px;font-size:15px;border-radius:9px}
 button:disabled{opacity:.4}
 #menuBtn{background:var(--tint);color:var(--pri);border-radius:50%;width:34px;height:34px;padding:0;font-size:18px;line-height:34px}
 .fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));padding:14px 22px;border-radius:30px;font-size:17px;box-shadow:0 6px 18px rgba(0,122,255,.35);z-index:6}
@@ -51,8 +51,23 @@ button:disabled{opacity:.4}
 .tag.op{background:rgba(255,149,0,.22);color:#c76a00}
 .tag.ok{background:rgba(52,199,89,.18);color:var(--okt)}.tag.low{background:rgba(255,59,48,.18);color:var(--bad)}
 @media(prefers-color-scheme:dark){.tag.op{color:var(--warn)}}
-.qbtn{width:38px;font-size:20px;padding:4px 0}
+.qbtn{width:40px;padding:7px 0}.qbtn .ic{width:1.15em;height:1.15em;stroke-width:2.6}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:rgba(60,60,67,.92);color:#fff;padding:11px 18px;border-radius:22px;z-index:20;max-width:90vw;font-size:14px;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.ic{width:1.2em;height:1.2em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+button{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+button.t-gray{background:var(--fill);color:var(--fg)}
+button.t-org{background:rgba(255,149,0,.16);color:#c76a00}
+button.t-grn{background:rgba(52,199,89,.18);color:var(--okt)}
+button.t-red{background:rgba(255,59,48,.14);color:var(--bad)}
+@media(prefers-color-scheme:dark){button.t-org{color:var(--warn)}}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:34px;height:34px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.item{box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.tabs button .ic{width:1.1em;height:1.1em}
+.fab .ic{width:1.3em;height:1.3em}
+.fab{background:linear-gradient(180deg,#3a97ff,#0a6cf0)}
+#newver{gap:8px}
+.meta .ic{width:1em;height:1em;vertical-align:-.15em;color:var(--warn)}
 .empty{text-align:center;color:var(--mut);padding:40px 0}
 dialog{border:0;border-radius:16px;padding:18px;width:min(92vw,420px);background:var(--card);color:var(--fg);box-shadow:0 10px 40px rgba(0,0,0,.3)}
 dialog::backdrop{background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
@@ -73,10 +88,26 @@ dialog{max-height:90vh;overflow:auto}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m20 6-11 11-5-5"/></symbol>
+<symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M8 7v10M12 7v10M16 7v10"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+<symbol id="i-unlock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+</defs></svg>
 <div class="top">
-<header><h1>食品效期 <small id="ver" style="font-size:11px;color:var(--mut);font-weight:400"></small></h1><button id="menuBtn" aria-label="選單">⋯</button></header>
-<button id="newver" hidden>🔔 有新版本，點此更新</button>
-<nav class="tabs"><button data-tab="food" class="on">🍱 食品效期</button><button data-tab="stock">📦 必備庫存</button></nav>
+<header><div class="brand"><img src="icon-180.png" alt=""><h1>食品效期 <small id="ver" style="font-size:11px;color:var(--mut);font-weight:400"></small></h1></div><button id="menuBtn" aria-label="選單"><svg class="ic"><use href="#i-more"/></svg></button></header>
+<button id="newver" hidden><svg class="ic"><use href="#i-bell"/></svg>有新版本，點此更新</button>
+<nav class="tabs"><button data-tab="food" class="on"><svg class="ic"><use href="#i-clock"/></svg>食品效期</button><button data-tab="stock"><svg class="ic"><use href="#i-box"/></svg>必備庫存</button></nav>
 </div>
 <main>
  <div id="foodView">
@@ -85,12 +116,12 @@ dialog{max-height:90vh;overflow:auto}
  </div>
  <div id="stockView" hidden>
   <div class="sum"><div>需補貨<b id="sLow">0</b></div><div>必備品項<b id="sAll">0</b></div></div>
-  <div class="row" style="margin-bottom:10px"><button id="stAdd">＋ 新增必備品</button><button class="ghost" id="stCopy" hidden>📋 複製補貨清單</button></div>
+  <div class="row" style="margin-bottom:10px"><button id="stAdd"><svg class="ic"><use href="#i-plus"/></svg>新增必備品</button><button class="ghost" id="stCopy" hidden><svg class="ic"><use href="#i-copy"/></svg>複製補貨清單</button></div>
   <div id="stList"></div>
  </div>
 </main>
 <div id="toast" hidden></div>
-<button class="fab" id="scanBtn">📷 掃描條碼</button>
+<button class="fab" id="scanBtn"><svg class="ic"><use href="#i-scan"/></svg>掃描條碼</button>
 
 <dialog id="scanDlg">
   <div id="cam"><video playsinline muted></video></div>
@@ -115,7 +146,7 @@ dialog{max-height:90vh;overflow:auto}
       <div><input id="fOpened" type="date" aria-label="開封日期"></div>
       <div><input id="fOpenDays" type="number" min="1" max="3650" placeholder="開封後可放幾天" aria-label="開封後可放幾天"></div>
     </div>
-    <div class="quick"><button type="button" class="sm ghost" id="fOpenToday">今天開封</button><button type="button" class="sm ghost" id="fOpenClear">改回未開封</button></div>
+    <div class="quick"><button type="button" class="sm ghost" id="fOpenToday"><svg class="ic"><use href="#i-unlock"/></svg>今天開封</button><button type="button" class="sm t-gray" id="fOpenClear"><svg class="ic"><use href="#i-undo"/></svg>改回未開封</button></div>
     <div class="hint" id="fHint"></div>
     <div class="btns"><button type="button" class="ghost" id="itemCancel">取消</button><button type="submit">儲存</button></div>
   </form>
@@ -147,7 +178,7 @@ dialog{max-height:90vh;overflow:auto}
     <label>一鍵補貨量（卡片多一顆「＋N」按鈕；雞蛋可設 10，不需要就填 1）</label><input id="sStep" type="number" min="1" step="any" value="1">
     <label>條碼（選填，之後掃到就自動 +1）</label><input id="sCode" inputmode="numeric">
     <datalist id="units"><option>個</option><option>包</option><option>顆</option><option>瓶</option><option>盒</option><option>捲</option><option>袋</option><option>罐</option><option>片</option></datalist>
-    <div class="btns"><button type="button" class="ghost" id="stDel" hidden style="margin-right:auto;color:var(--bad);background:rgba(255,59,48,.14)">刪除</button><button type="button" class="ghost" id="stCancel">取消</button><button type="submit">儲存</button></div>
+    <div class="btns"><button type="button" class="t-red" id="stDel" hidden style="margin-right:auto"><svg class="ic"><use href="#i-trash"/></svg>刪除</button><button type="button" class="ghost" id="stCancel">取消</button><button type="submit">儲存</button></div>
   </form>
 </dialog>
 
@@ -164,7 +195,7 @@ dialog{max-height:90vh;overflow:auto}
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-05.13"></script>
+<script src="js/version.js?v=2026-11-05.15"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -180,6 +211,7 @@ const toISO=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z
 const addDays=(iso,n)=>{const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);return toISO(d)};
 const eff=it=>it.opened&&it.openDays?(addDays(it.opened,it.openDays)<it.exp?addDays(it.opened,it.openDays):it.exp):it.exp;
 const daysLeft=e=>Math.round((new Date(e+'T00:00:00')-today())/864e5);
+const ic=n=>`<svg class="ic"><use href="#i-${n}"/></svg>`;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function render(){
@@ -189,7 +221,7 @@ function render(){
     const E=eff(it),d=daysLeft(E),cls=d<0?'exp':d<=soonDays?'soon':'';
     if(d<0)ne++;else if(d<=soonDays)ns++;
     const t=d<0?`過期 ${-d} 天`:d===0?'今天到期':`剩 ${d} 天`;
-    return `<div class="item ${cls} ${it.opened?'op':''}"><div class="info"><div class="nm"><span class="tag ${it.opened?'op':''}" ${it.opened?`data-open="${it.id}" style="cursor:pointer" title="點一下修改開封設定"`:''}>${it.opened?'已開封':'未開封'}</span>${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.opened?`🔓 ${it.opened} 開封${it.openDays?`，限 ${it.openDays} 天內吃完`:''}${E!==it.exp?'（原效期 '+it.exp+'）':''}`:'效期 '+it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div>${it.opened?'':`<button class="sm ghost" data-open="${it.id}">開封</button>`}<button class="sm ghost" data-edit="${it.id}">編輯</button><button class="sm" data-done="${it.id}">用完</button></div>`}).join('')
+    return `<div class="item ${cls} ${it.opened?'op':''}"><div class="info"><div class="nm"><span class="tag ${it.opened?'op':''}" ${it.opened?`data-open="${it.id}" style="cursor:pointer" title="點一下修改開封設定"`:''}>${it.opened?'已開封':'未開封'}</span>${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.opened?`${ic('unlock')} ${it.opened} 開封${it.openDays?`，限 ${it.openDays} 天內吃完`:''}${E!==it.exp?'（原效期 '+it.exp+'）':''}`:'效期 '+it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div>${it.opened?'':`<button class="sm t-org" data-open="${it.id}">${ic('unlock')}開封</button>`}<button class="sm t-gray qbtn" data-edit="${it.id}" aria-label="編輯">${ic('edit')}</button><button class="sm t-grn" data-done="${it.id}">${ic('check')}用完</button></div>`}).join('')
     :'<div class="empty">還沒有記錄<br>按下方「掃描條碼」開始</div>';
   window.renderStock&&renderStock();
   $('#nExp').textContent=ne;$('#nSoon').textContent=ns;$('#nAll').textContent=items.length;
@@ -372,9 +404,9 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 render();notifyDue();
 </script>
 <script src="firebase-config.js"></script>
-<script src="js/sync.js?v=2026-11-05.13"></script>
-<script src="js/family.js?v=2026-11-05.13"></script>
-<script src="js/stock.js?v=2026-11-05.13"></script>
-<script src="js/update.js?v=2026-11-05.13"></script>
+<script src="js/sync.js?v=2026-11-05.15"></script>
+<script src="js/family.js?v=2026-11-05.15"></script>
+<script src="js/stock.js?v=2026-11-05.15"></script>
+<script src="js/update.js?v=2026-11-05.15"></script>
 </body>
 </html>

@@ -21,11 +21,11 @@
     const nLow = L.filter(isLow).length;
     $('#sLow').textContent = nLow; $('#sAll').textContent = L.length;
     $('#stCopy').hidden = !nLow;
-    document.querySelector('.tabs [data-tab=stock]').textContent = '📦 必備庫存' + (nLow ? ` (${nLow})` : '');
+    document.querySelector('.tabs [data-tab=stock]').innerHTML = ic('box') + '必備庫存' + (nLow ? ` <span class="tag low" style="margin:0 0 0 2px;vertical-align:0">${nLow}</span>` : '');
     $('#stList').innerHTML = L.length ? L.map(s => {
       const low = isLow(s);
-      return `<div class="item st ${low ? 'low' : ''}"><div class="info"><div class="nm"><span class="tag ${low ? 'low' : 'ok'}">${low ? '該補貨' : '充足'}</span>${esc(s.name)}</div><div class="meta">警戒量 ${fmt(s.min)} ${esc(s.unit || '')}${s.code ? ' · ' + esc(s.code) : ''}</div></div><div class="badge">${low ? '只剩 ' : '庫存 '}${fmt(s.qty)} ${esc(s.unit || '')}</div><button class="sm ghost qbtn" data-minus="${s.id}">−</button><button class="sm qbtn" data-plus="${s.id}">＋</button>${Number(s.step) > 1 ? `<button class="sm" data-plusn="${s.id}">＋${fmt(s.step)}</button>` : ''}<button class="sm ghost" data-stedit="${s.id}">編輯</button></div>`;
-    }).join('') : '<div class="empty">還沒有必備品<br>按「＋ 新增必備品」，例如衛生紙、雞蛋</div>';
+      return `<div class="item st ${low ? 'low' : ''}"><div class="info"><div class="nm"><span class="tag ${low ? 'low' : 'ok'}">${low ? '該補貨' : '充足'}</span>${esc(s.name)}</div><div class="meta">警戒量 ${fmt(s.min)} ${esc(s.unit || '')}${s.code ? ' · ' + esc(s.code) : ''}</div></div><div class="badge">${low ? '只剩 ' : '庫存 '}${fmt(s.qty)} ${esc(s.unit || '')}</div><button class="sm t-gray qbtn" data-minus="${s.id}" aria-label="減一">${ic('minus')}</button><button class="sm qbtn" data-plus="${s.id}" aria-label="加一">${ic('plus')}</button>${Number(s.step) > 1 ? `<button class="sm ghost" data-plusn="${s.id}">${ic('plus')}${fmt(s.step)}</button>` : ''}<button class="sm t-gray qbtn" data-stedit="${s.id}" aria-label="編輯">${ic('edit')}</button></div>`;
+    }).join('') : '<div class="empty">還沒有必備品<br>按上方「新增必備品」，例如衛生紙、雞蛋</div>';
   };
 
   function change(s, d) {
