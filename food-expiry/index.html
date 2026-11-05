@@ -6,6 +6,7 @@
 <title>食品效期記錄</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-180.png">
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <style>
@@ -154,7 +155,7 @@ input:focus{box-shadow:0 0 0 2px var(--pri)}
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-05.10"></script>
+<script src="js/version.js?v=2026-11-05.11"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -357,9 +358,9 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 render();notifyDue();
 </script>
 <script src="firebase-config.js"></script>
-<script src="js/sync.js?v=2026-11-05.10"></script>
-<script src="js/family.js?v=2026-11-05.10"></script>
-<script src="js/stock.js?v=2026-11-05.10"></script>
-<script src="js/update.js?v=2026-11-05.10"></script>
+<script src="js/sync.js?v=2026-11-05.11"></script>
+<script src="js/family.js?v=2026-11-05.11"></script>
+<script src="js/stock.js?v=2026-11-05.11"></script>
+<script src="js/update.js?v=2026-11-05.11"></script>
 </body>
 </html>
