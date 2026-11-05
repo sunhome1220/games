@@ -34,6 +34,15 @@ button.sm{padding:6px 10px;font-size:14px}
 .tag{display:inline-block;font-size:12px;font-weight:600;border-radius:10px;padding:1px 8px;margin-right:6px;vertical-align:1px;background:#d0e6ff;color:#0b5cad}
 .tag.op{background:#ffd8a8;color:#a14a00}
 @media(prefers-color-scheme:dark){.tag{background:#264b73;color:#b8dcff}.tag.op{background:#6b4210;color:#ffd8a8}}
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:48px;z-index:4}
+.tabs button{flex:1;background:transparent;color:var(--mut);border-radius:0;border-bottom:3px solid transparent;padding:10px}
+.tabs button.on{color:var(--pri);border-bottom-color:var(--pri);font-weight:700}
+.item.st{background:#eefaf0;border-left-color:var(--ok)}.item.st.low{background:#ffecec;border-left-color:var(--bad)}
+@media(prefers-color-scheme:dark){.item.st{background:#1d2e22}.item.st.low{background:#3a1f1f}}
+.tag.ok{background:#c9f0d2;color:#1b6e2e}.tag.low{background:#ffc9c9;color:#a61e1e}
+@media(prefers-color-scheme:dark){.tag.ok{background:#1f5a2f;color:#c9f0d2}.tag.low{background:#7a2222;color:#ffc9c9}}
+.qbtn{width:40px;font-size:20px;padding:4px 0}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;z-index:20;max-width:90vw;font-size:14px}
 .empty{text-align:center;color:var(--mut);padding:40px 0}
 dialog{border:0;border-radius:14px;padding:16px;width:min(92vw,420px);background:var(--card);color:var(--fg)}
 dialog::backdrop{background:#0006}
@@ -51,10 +60,19 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
 <body>
 <header><h1>🍱 食品效期記錄 <small id="ver" style="font-size:11px;opacity:.8;font-weight:400"></small></h1><button class="ghost sm" style="color:#fff;border-color:#fff" id="menuBtn">⋯</button></header>
 <button id="newver" hidden style="width:100%;border-radius:0;background:#1971c2;position:sticky;top:48px;z-index:4">🔔 有新版本，點此更新</button>
+<nav class="tabs"><button data-tab="food" class="on">🍱 食品效期</button><button data-tab="stock">📦 必備庫存</button></nav>
 <main>
+ <div id="foodView">
   <div class="sum"><div>已過期<b id="nExp">0</b></div><div>3 天內<b id="nSoon">0</b></div><div>全部<b id="nAll">0</b></div></div>
   <div id="list"></div>
+ </div>
+ <div id="stockView" hidden>
+  <div class="sum"><div>需補貨<b id="sLow">0</b></div><div>必備品項<b id="sAll">0</b></div></div>
+  <div class="row" style="margin-bottom:10px"><button id="stAdd">＋ 新增必備品</button><button class="ghost" id="stCopy" hidden>📋 複製補貨清單</button></div>
+  <div id="stList"></div>
+ </div>
 </main>
+<div id="toast" hidden></div>
 <button class="fab" id="scanBtn">📷 掃描條碼</button>
 
 <dialog id="scanDlg">
@@ -94,6 +112,21 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   </form>
 </dialog>
 
+<dialog id="stockDlg">
+  <form method="dialog" id="stockForm">
+    <h3 style="margin:0" id="stTitle">新增必備品</h3>
+    <label>名稱</label><input id="sName" required placeholder="例：衛生紙、雞蛋">
+    <div class="row">
+      <div><label>目前庫存</label><input id="sQty" type="number" min="0" step="any" value="1"></div>
+      <div><label>單位</label><input id="sUnit" list="units" placeholder="包" value="個"></div>
+    </div>
+    <label>警戒量（少於這個數量就提醒補貨）</label><input id="sMin" type="number" min="0" step="any" value="1">
+    <label>條碼（選填，之後掃到就自動 +1）</label><input id="sCode" inputmode="numeric">
+    <datalist id="units"><option>個</option><option>包</option><option>顆</option><option>瓶</option><option>盒</option><option>捲</option><option>袋</option><option>罐</option><option>片</option></datalist>
+    <div class="btns"><button type="button" class="ghost" id="stDel" hidden style="margin-right:auto;color:var(--bad);border-color:var(--bad)">刪除</button><button type="button" class="ghost" id="stCancel">取消</button><button type="submit">儲存</button></div>
+  </form>
+</dialog>
+
 <dialog id="menuDlg">
   <h3 style="margin:0 0 8px">選單</h3>
   <div class="row"><button class="ghost" id="addManual">手動新增</button><button class="ghost" id="notifBtn">開啟到期提醒</button></div>
@@ -107,16 +140,17 @@ input,select{width:100%;font:inherit;padding:9px;border:1px solid var(--line);bo
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-05.06"></script>
+<script src="js/version.js?v=2026-11-05.07"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 let items=ls.get('fe.items',[]);      // {id,code,name,exp,qty}
+let stock=ls.get('fe.stock',[]);      // {id,name,qty,unit,min,code}
 let known=ls.get('fe.known',{});      // code -> {name,days}
 let soonDays=ls.get('fe.soon',3);
 const DEF_DAYS=[3,7,14,30,45,60,90,180,365];
 let presets=ls.get('fe.presets',DEF_DAYS);
-const save=()=>{ls.set('fe.items',items);ls.set('fe.known',known);ls.set('fe.soon',soonDays);ls.set('fe.presets',presets)};
+const save=()=>{ls.set('fe.items',items);ls.set('fe.known',known);ls.set('fe.stock',stock);ls.set('fe.soon',soonDays);ls.set('fe.presets',presets)};
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 const toISO=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
 const addDays=(iso,n)=>{const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);return toISO(d)};
@@ -133,6 +167,7 @@ function render(){
     const t=d<0?`過期 ${-d} 天`:d===0?'今天到期':`剩 ${d} 天`;
     return `<div class="item ${cls} ${it.opened?'op':''}"><div class="info"><div class="nm"><span class="tag ${it.opened?'op':''}" ${it.opened?`data-open="${it.id}" style="cursor:pointer" title="點一下修改開封設定"`:''}>${it.opened?'已開封':'未開封'}</span>${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.opened?`🔓 ${it.opened} 開封${it.openDays?`，限 ${it.openDays} 天內吃完`:''}${E!==it.exp?'（原效期 '+it.exp+'）':''}`:'效期 '+it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div>${it.opened?'':`<button class="sm ghost" data-open="${it.id}">開封</button>`}<button class="sm ghost" data-edit="${it.id}">編輯</button><button class="sm" data-done="${it.id}">用完</button></div>`}).join('')
     :'<div class="empty">還沒有記錄<br>按下方「掃描條碼」開始</div>';
+  window.renderStock&&renderStock();
   $('#nExp').textContent=ne;$('#nSoon').textContent=ns;$('#nAll').textContent=items.length;
 }
 $('#list').onclick=e=>{
@@ -184,11 +219,12 @@ async function startScan(){
   }
 }
 function stopScan(){scanning=false;zx=null;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('#cam video').srcObject=null}
-function found(code){stopScan();navigator.vibrate&&navigator.vibrate(60);$('#scanDlg').close();newFromCode(code)}
+function found(code){stopScan();navigator.vibrate&&navigator.vibrate(60);$('#scanDlg').close();onCode(code)}
 $('#scanBtn').onclick=startScan;
 $('#scanClose').onclick=()=>{stopScan();$('#scanDlg').close()};
 $('#scanDlg').addEventListener('cancel',stopScan);
-$('#manualGo').onclick=()=>{const c=$('#manual').value.trim();if(c){stopScan();$('#scanDlg').close();newFromCode(c)}};
+$('#manualGo').onclick=()=>{const c=$('#manual').value.trim();if(c){stopScan();$('#scanDlg').close();onCode(c)}};
+const onCode=c=>window.curTab&&curTab()==='stock'?stockScan(c):newFromCode(c);
 
 /* ---- 新增／編輯 ---- */
 let editing=null,lookupSeq=0;
@@ -280,32 +316,36 @@ $('#menuClose').onclick=()=>{soonDays=Math.min(30,Math.max(1,+$('#soonDays').val
   const ps=[...new Set($('#presetIn').value.split(/[,，、\s]+/).map(Number).filter(n=>n>=1&&n<=3650).map(Math.round))].sort((a,b)=>a-b);presets=ps.length?ps:DEF_DAYS;save();render();$('#menuDlg').close()};
 $('#exportBtn').onclick=()=>{
   const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([JSON.stringify({items,known},null,1)],{type:'application/json'}));
+  a.href=URL.createObjectURL(new Blob([JSON.stringify({items,known,stock},null,1)],{type:'application/json'}));
   a.download=`food-expiry-${toISO(new Date())}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e3)};
 $('#importBtn').onclick=()=>$('#importFile').click();
 $('#importFile').onchange=async e=>{
   try{const j=JSON.parse(await e.target.files[0].text());
     if(!Array.isArray(j.items))throw 0;
-    if(confirm(`匯入 ${j.items.length} 筆，會取代目前的記錄，確定？`)){const old=items.map(i=>i.id);items=j.items;known=j.known||{};save();render();Sync.replaceAll(items,known,old)}
+    if(confirm(`匯入 ${j.items.length} 筆，會取代目前的記錄，確定？`)){const old=items.map(i=>i.id),oldS=stock.map(i=>i.id);items=j.items;known=j.known||{};stock=j.stock||[];save();render();Sync.replaceAll(items,known,old,stock,oldS)}
   }catch{alert('檔案格式不正確')}e.target.value=''};
 function notifyDue(){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
-  const due=items.filter(i=>daysLeft(eff(i))<=soonDays);
-  if(due.length&&ls.get('fe.lastNotify')!==toISO(new Date())){
+  const due=items.filter(i=>daysLeft(eff(i))<=soonDays),low=window.lowStock?lowStock():[];
+  if((due.length||low.length)&&ls.get('fe.lastNotify')!==toISO(new Date())){
     ls.set('fe.lastNotify',toISO(new Date()));
-    new Notification('食品效期提醒',{body:due.slice(0,5).map(i=>i.name).join('、')+(due.length>5?` 等 ${due.length} 項`:'')+' 即將或已經到期',icon:'icon.svg'})}
+    const parts=[];
+    if(due.length)parts.push(due.slice(0,5).map(i=>i.name).join('、')+(due.length>5?` 等 ${due.length} 項`:'')+' 即將或已經到期');
+    if(low.length)parts.push('需補貨：'+low.slice(0,5).map(i=>i.name).join('、')+(low.length>5?` 等 ${low.length} 項`:''));
+    new Notification('食品提醒',{body:parts.join('；'),icon:'icon.svg'})}
 }
 $('#notifBtn').onclick=async()=>{
   if(!('Notification' in window))return alert('此瀏覽器不支援通知');
   const p=await Notification.requestPermission();
-  alert(p==='granted'?'已開啟：每天第一次打開 App 時，會提醒快到期的食品':'未允許通知');notifyDue()};
+  alert(p==='granted'?'已開啟：每天第一次打開 App 時，會提醒快到期的食品與低於警戒量的必備品':'未允許通知');notifyDue()};
 
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 render();notifyDue();
 </script>
 <script src="firebase-config.js"></script>
-<script src="js/sync.js?v=2026-11-05.06"></script>
-<script src="js/family.js?v=2026-11-05.06"></script>
-<script src="js/update.js?v=2026-11-05.06"></script>
+<script src="js/sync.js?v=2026-11-05.07"></script>
+<script src="js/family.js?v=2026-11-05.07"></script>
+<script src="js/stock.js?v=2026-11-05.07"></script>
+<script src="js/update.js?v=2026-11-05.07"></script>
 </body>
 </html>

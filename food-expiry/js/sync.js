@@ -2,7 +2,7 @@
 // 沒設定 firebase-config.js 時 Sync.available=false，App 當單機版使用。
 window.Sync = (() => {
   const cfg = window.FIREBASE_CONFIG;
-  const S = { err: '', available: !!(cfg && cfg.projectId), code: null, status: 'off', onItems() {}, onKnown() {}, onStatus() {} };
+  const S = { err: '', available: !!(cfg && cfg.projectId), code: null, status: 'off', onItems() {}, onKnown() {}, onStock() {}, onStatus() {} };
   let db = null, unsubs = [], loading = null;
   const clean = o => JSON.parse(JSON.stringify(o));
   const kid = c => String(c).replace(/[\/.#$\[\]]/g, '_');
@@ -32,11 +32,13 @@ window.Sync = (() => {
       if (upload) {
         const b = db.batch();
         upload.items.forEach(it => b.set(col('items').doc(String(it.id)), clean(it)));
+        (upload.stock || []).forEach(it => b.set(col('stock').doc(String(it.id)), clean(it)));
         Object.entries(upload.known).forEach(([k, v]) => b.set(col('known').doc(kid(k)), clean({ ...v, code: k })));
         b.commit().catch(e => { console.warn(e); setStatus('error', e); });
       }
       const onErr = e => { console.warn(e); setStatus('error', e); };
       unsubs.push(col('items').onSnapshot(sn => { S.onItems(sn.docs.map(d => ({ ...d.data(), id: d.data().id || d.id }))); setStatus(sn.metadata.fromCache && !navigator.onLine ? 'offline' : 'ok'); }, onErr));
+      unsubs.push(col('stock').onSnapshot(sn => { S.onStock(sn.docs.map(d => ({ ...d.data(), id: d.data().id || d.id }))); }, onErr));
       unsubs.push(col('known').onSnapshot(sn => { const m = {}; sn.docs.forEach(d => { const v = d.data(); m[v.code || d.id] = v; }); S.onKnown(m); }, onErr));
     } catch (e) { console.warn(e); setStatus('error', e); }
   };
@@ -44,12 +46,17 @@ window.Sync = (() => {
   const on = () => S.available && S.code && db;
   S.setItem = it => { if (on()) col('items').doc(String(it.id)).set(clean(it)).catch(e => setStatus('error', e)); };
   S.delItem = id => { if (on()) col('items').doc(String(id)).delete().catch(e => setStatus('error', e)); };
+  S.setStock = it => { if (on()) col('stock').doc(String(it.id)).set(clean(it)).catch(e => setStatus('error', e)); };
+  S.delStock = id => { if (on()) col('stock').doc(String(id)).delete().catch(e => setStatus('error', e)); };
   S.setKnown = (code, v) => { if (on()) col('known').doc(kid(code)).set(clean({ ...v, code })).catch(e => setStatus('error', e)); };
-  S.replaceAll = async (items, known, oldIds) => {
+  S.replaceAll = async (items, known, oldIds, stock = [], oldStockIds = []) => {
     if (!on()) return;
     const b = db.batch(), keep = new Set(items.map(i => String(i.id)));
     oldIds.forEach(id => { if (!keep.has(String(id))) b.delete(col('items').doc(String(id))); });
     items.forEach(it => b.set(col('items').doc(String(it.id)), clean(it)));
+    const keepS = new Set(stock.map(i => String(i.id)));
+    oldStockIds.forEach(id => { if (!keepS.has(String(id))) b.delete(col('stock').doc(String(id))); });
+    stock.forEach(it => b.set(col('stock').doc(String(it.id)), clean(it)));
     Object.entries(known).forEach(([k, v]) => b.set(col('known').doc(kid(k)), clean({ ...v, code: k })));
     await b.commit();
   };
