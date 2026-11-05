@@ -15,7 +15,6 @@ window.Sync = (() => {
       firebase.initializeApp(cfg);
       db = firebase.firestore();
       try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (_) {}
-      try { await db.enablePersistence({ synchronizeTabs: true }); } catch (_) { /* 不支援離線快取就略過 */ }
     })();
     await loading;
   }
@@ -27,16 +26,16 @@ window.Sync = (() => {
   S.join = async (code, upload) => {
     if (!S.available) return;
     setStatus('connecting');
+    const to = setTimeout(() => { if (S.status === 'connecting') setStatus('error', { code: '逾時：10 秒內沒收到伺服器回應' }); }, 10000);
     try {
       await init(); stop(); S.code = code;
       if (upload) {
         const b = db.batch();
         upload.items.forEach(it => b.set(col('items').doc(String(it.id)), clean(it)));
         Object.entries(upload.known).forEach(([k, v]) => b.set(col('known').doc(kid(k)), clean({ ...v, code: k })));
-        await b.commit();
+        b.commit().catch(e => { console.warn(e); setStatus('error', e); });
       }
       const onErr = e => { console.warn(e); setStatus('error', e); };
-      setTimeout(() => { if (S.status === 'connecting') setStatus('error', { code: '逾時：10 秒內沒收到伺服器回應' }); }, 10000);
       unsubs.push(col('items').onSnapshot(sn => { S.onItems(sn.docs.map(d => ({ ...d.data(), id: d.data().id || d.id }))); setStatus(sn.metadata.fromCache && !navigator.onLine ? 'offline' : 'ok'); }, onErr));
       unsubs.push(col('known').onSnapshot(sn => { const m = {}; sn.docs.forEach(d => { const v = d.data(); m[v.code || d.id] = v; }); S.onKnown(m); }, onErr));
     } catch (e) { console.warn(e); setStatus('error', e); }
