@@ -16,16 +16,21 @@
   }
   document.querySelector('.tabs').onclick = e => { if (e.target.dataset.tab) setTab(e.target.dataset.tab); };
 
+  let sflt = 'all';
+  $('#stockSum').onclick = e => { const f = e.target.closest('.flt'); if (!f) return; sflt = sflt === f.dataset.f ? 'all' : f.dataset.f; renderStock(); };
   window.renderStock = () => {
-    const L = stock.slice().sort((a, b) => (isLow(b) - isLow(a)) || String(a.name).localeCompare(String(b.name), 'zh-Hant'));
-    const nLow = L.filter(isLow).length;
-    $('#sLow').textContent = nLow; $('#sAll').textContent = L.length;
+    const ALL = stock.slice().sort((a, b) => (isLow(b) - isLow(a)) || String(a.name).localeCompare(String(b.name), 'zh-Hant'));
+    const nLow = ALL.filter(isLow).length;
+    if (sflt === 'low' && !nLow) sflt = 'all';
+    const L = sflt === 'low' ? ALL.filter(isLow) : ALL;
+    document.querySelectorAll('#stockSum .flt').forEach(e => e.classList.toggle('on', e.dataset.f === sflt));
+    $('#sLow').textContent = nLow; $('#sAll').textContent = ALL.length;
     $('#stCopy').hidden = !nLow;
     document.querySelector('.tabs [data-tab=stock]').innerHTML = ic('box') + '必備庫存' + (nLow ? ` <span class="tag low" style="margin:0 0 0 2px;vertical-align:0">${nLow}</span>` : '');
     $('#stList').innerHTML = L.length ? L.map(s => {
       const low = isLow(s);
       return `<div class="item st ${low ? 'low' : ''}"><div class="info"><div class="nm"><span class="tag ${low ? 'low' : 'ok'}">${low ? '該補貨' : '充足'}</span>${esc(s.name)}</div><div class="meta">警戒量 ${fmt(s.min)} ${esc(s.unit || '')}${s.code ? ' · ' + esc(s.code) : ''}</div></div><div class="badge">${low ? '只剩 ' : '庫存 '}${fmt(s.qty)} ${esc(s.unit || '')}</div><button class="sm t-gray qbtn" data-minus="${s.id}" aria-label="減一">${ic('minus')}</button><button class="sm qbtn" data-plus="${s.id}" aria-label="加一">${ic('plus')}</button>${Number(s.step) > 1 ? `<button class="sm ghost" data-plusn="${s.id}">${ic('plus')}${fmt(s.step)}</button>` : ''}<button class="sm t-gray qbtn" data-stedit="${s.id}" aria-label="編輯">${ic('edit')}</button></div>`;
-    }).join('') : '<div class="empty">還沒有必備品<br>按上方「新增必備品」，例如衛生紙、雞蛋</div>';
+    }).join('') : `<div class="empty">${ALL.length ? '沒有符合的項目' : '還沒有必備品<br>按上方「新增必備品」，例如衛生紙、雞蛋'}</div>`;
   };
 
   function change(s, d) {
