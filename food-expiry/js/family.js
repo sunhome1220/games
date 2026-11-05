@@ -17,7 +17,7 @@
   Sync.onKnown = m => { known = m; save(); };
   async function join(code, fromLink) {
     code = Sync.normalize(code);
-    if (code.length < 6) return alert('代碼至少 6 個英數字');
+    if (code.length < 8) return alert('代碼至少 8 個英數字');
     const local = items.length || stock.length || Object.keys(known).length;
     const upload = local && confirm(`把這支手機上的 ${items.length} 筆食品、${stock.length} 項必備品也上傳到家庭「${code}」嗎？\n（取消＝不上傳，改用家庭裡現有的清單）`);
     lsSet(code);
