@@ -60,7 +60,10 @@ dialog h3{font-size:19px}
 label{display:block;font-size:13px;color:var(--mut);margin:12px 0 5px}
 input,select{width:100%;font:inherit;padding:11px 12px;border:0;border-radius:10px;background:var(--fill);color:var(--fg);outline:none}
 input:focus{box-shadow:0 0 0 2px var(--pri)}
-.row{display:flex;gap:8px}.row>*{flex:1}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+input[type=date],input[type=number]{-webkit-appearance:none;appearance:none;min-width:0;height:44px;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
+dialog{max-height:90vh;overflow:auto}
 .btns{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
 #cam{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:4/3;margin-bottom:8px}
 #cam video{width:100%;height:100%;object-fit:cover}
@@ -107,6 +110,12 @@ input:focus{box-shadow:0 0 0 2px var(--pri)}
       <div><label>數量</label><input id="fQty" type="number" min="1" value="1"></div>
     </div>
     <div class="quick" id="quick"></div>
+    <label style="margin-top:14px">開封狀態（日期留空＝未開封）</label>
+    <div class="row">
+      <div><input id="fOpened" type="date" aria-label="開封日期"></div>
+      <div><input id="fOpenDays" type="number" min="1" max="3650" placeholder="開封後可放幾天" aria-label="開封後可放幾天"></div>
+    </div>
+    <div class="quick"><button type="button" class="sm ghost" id="fOpenToday">今天開封</button><button type="button" class="sm ghost" id="fOpenClear">改回未開封</button></div>
     <div class="hint" id="fHint"></div>
     <div class="btns"><button type="button" class="ghost" id="itemCancel">取消</button><button type="submit">儲存</button></div>
   </form>
@@ -155,7 +164,7 @@ input:focus{box-shadow:0 0 0 2px var(--pri)}
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-05.11"></script>
+<script src="js/version.js?v=2026-11-05.12"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -280,6 +289,7 @@ function openItem(it,code=''){
   editing=it;lookupSeq++;
   $('#itemTitle').textContent=it?'編輯食品':'新增食品';
   $('#fCode').value=it?it.code:code;$('#fName').value=it?it.name:'';$('#fExp').value=it?it.exp:'';$('#fQty').value=it?it.qty:1;$('#fHint').textContent='';
+  $('#fOpened').value=it&&it.opened||'';$('#fOpenDays').value=it&&it.openDays||'';
   renderQuick();
   $('#itemDlg').showModal();
 }
@@ -287,15 +297,19 @@ $('#quick').onclick=e=>{
   if(e.target.dataset.d)setExp(+e.target.dataset.d);
   if(e.target.id==='customGo'){const n=Math.round(+$('#customDays').value);if(n>=1&&n<=3650){setExp(n);if(!presets.includes(n)&&confirm(`把「${n} 天」加入常用保存天數？`)){presets=[...presets,n].sort((a,b)=>a-b);save();renderQuick()}}}
 };
+$('#fOpenToday').onclick=()=>{$('#fOpened').value=toISO(new Date());if(!$('#fOpenDays').value){const k=known[$('#fCode').value.trim()];if(k&&k.openDays)$('#fOpenDays').value=k.openDays}};
+$('#fOpenClear').onclick=()=>{$('#fOpened').value='';$('#fOpenDays').value=''};
 $('#itemCancel').onclick=()=>$('#itemDlg').close();
 $('#itemForm').onsubmit=()=>{
   const code=$('#fCode').value.trim(),name=$('#fName').value.trim(),exp=$('#fExp').value,qty=Math.max(1,+$('#fQty').value||1);
   if(!name||!exp)return;
   let it=editing;
+  const opened=$('#fOpened').value,openDays=Math.round(+$('#fOpenDays').value)||0;
   if(it)Object.assign(it,{code,name,exp,qty});
   else{it={id:Date.now()+Math.random().toString(36).slice(2,6),code,name,exp,qty};items.push(it)}
+  if(opened){it.opened=opened;if(openDays)it.openDays=openDays;else delete it.openDays}else{delete it.opened;delete it.openDays}
   Sync.setItem(it);
-  if(code){known[code]=Object.assign(known[code]||{},{name,days:Math.max(1,daysLeft(exp))});Sync.setKnown(code,known[code])}
+  if(code){known[code]=Object.assign(known[code]||{},{name,days:Math.max(1,daysLeft(exp))},openDays?{openDays}:{});Sync.setKnown(code,known[code])}
   save();render();
 };
 /* ---- 開封 ---- */
@@ -358,9 +372,9 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 render();notifyDue();
 </script>
 <script src="firebase-config.js"></script>
-<script src="js/sync.js?v=2026-11-05.11"></script>
-<script src="js/family.js?v=2026-11-05.11"></script>
-<script src="js/stock.js?v=2026-11-05.11"></script>
-<script src="js/update.js?v=2026-11-05.11"></script>
+<script src="js/sync.js?v=2026-11-05.12"></script>
+<script src="js/family.js?v=2026-11-05.12"></script>
+<script src="js/stock.js?v=2026-11-05.12"></script>
+<script src="js/update.js?v=2026-11-05.12"></script>
 </body>
 </html>
