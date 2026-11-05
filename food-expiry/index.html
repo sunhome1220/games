@@ -33,7 +33,13 @@ button:disabled{opacity:.4}
 #newver[hidden]{display:none}
 #newver{display:block;width:100%;border-radius:0;background:var(--pri);padding:8px;font-size:14px}
 .sum{display:flex;gap:10px;margin:4px 0 14px}
-.sum div{flex:1;background:var(--card);border-radius:14px;padding:10px 6px;text-align:center;font-size:13px;color:var(--mut)}
+.sum div{flex:1 1 0;min-width:0;background:var(--card);border-radius:14px;padding:10px 6px;text-align:center;font-size:13px;color:var(--mut)}
+.flt{cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .1s}
+.flt:active{transform:scale(.97)}
+.flt.on{border-color:var(--pri)}
+.flt[data-f=exp].on{border-color:var(--bad)}.flt[data-f=exp].on b{color:var(--bad)}
+.flt[data-f=soon].on{border-color:var(--warn)}.flt[data-f=soon].on b{color:var(--warn)}
+.flt[data-f=low].on{border-color:var(--bad)}.flt[data-f=low].on b{color:var(--bad)}
 .sum b{display:block;font-size:26px;font-weight:700;color:var(--fg)}
 .item{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .item{background-image:linear-gradient(rgba(0,122,255,.07),rgba(0,122,255,.07))}
@@ -111,11 +117,11 @@ dialog{max-height:90vh;overflow:auto}
 </div>
 <main>
  <div id="foodView">
-  <div class="sum"><div>已過期<b id="nExp">0</b></div><div>3 天內<b id="nSoon">0</b></div><div>全部<b id="nAll">0</b></div></div>
+  <div class="sum" id="foodSum"><div data-f="exp" class="flt">已過期<b id="nExp">0</b></div><div data-f="soon" class="flt"><span id="soonLbl">3 天內</span><b id="nSoon">0</b></div><div data-f="all" class="flt on">全部<b id="nAll">0</b></div></div>
   <div id="list"></div>
  </div>
  <div id="stockView" hidden>
-  <div class="sum"><div>需補貨<b id="sLow">0</b></div><div>必備品項<b id="sAll">0</b></div></div>
+  <div class="sum" id="stockSum"><div data-f="low" class="flt">需補貨<b id="sLow">0</b></div><div data-f="all" class="flt on">全部品項<b id="sAll">0</b></div></div>
   <div class="row" style="margin-bottom:10px"><button id="stAdd"><svg class="ic"><use href="#i-plus"/></svg>新增必備品</button><button class="ghost" id="stCopy" hidden><svg class="ic"><use href="#i-copy"/></svg>複製補貨清單</button></div>
   <div id="stList"></div>
  </div>
@@ -195,7 +201,7 @@ dialog{max-height:90vh;overflow:auto}
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-05.15"></script>
+<script src="js/version.js?v=2026-11-05.17"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -214,18 +220,25 @@ const daysLeft=e=>Math.round((new Date(e+'T00:00:00')-today())/864e5);
 const ic=n=>`<svg class="ic"><use href="#i-${n}"/></svg>`;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+let flt=ls.get('fe.flt','all');
 function render(){
-  const L=items.slice().sort((a,b)=>eff(a).localeCompare(eff(b)));
+  const all=items.slice().sort((a,b)=>eff(a).localeCompare(eff(b)));
   let ne=0,ns=0;
+  all.forEach(it=>{const d=daysLeft(eff(it));if(d<0)ne++;else if(d<=soonDays)ns++});
+  if(flt==='exp'&&!ne||flt==='soon'&&!ns)flt='all';
+  const L=all.filter(it=>{const d=daysLeft(eff(it));return flt==='exp'?d<0:flt==='soon'?(d>=0&&d<=soonDays):true});
+  document.querySelectorAll('#foodSum .flt').forEach(e=>e.classList.toggle('on',e.dataset.f===flt));
+  $('#soonLbl').textContent=soonDays+' 天內';
   $('#list').innerHTML=L.length?L.map(it=>{
     const E=eff(it),d=daysLeft(E),cls=d<0?'exp':d<=soonDays?'soon':'';
-    if(d<0)ne++;else if(d<=soonDays)ns++;
     const t=d<0?`過期 ${-d} 天`:d===0?'今天到期':`剩 ${d} 天`;
     return `<div class="item ${cls} ${it.opened?'op':''}"><div class="info"><div class="nm"><span class="tag ${it.opened?'op':''}" ${it.opened?`data-open="${it.id}" style="cursor:pointer" title="點一下修改開封設定"`:''}>${it.opened?'已開封':'未開封'}</span>${esc(it.name)}${it.qty>1?' ×'+it.qty:''}</div><div class="meta">${it.opened?`${ic('unlock')} ${it.opened} 開封${it.openDays?`，限 ${it.openDays} 天內吃完`:''}${E!==it.exp?'（原效期 '+it.exp+'）':''}`:'效期 '+it.exp}${it.code?' · '+esc(it.code):''}</div></div><div class="badge">${t}</div>${it.opened?'':`<button class="sm t-org" data-open="${it.id}">${ic('unlock')}開封</button>`}<button class="sm t-gray qbtn" data-edit="${it.id}" aria-label="編輯">${ic('edit')}</button><button class="sm t-grn" data-done="${it.id}">${ic('check')}用完</button></div>`}).join('')
-    :'<div class="empty">還沒有記錄<br>按下方「掃描條碼」開始</div>';
+    :`<div class="empty">${all.length?'沒有符合的項目':'還沒有記錄<br>按下方「掃描條碼」開始'}</div>`;
   window.renderStock&&renderStock();
+  ls.set('fe.flt',flt);
   $('#nExp').textContent=ne;$('#nSoon').textContent=ns;$('#nAll').textContent=items.length;
 }
+$('#foodSum').onclick=e=>{const f=e.target.closest('.flt');if(!f)return;flt=flt===f.dataset.f?'all':f.dataset.f;render()};
 $('#list').onclick=e=>{
   const d=e.target.dataset;
   if(d.done){const it=items.find(x=>x.id==d.done);if(confirm(`「${it.name}」已用完／丟棄？`)){items=items.filter(x=>x!==it);Sync.delItem(it.id);save();render()}}
@@ -404,9 +417,9 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 render();notifyDue();
 </script>
 <script src="firebase-config.js"></script>
-<script src="js/sync.js?v=2026-11-05.15"></script>
-<script src="js/family.js?v=2026-11-05.15"></script>
-<script src="js/stock.js?v=2026-11-05.15"></script>
-<script src="js/update.js?v=2026-11-05.15"></script>
+<script src="js/sync.js?v=2026-11-05.17"></script>
+<script src="js/family.js?v=2026-11-05.17"></script>
+<script src="js/stock.js?v=2026-11-05.17"></script>
+<script src="js/update.js?v=2026-11-05.17"></script>
 </body>
 </html>
