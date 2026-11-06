@@ -207,3 +207,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 移 	MOV 
 步 	HP 
 攻 	ATK 
+飛彈動畫改良：彈體朝飛行方向、尾焰閃動、漸細漸淡的尾跡，並留下持續擴散的煙團（彈道飛彈煙更濃更長）；手機與大量齊射時自動減少煙團	Better missile animation: a body that points along its flight path, a flickering exhaust flame, a tapering fading trail and drifting smoke puffs (thicker, longer for ballistic missiles); fewer puffs on phones and in big volleys
