@@ -611,3 +611,14 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 守方防線全面崩潰：攻方已達成三項勝利條件，島上守軍僅剩 	Defender lines collapse: the attacker has met all three victory conditions and only 	
  步（攻方 	 steps of defenders remain on the island (attacker 	
  步），攻方立即獲勝。	 steps); the attacker wins at once.	
+規則調整：攻方控制本島領土達 80% 立即獲勝；渡海船團全滅、登陸部隊耗盡則守方獲勝；灘頭補給線未建立（補給容量不足）時島上部隊逐回合損耗；攻方的停戰評估延後到戰事後段才會出現	Rule changes: the attacker wins at once with 80% of the island; the defender wins if the invasion fleet is destroyed and the landing force exhausted; island forces without an established beachhead supply line wear down turn by turn; the attacker's truce evaluation now appears only late in the war	
+攻方已控制本島八成以上領土，守方大勢已去，攻方立即獲勝。	The attacker controls 80% or more of the island and the defender is finished; the attacker wins at once.	
+渡海船團全滅、登陸部隊耗盡：攻方已無法登陸，守方獲勝。	The invasion fleet is destroyed and the landing force exhausted: the attacker can no longer land and the defender wins.	
+補給不足	Short of supply	
+攻方灘頭補給線未建立（需求 	Attacker beachhead supply line not established (demand 	
+、容量 	, capacity 	
+）：島上部隊損耗 	): island forces lose 	
+ 步	 steps	
+攻方補給不足，島上部隊損耗	Attacker short of supply: island forces wearing down	
+攻方控制本島領土 	Attacker controls 	
+（達 80% 立即判攻方勝利）；渡海船團全滅、登陸部隊耗盡則守方獲勝；灘頭補給線未建立時，島上部隊會逐回合損耗。	% of the island (80% = immediate attacker victory); if the invasion fleet is destroyed and the landing force exhausted the defender wins; without a beachhead supply line, island forces wear down turn by turn.	
