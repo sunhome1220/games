@@ -110,6 +110,10 @@
 防空攔截動畫：火力打擊遇到守方防空、守方攻擊船團遇到攻方護航防空時，會有防空飛彈升空迎擊；攔截成功在空中爆炸、失敗則擦身而過並照常命中或落空	Air-defense interception animation: when a fire strike meets the defender's air defense, or defender attacks on the fleet meet the escorts' air defense, interceptors launch; a success bursts in mid-air, a failure streaks past and the strike lands or misses as usual
 攔截成功	Intercepted
 火力打擊與守方飛彈改為「整波齊射」：一次結算、特效一起升空，不再逐發等待，推演時間縮短、畫面更壯觀（判定與統計不變）	Fire strikes and defender missiles now fire as full volleys: resolved at once with effects launching together instead of waiting shot by shot, so playback is shorter and more spectacular (rulings and statistics unchanged)
+作戰設定第 1 頁縮短：語言移到右上角「⚙ 設定」視窗，點了才開啟	Setup page 1 is shorter: the language picker moved into the "⚙ Settings" window at the top right, opened on click
+⚙ 設定	⚙ Settings
+先決定怎麼玩：自己指揮，或交給電腦推演整場戰爭。（語言在右上角「⚙ 設定」）	First decide how to play: command yourself, or let the computer simulate the whole war. (Language is under "⚙ Settings" at the top right.)
+切換語言後頁面會重新載入；進行中的對局會結束。	The page reloads when you change the language; the current game ends.
 滑鼠懸停的單位說明大幅加強：顯示現實對應、角色、遊戲規則、攻防算式（基礎值與各項修正）與圖片。可明確使用的實物照片（公有領域、CC0、CC BY；來源見 img/CREDITS.md）直接顯示，其餘用原創示意圖並註明原因	Unit hover cards are much richer: real-world equivalent, role, game rules, attack/defense arithmetic (base and modifiers) and a picture. Clearly usable real photos (public domain, CC0, CC BY; sources in img/CREDITS.md) are shown directly; the rest use original illustrations with the reason noted
 解放軍陸軍兩棲合成旅（東部戰區，配 05 式兩棲突擊車等）	PLA Army amphibious combined-arms brigade (Eastern Theater Command; Type 05 amphibious assault vehicles, etc.)
 攻方主力登陸部隊，具兩棲能力，從大陸沿岸出海搶灘。	The attacker's main landing force: amphibious-capable, sails from the mainland coast to storm the beaches.
