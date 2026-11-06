@@ -154,6 +154,10 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .u.sel .body{stroke:var(--accent);stroke-width:2.6}
 .u.done{opacity:.5}
 .u .sym{stroke:var(--on-unit);fill:none;stroke-width:1}
+.fu .body{stroke:var(--ink);stroke-width:.8}.fu .body.atk{fill:url(#gu-atk)}.fu .body.def{fill:url(#gu-def)}.fu .body.us{fill:color-mix(in srgb,var(--us) 88%,#000)}.fu .body.jp{fill:color-mix(in srgb,var(--jp) 88%,#000)}
+.fu .uside{stroke:none;fill:#444}.fu .uside.atk{fill:color-mix(in srgb,var(--atk) 55%,#000)}.fu .uside.us{fill:color-mix(in srgb,var(--us) 55%,#000)}.fu .uside.jp{fill:color-mix(in srgb,var(--jp) 55%,#000)}
+.fu .ush{fill:#000;opacity:.28;pointer-events:none}.fu .uhi{fill:#fff;opacity:.28;pointer-events:none}.fu .sym{stroke:var(--on-unit);fill:none;stroke-width:1}
+.fu .tx{font-size:7px;fill:var(--on-unit);text-anchor:middle;font-family:var(--f-body);font-weight:700}.fu.hid .body{stroke-dasharray:3 2;opacity:.7}
 .u .tx{font-size:7px;fill:var(--on-unit);text-anchor:middle;font-family:var(--f-body);font-weight:700}
 .pip{stroke:var(--ink);stroke-width:.6}
 .pip.full{fill:var(--accent)} .pip.lost{fill:none}
@@ -529,7 +533,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
         <button class="ghost" id="btnVoice" aria-pressed="false" hidden>🔈 語音：關</button>
         <span class="dd">Ctrl＋滾輪可縮放；縮小可看外圍示意區（美中日各方投射武力的基地與海域），放大後可拖曳</span>
       </div>
-      <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"><defs id="mdefs"></defs><g id="gX"></g><g id="gS"></g><g id="gD"></g><g id="gF" style="pointer-events:none"></g></svg></div>
+      <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"><defs id="mdefs"></defs><g id="gX"></g><g id="gS"></g><g id="gE"></g><g id="gD"></g><g id="gF" style="pointer-events:none"></g></svg></div>
       <div class="vcap" id="vcap" hidden>
         <div class="vctl">
           <button class="ghost" id="vPrevT" title="上一回合" aria-label="上一回合">⏮</button>
@@ -3197,7 +3201,7 @@ const ISL_CAP=[ // [lon1,lat1,lon2,lat2,半徑]
   [121.95,19.5,121.95,19.45,.1],[121.47,19.35,121.45,19.3,.1],[121.9,18.95,121.9,18.93,.07],[121.35,18.87,121.33,18.86,.06], // 巴布煙群島
 ];
 const ISL_POLY=[
-  [[120.55,18.5],[120.9,18.55],[121.35,18.62],[121.7,18.52],[122.1,18.5],[122.3,18.3],[122.25,17.9],[122.4,17.4],[122.25,16.9],[122.0,16.3],[121.6,15.85],[121.5,15.4],[120.9,15.4],[120.4,15.8],[120.3,16.15],[120.4,16.6],[120.35,17.1],[120.4,17.6],[120.5,18.1]] // 呂宋北部
+  [[120.5,18.5],[120.78,18.58],[121.07,18.62],[121.25,18.6],[121.45,18.5],[121.63,18.37],[121.82,18.3],[122.0,18.3],[122.12,18.42],[122.2,18.5],[122.22,18.38],[122.3,18.1],[122.36,17.7],[122.5,17.2],[122.48,16.9],[122.4,16.6],[122.22,16.38],[122.15,16.28],[122.02,16.05],[121.75,15.85],[121.6,15.7],[121.45,15.4],[119.95,15.4],[119.9,15.8],[119.9,16.15],[119.88,16.4],[120.1,16.35],[120.2,16.12],[120.3,16.0],[120.4,16.2],[120.33,16.62],[120.35,17.1],[120.38,17.57],[120.45,17.95],[120.52,18.2]] // 呂宋北部（Cape Engaño、Casiguran 灣、Lingayen 灣、Cape Bolinao）
 ];
 // 圖外地點的示意形狀：以示意位置為錨點，縮小後畫出（九州 0.5 倍、關島原尺寸、舟山群島）
 (function(){
@@ -3257,12 +3261,20 @@ function seaZone(lon,lat){
   if(lat>25.3&&lat<=33&&lon<=124.3+(lat-26)*.5)return 'shelf19';       // 東海陸棚（約 400 km）
   if(lat>=17.5&&lat<22&&lon<=119.5)return 'shelf12';                   // 南海北部陸棚
   return 'norm';}
+const ZW={steep:0,norm:2,shelf12:12,shelf19:19};
+const SWC=new Map();
+function shelfW(lon,lat){ // 陸棚寬度：把分區邊界在約 0.45 度內平滑混合，再加低頻起伏，避免海底分界出現筆直的線
+  const key=Math.round(lon*40)+','+Math.round(lat*40),c=SWC.get(key);if(c!==undefined)return c;
+  let sum=0,n=0;const R=.45;
+  for(const [dx,dy] of [[0,0],[R,0],[-R,0],[0,R],[0,-R],[R*.7,R*.7],[-R*.7,R*.7],[R*.7,-R*.7],[-R*.7,-R*.7],[R*.5,0],[-R*.5,0],[0,R*.5],[0,-R*.5]]){sum+=ZW[seaZone(lon+dx,lat+dy)];n++;}
+  let w=sum/n;w*=1+.22*Math.sin(lon*7.3+lat*4.1)*Math.cos(lon*3.7-lat*6.9);
+  SWC.set(key,w);return w;}
 function seaClass(lon,lat,dist){
-  const z=seaZone(lon,lat),d=dist==null?99:dist;
-  if(z==='steep')return d>10?'d4':'d3';                                // 陡降：近岸即深水，不做淺水漸層
+  const d=dist==null?99:dist,w=shelfW(lon,lat);
+  if(w<1)return d>10?'d4':'d3';                                        // 陡降：近岸即深水，不做淺水漸層
   if(d<=1)return 'd1';
-  if(z==='norm')return d===2?'d2':d>10?'d4':'d3';
-  const W=+z.slice(5);                                                  // 陸棚寬度（細格數）
+  if(w<3)return d===2?'d2':d>10?'d4':'d3';
+  const W=Math.round(w);                                                // 陸棚寬度（細格數）
   if(d<=W)return d===2?'d2':'sh';
   if(d===W+1)return 'd2';
   return d>W+10?'d4':'d3';}
@@ -3344,6 +3356,7 @@ function buildFar(){
     o+='<text class="far-lbl" x="'+x+'" y="'+(y-9)+'">'+f.name+'</text>';
     if(f.tag)o+='<text class="far-tag" x="'+x+'" y="'+(y+18)+'" fill="'+col[f.who]+'">'+f.tag+'</text>';
   }
+  let oS='';
   const Z=(c,r,rx,ry,who,t)=>{const [x,y]=center(c,r);return '<ellipse pointer-events="none" cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" fill="none" stroke="'+col[who]+'" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="6 4"/>'+(t?'<text class="far-tag" x="'+x+'" y="'+(y+ry+10)+'" fill="'+col[who]+'">'+t+'</text>':'');};
   const SUBG=(x,y,who,dash)=>'<g><ellipse cx="'+x+'" cy="'+(y+7)+'" rx="16" ry="4" fill="#000" opacity=".15"/><path d="M'+(x-17)+' '+(y+2)+'q0 -6 8 -6h18q9 0 9 6q0 6 -9 6h-18q-8 0 -8 -6z" fill="'+col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".55"':'')+'/><path d="M'+(x-4)+' '+(y-4)+'v-5h8v5" fill="'+col[who]+'" stroke="#fff" stroke-width="1"/><path d="M'+(x+2)+' '+(y-9)+'v-5h4" fill="none" stroke="#fff" stroke-width="1.2"/><path d="M'+(x-17)+' '+(y+2)+'l-4 -3m4 3l-4 4" stroke="'+col[who]+'" stroke-width="1.5"/></g>';
   // 航艦打擊群：側視剪影，尺寸控制在一個細格以內。美軍＝尼米茲／福特級（平甲板、斜角甲板、艦島居中偏後）；
@@ -3357,14 +3370,22 @@ function buildFar(){
       :'<path d="M-6 -2v-7h9v7" fill="'+f+'" '+ln+'/><circle cx="-1.5" cy="-11" r="2" fill="'+f+'" '+ln+'/>';
     const esc='<path d="M-41 4h8l-1.2 3h-5.6z" fill="'+f+'" '+ln+'/><path d="M33 5h8l-1.2 3h-5.6z" fill="'+f+'" '+ln+'/>';
     return '<g transform="translate('+x+' '+y+') scale(.3)">'+hull+deck+isl+esc+'</g>';};
-  const SH=(c,r,who,t,sub,dash)=>{const [x,y]=center(c,r);const isSub=/潛艦/.test(t);return '<g class="fclick" data-far="'+t+(who==='us'&&t==='潛艦'?'':'')+'">'+(isSub?SUBG(x,y,who,dash):/航艦/.test(sub)?CVG(x,y,who):'<ellipse cx="'+x+'" cy="'+(y+5)+'" rx="15" ry="5" fill="#000" opacity=".15"/><path d="M'+(x-14)+' '+y+'h28l-4 7h-20z" fill="'+col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".45"':'')+'/><rect x="'+(x-5)+'" y="'+(y-6)+'" width="10" height="6" fill="'+col[who]+'" stroke="#fff" stroke-width=".8"/>')+'</g><text class="far-lbl" x="'+x+'" y="'+(y-(/航艦/.test(sub)?6:10))+'">'+t+'</text><text class="far-tag" x="'+x+'" y="'+(y+(/航艦/.test(sub)?12:19))+'" fill="'+col[who]+'">'+sub+'</text>';};
+  const FK=US/KS; // 外圍艦艇改畫成與兵棋相同的棋子（尺寸與單位一致）
+  const FSYM={sub:'<rect class="sym" x="-9" y="-12" width="18" height="10"/><path class="sym" d="M-7 -5q0 -3 4 -3h6q4 0 4 3q0 3 -4 3h-6q-4 0 -4 -3z"/><path class="sym" d="M-1 -8v-2h3v2"/>',
+    cv:'<rect class="sym" x="-9" y="-12" width="18" height="10"/><path class="sym" d="M-8 -6.5h16l-1.2 3h-13.6z"/><path class="sym" d="M2 -6.5v-2.6h3v2.6"/>',
+    dd:'<rect class="sym" x="-9" y="-12" width="18" height="10"/><path class="sym" d="M-7 -6h14l-2 3h-10z"/><path class="sym" d="M-2 -6v-3h4v3"/>'};
+  const SH=(c,r,who,t,sub,dash)=>{const [x,y]=center(c,r),isSub=/潛艦/.test(t),cvg=/航艦/.test(sub),kind=isSub?'sub':cvg?'cv':'dd',sh=isSub?(who==='jp'?'SS':'SSN'):cvg?(who==='atk'?'CV':'CSG'):'DDG';
+    const cls=who;const ch='<g class="fu fclick'+(dash?' hid':'')+'" data-far="'+t+'"><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+FK.toFixed(4)+')">'+
+      '<ellipse class="ush" cx="0" cy="11" rx="16" ry="5"/><rect class="uside '+cls+'" x="-15" y="-9" width="30" height="22" rx="3"/><rect class="body '+cls+'" x="-15" y="-14" width="30" height="23" rx="3"/><rect class="uhi" x="-13" y="-13" width="26" height="3" rx="1.5"/>'+FSYM[kind]+'<text class="tx" x="0" y="6.5">'+sh+'</text></g></g>';
+    return ch+'<text class="far-lbl" x="'+x+'" y="'+(y-16*FK-2).toFixed(1)+'">'+t+'</text><text class="far-tag" x="'+x+'" y="'+(y+14*FK+7).toFixed(1)+'" fill="'+col[who]+'">'+sub+'</text>';};
   o+=Z(26.5,-1,115,70,'us','美日 沖繩投射區')+Z(19.5,4,150,95,'jp','日本 先島投射區')+Z(26.5,22,95,60,'us','美軍 關島投射區')+Z(27.5,-5.5,95,50,'jp','日本 九州')
     +Z(-4,5,62,300,'atk','共軍 大陸沿海投射區')+Z(8,-3.5,85,55,'atk','共軍 東海艦隊');
-  o+=SH(21,11,'atk','共軍潛艦','太平洋・隱蔽',true)+'<g id="csgM">'+SH(19,9,'us','第7艦隊','航艦打擊群')+'</g>'+'<g id="jmsdfM">'+SH(26,-4,'jp','海自護衛隊群','佐世保出港')+'</g>'+SH(24.5,5,'atk','共軍航艦群','航艦打擊群')+SH(18,13,'us','美軍潛艦','隱蔽',true)+SH(16,15,'jp','海自潛艦','隱蔽',true);
+  oS+=SH(21,11,'atk','共軍潛艦','太平洋・隱蔽',true)+'<g id="csgM">'+SH(19,9,'us','第7艦隊','航艦打擊群')+'</g>'+'<g id="jmsdfM">'+SH(26,-4,'jp','海自護衛隊群','佐世保出港')+'</g>'+SH(24.5,5,'atk','共軍航艦群','航艦打擊群')+SH(18,13,'us','美軍潛艦','隱蔽',true)+SH(16,15,'jp','海自潛艦','隱蔽',true);
   const T=(c,r,t,sz)=>{const [x,y]=center(c,r);return '<text class="big" font-size="'+(sz||12)+'" x="'+x+'" y="'+y+'" text-anchor="middle">'+t+'</text>';};
   o+=T(23,8,'太平洋',13)+T(5,19,'南海',13)+T(15,14,'呂宋海峽',11)+T(14,-3,'東海',13);
   o+='<text class="far-tag" x="'+(VBW-6)+'" y="-6" text-anchor="end" fill="var(--muted)" style="text-anchor:end">▲ 虛線內為遊戲格；外圍僅為背景（可點選查看）</text></g><rect class="playbox" x="0" y="0" width="'+VBW.toFixed(1)+'" height="'+VBH.toFixed(1)+'" rx="6"/>';
   $('#gX').innerHTML=bg+fineSvg+'<g transform="scale('+KS+')">'+o+'</g>';
+  $('#gE').innerHTML='<g transform="scale('+KS+')">'+oS+'</g>';
 }
 function buildStatic(){
   const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+tileGrad('gt-plain2','land2','#d3d0a8')+tileGrad('gt-plain3','land3','#dfd5b3')+tileGrad('gt-hill','hill','#c9bd92')+tileGrad('gt-main2','main2','#c3c6b6')+tileGrad('gt-main3','main3','#cec8b8')+tileGrad('gt-mainhill','mainhill','#b9b3a1')+tileGrad('gt-mainmtn','mainmtn','#a39d8c')+tileGrad('gt-maincity','maincity','#d4cfc2')+
