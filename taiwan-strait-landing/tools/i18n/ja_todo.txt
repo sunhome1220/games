@@ -1,3 +1,6 @@
+對戰	Play
+電腦推演	Computer simulation
+純模擬	Pure simulation
 戰爭代價	Cost of war
 攻方控制 	The attacker holds 
 攻方決定性勝利	Decisive attacker victory
@@ -12,6 +15,8 @@
 若現在判定：攻方達成 	If judged now: attacker meets 
 已選擇「	Chose "
 運作中	Operational
+、日本 	, Japan 
+雙方都操作	You played both sides
 判定	Ruling
 影片模式的事件卡不透明度提高（卡片可拖曳，不必再靠透明看後方），文字更清楚	Video-mode event cards are now nearly opaque (they can be dragged, so there is no need to see through them), making the text easier to read
 捲軸變細；地圖、側欄、分頁列不再顯示捲軸（仍可拖曳、滾輪或觸控捲動），畫面更清爽	Scrollbars are thinner, and the map, side panel and tab bar no longer show scrollbars (you can still drag, use the wheel or touch-scroll), for a cleaner screen
@@ -269,5 +274,41 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 ；平均評分 攻方 	; average score: attacker 
 、守方 	, defender 
 作戰結束新增「結局繪卡」與雙方評分：六種結局（攻方 3、守方 3）各有一張插畫，並有「結局圖鑑」收集解鎖；評分分為目標／代價／外部環境三大項與 S～D 等級	The end screen adds ending cards and scores for both sides: six endings (3 attacker, 3 defender), each with an illustration and a collectible ending gallery; scores cover goals / cost / environment with S–D grades
+新增「📜 戰績紀錄」（設定視窗內）：每場推演的結果、評分、決策自動存在這台裝置，可回頭查看、匯出 JSON，並顯示六種結局已經試出幾種與還沒試出的提示	New "📜 Records" (inside Settings): the result, scores and decisions of every game are saved on this device so you can review them, export JSON, and see which of the six endings you have found and hints for the rest
+📜 戰績紀錄	📜 Records
+戰績紀錄	Records
+結局收集	Ending collection
+已出現 	Found 
+ / 6 種	 / 6 endings
+　🎉 全部試出來了	  🎉 all found
+出現 ×	Seen ×
+尚未出現	Not seen yet
+每場結果	Results of each game
+（最多保留最近 	(keeps up to the latest 
+ 場）	 games)
+還沒有紀錄。打完一場推演就會自動存在這裡（只存在這台裝置的瀏覽器）。	No records yet. Every finished game is saved here automatically (only in this device's browser).
+匯出紀錄（JSON）	Export records (JSON)
+清除全部	Clear all
+已匯出戰績紀錄	Records exported
+清除全部戰績紀錄？（結局圖鑑的解鎖紀錄會保留）	Clear all records? (Ending gallery unlocks are kept)
+你的決策與事件	Your decisions and events
+沒有決策紀錄。	No decisions recorded.
+← 回到列表	← Back to list
+刪除這筆	Delete this record
+你操作攻方	You played the attacker
+你操作守方	You played the defender
+電腦操作	Computer-operated
+ · 判定回合 	 · ruling turn 
+ · 結束於回合 	 · ended on turn 
+ 千人 · 攻方軍人傷亡約 	 thousand · attacker military casualties about 
+ 千人 · 守方約 	 thousand · defender about 
+ 千人 · 全球股市 	 thousand · global stocks 
+% · 美國介入程度 	% · US involvement level 
+攻方：三項條件全部達成並連續站穩，或逼守方投降、殲滅本島守軍。	Attacker: meet all three conditions and hold them for several turns, or force the defender to surrender or wipe out its island forces.
+攻方：達成 2 項條件（占領台北、控制 2 個主要港口、島上兵力不輸守方）。	Attacker: meet 2 conditions (take Taipei, control 2 major ports, island forces not behind the defender).
+攻方：在已達成 2 項以上條件時，接受或促成停火。	Attacker: accept or bring about a ceasefire after meeting 2 or more conditions.
+守方：守住台灣，攻方撤退或條件落空，代價在可承受範圍內。	Defender: hold Taiwan while the attacker retreats or fails its conditions, at an acceptable cost.
+守方：守住，但平民傷亡達 3 萬人以上，或自行破壞 2 個以上港口（慘勝）。	Defender: hold, but with 30,000+ civilian casualties or 2 or more ports demolished (a Pyrrhic victory).
+停火且守方守住，或雙方陷入僵局。	A ceasefire with the defender holding, or a stalemate.
 匯出報告（圖片）加入結局繪卡與雙方評分	Export report (image) now includes the ending card and both sides' scores
 結局繪卡	Ending card
