@@ -109,3 +109,4 @@
 防空攔截動畫：火力打擊遇到守方防空、守方攻擊船團遇到攻方護航防空時，會有防空飛彈升空迎擊；攔截成功在空中爆炸、失敗則擦身而過並照常命中或落空	Air-defense interception animation: when a fire strike meets the defender's air defense, or defender attacks on the fleet meet the escorts' air defense, interceptors launch; a success bursts in mid-air, a failure streaks past and the strike lands or misses as usual
 攔截成功	Intercepted
 火力打擊與守方飛彈改為「整波齊射」：一次結算、特效一起升空，不再逐發等待，推演時間縮短、畫面更壯觀（判定與統計不變）	Fire strikes and defender missiles now fire as full volleys: resolved at once with effects launching together instead of waiting shot by shot, so playback is shorter and more spectacular (rulings and statistics unchanged)
+飛彈動畫改良：彈體朝飛行方向、尾焰閃動、漸細漸淡的尾跡，並留下持續擴散的煙團（彈道飛彈煙更濃更長）；手機與大量齊射時自動減少煙團	Better missile animation: a body that points along its flight path, a flickering exhaust flame, a tapering fading trail and drifting smoke puffs (thicker, longer for ballistic missiles); fewer puffs on phones and in big volleys
