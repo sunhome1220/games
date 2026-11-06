@@ -12,6 +12,7 @@
 海自 護衛隊群	JMSDF escort group
 事件 	Events 
 守方空軍 −1	Defender air force −1
+制空：	Air control: 
 已癱瘓	Knocked out
 天候機率：良好 50%、普通 30%、惡劣 20%	Weather odds: good 50%, fair 30%, bad 20%
 攔截失敗	Intercept failed
@@ -535,3 +536,6 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 攻方控制馬公後，每回合火力 +1（岸基火力與空襲可前推到西南部），補給容量 +2。反過來，守方守住馬公到第 3 回合以後，每回合攻方開始時有 1 次前沿警戒反艦攻擊打擊海峽中的船團（只在海上有登陸部隊時）。	Once the attacker controls Magong, fire +1 per turn (shore-based fires and air strikes can reach forward to the southwest) and supply capacity +2. Conversely, while the defender holds Magong from turn 3, each attacker turn begins with 1 forward-picket anti-ship strike on the strait fleet (only when landing forces are at sea).
 觸控裝置（手機、平板）新增「詳細資料」按鈕：點選單位或外圍艦隊後，資訊欄會出現按鈕，點開可看與電腦版滑鼠懸浮相同的照片、對應現實部隊、規則說明。	Touch devices (phones, tablets) get a 'Details' button: after tapping a unit or an outer fleet, the info panel shows a button that opens the same photo, real-world counterpart and rules as the desktop hover card.
 詳細資料（照片、說明、規則）	Details (photo, description, rules)
+新增空優爭奪動畫：每回合攻方階段開始時，共軍戰機（紅）自大陸沿岸、守方與盟軍戰機（藍）自西部空軍基地升空，在海峽中線纏鬥，被擊落的戰機冒煙墜落並標示損失；制空優勢的一方，戰場會偏向對方海岸。	Added an air-superiority animation: at the start of each attacker phase, PLA fighters (red) from the mainland coast and defender/allied fighters (blue) from western air bases meet over the strait; shot-down aircraft trail smoke and losses are labeled. The side with air superiority pushes the fight toward the other's coast.
+−1 共軍戰機	−1 PLA fighter
+−1 守方戰機	−1 defender fighter
