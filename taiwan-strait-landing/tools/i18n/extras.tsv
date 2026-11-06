@@ -280,3 +280,101 @@
 攔截失敗	Intercept failed	
 攔截成功	Intercepted	
 火力打擊與守方飛彈改為「整波齊射」：一次結算、特效一起升空，不再逐發等待，推演時間縮短、畫面更壯觀（判定與統計不變）	Fire strikes and defender missiles now fire as full volleys: resolved at once with effects launching together instead of waiting shot by shot, so playback is shorter and more spectacular (rulings and statistics unchanged)	
+滑鼠懸停的單位說明大幅加強：顯示現實對應、角色、遊戲規則、攻防算式（基礎值與各項修正）與圖片。可明確使用的實物照片（公有領域、CC0、CC BY；來源見 img/CREDITS.md）直接顯示，其餘用原創示意圖並註明原因	Unit hover cards are much richer: real-world equivalent, role, game rules, attack/defense arithmetic (base and modifiers) and a picture. Clearly usable real photos (public domain, CC0, CC BY; sources in img/CREDITS.md) are shown directly; the rest use original illustrations with the reason noted	
+解放軍陸軍兩棲合成旅（東部戰區，配 05 式兩棲突擊車等）	PLA Army amphibious combined-arms brigade (Eastern Theater Command; Type 05 amphibious assault vehicles, etc.)	
+攻方主力登陸部隊，具兩棲能力，從大陸沿岸出海搶灘。	The attacker's main landing force: amphibious-capable, sails from the mainland coast to storm the beaches.	
+在海上交戰有 −2 的懲罰（陸戰旅為 −1），所以多半在登陸時才決戰	−2 penalty when fighting at sea (−1 for marine brigades), so the decisive fight usually comes at the landing	
+海上移動力受天候影響；惡劣天候不利渡海	Sea movement depends on weather; bad weather hampers the crossing	
+每格最多 2 個友軍，疊放時防禦 −1	At most 2 friendly units per hex; stacking gives −1 defense	
+解放軍海軍陸戰隊旅	PLA Navy Marine Corps brigade	
+中華民國海軍陸戰隊旅	ROC Marine Corps brigade	
+兩棲作戰專長的精銳部隊。	Elite troops specialized in amphibious operations.	
+在海上交戰的懲罰較小（−1）	Smaller penalty when fighting at sea (−1)	
+開局預設負責澎湖方向（攻占馬公）	By default assigned to the Penghu axis (taking Magong)	
+解放軍空降兵（以運-20、運-9 等運輸機空降）	PLA Airborne Corps (parachuting from Y-20, Y-9 and other transports)	
+攻方空降突擊部隊，可繞過灘頭直接降落在目標附近。	The attacker's airborne assault force; it can bypass the beaches and land near objectives.	
+空降需要天候允許	Airdrops need suitable weather	
+落點若遭地面火力壓制，約一半機率損失 1 步；否則運輸機群有約 1/6 機率遭防空攔截損失 1 步	If the drop zone is under ground fire there is about a 50% chance to lose 1 step; otherwise about a 1/6 chance the transports are intercepted by air defense and lose 1 step	
+降落前停在大陸待命	Waits on the mainland until the drop	
+解放軍陸軍重型合成旅（99A 式戰車、04A 步戰車等）	PLA Army heavy combined-arms brigade (Type 99A tanks, Type 04A IFVs, etc.)	
+攻方高攻擊力、高機動的地面主力。	The attacker's high-attack, high-mobility ground force.	
+攻擊力與機動力是雙方地面部隊中最高的	Highest attack and mobility among all ground units	
+登陸後才能發揮；渡海時需要港口或灘頭支援	Only effective once ashore; the crossing needs a port or beachhead	
+中華民國陸軍步兵／機械化步兵旅（雲豹裝甲車等）	ROC Army infantry / mechanized infantry brigade (CM-32 Yunpao armored vehicles, etc.)	
+守方的基本守備部隊，駐守城市、港口與山區。	The defender's basic garrison force, holding cities, ports and mountains.	
+守備部隊（標示「守備」）原地防守，不主動出擊	Garrison units (marked "garrison") hold their ground and do not sortie	
+防禦力高，適合城市與山地	High defense, well suited to cities and mountains	
+中華民國陸軍裝甲旅（M60A3、CM-11 勇虎、M1A2T 戰車）	ROC Army armored brigade (M60A3, CM-11 Brave Tiger, M1A2T tanks)	
+守方機動反擊部隊。	The defender's mobile counterattack force.	
+攻擊力高，是反擊灘頭、收復目標的主力	High attack; the main force for counterattacking beachheads and retaking objectives	
+「機動反擊」決策可再 +1 攻擊	The "mobile counterattack" decision gives a further +1 attack	
+動員後備旅（後備軍人動員編成）	Mobilized reserve brigade (formed from reservists)	
+戰爭爆發後依動員節奏逐梯次補入的預備部隊。	Reserve forces added in waves at the mobilization pace after war breaks out.	
+攻防較低、步數少，但數量能補強守備	Lower attack and defense and fewer steps, but their numbers shore up the defense	
+動員被延遲或減半時，後備旅會晚到或變少	If mobilization is delayed or halved, reserve brigades arrive late or fewer	
+雄風二／雄風三型、魚叉岸防飛彈機動發射車	Hsiung Feng II / III and Harpoon coastal-defense missile mobile launchers	
+守方打擊船團的主力，是攻方火力打擊的首要目標。	The defender's main weapon against the invasion fleet, and the attacker's top fire-strike target.	
+機動隱蔽：未暴露時，火力打擊多半只打到誘餌與空車	Mobile and concealed: while unrevealed, fire strikes mostly hit decoys and empty trucks	
+開火後暴露；打完會轉移陣地重新隱蔽	Revealed after firing; it relocates afterwards to hide again	
+每階段最多 2 發，射程約 4 格，耗用「反艦飛彈」存量	Up to 2 shots per phase, range about 4 hexes, consuming anti-ship missile stock	
+M142 海馬士（HIMARS）高機動火箭砲系統	M142 HIMARS high-mobility rocket artillery system	
+守方長程精準火力：火箭彈打近處，陸軍戰術飛彈打遠處。	The defender's long-range precision fire: rockets for near targets, Army tactical missiles for far ones.	
+火箭彈射程 4 格；陸軍戰術飛彈（ATACMS）射程 14 格，會動用長程飛彈存量	Rocket range 4 hexes; Army tactical missiles (ATACMS) reach 14 hexes and use up long-range missile stock	
+每階段發數有限；打完就轉移，重新隱蔽	Limited shots per phase; it moves away afterwards to hide again	
+解放軍海軍 052D／055 型等驅逐艦、護衛艦	PLA Navy Type 052D / 055 destroyers, frigates and other surface ships	
+為登陸船團護航，提供防空與反潛。	Escorts the landing fleet with air defense and anti-submarine cover.	
+護航艦在附近時，守方反艦飛彈較難命中船團	With escorts nearby, the defender's anti-ship missiles find it harder to hit the fleet	
+被擊沉會減少「護航艦隊」點數	Losing one reduces the escort-fleet points	
+AI 會貼近己方船團，或朝登陸區靠攏	The AI stays close to its own fleet or heads for the landing area	
+解放軍海軍遼寧、山東、福建艦航艦戰鬥群	PLA Navy carrier groups: Liaoning, Shandong, Fujian	
+提供艦載機制空與打擊。	Provides carrier-based air superiority and strike power.	
+被反艦攻擊重創會減少「航艦」點數	Heavy anti-ship damage reduces the carrier points	
+AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cruises east of Taiwan and pulls back out to sea when shore missiles threaten it	
+中華民國海軍巡防艦、沱江級飛彈快艇等	ROC Navy frigates, Tuo Chiang-class missile corvettes, etc.	
+守方水面艦艇，牽制攻方船團。	The defender's surface ships, harassing the attacker's fleet.	
+平時停在港口（只有港口能停靠）	Stays in port normally (only ports can berth them)	
+出港後保持在飛彈射程外圍牽制，避開護航艦	Once out, it keeps to the edge of missile range and avoids the escorts	
+每階段 1 發，射程 4 格；被擊沉會減少「守方海軍」點數	1 shot per phase, range 4 hexes; losing one reduces the defender navy points	
+美國空軍第18聯隊（嘉手納基地）：F-15C／D、F-35A，正換裝 F-15EX	US Air Force 18th Wing (Kadena Air Base): F-15C/D and F-35A, transitioning to F-15EX	
+沖繩的主力戰機，需要日本同意使用基地才能出擊。	Okinawa's main fighters; they can only sortie with Japan's consent to use the base.	
+美國海軍陸戰隊第12濱海團：NMESIS 海軍陸戰隊遠征艦艇攔截系統（反艦飛彈）	US Marine Corps 12th Marine Littoral Regiment: NMESIS (Navy Marine Expeditionary Ship Interdiction System, anti-ship missiles)	
+岸置反艦打擊，需要日本同意使用基地。	Shore-based anti-ship strikes; needs Japan's consent to use the base.	
+美國海軍攻擊潛艦（維吉尼亞級等）	US Navy attack submarines (Virginia class, etc.)	
+隱蔽的水下打擊力量，無法被火力打擊。	A hidden undersea striking force that cannot be hit by fire strikes.	
+美國空軍 B-1B 槍騎兵轟炸機，可攜帶 LRASM 長程反艦飛彈	US Air Force B-1B Lancer bombers, able to carry LRASM long-range anti-ship missiles	
+從關島長程出擊，每次攻擊發數較多。	Strikes from Guam over long range, with more shots per attack.	
+美國海軍第7艦隊航艦打擊群（尼米茲級／福特級核動力航艦與艦載機）	US Navy 7th Fleet carrier strike group (Nimitz / Ford-class nuclear carriers and air wing)	
+參戰後 2 回合抵達台灣東側海域，是最強的盟軍空中打擊力量。	Arrives east of Taiwan 2 turns after joining the war; the strongest allied air-strike force.	
+美國陸軍多域特遣隊：海馬士、堤豐飛彈系統	US Army Multi-Domain Task Force: HIMARS and Typhon missile systems	
+部署在先島群島的陸基長程打擊，需要日本同意。	Land-based long-range strikes deployed in the Sakishima Islands; needs Japan's consent.	
+日本航空自衛隊第9航空團（那霸基地）：F-15J	JASDF 9th Air Wing (Naha Air Base): F-15J	
+沖繩的日本主力戰機。	Japan's main fighters in Okinawa.	
+日本陸上自衛隊地對艦飛彈連隊：12式地對艦誘導彈	JGSDF surface-to-ship missile regiment: Type 12 surface-to-ship missiles	
+部署在宮古・石垣一帶的岸置反艦飛彈。	Shore-based anti-ship missiles deployed around Miyako and Ishigaki.	
+日本海上自衛隊護衛隊群：出雲級直升機護衛艦、F-35B 等	JMSDF escort group: Izumo-class helicopter destroyers, F-35B, etc.	
+從佐世保出港，日本參戰後 1 回合抵達台灣東北側。	Sails from Sasebo and arrives northeast of Taiwan 1 turn after Japan joins.	
+日本海上自衛隊潛艦隊（蒼龍級、大鯨級）	JMSDF submarine force (Soryu and Taigei classes)	
+沒有找到授權明確（公有領域、CC0 或 CC BY）的實物照片	No clearly licensed (public domain, CC0 or CC BY) photo was found	
+後備旅是遊戲中的編制概念，沒有對應的單一裝備，也沒有授權明確的照片	The reserve brigade is a game organization concept with no single matching equipment, and no clearly licensed photo	
+找到的運-20 照片是防疫人員與下機場景，不適合代表空降旅，故以示意圖呈現	The Y-20 photo found shows anti-epidemic staff and disembarking, which does not represent an airborne brigade, so an illustration is shown	
+解放軍戰車照片多來自官方媒體（版權保留）或授權為 CC BY-SA（本專案不採用），故以示意圖呈現	PLA tank photos mostly come from official media (all rights reserved) or are CC BY-SA (not used in this project), so an illustration is shown	
+中華民國海軍艦艇照片多為 CC BY-SA 授權（本專案不採用），故以示意圖呈現	ROC Navy ship photos are mostly CC BY-SA (not used in this project), so an illustration is shown	
+守方（中華民國）海軍陸戰隊沒有授權明確的照片，故以示意圖呈現	There is no clearly licensed photo of the defender's (ROC) Marine Corps, so an illustration is shown	
+找到的授權明確照片不是潛艦本體，故以示意圖呈現	The clearly licensed photo found does not show the submarine itself, so an illustration is shown	
+找到的授權明確照片是記者會場景，無法清楚看到 NMESIS，故以示意圖呈現	The clearly licensed photo found is a press event where the NMESIS cannot be seen clearly, so an illustration is shown	
+事件 	Events 	
+受創 −1	Damaged −1	
+補給不足 −1	Low supply −1	
+疊放 −1	Stacked −1	
+（基礎 	(base 	
+對應：	Equivalent: 	
+照片：	Photo: 	
+示意圖（原創簡圖，非實物照片）。原因：	Illustration (original sketch, not a real photo). Reason: 	
+（地形再 +	(terrain +	
+　戰力	  Strength	
+公有領域	Public domain	
+示意圖	Illustration	
+防 	DEF 	
+移 	MOV 	
+步 	HP 	
+攻 	ATK 	
