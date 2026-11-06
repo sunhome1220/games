@@ -1252,7 +1252,7 @@ function endCaption(k,m){
   return {a1:'首都台北已由攻方控制'+th+'。',a2:'攻方控制 '+m.ports+' 個主要港口，島上兵力 '+m.as+' 步對 '+m.ds+' 步。',a3:'停火時攻方達成 '+m.n+' 項條件，實質控制了關鍵位置。',
     d1:'攻方只達成 '+m.n+' 項條件，軍人傷亡約 '+Math.round(m.milA/1000)+' 千人。',d2:'台灣平民傷亡約 '+Math.round(m.civ/1000)+' 千人'+(m.pd?'、'+m.pd+' 個港口遭自行破壞':'')+'。',d3:'攻方達成 '+m.n+' 項條件；停火後的局勢取決於談判。'}[k];
 }
-function endCardSVG(k){ // 結局繪卡：使用者提供的插圖（圖上已含標題文字）；名稱仍作為替代文字與圖說
+function endCardSVG(k){ // 結局繪卡：使用者提供的插圖（不含文字）；標題與說明由遊戲以各語言顯示
   return '<img class="ecard" src="img/end/'+k+'.jpg" alt="'+ENDCARDS[k].t+'" loading="lazy" decoding="async">';
 }
 function endingBlock(v){
