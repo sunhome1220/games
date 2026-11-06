@@ -714,3 +714,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 −1 守方戰機	−1 defender fighter	
 制空：	Air control: 	
 作戰設定精簡：選「電腦推演」模式時，沒有任何可設定項目的「戰前集結」頁會自動略過（頁數由 4 頁變 3 頁），上一步／下一步與頁碼也一併調整。	Simplified setup: in 'Computer sim' mode the 'Pre-war buildup' page, which has nothing to set, is skipped automatically (4 pages become 3); previous/next and page numbers adjust accordingly.	
+設定頁 UI 優化：頁籤改成帶連線的步驟列（已看過打勾、目前頁有底線）；選項改成單選卡片（圓點＋橘色邊框與淡底）；上一步／下一步改為文字連結，「開始作戰」固定在底部動作列右側的橘色主按鈕，三類控制項不再長得一樣。	Setup page UI: the page tabs are now a connected step bar (checked when seen, underline on the current page); options are radio cards (dot, orange border and tint); Previous/Next are text links and 'Start' is a fixed orange primary button at the right of the bottom action bar, so the three kinds of controls no longer look alike.	
