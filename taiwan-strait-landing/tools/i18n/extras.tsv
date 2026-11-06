@@ -636,3 +636,69 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 富岡港	Fugang port	
 （每個已控制的灘岸格 1、主要與東岸港口 4、次要港口 3、連續控制 2 個回合的灘頭堡再 +2、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1，且從第 3 回合起每回合損耗。次要港口（淡水、新竹、安平、烏石、富岡）標有 ⚓，不計入勝負條件。	(1 per controlled beach hex, 4 per major or east-coast port, 3 per minor port, +2 more for a beachhead held 2 turns in a row, +2 for taking Magong in Penghu); above it, island attacker units get −1 attack and defense and, from turn 3, wear down every turn. Minor ports (Tamsui, Hsinchu, Anping, Wushih, Fugang) are marked ⚓ and are not a victory condition.	
 攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 1、主要與東岸港口 4、次要港口 3、連續控制 2 個回合的灘頭堡再 +2、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1，且從第 3 回合起每回合損耗。次要港口（淡水、新竹、安平、烏石、富岡）標有 ⚓，不計入勝負條件。	The attacker's units on Taiwan proper may not exceed supply capacity (1 per controlled beach hex, 4 per major or east-coast port, 3 per minor port, +2 more for a beachhead held 2 turns in a row, +2 for taking Magong in Penghu); above it, island attacker units get −1 attack and defense and, from turn 3, wear down every turn. Minor ports (Tamsui, Hsinchu, Anping, Wushih, Fugang) are marked ⚓ and are not a victory condition.	
+攔截補給船團（守方）	Interdict the supply convoys (defender)	
+攻方已在島上站穩腳跟，補給全靠跨海的船團。是否集中岸置反艦飛彈、潛艦與空軍，優先攻擊補給船艦？預估可壓低攻方補給容量約 	The attacker has a foothold and relies on convoys across the strait. Concentrate shore-based anti-ship missiles, submarines and aircraft on the supply ships? Expected to cut the attacker's supply capacity by about 	
+照常作戰	Carry on as usual	
+維持原本的攻擊目標。	Keep to the usual targets.	
+不影響補給	No effect on supply	
+全力攻擊補給船艦	All-out attack on the supply ships	
+反艦飛彈、潛艦與空軍優先打補給船團：攻方補給容量未來兩回合約 −	Anti-ship missiles, submarines and aircraft hit the supply convoys first: attacker supply capacity about −	
+（受攻方護航與制空影響）；但反艦飛彈存量 −2，也少打登陸船團。	 for two turns (depending on the attacker's escorts and air control); but anti-ship missile stock −2 and fewer shots at the landing fleet.	
+攻方補給吃緊，島上部隊開始損耗	Attacker supply tightens and island forces start to wear down	
+守方（攔截補給船團）	Defender (convoy interdiction)	
+攻方補給容量未來兩回合 −	Attacker supply capacity −	
+補給線（攻方）	Supply line (attacker)	
+守方正集中火力攻擊補給船團，灘頭堡的補給線岌岌可危。要加強護航，還是加緊運補？	The defender is hitting the supply convoys and the beachhead supply line is in danger. Escort the convoys harder, or rush more supplies across?	
+灘頭堡已建立。接下來要建立並守住補給線：占領港口、保護跨海補給船團，否則島上部隊會因補給不足而損耗。	The beachhead is established. Next, set up and hold the supply line: take ports and protect the cross-strait convoys, or the island forces wear down for lack of supply.	
+不調整護航與運補。	No change to escorts or resupply.	
+集中護航補給船團	Concentrate escorts on the supply convoys	
+護航艦隊與防空集中保護補給船團：守方的攔截效果 −2（本回合與下回合）；但本回合攻方攻擊 −1。	Escorts and air defense concentrate on the supply convoys: the defender's interdiction −2 (this turn and next); but attacker attack −1 this turn.	
+補給較安全，攻勢略緩	Supply is safer; the offensive slows a little	
+加緊運補	Rush resupply	
+緊急增派運輸：本回合補給容量 +2；但抽調護航艦，護航艦隊 −1。	Emergency extra transports: supply capacity +2 this turn; but escorts are pulled away, escort fleet −1.	
+短期補給改善，護航變薄	Short-term supply improves; escorts thin out	
+守方攔截效果 −2（本回合與下回合）；攻方本回合攻擊 −1	Defender interdiction −2 (this turn and next); attacker attack −1 this turn	
+本回合補給容量 +2、護航艦隊 −1	Supply capacity +2 this turn; escort fleet −1	
+灘頭堡已建立：接下來要建立並守住補給線——占領港口、保護跨海補給船團，否則島上部隊會因補給不足而損耗。	A beachhead is established: next, set up and hold the supply line — take ports and protect the cross-strait convoys, or the island forces wear down for lack of supply.	
+灘頭堡已建立：要守住補給線	Beachhead established: hold the supply line	
+補給線攻防：灘頭堡建立時提醒攻方要守住補給線；守方可每回合選「全力攻擊補給船艦」壓低攻方補給容量，攻方可選「集中護航補給船團」或「加緊運補」應對	Supply-line contest: the attacker is reminded to hold its supply line once a beachhead exists; each turn the defender can choose "all-out attack on the supply ships" to cut the attacker's supply capacity, and the attacker can answer with "concentrate escorts on the convoys" or "rush resupply"	
+打擊大陸基地（	Strike mainland bases (	
+ 發）	 shot(s))	
+請在上方（或下方）的「戰區圖」點選大陸基地（紅色圖形）進行長程打擊，每次消耗 1 發長程飛彈；這裡的台灣地圖不用點。打擊會讓中方報復。	Click a mainland base (red shape) on the Theater map to fire a long-range strike; each costs 1 long-range missile. No need to click this Taiwan map. Strikes provoke Chinese retaliation.	
+修正「長程打擊」按鈕難懂：守方按鈕改稱「打擊大陸基地（N 發）」，提示說明目標在戰區圖；修正守方打擊模式下台灣地圖誤把我方單位畫上紅圈，並自動捲動到戰區圖。	Fixed the confusing long-range strike button: the defender button now reads 'Strike mainland bases (N shots)', the hint says targets are on the theater map; fixed own units wrongly ringed in red in defender strike mode and auto-scroll to the theater map.	
+指揮官意圖	Commander's intent	
+電腦代打前，先下達本階段的作戰重點（只影響這一階段）。	Before the computer plays for you, give this phase's operational focus (applies to this phase only).	
+打擊重點	Strike focus	
+照電腦判斷	Computer's judgment	
+綜合考量	Balanced	
+壓制反艦與火箭飛彈	Suppress anti-ship and rocket missiles	
+先打岸置飛彈與火箭砲	Hit shore-based missiles and rocket artillery first	
+打擊機動預備隊	Strike mobile reserves	
+裝甲旅與後備旅	Armored and reserve brigades	
+集中打擊灘頭守軍	Concentrate on beach defenders	
+支援登陸部隊	Support the landing force	
+主攻方向	Main axis	
+照開局計畫	Per opening plan	
+火力與登陸集中北部	Fires and landings focused on the north	
+火力與登陸集中中部	Fires and landings focused on the center	
+火力重點	Fire focus	
+全力打擊運輸船團	All-out strike on transport fleet	
+先打兩棲與運輸艦	Amphibious and transport ships first	
+集中打擊已登陸部隊	Concentrate on landed forces	
+優先灘頭上的攻方	Attackers on the beaches first	
+防守重點	Defense focus	
+死守台北	Hold Taipei at all costs	
+部隊向首都收縮	Units fall back toward the capital	
+死守主要港口	Hold the major ports	
+基隆、台中、高雄	Keelung, Taichung, Kaohsiung	
+積極反擊灘頭	Counterattack the beachheads	
+降低反擊門檻	Lower the threshold to counterattack	
+保存兵力	Preserve forces	
+只打有把握的戰鬥	Fight only battles with clear odds	
+開始代打	Start auto-play	
+【指揮官意圖】	[Commander's intent] 	
+打擊重點＝	Strike focus = 	
+火力重點＝	Fire focus = 	
+主攻方向＝	Main axis = 	
+防守重點＝	Defense focus = 	
+電腦代打新增「指揮官意圖」：按「電腦代打」前可先下令本階段重點。攻方可選打擊重點（壓制飛彈／打機動預備隊／集中灘頭）與主攻方向（北部／中部）；守方可選火力重點（全力打運輸船團／打已登陸部隊）與防守重點（死守台北／死守主要港口／積極反擊灘頭／保存兵力）。	Added 'Commander's intent' to computer-assist: before pressing it, set this phase's focus. Attacker: strike focus (suppress missiles / mobile reserves / beach defenders) and main axis (north / center); defender: fire focus (transport fleet / landed forces) and defense focus (hold Taipei / major ports / counterattack beaches / preserve forces).	
