@@ -1,6 +1,7 @@
 戰爭代價	Cost of war
 海自 護衛隊群	JMSDF escort group
 已癱瘓	Knocked out
+攔截失敗	Intercept failed
 若現在判定：攻方達成 	If judged now: attacker meets 
 已選擇「	Chose "
 運作中	Operational
@@ -102,3 +103,9 @@
 <br>狀態：	<br>Status: 
 　戰力 	  Strength 
 　完整度 	  Integrity 
+移除金門、馬祖駐軍與相關規則：雙方都無視金馬，不再有「攻方有限勝利（金馬）」、「轉攻金馬」選項與金馬攻擊軸線設定	Removed the Kinmen and Matsu garrisons and related rules: both sides now ignore them, with no "attacker limited victory (Kinmen)", no "turn to Kinmen" options and no Kinmen axis setting
+開局可勾選攻擊軸線：北部、中部、澎湖。只有單一本島軸線（澎湖算 0.5 條）時有「集中突擊」：第 1～3 回合攻方攻擊 +1；北、中並進沒有加成；軸線太多（合計 3.5 以上）兵力分散：第 1～3 回合攻擊 −1。北、中都不勾時由電腦選一個主攻區並集中。	At the start, tick the attack axes: north, central, Penghu. With only a single main-island axis (Penghu counts 0.5) there is a "concentrated assault": attacker attack +1 on turns 1–3; north plus central together get no bonus; with too many axes (total 3.5+) forces are scattered: attack −1 on turns 1–3. If neither north nor central is ticked, the AI picks one main area and concentrates.
+地圖上金門與馬祖是緊鄰大陸沿岸的小島，沒有駐軍，也沒有占領規則，雙方都無視它們。	On the map, Kinmen and Matsu are small islands right off the mainland coast. They have no garrison and no capture rule; both sides ignore them.
+防空攔截動畫：火力打擊遇到守方防空、守方攻擊船團遇到攻方護航防空時，會有防空飛彈升空迎擊；攔截成功在空中爆炸、失敗則擦身而過並照常命中或落空	Air-defense interception animation: when a fire strike meets the defender's air defense, or defender attacks on the fleet meet the escorts' air defense, interceptors launch; a success bursts in mid-air, a failure streaks past and the strike lands or misses as usual
+攔截成功	Intercepted
+火力打擊與守方飛彈改為「整波齊射」：一次結算、特效一起升空，不再逐發等待，推演時間縮短、畫面更壯觀（判定與統計不變）	Fire strikes and defender missiles now fire as full volleys: resolved at once with effects launching together instead of waiting shot by shot, so playback is shorter and more spectacular (rulings and statistics unchanged)
