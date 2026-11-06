@@ -19,3 +19,7 @@
 | img/inf.jpg | 聯兵旅 | 玄史生 | CC0 | <https://commons.wikimedia.org/wiki/File:CM-32_Yunpao_APC_Display_at_Armor_School_Rigjht_Rear_View_20130302.jpg> |
 | img/mar.jpg | 陸戰旅（攻方） | 中国新闻社 | CC BY 4.0 | <https://commons.wikimedia.org/wiki/File:PLA_Marine_Boarding_Z-18_on_PLANS_Anhui.png> |
 | img/jmsdf.jpg | 海自護衛隊群 | 海上自衛隊 | CC BY 4.0 | <https://commons.wikimedia.org/wiki/File:JMSDF_CVH_JS_Izumo_in_Ocean.jpg> |
+
+## 結局繪卡（img/end/）
+
+六張結局繪卡為專案提供者提供的 AI 生成插圖（不含文字，標題由遊戲顯示），原圖裁切為單張後使用，未做其他修改。
