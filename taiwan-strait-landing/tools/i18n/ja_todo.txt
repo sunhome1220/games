@@ -218,3 +218,6 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 美國、日本是否參戰、以什麼方式參戰，會大幅改變戰局。下方是設定摘要；任何一頁都可以回去修改，所有頁面看過之後，在哪一頁都能開始作戰。	Whether and how the US and Japan join the war changes the course of the war a lot. The summary of your settings is below; you can go back to any page, and once every page has been seen you can start from any of them.
 推演速度（電腦推演模式）	Simulation speed (computer simulation mode)
 播放速度（純模擬影片模式）	Playback speed (pure simulation video mode)
+決策預覽只列出有變化的戰況，「繼續推演」按鈕固定在視窗底部，手機上不用再下滑	The decision preview lists only the situation changes, and the "Continue" button is pinned to the bottom of the window, so phones no longer need scrolling
+有變化的戰況	Situation changes
+沒有立即的數值變化。	No immediate change in the numbers.
