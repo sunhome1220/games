@@ -212,3 +212,9 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 步 	HP 
 攻 	ATK 
 飛彈動畫改良：彈體朝飛行方向、尾焰閃動、漸細漸淡的尾跡，並留下持續擴散的煙團（彈道飛彈煙更濃更長）；手機與大量齊射時自動減少煙團	Better missile animation: a body that points along its flight path, a flickering exhaust flame, a tapering fading trail and drifting smoke puffs (thicker, longer for ballistic missiles); fewer puffs on phones and in big volleys
+推演／播放速度、國際快訊、戰報語音移到「⚙ 設定」（遊戲進行中也能改）；作戰設定縮成 4 頁，設定摘要併入最後一頁	Simulation/playback speed, news flashes and report voice moved into "⚙ Settings" (changeable during a game too); the setup is down to 4 pages with the summary merged into the last one
+先決定怎麼玩：自己指揮，或交給電腦推演整場戰爭。（語言、速度、快訊、語音在右上角「⚙ 設定」）	First decide how to play: command yourself, or let the computer simulate the whole war. (Language, speed, news flashes and voice are under "⚙ Settings" at the top right.)
+美日參戰與確認	US/Japan entry and confirmation
+美國、日本是否參戰、以什麼方式參戰，會大幅改變戰局。下方是設定摘要；任何一頁都可以回去修改，所有頁面看過之後，在哪一頁都能開始作戰。	Whether and how the US and Japan join the war changes the course of the war a lot. The summary of your settings is below; you can go back to any page, and once every page has been seen you can start from any of them.
+推演速度（電腦推演模式）	Simulation speed (computer simulation mode)
+播放速度（純模擬影片模式）	Playback speed (pure simulation video mode)
