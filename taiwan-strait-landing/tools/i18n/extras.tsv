@@ -394,3 +394,47 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 沒有立即的數值變化。	No immediate change in the numbers.	
 標題區更精簡：「⚙ 設定」移到右上角、不再多占一行，並拿掉副標題	A more compact header: "⚙ Settings" sits at the top right without using an extra row, and the subtitle is gone	
 決策視窗高度固定：點選項前後「繼續推演」按鈕都在同一個位置	Decision windows have a fixed height: the "Continue" button stays in the same place before and after you pick an option	
+作戰結束新增「結局繪卡」與雙方評分：六種結局（攻方 3、守方 3）各有一張舊海圖風插畫，並有「結局圖鑑」收集解鎖；評分分為目標／代價／外部環境三大項與 S～D 等級	The end screen adds ending cards and scores for both sides: six endings (3 attacker, 3 defender), each with an old-sea-chart illustration and a collectible ending gallery; scores cover goals / cost / environment with S–D grades	
+旗落台北	The Flag Over Taipei	
+灘頭站穩	A Foothold on the Beach	
+談判桌上的戰果	Gains at the Negotiating Table	
+海峽失守的船團	The Fleet Lost in the Strait	
+守住，但傷痕累累	Held, but Scarred	
+停火線	The Ceasefire Line	
+攻方決定性勝利	Decisive attacker victory	
+攻方勝利	Attacker victory	
+停火，攻方保有戰果	Ceasefire, attacker keeps its gains	
+守方決定性勝利	Decisive defender victory	
+守方慘勝	Pyrrhic defender victory	
+停火或僵局	Ceasefire or stalemate	
+首都台北已由攻方控制	Taipei is under the attacker's control	
+，連續 	; for 	
+ 個回合。	 turns in a row.	
+攻方控制 	The attacker holds 	
+ 個主要港口，島上兵力 	 major ports; ground strength 	
+ 步對 	 steps vs 	
+ 步。	 steps.	
+停火時攻方達成 	At the ceasefire the attacker had met 	
+ 項條件，實質控制了關鍵位置。	 conditions and held the key positions.	
+攻方只達成 	The attacker met only 	
+ 項條件，軍人傷亡約 	 conditions, with about 	
+ 千人。	 thousand military casualties.	
+台灣平民傷亡約 	Taiwanese civilian casualties about 	
+ 千人、	 thousand; 	
+ 個港口遭自行破壞	 ports were demolished by the defender	
+攻方達成 	The attacker met 	
+ 項條件；停火後的局勢取決於談判。	 conditions; what follows depends on negotiations.	
+結局繪卡 · 	Ending card · 	
+戰略目標	Strategic goals	
+代價效率	Cost efficiency	
+外部環境	External environment	
+守住程度	Holding the line	
+承受的代價	Cost borne	
+外援與韌性	Aid and resilience	
+分數不等於勝負：慘勝與代價沉重會被扣分。等級 S≥90、A≥75、B≥60、C≥40。	A score is not the outcome: a Pyrrhic win or a heavy cost loses points. Grades: S ≥ 90, A ≥ 75, B ≥ 60, C ≥ 40.	
+結局圖鑑	Ending gallery	
+已解鎖 	Unlocked 	
+尚未解鎖	Not unlocked yet	
+結局分布：	Ending distribution: 	
+；平均評分 攻方 	; average score: attacker 	
+、守方 	, defender 	
