@@ -528,3 +528,8 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 主攻方向＝	Main axis = 
 防守重點＝	Defense focus = 
 電腦代打新增「指揮官意圖」：按「電腦代打」前可先下令本階段重點。攻方可選打擊重點（壓制飛彈／打機動預備隊／集中灘頭）與主攻方向（北部／中部）；守方可選火力重點（全力打運輸船團／打已登陸部隊）與防守重點（死守台北／死守主要港口／積極反擊灘頭／保存兵力）。	Added 'Commander's intent' to computer-assist: before pressing it, set this phase's focus. Attacker: strike focus (suppress missiles / mobile reserves / beach defenders) and main axis (north / center); defender: fire focus (transport fleet / landed forces) and defense focus (hold Taipei / major ports / counterattack beaches / preserve forces).
+澎湖成為前進基地：攻方控制馬公後每回合火力 +1（另有補給容量 +2）；守方守住馬公到第 3 回合以後，每回合攻方開始時有 1 次前沿警戒反艦攻擊打擊海峽中的船團。	Penghu becomes a forward base: while the attacker holds Magong, fire +1 per turn (plus supply capacity +2); while the defender holds Magong from turn 3, one forward-picket anti-ship strike hits the strait fleet at the start of each attacker turn.
+＋澎湖前進基地 1	 + Penghu forward base 1
+守方（澎湖前沿警戒）	Defender (Penghu forward picket)
+澎湖前進基地：	Penghu forward base: 
+攻方控制馬公後，每回合火力 +1（岸基火力與空襲可前推到西南部），補給容量 +2。反過來，守方守住馬公到第 3 回合以後，每回合攻方開始時有 1 次前沿警戒反艦攻擊打擊海峽中的船團（只在海上有登陸部隊時）。	Once the attacker controls Magong, fire +1 per turn (shore-based fires and air strikes can reach forward to the southwest) and supply capacity +2. Conversely, while the defender holds Magong from turn 3, each attacker turn begins with 1 forward-picket anti-ship strike on the strait fleet (only when landing forces are at sea).
