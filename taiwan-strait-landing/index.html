@@ -225,7 +225,8 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
   body.playing{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
   body.playing:not(.mapfs) .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:14;align-items:center;gap:6px 8px;flex-wrap:wrap;padding:8px max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(0,0,0,.18)}
   .mbar #mbText{flex:1 0 100%;min-width:0;font-size:12.5px;font-weight:700;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .mbar button{flex:1;padding:6px 6px;white-space:nowrap}
+  .mbar button{flex:1;padding:6px 4px;white-space:normal;line-height:1.2;min-width:0}
+  .mbar #mbStrike{flex:1.35}
   .vcap{position:sticky;bottom:0;z-index:6;padding:6px 8px}
   .vcap .vchips,.vcap .vl:not(.cur){display:none}
   .vcap .vlines{height:66px;min-height:0;margin-top:4px}
@@ -2129,18 +2130,6 @@ function snap(){
     taipei:S.owner[TAIPEI]==='atk',ssm:S.units.filter(u=>u.side==='def'&&u.type==='ssm').reduce((a,u)=>a+u.hp,0),n:cs.filter(c=>c.atk).length,
     plaAir:S.pools.plaAir,ally:allyAir(),navy:S.pools.plaNavy,cv:S.pools.plaCV,fx:'美 '+LV.US[S.fx.lv.US]+'・日 '+LV.JP[S.fx.lv.JP]};
 }
-function snapHTML(now,prev){
-  const cell=(label,key,fmt,good)=>{
-    const v=now[key],p=prev&&prev[key]!==undefined?prev[key]:v;let d='';
-    if(typeof v==='number'&&p!==v){const up=v>p;d='<i class="'+((up===(good==='up'))?'up':'down')+'">'+(up?'+':'')+(v-p)+'</i>';}
-    return '<div><span>'+label+'</span><b>'+(fmt?fmt(v):v)+'</b>'+d+'</div>';
-  };
-  return '<div class="snap">'+cell('攻方島上兵力','as',null,'up')+cell('守方島上兵力','ds',null,'down')+cell('攻方海上單位','sea')+
-    cell('攻方控制港口','ports',v=>v+' / 3','up')+cell('台北','taipei',v=>v?'攻方':'守方')+cell('守方飛彈陣地','ssm',v=>v+' 步','down')+
-    cell('攻方空軍','plaAir',null,'up')+cell('守方與盟國空軍','ally',null,'down')+cell('攻方護航艦隊','navy',null,'up')+
-    '<div style="grid-column:1/-1"><span>各國參戰</span><b style="font-size:13px">'+now.fx+'</b></div></div>'+
-    '<div class="proj">若現在判定：攻方達成 <b>'+now.n+'</b> / 3 → <b class="verdict '+verdict(now.n).s+'">'+verdict(now.n).t+'</b></div>';
-}
 function snapDiffHTML(now,prev){ // 預覽用：只列出有變化的項目，畫面短、按鈕不會被擠到下面
   const defs=[['攻方島上兵力','as',null,'up'],['守方島上兵力','ds',null,'down'],['攻方海上單位','sea'],['攻方控制港口','ports',v=>v+' / 3','up'],['台北','taipei',v=>v?'攻方':'守方'],['守方飛彈陣地','ssm',v=>v+' 步','down'],['攻方空軍','plaAir',null,'up'],['守方與盟國空軍','ally',null,'down'],['攻方護航艦隊','navy',null,'up']];
   const ch=defs.filter(d=>now[d[1]]!==prev[d[1]]).map(([label,key,fmt,good])=>{
@@ -2225,7 +2214,7 @@ function playEvent(ev,i){
       }
       const res=document.createElement('div');res.className='res';
       res.innerHTML='<div class="eyebrow">結果</div><ul>'+fx.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+
-        '<div class="eyebrow" style="margin-top:12px">目前戰況</div>'+snapHTML(now,S.lastSnap)+
+        '<div class="eyebrow" style="margin-top:12px">有變化的戰況</div>'+snapDiffHTML(now,S.lastSnap||now)+
         '<div class="btns stk"><button id="evGo">繼續推演 ▶</button><button class="ghost" id="evMap">看地圖</button></div>';
       box.appendChild(res);
       S.lastSnap=now;
@@ -3773,7 +3762,7 @@ function renderCtrl(){
   const h=humanTurn();
   $('#phaseTitle').textContent=S.over?'作戰結束':'第 '+S.turn+' 回合 · '+SIDE[S.phase]+'指揮';
   const bs=$('#btnStrike'),atkP=S.phase==='atk',pts=atkP?S.fire:Math.min(S.dfire,S.pools.rocMsl);bs.hidden=false;bs.disabled=!h||pts<=0;bs.classList.toggle('on',S.mode==='strike');
-  bs.textContent=S.mode==='strike'?'取消打擊（剩 '+pts+'）':(atkP?'火力打擊（'+pts+' 點）':'打擊大陸基地（'+pts+' 發）');
+  bs.textContent=S.mode==='strike'?'取消打擊（剩 '+pts+'）':(atkP?'火力打擊（'+pts+' 點）':'打擊大陸（'+pts+' 發）');
   $('#btnEnd').disabled=!h;$('#btnEnd').hidden=S.sim;if(S.sim)bs.hidden=true;
   const ba=$('#btnAssist');ba.disabled=!h;ba.hidden=S.sim||S.video;
   let hint;
