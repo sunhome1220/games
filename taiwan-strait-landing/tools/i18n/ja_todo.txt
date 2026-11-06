@@ -541,3 +541,65 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 −1 守方戰機	−1 defender fighter
 作戰設定精簡：選「電腦推演」模式時，沒有任何可設定項目的「戰前集結」頁會自動略過（頁數由 4 頁變 3 頁），上一步／下一步與頁碼也一併調整。	Simplified setup: in 'Computer sim' mode the 'Pre-war buildup' page, which has nothing to set, is skipped automatically (4 pages become 3); previous/next and page numbers adjust accordingly.
 設定頁 UI 優化：頁籤改成帶連線的步驟列（已看過打勾、目前頁有底線）；選項改成單選卡片（圓點＋橘色邊框與淡底）；上一步／下一步改為文字連結，「開始作戰」固定在底部動作列右側的橘色主按鈕，三類控制項不再長得一樣。	Setup page UI: the page tabs are now a connected step bar (checked when seen, underline on the current page); options are radio cards (dot, orange border and tint); Previous/Next are text links and 'Start' is a fixed orange primary button at the right of the bottom action bar, so the three kinds of controls no longer look alike.
+「指揮官意圖」視窗改版：選項改成單選卡片，每項都寫明「效果」與「代價」，底部固定顯示本次選擇摘要與「開始代打」；新增攻方「躍進與補給」（優先占領港口／先鞏固灘頭／全力突進首都）、守方「飛彈使用節奏」（隱蔽待機／集中齊射／打了就跑）與「防線配置」（灘岸前推／縱深防禦／機動預備）。	Redesigned the 'Commander's intent' window: options are radio cards that state each choice's effect and cost, with a bottom summary and 'Start auto-play' always visible; added attacker 'Advance and supply' (take ports first / consolidate the beachhead / dash for the capital) and defender 'Missile tempo' (hold hidden / concentrated salvo / shoot and scoot) and 'Defense layout' (forward at the beaches / defense in depth / mobile reserve).
+每組選一個。	Pick one in each group.
+效果：	Effect: 
+代價：	Cost: 
+本次：	This time: 
+全部照電腦判斷	All left to the computer's judgment
+綜合考量各目標。	Weigh all targets together.
+優先打岸置飛彈與火箭砲，保護渡海船團。	Hit shore-based missiles and rocket artillery first to protect the crossing fleet.
+灘頭守軍壓力較小，登陸部隊較辛苦。	Less pressure on beach defenders; the landing force has a harder time.
+優先打裝甲旅與後備旅，削弱守方反擊。	Hit armored and reserve brigades first to weaken the defender's counterattack.
+岸置飛彈仍在威脅船團。	Shore-based missiles still threaten the fleet.
+優先打登陸部隊兩格內的守軍，幫登陸部隊站穩。	Hit defenders within two hexes of the landing force first to help it hold.
+飛彈與預備隊不受壓制。	Missiles and reserves are not suppressed.
+沿用開局選的攻擊軸線。	Keep the attack axis chosen at the start.
+火力與登陸集中林口、桃園一帶。	Fires and landings focus on the Linkou–Taoyuan area.
+中部灘頭較空，守方可能轉移兵力。	The central beaches are thinner; the defender may shift forces.
+火力與登陸集中新竹、苗栗、台中港一帶。	Fires and landings focus on Hsinchu, Miaoli and Taichung Port.
+北部較空。	The north is thinner.
+依首都與港口的遠近決定。	Decided by distance to the capital and ports.
+島上部隊先奪基隆、台中港、高雄，才能卸載重型裝備、擴大補給。	Forces ashore take Keelung, Taichung Port and Kaohsiung first, to unload heavy equipment and expand supply.
+首都方向進度延後。	Progress toward the capital is delayed.
+島上部隊不前進，只打有把握的攻擊，減少損失。	Forces ashore hold position and make only well-founded attacks to cut losses.
+進度慢，回合可能不夠。	Progress is slow; turns may run out.
+島上部隊直撲台北，攻擊門檻降低。	Forces ashore drive straight for Taipei with a lower attack threshold.
+損失大，補給線容易斷。	Heavy losses; the supply line is easily cut.
+飛彈先打兩棲與運輸艦、裝甲旅。	Missiles hit amphibious and transport ships and armored brigades first.
+登陸後的部隊較少被打。	Landed forces are hit less.
+飛彈優先打灘頭上的攻方。	Missiles hit attackers on the beaches first.
+海上船團較少被打。	The fleet at sea is hit less.
+發射後視情況轉移陣地。	Relocate after firing as the situation allows.
+每具只射 1 發，只打兩棲、裝甲、空降與航艦，其餘按兵不動、保持隱蔽。	Each launcher fires once, only at amphibious, armor, airborne and carriers; the rest hold fire and stay hidden.
+火力輸出低，一般船團可能漏網。	Low firepower; ordinary ships may slip through.
+全部飛彈打同一個目標，對航艦能造成飽和擊中。	All missiles hit the same target, able to saturate a carrier.
+射完不轉移，容易被火力打擊到。	No relocation after firing; easily hit by strikes.
+每具只射 1 發，射後立刻轉移並重新隱蔽。	Each launcher fires once, then relocates and re-hides at once.
+火力減半。	Firepower halved.
+部隊向首都收縮，並優先攻擊逼近首都的敵軍。	Units fall back toward the capital and attack enemies approaching it first.
+港口與灘頭較空。	Ports and beaches are thinner.
+部隊向基隆、台中、高雄收縮，不讓攻方開通補給。	Units fall back toward Keelung, Taichung and Kaohsiung to deny the attacker supply.
+首都與灘頭較空。	The capital and beaches are thinner.
+降低反擊門檻，登陸部隊站穩前就出擊。	Lower the threshold to counterattack before the landing force settles.
+自身損失較大。	Own losses are heavier.
+只打有把握的戰鬥，不輕易出擊。	Fight only battles with clear odds; do not sortie lightly.
+攻方較容易站穩。	The attacker finds it easier to hold.
+部隊朝北部與中部灘頭靠攏，在灘頭交戰。	Units move toward the northern and central beaches and fight at the water's edge.
+暴露在艦砲與空襲下。	Exposed to naval gunfire and air strikes.
+部隊往內陸山地與城市後退，等攻方深入再打。	Units fall back to inland mountains and cities and strike once the attacker advances.
+灘頭與港口容易被占。	Beaches and ports are easily taken.
+裝甲與後備旅集中在台中樞紐，反擊門檻降低。	Armor and reserve brigades gather at the Taichung hub with a lower counterattack threshold.
+各灘岸防守薄弱。	The beaches are thinly defended.
+躍進與補給	Advance and supply
+飛彈使用節奏	Missile tempo
+防線配置	Defense layout
+優先占領港口	Take ports first
+先鞏固灘頭再擴張	Consolidate the beachhead first
+全力突進首都	Dash for the capital
+隱蔽待機	Hold hidden
+集中齊射	Concentrated salvo
+打了就跑	Shoot and scoot
+灘岸前推	Forward at the beaches
+縱深防禦	Defense in depth
+機動預備	Mobile reserve
