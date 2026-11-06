@@ -622,3 +622,6 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 攻方補給不足，島上部隊損耗	Attacker short of supply: island forces wearing down	
 攻方控制本島領土 	Attacker controls 	
 （達 80% 立即判攻方勝利）；渡海船團全滅、登陸部隊耗盡則守方獲勝；灘頭補給線未建立時，島上部隊會逐回合損耗。	% of the island (80% = immediate attacker victory); if the invasion fleet is destroyed and the landing force exhausted the defender wins; without a beachhead supply line, island forces wear down turn by turn.	
+達成條件：	Conditions met: 	
+攻方：三項條件全部達成並連續站穩；或控制本島 80% 以上領土；或三項達成且守軍所剩無幾；或逼守方投降、殲滅本島守軍。	Attacker: meet all three conditions and hold them for several turns; or control 80%+ of the island; or meet all three with few defenders left; or force the defender to surrender or wipe out its island forces.	
+守方：守住台灣，攻方撤退、船團全滅或條件落空，代價在可承受範圍內。	Defender: hold Taiwan while the attacker retreats, its fleet is destroyed or it fails its conditions, at an acceptable cost.	
