@@ -625,3 +625,14 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 達成條件：	Conditions met: 	
 攻方：三項條件全部達成並連續站穩；或控制本島 80% 以上領土；或三項達成且守軍所剩無幾；或逼守方投降、殲滅本島守軍。	Attacker: meet all three conditions and hold them for several turns; or control 80%+ of the island; or meet all three with few defenders left; or force the defender to surrender or wipe out its island forces.	
 守方：守住台灣，攻方撤退、船團全滅或條件落空，代價在可承受範圍內。	Defender: hold Taiwan while the attacker retreats, its fleet is destroyed or it fails its conditions, at an acceptable cost.	
+攻方補給新增「次要港口」（淡水、新竹、安平、烏石、富岡，標 ⚓，占領補給 +2、不計入勝負條件）與「灘頭堡」（灘岸格連續控制 2 個回合，補給 +2，地圖上以金色虛線框標示）	New attacker supply sources: "minor ports" (Tamsui, Hsinchu, Anping, Wushih, Fugang; marked ⚓, +2 supply when taken, not counted as a victory condition) and "beachheads" (a beach hex held for 2 turns, +2 supply, shown with a gold dashed outline)	
+（占領後補給 +2，不計入勝負條件）	(+2 supply when taken; not a victory condition)	
+ · 次要港口：	 · Minor port: 	
+ · 灘頭堡（補給 +2）	 · Beachhead (+2 supply)	
+淡水港	Tamsui port	
+新竹港	Hsinchu port	
+安平港	Anping port	
+烏石港	Wushih port	
+富岡港	Fugang port	
+（每個已控制的灘岸格 1、主要與東岸港口 4、次要港口 3、連續控制 2 個回合的灘頭堡再 +2、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1，且從第 3 回合起每回合損耗。次要港口（淡水、新竹、安平、烏石、富岡）標有 ⚓，不計入勝負條件。	(1 per controlled beach hex, 4 per major or east-coast port, 3 per minor port, +2 more for a beachhead held 2 turns in a row, +2 for taking Magong in Penghu); above it, island attacker units get −1 attack and defense and, from turn 3, wear down every turn. Minor ports (Tamsui, Hsinchu, Anping, Wushih, Fugang) are marked ⚓ and are not a victory condition.	
+攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 1、主要與東岸港口 4、次要港口 3、連續控制 2 個回合的灘頭堡再 +2、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1，且從第 3 回合起每回合損耗。次要港口（淡水、新竹、安平、烏石、富岡）標有 ⚓，不計入勝負條件。	The attacker's units on Taiwan proper may not exceed supply capacity (1 per controlled beach hex, 4 per major or east-coast port, 3 per minor port, +2 more for a beachhead held 2 turns in a row, +2 for taking Magong in Penghu); above it, island attacker units get −1 attack and defense and, from turn 3, wear down every turn. Minor ports (Tamsui, Hsinchu, Anping, Wushih, Fugang) are marked ⚓ and are not a victory condition.	
