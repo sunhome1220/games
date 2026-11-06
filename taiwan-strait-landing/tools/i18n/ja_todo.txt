@@ -603,3 +603,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 灘岸前推	Forward at the beaches
 縱深防禦	Defense in depth
 機動預備	Mobile reserve
+修正澎湖沒人理的問題：澎湖軸線的陸戰旅開局落在大陸內陸格、又被電腦攻方每回合改派到本島，整場都不動；現在它會先走到海岸、渡海攻擊馬公（單一旅難以攻下，屬合理）。另修正守方「打擊大陸（N 發）」出現小數（如 2.5 發），改為無條件捨去的整數。	Fixed Penghu being ignored: the marine brigade on the Penghu axis started on an inland mainland hex and the computer attacker reassigned it to the main island every turn, so it never moved; it now walks to the coast and crosses to attack Magong (one brigade rarely takes it, which is reasonable). Also fixed the defender 'Strike mainland (N shots)' showing fractions such as 2.5; it is now a floored integer.
