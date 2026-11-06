@@ -539,3 +539,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 新增空優爭奪動畫：每回合攻方階段開始時，共軍戰機（紅）自大陸沿岸、守方與盟軍戰機（藍）自西部空軍基地升空，在海峽中線纏鬥，被擊落的戰機冒煙墜落並標示損失；制空優勢的一方，戰場會偏向對方海岸。	Added an air-superiority animation: at the start of each attacker phase, PLA fighters (red) from the mainland coast and defender/allied fighters (blue) from western air bases meet over the strait; shot-down aircraft trail smoke and losses are labeled. The side with air superiority pushes the fight toward the other's coast.
 −1 共軍戰機	−1 PLA fighter
 −1 守方戰機	−1 defender fighter
+作戰設定精簡：選「電腦推演」模式時，沒有任何可設定項目的「戰前集結」頁會自動略過（頁數由 4 頁變 3 頁），上一步／下一步與頁碼也一併調整。	Simplified setup: in 'Computer sim' mode the 'Pre-war buildup' page, which has nothing to set, is skipped automatically (4 pages become 3); previous/next and page numbers adjust accordingly.
