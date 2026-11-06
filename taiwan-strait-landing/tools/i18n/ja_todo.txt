@@ -1,6 +1,9 @@
 戰爭代價	Cost of war
+海自 護衛隊群	JMSDF escort group
+已癱瘓	Knocked out
 若現在判定：攻方達成 	If judged now: attacker meets 
 已選擇「	Chose "
+運作中	Operational
 判定	Ruling
 影片模式的事件卡不透明度提高（卡片可拖曳，不必再靠透明看後方），文字更清楚	Video-mode event cards are now nearly opaque (they can be dragged, so there is no need to see through them), making the text easier to read
 捲軸變細；地圖、側欄、分頁列不再顯示捲軸（仍可拖曳、滾輪或觸控捲動），畫面更清爽	Scrollbars are thinner, and the map, side panel and tab bar no longer show scrollbars (you can still drag, use the wheel or touch-scroll), for a cleaner screen
@@ -93,3 +96,9 @@
 防 <b>	DEF <b>
 移 <b>	MOV <b>
 步 <b>	HP <b>
+滑鼠懸停說明補上戰區圖的美日基地、中方基地，以及海自護衛隊群標記（含目前狀態與戰力）	Hover tooltips now cover the theater-map US/Japan bases, Chinese bases and the JMSDF escort group marker (with current status and strength)
+佐世保出港（含出雲級、F-35B），參戰後 1 回合抵達。	Sails from Sasebo (incl. Izumo-class, F-35B); arrives 1 turn after Japan joins.
+在台灣東北側、先島群島附近海域活動。	Operates northeast of Taiwan near the Sakishima Islands.
+<br>狀態：	<br>Status: 
+　戰力 	  Strength 
+　完整度 	  Integrity 
