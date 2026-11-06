@@ -662,3 +662,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 灘頭堡已建立：接下來要建立並守住補給線——占領港口、保護跨海補給船團，否則島上部隊會因補給不足而損耗。	A beachhead is established: next, set up and hold the supply line — take ports and protect the cross-strait convoys, or the island forces wear down for lack of supply.	
 灘頭堡已建立：要守住補給線	Beachhead established: hold the supply line	
 補給線攻防：灘頭堡建立時提醒攻方要守住補給線；守方可每回合選「全力攻擊補給船艦」壓低攻方補給容量，攻方可選「集中護航補給船團」或「加緊運補」應對	Supply-line contest: the attacker is reminded to hold its supply line once a beachhead exists; each turn the defender can choose "all-out attack on the supply ships" to cut the attacker's supply capacity, and the attacker can answer with "concentrate escorts on the convoys" or "rush resupply"	
+打擊大陸基地（	Strike mainland bases (	
+ 發）	 shot(s))	
+請在上方（或下方）的「戰區圖」點選大陸基地（紅色圖形）進行長程打擊，每次消耗 1 發長程飛彈；這裡的台灣地圖不用點。打擊會讓中方報復。	Click a mainland base (red shape) on the Theater map to fire a long-range strike; each costs 1 long-range missile. No need to click this Taiwan map. Strikes provoke Chinese retaliation.	
+修正「長程打擊」按鈕難懂：守方按鈕改稱「打擊大陸基地（N 發）」，提示說明目標在戰區圖；修正守方打擊模式下台灣地圖誤把我方單位畫上紅圈，並自動捲動到戰區圖。	Fixed the confusing long-range strike button: the defender button now reads 'Strike mainland bases (N shots)', the hint says targets are on the theater map; fixed own units wrongly ringed in red in defender strike mode and auto-scroll to the theater map.	
