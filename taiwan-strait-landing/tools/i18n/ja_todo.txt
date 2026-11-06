@@ -267,3 +267,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 結局分布：	Ending distribution: 
 ；平均評分 攻方 	; average score: attacker 
 、守方 	, defender 
+作戰結束新增「結局繪卡」與雙方評分：六種結局（攻方 3、守方 3）各有一張插畫，並有「結局圖鑑」收集解鎖；評分分為目標／代價／外部環境三大項與 S～D 等級	The end screen adds ending cards and scores for both sides: six endings (3 attacker, 3 defender), each with an illustration and a collectible ending gallery; scores cover goals / cost / environment with S–D grades
