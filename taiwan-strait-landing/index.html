@@ -4445,6 +4445,7 @@ const VERSION='2026-11-10.12';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
+ {v:'2026-11-10.11',items:['作戰設定精簡：選「電腦推演」模式時，沒有任何可設定項目的「戰前集結」頁會自動略過（頁數由 4 頁變 3 頁），上一步／下一步與頁碼也一併調整。']},
  {v:'2026-11-10.10',items:['新增空優爭奪動畫：每回合攻方階段開始時，共軍戰機（紅）自大陸沿岸、守方與盟軍戰機（藍）自西部空軍基地升空，在海峽中線纏鬥，被擊落的戰機冒煙墜落並標示損失；制空優勢的一方，戰場會偏向對方海岸。']},
  {v:'2026-11-10.09',items:['地圖外觀：呂宋北部海岸線改用更細的輪廓（科迪勒拉、卡加延沿岸、仁牙因灣等），不再像一塊方形；海底淺水／深水的分界改為平滑漸變加起伏，不再出現筆直的分界線。']},
  {v:'2026-11-10.08',items:['外圍的美日共軍艦艇（第7艦隊、潛艦、護衛隊群、共軍航艦群）改畫成與兵棋相同的棋子樣式；並修正位於遊戲格邊緣的潛艦被海面格蓋住、只剩半個的破圖。']},
@@ -4625,11 +4626,14 @@ function loadSetup(){
   voiceBtn();
 }
 $('#optLang').value=window.TSL_LANG;
+const wzVis=()=>SETUP_PAGES.map((pg,i)=>i).filter(i=>{const pg=SETUP_PAGES[i];return pg.summary||!pg.fields.length||pg.fields.some(f=>!f.when||f.when());}); // 沒有任何可設定項目的頁面（例如推演模式的「戰前集結」）直接略過
+function wzGo(d){const v=wzVis(),p=v.indexOf(WZ.i);const t=v[Math.max(0,Math.min(v.length-1,(p<0?0:p)+d))];if(t!==undefined&&t!==WZ.i){WZ.i=t;renderWizard();}}
 function renderWizard(){
-  const pg=SETUP_PAGES[WZ.i],N=SETUP_PAGES.length;WZ.done[WZ.i]=true;
-  $('#wzStep').textContent='作戰設定 · 第 '+(WZ.i+1)+' / '+N+' 頁';
+  const vis=wzVis();if(!vis.includes(WZ.i))WZ.i=vis.find(i=>i>WZ.i)??vis[vis.length-1];
+  const pg=SETUP_PAGES[WZ.i],N=vis.length,pos=vis.indexOf(WZ.i);WZ.done[WZ.i]=true;
+  $('#wzStep').textContent='作戰設定 · 第 '+(pos+1)+' / '+N+' 頁';
   $('#wzTitle').textContent=pg.t;$('#wzDesc').textContent=pg.d;
-  $('#wzChips').innerHTML=SETUP_PAGES.map((x,i)=>'<button data-i="'+i+'" class="'+(i===WZ.i?'on':'')+(WZ.done[i]?' ok':'')+'" title="'+x.t+'" aria-label="第 '+(i+1)+' 頁 '+x.t+'" aria-current="'+(i===WZ.i?'step':'false')+'"><i>'+(WZ.done[i]&&i!==WZ.i?'✓':i+1)+'</i><span>'+x.s+'</span></button>').join('');
+  $('#wzChips').innerHTML=vis.map((i,n)=>{const x=SETUP_PAGES[i];return '<button data-i="'+i+'" class="'+(i===WZ.i?'on':'')+(WZ.done[i]?' ok':'')+'" title="'+x.t+'" aria-label="第 '+(n+1)+' 頁 '+x.t+'" aria-current="'+(i===WZ.i?'step':'false')+'"><i>'+(WZ.done[i]&&i!==WZ.i?'✓':n+1)+'</i><span>'+x.s+'</span></button>';}).join('');
   let h='';
   pg.fields.filter(f=>!f.when||f.when()).forEach(f=>{
     const cur=$('#'+f.sel).value;
@@ -4646,15 +4650,15 @@ function renderWizard(){
     h+='<table class="wz-sum">'+rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('')+'</table>';
   }
   $('#wzBody').innerHTML=h;
-  $('#wzPrev').disabled=WZ.i===0;$('#wzNext').disabled=WZ.i===N-1;
-  const left=WZ.done.map((d,i)=>d?null:i+1).filter(Boolean),b=$('#btnStart');
+  $('#wzPrev').disabled=pos===0;$('#wzNext').disabled=pos===N-1;
+  const left=vis.map((i,n)=>WZ.done[i]?null:n+1).filter(Boolean),b=$('#btnStart');
   b.disabled=left.length>0;b.textContent=isSim()?'開始推演':isVideo()?'開始播放':'開始作戰';
   $('#wzHint').textContent=left.length?'還有第 '+left.join('、')+' 頁沒看過，看過每一頁後才能開始。':'設定完成，在任何一頁都可以開始。';
   saveSetup();
 }
 $('#wzChips').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;WZ.i=+b.dataset.i;renderWizard();});
-$('#wzPrev').onclick=()=>{if(WZ.i>0){WZ.i--;renderWizard();}};
-$('#wzNext').onclick=()=>{if(WZ.i<SETUP_PAGES.length-1){WZ.i++;renderWizard();}};
+$('#wzPrev').onclick=()=>wzGo(-1);
+$('#wzNext').onclick=()=>wzGo(1);
 $('#wzBody').addEventListener('click',e=>{
   const b=e.target.closest('.segb[data-sel]');if(!b)return;
   const el=$('#'+b.dataset.sel);el.value=b.dataset.v;el.dispatchEvent(new Event('change'));
