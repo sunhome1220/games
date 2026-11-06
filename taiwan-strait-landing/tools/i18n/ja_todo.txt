@@ -312,3 +312,15 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 停火且守方守住，或雙方陷入僵局。	A ceasefire with the defender holding, or a stalemate.
 匯出報告（圖片）加入結局繪卡與雙方評分	Export report (image) now includes the ending card and both sides' scores
 結局繪卡	Ending card
+六張結局卡改名並重寫說明：祖國統一、灘頭站穩、挾勝議和、海峽天險、浴血守成、烽火暫歇	The six ending cards are renamed with new descriptions: Reunification, A Foothold on the Beach, Peace Talks from Strength, The Strait as Barrier, Held in Blood, Fighting Pauses
+祖國統一	Reunification
+首都陷落，攻方決定性勝利	The capital falls: a decisive attacker victory
+登陸成功，建立戰略據點	The landing succeeds and a strategic foothold is set up
+挾勝議和	Peace Talks from Strength
+帶著戰果走上談判桌	Going to the negotiating table with gains in hand
+海峽天險	The Strait as Barrier
+登陸受挫，攻方主力覆滅	The landing falters and the attacker's main force is destroyed
+浴血守成	Held in Blood
+成功守住，但付出沉重代價	Held successfully, but at a heavy cost
+烽火暫歇	Fighting Pauses
+停火或僵持，戰爭尚未真正結束	A ceasefire or standoff; the war is not truly over
