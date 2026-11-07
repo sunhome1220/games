@@ -1404,12 +1404,18 @@ function updateBeachheads(){ // 灘岸格連續被攻方控制 2 個回合就成
   }
   if(!S.bhNote&&Object.values(S.bh).some(t=>S.turn-t>=1)){S.bhNote=true;log('灘頭堡已建立：接下來要建立並守住補給線——占領港口、保護跨海補給船團，否則島上部隊會因補給不足而損耗。');if(!REC.quiet&&S.ctrl&&S.ctrl.atk==='human')toast('灘頭堡已建立：要守住補給線',4200);}
 }
-function supplyAttrition(){ // 灘頭補給線沒建立（補給容量不足）：島上攻方部隊逐回合損耗，最終被耗盡
-  if(S.turn<3)return;
-  const sp=supply(),d=sp.used-sp.cap;if(d<=0)return;
-  const us=S.units.filter(u=>u.side==='atk'&&!isShip(u)&&onTW(u)&&u.hp>0);let n=Math.min(us.length,Math.max(1,Math.ceil(d/3))),lost=0;
+function supplyAttrition(){ // 補給容量不足：島上攻方部隊逐回合損耗；缺糧越久損耗越重，補給長期斷絕就崩潰（即使占領了台北也一樣）
+  const sp=supply(),d=sp.used-sp.cap;
+  if(S.turn<3||d<=0){S.stats.supDef=0;return;}
+  const sd=S.stats.supDef=(S.stats.supDef||0)+1;
+  const us=S.units.filter(u=>u.side==='atk'&&!isShip(u)&&onTW(u)&&u.hp>0);let n=Math.min(us.length,Math.max(1,Math.ceil(d/3))+Math.floor((sd-1)/2)),lost=0;
   while(n-->0&&us.length){const u=us.splice(Math.floor(Math.random()*us.length),1)[0];damage(u,1,'補給不足');lost++;}
-  if(lost){S.stats.attr=(S.stats.attr||0)+lost;log('攻方灘頭補給線未建立（需求 '+sp.used+'、容量 '+sp.cap+'）：島上部隊損耗 '+lost+' 步');if(!REC.quiet)toast('攻方補給不足，島上部隊損耗');}
+  if(lost){S.stats.attr=(S.stats.attr||0)+lost;log('攻方灘頭補給線未建立（需求 '+sp.used+'、容量 '+sp.cap+'；已連續 '+sd+' 回合）：島上部隊損耗 '+lost+' 步');if(!REC.quiet)toast('攻方補給不足，島上部隊損耗');}
+  if(S.over)return;
+  const noLift=S.pools.plaLift<=0&&!S.units.some(x=>x.side==='atk'&&x.type==='cvy');
+  if((noLift&&sd>=2)||sd>=5){
+    endGame(noLift?'攻方的補給船團與運輸船已全數損失，島上部隊連續 '+sd+' 回合得不到彈藥與油糧，彈盡糧絕而崩潰；即使一度占領台北，也守不住。':'攻方在島上連續 '+sd+' 回合補給不足，部隊在缺彈缺糧中被耗盡，攻勢崩潰。','def','補給斷絕，守方勝利');
+  }
 }
 function checkInstant(){
   syncShips();
@@ -3013,7 +3019,7 @@ async function beginPhase(side){
   if(side==='def')await portEval();if(S.over)return;
   if(side==='atk'){updateBeachheads();await convoyEval();if(S.over)return;}
   if(side==='def')await interdictEval();if(S.over)return;
-  if(side==='atk'){repairPorts();repairAirfields();resolveSupply();convoyTurn();supplyAttrition();}
+  if(side==='atk'){repairPorts();repairAirfields();resolveSupply();convoyTurn();supplyAttrition();if(S.over)return;}
   if(side==='atk'){
     S.weather=S.turn===1&&S.mods.wxT1?WEATHER[S.mods.wxT1]:rollWeather();if(S.weather.id==='bad')S.stats.badWx++;
     airBattle();S.fire=computeFire();doRetaliation();sweepMines();
@@ -3851,7 +3857,7 @@ if(/[?&]debug=1/.test(location.search))window.__ext=()=>{const out=[],real=S;
   ['atk','def'].forEach(side=>truceOptions(side).opts.filter(o=>o.x).forEach(o=>tryit('truce:'+o.id,()=>applyTruce(side,o))));
   tryit('port',()=>applyPort(PORTS[0],portOptions(PORTS[0]).opts.find(o=>o.x)));
   return out;};
-if(/[?&]debug=1/.test(location.search)){window.__truceDef=()=>truceOptions('def').opts.map(o=>o.id);window.__instant=()=>checkInstant();window.__sup=()=>{const r0=supply().cap;Object.keys(MINOR_PORTS).forEach(k=>{S.owner[k]='atk';});const r1=supply().cap;S.turn=Math.max(S.turn,3);S.bh={};['22,4','19,7','18,10'].forEach(k=>{S.owner[k]='atk';S.bh[k]=S.turn-1;});const r2=supply().cap;render();return [r0,r1,r2];};window.__owner=r=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h));hs.slice(0,Math.round(hs.length*r)).forEach(h=>{S.owner[h.k]='atk';});return twControl();};window.__wipe=()=>{S.stats.sailed=true;S.turn=Math.max(S.turn,3);S.units=S.units.filter(u=>!(u.side==='atk'&&!isShip(u)&&(atSea(u)||onTW(u)||hexOf(u).isl==='PH')));checkInstant();};window.__attr=()=>{S.turn=Math.max(S.turn,3);const a=S.units.filter(u=>u.side==='atk'&&!isShip(u));const tw=TER[TAIPEI];a.slice(0,18).forEach(u=>{u.c=tw.c;u.r=tw.r;});const b=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);supplyAttrition();const c=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);return [b,c,supply()];};window.__force3=keep=>{PORTS.concat([TAIPEI]).forEach(k=>{S.owner[k]='atk';delete S.portDown[k];});const tw=TER[TAIPEI];S.units.filter(u=>u.side==='atk'&&!isShip(u)).slice(0,16).forEach(u=>{u.c=tw.c;u.r=tw.r;u.hp=TYPES[u.type].hp;});let left=keep;S.units.filter(u=>u.side==='def'&&onTW(u)).forEach(u=>{if(left>0){u.hp=Math.min(u.hp,left);left-=u.hp;}else S.units=S.units.filter(x=>x!==u);});S.turn=Math.max(S.turn,3);const a=snap();return [a.n,a.as,a.ds];};}
+if(/[?&]debug=1/.test(location.search)){window.__truceDef=()=>truceOptions('def').opts.map(o=>o.id);window.__instant=()=>checkInstant();window.__collapse=n=>{S.turn=Math.max(S.turn,4);S.pools.plaLift=0;S.units=S.units.filter(u=>!(u.side==='atk'&&u.type==='cvy'));S.sup={t:S.turn,total:0};const r=[];for(let i=0;i<n&&!S.over;i++){supplyAttrition();r.push(S.stats.supDef);}return {r,over:S.over,used:supply().used};};window.__sup=()=>{const r0=supply().cap;Object.keys(MINOR_PORTS).forEach(k=>{S.owner[k]='atk';});const r1=supply().cap;S.turn=Math.max(S.turn,3);S.bh={};['22,4','19,7','18,10'].forEach(k=>{S.owner[k]='atk';S.bh[k]=S.turn-1;});const r2=supply().cap;render();return [r0,r1,r2];};window.__owner=r=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h));hs.slice(0,Math.round(hs.length*r)).forEach(h=>{S.owner[h.k]='atk';});return twControl();};window.__wipe=()=>{S.stats.sailed=true;S.turn=Math.max(S.turn,3);S.units=S.units.filter(u=>!(u.side==='atk'&&!isShip(u)&&(atSea(u)||onTW(u)||hexOf(u).isl==='PH')));checkInstant();};window.__attr=()=>{S.turn=Math.max(S.turn,3);const a=S.units.filter(u=>u.side==='atk'&&!isShip(u));const tw=TER[TAIPEI];a.slice(0,18).forEach(u=>{u.c=tw.c;u.r=tw.r;});const b=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);supplyAttrition();const c=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);return [b,c,supply()];};window.__force3=keep=>{PORTS.concat([TAIPEI]).forEach(k=>{S.owner[k]='atk';delete S.portDown[k];});const tw=TER[TAIPEI];S.units.filter(u=>u.side==='atk'&&!isShip(u)).slice(0,16).forEach(u=>{u.c=tw.c;u.r=tw.r;u.hp=TYPES[u.type].hp;});let left=keep;S.units.filter(u=>u.side==='def'&&onTW(u)).forEach(u=>{if(left>0){u.hp=Math.min(u.hp,left);left-=u.hp;}else S.units=S.units.filter(x=>x!==u);});S.turn=Math.max(S.turn,3);const a=snap();return [a.n,a.as,a.ds];};}
 if(/[?&]debug=1/.test(location.search))window.__reach=id=>{const u=S.units.find(x=>x.id===id);if(!u)return null;const h=hexOf(u);return {at:h.k,t:h.t,isl:h.isl,coastal:h.coastal,zones:{pen:ZONES.penghu,sp:SPOT.penghu,mg:SPOT.magong},reach:[...reach(u)].map(([k,v])=>k+':'+v.kind).slice(0,40),moved:u.moved,acted:u.acted};};
 if(/[?&]debug=1/.test(location.search))window.__af=()=>({n:airfields().length,names:airfields().map(h=>h.k+':'+(h.name||'')),share:afShare(),rocAir:S.pools.rocAir,pick:pickAirfield()});
 if(/[?&]debug=1/.test(location.search))window.__score=async(cfg)=>{ // 測試用：依設定跑一場電腦推演，回傳雙方原始分數
@@ -4744,6 +4750,7 @@ const VERSION='2026-11-10.26';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
+ {v:'2026-11-10.28',items:['補給斷絕會導致攻方失敗：島上補給不足時，損耗隨連續缺糧回合數加重；若補給船團與運輸船全數損失、連續 2 回合缺補給，或連續 5 回合缺補給，攻方彈盡糧絕而崩潰，守方獲勝（即使一度占領台北也一樣）','超過預計回合時，可選擇由電腦接手推演到分出勝負']},
  {v:'2026-11-10.26',items:['空戰與轟炸動畫的飛機換成戰機剪影：第四代戰機（三角翼加平尾）、隱形戰機（菱形折線機身，近似殲-20／F-22）、轟炸機（長直翼雙發），帶座艙與尾焰，紅藍分明，取代原本的小箭頭。']},
  {v:'2026-11-10.24',items:['補給系統大改：①補給分成三條管道——補給船團（地圖上的棋子）、空投、就地徵用（靠民心）；②補給船團每回合從大陸港口出航，渡海抵達攻方掌握的港口或灘頭才卸貨，沿途會被反艦飛彈、潛艦、戰機、無人機、快艇攻擊，運輸船數量有限、被擊沉就永久損失；③攻方可建立「灘頭補給站」棋子（卸載能力 +2、庫存 +3），守方可攻擊、攻方要派兵守；④守方新增攔截補給的選擇（打船團、攔運輸機、特種部隊破壞港口設施），攻方新增護航、加大空投、徵用民間物資、加緊運補、建立補給站。另外：航艦被擊沉會有重大消息，美軍航艦沉沒時美國會擲骰決定退出、維持或強力報復；主地圖打擊大陸基地有飛彈飛行動畫；海馬士改為卡車載具連射火箭彈（或單發戰術飛彈）的動畫，選取時提示射程與目標。']},
  {v:'2026-11-10.23',items:['大陸基地與美日基地直接畫在主地圖上：火箭軍旅駐地、空軍機場、海軍基地、集結港（含完整度數字），以及沖繩、先島、佐世保、關島、菲律賓海艦隊，都可以在主地圖上點選打擊；按「打擊大陸」後可打擊的基地會出現虛線圈，點一下就發射，不再切換或捲動到「戰區圖」。']},
