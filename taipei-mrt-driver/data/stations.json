@@ -6,196 +6,224 @@
    "name": "廣慈/奉天宮",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": null
+   "dist_km": null,
+   "en": "Guangci/Fengtian Temple"
   },
   {
    "code": "R02",
    "name": "象山",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.36
+   "dist_km": 1.36,
+   "en": "Xiangshan"
   },
   {
    "code": "R03",
    "name": "台北101/世貿",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.74
+   "dist_km": 0.74,
+   "en": "Taipei 101/World Trade Center"
   },
   {
    "code": "R04",
    "name": "信義安和",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.99
+   "dist_km": 0.99,
+   "en": "Xinyi Anhe"
   },
   {
    "code": "R05",
    "name": "大安",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.99
+   "dist_km": 0.99,
+   "en": "Daan"
   },
   {
    "code": "R06",
    "name": "大安森林公園",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.79
+   "dist_km": 0.79,
+   "en": "Daan Park"
   },
   {
    "code": "R07",
    "name": "東門",
    "structure": "地下",
    "platform": "島式疊層",
-   "dist_km": 0.67
+   "dist_km": 0.67,
+   "en": "Dongmen"
   },
   {
    "code": "R08",
    "name": "中正紀念堂",
    "structure": "地下",
    "platform": "島式疊層",
-   "dist_km": 1.56
+   "dist_km": 1.56,
+   "en": "Chiang Kai-Shek Memorial Hall"
   },
   {
    "code": "R09",
    "name": "台大醫院",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.99
+   "dist_km": 0.99,
+   "en": "NTU Hospital"
   },
   {
    "code": "R10",
    "name": "台北車站",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.63
+   "dist_km": 0.63,
+   "en": "Taipei Main Station"
   },
   {
    "code": "R11",
    "name": "中山",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.66
+   "dist_km": 0.66,
+   "en": "Zhongshan"
   },
   {
    "code": "R12",
    "name": "雙連",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.55
+   "dist_km": 0.55,
+   "en": "Shuanglian"
   },
   {
    "code": "R13",
    "name": "民權西路",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.53
+   "dist_km": 0.53,
+   "en": "Minquan West Road"
   },
   {
    "code": "R14",
    "name": "圓山",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 1.03
+   "dist_km": 1.03,
+   "en": "Yuanshan"
   },
   {
    "code": "R15",
    "name": "劍潭",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 1.52
+   "dist_km": 1.52,
+   "en": "Jiantan"
   },
   {
    "code": "R16",
    "name": "士林",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 1.09
+   "dist_km": 1.09,
+   "en": "Shilin"
   },
   {
    "code": "R17",
    "name": "芝山",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 1.1
+   "dist_km": 1.1,
+   "en": "Zhishan"
   },
   {
    "code": "R18",
    "name": "明德",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 0.88
+   "dist_km": 0.88,
+   "en": "Mingde"
   },
   {
    "code": "R19",
    "name": "石牌",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 0.6
+   "dist_km": 0.6,
+   "en": "Shipai"
   },
   {
    "code": "R20",
    "name": "唭哩岸",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 1.26
+   "dist_km": 1.26,
+   "en": "Qilian"
   },
   {
    "code": "R21",
    "name": "奇岩",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 0.83
+   "dist_km": 0.83,
+   "en": "Qiyan"
   },
   {
    "code": "R22",
    "name": "北投",
    "structure": "高架",
    "platform": "混合式",
-   "dist_km": 0.76
+   "dist_km": 0.76,
+   "en": "Beitou"
   },
   {
    "code": "R23",
    "name": "復興崗",
    "structure": "平面",
    "platform": "側式",
-   "dist_km": 1.61
+   "dist_km": 1.61,
+   "en": "Fuxinggang"
   },
   {
    "code": "R24",
    "name": "忠義",
    "structure": "平面",
    "platform": "側式",
-   "dist_km": 1.45
+   "dist_km": 1.45,
+   "en": "Zhongyi"
   },
   {
    "code": "R25",
    "name": "關渡",
    "structure": "平面",
    "platform": "側式",
-   "dist_km": 0.87
+   "dist_km": 0.87,
+   "en": "Guandu"
   },
   {
    "code": "R26",
    "name": "竹圍",
    "structure": "平面",
    "platform": "側式",
-   "dist_km": 2.14
+   "dist_km": 2.14,
+   "en": "Zhuwei"
   },
   {
    "code": "R27",
    "name": "紅樹林",
    "structure": "平面",
    "platform": "側式",
-   "dist_km": 1.91
+   "dist_km": 1.91,
+   "en": "Hongshulin"
   },
   {
    "code": "R28",
    "name": "淡水",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 2.09
+   "dist_km": 2.09,
+   "en": "Tamsui"
   }
  ],
  "blue": [
@@ -204,161 +232,184 @@
    "name": "頂埔",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": null
+   "dist_km": null,
+   "en": "Dingpu"
   },
   {
    "code": "BL02",
    "name": "永寧",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.95
+   "dist_km": 1.95,
+   "en": "Yongning"
   },
   {
    "code": "BL03",
    "name": "土城",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.11
+   "dist_km": 1.11,
+   "en": "Tucheng"
   },
   {
    "code": "BL04",
    "name": "海山",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.47
+   "dist_km": 1.47,
+   "en": "Haishan"
   },
   {
    "code": "BL05",
    "name": "亞東醫院",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.64
+   "dist_km": 1.64,
+   "en": "Far Eastern Hospital"
   },
   {
    "code": "BL06",
    "name": "府中",
    "structure": "地下",
    "platform": "側式疊層",
-   "dist_km": 1.45
+   "dist_km": 1.45,
+   "en": "Fuzhong"
   },
   {
    "code": "BL07",
    "name": "板橋",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.65
+   "dist_km": 0.65,
+   "en": "Banqiao"
   },
   {
    "code": "BL08",
    "name": "新埔",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.28
+   "dist_km": 1.28,
+   "en": "Xinpu"
   },
   {
    "code": "BL09",
    "name": "江子翠",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.87
+   "dist_km": 0.87,
+   "en": "Jiangzicui"
   },
   {
    "code": "BL10",
    "name": "龍山寺",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 3.08
+   "dist_km": 3.08,
+   "en": "Longshan Temple"
   },
   {
    "code": "BL11",
    "name": "西門",
    "structure": "地下",
    "platform": "島式疊層",
-   "dist_km": 1.31
+   "dist_km": 1.31,
+   "en": "Ximen"
   },
   {
    "code": "BL12",
    "name": "台北車站",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.35
+   "dist_km": 1.35,
+   "en": "Taipei Main Station"
   },
   {
    "code": "BL13",
    "name": "善導寺",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.68
+   "dist_km": 0.68,
+   "en": "Shandao Temple"
   },
   {
    "code": "BL14",
    "name": "忠孝新生",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.94
+   "dist_km": 0.94,
+   "en": "Zhongxiao Xinsheng"
   },
   {
    "code": "BL15",
    "name": "忠孝復興",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.12
+   "dist_km": 1.12,
+   "en": "Zhongxiao Fuxing"
   },
   {
    "code": "BL16",
    "name": "忠孝敦化",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.67
+   "dist_km": 0.67,
+   "en": "Zhongxiao Dunhua"
   },
   {
    "code": "BL17",
    "name": "國父紀念館",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.73
+   "dist_km": 0.73,
+   "en": "Sun Yet-Sen Memorial Hall"
   },
   {
    "code": "BL18",
    "name": "市政府",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.84
+   "dist_km": 0.84,
+   "en": "Taipei City Hall"
   },
   {
    "code": "BL19",
    "name": "永春",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.99
+   "dist_km": 0.99,
+   "en": "Yongchun"
   },
   {
    "code": "BL20",
    "name": "後山埤",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.82
+   "dist_km": 0.82,
+   "en": "Houshanpi"
   },
   {
    "code": "BL21",
    "name": "昆陽",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.36
+   "dist_km": 1.36,
+   "en": "Kunyang"
   },
   {
    "code": "BL22",
    "name": "南港",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.42
+   "dist_km": 1.42,
+   "en": "Nangang"
   },
   {
    "code": "BL23",
    "name": "南港展覽館",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.09
+   "dist_km": 1.09,
+   "en": "Taipei Nangang Exhibition Center"
   }
  ],
  "green": [
@@ -367,133 +418,152 @@
    "name": "新店",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": null
+   "dist_km": null,
+   "en": "Xindian"
   },
   {
    "code": "G02",
    "name": "新店區公所",
    "structure": "地下",
    "platform": "側式",
-   "dist_km": 1.11
+   "dist_km": 1.11,
+   "en": "Xindian District Office"
   },
   {
    "code": "G03",
    "name": "七張",
    "structure": "地下",
    "platform": "側式",
-   "dist_km": 0.9
+   "dist_km": 0.9,
+   "en": "Qizhang"
   },
   {
    "code": "G04",
    "name": "大坪林",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.85
+   "dist_km": 0.85,
+   "en": "Dapinglin"
   },
   {
    "code": "G05",
    "name": "景美",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.15
+   "dist_km": 1.15,
+   "en": "Jingmei"
   },
   {
    "code": "G06",
    "name": "萬隆",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.06
+   "dist_km": 1.06,
+   "en": "Wanlong"
   },
   {
    "code": "G07",
    "name": "公館",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.56
+   "dist_km": 1.56,
+   "en": "Gongguan"
   },
   {
    "code": "G08",
    "name": "台電大樓",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.9
+   "dist_km": 0.9,
+   "en": "Taipower Building"
   },
   {
    "code": "G09",
    "name": "古亭",
    "structure": "地下",
    "platform": "島式疊層",
-   "dist_km": 0.88
+   "dist_km": 0.88,
+   "en": "Guting"
   },
   {
    "code": "G10",
    "name": "中正紀念堂",
    "structure": "地下",
    "platform": "島式疊層",
-   "dist_km": 0.93
+   "dist_km": 0.93,
+   "en": "Chiang Kai-Shek Memorial Hall"
   },
   {
    "code": "G11",
    "name": "小南門",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.76
+   "dist_km": 0.76,
+   "en": "Xiaonanmen"
   },
   {
    "code": "G12",
    "name": "西門",
    "structure": "地下",
    "platform": "島式疊層",
-   "dist_km": 0.82
+   "dist_km": 0.82,
+   "en": "Ximen"
   },
   {
    "code": "G13",
    "name": "北門",
    "structure": "地下",
    "platform": "側式",
-   "dist_km": 0.81
+   "dist_km": 0.81,
+   "en": "Beimen"
   },
   {
    "code": "G14",
    "name": "中山",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.26
+   "dist_km": 1.26,
+   "en": "Zhongshan"
   },
   {
    "code": "G15",
    "name": "松江南京",
    "structure": "地下",
    "platform": "側式",
-   "dist_km": 1.3
+   "dist_km": 1.3,
+   "en": "Songjiang Nanjing"
   },
   {
    "code": "G16",
    "name": "南京復興",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.99
+   "dist_km": 0.99,
+   "en": "Nanjing Fuxing"
   },
   {
    "code": "G17",
    "name": "台北小巨蛋",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 0.94
+   "dist_km": 0.94,
+   "en": "Taipei Arena"
   },
   {
    "code": "G18",
    "name": "南京三民",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.2
+   "dist_km": 1.2,
+   "en": "Nanjing Sanmin"
   },
   {
    "code": "G19",
    "name": "松山",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.35
+   "dist_km": 1.35,
+   "en": "Songshan"
   }
  ],
  "brown": [
@@ -502,168 +572,192 @@
    "name": "動物園",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": null
+   "dist_km": null,
+   "en": "Taipei Zoo"
   },
   {
    "code": "BR02",
    "name": "木柵",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 0.68
+   "dist_km": 0.68,
+   "en": "Muzha"
   },
   {
    "code": "BR03",
    "name": "萬芳社區",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 0.51
+   "dist_km": 0.51,
+   "en": "Wanfang Community"
   },
   {
    "code": "BR04",
    "name": "萬芳醫院",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 1.14
+   "dist_km": 1.14,
+   "en": "Wanfang Hospital"
   },
   {
    "code": "BR05",
    "name": "辛亥",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 0.76
+   "dist_km": 0.76,
+   "en": "Xinhai"
   },
   {
    "code": "BR06",
    "name": "麟光",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 1.6
+   "dist_km": 1.6,
+   "en": "Linguang"
   },
   {
    "code": "BR07",
    "name": "六張犁",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 0.82
+   "dist_km": 0.82,
+   "en": "Liuzhangli"
   },
   {
    "code": "BR08",
    "name": "科技大樓",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 1.14
+   "dist_km": 1.14,
+   "en": "Technology Building"
   },
   {
    "code": "BR09",
    "name": "大安",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 0.75
+   "dist_km": 0.75,
+   "en": "Daan"
   },
   {
    "code": "BR10",
    "name": "忠孝復興",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 0.89
+   "dist_km": 0.89,
+   "en": "Zhongxiao Fuxing"
   },
   {
    "code": "BR11",
    "name": "南京復興",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 1.27
+   "dist_km": 1.27,
+   "en": "Nanjing Fuxing"
   },
   {
    "code": "BR12",
    "name": "中山國中",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 0.93
+   "dist_km": 0.93,
+   "en": "Zhongshan Junior High School"
   },
   {
    "code": "BR13",
    "name": "松山機場",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 1.48
+   "dist_km": 1.48,
+   "en": "Songshan Airport"
   },
   {
    "code": "BR14",
    "name": "大直",
    "structure": "地下",
    "platform": "島式",
-   "dist_km": 2.59
+   "dist_km": 2.59,
+   "en": "Dazhi"
   },
   {
    "code": "BR15",
    "name": "劍南路",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 1.33
+   "dist_km": 1.33,
+   "en": "Jiannan Road"
   },
   {
    "code": "BR16",
    "name": "西湖",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 1.28
+   "dist_km": 1.28,
+   "en": "Xihu"
   },
   {
    "code": "BR17",
    "name": "港墘",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 0.83
+   "dist_km": 0.83,
+   "en": "Gangqian"
   },
   {
    "code": "BR18",
    "name": "文德",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 1.01
+   "dist_km": 1.01,
+   "en": "Wende"
   },
   {
    "code": "BR19",
    "name": "內湖",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 1.13
+   "dist_km": 1.13,
+   "en": "Neihu"
   },
   {
    "code": "BR20",
    "name": "大湖公園",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 0.87
+   "dist_km": 0.87,
+   "en": "Dahu Park"
   },
   {
    "code": "BR21",
    "name": "葫洲",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 1.63
+   "dist_km": 1.63,
+   "en": "Huzhou"
   },
   {
    "code": "BR22",
    "name": "東湖",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 0.85
+   "dist_km": 0.85,
+   "en": "Donghu"
   },
   {
    "code": "BR23",
    "name": "南港軟體園區",
    "structure": "高架",
    "platform": "側式",
-   "dist_km": 1.01
+   "dist_km": 1.01,
+   "en": "Nangang Software Park"
   },
   {
    "code": "BR24",
    "name": "南港展覽館",
    "structure": "高架",
    "platform": "島式",
-   "dist_km": 0.65
+   "dist_km": 0.65,
+   "en": "Taipei Nangang Exhibition Center"
   }
  ]
 }

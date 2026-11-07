@@ -39,6 +39,7 @@ for k, m in META.items():
     rows = D[k]
     st = [r['name'] for r in rows]
     code = [r['code'] for r in rows]
+    en = [r.get('en','') for r in rows]
     d = [round(rows[i + 1]['dist_km'] * 1000) for i in range(len(rows) - 1)]
     env = [ENV[r['structure']] for r in rows]
     pl = [plat(r['platform']) for r in rows]
@@ -46,6 +47,7 @@ for k, m in META.items():
     out.append(f"  {k}:{{name:{json.dumps(m['name'],ensure_ascii=False)},short:{json.dumps(m['short'],ensure_ascii=False)},color:'{m['color']}',cars:{m['cars']},trainLen:{m['trainLen']},")
     out.append(f"    st:{json.dumps(st,ensure_ascii=False)},")
     out.append(f"    code:{json.dumps(code)},")
+    out.append(f"    en:{json.dumps(en,ensure_ascii=False)},")
     out.append(f"    d:{json.dumps(d)},")
     out.append(f"    env:{json.dumps(env)},")
     out.append(f"    plat:{json.dumps(pl)},")

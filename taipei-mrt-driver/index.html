@@ -146,7 +146,16 @@ th{color:#9fb0c8;font-weight:600}
   <label class="ck"><input type="checkbox" id="m-ev" checked> 突發事件（依新聞事件設計，預設開啟）</label>
   <details class="evd"><summary>選擇要出現的事件種類</summary><div id="m-evlist"></div></details>
   <label class="ck"><input type="checkbox" id="m-assist" checked> 新手輔助（顯示建議煞車檔位）</label>
-  <label class="ck"><input type="checkbox" id="m-voice"> 車內廣播（語音報站，需瀏覽器支援）</label>
+  <details class="evd" id="m-bcbox"><summary>🔊 廣播語言與 📳 手機震動</summary>
+    <label class="ck"><input type="checkbox" id="m-bc"> 車內廣播（語音＋字幕）</label>
+    <div id="m-bclang" class="chips" style="margin:4px 0"></div>
+    <div class="lab" style="margin-top:6px">日語／韓語播出範圍</div>
+    <select id="m-bcjk"><option value="part">熱門景點與轉乘站（依報導點名的站名加轉乘站，名單不完整）</option><option value="all">全線（北捷 2024 年擴增計畫）</option></select>
+    <div id="m-bcinfo" class="sub" style="font-size:12px;margin:6px 0"></div>
+    <label class="ck"><input type="checkbox" id="m-hap"> 手機震動（換檔、N 位、緊急煞車、車門、事件各有不同觸感）</label>
+    <div id="m-hapinfo" class="sub" style="font-size:12px;margin:2px 0"></div>
+    <button class="chip sm" id="m-haptest">試震動</button>
+  </details>
 
   <ul class="how">
     <li>🎚 <b>主控器</b>：右側手把，上方 P1～P4 加速、中間 N 惰行、下方 B1～B7 煞車、最下 EB 緊急煞車。鍵盤：<b>↑↓</b> 加減一檔、<b>空白</b> 回 N、<b>X</b> 緊急煞車</li>
@@ -191,15 +200,17 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-07.09"></script>
-<script src="js/events.js?v=2026-11-07.09"></script>
-<script src="js/lines.js?v=2026-11-07.09"></script>
-<script src="js/render3d.js?v=2026-11-07.09"></script>
+<script src="js/models.js?v=2026-11-07.10"></script>
+<script src="js/broadcast.js?v=2026-11-07.10"></script>
+<script src="js/haptics.js?v=2026-11-07.10"></script>
+<script src="js/events.js?v=2026-11-07.10"></script>
+<script src="js/lines.js?v=2026-11-07.10"></script>
+<script src="js/render3d.js?v=2026-11-07.10"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
 const DRIVER='ANDY';
-const VERSION='2026-11-07.09';
+const VERSION='2026-11-07.10';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -289,7 +300,7 @@ const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e
 
 /* ========================= 遊戲狀態 ========================= */
 let G=null;          // 目前這一班
-let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',events:true,evRate:'mid',evOff:[]};
+let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
 const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
 if(!LINES[SET.line])SET.line='red';
 
@@ -391,7 +402,7 @@ function setNotch(n){
   if(!G||G.state==='result')return;
   n=clamp(Math.round(n),-8,4);
   if(n===-8&&G.notch!==-8)G.ebUsed=true;
-  const old=G.notch;G.notch=n;syncLever();sfxNotch(old,n);
+  const old=G.notch;G.notch=n;syncLever();sfxNotch(old,n);if(old!==n)haptic(n>0?'p':n===0?'n':n===-8?'eb':'b',n>0?n:-n);
 }
 function step(dt){
   const g=G,D=g.doors;
@@ -432,6 +443,8 @@ function step(dt){
     if(g.v<=0){g.tripT+=dt;if(g.tripT>2&&g.notch<=0){g.trip=false;toast('ATP 已復歸，可重新發車','#9be39b');}else if(g.tripT>2&&g.tripT<2.1){toast('請將主控器回到 N 位以復歸 ATP','#ffd37a',3);}}
   }
   evTick(g,dt);                                             // 突發事件
+  if(g.trip&&!g._tripH){g._tripH=true;haptic('atp');}else if(!g.trip)g._tripH=false;   // ATP 動作的震動（只在剛動作時一次）
+  hapRumble(g);                                              // 緊急煞車持續時的低頻震動
   // 退行超出月台範圍：ATP 動作
   if(g.rev&&!g.trip&&g.k<g.S.length&&g.pos<g.S[g.k]-25){g.trip=true;g.tripT=0;g.segPen+=10;g.pen.atp++;toast('退行超出月台範圍，ATP 緊急煞車','#ff7b7b',3.2);beep(520,0.6,'square',0.18);}
   // 停車事件
@@ -456,7 +469,7 @@ function step(dt){
   }
   // 起步後更新目前站（離開月台才切到下一個目標，語音報站）
   if(g.v>0.5&&g.nextAnn!==g.k&&g.k<g.S.length&&g.pos>g.S[g.cur]+30){
-    g.nextAnn=g.k;speak('下一站，'+g.stations[g.k].name);
+    g.nextAnn=g.k;announce('next',g.stations[g.k]);
   }
   if(g.state==='ready'&&g.pos>1)g.state='run';
   if(g.endT>0){g.endT-=dt;if(g.endT<=0)showResult();}
@@ -486,7 +499,7 @@ function openDoors(side){
   if(j<0){toast('不在月台範圍，無法開門','#ffd37a');return;}
   const st=g.stations[j];
   if(side!==st.side){g.segPen+=3;g.pen.door++;toast(`車門側錯誤！本站應開${st.side==='L'?'左':'右'}側`,'#ff7b7b',3);beep(300,0.25,'square',0.15);return;}
-  D.state='opening';D.side=side;D.t=0;D.openT=0;
+  D.state='opening';D.side=side;D.t=0;D.openT=0;haptic('doorOpen');
   if(g.rev){g.rev=false;syncRevBtn();}
   chimeOpen();
   g.stopSt=j;
@@ -494,7 +507,7 @@ function openDoors(side){
     const r=scoreArrival(g,j);g.results.push(r);
     g.cur=j;g.k=j+1;g.segPen=0;g.arrTime=null;g.ebUsed=false;g.boardFrac=0;
     toast(`${st.name}　${r.score} 分　（停車 ${r.acc}／準點 ${r.pun}／舒適 ${r.com}）`,r.score>=85?'#9be39b':r.score>=60?'#ffd37a':'#ff9b7b',4);
-    speak('到達，'+st.name);
+    announce('arrive',st);
     if(g.k>=g.S.length){g.endT=7;g.state='finish';}
   }else if(j===g.cur){g.boardFrac=0;}
 }
@@ -505,7 +518,7 @@ function closeDoors(){
     if(D.openT<MIN_OPEN){toast('乘客上下車中，請稍候','#ffd37a');return;}
     if(g.evBlockClose){toast('清客中，旅客換乘完成前請保持開門','#ffd37a');return;}
     if(g.state==='finish'){return;}
-    D.state='closing';D.t=0;chimeClose();
+    D.state='closing';D.t=0;chimeClose();haptic('doorClose');
   }
 }
 function finishRun(){G.endT=G.endT||1.5;G.state='finish';}
@@ -1043,6 +1056,21 @@ function drawStopGauge(g){
   T(txt,x0+w-8,y0+h+6,12,col,'right',800);
   T('◀ 短',x0+8,y0+h+6,10,'#9fb0c8','left',600);
 }
+// 廣播字幕：各語言一行（沒有語音的語言以灰字標示），最後 1 秒淡出
+function drawCaptions(){
+  if(!BCAP||!SET.bcOn)return;
+  const el=performance.now()-BCAP.t0;if(el>BCAP.dur){BCAP=null;return;}
+  const a=Math.min(1,(BCAP.dur-el)/1000,el/200),ls=BCAP.lines,lh=21,w=Math.min(W*0.5,380),h=ls.length*lh+12;
+  const x=land?(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ll'))||6)+114:10,y=dashTop-h-(land?82:64);
+  X.globalAlpha=a;X.fillStyle='rgba(8,12,20,.82)';rr(x,y,w,h,10);X.fill();
+  ls.forEach((l,i)=>{
+    const yy=y+6+i*lh+lh/2;
+    X.fillStyle=l.tag;rr(x+8,yy-8,48,16,8);X.fill();T(l.name,x+32,yy,10,'#10151f','center',800);
+    X.font='600 12.5px sans-serif';let fs=12.5;const maxW=w-70;while(X.measureText(l.text).width>maxW&&fs>8){fs-=0.5;X.font='600 '+fs+'px sans-serif';}
+    T(l.text,x+62,yy,fs,l.voice?'#eef2f8':'#8fa0b8','left',600);
+  });
+  X.globalAlpha=1;
+}
 function drawEvBanner(g){
   const e=g.ev;if(!e||!e.title)return;
   const info=EV_INFO[e.id],w=Math.min(W-24,640),x=W/2-w/2,y=48,h=46;
@@ -1061,6 +1089,7 @@ function drawEvBanner(g){
 function drawHud(g){
   drawStrip(g);
   drawEvBanner(g);
+  drawCaptions();
   drawStopGauge(g);
   // 限速牌
   const r=24,cx=r+14,cy=64+r;
@@ -1262,13 +1291,19 @@ function fillMenu(){
   rsBuild(L);rsUpdate(L);
   fillPresets();
   $('m-info').textContent=infoText();
-  $('m-theme').value=SET.theme;$('m-assist').checked=SET.assist;$('m-voice').checked=SET.voice;
+  $('m-theme').value=SET.theme;$('m-assist').checked=SET.assist;
   // 車型：該路線實際使用的車型（列數為加權）
   const ms=$('m-model');ms.innerHTML='<option value="auto">隨機（依各車型列數加權）</option>';
   FLEETS[SET.line].forEach(([id,n])=>{const o=document.createElement('option');o.value=id;o.textContent=MODELS[id].name+(FLEETS[SET.line].length>1&&n>1?`（${n} 列）`:'');ms.appendChild(o);});
   if(!FLEETS[SET.line].some(x=>x[0]===SET.model))SET.model='auto';ms.value=SET.model;
   const M=SET.model==='auto'?null:MODELS[SET.model];
   $('m-minfo').innerHTML=M?`${M.name}｜${M.maker}（${M.year}）｜營運最高 ${M.vmax} km/h｜起動加速 ${M.accel.toFixed(1)} m/s²、正常減速 ${M.brake.toFixed(1)}、緊急 ${M.eb.toFixed(2)} m/s²${M.kw?`｜編組輸出 ${M.kw} kW`:''}${M.driverless?'<br><b style="color:#ffb347">真實的文湖線是全自動無人駕駛，這裡的手動駕駛是模擬設定</b>':''}`:'每次值勤隨機派車，列數多的車型出現機率較高。';
+  $('m-bc').checked=SET.bcOn;$('m-bcjk').value=SET.bcJk;$('m-hap').checked=SET.haptic;
+  const bl=$('m-bclang');bl.innerHTML='';
+  BC_LANGS.forEach(L=>{const b=document.createElement('button');b.className='chip sm'+(SET.bcLangs.includes(L.id)?' on':'');b.textContent=L.name;
+    b.onclick=()=>{const s=new Set(SET.bcLangs);s.has(L.id)?s.delete(L.id):s.add(L.id);SET.bcLangs=BC_LANGS.map(x=>x.id).filter(x=>s.has(x));fillMenu();};bl.appendChild(b);});
+  bcShowInfo();
+  const hs=hapSupport();$('m-hapinfo').textContent=hs==='vibrate'?'此裝置支援震動（Android 等）。':hs==='ios'?'iPhone 的 Safari 不支援標準震動；這裡用 iOS 17.4 起的替代做法近似（實驗性，效果未在真機驗證）。':'這台裝置／瀏覽器不支援震動。';
   $('m-ev').checked=SET.events;$('m-evrate').value=SET.evRate;$('m-evrate').disabled=!SET.events;
   const el=$('m-evlist');el.innerHTML='';
   EV_ORDER.forEach(id=>{const I=EV_INFO[id],lb=document.createElement('label');
@@ -1321,7 +1356,10 @@ $('b-prev').onclick=()=>{rsSet('b',SET.to-1);rsCommit();};$('b-next').onclick=()
 $('m-swap').onclick=()=>{const f=SET.from;SET.from=SET.to;SET.to=f;rebuild();};
 $('m-theme').onchange=e=>{SET.theme=e.target.value;G=buildRun(SET);};
 $('m-assist').onchange=e=>{SET.assist=e.target.checked;};
-$('m-voice').onchange=e=>{SET.voice=e.target.checked;};
+$('m-bc').onchange=e=>{SET.bcOn=e.target.checked;};
+$('m-bcjk').onchange=e=>{SET.bcJk=e.target.value;};
+$('m-hap').onchange=e=>{SET.haptic=e.target.checked;if(SET.haptic)haptic('n');};
+$('m-haptest').onclick=()=>{SET.haptic=true;$('m-hap').checked=true;haptic('p',2);setTimeout(()=>haptic('n'),350);setTimeout(()=>haptic('b',5),800);setTimeout(()=>haptic('eb'),1300);};
 
 function startRun(){
   audioInit();if(AC&&AC.state==='suspended')AC.resume();
@@ -1332,7 +1370,7 @@ function startRun(){
   resize();
   $('b-snd').textContent=SET.snd?'🔊':'🔇';
   toast(`${G.L.name}　往 ${G.stations[G.stations.length-1].name}　共 ${G.S.length-1} 站`,'#fff',3.5);
-  speak('本列車往，'+G.stations[G.stations.length-1].name);
+  announce('lead',G.stations[G.stations.length-1]);
 }
 $('m-go').onclick=startRun;
 $('r-again').onclick=startRun;

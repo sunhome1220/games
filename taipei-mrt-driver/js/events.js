@@ -57,7 +57,7 @@ function evStart(g,id){
   const E=EV[id];if(!E)return false;
   g.ev={id,t0:g.time,trips0:g.pen.atp,state:'start'};g.evCount++;
   E.start(g,g.ev);
-  evAlarm();
+  evAlarm();haptic(id==='quake'?'quake':'alert');
   return true;
 }
 const kmhOf=g=>g.v*3.6;
