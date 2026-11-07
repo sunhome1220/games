@@ -157,6 +157,8 @@ th{color:#9fb0c8;font-weight:600}
   <div id="m-minfo" class="sub" style="margin:4px 0 0;font-size:12px"></div>
   <label class="ck"><input type="checkbox" id="m-ev" checked> 突發事件（依新聞事件設計，預設開啟）</label>
   <details class="evd"><summary>選擇要出現的事件種類</summary><div id="m-evlist"></div></details>
+  <div class="lab">ATP 超速動作後</div>
+  <select id="m-atp"><option value="relaxed">寬鬆：速度降到限速以下、手把回 N 就復歸（預設）</option><option value="strict">嚴格：必須完全停車、等 2 秒、手把回 N 才復歸</option></select>
   <label class="ck"><input type="checkbox" id="m-assist" checked> 新手輔助（顯示建議煞車檔位）</label>
   <details class="evd" id="m-bcbox"><summary>🔊 廣播語言與 📳 手機震動</summary>
     <label class="ck"><input type="checkbox" id="m-bc"> 車內廣播（語音＋字幕）</label>
@@ -175,7 +177,7 @@ th{color:#9fb0c8;font-weight:600}
     <li>🔊 <b>H</b> 或 📯 鳴笛；聽得到馬達、鐵軌接縫、煞車空氣聲與車門聲，隧道內有殘響</li>
     <li>◀ <b>超過停車線</b>可按 <b>R</b>／「退行」倒回對位（限速 5 km/h、每次扣 5 分、只限月台範圍內；超過太多就是冒進過站）。靠近停車線時畫面下方有<b>對位指示條</b>，會放大顯示差幾公分</li>
     <li>🛑 把車頭停在<b>綠色停車線</b>（月台上的「停」字牌）；誤差越小分數越高。<b>煞車到快停時要慢慢放鬆</b>，否則會頓挫扣舒適分</li>
-    <li>⚠ <b>ATP 超速防護</b>：超過限速會警示，超過太多會自動緊急煞車並扣分。進站前限速會依距離遞減</li>
+    <li>⚠ <b>ATP 超速防護</b>：超過限速會警示，超過太多會自動緊急煞車並扣分。進站前限速會依距離遞減。動作後預設<b>速度降到限速以下、手把回 N 就復歸</b>（選單可改成必須完全停車的嚴格版）</li>
     <li>🧍 月台上有排隊、走動的卡通旅客；停妥開門後會看到他們上車，也有人下車走開（從駕駛座只看得到車頭前方的月台）</li>
     <li>⚠ <b>突發事件</b>（預設開啟，依真實新聞與北捷規定設計）：地震、強風、旅客誤入軌道、車門故障、號誌異常、供電異常、列車故障清客。處置得宜加分，結算時會附建議與依據；可在選單關閉或調整頻率</li>
     <li>⏱ 依時刻表到站：太早或太晚都會扣準點分。月台上的乘客上下車需要時間，別太早關門</li>
@@ -216,13 +218,13 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-07.15"></script>
-<script src="js/broadcast.js?v=2026-11-07.15"></script>
-<script src="js/haptics.js?v=2026-11-07.15"></script>
-<script src="js/share.js?v=2026-11-07.15"></script>
-<script src="js/events.js?v=2026-11-07.15"></script>
-<script src="js/lines.js?v=2026-11-07.15"></script>
-<script src="js/render3d.js?v=2026-11-07.15"></script>
+<script src="js/models.js?v=2026-11-07.16"></script>
+<script src="js/broadcast.js?v=2026-11-07.16"></script>
+<script src="js/haptics.js?v=2026-11-07.16"></script>
+<script src="js/share.js?v=2026-11-07.16"></script>
+<script src="js/events.js?v=2026-11-07.16"></script>
+<script src="js/lines.js?v=2026-11-07.16"></script>
+<script src="js/render3d.js?v=2026-11-07.16"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -230,7 +232,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-07.15';
+const VERSION='2026-11-07.16';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -320,7 +322,7 @@ const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e
 
 /* ========================= 遊戲狀態 ========================= */
 let G=null;          // 目前這一班
-let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
+let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
 const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
 if(!LINES[SET.line])SET.line='red';
 
@@ -457,16 +459,24 @@ function step(dt){
   g.lim=atpLimit(g);
   g.over=kmh>g.lim+0.5&&!g.trip;
   if(!g.trip){
-    if(kmh>g.lim+4){g.overT+=dt;if(g.overT>0.8){g.trip=true;g.tripT=0;g.overT=0;g.segPen+=10;g.pen.atp++;toast('ATP 動作：超速，自動緊急煞車',"#ff7b7b",3.2);beep(520,0.6,'square',0.18);}}
+    // 前方有停止信號（終點速度為零的停車目標）時，不論模式都要停車才復歸，否則會衝過信號
+    if(kmh>g.lim+4){g.overT+=dt;if(g.overT>0.8){g.trip=true;g.tripStrict=!!SET.atpStrict||g.hold!=null;g.tripT=0;g.overT=0;g.segPen+=10;g.pen.atp++;toast('ATP 動作：超速，自動緊急煞車',"#ff7b7b",3.2);beep(520,0.6,'square',0.18);}}
     else g.overT=Math.max(0,g.overT-dt*2);
-  }else{
+  }else if(g.tripStrict){
+    // 嚴格：必須完全停車，再等 2 秒，並把主控器回到 N 位才復歸
     if(g.v<=0){g.tripT+=dt;if(g.tripT>2&&g.notch<=0){g.trip=false;toast('ATP 已復歸，可重新發車','#9be39b');}else if(g.tripT>2&&g.tripT<2.1){toast('請將主控器回到 N 位以復歸 ATP','#ffd37a',3);}}
+  }else{
+    // 寬鬆（預設）：速度降到限速以下（或已停住），且主控器在 N 或煞車位就復歸，不必停到底
+    if(kmh<=g.lim-1||g.v<=0.05){
+      if(g.notch<=0){g.trip=false;g.tripT=0;toast(g.v<=0.05?'ATP 已復歸，可重新發車':'ATP 已復歸：速度已降到限速以下','#9be39b');}
+      else if(g.time-(g._tripHint||0)>3){g._tripHint=g.time;toast('速度已低於限速，請將主控器回到 N 位以復歸 ATP','#ffd37a',3);}
+    }
   }
   evTick(g,dt);                                             // 突發事件
   if(g.trip&&!g._tripH){g._tripH=true;haptic('atp');}else if(!g.trip)g._tripH=false;   // ATP 動作的震動（只在剛動作時一次）
   hapRumble(g);                                              // 緊急煞車持續時的低頻震動
   // 退行超出月台範圍：ATP 動作
-  if(g.rev&&!g.trip&&g.k<g.S.length&&g.pos<g.S[g.k]-25){g.trip=true;g.tripT=0;g.segPen+=10;g.pen.atp++;toast('退行超出月台範圍，ATP 緊急煞車','#ff7b7b',3.2);beep(520,0.6,'square',0.18);}
+  if(g.rev&&!g.trip&&g.k<g.S.length&&g.pos<g.S[g.k]-25){g.trip=true;g.tripStrict=true;g.tripT=0;g.segPen+=10;g.pen.atp++;toast('退行超出月台範圍，ATP 緊急煞車','#ff7b7b',3.2);beep(520,0.6,'square',0.18);}
   // 停車事件
   if(justStopped){
     const j=stationNear(g);
@@ -1321,6 +1331,7 @@ function fillMenu(){
   const M=SET.model==='auto'?null:MODELS[SET.model];
   $('m-minfo').innerHTML=M?`${M.name}｜${M.maker}（${M.year}）｜營運最高 ${M.vmax} km/h｜起動加速 ${M.accel.toFixed(1)} m/s²、正常減速 ${M.brake.toFixed(1)}、緊急 ${M.eb.toFixed(2)} m/s²${M.kw?`｜編組輸出 ${M.kw} kW`:''}${M.driverless?'<br><b style="color:#ffb347">真實的文湖線是全自動無人駕駛，這裡的手動駕駛是模擬設定</b>':''}`:'每次值勤隨機派車，列數多的車型出現機率較高。';
   $('m-driver').value=SET.driver===DRIVER_DEFAULT?DRIVER_DEFAULT:SET.driver;
+  $('m-atp').value=SET.atpStrict?'strict':'relaxed';
   $('m-bc').checked=SET.bcOn;$('m-bcjk').value=SET.bcJk;$('m-hap').checked=SET.haptic;
   const bl=$('m-bclang');bl.innerHTML='';
   BC_LANGS.forEach(L=>{const b=document.createElement('button');b.className='chip sm'+(SET.bcLangs.includes(L.id)?' on':'');b.textContent=L.name;
@@ -1386,6 +1397,7 @@ $('m-assist').onchange=e=>{SET.assist=e.target.checked;};
 $('m-driver').oninput=e=>{SET.driver=e.target.value;store('mrt-set',SET);};
 $('m-driver').onblur=e=>{e.target.value=drvName();SET.driver=e.target.value;store('mrt-set',SET);};   // 離開欄位時整理成實際使用的名稱（空白會回到 ANDY）
 $('m-driver').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}e.stopPropagation();};   // 輸入時不要觸發遊戲快捷鍵
+$('m-atp').onchange=e=>{SET.atpStrict=e.target.value==='strict';store('mrt-set',SET);};
 $('m-bc').onchange=e=>{SET.bcOn=e.target.checked;};
 $('m-bcjk').onchange=e=>{SET.bcJk=e.target.value;};
 $('m-hap').onchange=e=>{SET.haptic=e.target.checked;if(SET.haptic)haptic('n');};
