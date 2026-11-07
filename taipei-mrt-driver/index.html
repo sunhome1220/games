@@ -1,0 +1,1058 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>北捷駕駛模擬</title>
+<link rel="icon" href="data:,">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#0b0e14;color:#eef2f7;font:15px/1.5 "Microsoft JhengHei","PingFang TC","Noto Sans TC","WenQuanYi Zen Hei",sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{position:fixed;left:0;top:0;width:100%;height:100%;display:block}
+#gl{z-index:0}#c{z-index:1;pointer-events:none}
+button{font:inherit;color:inherit;cursor:pointer}
+.hidden{display:none!important}
+
+/* 右上角小按鈕 */
+#top{position:fixed;top:calc(6px + env(safe-area-inset-top));right:8px;display:flex;gap:6px;z-index:6}
+#top button{background:rgba(8,12,20,.78);border:1px solid #39465c;border-radius:8px;padding:5px 9px;font-size:13px;line-height:1.2}
+
+/* 主控器（手把） */
+#lever{position:fixed;right:10px;bottom:68px;width:76px;height:clamp(210px,50vh,330px);background:rgba(10,14,22,.8);border:1px solid #39465c;border-radius:12px;display:flex;flex-direction:column;touch-action:none;z-index:5}
+#lever .n{flex:1;display:flex;align-items:center;justify-content:center;font:700 11px/1 monospace;color:#8fa0b8;border-bottom:1px solid rgba(255,255,255,.06)}
+#lever .n.p{color:#7bd88f}#lever .n.b{color:#f0b46a}#lever .n.e{color:#ff6b6b;background:rgba(255,80,80,.1)}#lever .n.z{color:#fff;background:rgba(255,255,255,.08)}
+#knob{position:absolute;left:3px;right:3px;height:24px;margin-top:-12px;border-radius:8px;background:linear-gradient(#f4f6fa,#a9b2c1);border:2px solid #20283a;box-shadow:0 2px 6px #000a;pointer-events:none}
+#lever .cap{position:absolute;left:0;right:0;top:-18px;text-align:center;font-size:11px;color:#8fa0b8}
+
+/* 底部按鈕列 */
+#bar{position:fixed;left:0;right:0;bottom:0;height:58px;display:flex;gap:8px;padding:6px 10px calc(6px + env(safe-area-inset-bottom));z-index:6;box-sizing:content-box}
+#bar button{flex:1;border-radius:10px;border:1px solid #3d4b63;background:#1d2636;font-weight:700;font-size:14px;touch-action:manipulation}
+#bar button:active{background:#2c3a52}
+#bar #b-eb{background:#6d1f1f;border-color:#b24a4a;flex:.9}
+#bar button.dis{opacity:.4}
+
+/* 手機橫握：手把在右、車門按鈕在左直排，儀表縮成中間窄條，把畫面留給前方景色 */
+@media (orientation:landscape) and (max-height:520px){
+  #lever{bottom:8px;top:50px;height:auto;width:68px;right:8px}
+  #lever .cap{display:none}
+  #bar{left:6px;right:auto;top:auto;bottom:6px;width:108px;height:auto;flex-direction:column;gap:5px;padding:0;box-sizing:border-box}
+  #bar button{flex:none;height:42px;font-size:13px;padding:0}
+  #bar #b-eb{flex:none}
+  #top{top:4px;right:84px}
+}
+#rot{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:8;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:18px;padding:7px 14px;font-weight:700;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.4);display:none}
+
+/* 選單與結算 */
+.screen{position:fixed;inset:0;z-index:10;background:rgba(8,11,18,.94);overflow:auto;padding:16px 14px 30px;touch-action:pan-y}
+.screen>div{max-width:680px;margin:0 auto}
+h1{margin:6px 0 2px;font-size:26px;letter-spacing:1px}
+h1 small{font-size:13px;color:#9fb0c8;font-weight:400;margin-left:8px}
+.sub{color:#9fb0c8;margin:0 0 12px;font-size:14px}
+.lab{margin:12px 0 5px;color:#c9d6ea;font-size:13px;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid #3d4b63;background:#1a2231;border-radius:9px;padding:7px 12px;font-size:14px}
+.chip.on{background:#27406a;border-color:#7fb0ff;color:#fff}
+.chip.ln{border-left:6px solid var(--c)}
+select{width:100%;background:#1a2231;color:#eef2f7;border:1px solid #3d4b63;border-radius:9px;padding:8px;font:inherit}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.ck{display:flex;gap:8px;align-items:center;margin:6px 0;font-size:14px}
+.how{margin:12px 0;padding:10px 14px;background:#141b27;border:1px solid #2c3850;border-radius:10px;font-size:13px;color:#c3cfe2}
+.how li{margin:3px 0}
+.big{display:block;width:100%;margin-top:14px;padding:13px;font-size:18px;font-weight:700;border-radius:12px;border:0;background:#e8c88a;color:#2b2118}
+.btn2{display:block;width:100%;margin-top:8px;padding:10px;font-size:15px;border-radius:12px;border:1px solid #3d4b63;background:#1a2231}
+#ver{color:#6f7f98;font-size:12px;margin-top:10px;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+th,td{padding:5px 6px;border-bottom:1px solid #26324a;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{color:#9fb0c8;font-weight:600}
+.grade{font-size:64px;font-weight:800;line-height:1;margin:6px 0}
+.pill{display:inline-block;background:#1a2231;border:1px solid #3d4b63;border-radius:8px;padding:3px 10px;margin:2px 4px 2px 0;font-size:13px}
+#newver{position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:30;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:20px;padding:8px 16px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<canvas id="c"></canvas>
+<button id="rot">📱 橫放手機操作更順手（點此全螢幕橫向）</button>
+<button id="newver" hidden>🔔 有新版本，點此重新整理</button>
+
+<div id="top" class="hidden">
+  <button id="b-pause">⏸ 暫停</button>
+  <button id="b-fs">⛶</button>
+  <button id="b-snd">🔊</button>
+  <button id="b-quit">← 離開</button>
+</div>
+
+<div id="lever" class="hidden"><div class="cap">主控器</div><div id="knob"></div></div>
+
+<div id="bar" class="hidden">
+  <button id="b-ol">◀ 開左門</button>
+  <button id="b-close">關門</button>
+  <button id="b-or">開右門 ▶</button>
+  <button id="b-eb">緊急煞車</button>
+</div>
+
+<section id="menu" class="screen">
+<div>
+  <h1>🚇 北捷駕駛模擬<small>第一人稱・手動駕駛</small></h1>
+  <p class="sub">加速、惰行、煞車，準點、準確地把列車停在月台停車位置，並維持乘坐舒適。</p>
+
+  <div class="lab">路線</div>
+  <div class="chips" id="m-lines"></div>
+
+  <div class="row2">
+    <div><div class="lab">行駛方向</div><select id="m-dir"></select></div>
+    <div><div class="lab">起始站</div><select id="m-start"></select></div>
+  </div>
+  <div class="row2">
+    <div><div class="lab">本班停靠站數</div><select id="m-n"></select></div>
+    <div><div class="lab">天色</div><select id="m-theme">
+      <option value="auto">自動（隨機）</option><option value="day">白天</option><option value="dusk">黃昏</option><option value="night">夜晚</option></select></div>
+  </div>
+  <label class="ck"><input type="checkbox" id="m-assist" checked> 新手輔助（顯示建議煞車檔位）</label>
+  <label class="ck"><input type="checkbox" id="m-voice"> 車內廣播（語音報站，需瀏覽器支援）</label>
+
+  <ul class="how">
+    <li>🎚 <b>主控器</b>：右側手把，上方 P1～P4 加速、中間 N 惰行、下方 B1～B7 煞車、最下 EB 緊急煞車。鍵盤：<b>↑↓</b> 加減一檔、<b>空白</b> 回 N、<b>X</b> 緊急煞車</li>
+    <li>🚪 <b>停妥後</b>開門：看畫面上的月台在左或右。<b>A／←</b> 開左門、<b>D／→</b> 開右門、<b>F／Enter</b> 關門。門沒關好不能加速</li>
+    <li>🛑 把車頭停在<b>綠色停車線</b>（月台上的「停」字牌）；誤差越小分數越高。<b>煞車到快停時要慢慢放鬆</b>，否則會頓挫扣舒適分</li>
+    <li>⚠ <b>ATP 超速防護</b>：超過限速會警示，超過太多會自動緊急煞車並扣分。進站前限速會依距離遞減</li>
+    <li>⏱ 依時刻表到站：太早或太晚都會扣準點分。月台上的乘客上下車需要時間，別太早關門</li>
+  </ul>
+  <button class="big" id="m-go">開始值勤</button>
+  <div id="m-best" class="sub" style="text-align:center;margin-top:8px"></div>
+  <p class="sub" style="font-size:12px;text-align:center">站序為真實站名；站間距離、限速與沿線場景（高架／地下）皆為遊戲示意，非實際營運資料。</p>
+  <div id="ver"></div>
+</div>
+</section>
+
+<section id="result" class="screen hidden">
+<div>
+  <h1 id="r-title">值勤結束</h1>
+  <div class="grade" id="r-grade"></div>
+  <div id="r-sum"></div>
+  <table id="r-tbl"></table>
+  <button class="big" id="r-again">再開一班</button>
+  <button class="btn2" id="r-menu">回到選單</button>
+</div>
+</section>
+
+<script src="js/render3d.js?v=2026-11-07.02"></script>
+<script>
+'use strict';
+// 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
+const VERSION='2026-11-07.02';
+
+/* ========================= 小工具 ========================= */
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+function hash(n){n=Math.imul((n^61)^(n>>>16),9);n^=n>>>4;n=Math.imul(n,0x27d4eb2d);n^=n>>>15;return (n>>>0)/4294967296;}
+function hstr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
+function mixc(a,b,t){return `rgb(${(a[0]+(b[0]-a[0])*t)|0},${(a[1]+(b[1]-a[1])*t)|0},${(a[2]+(b[2]-a[2])*t)|0})`;}
+const $=id=>document.getElementById(id);
+const fmtT=s=>{const a=Math.abs(Math.round(s));return (s<0?'-':'')+String(Math.floor(a/60)).padStart(2,'0')+':'+String(a%60).padStart(2,'0');};
+function store(k,v){try{if(v===undefined){return JSON.parse(localStorage.getItem(k));}localStorage.setItem(k,JSON.stringify(v));}catch(e){return null;}}
+
+/* ========================= 路線資料 ========================= */
+// st：站名；d：到下一站的概略距離（公尺）；env(i)：第 i 站的場景（elev 高架／tunnel 地下，示意）
+const LINES={
+  red:{name:'淡水信義線',short:'紅線',color:'#e3002c',cars:6,trainLen:140,
+    st:['淡水','紅樹林','竹圍','關渡','忠義','復興崗','北投','奇岩','唭哩岸','石牌','明德','芝山','士林','劍潭','圓山','民權西路','雙連','中山','台北車站','台大醫院','中正紀念堂','東門','大安森林公園','大安','信義安和','台北101/世貿','象山'],
+    d:[2100,1500,3300,1400,1000,1300,1700,900,1000,1100,1000,1000,1300,1200,1100,800,700,1000,700,1000,800,1000,800,1100,1000,1000],
+    env:i=>(i<=13||i===26)?'elev':'tunnel'},
+  blue:{name:'板南線',short:'藍線',color:'#0070bd',cars:6,trainLen:140,
+    st:['頂埔','永寧','土城','海山','亞東醫院','府中','板橋','新埔','江子翠','龍山寺','西門','台北車站','善導寺','忠孝新生','忠孝復興','忠孝敦化','國父紀念館','市政府','永春','後山埤','昆陽','南港','南港展覽館'],
+    d:[1500,1400,1700,1500,1400,1000,1200,1000,2300,1000,1000,1000,800,800,900,800,1000,1000,900,1300,1400,1200],
+    env:i=>'tunnel'},
+  green:{name:'松山新店線',short:'綠線',color:'#008659',cars:6,trainLen:140,
+    st:['新店','新店區公所','七張','大坪林','景美','萬隆','公館','台電大樓','古亭','中正紀念堂','小南門','西門','北門','中山','松江南京','南京復興','台北小巨蛋','南京三民','松山'],
+    d:[1200,1000,1500,1700,1200,1500,1100,900,800,700,700,800,1000,800,700,900,700,1000],
+    env:i=>i<=3?'elev':'tunnel'},
+  brown:{name:'文湖線',short:'棕線',color:'#c48c31',cars:4,trainLen:76,
+    st:['動物園','木柵','萬芳社區','萬芳醫院','辛亥','麟光','六張犁','科技大樓','大安','忠孝復興','南京復興','中山國中','松山機場','大直','劍南路','西湖','港墘','文德','內湖','大湖公園','葫洲','東湖','南港軟體園區','南港展覽館'],
+    d:[1200,1100,800,800,900,1000,1100,1000,1100,1000,900,800,2000,1300,1000,1100,1400,1000,900,1100,1100,1300,1200],
+    env:i=>(i===13||i===14)?'tunnel':'elev'}
+};
+const LINE_KEYS=['red','blue','green','brown'];
+
+/* ========================= 列車與物理參數 ========================= */
+const ACC_P=[0.30,0.55,0.80,1.00];                 // P1～P4 最大加速度 m/s²
+const DEC_B=[0.25,0.45,0.65,0.85,1.05,1.20,1.35];  // B1～B7 減速度 m/s²
+const DEC_EB=1.5;
+const VMAX=80;                                      // 路線最高速 km/h
+const ATP_DEC=1.2;                                  // ATP 停車曲線採用的減速度
+const ZONE_DEC=1.0;                                 // 限速區間前的減速曲線
+const MIN_OPEN=6;                                   // 開門後最少停留秒數
+const DWELL=22;                                     // 時刻表停站秒數
+const TOL_OPEN_SHORT=10, TOL_OPEN_LONG=30;          // 可開門的停車誤差範圍（短停 10 m／過站 30 m）
+
+/* ========================= 畫面尺寸與投影 ========================= */
+const cv=$('c'),X=cv.getContext('2d');
+const NEAR=2.5,MAXZ=420,CAM=2.4,BAR=58;
+let W=0,H=0,DPR=1,HY=0,dashTop=0,dashH=0,F=700,land=false,barH=BAR,dashX0=0,dashX1=0,sceneH=0;
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;
+  cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);X.setTransform(DPR,0,0,DPR,0,0);
+  land=W>H&&H<=520;
+  barH=land?0:BAR;
+  if(land){dashH=clamp(H*0.34,108,150);dashX0=122;dashX1=W-84;}
+  else{dashH=clamp(H*0.36,230,330);dashX0=0;dashX1=W;}
+  dashTop=H-dashH;HY=dashTop*0.46;F=Math.max(W*0.72,dashTop*0.9);
+  sceneH=land?H:dashTop;   // 橫握時 3D 畫面鋪滿整個螢幕，儀表只蓋在中間下緣
+  const gl=$('gl');gl.style.height=sceneH+'px';
+  if(typeof R3!=='undefined'&&R3.ok)R3.resize(W,sceneH,DPR);
+  const rot=$('rot');if(rot)rot.style.display=(!land&&W<H&&('ontouchstart' in window)&&!rotDismissed&&document.getElementById('top')&&!$('top').classList.contains('hidden'))?'block':'none';
+}
+let rotDismissed=false;
+addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,200));
+
+// 彎道：曲率以兩個正弦疊加，lat(z) 為前方 z 公尺處相對於車頭切線的橫向偏移
+const CVS=[{A:0.0009,L:900,P:0.3},{A:0.0005,L:330,P:1.7}];
+let cvT=[],camX=0,camY=0,gPos=0;
+function setCurve(s0){cvT=CVS.map(c=>{const th=s0/c.L+c.P;return {c,th,cos:Math.cos(th),sin:Math.sin(th)};});}
+function lat(z){let x=0;for(const t of cvT){const c=t.c;x+=c.A*(c.L*z*t.cos+c.L*c.L*(t.sin-Math.sin(t.th+z/c.L)));}return x;}
+function pj(x,y,z){const s=F/z;return [W/2+(x+lat(z)-camX)*s,HY+(CAM-y+camY)*s];}
+// 面向鏡頭的矩形（在深度 z）
+function fr(x0,y0,x1,y1,z,fill){if(z<NEAR)return;const a=pj(x0,y1,z),b=pj(x1,y0,z);X.fillStyle=fill;X.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);}
+// 沿軌道方向擠出的面：邊 A(x0,y0)、邊 B(x1,y1)，深度 za～zb
+function surf(x0,y0,x1,y1,za,zb,fill){
+  if(za<NEAR)za=NEAR;if(zb<=za)return;
+  const n=Math.max(1,Math.ceil((zb-za)/16));
+  X.beginPath();
+  for(let i=0;i<=n;i++){const p=pj(x0,y0,za+(zb-za)*i/n);if(i)X.lineTo(p[0],p[1]);else X.moveTo(p[0],p[1]);}
+  for(let i=n;i>=0;i--){const p=pj(x1,y1,za+(zb-za)*i/n);X.lineTo(p[0],p[1]);}
+  X.closePath();X.fillStyle=fill;X.fill();
+}
+function rr(x,y,w,h,r){X.beginPath();X.moveTo(x+r,y);X.arcTo(x+w,y,x+w,y+h,r);X.arcTo(x+w,y+h,x,y+h,r);X.arcTo(x,y+h,x,y,r);X.arcTo(x,y,x+w,y,r);X.closePath();}
+function T(s,x,y,size,color,align,weight){X.font=`${weight||700} ${size}px "Microsoft JhengHei","PingFang TC","Noto Sans TC","WenQuanYi Zen Hei",sans-serif`;X.fillStyle=color||'#fff';X.textAlign=align||'left';X.textBaseline='middle';X.fillText(s,x,y);}
+
+/* ========================= 場景配色 ========================= */
+const THEMES={
+  day:{sky0:[92,166,230],sky1:[205,232,255],gnd0:[126,138,120],gnd1:[86,96,82],bld:[176,186,198],lit:0,mtn:[132,160,182],fog:[205,232,255]},
+  dusk:{sky0:[48,70,128],sky1:[244,168,92],gnd0:[86,80,92],gnd1:[44,42,54],bld:[110,102,126],lit:0.35,mtn:[96,86,116],fog:[200,140,100]},
+  night:{sky0:[5,9,22],sky1:[28,40,70],gnd0:[22,26,38],gnd1:[10,12,18],bld:[34,42,60],lit:0.7,mtn:[18,24,40],fog:[28,40,70]}
+};
+const TUN_FOG=[4,5,8];
+const C={ballast:[92,88,82],rail:[176,182,190],sleeper:[60,50,44],deck:[120,122,126],para:[150,152,156],
+  wallA:[96,100,108],wallB:[80,84,92],ceil:[66,70,78],platA:[196,198,202],platB:[178,180,186],edge:[112,114,120],yellow:[245,200,40],
+  back:[206,210,214],psd:[150,205,225]};
+const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e','#e67e22'];
+
+/* ========================= 遊戲狀態 ========================= */
+let G=null;          // 目前這一班
+let SET={line:'red',dir:0,start:0,n:6,theme:'auto',assist:true,voice:false,snd:true};
+const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
+if(!LINES[SET.line])SET.line='red';
+
+function buildRun(opt){
+  const L=LINES[opt.line];
+  let names=L.st.slice(),dist=L.d.slice(),envs=L.st.map((_,i)=>L.env(i));
+  if(opt.dir){names.reverse();dist.reverse();envs.reverse();}
+  const start=clamp(opt.start,0,names.length-2);
+  const last=Math.min(names.length-1,start+opt.n);
+  const stations=[];let pos=0;
+  for(let i=start;i<=last;i++){
+    stations.push({name:names[i],pos,idx:i,env:envs[i],side:(hstr(names[i]+opt.dir)&1)?'L':'R'});
+    if(i<last)pos+=dist[i];
+  }
+  const S=stations.map(s=>s.pos);
+  // 場景分段（以站間中點為界，同一站的月台都在同一種場景）
+  const sec=stations.map((s,i)=>({a:i===0?-1e9:(S[i-1]+S[i])/2,b:i===stations.length-1?1e9:(S[i]+S[i+1])/2,env:s.env}));
+  // 限速區間
+  const zones=[];
+  for(let i=0;i<stations.length-1;i++){
+    const d=S[i+1]-S[i],h=hash(hstr(stations[i].name)+i);
+    if(d>=1100&&h>0.35){zones.push({s0:S[i]+d*0.38,s1:S[i]+d*0.62,lim:60});}
+    if(d>=1900){zones.push({s0:S[i]+d*0.14,s1:S[i]+d*0.26,lim:45});}
+  }
+  // 時刻表
+  const tArr=[0],tDep=[20];
+  for(let i=1;i<stations.length;i++){
+    const d=S[i]-S[i-1],vc=20;
+    let rest=d,tz=0;
+    for(const z of zones){if(z.s0>=S[i-1]&&z.s1<=S[i]){const len=z.s1-z.s0;tz+=len/Math.min(vc,z.lim/3.6)+6;rest-=len;}} // 限速區間：低速行駛＋進出區間的加減速
+    const run=(rest/vc+tz+vc/(2*0.8)+vc/(2*0.9))*1.06+6; // +6 秒：進站最後的慢行對位
+    tArr[i]=tDep[i-1]+run;tDep[i]=tArr[i]+DWELL;
+  }
+  const th=opt.theme==='auto'?['day','dusk','night'][Math.floor(Math.random()*3)]:opt.theme;
+  return {L,opt,stations,S,sec,zones,tArr,tDep,theme:th,
+    state:'ready',pos:0,v:0,aAct:0,notch:0,time:0,k:1,cur:0,
+    doors:{state:'closed',side:null,t:0,frac:0,openT:0},stopSt:null,
+    trip:false,tripT:0,overT:0,lim:VMAX,over:false,interlock:false,
+    results:[],segPen:0,pen:{atp:0,door:0,miss:0},ebUsed:false,
+    lastStop:null,arrTime:null,boardFrac:0,toast:null,endT:0,warnAt:0,
+    nextAnn:-1};
+}
+
+function toast(text,color,dur){G.toast={text,color:color||'#fff',t:0,dur:dur||2.6};}
+
+/* ========================= 物理與規則 ========================= */
+function atpLimit(g){
+  let lim=VMAX;
+  for(const z of g.zones){
+    if(g.pos>z.s1)continue;
+    if(g.pos>=z.s0)lim=Math.min(lim,z.lim);
+    else{const vz=z.lim/3.6;lim=Math.min(lim,Math.sqrt(vz*vz+2*ZONE_DEC*(z.s0-g.pos))*3.6+3);} // 牌子前以平緩曲線遞減，到牌子時剛好降到限速
+  }
+  if(g.k<g.S.length){
+    const d=g.S[g.k]-g.pos;
+    const dd=Math.max(d,0);
+    lim=Math.min(lim,Math.sqrt(2*ATP_DEC*dd)*3.6+8);
+  }
+  return lim;
+}
+function stationNear(g){ // 目前車頭所在的月台（誤差在可開門範圍內）
+  for(let j=0;j<g.stations.length;j++){const e=g.S[j]-g.pos;if(e<=TOL_OPEN_SHORT&&e>=-TOL_OPEN_LONG)return j;}
+  return -1;
+}
+function setNotch(n){
+  if(!G||G.state==='result')return;
+  n=clamp(Math.round(n),-8,4);
+  if(n===-8&&G.notch!==-8)G.ebUsed=true;
+  G.notch=n;syncLever();
+}
+function step(dt){
+  const g=G,D=g.doors;
+  g.time+=dt;
+  if(g.toast){g.toast.t+=dt;if(g.toast.t>g.toast.dur)g.toast=null;}
+  // 車門動作
+  if(D.state==='opening'){D.t+=dt;D.frac=Math.min(1,D.t/2.2);if(D.t>=2.2){D.state='open';D.openT=0;}}
+  else if(D.state==='open'){D.openT+=dt;g.boardFrac=Math.min(1,D.openT/8);}
+  else if(D.state==='closing'){D.t+=dt;D.frac=Math.max(0,1-D.t/2.6);if(D.t>=2.6){D.state='closed';D.frac=0;D.side=null;}}
+  // 有效檔位
+  let n=g.notch;
+  if(g.trip)n=-8;
+  g.interlock=false;
+  if(D.state!=='closed'&&n>0){n=0;g.interlock=true;}
+  // 目標加速度
+  const kmh=g.v*3.6;
+  let cmd=0,jl=1.1;
+  if(n>0){cmd=ACC_P[n-1]*(g.v<11?1:11/g.v);jl=1.1;}
+  else if(n>-8&&n<0){cmd=-DEC_B[-n-1];jl=1.6;}
+  else if(n===-8){cmd=-DEC_EB;jl=4;}
+  const da=cmd-g.aAct;g.aAct+=clamp(da,-jl*dt,jl*dt);
+  const resist=g.v>0?(0.02+0.00008*g.v*g.v):0;
+  let vN=g.v+(g.aAct-resist)*dt;
+  let justStopped=false,stopA=0;
+  if(vN<=0){
+    if(g.v>0){justStopped=true;stopA=Math.max(0,-g.aAct);}
+    vN=0;if(g.aAct<0)g.aAct=0;
+  }
+  g.pos+=(g.v+vN)/2*dt;g.v=vN;
+  // ATP
+  g.lim=atpLimit(g);
+  g.over=kmh>g.lim+0.5&&!g.trip;
+  if(!g.trip){
+    if(kmh>g.lim+4){g.overT+=dt;if(g.overT>0.8){g.trip=true;g.tripT=0;g.overT=0;g.segPen+=10;g.pen.atp++;toast('ATP 動作：超速，自動緊急煞車',"#ff7b7b",3.2);beep(520,0.6,'square',0.18);}}
+    else g.overT=Math.max(0,g.overT-dt*2);
+  }else{
+    if(g.v<=0){g.tripT+=dt;if(g.tripT>2&&g.notch<=0){g.trip=false;toast('ATP 已復歸，可重新發車','#9be39b');}else if(g.tripT>2&&g.tripT<2.1){toast('請將主控器回到 N 位以復歸 ATP','#ffd37a',3);}}
+  }
+  // 停車事件
+  if(justStopped){
+    const j=stationNear(g);
+    g.lastStop={a:stopA,j,err:j>=0?g.S[j]-g.pos:null};
+    if(j===g.k&&g.arrTime===null){g.arrTime=g.time;}
+    if(j===g.k){
+      const e=g.S[j]-g.pos;
+      const txt=Math.abs(e)<0.05?'誤差 0.0 m':`誤差 ${e>0?'短':'過'} ${Math.abs(e).toFixed(1)} m`;
+      toast(`停車完成　${txt}`,Math.abs(e)<=1?'#9be39b':Math.abs(e)<=4?'#ffd37a':'#ff9b7b',3);
+      if(g.doors.state==='closed'&&Math.abs(e)<=TOL_OPEN_SHORT+1)playChime();
+    }
+  }
+  // 冒進過站
+  if(g.k<g.S.length&&g.pos>g.S[g.k]+TOL_OPEN_LONG&&g.doors.state==='closed'){
+    const st=g.stations[g.k];
+    g.results.push({name:st.name,err:null,dt:null,acc:0,pun:0,com:0,score:0,miss:true});
+    g.pen.miss++;toast(`冒進過站：${st.name}（未停靠）`,'#ff7b7b',3.5);
+    g.k++;g.arrTime=null;g.segPen=0;g.boardFrac=0;
+    if(g.k>=g.S.length){finishRun();}
+  }
+  // 起步後更新目前站（離開月台才切到下一個目標，語音報站）
+  if(g.v>0.5&&g.nextAnn!==g.k&&g.k<g.S.length&&g.pos>g.S[g.cur]+30){
+    g.nextAnn=g.k;speak('下一站，'+g.stations[g.k].name);
+  }
+  if(g.state==='ready'&&g.pos>1)g.state='run';
+  if(g.endT>0){g.endT-=dt;if(g.endT<=0)showResult();}
+}
+function scoreArrival(g,j){
+  const e=g.S[j]-g.pos,a=Math.abs(e);
+  let acc=a<=0.5?100:a<=1?95:a<=2?85:a<=4?65:a<=8?40:15;
+  if(e<0&&a>2)acc-=10;acc=Math.max(0,acc);
+  const arr=g.arrTime===null?g.time:g.arrTime;
+  const dt=arr-g.tArr[j];const ad=Math.abs(dt);
+  const pun=ad<=10?100:ad<=20?90:ad<=40?70:ad<=80?45:20;
+  const sa=g.lastStop?g.lastStop.a:0;
+  let com=100-Math.min(70,sa/0.8*70);
+  if(g.ebUsed)com-=15;
+  com=Math.max(0,Math.round(com));
+  const score=Math.max(0,Math.round(acc*0.5+pun*0.25+com*0.25-g.segPen));
+  return {name:g.stations[j].name,err:e,dt,acc,pun,com,score,miss:false};
+}
+
+/* ========================= 車門 ========================= */
+function openDoors(side){
+  const g=G;if(!g||g.state==='result')return;
+  const D=g.doors;
+  if(D.state!=='closed')return;
+  if(g.v>0.05){toast('列車尚未停妥','#ffd37a');return;}
+  const j=stationNear(g);
+  if(j<0){toast('不在月台範圍，無法開門','#ffd37a');return;}
+  const st=g.stations[j];
+  if(side!==st.side){g.segPen+=3;g.pen.door++;toast(`車門側錯誤！本站應開${st.side==='L'?'左':'右'}側`,'#ff7b7b',3);beep(300,0.25,'square',0.15);return;}
+  D.state='opening';D.side=side;D.t=0;D.openT=0;
+  chimeOpen();
+  g.stopSt=j;
+  if(j===g.k){ // 本站到站計分
+    const r=scoreArrival(g,j);g.results.push(r);
+    g.cur=j;g.k=j+1;g.segPen=0;g.arrTime=null;g.ebUsed=false;g.boardFrac=0;
+    toast(`${st.name}　${r.score} 分　（停車 ${r.acc}／準點 ${r.pun}／舒適 ${r.com}）`,r.score>=85?'#9be39b':r.score>=60?'#ffd37a':'#ff9b7b',4);
+    speak('到達，'+st.name);
+    if(g.k>=g.S.length){g.endT=7;g.state='finish';}
+  }else if(j===g.cur){g.boardFrac=0;}
+}
+function closeDoors(){
+  const g=G;if(!g||g.state==='result')return;
+  const D=g.doors;
+  if(D.state==='open'){
+    if(D.openT<MIN_OPEN){toast('乘客上下車中，請稍候','#ffd37a');return;}
+    if(g.state==='finish'){return;}
+    D.state='closing';D.t=0;chimeClose();
+  }
+}
+function finishRun(){G.endT=G.endT||1.5;G.state='finish';}
+
+/* ========================= 音效 ========================= */
+let AC=null,AN=null;
+function audioInit(){
+  if(AC)return;
+  try{
+    AC=new (window.AudioContext||window.webkitAudioContext)();
+    const master=AC.createGain();master.gain.value=0.7;master.connect(AC.destination);
+    const mo=AC.createOscillator();mo.type='sawtooth';mo.frequency.value=60;
+    const mf=AC.createBiquadFilter();mf.type='lowpass';mf.frequency.value=500;
+    const mg=AC.createGain();mg.gain.value=0;mo.connect(mf);mf.connect(mg);mg.connect(master);mo.start();
+    const nb=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate),d=nb.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+    const ns=AC.createBufferSource();ns.buffer=nb;ns.loop=true;
+    const nf=AC.createBiquadFilter();nf.type='bandpass';nf.frequency.value=260;nf.Q.value=0.8;
+    const ng=AC.createGain();ng.gain.value=0;ns.connect(nf);nf.connect(ng);ng.connect(master);ns.start();
+    const so=AC.createOscillator();so.type='sine';so.frequency.value=1500;
+    const sg=AC.createGain();sg.gain.value=0;so.connect(sg);sg.connect(master);so.start();
+    const bo=AC.createOscillator();bo.type='square';bo.frequency.value=700;
+    const bg=AC.createGain();bg.gain.value=0;bo.connect(bg);bg.connect(master);bo.start();
+    AN={master,mo,mg,mf,nf,ng,so,sg,bo,bg};
+  }catch(e){AC=null;AN=null;}
+}
+function beep(freq,dur,type,vol,delay){
+  if(!AC||!SET.snd)return;
+  try{
+    const t=AC.currentTime+(delay||0);
+    const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g);g.connect(AN.master);o.start(t);o.stop(t+dur+0.05);
+  }catch(e){}
+}
+function playChime(){beep(988,0.5,'sine',0.18,0);beep(784,0.7,'sine',0.18,0.28);}
+function chimeOpen(){beep(1175,0.35,'sine',0.16,0);beep(880,0.5,'sine',0.16,0.22);}
+function chimeClose(){for(let i=0;i<5;i++)beep(1318,0.16,'square',0.09,i*0.42);}
+function audioUpdate(){
+  if(!AC||!AN||!G)return;
+  const t=AC.currentTime,on=SET.snd&&(G.state==='run'||G.state==='ready'||G.state==='finish')&&!paused;
+  const v=G.v,pw=Math.max(0,G.aAct),br=Math.max(0,-G.aAct);
+  AN.mo.frequency.setTargetAtTime(48+v*6,t,0.12);
+  AN.mf.frequency.setTargetAtTime(280+v*30,t,0.15);
+  AN.mg.gain.setTargetAtTime(on?(v>0.1?(0.012+pw*0.06+br*0.02):0):0,t,0.12);
+  AN.nf.frequency.setTargetAtTime(160+v*22,t,0.2);
+  AN.ng.gain.setTargetAtTime(on?Math.min(0.22,v*0.011):0,t,0.2);
+  AN.sg.gain.setTargetAtTime(on&&br>0.3&&v<5&&v>0.4?0.012*Math.min(1,br):0,t,0.08);
+  AN.so.frequency.setTargetAtTime(900+v*120,t,0.1);
+  const buzz=on&&(G.over||G.trip);
+  AN.bg.gain.setTargetAtTime(buzz&&(Math.floor(G.time*4)&1)?0.05:0,t,0.01);
+}
+function speak(text){
+  if(!SET.voice||!('speechSynthesis' in window))return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';u.rate=0.95;speechSynthesis.speak(u);}catch(e){}
+}
+
+/* ========================= 場景繪製 ========================= */
+function fogC(g,env){return env==='tunnel'?TUN_FOG:THEMES[g.theme].fog;}
+function col(base,z,fog,mz){return mixc(base,fog,clamp(Math.pow(z/(mz||MAXZ),0.85),0,1));}
+
+function drawWorld(g){
+  const th=THEMES[g.theme];
+  let gr=X.createLinearGradient(0,0,0,HY);gr.addColorStop(0,rgb(th.sky0));gr.addColorStop(1,rgb(th.sky1));
+  X.fillStyle=gr;X.fillRect(0,0,W,HY+1);
+  // 遠山
+  X.fillStyle=rgb(th.mtn);X.beginPath();X.moveTo(0,HY);
+  for(let x=0;x<=W+12;x+=12){const u=x/W;X.lineTo(x,HY-(14+22*Math.sin(u*5+1.2)+14*Math.sin(u*13+0.4)+8*Math.sin(u*29))*(H/600));}
+  X.lineTo(W,HY);X.closePath();X.fill();
+  gr=X.createLinearGradient(0,HY,0,dashTop);gr.addColorStop(0,rgb(th.gnd0));gr.addColorStop(1,rgb(th.gnd1));
+  X.fillStyle=gr;X.fillRect(0,HY,W,dashTop-HY);
+  // 由遠到近畫各分段
+  for(let i=g.sec.length-1;i>=0;i--){
+    const s=g.sec[i];
+    const za=Math.max(s.a-g.pos,NEAR),zb=Math.min(s.b-g.pos,MAXZ);
+    if(zb<=za)continue;
+    if(s.env==='elev')drawElev(g,za,zb);else drawTunnel(g,za,zb);
+    drawTrack(g,za,zb,s.env);
+    for(const st of g.stations)drawStation(g,st,s,za,zb);
+    drawSigns(g,za,zb);
+    if(s.env==='tunnel'&&s.b-g.pos>MAXZ){ // 隧道遠端以黑色封口
+      const a=pj(-2.4,0,zb),b=pj(2.4,4.2,zb);X.fillStyle='#030406';X.fillRect(a[0],b[1],b[0]-a[0],a[1]-b[1]);
+    }
+  }
+}
+
+function drawElev(g,za,zb){
+  const th=THEMES[g.theme],fog=th.fog;
+  // 建築
+  const CELL=22,cA=Math.floor((g.pos+za)/CELL),cB=Math.ceil((g.pos+zb)/CELL);
+  const seed=hstr(g.L.short);
+  for(let c=cB;c>=cA;c--){
+    for(let side=-1;side<=1;side+=2){
+      const h0=hash(c*2+(side>0?1:0)+seed);
+      if(h0<0.32)continue;
+      const wid=10+hash(c*5+seed+side)*26,dep=14+hash(c*7+seed+side*3)*30,off=11+hash(c*3+seed+side*9)*42;
+      const hgt=14+Math.pow(hash(c*11+seed+side*5),1.6)*80;
+      const zf=c*CELL-g.pos,zr=zf+dep;
+      if(zr<NEAR)continue;
+      const bY=-12,tY=bY+hgt;
+      const tone=0.85+hash(c*13+seed)*0.3;
+      const base=[th.bld[0]*tone,th.bld[1]*tone,th.bld[2]*tone];
+      const xi=side*off,xo=side*(off+wid);
+      // 內側面
+      const mid=Math.max(zf,NEAR);
+      surf(xi,bY,xi,tY,mid,zr,col([base[0]*0.82,base[1]*0.82,base[2]*0.86],(mid+zr)/2,fog));
+      // 正面
+      if(zf>=NEAR){
+        fr(Math.min(xi,xo),bY,Math.max(xi,xo),tY,zf,col(base,zf,fog));
+        if(th.lit>0&&zf<190){
+          const fl=Math.floor(hgt/4),cols=Math.max(2,Math.floor(wid/3.5));
+          for(let r=0;r<fl;r++){for(let q=0;q<cols;q++){
+            if(hash(c*997+r*31+q*7+side)<th.lit){
+              const wx=Math.min(xi,xo)+(q+0.25)*(wid/cols),wy=bY+2+r*4;
+              fr(wx,wy,wx+wid/cols*0.5,wy+1.8,zf,'rgba(255,226,150,'+(0.85-zf/260)+')');
+            }
+          }}
+        }
+      }
+    }
+  }
+  // 高架橋面與護欄
+  surf(-3.2,-0.25,3.2,-0.25,za,zb,col(C.deck,(za+zb)/2,fog));
+  surf(-3.2,-0.25,-3.2,0.95,za,zb,col(C.para,(za+zb)/2,fog));
+  surf(3.2,-0.25,3.2,0.95,za,zb,col(C.para,(za+zb)/2,fog));
+  surf(-3.2,0.95,-3.5,0.95,za,zb,col([170,172,176],(za+zb)/2,fog));
+  surf(3.2,0.95,3.5,0.95,za,zb,col([170,172,176],(za+zb)/2,fog));
+  // 路燈
+  const sA=Math.ceil((g.pos+za)/36)*36;
+  for(let s=sA;s<g.pos+zb;s+=36){const z=s-g.pos;
+    for(const sd of [-1,1]){fr(sd*3.3-0.06,0.95,sd*3.3+0.06,6.2,z,col([70,72,78],z,fog));fr(sd*3.3-0.5,6.1,sd*3.3+0.5,6.3,z,col([240,240,220],z,fog));}
+  }
+}
+
+function drawTunnel(g,za,zb){
+  const fog=TUN_FOG,mz=330;
+  const sA=Math.floor((g.pos+za)/6)*6;
+  for(let s=sA;s<g.pos+zb;s+=6){
+    const a0=Math.max(s-g.pos,za),b0=Math.min(s+6-g.pos,zb);if(b0<=a0)continue;
+    const alt=Math.floor(s/6)&1;
+    // 在月台起訖處切開，月台內與月台外分開畫
+    const cuts=[a0];
+    for(const st of g.stations){for(const e of [st.pos-g.L.trainLen-14,st.pos+22]){const z=e-g.pos;if(z>a0+0.01&&z<b0-0.01)cuts.push(z);}}
+    cuts.push(b0);cuts.sort((x,y)=>x-y);
+    for(let ci=0;ci<cuts.length-1;ci++){
+      const a=cuts[ci],b=cuts[ci+1],zm=(a+b)/2;
+      const st=stOverlap(g,g.pos+zm-0.01,g.pos+zm+0.01);
+      const wc=col(alt?C.wallA:C.wallB,zm,fog,mz);
+      surf(-2.4,0,2.4,0,a,b,col([70,68,64],zm,fog,mz));
+      const wh=st?4.8:4.2; // 車站範圍的頂棚較高，牆也要一起拉高，否則會露出縫
+      if(!st||st.side==='R')surf(-2.4,0,-2.4,wh,a,b,wc);
+      if(!st||st.side==='L')surf(2.4,0,2.4,wh,a,b,wc);
+      if(!st)surf(-2.4,4.2,2.4,4.2,a,b,col(C.ceil,zm,fog,mz));
+      if(!st){
+        if(Math.floor(s/6)%3===0&&ci===0){
+          const lc=col([255,244,205],zm,fog,mz*1.6),e=Math.min(a+1.4,b);
+          surf(-2.38,3.35,-2.38,3.55,a,e,lc);surf(2.38,3.35,2.38,3.55,a,e,lc);
+        }
+        const cc=col([40,42,48],zm,fog,mz);surf(-2.38,2.2,-2.38,2.35,a,b,cc);surf(2.38,2.2,2.38,2.35,a,b,cc);
+      }
+    }
+  }
+}
+function stOverlap(g,s0,s1){
+  for(const st of g.stations){const pa=st.pos-g.L.trainLen-14,pb=st.pos+22;if(s1>pa&&s0<pb)return st;}
+  return null;
+}
+
+function drawTrack(g,za,zb,env){
+  const fog=fogC(g,env),mz=env==='tunnel'?330:MAXZ;
+  surf(-2.4,0,2.4,0,za,zb,col(C.ballast,(za+zb)/2,fog,mz));
+  // 軌枕
+  const sp=0.65,zmax=Math.min(zb,70);
+  let s=Math.ceil((g.pos+za)/sp)*sp;
+  for(;s-g.pos<zmax;s+=sp){const z=s-g.pos;surf(-1.25,0.06,1.25,0.06,z,z+0.22,col(C.sleeper,z,fog,mz));}
+  // 鋼軌
+  const rc=col(C.rail,(za+zb)/2*0.6,fog,mz);
+  surf(-0.80,0.16,-0.66,0.16,za,zb,rc);surf(0.66,0.16,0.80,0.16,za,zb,rc);
+  // 第三軌
+  surf(1.45,0.18,1.55,0.18,za,zb,col([60,62,70],(za+zb)/2,fog,mz));
+}
+
+function drawStation(g,st,sec,zaS,zbS){
+  const L=g.L,sd=st.side==='R'?1:-1;
+  if(st.env!==sec.env)return;
+  const pa=st.pos-L.trainLen-14,pb=st.pos+22;
+  const za=Math.max(pa-g.pos,zaS),zb=Math.min(pb-g.pos,zbS);
+  if(zb<=za)return;
+  const fog=fogC(g,st.env),mz=st.env==='tunnel'?330:MAXZ;
+  const lc=L.color;
+  // 後牆／頂棚／欄杆
+  const sA=Math.floor((g.pos+za)/6)*6;
+  for(let s=sA;s<g.pos+zb;s+=6){
+    const a=Math.max(s-g.pos,za),b=Math.min(s+6-g.pos,zb);if(b<=a)continue;
+    const zm=(a+b)/2,alt=Math.floor(s/12)&1;
+    if(st.env==='tunnel'){
+      surf(sd*9.5,0,sd*9.5,4.8,a,b,col(alt?C.back:[170,176,184],zm,fog,mz));
+      surf(sd*9.45,3.4,sd*9.45,4.2,a,b,alt?col(hexa(lc),zm,fog,mz):col([60,66,80],zm,fog,mz));
+      surf(-sd*2.4,4.8,sd*9.5,4.8,a,b,col([200,204,208],zm,fog,mz));
+    }else{
+      surf(sd*1.2,4.8,sd*9.5,4.8,a,b,col([205,208,212],zm,fog,mz));
+      surf(sd*9.5,1.1,sd*9.5,2.3,a,b,col([150,156,166],zm,fog,mz));
+    }
+  }
+  // 地下車站末端封口：月台段比隧道寬，盡頭要用牆擋住，否則會透出背景天空
+  if(st.env==='tunnel'){
+    const ze=pb-g.pos;
+    if(ze>=NEAR&&ze<=MAXZ){
+      const cc=col([40,43,50],ze,fog,mz);
+      fr(Math.min(sd*2.4,sd*9.5),0,Math.max(sd*2.4,sd*9.5),4.8,ze,cc);
+      fr(-2.4,4.2,2.4,4.8,ze,cc);
+    }
+  }
+  // 月台面
+  const tA=Math.floor((g.pos+za)/4.4)*4.4;
+  for(let s=tA;s<g.pos+zb;s+=4.4){
+    const a=Math.max(s-g.pos,za),b=Math.min(s+4.4-g.pos,zb);if(b<=a)continue;
+    surf(sd*1.45,1.1,sd*9.5,1.1,a,b,col((Math.floor(s/4.4)&1)?C.platA:C.platB,(a+b)/2,fog,mz));
+  }
+  surf(sd*1.45,0,sd*1.45,1.1,za,zb,col(C.edge,(za+zb)/2,fog,mz));
+  surf(sd*1.5,1.12,sd*1.95,1.12,za,zb,col(C.yellow,(za+zb)/2,fog,mz));
+  // 月台門（PSD）
+  const open=(g.stopSt!==null&&g.stations[g.stopSt]===st&&g.doors.side===st.side)?g.doors.frac:0;
+  const spacing=L.cars===6?5.6:5.2,nd=L.cars*4;
+  const panelC=`rgba(150,205,225,${0.2})`;
+  const paneO=`rgba(170,215,235,0.28)`;
+  for(let j=0;j<nd;j++){
+    const sj=st.pos-4-j*spacing,zj=sj-g.pos;
+    if(zj<NEAR||zj>MAXZ)continue;
+    const hw=1.2*(1-open),zc=zj;
+    // 固定板
+    surf(sd*1.6,1.1,sd*1.6,3.3,Math.max(zc+1.25,NEAR),zc+spacing-1.25,panelC);
+    // 門板
+    if(hw>0.02)surf(sd*1.6,1.1,sd*1.6,3.3,Math.max(zc-hw,NEAR),zc+hw,paneO);
+    // 門框
+    if(zc>NEAR){const fc=col([210,214,220],zc,fog,mz);fr(sd*1.6-0.05,1.1,sd*1.6+0.05,3.3,zc-1.25,fc);fr(sd*1.6-0.05,1.1,sd*1.6+0.05,3.3,zc+1.25,fc);}
+    // 乘客
+    if(zc<120){
+      const cnt=Math.floor(hash(st.idx*131+j*7+hstr(g.L.short))*5);
+      const vis=(g.stopSt!==null&&g.stations[g.stopSt]===st)?Math.round(cnt*(1-g.boardFrac)):cnt;
+      for(let p=0;p<vis;p++){
+        const pz=zc+(p-1.5)*0.7,px=sd*(2.4+(p%2)*0.6+hash(j*3+p)*0.4);
+        if(pz<NEAR)continue;
+        const cc=PCOL[Math.floor(hash(st.idx*17+j*5+p)*PCOL.length)];
+        fr(px-0.22,1.1,px+0.22,2.55,pz,cc);
+        const hp=pj(px,2.8,pz),r=0.17*F/pz;X.fillStyle='#e8c9a6';X.beginPath();X.arc(hp[0],hp[1],r,0,6.3);X.fill();
+      }
+    }
+  }
+  // 立柱
+  const pA=Math.ceil((g.pos+za)/18)*18;
+  for(let s=pA;s<g.pos+zb;s+=18){const z=s-g.pos;fr(sd*3.2-0.25,1.1,sd*3.2+0.25,4.8,z,col([188,192,198],z,fog,mz));}
+  // 站名牌（吊牌）
+  for(const off of [-100,-46,14]){
+    const z=st.pos+off-g.pos;if(z<NEAR||z>300)continue;
+    const x0=sd>0?3:-7,x1=x0+4;
+    fr(x0,3.55,x1,4.65,z,col([248,248,250],z,fog,mz));
+    fr(x0,4.4,x1,4.65,z,col(hexa(lc),z,fog,mz));
+    const c=pj((x0+x1)/2,3.95,z),size=0.62*F/z;
+    if(size>7)T(st.name,c[0],c[1],Math.min(size,60),'#1b2230','center',800);
+  }
+  // 停車標與停車線
+  const zs=st.pos-g.pos;
+  if(zs>=NEAR){
+    surf(-1.7,0.18,1.7,0.18,zs,zs+0.45,col([80,255,120],zs,fog,mz*1.5));
+    fr(sd*1.55,1.1,sd*2.05,2.5,zs,col([30,30,34],zs,fog,mz));
+    fr(sd*1.62,1.9,sd*1.98,2.45,zs,col(C.yellow,zs,fog,mz));
+    const c=pj(sd*1.8,2.18,zs),size=0.5*F/zs;if(size>7)T('停',c[0],c[1],Math.min(size,48),'#1b1b1b','center',900);
+  }
+}
+function hexa(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+
+function drawSigns(g,za,zb){
+  const sd=[];
+  for(const z of g.zones){sd.push([z.s0,z.lim]);sd.push([z.s1,VMAX]);}
+  for(const [s,lim] of sd){
+    const z=s-g.pos;if(z<za||z>Math.min(zb,300))continue;
+    const p=pj(-2.05,2.5,z),r=0.5*F/z;if(r<2.5)continue;
+    const b=pj(-2.05,0,z);
+    X.strokeStyle='#555';X.lineWidth=Math.max(1,r*0.14);X.beginPath();X.moveTo(b[0],b[1]);X.lineTo(p[0],p[1]);X.stroke();
+    X.fillStyle='#fff';X.beginPath();X.arc(p[0],p[1],r,0,6.3);X.fill();
+    X.strokeStyle='#d32f2f';X.lineWidth=Math.max(1,r*0.2);X.beginPath();X.arc(p[0],p[1],r*0.86,0,6.3);X.stroke();
+    if(r>6)T(String(lim),p[0],p[1],r*1.0,'#111','center',800);
+  }
+}
+
+/* ========================= 儀表與 HUD ========================= */
+function drawCabFrame(){
+  X.fillStyle='#0a0d13';
+  X.beginPath();X.moveTo(0,0);X.lineTo(W*0.06,0);X.lineTo(W*0.035,dashTop);X.lineTo(0,dashTop);X.closePath();X.fill();
+  X.beginPath();X.moveTo(W,0);X.lineTo(W*0.94,0);X.lineTo(W*0.965,dashTop);X.lineTo(W,dashTop);X.closePath();X.fill();
+  const gr=X.createLinearGradient(0,dashTop-26,0,dashTop);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(0,0,0,.55)');
+  X.fillStyle=gr;X.fillRect(0,dashTop-26,W,26);
+}
+
+function needAssist(g){
+  if(!SET.assist||g.k>=g.S.length)return '';
+  if(g.doors.state!=='closed')return '';
+  const d=g.S[g.k]-g.pos,v=g.v;
+  if(v<0.3){return d>TOL_OPEN_SHORT?'可關門後推 P2～P3 發車':'';}
+  if(d<=0.3)return '已到停車線，煞車停住';
+  const a=v*v/(2*d);
+  if(a>1.4)return '來不及了！EB 緊急煞車';
+  const braking=g.notch<0;
+  // 還沒開始煞車時，要惰行到需要 B4 左右的距離才煞，太早煞會誤點；開始煞車後再依所需減速度逐步放鬆
+  if(a>=(braking?0.12:0.72)){let i=DEC_B.findIndex(b=>b>=a*1.08);if(i<0)i=6;return v<2.5?'輕煞（B1），快停時放鬆':`建議 B${i+1} 煞車`+(braking&&i<g.notch*-1-1?'（可放鬆）':'');}
+  const kmh=v*3.6;
+  const nz=g.zones.find(z=>z.s0>g.pos&&z.s0-g.pos<400&&kmh>z.lim+2);
+  if(nz)return `前方 ${Math.round(nz.s0-g.pos)} m 限速 ${nz.lim}，請減速`;
+  if(d>350&&kmh<g.lim-8&&g.notch<=0)return '可加速（P2～P3）';
+  return '惰行（N）';
+}
+
+function drawDash(g){
+  const top=dashTop;
+  let gr=X.createLinearGradient(0,top,0,H);gr.addColorStop(0,'#232b3a');gr.addColorStop(0.18,'#161c28');gr.addColorStop(1,'#0a0d14');
+  X.fillStyle=gr;
+  if(land){rr(dashX0,top,dashX1-dashX0,H-top+12,12);X.fill();X.fillStyle='#394760';X.fillRect(dashX0+8,top,dashX1-dashX0-16,2);}
+  else{X.fillRect(0,top,W,H-top);X.fillStyle='#394760';X.fillRect(0,top,W,2);}
+  const gx0=dashX0+10,gx1=land?dashX1-8:W-92,gh=H-barH-top-(land?10:18);
+  const dia=Math.min(gh,(gx1-gx0)*0.5,240),R=dia/2;
+  const cx=gx0+R+6,cy=top+(land?6:10)+R;
+  // 速度表
+  const A0=Math.PI*0.75,SW=Math.PI*1.5,vmaxDial=100;
+  const ang=k=>A0+SW*clamp(k/vmaxDial,0,1);
+  X.fillStyle='#0b0f17';X.beginPath();X.arc(cx,cy,R,0,6.3);X.fill();
+  X.strokeStyle='#3a4660';X.lineWidth=3;X.stroke();
+  // 限速紅區
+  const lim=g.lim;
+  X.strokeStyle='rgba(255,70,70,.9)';X.lineWidth=R*0.09;X.beginPath();X.arc(cx,cy,R*0.9,ang(lim),ang(vmaxDial));X.stroke();
+  X.strokeStyle='rgba(120,230,150,.7)';X.beginPath();X.arc(cx,cy,R*0.9,ang(0),ang(lim));X.stroke();
+  for(let k=0;k<=100;k+=10){
+    const a=ang(k),c=Math.cos(a),s=Math.sin(a),long=k%20===0;
+    X.strokeStyle='#cfd8e6';X.lineWidth=long?2.4:1.2;X.beginPath();X.moveTo(cx+c*R*0.78,cy+s*R*0.78);X.lineTo(cx+c*R*(long?0.64:0.7),cy+s*R*(long?0.64:0.7));X.stroke();
+    if(long)T(String(k),cx+c*R*0.5,cy+s*R*0.5,Math.max(9,R*0.13),'#cfd8e6','center',700);
+  }
+  const kmh=g.v*3.6;
+  const a=ang(kmh),na=a;
+  X.strokeStyle=g.over||g.trip?'#ff5959':'#ffd37a';X.lineWidth=3;X.lineCap='round';
+  X.beginPath();X.moveTo(cx-Math.cos(na)*R*0.12,cy-Math.sin(na)*R*0.12);X.lineTo(cx+Math.cos(na)*R*0.8,cy+Math.sin(na)*R*0.8);X.stroke();X.lineCap='butt';
+  X.fillStyle='#ffd37a';X.beginPath();X.arc(cx,cy,R*0.07,0,6.3);X.fill();
+  T(String(Math.round(kmh)),cx,cy+R*0.38,R*0.34,'#fff','center',800);
+  T('km/h',cx,cy+R*0.56,R*0.11,'#8fa0b8','center',600);
+  const nn=g.trip?-8:g.notch;
+  const nl=nn>0?'P'+nn:nn===0?'N':nn===-8?'EB':'B'+(-nn);
+  const nc=nn>0?'#7bd88f':nn===0?'#fff':nn===-8?'#ff6b6b':'#f0b46a';
+  X.fillStyle='rgba(255,255,255,.07)';rr(cx-R*0.27,cy+R*0.68,R*0.54,R*0.24,R*0.1);X.fill();
+  T(nl,cx,cy+R*0.8,R*0.19,nc,'center',800);
+  // 資訊欄（文字依可用寬度縮放，窄螢幕也不重疊）
+  const ix=cx+R+16,iw=Math.min(gx1-ix,300);
+  if(iw>90){
+    const rows=land?5:6,rh=gh/rows,fs=clamp(rh*0.55,land?10:11,18);
+    const fit=(s,size,w,weight)=>{X.font=`${weight||700} ${size}px sans-serif`;const m=X.measureText(s).width;return m>w?size*w/m:size;};
+    // 一列：左標籤、右數值，兩者合計超出寬度時一起縮小
+    const row=(label,val,y,vcol)=>{
+      X.font=`600 ${fs*0.8}px sans-serif`;const wl=X.measureText(label).width;
+      X.font=`800 ${fs*1.15}px sans-serif`;const wv=X.measureText(val).width;
+      const k=Math.min(1,(iw-8)/(wl+wv));
+      T(label,ix,y,fs*0.8*k,'#8fa0b8','left',600);T(val,ix+iw,y,fs*1.15*k,vcol,'right',800);
+    };
+    let y=top+10+rh*0.5;
+    const nxt=g.k<g.S.length?g.stations[g.k]:null;
+    const cur=nxt||g.stations[g.stations.length-1];
+    X.fillStyle=g.L.color;X.fillRect(ix,y-rh*0.38,5,rh*0.76);
+    T(nxt?'下一站':'終點站',ix+11,y-fs*0.62,fs*0.68,'#8fa0b8','left',600);
+    T(cur.name,ix+11,y+fs*0.42,fit(cur.name,fs*1.25,iw-12,800),'#fff','left',800);
+    y+=rh;
+    const d=nxt?nxt.pos-g.pos:0;
+    row('距停車線',nxt?(d>=0?d.toFixed(d<100?1:0)+' m':'過線 '+(-d).toFixed(1)+' m'):'—',y,Math.abs(d)<=1?'#7bd88f':d<0?'#ff9b7b':'#fff');
+    y+=rh;
+    row('ATP 限速',Math.round(lim)+' km/h',y,g.over||g.trip?'#ff6b6b':'#ffd37a');
+    y+=rh;
+    if(nxt){const rest=g.tArr[g.k]-g.time;row('預定到站',(rest>=0?'剩 ':'誤點 ')+fmtT(Math.abs(rest)),y,rest>=-10?(rest<0?'#ffd37a':'#fff'):'#ff6b6b');}
+    else row('預定到站','—',y,'#fff');
+    y+=rh;
+    // 車門燈
+    const D=g.doors,lw=Math.min(64,iw*0.24),lh=rh*0.62;
+    const lampL=D.side==='L'&&D.state!=='closed',lampR=D.side==='R'&&D.state!=='closed';
+    const tsd=nxt?nxt.side:null;
+    function lamp(x,on,label,hint){X.fillStyle=on?'#ffb347':'#2b3345';rr(x,y-lh/2,lw,lh,6);X.fill();X.strokeStyle=hint?'#7fe39b':'#4a5670';X.lineWidth=hint?2.5:1;X.stroke();T(label,x+lw/2,y,fit(label,fs*0.85,lw-6,700),on?'#1b1308':'#9fb0c8','center',700);}
+    lamp(ix,lampL,'◀ 左門',tsd==='L'&&d<400);lamp(ix+lw+6,lampR,'右門 ▶',tsd==='R'&&d<400);
+    const stxt=g.interlock?'⚠ 車門未關':D.state==='closed'?'車門已關':D.state==='open'?(D.openT<MIN_OPEN?'上下車中':'可關門'):D.state==='opening'?'開門中':'關門中';
+    const tx=ix+2*lw+14,tw=ix+iw-tx;
+    if(tw>40)T(stxt,ix+iw,y,fit(stxt,fs*0.9,tw,700),g.interlock?'#ff6b6b':D.state==='closed'?'#7bd88f':'#ffd37a','right',700);
+    y+=rh;
+    const h=land?'':needAssist(g);
+    if(h)T('💡 '+h,ix,y,fit('💡 '+h,fs*0.95,iw+40,700),'#9bd1ff','left',700);
+  }
+}
+
+function drawStrip(g){
+  const x0=18,x1=W-(land?300:290),y=24,total=g.S[g.S.length-1]||1;
+  X.fillStyle='rgba(8,12,20,.74)';rr(6,6,x1-x0+24+54,36,10);X.fill();
+  X.strokeStyle='rgba(255,255,255,.25)';X.lineWidth=3;X.beginPath();X.moveTo(x0,y);X.lineTo(x1,y);X.stroke();
+  X.strokeStyle=g.L.color;X.lineWidth=4;X.beginPath();X.moveTo(x0,y);X.lineTo(x0+(x1-x0)*clamp(g.pos/total,0,1),y);X.stroke();
+  for(let i=0;i<g.S.length;i++){
+    const x=x0+(x1-x0)*g.S[i]/total,done=i<g.k||(g.results[i-1]&&true);
+    X.fillStyle=i<g.k?g.L.color:'#2b3345';X.strokeStyle=i===g.k?'#fff':'#b8c4d8';X.lineWidth=i===g.k?2.5:1.2;
+    X.beginPath();X.arc(x,y,i===g.k?5.5:4,0,6.3);X.fill();X.stroke();
+  }
+  const mx=x0+(x1-x0)*clamp(g.pos/total,0,1);
+  X.fillStyle='#ffd37a';X.beginPath();X.moveTo(mx,y-12);X.lineTo(mx-5,y-20);X.lineTo(mx+5,y-20);X.closePath();X.fill();
+  T(g.stations[0].name,x0,y+13,10,'#9fb0c8','left',600);
+  T(g.stations[g.S.length-1].name,x1,y+13,10,'#9fb0c8','right',600);
+  T(fmtT(g.time),x1+26,y-1,13,'#cfd8e6','left',700);
+}
+
+function drawHud(g){
+  drawStrip(g);
+  // 限速牌
+  const r=24,cx=r+14,cy=64+r;
+  X.fillStyle='#fff';X.beginPath();X.arc(cx,cy,r,0,6.3);X.fill();
+  X.strokeStyle=g.over||g.trip?'#ff2a2a':'#d32f2f';X.lineWidth=5;X.beginPath();X.arc(cx,cy,r-3,0,6.3);X.stroke();
+  T(String(Math.round(g.lim)),cx,cy,r*0.85,'#111','center',800);
+  if(g.over||g.trip){T(g.trip?'ATP 動作':'超速！',cx,cy+r+12,13,'#ff6b6b','center',800);}
+  // 到站前提示
+  const nxt=g.k<g.S.length?g.stations[g.k]:null;
+  if(nxt&&g.doors.state==='closed'&&nxt.pos-g.pos<420&&nxt.pos-g.pos>-30&&g.v>0.5){
+    const t=`${nxt.name}　月台在${nxt.side==='L'?'◀ 左':'右 ▶'}側`;
+    X.font='700 14px sans-serif';const w=X.measureText(t).width+22;
+    X.fillStyle='rgba(8,12,20,.8)';rr(W/2-w/2,52,w,28,14);X.fill();
+    T(t,W/2,66,14,'#fff','center',700);
+  }
+  if(g.state==='ready'&&g.time<30&&g.v<0.1&&g.doors.state==='closed'){
+    const t='關門後，把主控器推到 P2 發車';const w=290;
+    X.fillStyle='rgba(8,12,20,.8)';rr(W/2-w/2,HY*0.9,w,32,16);X.fill();T(t,W/2,HY*0.9+16,14,'#ffe9a0','center',700);
+  }
+  if(land){const h=needAssist(g);if(h){X.font='700 13px sans-serif';const w=X.measureText('💡 '+h).width+20;X.fillStyle='rgba(8,12,20,.78)';rr(W/2-w/2,dashTop-34,w,26,13);X.fill();T('💡 '+h,W/2,dashTop-21,13,'#9bd1ff','center',700);}}
+  // 訊息
+  if(g.toast){
+    const a=clamp(Math.min(1,(g.toast.dur-g.toast.t)*2,g.toast.t*5),0,1);
+    X.globalAlpha=a;
+    X.font='700 16px sans-serif';const w=Math.min(W-20,X.measureText(g.toast.text).width+34);
+    X.fillStyle='rgba(8,12,20,.86)';rr(W/2-w/2,HY*0.62,w,38,12);X.fill();
+    X.strokeStyle=g.toast.color;X.lineWidth=1.5;X.stroke();
+    T(g.toast.text,W/2,HY*0.62+19,16,g.toast.color,'center',700);
+    X.globalAlpha=1;
+  }
+}
+
+let frameDt=0.016,r3Run=null;
+function render(){
+  X.clearRect(0,0,W,H);
+  if(!G)return;
+  const g=G;
+  gPos=g.pos;
+  setCurve(g.pos);
+  camX=Math.sin(g.pos*0.31)*0.012*Math.min(1,g.v/8);camY=Math.sin(g.pos*1.3)*0.008*Math.min(1,g.v/10);
+  const use3d=R3.ok&&!force2d;
+  $('gl').style.visibility=use3d?'visible':'hidden';
+  if(use3d){
+    if(r3Run!==g){R3.setRun(g);r3Run=g;}
+    try{R3.frame(g,frameDt,camX*3,camY*3);}catch(e){console.error(e);force2d=true;}
+  }else{
+    X.save();X.beginPath();X.rect(0,0,W,dashTop);X.clip();
+    drawWorld(g);
+    X.restore();
+  }
+  drawCabFrame();
+  drawDash(g);
+  if($('menu').classList.contains('hidden')&&$('result').classList.contains('hidden'))drawHud(g); // 選單／結算頁底下不畫 HUD，避免文字透出
+}
+let force2d=false;
+
+/* ========================= 手把與按鍵 ========================= */
+const lever=$('lever'),knob=$('knob');
+const ROWS=[];for(let n=4;n>=-8;n--)ROWS.push(n);
+(function(){
+  ROWS.forEach(n=>{
+    const d=document.createElement('div');d.className='n '+(n>0?'p':n===0?'z':n===-8?'e':'b');
+    d.textContent=n>0?'P'+n:n===0?'N':n===-8?'EB':'B'+(-n);lever.appendChild(d);
+  });
+})();
+function syncLever(){if(!G)return;const r=ROWS.indexOf(G.notch);knob.style.top=((r+0.5)/ROWS.length*100)+'%';}
+let dragging=false;
+function leverAt(e){
+  const b=lever.getBoundingClientRect();
+  const r=clamp(Math.floor((e.clientY-b.top)/b.height*ROWS.length),0,ROWS.length-1);
+  setNotch(ROWS[r]);
+}
+lever.addEventListener('pointerdown',e=>{dragging=true;lever.setPointerCapture(e.pointerId);leverAt(e);e.preventDefault();});
+lever.addEventListener('pointermove',e=>{if(dragging)leverAt(e);});
+lever.addEventListener('pointerup',()=>{dragging=false;});
+lever.addEventListener('pointercancel',()=>{dragging=false;});
+
+addEventListener('keydown',e=>{
+  if(!G||$('menu').classList.contains('hidden')===false||$('result').classList.contains('hidden')===false)return;
+  const k=e.key;
+  if(k==='ArrowUp'||k==='w'||k==='W'){setNotch(G.notch+1);e.preventDefault();}
+  else if(k==='ArrowDown'||k==='s'||k==='S'){setNotch(G.notch-1);e.preventDefault();}
+  else if(k===' '){setNotch(0);e.preventDefault();}
+  else if(k==='x'||k==='X'){setNotch(-8);}
+  else if(k==='ArrowLeft'||k==='a'||k==='A'){openDoors('L');e.preventDefault();}
+  else if(k==='ArrowRight'||k==='d'||k==='D'){openDoors('R');e.preventDefault();}
+  else if(k==='f'||k==='F'||k==='Enter'){closeDoors();e.preventDefault();}
+  else if(k==='p'||k==='P'||k==='Escape'){togglePause();}
+});
+$('b-ol').onclick=()=>openDoors('L');
+$('b-or').onclick=()=>openDoors('R');
+$('b-close').onclick=()=>closeDoors();
+$('b-eb').onclick=()=>setNotch(-8);
+
+/* ========================= 選單與流程 ========================= */
+let paused=false;
+function togglePause(){
+  if(!G||G.state==='result')return;
+  paused=!paused;$('b-pause').textContent=paused?'▶ 繼續':'⏸ 暫停';
+  if(AC){paused?AC.suspend():AC.resume();}
+}
+$('b-pause').onclick=togglePause;
+function goFullscreen(){
+  const el=document.documentElement;
+  try{
+    const p=(el.requestFullscreen||el.webkitRequestFullscreen||function(){return Promise.reject();}).call(el);
+    Promise.resolve(p).then(()=>{try{screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}).catch(()=>{});
+  }catch(e){}
+}
+$('b-fs').onclick=()=>{if(document.fullscreenElement){document.exitFullscreen();}else goFullscreen();};
+$('rot').onclick=()=>{goFullscreen();rotDismissed=true;resize();};
+$('b-snd').onclick=()=>{SET.snd=!SET.snd;$('b-snd').textContent=SET.snd?'🔊':'🔇';store('mrt-set',SET);};
+$('b-quit').onclick=()=>{showMenu();};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!paused&&$('menu').classList.contains('hidden')&&$('result').classList.contains('hidden'))togglePause();});
+
+function showMenu(){
+  paused=false;$('b-pause').textContent='⏸ 暫停';
+  if(AC)AC.resume();
+  $('menu').classList.remove('hidden');$('result').classList.add('hidden');
+  ['top','lever','bar'].forEach(i=>$(i).classList.add('hidden'));
+  G=buildRun(SET);syncLever();updateBest();
+}
+function updateBest(){
+  const b=store('mrt-best')||{};const v=b[SET.line];
+  $('m-best').textContent=v?`${LINES[SET.line].name} 最佳成績：${v.grade}（${v.score} 分）`:'';
+}
+function fillMenu(){
+  const ml=$('m-lines');ml.innerHTML='';
+  LINE_KEYS.forEach(k=>{
+    const b=document.createElement('button');b.className='chip ln'+(SET.line===k?' on':'');b.style.setProperty('--c',LINES[k].color);b.textContent=LINES[k].name;
+    b.onclick=()=>{SET.line=k;SET.dir=0;SET.start=0;fillMenu();G=buildRun(SET);updateBest();};ml.appendChild(b);
+  });
+  const L=LINES[SET.line],names=L.st;
+  const dirSel=$('m-dir');dirSel.innerHTML='';
+  [0,1].forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent='往 '+(d?names[0]:names[names.length-1]);dirSel.appendChild(o);});
+  dirSel.value=SET.dir;
+  const order=SET.dir?names.slice().reverse():names.slice();
+  const stSel=$('m-start');stSel.innerHTML='';
+  order.slice(0,-1).forEach((n,i)=>{const o=document.createElement('option');o.value=i;o.textContent=n;stSel.appendChild(o);});
+  SET.start=clamp(SET.start,0,order.length-2);stSel.value=SET.start;
+  const nSel=$('m-n');nSel.innerHTML='';
+  const maxN=order.length-1-SET.start;
+  [3,6,10,99].forEach(n=>{
+    if(n!==99&&n>=maxN)return;
+    const o=document.createElement('option');o.value=n;o.textContent=n===99?`直到終點（${maxN} 站）`:`${n} 站`;nSel.appendChild(o);
+  });
+  if(![...nSel.options].some(o=>+o.value===SET.n))SET.n=6<maxN?6:99;
+  nSel.value=SET.n;
+  $('m-theme').value=SET.theme;$('m-assist').checked=SET.assist;$('m-voice').checked=SET.voice;
+}
+$('m-dir').onchange=e=>{SET.dir=+e.target.value;SET.start=0;fillMenu();G=buildRun(SET);};
+$('m-start').onchange=e=>{SET.start=+e.target.value;fillMenu();G=buildRun(SET);};
+$('m-n').onchange=e=>{SET.n=+e.target.value;};
+$('m-theme').onchange=e=>{SET.theme=e.target.value;G=buildRun(SET);};
+$('m-assist').onchange=e=>{SET.assist=e.target.checked;};
+$('m-voice').onchange=e=>{SET.voice=e.target.checked;};
+
+function startRun(){
+  audioInit();if(AC&&AC.state==='suspended')AC.resume();
+  store('mrt-set',SET);
+  G=buildRun(SET);syncLever();paused=false;
+  $('menu').classList.add('hidden');$('result').classList.add('hidden');
+  ['top','lever','bar'].forEach(i=>$(i).classList.remove('hidden'));
+  resize();
+  $('b-snd').textContent=SET.snd?'🔊':'🔇';
+  toast(`${G.L.name}　往 ${G.stations[G.stations.length-1].name}　共 ${G.S.length-1} 站`,'#fff',3.5);
+  speak('本列車往，'+G.stations[G.stations.length-1].name);
+}
+$('m-go').onclick=startRun;
+$('r-again').onclick=startRun;
+$('r-menu').onclick=showMenu;
+
+function showResult(){
+  const g=G;g.state='result';
+  ['top','lever','bar'].forEach(i=>$(i).classList.add('hidden'));
+  const rs=g.results.filter((_,i)=>true);
+  const n=g.S.length-1;
+  const avg=rs.length?Math.round(rs.reduce((a,r)=>a+r.score,0)/n):0;
+  const grade=avg>=92?'S':avg>=85?'A':avg>=70?'B':avg>=55?'C':'D';
+  const gc={S:'#ffd54a',A:'#7bd88f',B:'#7fb0ff',C:'#f0b46a',D:'#ff7b7b'}[grade];
+  $('r-title').textContent=`${g.L.name}　${g.stations[0].name} → ${g.stations[g.S.length-1].name}`;
+  $('r-grade').innerHTML=`<span style="color:${gc}">${grade}</span> <span style="font-size:24px;color:#cfd8e6">${avg} 分</span>`;
+  const done=rs.filter(r=>!r.miss);
+  const mean=k=>done.length?Math.round(done.reduce((a,r)=>a+r[k],0)/done.length):0;
+  $('r-sum').innerHTML=`<span class="pill">平均停車 ${mean('acc')}</span><span class="pill">平均準點 ${mean('pun')}</span><span class="pill">平均舒適 ${mean('com')}</span>`+
+    `<span class="pill">ATP 動作 ${g.pen.atp} 次</span><span class="pill">開錯門 ${g.pen.door} 次</span><span class="pill">冒進過站 ${g.pen.miss} 次</span>`;
+  $('r-tbl').innerHTML='<tr><th>站</th><th>停車誤差</th><th>時刻差</th><th>停車</th><th>準點</th><th>舒適</th><th>得分</th></tr>'+
+    rs.map(r=>r.miss?`<tr><td>${r.name}</td><td colspan="5" style="color:#ff9b7b">冒進過站</td><td>0</td></tr>`:
+    `<tr><td>${r.name}</td><td>${r.err>=0?'短':'過'} ${Math.abs(r.err).toFixed(1)} m</td><td>${r.dt>=0?'+':'-'}${Math.abs(Math.round(r.dt))} 秒</td><td>${r.acc}</td><td>${r.pun}</td><td>${r.com}</td><td><b>${r.score}</b></td></tr>`).join('');
+  const b=store('mrt-best')||{};const old=b[g.opt.line];
+  if(g.opt.n>=6&&(!old||avg>old.score)){b[g.opt.line]={score:avg,grade};store('mrt-best',b);}
+  $('result').classList.remove('hidden');
+}
+
+/* ========================= 主迴圈 ========================= */
+let last=0,acc=0;
+function loop(ts){
+  const dt=Math.min(0.1,(ts-last)/1000||0);last=ts;frameDt=dt;
+  const playing=G&&$('menu').classList.contains('hidden')&&$('result').classList.contains('hidden')&&!paused;
+  if(playing){acc+=dt;let c=0;while(acc>=1/60&&c<12){step(1/60);acc-=1/60;c++;}if(c>=12)acc=0;}
+  render();audioUpdate();
+  requestAnimationFrame(loop);
+}
+
+/* ========================= 版本更新提示 ========================= */
+$('ver').textContent='版本 '+VERSION;
+const newverBtn=$('newver');
+async function checkUpdate(){
+  try{
+    const txt=await (await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'})).text();
+    const v=(txt.match(/const VERSION='([^']+)'/)||[])[1];
+    newverBtn.hidden=!v||v===VERSION;
+  }catch(e){/* 離線時略過 */}
+}
+newverBtn.onclick=()=>location.replace(location.pathname+'?v='+Date.now());
+if(location.protocol.startsWith('http')){
+  checkUpdate();setInterval(checkUpdate,5*60*1000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate();});
+  addEventListener('focus',checkUpdate);addEventListener('pageshow',checkUpdate);
+}
+
+/* ========================= 啟動 ========================= */
+resize();fillMenu();G=buildRun(SET);
+R3.load().then(ok=>{if(ok&&R3.init($('gl')))resize();else force2d=true;});
+syncLever();updateBest();
+window.__mrt={get G(){return G;},setNotch,openDoors,closeDoors,startRun,step,SET,buildRun,render,LINES};
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
