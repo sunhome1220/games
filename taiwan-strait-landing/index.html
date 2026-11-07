@@ -2904,14 +2904,14 @@ async function beginPhase(side){
     S.weather=S.turn===1&&S.mods.wxT1?WEATHER[S.mods.wxT1]:rollWeather();if(S.weather.id==='bad')S.stats.badWx++;
     airBattle();S.fire=computeFire();doRetaliation();sweepMines();
     if(S.turn>=3&&S.owner[MAGONG]!=='atk'&&S.units.some(u=>u.side==='def'&&hexOf(u).k===MAGONG)&&S.units.some(u=>u.side==='atk'&&atSea(u)&&!isShip(u))){antiShip('守方（澎湖前沿警戒）',1,4,false,'','roc','cm');render();}
-    (ATK_REINF[S.turn]||[]).forEach(([t,z])=>{
+    (ATK_REINF[S.turn]||(S.turn>8?[['amph','north'],['amph','central']].concat(PORTS.some(k=>S.owner[k]==='atk'&&!S.portDown[k])?[['arm']]:[]):[])).forEach(([t,z])=>{ // 第 8 回合後的持續增援：兩棲旅每回合 2 個，掌握港口時再加 1 個重型旅
       const h=t==='arm'?placeNear(FK('4,4'),x=>x.isl==='CN'&&x.t==='port'):placeNear(FK('4,4'),x=>x.isl==='CN'&&x.coastal);
       if(h){if(!z){const ax=(S.plan&&S.plan.axes)||['north','central'];z=ax[S.zoneFlip++%ax.length];}S.units.push(mkUnit('atk',t,h.k,{zone:z}));log('攻方增援 '+TYPES[t].n+' 抵達 '+hname(h));}
     });
     log('第 '+S.turn+' 回合開始，天候'+S.weather.n+'（海上移動 '+S.weather.sea+'，火力 '+S.fire+' 點'+(S.weather.air?'':'，無法空降')+'）');
   } else {
     if(supply().over)S.stats.over++;
-    let wave=(DEF_REINF[S.turn-S.mods.defReinfDelay]||[]).slice();
+    let wave=(DEF_REINF[S.turn-S.mods.defReinfDelay]||(S.turn>8?[S.turn%2?SPOT.taipei:SPOT.kaohsiung]:[])).slice(); // 第 8 回合後守方每回合再動員 1 個後備旅
     if(S.mods.defReinfHalve)wave=wave.filter((k,i)=>i%2===0);
     if(wave.length)for(let i=0;i<S.mods.defReinfExtra;i++)wave.push(wave[0]);
     wave.forEach(k=>{
@@ -2932,7 +2932,12 @@ async function endPhase(){
   S.stats.tpHold=S.owner[TAIPEI]==='atk'?(S.stats.tpHold||0)+1:0;
   {const nn=conditions().filter(c=>c.atk).length;S.stats.winHold=nn>=2?(S.stats.winHold||0)+1:0;S.stats.fullHold=nn>=3?(S.stats.fullHold||0)+1:0;}
   econTick();
-  if(S.turn>=S.T)return endGame();
+  if(S.turn>=S.T){
+    // 未真正分出勝負（攻方達成不到兩項、但島上或海上還有攻方兵力）就不在此判定，雙方繼續打下去；上限 30 回合
+    const nn=conditions().filter(c=>c.atk).length,alive=S.units.some(u=>u.side==='atk'&&!isShip(u)&&(onTW(u)||hexOf(u).isl==='PH'||atSea(u)));
+    if(nn<2&&alive&&S.T<30){S.T+=2;S.extended=true;S.stats.autoExt=(S.stats.autoExt||0)+1;log('戰局尚未分出勝負：判定延後至第 '+S.T+' 回合（攻方達成 '+nn+' / 3 項，雙方仍在交戰）');toast('戰局未分，判定延後至第 '+S.T+' 回合',3600);}
+    else return endGame();
+  }
   if((S.stats.fullHold||0)>=2)return endGame('攻方連續兩個回合同時控制首都、主要港口並取得兵力優勢，提前判定攻方勝利。','atk','攻方提前取勝');
   const n=buildNews();S.news.push(n);
   if(S.rec){render();if(S.newsOn)recordFrame({html:newsBody(n),kind:'news',dur:6500});}
