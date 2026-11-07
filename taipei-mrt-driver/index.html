@@ -218,13 +218,13 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-07.16"></script>
-<script src="js/broadcast.js?v=2026-11-07.16"></script>
-<script src="js/haptics.js?v=2026-11-07.16"></script>
-<script src="js/share.js?v=2026-11-07.16"></script>
-<script src="js/events.js?v=2026-11-07.16"></script>
-<script src="js/lines.js?v=2026-11-07.16"></script>
-<script src="js/render3d.js?v=2026-11-07.16"></script>
+<script src="js/models.js?v=2026-11-07.17"></script>
+<script src="js/broadcast.js?v=2026-11-07.17"></script>
+<script src="js/haptics.js?v=2026-11-07.17"></script>
+<script src="js/share.js?v=2026-11-07.17"></script>
+<script src="js/events.js?v=2026-11-07.17"></script>
+<script src="js/lines.js?v=2026-11-07.17"></script>
+<script src="js/render3d.js?v=2026-11-07.17"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -232,7 +232,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-07.16';
+const VERSION='2026-11-07.17';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -1194,14 +1194,24 @@ const ROWS=[];for(let n=4;n>=-8;n--)ROWS.push(n);
   });
 })();
 function syncLever(){if(!G)return;const r=ROWS.indexOf(G.notch);knob.style.top=((r+0.5)/ROWS.length*100)+'%';}
-let dragging=false;
-function leverAt(e){
-  const b=lever.getBoundingClientRect();
-  const r=clamp(Math.floor((e.clientY-b.top)/b.height*ROWS.length),0,ROWS.length-1);
+let dragging=false,dragRow=0,dragY=0;
+// 以「手指實際壓到的那一格」為準（瀏覽器自己的命中測試），拖曳時只用相對位移；
+// 不再用 getBoundingClientRect 與 clientY 的絕對座標相減（iOS 版面／視覺視窗偏移時會錯位）
+function leverRowH(){const n=lever.querySelector('.n');return (n&&n.getBoundingClientRect().height)||lever.clientHeight/ROWS.length;}
+function leverDown(e){
+  const el=e.target&&e.target.closest?e.target.closest('.n'):null;
+  const kids=[...lever.querySelectorAll('.n')];
+  let r=el?kids.indexOf(el):-1;
+  if(r<0){const b=lever.getBoundingClientRect();r=Math.floor((e.clientY-b.top)/b.height*ROWS.length);}
+  dragRow=clamp(r,0,ROWS.length-1);dragY=e.clientY;
+  setNotch(ROWS[dragRow]);
+}
+function leverMove(e){
+  const r=clamp(dragRow+Math.round((e.clientY-dragY)/leverRowH()),0,ROWS.length-1);
   setNotch(ROWS[r]);
 }
-lever.addEventListener('pointerdown',e=>{dragging=true;lever.setPointerCapture(e.pointerId);leverAt(e);e.preventDefault();});
-lever.addEventListener('pointermove',e=>{if(dragging)leverAt(e);});
+lever.addEventListener('pointerdown',e=>{dragging=true;try{lever.setPointerCapture(e.pointerId);}catch(_){}leverDown(e);e.preventDefault();});
+lever.addEventListener('pointermove',e=>{if(dragging)leverMove(e);});
 lever.addEventListener('pointerup',()=>{dragging=false;});
 lever.addEventListener('pointercancel',()=>{dragging=false;});
 
