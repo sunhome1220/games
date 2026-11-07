@@ -786,3 +786,22 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 建立灘頭補給站	Build a beach supply depot
 強行徵用民間物資	Requisition civilian supplies by force
 加大空投	Bigger airdrop
+長程飛彈存量拆成兩個，各自記錄、各自消耗：雲峰（國造長程巡弋飛彈，打大陸基地，每次約用 5 枚＝0.5 點）與 ATACMS（美製陸軍戰術飛彈，海馬士打 4 格以外，每枚 0.1 點）；每點約 10 枚。起始量依公開資料：ATACMS 合約 84 枚（2026 約 6 點、2027 起 8 點）、雲峰 2019 年首批訂單 20 枚（2 點，之後每年 +0.5 點為保守推估）；美國隱蔽補給與「秘密請求補給」只補 ATACMS，雲峰是國造，美方補不了。狀態列顯示兩者與合計。	Long-range missile stock is split into two pools, recorded and consumed separately: Yun Feng (domestic long-range cruise missile for striking mainland bases, about 5 missiles per strike = 0.5 point) and ATACMS (US Army tactical missile used by HIMARS beyond 4 hexes, 0.1 point each); one point is about 10 missiles. Starting amounts follow public data: ATACMS contract of 84 missiles (about 6 points in 2026, 8 from 2027), Yun Feng's first 2019 order of 20 missiles (2 points, then a conservative +0.5 point per year as an estimate); US covert resupply and 'Request supplies secretly' only top up ATACMS, because Yun Feng is domestic and the US cannot supply it. The status panel shows both and the total.
+雲峰長程巡弋飛彈（國造，每點約 10 枚）	Yun Feng long-range cruise missile (domestic, about 10 missiles per point)
+陸軍戰術飛彈 ATACMS（美製，海馬士用，每點約 10 枚）	Army tactical missile ATACMS (US-made, used by HIMARS, about 10 missiles per point)
+美國隱蔽補給：海馬士陸軍戰術飛彈 +0.5 點（約 5 枚）	US covert resupply: HIMARS Army tactical missiles +0.5 point (about 5 missiles)
+但雲峰存量 −0.5 點（預算排擠）。	but Yun Feng stock −0.5 point (budget crowding out).
+雲峰存量 −0.5 點	Yun Feng stock −0.5 point
+但雲峰存量 −1 點。	but Yun Feng stock −1 point.
+雲峰存量 −1 點	Yun Feng stock −1 point
+雲峰存量 −1.5 點、平民傷亡 +30%、美日擲骰 −1。	Yun Feng stock −1.5 points, civilian casualties +30%, US/Japan roll −1.
+雲峰存量 −1.5 點、平民傷亡 +30%	Yun Feng stock −1.5 points, civilian casualties +30%
+反艦飛彈存量 +3、陸軍戰術飛彈（ATACMS，美製）+1 點（約 10 枚）；但外交上受制，美日參戰擲骰 −1。雲峰是國造，美方補不了。	Anti-ship missile stock +3, Army tactical missiles (ATACMS, US-made) +1 point (about 10 missiles); but diplomatically constrained, US/Japan entry roll −1. Yun Feng is domestic, so the US cannot resupply it.
+反艦飛彈存量 +3、陸軍戰術飛彈 +1 點	Anti-ship missile stock +3, Army tactical missiles +1 point
+14 格內動用 ATACMS 存量（每枚 0.1 點）；每階段發射 1 次，發射後可再移動。	within 14 hexes it uses ATACMS stock (0.1 point each); one launch per phase, and it can still move afterwards.
+點選地圖上的大陸基地（紅色圖形，虛線圈標示可打擊者）進行長程打擊，每次打擊約用 5 枚雲峰（0.5 點）。	Tap a mainland base on the map (red shapes; dashed rings mark strikable ones) for a long-range strike; each strike uses about 5 Yun Feng missiles (0.5 point).
+長程飛彈合計 	Total long-range missiles 
+ 點（雲峰 	 points (Yun Feng 
+、ATACMS 	, ATACMS 
+，分開記錄、各自消耗）	 — recorded and consumed separately)
+台灣雲峰長程巡弋飛彈	Taiwan's Yun Feng long-range cruise missiles
