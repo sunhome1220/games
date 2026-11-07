@@ -793,7 +793,9 @@ const TYPES={
   hmr:{n:'海馬士火箭砲（HIMARS）',s:'海馬',atk:0,def:1,mv:2,hp:2},
   dd:{n:'共軍護航艦',s:'護航',atk:2,def:1,mv:3,hp:2},
   cv:{n:'共軍航艦群',s:'航艦',atk:0,def:2,mv:3,hp:3},
-  ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:3,hp:2}
+  ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:3,hp:2},
+  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:3,hp:2},
+  fob:{n:'灘頭補給站',s:'補給站',atk:0,def:2,mv:0,hp:3}
 };
 const WEATHER={
   good:{id:'good',n:'良好',sea:5,air:true,fire:0},
@@ -1019,7 +1021,8 @@ function newState(){
 }
 const hexOf=u=>TER[K(u.c,u.r)];
 const isMsl=u=>u.type==='ssm'||u.type==='ff'||u.type==='hmr';
-const isShip=u=>u.type==='dd'||u.type==='ff'||u.type==='cv';
+const isShip=u=>u.type==='dd'||u.type==='ff'||u.type==='cv'||u.type==='cvy'||u.type==='fob'; // 補給船團與灘頭補給站不是作戰部隊，不計入兵力
+const isSup=u=>u.type==='cvy'||u.type==='fob';
 const unitAt=k=>S.units.find(u=>K(u.c,u.r)===k);
 // 堆疊：每格最多 2 個友軍單位，不能與敵軍同格
 const STACK_MAX=2;
@@ -1051,27 +1054,54 @@ function unloadCap(){ // 船團的卸載上限：攻方掌握的港口、灘岸�
   return cap;
 }
 function supply(){
-  const used=S.units.filter(u=>u.side==='atk'&&onTW(u)).length;
+  const used=S.units.filter(u=>u.side==='atk'&&onTW(u)&&!isSup(u)).length;
   const cap=(S.sup&&S.sup.t===S.turn)?S.sup.total:unloadCap();
   return {cap,used,over:used>cap};
 }
 const goodwill=()=>Math.max(0,Math.min(1,1-(S.cost&&S.cost.civ?S.cost.civ.TW:0)/60000-Object.keys(S.portDown||{}).length*.08)); // 民心：平民傷亡與焦土都會降低
+// 補給船團與灘頭補給站：真正的棋子。船團每回合從大陸港口出航，渡海抵達卸載點才算數；沿途會被守方的反艦飛彈、潛艦、戰機、無人機、快艇打，攻方靠護航艦保護
+function unloadHexes(){ // 可卸貨的格子：攻方掌握的港口、次要港口、連續控制的灘頭、補給站所在格
+  const L=[];for(const h of Object.values(TER)){
+    if(h.isl!=='TW'||S.owner[h.k]!=='atk'||!h.coastal||h.cliff||h.mud)continue;
+    const beach=h.t!=='mtn'&&h.t!=='port'&&enemyAdj(h.k,'atk')===0; // 已控制、周圍沒有敵軍的灘岸：登陸艦可以直接搶灘卸貨
+    if((h.t==='port'&&!S.portDown[h.k])||MINOR_PORTS[h.k]||beach)L.push(h);
+  }
+  for(const f of S.units)if(f.side==='atk'&&f.type==='fob')L.push(hexOf(f));
+  return L;
+}
+function convoyTurn(){ // 攻方階段開始：運輸船返航入列、派出新船團、全部船團自動朝最近的卸載點前進
+  const P=S.pools,t=S.turn;P.plaLift+=(S.liftBack&&S.liftBack[t])||0;
+  const sinks=unloadHexes();if(!sinks.length)return;
+  const maxSend=Math.min(3,Math.floor((unloadCap()+S.units.filter(x=>x.side==='atk'&&x.type==='fob').length*2)/2)),have=S.units.filter(x=>x.side==='atk'&&x.type==='cvy').length;
+  const ord=(S.supOrd&&S.supOrd[t])||{},n=Math.max(0,Math.min(P.plaLift,maxSend+(ord.rush?1:0)-have));
+  for(let i=0;i<n;i++){const h=placeNear(FK('4,4'),x=>x.isl==='CN'&&x.t==='port');if(!h)break;S.units.push(mkUnit('atk','cvy',h.k));P.plaLift--;}
+  if(n>0)log('攻方派出 '+n+' 個補給船團，目標：已掌握的港口與灘頭（運輸船剩 '+P.plaLift+'）');
+  for(const u of S.units.filter(x=>x.side==='atk'&&x.type==='cvy')){
+    u.moved=false;const rc=reach(u),h=hexOf(u);let best=null,bs=Math.min.apply(null,sinks.map(s2=>hd(h,s2)))+ssmThreat(h.k)*.6;
+    for(const [k,v] of rc){if(v.kind!=='sail')continue;const hh=TER[k],sc=Math.min.apply(null,sinks.map(s2=>hd(hh,s2)))+ssmThreat(k)*.6+Math.random()*.3-(S.units.some(x=>x.side==='atk'&&x.type==='dd'&&hd(hexOf(x),hh)<=2)?.8:0);if(sc<bs-.2){bs=sc;best=k;}}
+    if(best)doMove(u,best,'sail');u.moved=true;u.acted=true;
+  }
+}
+function buildFob(){ // 在攻方掌握的灘頭或港口格建立灘頭補給站
+  if(S.units.filter(x=>x.side==='atk'&&x.type==='fob').length>=2)return null;
+  const c=Object.values(TER).filter(h=>h.isl==='TW'&&S.owner[h.k]==='atk'&&h.coastal&&!h.cliff&&!h.mud&&h.t!=='mtn'&&unitsAt(h.k).length<STACK_MAX&&!unitsAt(h.k).some(e=>e.side!=='atk')&&enemyAdj(h.k,'atk')===0).sort((a,b)=>(b.t==='port')-(a.t==='port')||0);
+  if(!c.length)return null;const h=c[0];S.units.push(mkUnit('atk','fob',h.k));return h;
+}
 function resolveSupply(){
   const P=S.pools,t=S.turn,ord=(S.supOrd&&S.supOrd[t])||{},intd=(S.mods.intd&&S.mods.intd[t])||null;
   if(!S.units.some(u=>u.side==='atk'&&!isShip(u)&&onTW(u))){S.sup=null;return;}
-  const AC=S.airCtl,by={},R={t};
-  // ① 船團：先看卸載能力，再逐項承受守方的攻擊（各軍種依自己的存量與條件出手，打中一次就少一個補給點）
-  const n0=Math.max(0,unloadCap()+(ord.rush?2:0)-(intd==='sabotage'?2:0));
-  const prot=Math.max(.2,1-Math.min(.6,P.plaNavy/25)-(ord.escort?.25:0)); // 護航艦隊與集中護航降低每次攻擊的命中率
-  let hits=0;
-  const att=(k,n,pp)=>{let h=0;for(let i=0;i<n&&hits<n0;i++){if(trial(Math.min(.9,pp*prot))){h++;hits++;}}if(h)by[k]=h;return h;};
-  const fu=intd==='convoy'?1.6:1;
-  const asn=Math.min(8,Math.round(Math.min(P.rocAS,10)/2*fu));if(asn>0){att('反艦飛彈',asn,.40*(AC==='atk'?.8:1));P.rocAS=Math.max(0,Math.round((P.rocAS-asn*.2)*10)/10);}
-  const subn=P.rocSub+S.fx.units.filter(f=>f.kind==='sub'&&fxActive(f)&&f.hp>0).length;if(subn>0)att('潛艦',Math.round(subn*fu),.35);
-  const fa=rocAirEff();if(fa>=1&&AC!=='atk'){const n=Math.floor(fa/2)+(AC==='def'?1:0)+(intd==='convoy'?1:0);att('戰機',n,.30);if(P.plaAD>=3&&trial(1/6)){pAdd('rocAir',-1);}}
-  if(P.rocDrone>0)att('無人機',Math.round(P.rocDrone*2*fu),.25);
-  const ffn=Math.floor(P.rocNavy/2);if(ffn>0){att('快艇',ffn,.30);if(trial(1/6))pAdd('rocNavy',-1);}
-  R.convoy={n0,hit:hits,ok:n0-hits,by};
+  const fobN=S.units.filter(u=>u.side==='atk'&&u.type==='fob').length;
+  const AC=S.airCtl,by={},R={t},fa=rocAirEff();
+  // ① 船團：已抵達卸載點的補給船團（棋子）卸貨；每回合總卸載量受港口、灘頭、補給站的卸載能力限制
+  const ucap=Math.max(0,unloadCap()+fobN*2-(intd==='sabotage'?2:0));
+  let unl=0;const arrived=[];
+  const sinks=unloadHexes();
+  for(const u of S.units.filter(x=>x.side==='atk'&&x.type==='cvy')){
+    if(!atSea(u))continue;
+    if(sinks.some(h=>hd(hexOf(u),h)<=1)){const c=u.hp;if(unl+c<=ucap){unl+=c;arrived.push(u);}}
+  }
+  arrived.forEach(u=>{S.units.splice(S.units.indexOf(u),1);S.liftBack=S.liftBack||{};S.liftBack[t+2]=(S.liftBack[t+2]||0)+1;});
+  R.convoy={n0:ucap,hit:0,ok:unl,by:{},ships:arrived.length,sunkTotal:(S.stats.cvySunk||0)};
   // ② 空投：要天候允許、運輸機要穿過防空與戰機
   let an0=0,al=0;
   if(S.weather.air&&P.plaAir>=1){an0=Math.min(2,Math.floor(P.plaAir/3))+(ord.airlift?1:0);
@@ -1083,9 +1113,11 @@ function resolveSupply(){
   const gw=goodwill(),loc=Math.round(Math.min(2,owned/60)*gw+(ord.requisition?gw:0));
   if(ord.requisition&&S.cost&&S.cost.civ)S.cost.civ.TW+=1200; // 強行徵用會增加民怨與傷亡
   R.local={n:loc,gw:Math.round(gw*100),owned};
-  R.total=R.convoy.ok+R.air.ok+R.local.n;S.sup=R;
+  // 第一次結算：登陸部隊隨身攜帶的基數（約 4 點），之後靠船團、空投與就地補給
+  const stock=(S.sup&&S.sup.stockNext!=null)?S.sup.stockNext:4;R.stock=stock;R.total=R.convoy.ok+R.air.ok+R.local.n+stock-(ord.fob?2:0);
+  const used0=S.units.filter(u=>u.side==='atk'&&onTW(u)&&!isSup(u)).length;R.stockNext=Math.max(0,Math.min(2+3*fobN,R.total-used0));S.sup=R;
   const bys=Object.entries(by).map(([k,v])=>k+' '+v).join('、');
-  log('補給結算：船團 出航 '+n0+'、遭擊沉 '+hits+(bys?'（'+bys+'）':'')+'、抵達 '+R.convoy.ok+'；空投 '+an0+(an0?'、被擊落 '+al:'（天候或空軍不足）')+'；就地 '+loc+'（民心 '+R.local.gw+'%）；合計補給容量 '+R.total);
+  log('補給結算：補給船團 '+R.convoy.ships+' 個抵達卸貨（'+R.convoy.ok+' 點，卸載上限 '+ucap+'；累計損失船團 '+(S.stats.cvySunk||0)+' 個）；庫存 '+stock+'；空投 '+an0+(an0?'、被擊落 '+al:'（天候或空軍不足）')+'；就地 '+loc+'（民心 '+R.local.gw+'%）；合計補給容量 '+R.total);
 }
 function weak(u){return u.hp===1&&TYPES[u.type].hp>1?1:0;}
 function effAtk(u){return TYPES[u.type].atk+sideMod(u,'atk')-weak(u)-(u.side==='atk'&&onTW(u)&&supply().over?1:0);}
@@ -1175,7 +1207,9 @@ function damage(u,n,why){
   S.hits.push({c:u.c,r:u.r,t:S.turn,side:u.side,type:u.type,n:Math.min(n,u.hp),sea:atSea(u),why:why||'地面戰鬥'});
   fxq({t:'dmg',id:u.id,at:[u.c,u.r],n:Math.min(n,u.hp),side:u.side});
   u.hp-=n;
-  if(u.hp<=0){fxq({t:'dead',at:[u.c,u.r],type:u.type,side:u.side});S.units=S.units.filter(x=>x!==u);if(u.type==='dd'&&S.pools)S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(u.type==='ff'&&S.pools)S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);if(u.type==='cv'&&S.pools)S.pools.plaCV=Math.max(0,S.pools.plaCV-1);
+  if(u.hp<=0){if(u.type==='cvy'){S.stats.cvySunk=(S.stats.cvySunk||0)+1;if(S.pools)S.pools.plaLift=Math.max(0,S.pools.plaLift)+0;}
+    if(u.type==='fob')log('攻方灘頭補給站被摧毀：卸載能力與庫存空間下降');
+    fxq({t:'dead',at:[u.c,u.r],type:u.type,side:u.side});S.units=S.units.filter(x=>x!==u);if(u.type==='dd'&&S.pools)S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(u.type==='ff'&&S.pools)S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);if(u.type==='cv'&&S.pools)S.pools.plaCV=Math.max(0,S.pools.plaCV-1);
     if(!isShip(u)){const rest=unitsAt(K(u.c,u.r));if(rest.length&&rest.every(isShip)){rest.forEach(x=>{fxq({t:'dead',at:[x.c,x.r],type:x.type,side:x.side});S.units=S.units.filter(y=>y!==x);if(x.type==='ff')S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);if(x.type==='dd')S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(x.type==='cv')S.pools.plaCV=Math.max(0,S.pools.plaCV-1);log(uname(x)+' 隨港口失守而損失');});}}log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));return true;}
   return false;
 }
@@ -1316,7 +1350,7 @@ const hasBeachhead=()=>S.units.some(u=>u.side==='atk'&&!isShip(u)&&onTW(u));
 function interdictOptions(){
   return {title:'攔截補給（守方）',blurb:'攻方已在島上站穩腳跟，補給靠船團、空投與就地徵用三條路。可以集中力量打其中一條：預估對應的管道在下回合補給結算時受到更大壓力。',
     opts:[{id:'normal',label:'照常作戰',desc:'維持原本的攻擊目標。',est:'不影響補給',rec:false},
-      {id:'convoy',label:'全力打補給船團',desc:'反艦飛彈、潛艦、戰機優先打補給船團：下回合補給結算時船團受到的攻擊次數約 ×1.6；代價是反艦飛彈存量 −2，也少打登陸船團。',est:'船團補給明顯下降',rec:true},
+      {id:'convoy',label:'全力打補給船團',desc:'反艦飛彈、潛艦、戰機優先打海上的補給船團：額外對船團發動 3 次攻擊；代價是反艦飛彈存量 −2，也少打登陸船團。',est:'船團損失增加',rec:true},
       {id:'air',label:'全力攔截運輸機',desc:'戰機與防空集中攔截空投：下回合空投被擊落機率 +30%；代價是出擊的戰機可能折損（1/3 機率守方空軍 −1）。',est:'空投幾乎失效',rec:false},
       {id:'sabotage',label:'特種部隊破壞港口後勤設施',desc:'特種部隊襲擊卸載碼頭與油料庫：下回合船團卸載能力 −2；代價是破壞行動造成平民傷亡 +1,500。',est:'卸載能力下降',rec:false}]};
 }
@@ -1331,7 +1365,7 @@ async function interdictEval(){
   log('【'+rec.title+'】守方選擇「'+o.label+'」');
   m.intd=m.intd||{};
   if(o.id!=='normal'){m.intd[t+1]=o.id;S.stats.interdict=(S.stats.interdict||0)+1;m.lastInterdict=t;}
-  if(o.id==='convoy'){pAdd('rocAS',-2);eff.push('下回合船團受到的攻擊約 ×1.6','反艦飛彈存量 −2');}
+  if(o.id==='convoy'){pAdd('rocAS',-2);const prot=Math.max(.2,1-Math.min(.6,S.pools.plaNavy/25)-((S.supOrd&&S.supOrd[t]&&S.supOrd[t].escort)?.25:0));let hit=0;for(let i=0;i<3;i++){const cs=S.units.filter(x=>x.side==='atk'&&x.type==='cvy'&&atSea(x));if(!cs.length)break;const c=pick(cs);if(trial(Math.min(.9,.45*prot))){hit++;damage(c,1,'守方（攔截補給船團）');}}eff.push('對補給船團額外發動 3 次攻擊，命中 '+hit,'反艦飛彈存量 −2');log('守方集中攻擊補給船團：命中 '+hit+' 次');}
   else if(o.id==='air'){if(trial(1/3)){pAdd('rocAir',-1);eff.push('出擊戰機折損，守方空軍 −1');}eff.push('下回合空投被擊落機率 +30%');}
   else if(o.id==='sabotage'){if(S.cost&&S.cost.civ)S.cost.civ.TW+=1500;eff.push('下回合船團卸載能力 −2','平民傷亡 +1,500');}
   rec.snap=snap();S.events.push(rec);
@@ -1343,13 +1377,14 @@ function convoyOptions(){
       {id:'escort',label:'集中護航補給船團',desc:'護航艦隊集中保護船團：船團每次遭攻擊的命中率 −25%；但本回合攻方攻擊 −1。',est:'船團較安全，攻勢略緩',rec:hit},
       {id:'airlift',label:'加大空投',desc:'多派運輸機：空投補給 +1 點；但運輸機要穿過防空與戰機，被擊落就算空軍損失。',est:'多一點補給，有折損風險',rec:false},
       {id:'requisition',label:'強行徵用民間物資',desc:'就地徵用燃料與糧食：就地補給 +1 點（乘上民心）；但強行徵用造成平民傷亡 +1,200，民心下降。',est:'多一點補給，民心再降',rec:false},
-      {id:'rush',label:'加緊運補',desc:'緊急增派運輸船：本回合船團出航量 +2；但抽調護航艦，護航艦隊 −1，新增的船也要承受攻擊。',est:'短期補給改善，護航變薄',rec:false}]};
+      {id:'rush',label:'加緊運補',desc:'緊急多派 1 個補給船團出航；但抽調護航艦，護航艦隊 −1，新增的船也要承受攻擊。',est:'多一個船團，護航變薄',rec:false},
+      {id:'fob',label:'建立灘頭補給站',desc:'在已掌握的灘頭或港口格建立補給站（最多 2 個）：卸載能力 +2、庫存空間 +3；本回合補給 −2（材料與人力）；補給站是棋子，守方可以攻擊，攻方要派兵守。',est:'長期補給改善，補給站需要保護',rec:false}]};
 }
 async function convoyEval(){
   if(S.over||S.turn<3||!hasBeachhead())return;
   const info=convoyOptions(),manual=(S.sim&&!S.simAuto)||(!S.video&&S.ctrl.atk==='human');
   const ai=()=>{const hit=S.mods.lastInterdict===S.turn-1,r=Math.random(),O=info.opts;
-    return hit?(r<.5?O[1]:r<.65?O[2]:r<.8?O[4]:r<.9?O[3]:O[0]):(r<.7?O[0]:r<.82?O[3]:O[2]);};
+    const nf=S.units.filter(x=>x.side==='atk'&&x.type==='fob').length;return hit?(r<.45?O[1]:r<.6?O[2]:r<.72?O[4]:r<.82?O[3]:r<.92&&nf<2?O[5]:O[0]):(nf<2&&r<.45?O[5]:r<.75?O[0]:r<.87?O[3]:O[2]);};
   let o;if(manual)o=await askTruce(info,ai);else{o=ai();if(!(S.rec&&REC.quiet)&&o.id!=='normal')toast(info.title+'：'+o.label);}
   const m=S.mods,t=S.turn,eff=[],rec={turn:t,phase:S.phase,title:info.title,id:'convoy_'+t,choice:o.label,who:'atk',rolls:[],effects:eff};
   log('【'+rec.title+'】攻方選擇「'+o.label+'」');
@@ -1357,7 +1392,8 @@ async function convoyEval(){
   if(o.id==='escort'){S.supOrd[t].escort=1;addTurns(m.atkAtk,t,t,-1);eff.push('船團遭攻擊命中率 −25%；攻方本回合攻擊 −1');}
   else if(o.id==='airlift'){S.supOrd[t].airlift=1;eff.push('空投 +1 點（有被擊落風險）');}
   else if(o.id==='requisition'){S.supOrd[t].requisition=1;eff.push('就地補給 +1 點（乘上民心）；平民傷亡 +1,200');}
-  else if(o.id==='rush'){S.supOrd[t].rush=1;S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);eff.push('本回合船團出航量 +2、護航艦隊 −1');}
+  else if(o.id==='rush'){S.supOrd[t].rush=1;S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);eff.push('多派 1 個補給船團、護航艦隊 −1');}
+  else if(o.id==='fob'){S.supOrd[t].fob=1;const h=buildFob();eff.push(h?'在 '+hname(h)+' 建立灘頭補給站（卸載能力 +2、庫存 +3；本回合補給 −2）':'沒有合適的位置，補給站未建立');if(!h)S.supOrd[t].fob=0;}
   rec.snap=snap();S.events.push(rec);
 }
 function updateBeachheads(){ // 灘岸格連續被攻方控制 2 個回合就成為灘頭堡（補給 +2）；失守即重算
@@ -1582,7 +1618,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 
 /* ---------- theater: pools, foreign forces ---------- */
 // baseline (2026) force pools, abstract points built from public reporting; see DATA.md
-const POOL0={plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:8,rf:32,plaCM:5,plaLR:6,plaHS:3,rocAir:4,rocNavy:4,rocSub:0,rocAD:4,rocMsl:10,rocDrone:1,rocMine:1,rocAS:10};
+const POOL0={plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:8,rf:32,plaCM:5,plaLR:6,plaHS:3,rocAir:4,rocNavy:4,rocSub:0,rocAD:4,rocMsl:10,rocDrone:1,rocMine:1,rocAS:10,plaLift:8};
 const ERA={
   '2026':{n:'2026 現況',d:'依 2025～2026 公開報導：台灣剛收到首批 F-16V、HIMARS 陸續到貨、雲峰尚未大量生產、火山布雷車尚未交付；共軍有約 250 具東風-26 發射器、東風-17 與 PCH-191 長程火箭，福建艦剛服役。',short:'2026 現況',pools:{},ssm:[],dfire:2},
   '2027':{n:'2027（推估）',d:'火山布雷車 14 套預計到位（交付多次延後，最新報導為 2027 年）；福建艦達完整戰力；F-16V 持續交付、雲峰開始量產。',short:'2027',pools:{plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:8,rf:33,plaCM:5,plaLR:7,plaHS:3,rocAir:4,rocNavy:4,rocSub:0,rocAD:4,rocMsl:11,rocDrone:1,rocAS:12,rocMine:3},ssm:[],dfire:2},
@@ -1650,7 +1686,7 @@ function sweepMines(){
   for(let i=0;i<sw;i++){const k=ks[i];delete S.mines[k];got.push(hname(TER[k]));if(trial(1/6)){P.plaNavy--;got.push('掃雷艦觸雷（攻方護航艦 −1）');}}
   syncMines();log('攻方掃雷：清除 '+got.join('、')+'。');
 }
-const POOLN={rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程飛彈（雲峰等）',rocDrone:'無人機與巡飛彈'};
+const POOLN={plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程飛彈（雲峰等）',rocDrone:'無人機與巡飛彈'};
 const CN={US:'美國',JP:'日本'};
 const LV={US:['不介入','情報支援','有限介入','全面參戰'],JP:['中立','後方支援','全面參戰']};
 
@@ -1759,6 +1795,20 @@ function fxStatus(f){
   if(S.turn<fxReady(f))return '第 '+fxReady(f)+' 回合抵達';
   return '出擊中';
 }
+// 航艦被擊沉：任一方的航艦沉沒都是大消息。美軍航艦沉沒時，美國會依傷亡、當前參戰程度與戰況，決定退出、維持或強力報復
+function bigNews(title,msg){log('【重大消息】'+title+'：'+msg);if(!(S.rec&&REC.quiet))toast('📰 重大消息：'+title,6500);S.bigNews=S.bigNews||[];S.bigNews.push({t:S.turn,title,msg});}
+function plaCarrierLost(how){bigNews('共軍航艦遭擊沉','共軍航艦被'+(how||'守方攻擊')+'擊沉，剩餘 '+Math.max(0,S.pools.plaCV)+' 艘；攻方的制空與艦載機出擊能力大受打擊，全球媒體頭條。');}
+function usCarrierSunk(){
+  const idx=usIdx();bigNews('美軍航艦遭擊沉','第 7 艦隊的航艦打擊群在台海附近被擊沉，數千名官兵可能罹難，美國社會震動。');
+  if(idx<0)return;
+  const cas=usCas(),n=conditions().filter(c=>c.atk).length,recent=S.us.rally&&S.turn-S.us.rally<=2;
+  const wR=Math.max(.05,.18+.03*cas+(idx>=2?-.08:0)-(n>=2?.06:0)),wE=Math.max(.1,.3+.1*n+(recent?.2:0)+(idx>=2?.1:0)),wH=Math.max(.1,1-wR-wE),tot=wR+wE+wH,r=Math.random()*tot;
+  if(r<wR){S.us.drop=Math.max(S.us.drop||0,1)+1;notePosture('航艦遭擊沉，美國國內壓力暴增，政府宣布撤出戰區',true);log('美國：航艦沉沒後政治壓力過大（傷亡累計 '+cas+' 步），退出戰場，改為最低限度的支援');}
+  else if(r<wR+wE){setLevel('US',Math.min(3,Math.max(S.fx.lv.US,2)+1),'航艦遭擊沉的報復');S.us.drop=0;S.us.rally=S.turn;
+    let k=0;for(let i=0;i<3;i++){const id=aiPickCN();if(!id)break;strikeCN(id,'US');k++;}
+    log('美國：航艦沉沒激起強烈報復，全力投入並對大陸基地發動 '+k+' 次打擊');}
+  else log('美國：航艦沉沒後暫時維持現有立場，等待進一步情勢（傷亡累計 '+cas+' 步）');
+}
 function setLevel(c,v,why){
   if(S.fxLock||v<=S.fx.lv[c])return false;
   for(let l=S.fx.lv[c]+1;l<=v;l++)if(S.fx.reach[c][l]===undefined)S.fx.reach[c][l]=S.turn;
@@ -1840,9 +1890,9 @@ function antiShip(who,shots,need,canLand,tag,ok0,fk){
   const base=ok0||'roc';
   const P=S.pools;let hc=0,he=0,hl=0,cvh=0;
   for(let i=0;i<shots;i++){
-    const fleet=S.units.filter(u=>u.side==='atk'&&atSea(u)&&(!isShip(u)||u.type==='cv'));
+    const fleet=S.units.filter(u=>u.side==='atk'&&atSea(u)&&(!isShip(u)||u.type==='cv'||u.type==='cvy'));
     if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pick(fleet),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&hd(hexOf(x),hexOf(tg))<=2)?1:0,sat=satHit(tg),ok=sat>=3||trial(pNeed(need+escortMod()+cov-sat));fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:orgPick(base),k:fk||'cm',ad:P.plaAD>0&&fk!=='torp'?(ok?'pass':'int'):undefined,adSide:'atk'});if(ok){hc++;damage(tg,sat>=2?2:1,sat>=2?'飽和攻擊':who);}}
-    else if(P.plaNavy>0){if(trial(pNeed(need))){he++;P.plaNavy--;if(P.plaCV>0&&trial(pNeed(5+(P.plaNavy>=5?1:0)))){P.plaCV--;cvh++;}}}
+    else if(P.plaNavy>0){if(trial(pNeed(need))){he++;P.plaNavy--;if(P.plaCV>0&&trial(pNeed(5+(P.plaNavy>=5?1:0)))){P.plaCV--;cvh++;plaCarrierLost('反艦飛彈');}}}
     else if(canLand){
       const land=S.units.filter(u=>u.side==='atk'&&onTW(u));if(!land.length)break;
       const t=pick(land),h=hexOf(t),ok=trial(pNeed(h.t==='city'||h.t==='mtn'?6:5));fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:false,org:orgPick(base),k:fk||'cm'});if(ok){hl++;damage(t,1,who);}
@@ -1878,20 +1928,20 @@ function seaBattle(){
   const rounds=Math.min(3,Math.ceil((P.plaNavy+P.plaCV)/4));
   for(let i=0;i<rounds;i++){
     if(P.rocNavy>0&&trial(.5)){P.rocNavy--;out.push('守方海軍 −1');}
-    else if(ships.length&&trial(pNeed(5))){const f=pick(ships.filter(x=>x.hp>0));if(f){f.hp--;out.push(f.n+' −1');}}
+    else if(ships.length&&trial(pNeed(5))){const f=pick(ships.filter(x=>x.hp>0));if(f){f.hp--;out.push(f.n+' −1');if(f.id==='csg'&&f.hp<=0)usCarrierSunk();}}
   }
   for(let i=0;i<Math.min(2,P.rocNavy);i++)if(P.plaNavy>0&&trial(pNeed(5+(P.plaCV>0&&P.plaNavy>=6?1:0)))){P.plaNavy--;out.push('攻方護航艦 −1');}
   for(const sb of subs){
     if(sb.hp<=0)continue;
     if(trial(.5)){
-      if(P.plaCV>0&&trial(1/6)){P.plaCV--;out.push(sb.n+'擊傷航艦（共軍航艦 −1）');}
+      if(P.plaCV>0&&trial(1/6)){P.plaCV--;out.push(sb.n+'擊沉航艦（共軍航艦 −1）');plaCarrierLost('潛艦魚雷');}
       else if(P.plaNavy>0){P.plaNavy--;out.push(sb.n+'擊沉護航艦（攻方護航艦 −1）');}
     }
     if(P.plaNavy>=4&&trial(pNeed(5))){sb.hp--;out.push(sb.n+'遭反潛 −1');}
   }
   for(let i=0;i<P.rocSub;i++){ // 台灣自製潛艦（海鯤）
     if(trial(.5)){
-      if(P.plaCV>0&&trial(1/6)){P.plaCV--;out.push('海鯤潛艦擊傷航艦（共軍航艦 −1）');}
+      if(P.plaCV>0&&trial(1/6)){P.plaCV--;out.push('海鯤潛艦擊沉航艦（共軍航艦 −1）');plaCarrierLost('潛艦魚雷');}
       else if(P.plaNavy>0){P.plaNavy--;out.push('海鯤潛艦擊沉護航艦（攻方護航艦 −1）');}
     }
     if(P.plaNavy>=4&&trial(pNeed(5))){P.rocSub--;out.push('海鯤潛艦遭反潛擊沉（守方潛艦 −1）');i--;}
@@ -1935,7 +1985,7 @@ function strikeBase(b){
   const lr=S.pools.plaLR>0;if(lr)S.pools.plaLR--; // DF-26 / DF-21D
   const need=Math.max(3,baseNeed(b)-(lr?1:0)),ok=trial(pNeed(need));
   fxq({t:'tfa',a:Object.keys(CNB).find(id=>CNB[id].kind==='rf'&&S.cn[id]>0)||'yongan',b,hit:ok});
-  if(ok){const f=pick(tg);f.hp--;log('火力打擊 '+B.n+(lr?'（東風-26／21D）':'')+' 命中 '+f.n+'（'+lastTxt()+'）'+(f.hp<=0?'，已失去戰力':''));}
+  if(ok){const f=pick(tg);f.hp--;if(f.id==='csg'&&f.hp<=0)usCarrierSunk();log('火力打擊 '+B.n+(lr?'（東風-26／21D）':'')+' 命中 '+f.n+'（'+lastTxt()+'）'+(f.hp<=0?'，已失去戰力':''));}
   else log('火力打擊 '+B.n+' 未命中（'+lastTxt()+'）');
 }
 function aiBaseStrikes(){
@@ -2014,7 +2064,7 @@ function doRetaliation(){
     if(b==='guam')usRally();
     const ok=trial(pNeed(need));
     fxq({t:'tfa',a:'yongan',b,hit:ok});
-    if(ok){f.hp--;S.stats.retal.hits++;log('中方報復打擊 '+B.n+(lr?'（東風-26／21D）':'')+' 命中 '+f.n+'（'+lastTxt()+'）'+(f.hp<=0?'，已失去戰力':''));}
+    if(ok){f.hp--;if(f.id==='csg'&&f.hp<=0)usCarrierSunk();S.stats.retal.hits++;log('中方報復打擊 '+B.n+(lr?'（東風-26／21D）':'')+' 命中 '+f.n+'（'+lastTxt()+'）'+(f.hp<=0?'，已失去戰力':''));}
     else log('中方報復打擊 '+B.n+' 未命中（'+lastTxt()+'）');
   }
 }
@@ -2240,7 +2290,7 @@ const DEFEV=[
   EVENTS.splice(at('final'),0,...DEFEV.slice(4));          // 開戰初期、中段與後期
 })();
 function snap(){
-  let as=0,ds=0;for(const u of S.units)if(onTW(u)){if(u.side==='atk')as+=u.hp;else ds+=u.hp;}
+  let as=0,ds=0;for(const u of S.units)if(onTW(u)&&!isSup(u)){if(u.side==='atk')as+=u.hp;else ds+=u.hp;}
   const cs=conditions();
   return {as,ds,sea:S.units.filter(u=>u.side==='atk'&&atSea(u)&&!isShip(u)).length,ports:PORTS.filter(k=>S.owner[k]==='atk'&&!S.portDown[k]).length,
     taipei:S.owner[TAIPEI]==='atk',ssm:S.units.filter(u=>u.side==='def'&&u.type==='ssm').reduce((a,u)=>a+u.hp,0),n:cs.filter(c=>c.atk).length,
@@ -2477,7 +2527,7 @@ function renderTheater(){
   const P=S.pools,bar=(k,side)=>'<div class="pool"><span>'+POOLN[k]+'</span><i><em class="'+side+'" style="width:'+Math.round(100*Math.max(0,P[k])/Math.max(S.p0[k],P[k]))+'%"></em></i><b>'+Math.round(P[k]*10)/10+'</b></div>';
   const dt=(key,def,head,body)=>'<details class="fside" data-f="'+key+'"'+((FOLD[key]===undefined?def:FOLD[key])?' open':'')+'><summary class="fh">'+head+'</summary>'+body+'</details>';
   const cnN=Object.keys(CNB).filter(id=>S.cn[id]>0).length;
-  let l=dt('atk',true,'<b>攻方</b>',['plaAir','plaCV','plaSub','plaAD','plaNavy','rf','plaCM','plaLR','plaHS'].map(k=>bar(k,'atk')).join(''))+
+  let l=dt('atk',true,'<b>攻方</b>',['plaAir','plaCV','plaSub','plaAD','plaNavy','plaLift','rf','plaCM','plaLR','plaHS'].map(k=>bar(k,'atk')).join(''))+
     dt('cnb',false,'<b>中方基地</b><span class="dd">運作中 '+cnN+' / '+Object.keys(CNB).length+'　◆火箭軍 ▲空軍 ■海軍 ●集結港</span>',
       Object.entries(CNB).map(([id,B])=>'<div class="fu cnrow'+(S.cnSel===id?' hl':'')+'"><div><b>'+KIND_S[B.kind]+' '+B.n+'</b> <span class="dd">'+KIND_N[B.kind]+'</span></div><div class="fst"><span class="pips">'+
         Array.from({length:B.hp},(_,i)=>'<i class="'+(i<S.cn[id]?'f':'')+'"></i>').join('')+'</span><span class="st'+(S.cn[id]>0?'':' off')+'">'+(S.cn[id]>0?'運作中':'已癱瘓')+'</span></div></div>').join(''))+
@@ -2963,7 +3013,7 @@ async function beginPhase(side){
   if(side==='def')await portEval();if(S.over)return;
   if(side==='atk'){updateBeachheads();await convoyEval();if(S.over)return;}
   if(side==='def')await interdictEval();if(S.over)return;
-  if(side==='atk'){repairPorts();repairAirfields();resolveSupply();supplyAttrition();}
+  if(side==='atk'){repairPorts();repairAirfields();resolveSupply();convoyTurn();supplyAttrition();}
   if(side==='atk'){
     S.weather=S.turn===1&&S.mods.wxT1?WEATHER[S.mods.wxT1]:rollWeather();if(S.weather.id==='bad')S.stats.badWx++;
     airBattle();S.fire=computeFire();doRetaliation();sweepMines();
@@ -3120,6 +3170,7 @@ function pickStrike(){
   return best;
 }
 async function aiAtkUnit(u){
+  if(isSup(u))return; // 補給船團與補給站由補給系統自動處理
   const h=hexOf(u);
   if(u.type==='cv'){ // 航艦群：在東岸海域游弋，遇到岸置飛彈威脅就向外海退
     const rc=reach(u),others=S.units.filter(x=>x.type==='cv'&&x!==u);let best=null;
@@ -3586,6 +3637,8 @@ function unitSVG(u){
   else if(u.type==='dd'||u.type==='ff')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+6)+'h14l-2 3h-10z"/><path class="sym" d="M'+(x-2)+' '+(by+6)+'v-3h4v3"/>';
   else if(u.type==='hmr')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+8)+'h12M'+(x-4)+' '+(by+7.5)+'l7 -5M'+(x-1)+' '+(by+7.5)+'l7 -5M'+(x+2)+' '+(by+7.5)+'l5 -3.5"/><circle class="sym" cx="'+(x-4)+'" cy="'+(by+8.6)+'" r="1"/><circle class="sym" cx="'+(x+4)+'" cy="'+(by+8.6)+'" r="1"/>';
   else if(u.type==='ssm')sym=box+'<path class="sym" d="M'+(x-5)+' '+(by+8)+'L'+x+' '+(by+2)+'L'+(x+5)+' '+(by+8)+'M'+x+' '+(by+2)+'V'+(by+9)+'"/>';
+  else if(u.type==='cvy')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+7)+'h14l-2 2.5h-10z"/><path class="sym" d="M'+(x-4)+' '+(by+7)+'v-3h8v3"/>';
+  else if(u.type==='fob')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+8)+'h12M'+(x-4)+' '+(by+8)+'v-5h8v5"/>';
   else if(u.type==='abn')sym=box+X+'<path class="sym" d="M'+(x-5)+' '+(by+bh)+'Q'+x+' '+(by+4)+' '+(x+5)+' '+(by+bh)+'"/>';
   else if(u.type==='amph'||u.type==='mar')sym=box+X+'<path class="sym" d="M'+(bx+1)+' '+(by+bh-1.5)+'q2.5 -2 5 0t5 0t5 0"/>';
   else sym=box+X;
@@ -3793,6 +3846,7 @@ if(/[?&]debug=1/.test(location.search))window.__score=async(cfg)=>{ // 測試用
   for(const [k,v] of Object.entries(cfg||{})){const e=document.getElementById(k);if(e)e.value=v;}
   const keep=S;await simRun(true);const m=endScores(),r={A:m.A.total,D:m.D.total,win:(S.result&&S.result.side)||null,US:S.fx.lv.US,JP:S.fx.lv.JP};S=keep;return r;};
 if(/[?&]debug=1/.test(location.search))window.__sup2=()=>S.sup;
+if(/[?&]debug=1/.test(location.search))window.__cvTest=side=>{if(side==='US')usCarrierSunk();else plaCarrierLost('測試');return S.log.slice(0,4).map(l=>l.msg);};
 if(/[?&]debug=1/.test(location.search))window.__dog=o=>fxDog(o);
 if(/[?&]debug=1/.test(location.search))window.__fxShot=(a,b,o)=>fxShot(a,b,o);
 function fxSmoke(a,b,arc,n,ms){for(let i=1;i<=n;i++)setTimeout(()=>{const p=bez(a,[(a[0]+b[0])/2,(a[1]+b[1])/2-arc],b,i/(n+1));fxFlash(p,2,7,'#e8e8e8',520);},ms*i/(n+1)*fxK());}
