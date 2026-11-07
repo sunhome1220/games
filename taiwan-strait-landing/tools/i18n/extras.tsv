@@ -902,3 +902,33 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 美日參戰擲骰 +2。	US/Japan entry roll +2.	
 沒有得到回應，沒有任何實際效果	No answer; no practical effect	
 電網癱瘓	Power grid down	
+新增「難度評級」：把你的分數放進「同年代、同參戰情境」的 150 場電腦推演分布裡看百分位（S 前 5%、A 前 20%、B 前 50%、C 前 80%、D 其餘），人類玩家會得到帶百分比的評語；電腦推演只顯示客觀等級。分數的「外部」一項改為自主程度（攻方損失中美日造成的比例越低，攻方「對抗外援」越高；守方靠自己打掉敵軍的比例越高，「自主程度」越高）。另外：大陸基地（火箭軍旅駐地、機場）被打掉的比例會持續降低攻方的發射與出擊能量，不再只是一次性扣庫存；決策選項依物理原則整理（拿掉報復加火力、士氣數值與憑空增援）。	Added a 'Difficulty rating': your score is placed within the distribution of 150 computer sims with the same era and same US/Japan entry scenario (S top 5%, A top 20%, B top 50%, C top 80%, D the rest); human players get a comment with the percentage, computer sims show only the objective grade. The 'external' score item became self-reliance (the lower the share of attacker losses caused by the US/Japan, the higher the attacker's 'Resisting allies'; the more kills Taiwan makes itself, the higher the defender's 'Self-reliance'). Also: the share of mainland bases (rocket-force garrisons, airfields) knocked out now keeps reducing the attacker's launch and sortie capacity instead of a one-time stock deduction; decision options were cleaned up by physical principles (no retaliation fire bonuses, morale numbers or conjured reinforcements).	
+難度評級（相對同設定的電腦推演）	Difficulty rating (relative to computer sims with the same settings)	
+同年代、同參戰情境的 150 場電腦推演中，約 	Among 150 computer sims with the same era and US/Japan scenario, about 	
+% 能達到 	% reached 	
+ 分或更高	 points or more	
+難度評級以百分位計：S 前 5%、A 前 20%、B 前 50%、C 前 80%、D 其餘。基準是電腦對電腦的推演，不是真人玩家資料。	The difficulty rating is a percentile: S top 5%, A top 20%, B top 50%, C top 80%, D the rest. The baseline is computer-vs-computer sims, not data from real players.	
+（而且有一半以上的功勞是美日的。）	(And more than half the credit goes to the US and Japan.)	
+對抗外援	Resisting allies	
+自主程度	Self-reliance	
+戰神！同樣的設定下，只有約 {p}% 的電腦推演能做到。	A war god! With the same settings only about {p}% of computer sims manage this.	
+教科書級的操作，電腦推演裡不到 {p}% 能贏得這麼漂亮。	Textbook play: under {p}% of computer sims win this beautifully.	
+這成績單可以裱框了，同設定下電腦推演只有約 {p}% 能達到。	This report card deserves a frame; only about {p}% of computer sims reach it with the same settings.	
+漂亮，同設定下只有約 {p}% 的電腦推演能贏得這麼好。	Nice: only about {p}% of computer sims win this well with the same settings.	
+穩而準，電腦推演裡約 {p}% 才有這樣的成績。	Steady and precise: about {p}% of computer sims get a result like this.	
+贏是贏了，電腦推演裡約 {p}% 也能做到，不算特別，也不算丟臉。	A win is a win; about {p}% of computer sims manage it too — nothing special, nothing shameful.	
+中規中矩的勝利，同設定下約 {p}% 的電腦推演做得到。	A solid, unremarkable win; about {p}% of computer sims can do it with the same settings.	
+贏是贏了，但同設定下約 {p}% 的電腦推演贏得比你好看。	You won, but about {p}% of computer sims win more prettily with the same settings.	
+勉強過關，電腦推演裡約 {p}% 都比你更漂亮。	A narrow pass; about {p}% of computer sims do it more prettily.	
+這樣也叫贏？同設定下約 {p}% 的電腦推演都贏得比你像樣。	Is that even a win? About {p}% of computer sims win more respectably with the same settings.	
+贏得驚險又難看，約 {p}% 的電腦推演表現比你好。	A scary and ugly win; about {p}% of computer sims do better than you.	
+輸了，卻輸得很有格調：同設定下只有約 {p}% 的電腦推演能撐得比你好。	You lost, but with style: only about {p}% of computer sims hold out better with the same settings.	
+這局難度太高，你的表現仍優於九成以上的電腦推演。	This one was too hard, yet you still beat over 90% of computer sims.	
+雖敗猶榮，同設定下約 {p}% 的電腦推演才有這個表現。	Honorable in defeat: only about {p}% of computer sims perform like this with the same settings.	
+輸了，但電腦推演裡約 {p}% 也跟你差不多，不用太難過。	You lost, but about {p}% of computer sims did about the same; don't be too sad.	
+這種設定下，約 {p}% 的電腦推演都比你撐得久，下次想想哪裡出了問題。	With these settings about {p}% of computer sims last longer than you; think about what went wrong.	
+輸了，而且約 {p}% 的電腦推演在同設定下都做得比你好。	You lost, and about {p}% of computer sims do better than you with the same settings.	
+這麼多資源你也能輸！同設定下約 {p}% 的電腦推演都做得比你好。	With this many resources you still lost! About {p}% of computer sims do better than you with the same settings.	
+輸成這樣，約 {p}% 的電腦推演都能做得比你像樣。請重新開局，或者換個難度。	Losing like this: about {p}% of computer sims do more respectably. Restart, or pick another difficulty.	
+大陸基地受損：火箭軍旅可用 	Mainland bases damaged: rocket-force brigades usable 	
+、機場可用 	, airfields usable 	
