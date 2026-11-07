@@ -93,6 +93,7 @@ th{color:#9fb0c8;font-weight:600}
 .card{background:#141b27;border:1px solid #2c3850;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:13.5px;color:#d3ddee}
 .card h3{margin:0 0 6px;font-size:14px;color:#e8c88a}.card li{margin:5px 0}.card .nw{display:block;color:#8fa0b8;font-size:12px;margin-top:2px}
 .ok{color:#7bd88f}.bad{color:#ff9b7b}.mid{color:#ffd37a}
+.sh-st{margin-bottom:6px;color:#9fb0c8;font-size:13px}.card textarea{width:100%;background:#0e131c;color:#eef2f7;border:1px solid #3d4b63;border-radius:8px;padding:8px;font:inherit;font-size:16px;resize:none}
 .rk{width:100%}.rk tr.me td{background:rgba(232,200,138,.18);color:#ffe9a0;font-weight:700}.rk td:nth-child(2){text-align:left}
 .pill{display:inline-block;background:#1a2231;border:1px solid #3d4b63;border-radius:8px;padding:3px 10px;margin:2px 4px 2px 0;font-size:13px}
 #newver{position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:30;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:20px;padding:8px 16px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.4)}
@@ -126,6 +127,7 @@ th{color:#9fb0c8;font-weight:600}
 <section id="menu" class="screen">
 <div>
   <h1>🚇 北捷駕駛模擬<small>第一人稱・手動駕駛</small></h1>
+  <div id="sharebanner" class="card" hidden></div>
   <p class="sub">加速、惰行、煞車，準點、準確地把列車停在月台停車位置，並維持乘坐舒適。</p>
 
   <div class="lab">駕駛名稱（顯示在駕駛室名牌、成績與排行榜）</div>
@@ -180,6 +182,8 @@ th{color:#9fb0c8;font-weight:600}
   </ul>
   <button class="big" id="m-go">開始值勤</button>
   <div id="m-best" class="sub" style="text-align:center;margin-top:8px"></div>
+  <button class="btn2" id="m-share">🔗 分享這個關卡（可用 AirDrop）</button>
+  <div id="sh-menu" class="card" hidden></div>
   <button class="btn2" id="m-board">🏆 排行榜</button>
   <p class="sub" style="font-size:12px;text-align:center">站序、站體（高架／平面／地下）、月台形式（島式／側式）與站間距離依維基百科車站表（2026-11 擷取）；限速區間與沿線地貌（河、山、湖、建築疏密）為遊戲示意，未逐站查證。</p>
   <div id="ver"></div>
@@ -206,16 +210,19 @@ th{color:#9fb0c8;font-weight:600}
   <div id="r-coach"></div>
   <table id="r-tbl"></table>
   <button class="big" id="r-again">再開一班</button>
+  <button class="btn2" id="r-share">🔗 分享成績與這一關（可用 AirDrop）</button>
+  <div id="sh-res" class="card" hidden></div>
   <button class="btn2" id="r-menu">回到選單</button>
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-07.14"></script>
-<script src="js/broadcast.js?v=2026-11-07.14"></script>
-<script src="js/haptics.js?v=2026-11-07.14"></script>
-<script src="js/events.js?v=2026-11-07.14"></script>
-<script src="js/lines.js?v=2026-11-07.14"></script>
-<script src="js/render3d.js?v=2026-11-07.14"></script>
+<script src="js/models.js?v=2026-11-07.15"></script>
+<script src="js/broadcast.js?v=2026-11-07.15"></script>
+<script src="js/haptics.js?v=2026-11-07.15"></script>
+<script src="js/share.js?v=2026-11-07.15"></script>
+<script src="js/events.js?v=2026-11-07.15"></script>
+<script src="js/lines.js?v=2026-11-07.15"></script>
+<script src="js/render3d.js?v=2026-11-07.15"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -223,7 +230,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-07.14';
+const VERSION='2026-11-07.15';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -1275,6 +1282,8 @@ function showBoard(sel){
   $('menu').classList.add('hidden');$('result').classList.add('hidden');$('board').classList.remove('hidden');
 }
 $('m-board').onclick=()=>showBoard();
+$('m-share').onclick=()=>{shareLevel();};   // 必須在點擊當下同步呼叫 navigator.share
+$('r-share').onclick=()=>{shareResult();};
 $('b-back').onclick=()=>{$('board').classList.add('hidden');$('menu').classList.remove('hidden');};
 const PRESETS={
   red:[['淡水 → 北投（平面轉高架）',27,21],['士林 → 台北車站',15,9],['台北車站 → 廣慈/奉天宮（新延伸段）',9,0],['紅樹林 → 淡水',26,27]],
@@ -1444,6 +1453,7 @@ function showResult(){
     rs.map(r=>r.miss?`<tr><td>${r.name}</td><td colspan="5" style="color:#ff9b7b">冒進過站</td><td>0</td></tr>`:
     `<tr><td>${r.name}</td><td>${r.err>=0?'短':'過'} ${Math.abs(r.err).toFixed(1)} m</td><td>${r.dt>=0?'+':'-'}${Math.abs(Math.round(r.dt))} 秒</td><td>${r.acc}</td><td>${r.pun}</td><td>${r.com}</td><td><b>${r.score}</b></td></tr>`).join('');
   const sub=submitScore(g,total,avg,grade);
+  LASTRES={g,total,avg,grade,rank:sub.rank};$('sh-res').hidden=true;
   const first=sub.list.length===1;
   $('r-rank').innerHTML=`<p style="margin:10px 0 4px;font-weight:700;color:${sub.rank===0?'#ffd54a':'#cfd8e6'}">`+
     (sub.rank<0?'沒有進入前 10 名':sub.rank===0?(first?'🏆 第一筆紀錄，目前第 1 名':'🏆 新紀錄！第 1 名'):`排名：第 ${sub.rank+1} 名`)+
@@ -1489,6 +1499,10 @@ if(location.protocol.startsWith('http')){
 }
 
 /* ========================= 啟動 ========================= */
+// 朋友分享的關卡連結：套用參數（不合法就忽略），顯示提示，並把網址上的參數清掉（重新整理不會再蓋掉之後的選擇）
+{const sh=applyShareParams(location.search);
+ if(sh){const b=$('sharebanner');b.hidden=false;b.textContent='🔗 已載入朋友分享的關卡：'+levelLabel(sh.line,sh.from,sh.to)+(sh.model!=='auto'?'，'+MODELS[sh.model].name:'')+'。按「開始值勤」就能挑戰。';
+  try{history.replaceState(null,'',shareBase());}catch(e){}}}
 resize();fillMenu();G=buildRun(SET);
 R3.load().then(ok=>{if(ok&&R3.init($('gl')))resize();else force2d=true;});
 syncLever();updateBest();
