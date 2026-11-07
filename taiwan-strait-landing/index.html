@@ -618,7 +618,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
             <select id="optSpeed"><option value="1">一般</option><option value="0.35">快速</option></select>
             <select id="optT"><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option><option value="12">12</option></select>
             <select id="optLang"><option value="zh-TW">zh-TW</option><option value="en">en</option><option value="ja">ja</option><option value="zh-CN">zh-CN</option></select>
-            <select id="optAxN"><option value="0" selected>0</option><option value="1">1</option></select><select id="optAxC"><option value="0" selected>0</option><option value="1">1</option></select><select id="optAxP"><option value="0">0</option><option value="1" selected>1</option></select>
+            <select id="optAirGen"><option value="mixed" selected>mixed</option><option value="legacy">legacy</option><option value="stealthy">stealthy</option></select><select id="optAirModel"><option value="bvr" selected>bvr</option><option value="simple">simple</option></select><select id="optEW"><option value="mid" selected>mid</option><option value="low">low</option><option value="high">high</option></select><select id="optAxN"><option value="0" selected>0</option><option value="1">1</option></select><select id="optAxC"><option value="0" selected>0</option><option value="1">1</option></select><select id="optAxP"><option value="0">0</option><option value="1" selected>1</option></select>
             <select id="optBuild"><option value="open">open</option><option value="exercise" selected>exercise</option><option value="surprise">surprise</option></select>
             <select id="optFx"><option value="dice" selected>dice</option><option value="interest">interest</option><option value="intel">intel</option><option value="none">none</option><option value="full">full</option></select>
             <select id="optEra"><option value="2026" selected>2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option></select>
@@ -1689,17 +1689,29 @@ function computeFire(){
   const hs=Math.min(P.plaHS,t<=3?2:1);P.plaHS-=hs; // DF-17 hypersonic: not reduced by the defender's air defense
   const cm0=Math.min(P.plaCM,t<=3?2:1);P.plaCM-=cm0;const cm=Math.max(0,cm0-(P.rocAD>=5?1:0)); // cruise missiles are intercepted more easily than ballistic ones
   const air=Math.max(0,Math.min(4,2+Math.floor((P.plaAir+P.plaCV-allyAir())/3)));
-  const ad=Math.floor(P.rocAD/2),add=S.mods.fireAdd[t]||0,sd=S.sead?1:0;
+  const AP=airParams(),ad=Math.max(0,Math.floor(P.rocAD/2)-(stealthPen(AP)>=.2?1:0)),add=S.mods.fireAdd[t]||0,sd=S.sead?1:0;
   S.fireNote='火箭軍 '+rf+(hs?'＋東風-17 '+hs:'')+(cm?'＋巡弋飛彈 '+cm:'')+'＋空軍 '+air+(sd?'＋防空壓制 1':'')+'－守方防空 '+ad+(S.weather.fire?'－天候 '+(-S.weather.fire):'')+(add?(add>0?'＋':'－')+'事件 '+Math.abs(add):'');
   const pb=S.owner[MAGONG]==='atk'?1:0; // 澎湖前進基地
   if(pb)S.fireNote+='＋澎湖前進基地 1';
   return Math.max(1,rf+hs+cm+air+sd-ad+S.weather.fire+add+pb);
 }
+// 空戰參數：隱形機占比（共軍、盟軍；台灣沒有）、反隱形感測抵銷、電子戰強度
+function airParams(){
+  const g=S.airGen||'mixed',yr=Math.max(0,(+S.era||2026)-2026),base={legacy:[.05,.15],mixed:[.2,.4],stealthy:[.45,.65]}[g]||[.2,.4];
+  return {m:S.airModel||'bvr',pla:Math.min(.8,base[0]+.03*yr),ally:Math.min(.85,base[1]+.03*yr),ewk:{low:.8,mid:1,high:1.25}[S.ewLv||'mid'],cDef:.4,cPla:.35};
+}
+const stealthPen=A=>A.m==='bvr'?A.pla*(1-A.cDef):0; // 共軍隱形機扣掉守方預警與反隱形感測後，對防空造成的實際突破
+function airEff(){ // 有效空中戰力：隱形機占比越高越強，但會被對方的反隱形感測抵銷；盟軍隱形機只在盟軍參戰時才有（台灣的 rocAir 沒有隱形機）
+  const P=S.pools,A=airParams(),ally=allyAir();
+  if(A.m!=='bvr')return {A,pla:P.plaAir+P.plaCV,def:ally};
+  const au=Math.max(0,ally-P.rocAir);
+  return {A,pla:(P.plaAir+P.plaCV)*(1+.6*A.pla*(1-A.cDef)),def:P.rocAir+au*(1+.6*A.ally*(1-A.cPla))};
+}
 function airBattle(){
-  const P=S.pools,ally=allyAir(),out=[];
-  if(P.plaAir>0&&trial(pNeed(6-Math.floor(ally/3)))){P.plaAir--;out.push('攻方空軍 −1');}
-  if(ally>=6&&P.plaAir>0&&trial(.5)){P.plaAir--;out.push('攻方空軍 −1');}
-  if(P.rocAir>0&&trial((3+(P.plaAir>=8?1:0))/6)){P.rocAir--;out.push('守方空軍 −1');}
+  const P=S.pools,ally=allyAir(),out=[],E=airEff(),A=E.A,ek=Math.max(.01,A.ewk);
+  if(P.plaAir>0&&trial(Math.min(1,pNeed(6-Math.floor(E.def/3))/ek))){P.plaAir--;out.push('攻方空軍 −1');}
+  if(E.def>=6&&P.plaAir>0&&trial(.5/ek)){P.plaAir--;out.push('攻方空軍 −1');}
+  if(P.rocAir>0&&trial(Math.min(1,((3+(E.pla>=8?1:0))/6)/ek))){P.rocAir--;out.push('守方空軍 −1');}
   if(P.rocAD>0&&trial(.5)){P.rocAD--;out.push('守方防空遭壓制 −1');}
   S.fx.units.forEach(f=>{
     if(!fxActive(f))return;
@@ -1708,10 +1720,11 @@ function airBattle(){
   });
   if(S.fx.units.some(f=>f.kind==='air'&&fxActive(f))&&P.plaAD>0&&trial(1/3)){P.plaAD--;out.push('攻方防空 −1');}
   if(out.length)log('第 '+S.turn+' 回合空優爭奪：'+out.join('、'));
-  fxq({t:'dog',al:out.filter(x=>x==='攻方空軍 −1').length,dl:out.filter(x=>x==='守方空軍 −1').length,na:Math.min(4,Math.max(2,Math.ceil((P.plaAir+P.plaCV)/3))),nd:Math.min(4,Math.max(2,Math.ceil((P.rocAir+allyAir())/3))),ctl:(P.plaAir+P.plaCV-allyAir())>=3?'atk':(P.plaAir+P.plaCV-allyAir())<=-3?'def':'mid'});
+  const E2=airEff(),dff=E2.pla-E2.def;
+  fxq({t:'dog',al:out.filter(x=>x==='攻方空軍 −1').length,dl:out.filter(x=>x==='守方空軍 −1').length,na:Math.min(4,Math.max(2,Math.ceil((P.plaAir+P.plaCV)/3))),nd:Math.min(4,Math.max(2,Math.ceil((P.rocAir+allyAir())/3))),ctl:dff>=3?'atk':dff<=-3?'def':'mid',pst:A.m==='bvr'?A.pla:0,dst:A.m==='bvr'&&allyAir()>P.rocAir?A.ally:0,ew:S.ewLv||'mid'});
   // 兩層：制空（陸基＋艦載機 vs 守方與盟國）與防空壓制（SEAD）
-  const diff=P.plaAir+P.plaCV-allyAir();S.airCtl=diff>=3?'atk':diff<=-3?'def':'mid';S.sead=P.rocAD<=2;
-  log('制空：'+AIRCTL[S.airCtl]+'；守方防空'+(S.sead?'遭壓制，攻方火力 +1':'尚能維持，攻方火力不加成'));
+  const E3=airEff(),diff=E3.pla-E3.def;S.airCtl=diff>=3?'atk':diff<=-3?'def':'mid';S.sead=P.rocAD<=2+(stealthPen(A)>=.12?1:0)+(A.ewk>1?1:0);
+  log('制空：'+AIRCTL[S.airCtl]+(A.m==='bvr'?'（隱形機占比：共軍 '+Math.round(A.pla*100)+'%'+(allyAir()>P.rocAir?'、盟軍 '+Math.round(A.ally*100)+'%':'、台灣 0%')+'；電戰'+({low:'低',mid:'中',high:'高'}[S.ewLv||'mid'])+'）':'')+'；守方防空'+(S.sead?'遭壓制，攻方火力 +1':'尚能維持，攻方火力不加成'));
 }
 const AIRCTL={atk:'攻方優勢',mid:'雙方均勢',def:'守方與盟國優勢'};
 function antiShip(who,shots,need,canLand,tag,ok0,fk){
@@ -3674,41 +3687,48 @@ function fxTheater(o){
     dot.remove();fxRing(b,3,o.hit?24:14,o.hit?'#ff5a3a':'#cfd6d8',620,o.hit?3:2,g);if(o.hit)fxFlash(b,2,14,'#ffb347',420,g);
     tween(500,k=>path.setAttribute('opacity',.5*(1-k)),()=>path.remove());});
 }
-// 空優爭奪動畫：共軍戰機（紅）自大陸沿岸、守方與盟軍戰機（藍）自西部空軍基地升空，在海峽中線附近纏鬥；被擊落的戰機冒煙墜落
+// 空優爭奪動畫（視距外）：雙方戰機保持遠距，各自發射空對空飛彈；命中則爆炸墜落，被干擾的飛彈撒出熱焰彈後落空。隱形機平時近乎隱形，發射瞬間才顯形。
 function fxDog(o){
   const PO=h=>{const q=oCenter(h[0],h[1]);return [q[0]*KS,q[1]*KS];};
   const bases=[SPOT.ckk,SPOT.chiayiab,SPOT.tainanab,SPOT.gangshan,SPOT.pingtung].map(k=>TER[k]).filter(Boolean).map(h=>cen(h.c,h.r));
   const pla=[[2,2],[2,4],[2,6],[2,8]].map(PO);
   if(!bases.length)return;
   const N=LITE?2:Math.max(2,Math.min(4,Math.max(o.na,o.nd))),sh=o.ctl==='atk'?.62:o.ctl==='def'?.38:.5;
-  const jet=col=>{const g=el('g',{});el('polygon',{points:'10,0 -6,-6.5 -3,0 -6,6.5',fill:col,stroke:'#fff','stroke-width':.9},g);el('rect',{x:-9,y:-1.6,width:4,height:3.2,fill:col,stroke:'#fff','stroke-width':.6},g);return g;};
+  const jet=(col,stealth)=>{const g=el('g',{opacity:stealth?.22:1});el('polygon',{points:'10,0 -6,-6.5 -3,0 -6,6.5',fill:col,stroke:'#fff','stroke-width':.9,'stroke-dasharray':stealth?'2 1.5':'0'},g);return g;};
   const place=(g,p,ang,sc)=>g.setAttribute('transform','translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+(ang*180/Math.PI).toFixed(0)+') scale('+(1.4*(sc||1))+')');
   const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
-  const shoot=(g,p,ang,col,txt,cls)=>{ // 擊落：旋轉墜落、冒黑煙
-    fxFlash(p,3,20,'#ffb347',360);fxFlash(p,2,10,'#fff3c4',240);fxText(p,txt,cls,1100);
-    tween(760,k=>{place(g,[p[0]+30*k,p[1]+46*k*k+10*k],ang+k*9,1-.35*k);g.setAttribute('opacity',1-k*k);if(!LITE&&Math.random()<.45)fxPuff([p[0]+30*k,p[1]+46*k*k+10*k],2,7,'#4a4a4a',.7,640);},()=>g.remove());};
+  const missile=(a,b,col,hit,done)=>{ // 一發空對空飛彈：命中＝在目標爆炸；落空＝中途被干擾、撒出熱焰彈
+    const miss=[b[0]+(Math.random()-.5)*70,b[1]+(Math.random()<.5?-1:1)*(26+Math.random()*24)];
+    fxFlash(a,2,9,'#fff',200);
+    fxShot(a,hit?b:miss,{arc:(Math.random()-.5)*26,dur:Math.min(1100,520+Math.hypot(b[0]-a[0],b[1]-a[1])*1.3),color:'#f4f4f4',trail:col,w:1.8,r:2.1,style:'mis',end:()=>{
+      if(hit){fxFlash(b,3,26,'#ffb347',380);fxFlash(b,2,12,'#fff3c4',260);fxRing(b,5,34,'#ff7a3d',460,2);}
+      else{for(let i=0;i<4;i++)setTimeout(()=>fxFlash([miss[0]+(Math.random()-.5)*16,miss[1]+(Math.random()-.5)*12],1.5,7,'#ffd45a',420),i*70*fxK());fxText(miss,'被干擾','dead',700);}
+      if(done)done();}});
+  };
+  const fall=(g,p,ang,txt,cls)=>{fxText(p,txt,cls,1100);tween(760,k=>{place(g,[p[0]+26*k,p[1]+44*k*k+10*k],ang+k*9,1-.35*k);g.setAttribute('opacity',1-k*k);if(!LITE&&Math.random()<.45)fxPuff([p[0]+26*k,p[1]+44*k*k+10*k],2,7,'#4a4a4a',.7,640);},()=>g.remove());};
   for(let i=0;i<N;i++){
     const a=pla[i%pla.length].slice(),b=bases[i%bases.length].slice();a[1]+=(i>>2)*10;
-    const m=lerp(a,b,sh);m[0]+=(Math.random()-.5)*30;m[1]+=(Math.random()-.5)*60;
-    const pm=[m[0]-12,m[1]-6],rm=[m[0]+12,m[1]+6],ap=Math.atan2(m[1]-a[1],m[0]-a[0]),ar=Math.atan2(m[1]-b[1],m[0]-b[0]);
-    const gp=jet('#d9534a'),gr=jet('#3f7fd0');
-    const pd=i<o.al,rd=i<o.dl,d0=i*170*fxK();
+    const m=lerp(a,b,sh);m[1]+=(Math.random()-.5)*60;
+    const pm=lerp(a,m,.55),rm=lerp(b,m,.55); // 雙方停在遠處互射，彼此不靠近
+    const ap=Math.atan2(rm[1]-pm[1],rm[0]-pm[0]),ar=ap+Math.PI;
+    const pst=Math.random()<o.pst,rst=Math.random()<o.dst; // 這一對裡是否為隱形機
+    const gp=jet('#d9534a',pst),gr=jet('#3f7fd0',rst);
+    const pd=i<o.al,rd=i<o.dl,d0=i*220*fxK();
     setTimeout(()=>{
-      fxFlash(a,2,10,'#ffe1dc',220);fxFlash(b,2,10,'#dcecff',220);
-      tween(1000,k=>{place(gp,lerp(a,pm,k),ap);place(gr,lerp(b,rm,k),ar);if(!LITE&&Math.random()<.5){fxPuff(lerp(a,pm,k),1.5,5,'#ffe9e6',.5,520);fxPuff(lerp(b,rm,k),1.5,5,'#e3f0ff',.5,520);}},()=>{
-        let n=0;const iv=setInterval(()=>{ // 纏鬥：交錯閃光與曳光
-          const q=[m[0]+(Math.random()-.5)*26,m[1]+(Math.random()-.5)*20];fxFlash(q,1.5,8,'#ffe9a8',220);
-          const t1=el('line',{x1:pm[0],y1:pm[1],x2:q[0],y2:q[1],stroke:'#ffd45a','stroke-width':1.2,opacity:.9});tween(160,k=>t1.setAttribute('opacity',.9*(1-k)),()=>t1.remove());
-          const t2=el('line',{x1:rm[0],y1:rm[1],x2:q[0],y2:q[1],stroke:'#9fd0ff','stroke-width':1.2,opacity:.9});tween(160,k=>t2.setAttribute('opacity',.9*(1-k)),()=>t2.remove());
-          place(gp,[pm[0]+Math.sin(n*1.7)*6,pm[1]+Math.cos(n*1.3)*5],ap+Math.sin(n)*1.1);place(gr,[rm[0]+Math.cos(n*1.5)*6,rm[1]+Math.sin(n*1.1)*5],ar+Math.cos(n)*1.1);
-          if(++n>=4){clearInterval(iv);
-            if(pd)shoot(gp,pm,ap,'#d9534a','−1 共軍戰機','atk');else tween(800,k=>{place(gp,lerp(pm,a,k),ap+Math.PI);gp.setAttribute('opacity',1-k);},()=>gp.remove());
-            if(rd)shoot(gr,rm,ar,'#3f7fd0','−1 守方戰機','def');else tween(800,k=>{place(gr,lerp(rm,b,k),ar+Math.PI);gr.setAttribute('opacity',1-k);},()=>gr.remove());
-          }},150*fxK());
-      });
+      tween(900,k=>{place(gp,lerp(a,pm,k),ap);place(gr,lerp(b,rm,k),ar);});
+      setTimeout(()=>{
+        if(pst){gp.setAttribute('opacity',1);fxRing(pm,3,16,'#ffe1dc',420,1.2);}
+        if(rst){gr.setAttribute('opacity',1);fxRing(rm,3,16,'#dcecff',420,1.2);}
+        missile(pm,rm,'#ff9a8a',rd,()=>{ if(rd)fall(gr,rm,ar,'−1 守方戰機','def');});
+        setTimeout(()=>missile(rm,pm,'#8fc4ff',pd,()=>{ if(pd)fall(gp,pm,ap,'−1 共軍戰機','atk');}),160*fxK());
+        setTimeout(()=>{ // 沒被擊落的戰機脫離
+          if(!rd)tween(800,k=>{place(gr,lerp(rm,b,k),ar+Math.PI);gr.setAttribute('opacity',1-k);},()=>gr.remove());
+          if(!pd)tween(800,k=>{place(gp,lerp(pm,a,k),ap+Math.PI);gp.setAttribute('opacity',1-k);},()=>gp.remove());
+        },1900*fxK());
+      },950*fxK());
     },d0);
   }
-  const mid=lerp(pla[0],bases[0],.5);setTimeout(()=>fxText(mid,'制空：'+AIRCTL[o.ctl],o.ctl==='def'?'def':o.ctl==='atk'?'atk':'dead',1300),(N*170+1900)*fxK());
+  const mid=lerp(pla[0],bases[0],.5);setTimeout(()=>fxText(mid,'制空：'+AIRCTL[o.ctl],o.ctl==='def'?'def':o.ctl==='atk'?'atk':'dead',1300),(N*220+3200)*fxK());
 }
 function runFx(o){
   const PO=h=>{const q=oCenter(h[0],h[1]);return [q[0]*KS,q[1]*KS];}; // 外圍／港口出發點（舊座標）
@@ -4423,10 +4443,10 @@ function readSetup(){
   S.T=+$('#optT').value;S.sim=$('#optMode').value==='sim';S.video=$('#optMode').value==='video';S.speed=S.sim?+$('#optSpeed').value:1;
   const sd=$('#optSide').value;
   S.ctrl=S.sim||S.video?{atk:'ai',def:'ai'}:{atk:sd==='atk'||sd==='both'?'human':'ai',def:sd==='def'||sd==='both'?'human':'ai'};
-  S.newsOn=$('#optNews').value==='1';S.fxScen=$('#optFx').value;
+  S.newsOn=$('#optNews').value==='1';S.fxScen=$('#optFx').value;S.airGen=$('#optAirGen').value;S.airModel=$('#optAirModel').value;S.ewLv=$('#optEW').value;
 }
-['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optNews','#optVoice','#optFx','#optAxN','#optAxC','#optAxP'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
-const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optFx:'dice',optNews:'1',optVoice:'0',optAxN:'0',optAxC:'0',optAxP:'1'};
+['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optNews','#optVoice','#optFx','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
+const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optFx:'dice',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optAxN:'0',optAxC:'0',optAxP:'1'};
 $('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
 // one-off start with the default settings; the saved setup choices are left as they were
 $('#btnDefault').onclick=()=>{
@@ -4465,7 +4485,7 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn），並在下方 CHANGELOG 最前面補一筆更新內容（再補 tools/i18n/extras.tsv 的英日譯文）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-10.17';
+const VERSION='2026-11-10.19';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
@@ -4642,11 +4662,14 @@ const SETUP_PAGES=[
   {sel:'optAxP',q:'攻擊軸線：澎湖',when:()=>!isSim(),opts:{'0':['不選','澎湖不作為目標，陸戰旅改歸中部軸線。'],'1':['選擇澎湖','陸戰旅攻占馬公，作為跳板（基準設定）。']}}],
   note:()=>isSim()?'推演模式的集結會在第一個事件節點由你選擇，這一頁不用設定。':''},
  {t:'美日參戰與確認',s:'確認',d:'美國、日本是否參戰、以什麼方式參戰，會大幅改變戰局。下方是設定摘要；任何一頁都可以回去修改，所有頁面看過之後，在哪一頁都能開始作戰。',fields:[
+  {sel:'optAirGen',q:'空軍裝備世代（隱形機占比）',opts:{legacy:['非隱形為主','雙方戰機以第四代為主，隱形機很少。'],mixed:['混合（基準）','共軍殲-20／殲-35 約兩成、盟軍 F-35／F-22 約四成；台灣沒有隱形機。隱形占比隨年代每年略增。'],stealthy:['隱形佔多數','共軍約四成五、盟軍約六成五為隱形機；台灣仍沒有。']}},
+  {sel:'optAirModel',q:'空戰模型',opts:{bvr:['視距外（基準）','隱形占比、反隱形感測與電子戰會影響制空與防空突破。盟軍要參戰後隱形機才會出現。'],simple:['簡化','不計隱形與電戰，沿用舊的制空判定。']}},
+  {sel:'optEW',q:'電子戰強度',opts:{low:['低','干擾弱：空戰與飛彈較容易命中，損失較大。'],mid:['中（基準）',''],high:['高','干擾強：空戰飛彈較易被干擾落空，損失較小；對岸防空壓制也較容易。']}},
   {sel:'optFx',q:'參戰情境',opts:{interest:['依自身利益決定','美日不擲骰，依戰況與自身利益評估是否參戰：半導體與第一島鏈、攻方是否已拿下港口或台北、守軍撐不撐得住、美軍傷亡、日本與美國彼此的態度、本國基地是否被打。事件節點會列出評估理由。','依利益'],dice:['擲骰決定','美國開戰起至少是代理打擊（台美共用飛彈、魚雷，難分是誰發射）；第 3 回合各國擲骰決定參戰程度，第 5 回合再擲一次；攻方打擊基地會讓該國升級；美軍傷亡過高會退縮為隱蔽支援。'],intel:['只提供情報（不公開參戰）','美國只提供情報與目標資料（守方反艦飛彈命中門檻 −1），不補給、不出兵、不公開參戰；日本中立，戰區基地也不能被打擊。','只提供情報'],none:['不介入（台灣孤軍）','美日全程不參戰，戰區基地也不能被打擊。'],full:['開戰即全面介入','美日第 1 回合就參戰，航艦仍要 2 回合才抵達。']}}],summary:true},
 ];
 const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
 function optLabel(sel,v){for(const f of PREF_FIELDS.concat(...SETUP_PAGES.map(pg=>pg.fields)))if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
-function saveSetup(){try{const cfg={};['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optFx','optNews','optVoice','optAxN','optAxC','optAxP'].forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
+function saveSetup(){try{const cfg={};['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optFx','optAirGen','optAirModel','optEW','optNews','optVoice','optAxN','optAxC','optAxP'].forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
 function loadSetup(){
   try{const o=JSON.parse(localStorage.getItem('tsl-setup')||'null');if(!o)return;
     let vu='';try{vu=localStorage.getItem('tsl-voice-user')||'';}catch(e){}
@@ -4676,7 +4699,7 @@ function renderWizard(){
     if(isVideo())rows.push(['操作','電腦自動（影片）'],['播放',optLabel('optVSpeed',$('#optVSpeed').value)]);else if(!sim)rows.push(['操作',optLabel('optSide',$('#optSide').value)]);else rows.push(['速度',optLabel('optSpeed',$('#optSpeed').value)]);
     rows.push(['判定',optLabel('optT',$('#optT').value)]);rows.push(['年代',optLabel('optEra',$('#optEra').value)]);
     rows.push(['集結',sim?'推演中選擇':optLabel('optBuild',$('#optBuild').value)]);
-    rows.push(['參戰',optLabel('optFx',$('#optFx').value)]);rows.push(['快訊',optLabel('optNews',$('#optNews').value)]);rows.push(['語音',optLabel('optVoice',$('#optVoice').value)]);
+    rows.push(['參戰',optLabel('optFx',$('#optFx').value)]);rows.push(['空戰',optLabel('optAirModel',$('#optAirModel').value)+'・'+optLabel('optAirGen',$('#optAirGen').value)+'・電戰'+optLabel('optEW',$('#optEW').value)]);rows.push(['快訊',optLabel('optNews',$('#optNews').value)]);rows.push(['語音',optLabel('optVoice',$('#optVoice').value)]);
     h+='<table class="wz-sum">'+rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('')+'</table>';
   }
   $('#wzBody').innerHTML=h;
