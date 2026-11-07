@@ -14,11 +14,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hidden{display:none!important}
 
 /* 右上角小按鈕 */
-#top{position:fixed;top:calc(6px + env(safe-area-inset-top));right:8px;display:flex;gap:6px;z-index:6}
+#top{position:fixed;top:calc(6px + env(safe-area-inset-top));right:var(--tr,8px);display:flex;gap:6px;z-index:6}
 #top button{background:rgba(8,12,20,.78);border:1px solid #39465c;border-radius:8px;padding:5px 9px;font-size:13px;line-height:1.2}
 
 /* 主控器（手把） */
-#lever{position:fixed;right:10px;bottom:68px;width:76px;height:clamp(210px,50vh,330px);background:rgba(10,14,22,.8);border:1px solid #39465c;border-radius:12px;display:flex;flex-direction:column;touch-action:none;z-index:5}
+#lever{position:fixed;right:var(--lr,10px);bottom:68px;width:76px;height:clamp(210px,50vh,330px);background:rgba(10,14,22,.8);border:1px solid #39465c;border-radius:12px;display:flex;flex-direction:column;touch-action:none;z-index:5}
 #lever .n{flex:1;display:flex;align-items:center;justify-content:center;font:700 11px/1 monospace;color:#8fa0b8;border-bottom:1px solid rgba(255,255,255,.06)}
 #lever .n.p{color:#7bd88f}#lever .n.b{color:#f0b46a}#lever .n.e{color:#ff6b6b;background:rgba(255,80,80,.1)}#lever .n.z{color:#fff;background:rgba(255,255,255,.08)}
 #knob{position:absolute;left:3px;right:3px;height:24px;margin-top:-12px;border-radius:8px;background:linear-gradient(#f4f6fa,#a9b2c1);border:2px solid #20283a;box-shadow:0 2px 6px #000a;pointer-events:none}
@@ -33,12 +33,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 /* 手機橫握：手把在右、車門按鈕在左直排，儀表縮成中間窄條，把畫面留給前方景色 */
 @media (orientation:landscape) and (max-height:520px){
-  #lever{bottom:8px;top:50px;height:auto;width:68px;right:8px}
+  #lever{bottom:calc(8px + env(safe-area-inset-bottom));top:50px;height:auto;width:68px}
   #lever .cap{display:none}
-  #bar{left:6px;right:auto;top:auto;bottom:6px;width:108px;height:auto;flex-direction:column;gap:5px;padding:0;box-sizing:border-box}
+  #bar{left:var(--ll,6px);right:auto;top:auto;bottom:6px;width:108px;height:auto;flex-direction:column;gap:5px;padding:0;box-sizing:border-box}
   #bar button{flex:none;height:42px;font-size:13px;padding:0}
   #bar #b-eb{flex:none}
-  #top{top:4px;right:84px}
+  #top{top:4px}
 }
 #rot{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:8;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:18px;padding:7px 14px;font-weight:700;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.4);display:none}
 
@@ -139,12 +139,12 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/render3d.js?v=2026-11-07.04"></script>
+<script src="js/render3d.js?v=2026-11-07.05"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
 const DRIVER='ANDY';
-const VERSION='2026-11-07.04';
+const VERSION='2026-11-07.05';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -192,14 +192,20 @@ const TOL_OPEN_SHORT=10, TOL_OPEN_LONG=30;          // 可開門的停車誤差�
 /* ========================= 畫面尺寸與投影 ========================= */
 const cv=$('c'),X=cv.getContext('2d');
 const NEAR=2.5,MAXZ=420,CAM=2.4,BAR=58;
-let W=0,H=0,DPR=1,HY=0,dashTop=0,dashH=0,F=700,land=false,barH=BAR,dashX0=0,dashX1=0,sceneH=0;
+let W=0,H=0,DPR=1,HY=0,dashTop=0,dashH=0,F=700,land=false,lrPx=10,barH=BAR,dashX0=0,dashX1=0,sceneH=0;
 function resize(){
   DPR=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;
   cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);X.setTransform(DPR,0,0,DPR,0,0);
   land=W>H&&H<=520;
   barH=land?0:BAR;
-  if(land){dashH=clamp(H*0.34,108,150);dashX0=122;dashX1=W-84;}
+  const ins=safeInsets();
+  // 橫握：手把離右緣再多 36px（避開 iPhone 瀏海／動態島），車門按鈕離左緣加安全區
+  const lr=land?ins.r+36:ins.r+10,ll=land?ins.l+6:0;
+  const rs=document.documentElement.style;
+  rs.setProperty('--lr',lr+'px');rs.setProperty('--ll',ll+'px');rs.setProperty('--tr',(land?lr+68+8:ins.r+8)+'px');
+  if(land){dashH=clamp(H*0.34,108,150);dashX0=ll+108+8;dashX1=W-(lr+68+8);}
   else{dashH=clamp(H*0.36,230,330);dashX0=0;dashX1=W;}
+  lrPx=lr;
   dashTop=H-dashH;HY=dashTop*0.46;F=Math.max(W*0.72,dashTop*0.9);
   sceneH=land?H:dashTop;   // 橫握時 3D 畫面鋪滿整個螢幕，儀表只蓋在中間下緣
   const gl=$('gl');gl.style.height=sceneH+'px';
@@ -207,6 +213,11 @@ function resize(){
   const rot=$('rot');if(rot)rot.style.display=(!land&&W<H&&('ontouchstart' in window)&&!rotDismissed&&document.getElementById('top')&&!$('top').classList.contains('hidden'))?'block':'none';
 }
 let rotDismissed=false;
+// 讀取裝置安全區域（iPhone 瀏海／動態島／圓角），回傳 {l,r}
+function safeInsets(){
+  const d=document.createElement('div');d.style.cssText='position:fixed;left:0;top:0;visibility:hidden;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)';
+  document.body.appendChild(d);const cs=getComputedStyle(d);const r={l:parseFloat(cs.paddingLeft)||0,r:parseFloat(cs.paddingRight)||0};d.remove();return r;
+}
 addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,200));
 
 // 彎道：曲率以兩個正弦疊加，lat(z) 為前方 z 公尺處相對於車頭切線的橫向偏移
@@ -795,7 +806,7 @@ function drawDash(g){
    X.fillStyle=pg;rr(px,py,pw,ph,4);X.fill();X.strokeStyle='#5a4a20';X.lineWidth=1.2;X.stroke();
    X.fillStyle='#3a2f10';[px+6,px+pw-6].forEach(sx=>{X.beginPath();X.arc(sx,py+ph/2,1.8,0,6.3);X.fill();});
    T('駕駛 '+DRIVER,px+pw/2,py+ph/2+1,13,'#2b2208','center',800);}
-  const gx0=dashX0+10,gx1=land?dashX1-8:W-92,gh=H-barH-top-(land?10:18);
+  const gx0=dashX0+10,gx1=land?dashX1-8:W-(lrPx+82),gh=H-barH-top-(land?10:18);
   const dia=Math.min(gh,(gx1-gx0)*0.5,240),R=dia/2;
   const cx=gx0+R+6,cy=top+(land?6:10)+R;
   // 速度表
@@ -867,7 +878,7 @@ function drawDash(g){
 }
 
 function drawStrip(g){
-  const x0=18,x1=W-(land?300:290),y=24,total=g.S[g.S.length-1]||1;
+  const x0=18,x1=W-(land?lrPx+68+8+345:290),y=24,total=g.S[g.S.length-1]||1;
   X.fillStyle='rgba(8,12,20,.74)';rr(6,6,x1-x0+24+54,36,10);X.fill();
   X.strokeStyle='rgba(255,255,255,.25)';X.lineWidth=3;X.beginPath();X.moveTo(x0,y);X.lineTo(x1,y);X.stroke();
   X.strokeStyle=g.L.color;X.lineWidth=4;X.beginPath();X.moveTo(x0,y);X.lineTo(x0+(x1-x0)*clamp(g.pos/total,0,1),y);X.stroke();
