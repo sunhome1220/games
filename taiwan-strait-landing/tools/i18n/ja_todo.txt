@@ -787,3 +787,5 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 強行徵用民間物資	Requisition civilian supplies by force
 加大空投	Bigger airdrop
 空戰與轟炸動畫的飛機換成戰機剪影：第四代戰機（三角翼加平尾）、隱形戰機（菱形折線機身，近似殲-20／F-22）、轟炸機（長直翼雙發），帶座艙與尾焰，紅藍分明，取代原本的小箭頭。	Aircraft in the air-combat and bombing animations are now proper silhouettes: 4th-generation fighters (delta wing with tailplanes), stealth fighters (faceted diamond body, similar to J-20/F-22) and bombers (long straight wings, twin engines), with canopy and exhaust glow in clear red and blue, replacing the small arrows.
+補給斷絕，守方勝利	Supply cut off — defender wins
+超過預計回合時，可選擇由電腦接手推演到分出勝負	After the planned turn limit you may let the computer play on until a winner emerges
