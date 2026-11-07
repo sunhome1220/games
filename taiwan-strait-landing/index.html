@@ -2969,7 +2969,7 @@ function ssmThreat(k){const h=TER[k];return S.units.filter(d=>d.side==='def'&&is
 async function aiAtk(){
   const plan=aiPlan();
   const IT=S.intent||{};
-  S.units.forEach(u=>{if(u.side==='atk'&&(u.type==='amph'||u.type==='mar'))u.zone=(IT.axis==='north'||IT.axis==='central')?IT.axis:plan.zone;});
+  S.units.forEach(u=>{if(u.side==='atk'&&(u.type==='amph'||u.type==='mar')&&u.zone!=='penghu')u.zone=(IT.axis==='north'||IT.axis==='central')?IT.axis:plan.zone;}); // 澎湖軸線的陸戰旅保留原任務（原本每回合被改派到本島）
   aiBaseStrikes();render();
   { // 火力打擊：整波一起放（先算完、一次繪製），特效同時升空，比逐發等待快得多
     let n=0;
@@ -3056,6 +3056,11 @@ async function aiAtkUnit(u){
   }
   if(best){doMove(u,best,'land');render();await sleep(340);return;}
   if(h.t==='sea'&&await aiTryAttack(u,0))return;
+  if(h.isl==='CN'&&!h.coastal&&u.type!=='arm'){ // 開局落在內陸格（例如澎湖軸線的陸戰旅）：先走到最靠近目標的沿岸格，下回合才能出航
+    let b=null,bs0=minD(h.k,goals);
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const t=TER[k];if(t.isl!=='CN')continue;const sc=minD(k,goals)-(t.coastal?3:0);if(sc<bs0){bs0=sc;b=k;}}
+    if(b){doMove(u,b,'move');render();await sleep(300);return;}
+  }
   if(h.isl==='CN'&&u.type!=='arm'&&S.turn>1&&S.turn<S.T-1){
     // hold reinforcements on the coast until at least two can cross together
     const ready=S.units.filter(x=>x.side==='atk'&&(x.type==='amph'||x.type==='mar')&&hexOf(x).isl==='CN'&&!x.moved).length;
@@ -3651,6 +3656,7 @@ if(/[?&]debug=1/.test(location.search))window.__ext=()=>{const out=[],real=S;
   tryit('port',()=>applyPort(PORTS[0],portOptions(PORTS[0]).opts.find(o=>o.x)));
   return out;};
 if(/[?&]debug=1/.test(location.search)){window.__truceDef=()=>truceOptions('def').opts.map(o=>o.id);window.__instant=()=>checkInstant();window.__sup=()=>{const r0=supply().cap;Object.keys(MINOR_PORTS).forEach(k=>{S.owner[k]='atk';});const r1=supply().cap;S.turn=Math.max(S.turn,3);S.bh={};['22,4','19,7','18,10'].forEach(k=>{S.owner[k]='atk';S.bh[k]=S.turn-1;});const r2=supply().cap;render();return [r0,r1,r2];};window.__owner=r=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h));hs.slice(0,Math.round(hs.length*r)).forEach(h=>{S.owner[h.k]='atk';});return twControl();};window.__wipe=()=>{S.stats.sailed=true;S.turn=Math.max(S.turn,3);S.units=S.units.filter(u=>!(u.side==='atk'&&!isShip(u)&&(atSea(u)||onTW(u)||hexOf(u).isl==='PH')));checkInstant();};window.__attr=()=>{S.turn=Math.max(S.turn,3);const a=S.units.filter(u=>u.side==='atk'&&!isShip(u));const tw=TER[TAIPEI];a.slice(0,18).forEach(u=>{u.c=tw.c;u.r=tw.r;});const b=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);supplyAttrition();const c=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);return [b,c,supply()];};window.__force3=keep=>{PORTS.concat([TAIPEI]).forEach(k=>{S.owner[k]='atk';delete S.portDown[k];});const tw=TER[TAIPEI];S.units.filter(u=>u.side==='atk'&&!isShip(u)).slice(0,16).forEach(u=>{u.c=tw.c;u.r=tw.r;u.hp=TYPES[u.type].hp;});let left=keep;S.units.filter(u=>u.side==='def'&&onTW(u)).forEach(u=>{if(left>0){u.hp=Math.min(u.hp,left);left-=u.hp;}else S.units=S.units.filter(x=>x!==u);});S.turn=Math.max(S.turn,3);const a=snap();return [a.n,a.as,a.ds];};}
+if(/[?&]debug=1/.test(location.search))window.__reach=id=>{const u=S.units.find(x=>x.id===id);if(!u)return null;const h=hexOf(u);return {at:h.k,t:h.t,isl:h.isl,coastal:h.coastal,zones:{pen:ZONES.penghu,sp:SPOT.penghu,mg:SPOT.magong},reach:[...reach(u)].map(([k,v])=>k+':'+v.kind).slice(0,40),moved:u.moved,acted:u.acted};};
 if(/[?&]debug=1/.test(location.search))window.__dog=o=>fxDog(o);
 if(/[?&]debug=1/.test(location.search))window.__fxShot=(a,b,o)=>fxShot(a,b,o);
 function fxSmoke(a,b,arc,n,ms){for(let i=1;i<=n;i++)setTimeout(()=>{const p=bez(a,[(a[0]+b[0])/2,(a[1]+b[1])/2-arc],b,i/(n+1));fxFlash(p,2,7,'#e8e8e8',520);},ms*i/(n+1)*fxK());}
@@ -3762,7 +3768,7 @@ function renderCtrl(){
   if(!S.started)return;
   const h=humanTurn();
   $('#phaseTitle').textContent=S.over?'作戰結束':'第 '+S.turn+' 回合 · '+SIDE[S.phase]+'指揮';
-  const bs=$('#btnStrike'),atkP=S.phase==='atk',pts=atkP?S.fire:Math.min(S.dfire,S.pools.rocMsl);bs.hidden=false;bs.disabled=!h||pts<=0;bs.classList.toggle('on',S.mode==='strike');
+  const bs=$('#btnStrike'),atkP=S.phase==='atk',pts=atkP?S.fire:Math.floor(Math.min(S.dfire,S.pools.rocMsl));bs.hidden=false;bs.disabled=!h||pts<=0;bs.classList.toggle('on',S.mode==='strike');
   bs.textContent=S.mode==='strike'?'取消打擊（剩 '+pts+'）':(atkP?'火力打擊（'+pts+' 點）':'打擊大陸（'+pts+' 發）');
   $('#btnEnd').disabled=!h;$('#btnEnd').hidden=S.sim;if(S.sim)bs.hidden=true;
   const ba=$('#btnAssist');ba.disabled=!h;ba.hidden=S.sim||S.video;
