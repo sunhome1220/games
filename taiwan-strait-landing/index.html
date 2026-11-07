@@ -3049,7 +3049,19 @@ async function endPhase(){
   if(S.turn>=S.T){
     // 未真正分出勝負（攻方達成不到兩項、但島上或海上還有攻方兵力）就不在此判定，雙方繼續打下去；上限 30 回合
     const nn=conditions().filter(c=>c.atk).length,alive=S.units.some(u=>u.side==='atk'&&!isShip(u)&&(onTW(u)||hexOf(u).isl==='PH'||atSea(u)));
-    if(nn<2&&alive&&S.T<30){S.T+=2;S.extended=true;S.stats.autoExt=(S.stats.autoExt||0)+1;log('戰局尚未分出勝負：判定延後至第 '+S.T+' 回合（攻方達成 '+nn+' / 3 項，雙方仍在交戰）');toast('戰局未分，判定延後至第 '+S.T+' 回合',3600);}
+    if(nn<2&&alive&&S.T<30){
+      // 超過預計回合：真人操作的局可選擇由電腦接手推演到分出勝負，或自己繼續、或現在就判定
+      const human=!S.sim&&!S.video&&!S.rec&&(S.ctrl.atk==='human'||S.ctrl.def==='human');
+      if(human){
+        const info={title:'已超過預計回合',blurb:'預計的第 '+S.T+' 回合到了，但勝負還沒分出來（攻方達成 '+nn+' / 3 項，雙方仍在交戰）。要怎麼繼續？',
+          opts:[{id:'self',label:'自己繼續操作（再 2 回合）',desc:'判定延後 2 回合，由你繼續指揮。',est:'判定延後至第 '+(S.T+2)+' 回合',rec:false},
+            {id:'ai',label:'由電腦接手推演到分出勝負',desc:'雙方都交給電腦，一路推演到分出勝負（上限第 30 回合）；之後可看戰報與結算。',est:'電腦推演，最多到第 30 回合',rec:true},
+            {id:'now',label:'現在就判定',desc:'不再延長，依目前局勢直接判定結果。',est:'依目前的控制與兵力判定',rec:false}]};
+        const o=await askTruce(info,()=>info.opts[1]);
+        if(o.id==='now')return endGame();
+        if(o.id==='ai'){S.ctrl={atk:'ai',def:'ai'};S.takeover=true;log('超過預計回合：雙方改由電腦接手推演，直到分出勝負');}
+      }
+      S.T+=2;S.extended=true;S.stats.autoExt=(S.stats.autoExt||0)+1;log('戰局尚未分出勝負：判定延後至第 '+S.T+' 回合（攻方達成 '+nn+' / 3 項，雙方仍在交戰）');toast('戰局未分，判定延後至第 '+S.T+' 回合',3600);}
     else return endGame();
   }
   if((S.stats.fullHold||0)>=2)return endGame('攻方連續兩個回合同時控制首都、主要港口並取得兵力優勢，提前判定攻方勝利。','atk','攻方提前取勝');
