@@ -1200,6 +1200,7 @@ function fireHimars(m,t){
   checkInstant();
 }
 function fireMissile(m,t){
+  if(window.__fm)window.__fm.push(t.type+(atSea(t)?'@sea':'@land'));
   if(m.type==='hmr')return fireHimars(m,t);
   if(m.type==='ssm'&&S.pools&&S.pools.rocAS!==undefined)S.pools.rocAS=Math.max(0,S.pools.rocAS-.2);
   m.shots--;if(m.shots<=0&&m.type!=='ssm')m.acted=true; // 岸置發射車打完仍可機動轉移
@@ -1211,6 +1212,7 @@ function fireMissile(m,t){
   checkInstant();
 }
 function strike(t){
+  if(window.__st)window.__st.push(t.type);
   S.fire--;S.stats.fire++;const h=hexOf(t);civHit('TW',h,'strike');
   const hid=(t.type==='ssm'||t.type==='hmr')&&!t.revealed; // 機動發射車：未暴露時多半打到誘餌與空車
   const need=Math.min(6,((h.t==='city'||h.t==='mtn')?6:5)+(hid?1:0));
@@ -3039,9 +3041,8 @@ function pickStrike(){
     if(OBJ.includes(h.k))s+=2;
     if(zoneKs.some(k=>hd(TER[k],h)<=2))s+=3;
     { const IT=S.intent||{};
-      if(IT.fire==='ssm'&&(d.type==='ssm'||d.type==='hmr'))s+=14;
-      if(IT.fire==='reserve'&&(d.type==='tank'||d.type==='res'))s+=12;
-      if(IT.fire==='landing'&&atkLand.some(a=>hd(hexOf(a),h)<=2))s+=9;
+      if(IT.fire==='ssm'&&(d.type==='ssm'||d.type==='hmr'))s+=30;
+      if(IT.fire==='reserve'&&(d.type==='tank'||d.type==='res'))s+=30;
       if((IT.axis==='north'||IT.axis==='central')&&ZONES[IT.axis].some(k=>hd(TER[k],h)<=3))s+=8; }
     if(h.t==='city'||h.t==='mtn')s-=2;
     if(s>bs){bs=s;best=d;}
@@ -3144,10 +3145,7 @@ async function aiDef(){
     while(alive(m)&&m.shots>0&&!S.over){
       let ts=targets(m);if(MS==='save')ts=ts.filter(t=>HV.includes(t.type));if(!ts.length)break;
       if(m.type==='hmr'){const w={arm:4,tank:4,amph:4,mar:4,abn:3,inf:2,res:2};ts.sort((a,b)=>(w[b.type]||1)-(w[a.type]||1)||a.hp-b.hp);}
-      else{const f=(S.intent||{}).fire;
-        if(f==='fleet'){const w={amph:5,mar:5,arm:5,tank:5,abn:3,cv:2};ts.sort((a,b)=>(atSea(b)-atSea(a))||((w[b.type]||1)-(w[a.type]||1))||a.hp-b.hp);}
-        else if(f==='landed')ts.sort((a,b)=>(onTW(b)-onTW(a))||a.hp-b.hp);
-        else ts.sort((a,b)=>(b.type==='cv')-(a.type==='cv')||a.hp-b.hp);}
+      else ts.sort((a,b)=>(b.type==='cv')-(a.type==='cv')||a.hp-b.hp);
       if(MS==='salvo'){if(!(salvoT&&alive(salvoT)&&ts.includes(salvoT)))salvoT=ts[0];else ts=[salvoT];}
       fireMissile(m,ts[0]);vol++;
       if(MS==='scoot'&&alive(m))m.revealed=false;
@@ -3169,8 +3167,7 @@ async function aiDefUnit(u){
   const hold=(S.intent||{}).hold;
   const lost=OBJ.filter(k=>S.owner[k]==='atk');let thr=u.type==='tank'?0:1;
   const line=(S.intent||{}).line;
-  if(hold==='counter')thr-=1;else if(hold==='preserve')thr=3;
-  if(line==='mobile'&&(u.type==='tank'||u.type==='res'))thr-=1;
+  if(hold==='preserve')thr=3;
   const fk=hold==='capital'?lost.concat([TAIPEI]):hold==='ports'?lost.concat(PORTS):lost;
   if(await aiTryAttack(u,thr,fk))return;
   if(u.garrison||S.mods.defFreeze[S.turn])return;
@@ -3181,19 +3178,10 @@ async function aiDefUnit(u){
     if(b0>2){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<b0){b0=sc;pk=k;}}
       if(pk){doMove(u,pk,'move');render();await sleep(280);await aiTryAttack(u,thr,fk);}return;}
   }
-  if(line&&!lost.length&&!u.garrison){ // 指揮官令：防線配置
-    let od=null,better=null;
-    if(line==='beach')od=landDist(ZONES.north.concat(ZONES.central));
-    else if(line==='mobile'&&(u.type==='tank'||u.type==='res'))od=landDist([SPOT.taichung]);
-    if(od){let b0=od[h.k]===undefined?1e9:od[h.k];
-      if(b0>(line==='beach'?2:3)){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<b0){b0=sc;better=k;}}
-        if(better){doMove(u,better,'move');render();await sleep(280);await aiTryAttack(u,thr,fk);}return;}
-    } else if(line==='depth'){
-      const co=landDist(Object.values(TER).filter(x=>x.isl==='TW'&&x.coastal).map(x=>x.k));
-      const val=k=>(co[k]||0)+(TER[k].t==='mtn'?1.5:TER[k].t==='city'?1:0);let b0=val(h.k);
-      for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=val(k);if(sc>b0){b0=sc;better=k;}}
-      if(better){doMove(u,better,'move');render();await sleep(280);}return;
-    }
+  if(line==='beach'&&!lost.length&&!u.garrison){ // 指揮官令：灘岸前推
+    const od=landDist(ZONES.north.concat(ZONES.central));let b0=od[h.k]===undefined?1e9:od[h.k],better=null;
+    if(b0>2){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<b0){b0=sc;better=k;}}
+      if(better){doMove(u,better,'move');render();await sleep(280);await aiTryAttack(u,thr,fk);}return;}
   }
   // retake an empty objective in reach
   for(const k of OBJ){if(S.owner[k]==='atk'&&rc.has(k)&&rc.get(k).kind==='move'){doMove(u,k,'move');log(TYPES[u.type].n+' 收復 '+hname(TER[k]));render();await sleep(300);return;}}
@@ -4830,8 +4818,7 @@ $('#fsStrike').onclick=()=>$('#btnStrike').click();$('#fsEnd').onclick=()=>$('#b
 const INTENT={ // 選項格式：[id, 名稱, 效果, 代價]
   atk:[{k:'fire',t:'打擊重點',o:[['','照電腦判斷','綜合考量各目標。',''],
          ['ssm','壓制反艦與火箭飛彈','優先打岸置飛彈與火箭砲，保護渡海船團。','灘頭守軍壓力較小，登陸部隊較辛苦。'],
-         ['reserve','打擊機動預備隊','優先打裝甲旅與後備旅，削弱守方反擊。','岸置飛彈仍在威脅船團。'],
-         ['landing','集中打擊灘頭守軍','優先打登陸部隊兩格內的守軍，幫登陸部隊站穩。','飛彈與預備隊不受壓制。']]},
+         ['reserve','打擊機動預備隊','優先打裝甲旅與後備旅，削弱守方反擊。','岸置飛彈仍在威脅船團。']]},
        {k:'axis',t:'主攻方向',o:[['','照開局計畫','沿用開局選的攻擊軸線。',''],
          ['north','北部','火力與登陸集中林口、桃園一帶。','中部灘頭較空，守方可能轉移兵力。'],
          ['central','中部','火力與登陸集中新竹、苗栗、台中港一帶。','北部較空。']]},
@@ -4839,22 +4826,16 @@ const INTENT={ // 選項格式：[id, 名稱, 效果, 代價]
          ['port','優先占領港口','島上部隊先奪基隆、台中港、高雄，才能卸載重型裝備、擴大補給。','首都方向進度延後。'],
          ['hold','先鞏固灘頭再擴張','島上部隊不前進，只打有把握的攻擊，減少損失。','進度慢，回合可能不夠。'],
          ['dash','全力突進首都','島上部隊直撲台北，攻擊門檻降低。','損失大，補給線容易斷。']]}],
-  def:[{k:'fire',t:'火力重點',o:[['','照電腦判斷','綜合考量各目標。',''],
-         ['fleet','全力打擊運輸船團','飛彈先打兩棲與運輸艦、裝甲旅。','登陸後的部隊較少被打。'],
-         ['landed','集中打擊已登陸部隊','飛彈優先打灘頭上的攻方。','海上船團較少被打。']]},
-       {k:'msl',t:'飛彈使用節奏',o:[['','照電腦判斷','發射後視情況轉移陣地。',''],
+  def:[{k:'msl',t:'飛彈使用節奏',o:[['','照電腦判斷','發射後視情況轉移陣地。',''],
          ['save','隱蔽待機','每具只射 1 發，只打兩棲、裝甲、空降與航艦，其餘按兵不動、保持隱蔽。','火力輸出低，一般船團可能漏網。'],
          ['salvo','集中齊射','全部飛彈打同一個目標，對航艦能造成飽和擊中。','射完不轉移，容易被火力打擊到。'],
          ['scoot','打了就跑','每具只射 1 發，射後立刻轉移並重新隱蔽。','火力減半。']]},
        {k:'hold',t:'防守重點',o:[['','照電腦判斷','',''],
          ['capital','死守台北','部隊向首都收縮，並優先攻擊逼近首都的敵軍。','港口與灘頭較空。'],
          ['ports','死守主要港口','部隊向基隆、台中、高雄收縮，不讓攻方開通補給。','首都與灘頭較空。'],
-         ['counter','積極反擊灘頭','降低反擊門檻，登陸部隊站穩前就出擊。','自身損失較大。'],
          ['preserve','保存兵力','只打有把握的戰鬥，不輕易出擊。','攻方較容易站穩。']]},
        {k:'line',t:'防線配置',o:[['','照電腦判斷','',''],
-         ['beach','灘岸前推','部隊朝北部與中部灘頭靠攏，在灘頭交戰。','暴露在艦砲與空襲下。'],
-         ['depth','縱深防禦','部隊往內陸山地與城市後退，等攻方深入再打。','灘頭與港口容易被占。'],
-         ['mobile','機動預備','裝甲與後備旅集中在台中樞紐，反擊門檻降低。','各灘岸防守薄弱。']]}]
+         ['beach','灘岸前推','部隊朝北部與中部灘頭靠攏，在灘頭交戰。','暴露在艦砲與空襲下。']]}]
 };
 function askIntent(side){
   return new Promise(done=>{
