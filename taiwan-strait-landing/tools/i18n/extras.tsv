@@ -874,3 +874,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 ，仍受損	, still damaged	
 ，恢復運作	, back in operation	
  · 機場 	 · Airfields 	
+判定回合改為「未分勝負就延長」：到判定回合時，若攻方達成不到 2 項、但島上或海上仍有攻方兵力，就不在此判定，自動延後 2 回合，雙方持續交戰到分出勝負或兵力耗盡（上限第 30 回合）。不新增任何增援：兵力只有預排的 8 回合內到達的那些，後續不會憑空生出新的旅。另修正多處小數顯示（盟國空軍取一位小數、增減值的浮點誤差）。	The judgment turn is now 'extend until a winner emerges': when the judgment turn arrives and the attacker meets fewer than 2 conditions but still has forces on the island or at sea, the game does not judge but automatically extends by 2 turns, with both sides fighting on until a result or exhaustion (cap: turn 30). No reinforcements are added: forces are only those scheduled to arrive within the first 8 turns, and no new brigades appear afterwards. Also fixed several decimal displays (allied air force to one decimal, floating-point error in deltas).	
+戰局尚未分出勝負：判定延後至第 	The result is still undecided: judgment postponed to turn 	
+ / 3 項，雙方仍在交戰）	 / 3 conditions; both sides still fighting)	
+戰局未分，判定延後至第 	Undecided; judgment postponed to turn 	
