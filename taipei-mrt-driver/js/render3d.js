@@ -11,7 +11,11 @@ const R3=(function(){
   const mats=new Map(),texs=new Map();
   let tun=0;                    // 0＝高架／戶外，1＝隧道（光線與霧漸變）
   let th=null;
-  const PCOL=[0xd9534f,0x5bc0de,0xf0ad4e,0x5cb85c,0x9b59b6,0xecf0f1,0x34495e,0xe67e22];
+  // 卡通人物配色
+  const SHIRT=[0xff6b6b,0x4dabf7,0xffd43b,0x51cf66,0xcc5de8,0xff922b,0xf8f9fa,0x20c997,0xf06595,0x748ffc];
+  const PANTS=[0x2f3b52,0x4a4f5c,0x6b4f3a,0x1f2a3a,0x7a8aa0,0x364a3c];
+  const SKIN=[0xf8d3b0,0xeab98e,0xcf9468,0x9a6240,0xfbe0c6];
+  const HAIR=[0x2a1d14,0x4a3020,0x111111,0xd1a94a,0x8a3b2a,0x777777,0xb04a8a];
   const TH={
     day:{sky0:'#5aa9e6',sky1:'#cfe8ff',gnd:0x7e8a78,bld:0xaeb8c4,fog:0xcfe8ff,hemi:[0xdcecff,0x8a8f86,2.1],sun:2.2,lit:0,water:0x6c9bbd,hill:0x6f8f6a,tree:0x3f7a3c,fields:[0x9ab26a,0x8aa85c,0xb8b270]},
     dusk:{sky0:'#35508c',sky1:'#f2a65a',gnd:0x54505c,bld:0x7a728c,fog:0xc88c64,hemi:[0xffc79a,0x4a4658,1.5],sun:1.4,lit:0.35,water:0x7a7898,hill:0x5b5a6e,tree:0x38523a,fields:[0x6f7a58,0x646f50,0x7a7655]},
@@ -118,7 +122,7 @@ const R3=(function(){
   const GY={elev:-12,grade:-0.3};     // 地面高度（軌道頂面為 0）
   const DENS={high:{p:0.7,h0:20,h1:90,w0:10,w1:34,o0:11,o1:45},mid:{p:0.62,h0:12,h1:42,w0:10,w1:30,o0:11,o1:50},
               low:{p:0.62,h0:4,h1:11,w0:6,w1:16,o0:9,o1:45},rural:{p:0.12,h0:3,h1:6,w0:6,w1:14,o0:16,o1:90}};
-  let coneGeo=null;
+  let coneGeo=null,headGeo=null;
   const flatMats=new Map();
   function flatMat(color){let m=flatMats.get(color);if(!m){m=new T.MeshLambertMaterial({color,flatShading:true});flatMats.set(color,m);}return m;}
   function inst(g,geo,m,n,fill){
@@ -332,41 +336,108 @@ const R3=(function(){
     box(g,0.3,1.4,0.5,sd*1.8,1.8,st.pos,mat(0x222428));
     plane(g,0.9,0.9,sd*1.8,2.1,st.pos+0.3,mat(0xffffff,{basic:1,map:stopTex()}));
     const ln=new T.Mesh(planeGeo,mat(0x50ff78,{basic:1,op:0.9}));ln.rotation.x=-Math.PI/2;ln.scale.set(3.4,0.5,1);ln.position.set(0,0.19,-st.pos);g.add(ln);
-    // 月台門與乘客
+    // 月台門
     const sp=L.cars===6?5.6:5.2,nd=L.cars*4;
     const glass=mat(0x96cde1,{basic:1,op:0.2,depthWrite:false}),frame=mat(0xd2d6dc);
-    const doors=[];
-    const persons=[];
+    const doors=[],P=[];
+    const sk=hstr(L.short)+st.idx*131;
+    const pick=(arr,k)=>arr[Math.floor(hash(k)*arr.length)];
+    const spec=(kind,k,o)=>Object.assign({kind,shirt:pick(SHIRT,k*3+1),pants:pick(PANTS,k*5+2),skin:pick(SKIN,k*7+3),hair:pick(HAIR,k*11+4),
+      sc:hash(k*13+5)<0.16?0.72:0.9+hash(k*17+6)*0.2,ph:hash(k*19+7)*6.28},o);   // 約 16% 是小朋友
     for(let j=0;j<nd;j++){
       const sj=st.pos-4-j*sp;
       box(g,0.05,2.2,sp-2.5,sd*1.6,2.2,sj-sp/2,glass);
       box(g,0.07,2.2,0.08,sd*1.6,2.2,sj-1.25,frame);box(g,0.07,2.2,0.08,sd*1.6,2.2,sj+1.25,frame);
       const a=box(g,0.05,2.2,1.2,sd*1.6,2.2,sj-0.6,glass),b=box(g,0.05,2.2,1.2,sd*1.6,2.2,sj+0.6,glass);
       doors.push({a,b,sj});
-      const cnt=Math.floor(hash(st.idx*131+j*7+hstr(L.short))*5);
-      for(let p=0;p<cnt;p++){
-        persons.push({x:sd*(2.4+(p%2)*0.6+hash(j*3+p)*0.4),s:sj+(p-1.5)*0.7,c:PCOL[Math.floor(hash(st.idx*17+j*5+p)*PCOL.length)],i:persons.length});
+      // 排隊候車：門的兩側各一列，往月台內側延伸
+      const cnt=Math.floor(hash(sk+j*7)*6);
+      for(let q=0;q<cnt;q++){
+        const k=sk+j*97+q*13;
+        P.push(spec('queue',k,{sj,x:sd*(2.35+Math.floor(q/2)*0.75),s:sj+(q%2?0.8:-0.8),delay:1.4+hash(k+9)*3.4}));
+      }
+      // 下車旅客：開門後從車門走出來，沿月台走開
+      const na=hash(sk+j*5+1)<0.5?1:2;
+      for(let q=0;q<na;q++){
+        const k=sk+j*131+q*29+1000;
+        P.push(spec('alight',k,{sj,delay:1.8+hash(k+9)*2.4,dir:hash(k+11)<0.5?1:-1,xo:sd*(3.0+hash(k+13)*2.5)}));
       }
     }
-    const nP=persons.length;
-    const bodies=new T.InstancedMesh(unitBox,mat(0xffffff),Math.max(1,nP)),heads=new T.InstancedMesh(unitBox,mat(0xe8c9a6),Math.max(1,nP));
-    bodies.frustumCulled=false;heads.frustumCulled=false;
-    persons.forEach((p,i)=>bodies.setColorAt(i,new T.Color(p.c)));
-    g.add(bodies);g.add(heads);
-    g.userData={doors,persons,bodies,heads,vis:-1,open:-1};
-    setPersons(g,1);
+    // 在月台上來回走動的人
+    const nw=island?9:6;
+    for(let q=0;q<nw;q++){
+      const k=sk+q*53+5000;
+      P.push(spec('walk',k,{lane:sd*(2.3+hash(k+3)*(pw-3.3)),sp:0.9+hash(k+5)*0.8,off:hash(k+7)*1000}));
+    }
+    // 每個人 7 個部件：頭、頭髮、軀幹、左右腿、左右臂（用實體化網格一次畫完）
+    const nP=P.length,cm=mat(0xffffff);
+    const parts={head:new T.InstancedMesh(headGeo,cm,nP),hair:new T.InstancedMesh(unitBox,cm,nP),torso:new T.InstancedMesh(unitBox,cm,nP),
+      legL:new T.InstancedMesh(unitBox,cm,nP),legR:new T.InstancedMesh(unitBox,cm,nP),armL:new T.InstancedMesh(unitBox,cm,nP),armR:new T.InstancedMesh(unitBox,cm,nP),
+      eyeL:new T.InstancedMesh(unitBox,cm,nP),eyeR:new T.InstancedMesh(unitBox,cm,nP)};
+    const C=(h)=>new T.Color(h);
+    P.forEach((q,i)=>{parts.head.setColorAt(i,C(q.skin));parts.hair.setColorAt(i,C(q.hair));parts.torso.setColorAt(i,C(q.shirt));
+      parts.eyeL.setColorAt(i,C(0x111111));parts.eyeR.setColorAt(i,C(0x111111));parts.legL.setColorAt(i,C(q.pants));parts.legR.setColorAt(i,C(q.pants));parts.armL.setColorAt(i,C(q.shirt));parts.armR.setColorAt(i,C(q.skin));});
+    for(const k in parts){parts[k].frustumCulled=false;g.add(parts[k]);}
+    g.userData={doors,P,parts,open:-1,t0:null,sd,pa,pb,pw};
     return g;
   }
-  // 乘客依 frac（1＝全在月台，0＝全部上車）逐漸消失
-  function setPersons(g,frac){
-    const u=g.userData,M=new T.Matrix4(),q=new T.Quaternion(),total=Math.max(1,u.persons.length);
-    u.persons.forEach(p=>{
-      const k=(p.i+0.5)/total<=frac?1:0;
-      M.compose(new T.Vector3(p.x,1.1+0.725,-p.s),q,new T.Vector3(0.45*k+0.001,1.45*k+0.001,0.3*k+0.001));u.bodies.setMatrixAt(p.i,M);
-      M.compose(new T.Vector3(p.x,1.1+1.6,-p.s),q,new T.Vector3(0.28*k+0.001,0.28*k+0.001,0.28*k+0.001));u.heads.setMatrixAt(p.i,M);
+
+  /* ---------- 卡通人物動畫 ---------- */
+  // 暫存物件：T（Three.js）是動態載入的，所以要等 init() 才能建立
+  let _q,_q2,_v,_s,_m,_AX,_AY,HIDE;
+  function hidePerson(parts,i){for(const k in parts)parts[k].setMatrixAt(i,HIDE);}
+  // 擺放一個人：位置 (x,z)（世界座標，z 為 -里程）、朝向 yaw、步伐相位 ph、擺幅 amp、縮放 sc、垂直彈跳 bob
+  function poseParts(parts,i,x,z,yaw,ph,amp,sc,bob){
+    const y0=1.1+bob;_q.setFromAxisAngle(_AY,yaw);
+    const sw=Math.sin(ph)*amp;
+    const put=(im,lx,ly,lz,sx,sy,sz,q)=>{_v.set(lx*sc,ly*sc,lz*sc).applyQuaternion(_q).add(_s.set(x,y0,z));
+      _m.compose(_v,q,_s.set(sx*sc,sy*sc,sz*sc));im.setMatrixAt(i,_m);};
+    put(parts.torso,0,0.88,0,0.46,0.62,0.27,_q);
+    put(parts.head,0,1.52,0,0.66,0.66,0.66,_q);
+    put(parts.hair,0,1.74,0.03,0.58,0.2,0.6,_q);              // 頭髮：蓋在頭頂偏後
+    put(parts.eyeL,-0.12,1.55,-0.32,0.08,0.11,0.05,_q);put(parts.eyeR,0.12,1.55,-0.32,0.08,0.11,0.05,_q);   // 眼睛（臉朝前進方向）
+    // 肢體：樞軸在髖／肩，繞局部 x 軸擺動（正向＝往前）
+    const limb=(im,px,py,h,w,a)=>{_q2.setFromAxisAngle(_AX,a);const q=_q.clone().multiply(_q2);
+      put(im,px,py-h/2*Math.cos(a),-h/2*Math.sin(a),w,h,w,q);};
+    limb(parts.legL,-0.11,0.58,0.58,0.16, sw);limb(parts.legR,0.11,0.58,0.58,0.16,-sw);
+    limb(parts.armL,-0.30,1.15,0.55,0.11,-sw*0.9);limb(parts.armR,0.30,1.15,0.55,0.11, sw*0.9);
+  }
+  const pingpong=(x,L)=>{const m=((x%(2*L))+2*L)%(2*L);return m<L?m:2*L-m;};
+  function animatePeople(gg,st,g){
+    const u=gg.userData,sd=u.sd,D=g.doors,now=g.time,parts=u.parts;
+    const isStop=g.stopSt!==null&&g.stations[g.stopSt]===st&&D.side===st.side;
+    if(isStop&&u.t0===null)u.t0=now-(D.state==='opening'?D.t:2.2+D.openT);   // 開始開門的時刻
+    const te=u.t0===null?-1:now-u.t0;                                         // 開門後經過秒數
+    const face=sd>0?Math.PI/2:-Math.PI/2;                                      // 面向軌道
+    u.P.forEach((q,i)=>{
+      if(q.kind==='queue'){
+        const zw=-q.s,dx=sd*1.78-q.x,dz=-q.sj-zw;
+        if(te>=q.delay){
+          const len=Math.hypot(dx,dz),t=(te-q.delay)*1.35;
+          if(t>=len){hidePerson(parts,i);return;}            // 走進車廂
+          const f=t/len;poseParts(parts,i,q.x+dx*f,zw+dz*f,Math.atan2(-dx,-dz),now*8+q.ph,0.75,q.sc,Math.abs(Math.sin(now*8+q.ph))*0.04);
+        }else{    // 排隊：輕微晃動、偶爾換重心
+          const bob=Math.abs(Math.sin(now*1.6+q.ph))*0.012;
+          poseParts(parts,i,q.x,zw,face+Math.sin(now*0.7+q.ph)*0.12,now*1.3+q.ph,0.05,q.sc,bob);
+        }
+      }else if(q.kind==='alight'){
+        if(te<q.delay){hidePerson(parts,i);return;}
+        const age=te-q.delay,AL=16;
+        if(age>AL){hidePerson(parts,i);return;}
+        const sc=q.sc*Math.min(1,(AL-age)/1.2);                   // 最後 1.2 秒縮小消失
+        let x,z,yaw;
+        if(age<1.4){ // 第一階段：從車門走向月台內側
+          const f=age/1.4,dx=q.xo-sd*1.78,dz=-q.dir*0.6;
+          x=sd*1.78+dx*f;z=-q.sj+dz*f;yaw=Math.atan2(-dx,-dz);}
+        else{const a2=age-1.4;x=q.xo;z=-q.sj-q.dir*(0.6+a2*1.25);yaw=q.dir>0?0:Math.PI;}
+        poseParts(parts,i,x,z,yaw,now*6.5+q.ph,0.75,sc,Math.abs(Math.sin(now*6.5+q.ph))*0.04);
+      }else{ // walk
+        const L=Math.max(10,u.pb-u.pa-10),m=((q.sp*now+q.off)%(2*L)+2*L)%(2*L),fwd=m<L;
+        const s=u.pa+5+pingpong(q.sp*now+q.off,L);
+        poseParts(parts,i,q.lane,-s,fwd?0:Math.PI,now*q.sp*5.2+q.ph,0.7,q.sc,Math.abs(Math.sin(now*q.sp*5.2+q.ph))*0.04);
+      }
     });
-    u.bodies.instanceMatrix.needsUpdate=true;u.heads.instanceMatrix.needsUpdate=true;
-    if(u.bodies.instanceColor)u.bodies.instanceColor.needsUpdate=true;
+    for(const k in parts)parts[k].instanceMatrix.needsUpdate=true;
   }
 
   /* ---------- 限速牌 ---------- */
@@ -394,7 +465,8 @@ const R3=(function(){
       renderer.outputColorSpace=T.SRGBColorSpace;
       scene=new T.Scene();
       camera=new T.PerspectiveCamera(52,1,0.4,520);
-      unitBox=new T.BoxGeometry(1,1,1);planeGeo=new T.PlaneGeometry(1,1);coneGeo=new T.ConeGeometry(1,1,7);
+      unitBox=new T.BoxGeometry(1,1,1);planeGeo=new T.PlaneGeometry(1,1);coneGeo=new T.ConeGeometry(1,1,7);headGeo=new T.SphereGeometry(0.5,12,9);
+      _q=new T.Quaternion();_q2=new T.Quaternion();_v=new T.Vector3();_s=new T.Vector3();_m=new T.Matrix4();_AX=new T.Vector3(1,0,0);_AY=new T.Vector3(0,1,0);HIDE=new T.Matrix4().makeScale(0.0001,0.0001,0.0001);
       hemi=new T.HemisphereLight(0xffffff,0x888888,1);scene.add(hemi);
       sun=new T.DirectionalLight(0xffffff,1);sun.position.set(-30,60,20);scene.add(sun);
       head=new T.PointLight(0xfff0d0,0,70,1.2);scene.add(head);
@@ -444,11 +516,10 @@ const R3=(function(){
           u.open=fr;
           for(const d of u.doors){d.a.position.z=-(d.sj-0.6-1.2*fr);d.b.position.z=-(d.sj+0.6+1.2*fr);}
         }
-        const bf=Math.round(g.boardFrac*20)/20;
-        const want=1-bf;
-        if(u.vis!==want){u.vis=want;setPersons(gg,want);}
       }
     }
+    // 卡通人物：只更新鏡頭附近的車站
+    for(const st of g.stations){if(st.g3&&st.g3.visible&&Math.abs(st.pos-pos)<260)animatePeople(st.g3,st,g);}
     // 光線與霧：依鏡頭所在場景漸變
     const target=sectorEnv(pos+8)==='tunnel'?1:0;
     tun+=(target-tun)*Math.min(1,dt*3);
