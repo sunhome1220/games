@@ -703,3 +703,57 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 戰局尚未分出勝負：判定延後至第 	The result is still undecided: judgment postponed to turn 
  / 3 項，雙方仍在交戰）	 / 3 conditions; both sides still fighting)
 戰局未分，判定延後至第 	Undecided; judgment postponed to turn 
+決策選項依物理原則整理：拿掉「報復／刺激使攻方火力增加」（公開深化美日合作、立即反擊大陸基地、預防性打擊集結港）；「前推到海岸線」「水際死守」的暴露改為攻方打擊命中門檻 −1；拿掉純靠士氣的效果（公開表明決不談判、公開向美日求援示弱、戰至最後一人、斬首失敗的同仇敵愾、求援落空的士氣崩落、外援無回應的士氣受挫）；釋出善意改為「後備旅動員提前 1 回合」；移除會憑空生出新旅的選項（增兵再搏、繼續進攻、全面升級的增援），火力 +3／+4 的選項改為同時消耗火箭軍存量。	Decision options cleaned up by physical principles: removed 'retaliation/provocation raises attacker fire' (publicly deepen US-Japan cooperation, immediate strike on mainland bases, preventive strike on assembly ports); exposure in 'Forward to the coastline' and 'Hold the water's edge' now makes attacker strikes easier to hit (threshold −1); removed pure-morale effects (refuse all talks, appeal to US/Japan, fight to the last, the rallying effect of a failed decapitation, morale collapse when the call-out fails, morale hit when outside help does not answer); 'Extend goodwill' now means 'reserve brigades mobilize 1 turn earlier'; removed options that conjure new brigades out of nothing (reinforce, continue the offensive, reinforcements in full escalation); fire +3/+4 options now also consume rocket-force stock.
+聯合演訓、公開表態。美日參戰擲骰 +1。	Joint exercises and public statements. US/Japan entry roll +1.
+爭取到時間：守方後備旅動員提前 1 回合；但盟國更不確定，美日參戰擲骰 −1。	Time gained: defender reserve brigades mobilize 1 turn earlier; but allies are less sure, US/Japan entry roll −1.
+守方後備旅動員提前 1 回合	Defender reserve brigades mobilize 1 turn earlier
+火箭軍存量 −2、攻方空軍 −1；但長程飛彈存量 −2。	Rocket-force stock −2, attacker air force −1; but long-range missile stock −2.
+重創集結中的 2 個攻方船團（各 −1 步）；被視為首先動武，美日參戰擲骰 −2。	Cripple 2 attacker fleets still assembling (−1 step each); seen as striking first, US/Japan entry roll −2.
+美日參戰擲骰 −2	US/Japan entry roll −2
+守方第 1～3 回合防禦 +1（灘頭交戰）；但兵力暴露，攻方第 1 回合打擊更容易命中（命中門檻 −1）。	Defender defense +1 on turns 1–3 (fighting at the beach); but exposed forces make attacker strikes easier to hit on turn 1 (threshold −1).
+攻方第 1 回合打擊命中門檻 −1（暴露）	Attacker strike hit threshold −1 on turn 1 (exposure)
+第 1～3 回合守方防禦 +2；海岸部隊暴露，攻方第 1～2 回合打擊更容易命中（命中門檻 −1）；第 4～6 回合守方防禦 −1。	Defender defense +2 on turns 1–3; coastal forces are exposed, attacker strikes hit more easily on turns 1–2 (threshold −1); defender defense −1 on turns 4–6.
+守方第 1～3 回合防禦 +2、攻方第 1～2 回合打擊命中門檻 −1（暴露）	Defender defense +2 on turns 1–3, attacker strike hit threshold −1 on turns 1–2 (exposure)
+拒絕放棄，繼續作戰；軍民損失持續累積。	Refuse to give up and keep fighting; military and civilian losses keep mounting.
+守方繼續作戰	Defender keeps fighting
+擴大戰事：本回合火力 +3（消耗火箭軍存量 −2），美日參戰程度各 +1（若情境允許）。	Widen the war: fire +3 this turn (consumes rocket-force stock −2), US and Japan entry levels +1 each (if the scenario allows).
+本回合火力 +3（消耗火箭軍存量 −2）	Fire +3 this turn (consumes rocket-force stock −2)
+本回合火力 +3（消耗火箭軍存量 −3），美日參戰程度各 +1；攻方本回合與下回合防禦 −1，平民傷亡 +30%、股市 −4。	Fire +3 this turn (consumes rocket-force stock −3), US and Japan entry levels +1 each; attacker defense −1 this and next turn, civilian casualties +30%, stocks −4.
+本回合火力 +3（消耗火箭軍存量 −3）	Fire +3 this turn (consumes rocket-force stock −3)
+本回合攻擊 +2、火力 +4（消耗火箭軍存量 −3），防禦 −2；平民傷亡 +50%、股市 −4。	This turn attack +2, fire +4 (consumes rocket-force stock −3), defense −2; civilian casualties +50%, stocks −4.
+攻方本回合攻擊 +2、火力 +4（消耗火箭軍存量 −3）	Attacker attack +2 and fire +4 this turn (consumes rocket-force stock −3)
+依判定：成功則守方機動部隊第 1～3 回合無法調動、社會韌性 −1；部分成功癱瘓 2 回合；失敗則沒有效果。平民傷亡 +50%、美日擲骰 +1。	By roll: on success the defender's mobile forces cannot move on turns 1–3 and resilience −1; partial success paralyzes them for 2 turns; failure has no effect. Civilian casualties +50%, US/Japan roll +1.
+斬首失敗：指揮核心未受影響	Decapitation failed: the command core is unaffected
+美日參戰擲骰 +2。	US/Japan entry roll +2.
+沒有得到回應，沒有任何實際效果	No answer; no practical effect
+電網癱瘓	Power grid down
+新增「難度評級」：把你的分數放進「同年代、同參戰情境」的 150 場電腦推演分布裡看百分位（S 前 5%、A 前 20%、B 前 50%、C 前 80%、D 其餘），人類玩家會得到帶百分比的評語；電腦推演只顯示客觀等級。分數的「外部」一項改為自主程度（攻方損失中美日造成的比例越低，攻方「對抗外援」越高；守方靠自己打掉敵軍的比例越高，「自主程度」越高）。另外：大陸基地（火箭軍旅駐地、機場）被打掉的比例會持續降低攻方的發射與出擊能量，不再只是一次性扣庫存；決策選項依物理原則整理（拿掉報復加火力、士氣數值與憑空增援）。	Added a 'Difficulty rating': your score is placed within the distribution of 150 computer sims with the same era and same US/Japan entry scenario (S top 5%, A top 20%, B top 50%, C top 80%, D the rest); human players get a comment with the percentage, computer sims show only the objective grade. The 'external' score item became self-reliance (the lower the share of attacker losses caused by the US/Japan, the higher the attacker's 'Resisting allies'; the more kills Taiwan makes itself, the higher the defender's 'Self-reliance'). Also: the share of mainland bases (rocket-force garrisons, airfields) knocked out now keeps reducing the attacker's launch and sortie capacity instead of a one-time stock deduction; decision options were cleaned up by physical principles (no retaliation fire bonuses, morale numbers or conjured reinforcements).
+難度評級（相對同設定的電腦推演）	Difficulty rating (relative to computer sims with the same settings)
+同年代、同參戰情境的 150 場電腦推演中，約 	Among 150 computer sims with the same era and US/Japan scenario, about 
+% 能達到 	% reached 
+ 分或更高	 points or more
+難度評級以百分位計：S 前 5%、A 前 20%、B 前 50%、C 前 80%、D 其餘。基準是電腦對電腦的推演，不是真人玩家資料。	The difficulty rating is a percentile: S top 5%, A top 20%, B top 50%, C top 80%, D the rest. The baseline is computer-vs-computer sims, not data from real players.
+（而且有一半以上的功勞是美日的。）	(And more than half the credit goes to the US and Japan.)
+對抗外援	Resisting allies
+自主程度	Self-reliance
+戰神！同樣的設定下，只有約 {p}% 的電腦推演能做到。	A war god! With the same settings only about {p}% of computer sims manage this.
+教科書級的操作，電腦推演裡不到 {p}% 能贏得這麼漂亮。	Textbook play: under {p}% of computer sims win this beautifully.
+這成績單可以裱框了，同設定下電腦推演只有約 {p}% 能達到。	This report card deserves a frame; only about {p}% of computer sims reach it with the same settings.
+漂亮，同設定下只有約 {p}% 的電腦推演能贏得這麼好。	Nice: only about {p}% of computer sims win this well with the same settings.
+穩而準，電腦推演裡約 {p}% 才有這樣的成績。	Steady and precise: about {p}% of computer sims get a result like this.
+贏是贏了，電腦推演裡約 {p}% 也能做到，不算特別，也不算丟臉。	A win is a win; about {p}% of computer sims manage it too — nothing special, nothing shameful.
+中規中矩的勝利，同設定下約 {p}% 的電腦推演做得到。	A solid, unremarkable win; about {p}% of computer sims can do it with the same settings.
+贏是贏了，但同設定下約 {p}% 的電腦推演贏得比你好看。	You won, but about {p}% of computer sims win more prettily with the same settings.
+勉強過關，電腦推演裡約 {p}% 都比你更漂亮。	A narrow pass; about {p}% of computer sims do it more prettily.
+這樣也叫贏？同設定下約 {p}% 的電腦推演都贏得比你像樣。	Is that even a win? About {p}% of computer sims win more respectably with the same settings.
+贏得驚險又難看，約 {p}% 的電腦推演表現比你好。	A scary and ugly win; about {p}% of computer sims do better than you.
+輸了，卻輸得很有格調：同設定下只有約 {p}% 的電腦推演能撐得比你好。	You lost, but with style: only about {p}% of computer sims hold out better with the same settings.
+這局難度太高，你的表現仍優於九成以上的電腦推演。	This one was too hard, yet you still beat over 90% of computer sims.
+雖敗猶榮，同設定下約 {p}% 的電腦推演才有這個表現。	Honorable in defeat: only about {p}% of computer sims perform like this with the same settings.
+輸了，但電腦推演裡約 {p}% 也跟你差不多，不用太難過。	You lost, but about {p}% of computer sims did about the same; don't be too sad.
+這種設定下，約 {p}% 的電腦推演都比你撐得久，下次想想哪裡出了問題。	With these settings about {p}% of computer sims last longer than you; think about what went wrong.
+輸了，而且約 {p}% 的電腦推演在同設定下都做得比你好。	You lost, and about {p}% of computer sims do better than you with the same settings.
+這麼多資源你也能輸！同設定下約 {p}% 的電腦推演都做得比你好。	With this many resources you still lost! About {p}% of computer sims do better than you with the same settings.
+輸成這樣，約 {p}% 的電腦推演都能做得比你像樣。請重新開局，或者換個難度。	Losing like this: about {p}% of computer sims do more respectably. Restart, or pick another difficulty.
+大陸基地受損：火箭軍旅可用 	Mainland bases damaged: rocket-force brigades usable 
+、機場可用 	, airfields usable 
