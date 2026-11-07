@@ -187,6 +187,18 @@ th{color:#9fb0c8;font-weight:600}
   <button class="btn2" id="m-share">🔗 分享這個關卡（可用 AirDrop）</button>
   <div id="sh-menu" class="card" hidden></div>
   <button class="btn2" id="m-board">🏆 排行榜</button>
+  <button class="btn2" id="m-fb">✉ 意見回饋</button>
+  <div id="fb-box" class="card" hidden>
+    <div class="sh-st">意見會用你手機的郵件 App 寄出（按下「寄出」才會送出）。</div>
+    <select id="fb-type"><option value="bug">錯誤回報</option><option value="idea">功能建議</option><option value="data">資料／站名錯誤</option><option value="other">其他</option></select>
+    <textarea id="fb-msg" rows="5" maxlength="1500" placeholder="請描述你遇到的情況或想要的功能"></textarea>
+    <div class="sub" id="fb-cnt" style="text-align:right">0 / 1500</div>
+    <label class="sub"><input type="checkbox" id="fb-info-chk" checked> 附上遊戲資訊（版本、關卡、畫面與瀏覽器；不含駕駛名稱）</label>
+    <pre id="fb-info" class="sub" style="white-space:pre-wrap;word-break:break-all;font-size:11px;margin:6px 0"></pre>
+    <button class="btn2" id="fb-send">用郵件 App 寄出</button>
+    <button class="btn2" id="fb-copy">複製內容</button>
+    <div id="fb-st" class="sh-st" style="margin-top:6px"></div>
+  </div>
   <p class="sub" style="font-size:12px;text-align:center">站序、站體（高架／平面／地下）、月台形式（島式／側式）與站間距離依維基百科車站表（2026-11 擷取）；限速區間與沿線地貌（河、山、湖、建築疏密）為遊戲示意，未逐站查證。</p>
   <div id="ver"></div>
 </div>
@@ -218,13 +230,14 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-07.17"></script>
-<script src="js/broadcast.js?v=2026-11-07.17"></script>
-<script src="js/haptics.js?v=2026-11-07.17"></script>
-<script src="js/share.js?v=2026-11-07.17"></script>
-<script src="js/events.js?v=2026-11-07.17"></script>
-<script src="js/lines.js?v=2026-11-07.17"></script>
-<script src="js/render3d.js?v=2026-11-07.17"></script>
+<script src="js/models.js?v=2026-11-07.18"></script>
+<script src="js/broadcast.js?v=2026-11-07.18"></script>
+<script src="js/haptics.js?v=2026-11-07.18"></script>
+<script src="js/feedback.js?v=2026-11-07.18"></script>
+<script src="js/share.js?v=2026-11-07.18"></script>
+<script src="js/events.js?v=2026-11-07.18"></script>
+<script src="js/lines.js?v=2026-11-07.18"></script>
+<script src="js/render3d.js?v=2026-11-07.18"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -232,7 +245,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-07.17';
+const VERSION='2026-11-07.18';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -1302,6 +1315,7 @@ function showBoard(sel){
   $('menu').classList.add('hidden');$('result').classList.add('hidden');$('board').classList.remove('hidden');
 }
 $('m-board').onclick=()=>showBoard();
+fbInit();
 $('m-share').onclick=()=>{shareLevel();};   // 必須在點擊當下同步呼叫 navigator.share
 $('r-share').onclick=()=>{shareResult();};
 $('b-back').onclick=()=>{$('board').classList.add('hidden');$('menu').classList.remove('hidden');};
