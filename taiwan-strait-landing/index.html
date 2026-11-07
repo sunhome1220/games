@@ -1083,9 +1083,7 @@ function convoyTurn(){ // 攻方階段開始：運輸船返航入列、派出新
   }
 }
 function buildFob(){ // 在攻方掌握的灘頭或港口格建立灘頭補給站
-  if(S.units.filter(x=>x.side==='atk'&&x.type==='fob').length>=2)return null;
-  const c=Object.values(TER).filter(h=>h.isl==='TW'&&S.owner[h.k]==='atk'&&h.coastal&&!h.cliff&&!h.mud&&h.t!=='mtn'&&unitsAt(h.k).length<STACK_MAX&&!unitsAt(h.k).some(e=>e.side!=='atk')&&enemyAdj(h.k,'atk')===0).sort((a,b)=>(b.t==='port')-(a.t==='port')||0);
-  if(!c.length)return null;const h=c[0];S.units.push(mkUnit('atk','fob',h.k));return h;
+  const h=fobSpot();if(!h)return null;S.units.push(mkUnit('atk','fob',h.k));return h;
 }
 function resolveSupply(){
   const P=S.pools,t=S.turn,ord=(S.supOrd&&S.supOrd[t])||{},intd=(S.mods.intd&&S.mods.intd[t])||null;
@@ -1347,17 +1345,35 @@ const twControl=()=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(
 
 /* ---------- 補給線：守方攔截補給船團、攻方護航或加緊運補 ---------- */
 const hasBeachhead=()=>S.units.some(u=>u.side==='atk'&&!isShip(u)&&onTW(u));
+// 補給情報：守方做決策時看得到攻方補給的實際狀況（船團在哪、貨量多少、空投與卸載能力），只列出真的有東西可以打的選項
+function supplyIntel(){
+  const cv=S.units.filter(x=>x.side==='atk'&&x.type==='cvy'&&atSea(x)),cargo=cv.reduce((a,u)=>a+u.hp,0),sinks=unloadHexes(),fob=S.units.filter(x=>x.side==='atk'&&x.type==='fob').length;
+  const near=cv.length&&sinks.length?Math.min.apply(null,cv.map(u=>Math.min.apply(null,sinks.map(h=>hd(hexOf(u),h))))):null;
+  const AC=S.airCtl,fa=rocAirEff(),P=S.pools;
+  const airN=P.plaAir>=3?Math.min(2,Math.floor(P.plaAir/3)):0;
+  const plBase=Math.min(.9,.15+(S.sead?0:.25)+(AC==='def'?.25:AC==='mid'?.1:0)+(fa>=2&&AC!=='atk'?.1:0));
+  const prot=Math.max(.2,1-Math.min(.6,P.plaNavy/25)-((S.supOrd&&S.supOrd[S.turn]&&S.supOrd[S.turn].escort)?.25:0));
+  const sp=supply(),sup=S.sup&&S.sup.t===S.turn?S.sup:null;
+  return {cv,cargo,sinks,fob,near,airN,plBase,plInt:Math.min(.9,plBase+.3),prot,ucap:unloadCap()+fob*2,sp,sup};
+}
 function interdictOptions(){
-  return {title:'攔截補給（守方）',blurb:'攻方已在島上站穩腳跟，補給靠船團、空投與就地徵用三條路。可以集中力量打其中一條：預估對應的管道在下回合補給結算時受到更大壓力。',
-    opts:[{id:'normal',label:'照常作戰',desc:'維持原本的攻擊目標。',est:'不影響補給',rec:false},
-      {id:'convoy',label:'全力打補給船團',desc:'反艦飛彈、潛艦、戰機優先打海上的補給船團：額外對船團發動 3 次攻擊；代價是反艦飛彈存量 −2，也少打登陸船團。',est:'船團損失增加',rec:true},
-      {id:'air',label:'全力攔截運輸機',desc:'戰機與防空集中攔截空投：下回合空投被擊落機率 +30%；代價是出擊的戰機可能折損（1/3 機率守方空軍 −1）。',est:'空投幾乎失效',rec:false},
-      {id:'sabotage',label:'特種部隊破壞港口後勤設施',desc:'特種部隊襲擊卸載碼頭與油料庫：下回合船團卸載能力 −2；代價是破壞行動造成平民傷亡 +1,500。',est:'卸載能力下降',rec:false}]};
+  const I=supplyIntel(),opts=[{id:'normal',label:'照常作戰',desc:'維持原本的攻擊目標。',est:'不影響補給',rec:false}];
+  const pc=Math.min(.9,.45*I.prot),hitsE=Math.min(I.cargo,3*pc),gain={};
+  if(I.cv.length>0){gain.convoy=hitsE;
+    opts.push({id:'convoy',label:'全力打補給船團',desc:'海上有 '+I.cv.length+' 個補給船團（貨量共 '+I.cargo+' 點'+(I.near!=null?'，最近的離卸載點約 '+I.near+' 格':'')+'）。反艦飛彈、潛艦、戰機優先打船團：額外 3 次攻擊，每次命中約 '+Math.round(pc*100)+'%（已計入攻方護航）；代價是反艦飛彈存量 −2，也少打登陸船團。',est:'再擊中約 '+hitsE.toFixed(1)+' 次，攻方少約 '+hitsE.toFixed(1)+' 點貨量',rec:false});}
+  if(I.airN>0){gain.air=I.airN*(I.plInt-I.plBase);
+    opts.push({id:'air',label:'全力攔截運輸機',desc:'攻方空軍 '+S.pools.plaAir+'，每回合可空投約 '+I.airN+' 點（要天候允許才能飛）。目前運輸機被擊落機率約 '+Math.round(I.plBase*100)+'%（防空'+(S.sead?'已被壓制':'尚可')+'、制空'+AIRCTL[S.airCtl||'mid']+'）；集中攔截後約 '+Math.round(I.plInt*100)+'%。代價是出擊的戰機可能折損（1/3 機率守方空軍 −1）。',est:'空投再少約 '+gain.air.toFixed(1)+' 點，被擊落的運輸機算攻方空軍損失',rec:false});}
+  if(I.sinks.length>0&&I.ucap>=3){gain.sabotage=Math.min(2,I.ucap);
+    opts.push({id:'sabotage',label:'特種部隊破壞港口後勤設施',desc:'攻方目前有 '+I.sinks.length+' 處可卸貨（港口、灘頭、補給站 '+I.fob+' 個），卸載能力 '+I.ucap+' 點。特種部隊襲擊卸載碼頭與油料庫：下回合卸載能力 −2；代價是破壞行動造成平民傷亡 +1,500。',est:'卸載能力 '+I.ucap+' → '+Math.max(0,I.ucap-2)+'；只有船團要卸貨時才有效',rec:false});}
+  const best=Object.entries(gain).sort((a,b)=>b[1]-a[1])[0];if(best)opts.find(o=>o.id===best[0]).rec=true;
+  const sc=I.sp,sup=I.sup;
+  return {title:'攔截補給（守方）',blurb:'攻方補給現況：島上部隊 '+sc.used+' 個、補給容量 '+sc.cap+(sup?'（船團 '+sup.convoy.ok+'、空投 '+sup.air.ok+'、就地 '+sup.local.n+'、庫存 '+sup.stock+'）':'')+'；海上補給船團 '+I.cv.length+' 個。下面只列出攻方真的有、可以打的管道，預估對應下回合補給結算的影響。',opts};
 }
 async function interdictEval(){
   if(S.over||S.turn<3||!hasBeachhead())return;
   const info=interdictOptions(),manual=(S.sim&&!S.simAuto)||(!S.video&&S.ctrl.def==='human');
-  const ai=()=>{if(Math.random()>=.3||S.pools.rocAS<3)return info.opts[0];const r=Math.random();return info.opts[r<.5?1:r<.8?2:3];};
+  if(info.opts.length<=1)return; // 攻方補給沒有可打的管道，不必決策
+  const ai=()=>{const rest=info.opts.filter(x=>x.id!=='normal');if(Math.random()>=.3||S.pools.rocAS<3||!rest.length)return info.opts[0];const w={convoy:50,air:30,sabotage:20};let tot=rest.reduce((a,x)=>a+w[x.id],0),r=Math.random()*tot;for(const x of rest){r-=w[x.id];if(r<=0)return x;}return rest[0];};
   let o;
   if(manual)o=await askTruce(info,ai);
   else{o=ai();if(!(S.rec&&REC.quiet)&&o.id!=='normal')toast(info.title+'：'+o.label);}
@@ -1370,21 +1386,28 @@ async function interdictEval(){
   else if(o.id==='sabotage'){if(S.cost&&S.cost.civ)S.cost.civ.TW+=1500;eff.push('下回合船團卸載能力 −2','平民傷亡 +1,500');}
   rec.snap=snap();S.events.push(rec);
 }
+function fobSpot(){ // 建立補給站的候選格：攻方掌握、沿岸、沒有敵軍相鄰
+  if(S.units.filter(x=>x.side==='atk'&&x.type==='fob').length>=2)return null;
+  const c=Object.values(TER).filter(h=>h.isl==='TW'&&S.owner[h.k]==='atk'&&h.coastal&&!h.cliff&&!h.mud&&h.t!=='mtn'&&unitsAt(h.k).length<STACK_MAX&&!unitsAt(h.k).some(e=>e.side!=='atk')&&enemyAdj(h.k,'atk')===0).sort((a,b)=>(b.t==='port')-(a.t==='port')||0);
+  return c[0]||null;
+}
 function convoyOptions(){
-  const hit=S.mods.lastInterdict===S.turn-1;
-  return {title:'補給線（攻方）',blurb:(hit?'守方正集中火力攻擊你的補給線，要把有限的資源投在哪一條管道？':'灘頭堡已建立。補給靠船團、空投與就地徵用三條路，本回合要偏重哪一條？')+'（結算在本回合開始時進行。）',
-    opts:[{id:'normal',label:'照常作戰',desc:'不調整護航與運補。',est:'不影響補給',rec:!hit},
-      {id:'escort',label:'集中護航補給船團',desc:'護航艦隊集中保護船團：船團每次遭攻擊的命中率 −25%；但本回合攻方攻擊 −1。',est:'船團較安全，攻勢略緩',rec:hit},
-      {id:'airlift',label:'加大空投',desc:'多派運輸機：空投補給 +1 點；但運輸機要穿過防空與戰機，被擊落就算空軍損失。',est:'多一點補給，有折損風險',rec:false},
-      {id:'requisition',label:'強行徵用民間物資',desc:'就地徵用燃料與糧食：就地補給 +1 點（乘上民心）；但強行徵用造成平民傷亡 +1,200，民心下降。',est:'多一點補給，民心再降',rec:false},
-      {id:'rush',label:'加緊運補',desc:'緊急多派 1 個補給船團出航；但抽調護航艦，護航艦隊 −1，新增的船也要承受攻擊。',est:'多一個船團，護航變薄',rec:false},
-      {id:'fob',label:'建立灘頭補給站',desc:'在已掌握的灘頭或港口格建立補給站（最多 2 個）：卸載能力 +2、庫存空間 +3；本回合補給 −2（材料與人力）；補給站是棋子，守方可以攻擊，攻方要派兵守。',est:'長期補給改善，補給站需要保護',rec:false}]};
+  const hit=S.mods.lastInterdict===S.turn-1,I=supplyIntel(),P=S.pools,gw=Math.round(goodwill()*100),fobN=I.fob;
+  let owned=0;for(const h of Object.values(TER))if(h.isl==='TW'&&isLand(h)&&S.owner[h.k]==='atk')owned++;
+  const opts=[{id:'normal',label:'照常作戰',desc:'不調整護航與運補。',est:'不影響補給',rec:!hit}];
+  if(I.cv.length>0||hit)opts.push({id:'escort',label:'集中護航補給船團',desc:'海上有 '+I.cv.length+' 個補給船團（貨量 '+I.cargo+' 點），護航艦隊 '+P.plaNavy+'。集中保護：船團每次遭攻擊的命中率 −25%；但本回合攻方攻擊 −1。',est:'船團較安全，攻勢略緩',rec:hit});
+  if(I.airN>0)opts.push({id:'airlift',label:'加大空投',desc:'攻方空軍 '+P.plaAir+'，本回合基本可空投 '+I.airN+' 點；再多派運輸機 +1 點，但要穿過防空與戰機（目前被擊落機率約 '+Math.round(I.plBase*100)+'%），被擊落就算空軍損失。',est:'多一點補給，有折損風險',rec:false});
+  if(owned>0&&gw>0)opts.push({id:'requisition',label:'強行徵用民間物資',desc:'占領區 '+owned+' 格、民心 '+gw+'%。就地徵用燃料與糧食：就地補給 +1 點（乘上民心）；但強行徵用造成平民傷亡 +1,200，民心下降。',est:'多一點補給，民心再降',rec:false});
+  if(P.plaLift>0&&I.sinks.length>0)opts.push({id:'rush',label:'加緊運補',desc:'運輸船剩 '+P.plaLift+' 個、卸載能力 '+I.ucap+' 點。緊急多派 1 個補給船團出航；但抽調護航艦，護航艦隊 −1，新增的船也要承受攻擊。',est:'多一個船團，護航變薄',rec:false});
+  if(fobSpot())opts.push({id:'fob',label:'建立灘頭補給站',desc:'目前補給站 '+fobN+' / 2 個。在已掌握的灘頭或港口格建立：卸載能力 +2、庫存空間 +3；本回合補給 −2（材料與人力）；補給站是棋子，守方可以攻擊，攻方要派兵守。',est:'長期補給改善，補給站需要保護',rec:false});
+  return {title:'補給線（攻方）',blurb:(hit?'守方正集中火力攻擊你的補給線，要把有限的資源投在哪一條管道？':'灘頭堡已建立。補給靠船團、空投與就地徵用三條路，本回合要偏重哪一條？')+'目前：島上部隊 '+I.sp.used+' 個、補給容量 '+I.sp.cap+'。（結算在本回合開始時進行。）',opts};
 }
 async function convoyEval(){
   if(S.over||S.turn<3||!hasBeachhead())return;
   const info=convoyOptions(),manual=(S.sim&&!S.simAuto)||(!S.video&&S.ctrl.atk==='human');
-  const ai=()=>{const hit=S.mods.lastInterdict===S.turn-1,r=Math.random(),O=info.opts;
-    const nf=S.units.filter(x=>x.side==='atk'&&x.type==='fob').length;return hit?(r<.45?O[1]:r<.6?O[2]:r<.72?O[4]:r<.82?O[3]:r<.92&&nf<2?O[5]:O[0]):(nf<2&&r<.45?O[5]:r<.75?O[0]:r<.87?O[3]:O[2]);};
+  if(info.opts.length<=1)return; // 沒有可調整的項目
+  const ai=()=>{const hit=S.mods.lastInterdict===S.turn-1,r=Math.random();const O=info.opts,pickId=id=>O.find(x=>x.id===id)||O[0];
+    const nf=S.units.filter(x=>x.side==='atk'&&x.type==='fob').length;return hit?(r<.45?pickId('escort'):r<.6?pickId('airlift'):r<.72?pickId('rush'):r<.82?pickId('requisition'):r<.92&&nf<2?pickId('fob'):O[0]):(nf<2&&r<.45?pickId('fob'):r<.75?O[0]:r<.87?pickId('requisition'):pickId('airlift'));};
   let o;if(manual)o=await askTruce(info,ai);else{o=ai();if(!(S.rec&&REC.quiet)&&o.id!=='normal')toast(info.title+'：'+o.label);}
   const m=S.mods,t=S.turn,eff=[],rec={turn:t,phase:S.phase,title:info.title,id:'convoy_'+t,choice:o.label,who:'atk',rolls:[],effects:eff};
   log('【'+rec.title+'】攻方選擇「'+o.label+'」');
