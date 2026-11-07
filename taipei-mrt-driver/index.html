@@ -66,6 +66,7 @@ th,td{padding:5px 6px;border-bottom:1px solid #26324a;text-align:right}
 th:first-child,td:first-child{text-align:left}
 th{color:#9fb0c8;font-weight:600}
 .grade{font-size:64px;font-weight:800;line-height:1;margin:6px 0}
+.rk{width:100%}.rk tr.me td{background:rgba(232,200,138,.18);color:#ffe9a0;font-weight:700}.rk td:nth-child(2){text-align:left}
 .pill{display:inline-block;background:#1a2231;border:1px solid #3d4b63;border-radius:8px;padding:3px 10px;margin:2px 4px 2px 0;font-size:13px}
 #newver{position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:30;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:20px;padding:8px 16px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 </style>
@@ -123,8 +124,19 @@ th{color:#9fb0c8;font-weight:600}
   </ul>
   <button class="big" id="m-go">開始值勤</button>
   <div id="m-best" class="sub" style="text-align:center;margin-top:8px"></div>
+  <button class="btn2" id="m-board">🏆 排行榜</button>
   <p class="sub" style="font-size:12px;text-align:center">站序為真實站名；站間距離、限速與沿線場景（高架／地下）皆為遊戲示意，非實際營運資料。</p>
   <div id="ver"></div>
+</div>
+</section>
+
+<section id="board" class="screen hidden">
+<div>
+  <h1>🏆 排行榜<small>本機紀錄</small></h1>
+  <p class="sub">同一條路線（路線、方向、起訖站）各自排名，依總分高低，每條路線保留前 10 名。紀錄存在這支手機／瀏覽器，不會上傳。</p>
+  <select id="b-route"></select>
+  <div id="b-list"></div>
+  <button class="btn2" id="b-back">← 回選單</button>
 </div>
 </section>
 
@@ -133,18 +145,19 @@ th{color:#9fb0c8;font-weight:600}
   <h1 id="r-title">值勤結束</h1>
   <div class="grade" id="r-grade"></div>
   <div id="r-sum"></div>
+  <div id="r-rank"></div>
   <table id="r-tbl"></table>
   <button class="big" id="r-again">再開一班</button>
   <button class="btn2" id="r-menu">回到選單</button>
 </div>
 </section>
 
-<script src="js/render3d.js?v=2026-11-07.05"></script>
+<script src="js/render3d.js?v=2026-11-07.06"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
 const DRIVER='ANDY';
-const VERSION='2026-11-07.05';
+const VERSION='2026-11-07.06';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -914,6 +927,11 @@ function drawHud(g){
     const t='關門後，把主控器推到 P2 發車';const w=290;
     X.fillStyle='rgba(8,12,20,.8)';rr(W/2-w/2,HY*0.9,w,32,16);X.fill();T(t,W/2,HY*0.9+16,14,'#ffe9a0','center',700);
   }
+  { // 即時累計分數
+    const sc=g.results.reduce((a,r)=>a+r.score,0),w=92;
+    X.fillStyle='rgba(8,12,20,.78)';rr(10,land?150:146,w,26,13);X.fill();
+    T('分數 '+sc,10+w/2,(land?150:146)+13,14,'#ffe9a0','center',800);
+  }
   if(land){const h=needAssist(g);if(h){X.font='700 13px sans-serif';const w=X.measureText('💡 '+h).width+20;X.fillStyle='rgba(8,12,20,.78)';rr(W/2-w/2,dashTop-34,w,26,13);X.fill();T('💡 '+h,W/2,dashTop-21,13,'#9bd1ff','center',700);}}
   // 訊息
   if(g.toast){
@@ -973,7 +991,7 @@ lever.addEventListener('pointerup',()=>{dragging=false;});
 lever.addEventListener('pointercancel',()=>{dragging=false;});
 
 addEventListener('keydown',e=>{
-  if(!G||$('menu').classList.contains('hidden')===false||$('result').classList.contains('hidden')===false)return;
+  if(!G||$('menu').classList.contains('hidden')===false||$('result').classList.contains('hidden')===false||$('board').classList.contains('hidden')===false)return;
   const k=e.key;
   if(k==='ArrowUp'||k==='w'||k==='W'){setNotch(G.notch+1);e.preventDefault();}
   else if(k==='ArrowDown'||k==='s'||k==='S'){setNotch(G.notch-1);e.preventDefault();}
@@ -1019,10 +1037,44 @@ function showMenu(){
   ['top','lever','bar'].forEach(i=>$(i).classList.add('hidden'));
   G=buildRun(SET);syncLever();updateBest();
 }
-function updateBest(){
-  const b=store('mrt-best')||{};const v=b[SET.line];
-  $('m-best').textContent=v?`${LINES[SET.line].name} 最佳成績：${v.grade}（${v.score} 分）`:'';
+/* ---------- 排行榜（localStorage，每條路線前 10 名） ---------- */
+const BOARD_KEY='mrt-board',BOARD_MAX=10;
+function routeKey(g){return g.opt.line+'|'+g.stations[0].name+'>'+g.stations[g.stations.length-1].name;}
+function routeLabel(g){return g.L.name+'　'+g.stations[0].name+' → '+g.stations[g.stations.length-1].name+'（'+(g.S.length-1)+' 站）';}
+function loadBoard(){return store(BOARD_KEY)||{};}
+// 寫入一筆成績，回傳 {rank,list}；rank 為 0 起算的名次，未進前 10 則為 -1
+function submitScore(g,total,avg,grade){
+  const all=loadBoard(),k=routeKey(g);
+  const bd=all[k]||(all[k]={label:routeLabel(g),line:g.opt.line,list:[]});
+  const e={name:DRIVER,total,avg,grade,t:Date.now()};
+  bd.list.push(e);
+  bd.list.sort((a,b)=>b.total-a.total||a.t-b.t);   // 同分先達成者在前
+  const rank=bd.list.indexOf(e);
+  bd.list=bd.list.slice(0,BOARD_MAX);
+  store(BOARD_KEY,all);
+  return {rank:rank<BOARD_MAX?rank:-1,list:bd.list,e};
 }
+function boardTable(list,hl){
+  const d=ts=>{const x=new Date(ts);return (x.getMonth()+1)+'/'+x.getDate();};
+  return '<table class="rk"><tr><th>名次</th><th>駕駛</th><th>總分</th><th>平均</th><th>評級</th><th>日期</th></tr>'+
+    list.map((e,i)=>`<tr class="${e===hl||(hl&&e.t===hl.t&&e.total===hl.total)?'me':''}"><td>${['🥇','🥈','🥉'][i]||(i+1)}</td><td>${e.name}</td><td>${e.total}</td><td>${e.avg}</td><td>${e.grade}</td><td>${d(e.t)}</td></tr>`).join('')+'</table>';
+}
+function updateBest(){
+  const k=routeKey(G),bd=loadBoard()[k];
+  $('m-best').textContent=bd&&bd.list.length?`這條路線最高：${bd.list[0].total} 分（${bd.list[0].grade}）`:'';
+}
+function showBoard(sel){
+  const all=loadBoard(),keys=Object.keys(all);
+  const bs=$('b-route');bs.innerHTML='';
+  if(!keys.length){$('b-list').innerHTML='<p class="sub">還沒有紀錄。跑完一班就會出現在這裡。</p>';}
+  keys.forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=all[k].label;bs.appendChild(o);});
+  const cur=routeKey(G);bs.value=sel||(all[cur]?cur:keys[0]);
+  const draw=()=>{const bd=all[bs.value];$('b-list').innerHTML=bd?boardTable(bd.list):$('b-list').innerHTML;};
+  bs.onchange=draw;if(keys.length)draw();
+  $('menu').classList.add('hidden');$('result').classList.add('hidden');$('board').classList.remove('hidden');
+}
+$('m-board').onclick=()=>showBoard();
+$('b-back').onclick=()=>{$('board').classList.add('hidden');$('menu').classList.remove('hidden');};
 function fillMenu(){
   const ml=$('m-lines');ml.innerHTML='';
   LINE_KEYS.forEach(k=>{
@@ -1047,9 +1099,9 @@ function fillMenu(){
   nSel.value=SET.n;
   $('m-theme').value=SET.theme;$('m-assist').checked=SET.assist;$('m-voice').checked=SET.voice;
 }
-$('m-dir').onchange=e=>{SET.dir=+e.target.value;SET.start=0;fillMenu();G=buildRun(SET);};
-$('m-start').onchange=e=>{SET.start=+e.target.value;fillMenu();G=buildRun(SET);};
-$('m-n').onchange=e=>{SET.n=+e.target.value;};
+$('m-dir').onchange=e=>{SET.dir=+e.target.value;SET.start=0;fillMenu();G=buildRun(SET);updateBest();};
+$('m-start').onchange=e=>{SET.start=+e.target.value;fillMenu();G=buildRun(SET);updateBest();};
+$('m-n').onchange=e=>{SET.n=+e.target.value;G=buildRun(SET);updateBest();};
 $('m-theme').onchange=e=>{SET.theme=e.target.value;G=buildRun(SET);};
 $('m-assist').onchange=e=>{SET.assist=e.target.checked;};
 $('m-voice').onchange=e=>{SET.voice=e.target.checked;};
@@ -1074,11 +1126,12 @@ function showResult(){
   ['top','lever','bar'].forEach(i=>$(i).classList.add('hidden'));
   const rs=g.results.filter((_,i)=>true);
   const n=g.S.length-1;
-  const avg=rs.length?Math.round(rs.reduce((a,r)=>a+r.score,0)/n):0;
+  const total=rs.reduce((a,r)=>a+r.score,0);
+  const avg=rs.length?Math.round(total/n):0;
   const grade=avg>=92?'S':avg>=85?'A':avg>=70?'B':avg>=55?'C':'D';
   const gc={S:'#ffd54a',A:'#7bd88f',B:'#7fb0ff',C:'#f0b46a',D:'#ff7b7b'}[grade];
   $('r-title').textContent=`駕駛 ${DRIVER}　${g.L.name}　${g.stations[0].name} → ${g.stations[g.S.length-1].name}`;
-  $('r-grade').innerHTML=`<span style="color:${gc}">${grade}</span> <span style="font-size:24px;color:#cfd8e6">${avg} 分</span>`;
+  $('r-grade').innerHTML=`<span style="color:${gc}">${grade}</span> <span style="font-size:24px;color:#cfd8e6">總分 ${total}　平均 ${avg}</span>`;
   const done=rs.filter(r=>!r.miss);
   const mean=k=>done.length?Math.round(done.reduce((a,r)=>a+r[k],0)/done.length):0;
   $('r-sum').innerHTML=`<span class="pill">平均停車 ${mean('acc')}</span><span class="pill">平均準點 ${mean('pun')}</span><span class="pill">平均舒適 ${mean('com')}</span>`+
@@ -1086,8 +1139,11 @@ function showResult(){
   $('r-tbl').innerHTML='<tr><th>站</th><th>停車誤差</th><th>時刻差</th><th>停車</th><th>準點</th><th>舒適</th><th>得分</th></tr>'+
     rs.map(r=>r.miss?`<tr><td>${r.name}</td><td colspan="5" style="color:#ff9b7b">冒進過站</td><td>0</td></tr>`:
     `<tr><td>${r.name}</td><td>${r.err>=0?'短':'過'} ${Math.abs(r.err).toFixed(1)} m</td><td>${r.dt>=0?'+':'-'}${Math.abs(Math.round(r.dt))} 秒</td><td>${r.acc}</td><td>${r.pun}</td><td>${r.com}</td><td><b>${r.score}</b></td></tr>`).join('');
-  const b=store('mrt-best')||{};const old=b[g.opt.line];
-  if(g.opt.n>=6&&(!old||avg>old.score)){b[g.opt.line]={score:avg,grade};store('mrt-best',b);}
+  const sub=submitScore(g,total,avg,grade);
+  const first=sub.list.length===1;
+  $('r-rank').innerHTML=`<p style="margin:10px 0 4px;font-weight:700;color:${sub.rank===0?'#ffd54a':'#cfd8e6'}">`+
+    (sub.rank<0?'沒有進入前 10 名':sub.rank===0?(first?'🏆 第一筆紀錄，目前第 1 名':'🏆 新紀錄！第 1 名'):`排名：第 ${sub.rank+1} 名`)+
+    `　<span style="font-weight:400;color:#9fb0c8;font-size:13px">${routeLabel(g)}</span></p>`+boardTable(sub.list,sub.e);
   $('result').classList.remove('hidden');
 }
 
