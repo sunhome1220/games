@@ -122,7 +122,7 @@ const R3=(function(){
   const GY={elev:-12,grade:-0.3};     // 地面高度（軌道頂面為 0）
   const DENS={high:{p:0.7,h0:20,h1:90,w0:10,w1:34,o0:11,o1:45},mid:{p:0.62,h0:12,h1:42,w0:10,w1:30,o0:11,o1:50},
               low:{p:0.62,h0:4,h1:11,w0:6,w1:16,o0:9,o1:45},rural:{p:0.12,h0:3,h1:6,w0:6,w1:14,o0:16,o1:90}};
-  let coneGeo=null,headGeo=null;
+  let coneGeo=null,headGeo=null,buildHazards_pending=false;
   const flatMats=new Map();
   function flatMat(color){let m=flatMats.get(color);if(!m){m=new T.MeshLambertMaterial({color,flatShading:true});flatMats.set(color,m);}return m;}
   function inst(g,geo,m,n,fill){
@@ -440,6 +440,31 @@ const R3=(function(){
     for(const k in parts)parts[k].instanceMatrix.needsUpdate=true;
   }
 
+  /* ---------- 突發事件：軌道上的人與號誌（位置由 g.hz 決定） ---------- */
+  let hzPerson=null,hzSignal=null,hzRed=null,hzGreen=null;
+  function buildHazards(){
+    hzPerson=new T.Group();
+    const vest=mat(0xff7a1a),skin=mat(0xf0c8a0),pants=mat(0x2f3b52),hat=mat(0xffe03a);
+    box(hzPerson,0.5,0.72,0.3,0,1.2,0,vest);box(hzPerson,0.16,0.62,0.18,-0.12,0.45,0,pants);box(hzPerson,0.16,0.62,0.18,0.12,0.45,0,pants);
+    box(hzPerson,0.12,0.55,0.12,-0.34,1.2,0,vest);box(hzPerson,0.12,0.55,0.12,0.34,1.2,0,vest);
+    const h=new T.Mesh(headGeo,skin);h.scale.set(0.34,0.34,0.34);h.position.set(0,1.78,0);hzPerson.add(h);
+    box(hzPerson,0.4,0.12,0.4,0,1.98,0,hat);
+    hzPerson.visible=false;scene.add(hzPerson);
+    hzSignal=new T.Group();
+    box(hzSignal,0.12,4.2,0.12,-2.4,2.1,0,mat(0x555a62));box(hzSignal,0.6,1.3,0.3,-2.4,4.1,0,mat(0x1a1c20));
+    hzRed=new T.Mesh(unitBox,new T.MeshBasicMaterial({color:0xff2a2a}));hzRed.scale.set(0.38,0.38,0.08);hzRed.position.set(-2.4,4.4,0.18);hzSignal.add(hzRed);
+    hzGreen=new T.Mesh(unitBox,new T.MeshBasicMaterial({color:0x35e06a}));hzGreen.scale.set(0.38,0.38,0.08);hzGreen.position.set(-2.4,3.85,0.18);hzSignal.add(hzGreen);
+    hzSignal.visible=false;scene.add(hzSignal);
+  }
+  function updateHazards(g){
+    const h=g.hz;
+    if(!hzPerson)return;
+    hzPerson.visible=!!h&&h.kind==='person';
+    if(hzPerson.visible)hzPerson.position.set(0,0.17,-h.pos);
+    const sg=!!h&&h.kind.startsWith('signal');hzSignal.visible=sg;
+    if(sg){hzSignal.position.set(0,0,-h.pos);const green=h.kind==='signalgreen';hzRed.visible=!green;hzGreen.visible=green;}
+  }
+
   /* ---------- 限速牌 ---------- */
   function buildSigns(){
     const g=new T.Group();
@@ -466,6 +491,7 @@ const R3=(function(){
       scene=new T.Scene();
       camera=new T.PerspectiveCamera(52,1,0.4,520);
       unitBox=new T.BoxGeometry(1,1,1);planeGeo=new T.PlaneGeometry(1,1);coneGeo=new T.ConeGeometry(1,1,7);headGeo=new T.SphereGeometry(0.5,12,9);
+      buildHazards_pending=true;
       _q=new T.Quaternion();_q2=new T.Quaternion();_v=new T.Vector3();_s=new T.Vector3();_m=new T.Matrix4();_AX=new T.Vector3(1,0,0);_AY=new T.Vector3(0,1,0);HIDE=new T.Matrix4().makeScale(0.0001,0.0001,0.0001);
       hemi=new T.HemisphereLight(0xffffff,0x888888,1);scene.add(hemi);
       sun=new T.DirectionalLight(0xffffff,1);sun.position.set(-30,60,20);scene.add(sun);
@@ -520,6 +546,8 @@ const R3=(function(){
     }
     // 卡通人物：只更新鏡頭附近的車站
     for(const st of g.stations){if(st.g3&&st.g3.visible&&Math.abs(st.pos-pos)<260)animatePeople(st.g3,st,g);}
+    if(buildHazards_pending){buildHazards();buildHazards_pending=false;}
+    updateHazards(g);
     // 光線與霧：依鏡頭所在場景漸變
     const target=sectorEnv(pos+8)==='tunnel'?1:0;
     tun+=(target-tun)*Math.min(1,dt*3);
