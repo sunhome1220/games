@@ -103,7 +103,16 @@ const R3=(function(){
   function sectorAt(s){const S=run.sec;for(let i=0;i<S.length;i++)if(s>=S[i].a&&s<S[i].b)return S[i];return S[S.length-1];}
   function sectorEnv(s){return sectorAt(s).env;}
   function platRange(st){return [st.pos-run.L.trainLen-14,st.pos+22];}
-  function stationAt(s0,s1){for(const st of run.stations){const r=platRange(st);if(s1>r[0]&&s0<r[1])return st;}return null;}
+  // 大廳範圍：島式月台站的對向軌道在站前後 60 m 內從 -TS 分開到月台另一側（見 oppX），這段結構（隧道、高架橋面）必須一起加寬，
+  // 否則分開中的軌道會穿過一般斷面的牆或橋面邊緣（先前量測：永寧 86 m、淡水 73 m 穿牆）。側式月台不需要分開。
+  function hallRange(st){const r=platRange(st);return st.plat==='side'?r:[r[0]-60,r[1]+60];}
+  function stationAt(s0,s1){for(const st of run.stations){const r=hallRange(st);if(s1>r[0]&&s0<r[1])return st;}return null;}
+  // 從 [sa,sb] 扣掉一組範圍，回傳剩下的區段
+  function minusRanges(sa,sb,holes){
+    let segs=[[sa,sb]];
+    for(const [ha,hb] of holes){const n=[];for(const [a,b] of segs){if(hb<=a||ha>=b){n.push([a,b]);continue;}if(ha>a)n.push([a,ha]);if(hb<b)n.push([hb,b]);}segs=n;}
+    return segs.filter(([a,b])=>b-a>0.05);
+  }
 
   /* ---------- 區塊（軌道、隧道、高架、建築） ---------- */
   // 雙軌：我方軌道在 x=0（靠右行駛），對向軌道在左側。軌道中心距 TS 是假設值（未查到官方數值）
@@ -181,16 +190,17 @@ const R3=(function(){
     // 高架橋面、護欄、路燈／平面段圍籬
     if(env==='elev'){
       box(g,6.4+TS,0.5,len,-TS/2,-0.5,mid,mat(0x78797e));   // 雙軌橋面：從對向軌道外側到我方軌道外側
-      const pm=mat(0x96989c);
-      box(g,0.3,1.2,len,-(TS+3.05),0.35,mid,pm);box(g,0.3,1.2,len,3.05,0.35,mid,pm);
-      for(let s=Math.ceil(sa/36)*36;s<sb;s+=36){for(const sd of [-1,1]){
+      const pm=mat(0x96989c),holes=run.stations.map(hallRange);
+      for(const [a,b] of minusRanges(sa,sb,holes)){box(g,0.3,1.2,b-a,-(TS+3.05),0.35,(a+b)/2,pm);box(g,0.3,1.2,b-a,3.05,0.35,(a+b)/2,pm);}   // 護欄（車站大廳範圍除外）
+      for(let s=Math.ceil(sa/36)*36;s<sb;s+=36){if(holes.some(([a,b])=>s>=a&&s<=b))continue;for(const sd of [-1,1]){
         const px=sd>0?3.3:-(TS+3.3);box(g,0.12,5.3,0.12,px,3.6,s,mat(0x464850));box(g,0.9,0.14,0.35,px-sd*0.4,6.3,s,mat(0xfff4d0,{basic:1}));}}
       // 高架橋墩（在道路中央時可從兩側看到）
       if(sc.ro)for(let s=Math.ceil(sa/30)*30;s<sb;s+=30)box(g,2.4,11.7,2.4,-TS/2,-6.3,s,mat(0x8a8c92));
     }else{
-      const fm=mat(0x6a7078,{op:0.55,depthWrite:false});
-      for(const sd of [-1,1]){const fx=sd>0?4.6:-(TS+4.6);box(g,0.05,1.8,len,fx,0.6,mid,fm);
-        for(let s=Math.ceil(sa/15)*15;s<sb;s+=15)box(g,0.1,1.9,0.1,fx,0.65,s,mat(0x50565e));}
+      const fm=mat(0x6a7078,{op:0.55,depthWrite:false}),holes=run.stations.map(hallRange);
+      for(const sd of [-1,1]){const fx=sd>0?4.6:-(TS+4.6);
+        for(const [a,b] of minusRanges(sa,sb,holes))box(g,0.05,1.8,b-a,fx,0.6,(a+b)/2,fm);
+        for(let s=Math.ceil(sa/15)*15;s<sb;s+=15){if(holes.some(([a,b])=>s>=a&&s<=b))continue;box(g,0.1,1.9,0.1,fx,0.65,s,mat(0x50565e));}}
       // 通訊與號誌箱、電桿
       for(let s=Math.ceil(sa/50)*50;s<sb;s+=50){box(g,0.14,6.5,0.14,4.1,3,s,mat(0x4a4036));box(g,2.2,0.12,0.12,4.1,6.1,s,mat(0x4a4036));}
     }
@@ -287,7 +297,7 @@ const R3=(function(){
   function tunnelPiece(g,sa,sb){
     const ct=concreteTex();
     const pieces=[sa];
-    for(const st of run.stations){for(const e of platRange(st)){if(e>sa+0.01&&e<sb-0.01)pieces.push(e);}}
+    for(const st of run.stations){for(const e of hallRange(st)){if(e>sa+0.01&&e<sb-0.01)pieces.push(e);}}
     pieces.push(sb);pieces.sort((a,b)=>a-b);
     for(let i=0;i<pieces.length-1;i++){
       const a=pieces[i],b=pieces[i+1],len=b-a,mid=(a+b)/2;
@@ -339,6 +349,7 @@ const R3=(function(){
   function buildStation(st){
     const g=new T.Group(),L=run.L,sd=st.side==='R'?1:-1;
     const [pa,pb]=platRange(st),len=pb-pa,mid=(pa+pb)/2;
+    const [ha,hb]=hallRange(st),hlen=hb-ha,hmid=(ha+hb)/2;   // 大廳（含島式月台站前後分開的路段）
     const tun2=st.env==='tunnel';
     // 月台形式（已查證）：島式／混合式＝月台在兩條軌道之間，對面還有一條軌道；側式＝月台在外側
     const island=st.plat!=='side';
@@ -353,7 +364,7 @@ const R3=(function(){
       box(g,0.45,0.03,len,sd*(px1-0.25),1.11,mid,mat(0xf5c828,{basic:1}));
       box(g,0.06,1.1,len,sd*px1,0.55,mid,mat(0x70727a));
       box(g,0.05,2.2,len,sd*(px1-0.15),2.2,mid,mat(0x96cde1,{basic:1,op:0.2,depthWrite:false}));   // 對向月台門
-      if(!tun2)box(g,3.6,0.5,len+80,sd*(px1+1.45),-0.5,mid,mat(0x78797e));                         // 高架：對向軌道在橋面之外，補一段橋面
+      if(!tun2)box(g,4.6,0.5,hlen,-(TS+3.2)-2.3+0.0,-0.5,hmid,mat(0x78797e));                      // 高架：對向軌道分開到橋面之外，大廳範圍內把橋面加寬
     }else{
       // 側式月台：對向軌道在 -TS，它自己的月台在更外側（左邊）；只做月台本體與月台門，沒有旅客
       const ox=-(TS+px0+pw/2),ex=-(TS+px0);
@@ -366,21 +377,21 @@ const R3=(function(){
     // 大廳範圍：xl～xr（島式：我方右牆 +2.55 到月台後牆；側式：兩側月台的後牆）
     const xr=island?2.55:px1+1.3,xl=island?-(px1+4.05):-(TS+px0+pw+1.3);
     if(tun2){
-      box(g,xr-xl,0.3,len,(xl+xr)/2,4.95,mid,mat(0xc8ccd0));                               // 頂棚
+      box(g,xr-xl,0.3,hlen,(xl+xr)/2,4.95,hmid,mat(0xc8ccd0));                             // 頂棚（大廳全長）
       const band=mat(new T.Color(L.color).getHex(),{basic:1});
       if(xl<-(TS+2.55)){   // 左側後牆（島式：月台後牆；側式：對向月台後牆）
-        box(g,0.3,4.8,len,xl-0.15,2.4,mid,mat(0xb4bac2));
-        for(let s=Math.ceil(pa/12)*12;s<pb;s+=12)box(g,0.05,0.9,5,xl+0.1,3.7,s,band);
+        box(g,0.3,4.8,hlen,xl-0.15,2.4,hmid,mat(0xb4bac2));
+        for(let s=Math.ceil(ha/12)*12;s<hb;s+=12)box(g,0.05,0.9,5,xl+0.1,3.7,s,band);
       }
       if(xr>2.55){         // 右側後牆（側式月台）
-        box(g,0.3,4.8,len,xr+0.15,2.4,mid,mat(0xb4bac2));
-        for(let s=Math.ceil(pa/12)*12;s<pb;s+=12)box(g,0.05,0.9,5,xr-0.1,3.7,s,band);
+        box(g,0.3,4.8,hlen,xr+0.15,2.4,hmid,mat(0xb4bac2));
+        for(let s=Math.ceil(ha/12)*12;s<hb;s+=12)box(g,0.05,0.9,5,xr-0.1,3.7,s,band);
       }
       // 末端封口：把大廳比一般隧道寬的部分擋住（一般隧道 x 從 -(TS+2.55) 到 +2.55，高 4.2）
       const cm=mat(0x282b32),ol=-(TS+2.55),or=2.55;
-      if(xl<ol)box(g,ol-xl,4.8,0.3,(xl+ol)/2,2.4,pb,cm);
-      if(xr>or)box(g,xr-or,4.8,0.3,(xr+or)/2,2.4,pb,cm);
-      box(g,or-ol,0.7,0.3,(ol+or)/2,4.55,pb,cm);
+      if(xl<ol)box(g,ol-xl,4.8,0.3,(xl+ol)/2,2.4,hb,cm);
+      if(xr>or)box(g,xr-or,4.8,0.3,(xr+or)/2,2.4,hb,cm);
+      box(g,or-ol,0.7,0.3,(ol+or)/2,4.55,hb,cm);
     }else{
       const rx=px1+(island?3.4:0.7);
       if(island){box(g,rx-1.2,0.3,len,sd*(rx+1.2)/2,4.95,mid,mat(0xd0d3d8));box(g,0.1,1.2,len,sd*rx,1.7,mid,mat(0xb0b8c4,{op:0.5}));}
@@ -628,10 +639,11 @@ const R3=(function(){
     head.position.set(0,2.6,-pos-3);
     ground.position.set(0,-12,-pos);
     // 鏡頭
-    camera.position.set(camX,CAMH+camY,-pos);
-    camera.lookAt(camX,CAMH+camY-0.05,-pos-50);
+    if(dbgCam){camera.up.set(dbgCam.up[0],dbgCam.up[1],dbgCam.up[2]);camera.position.set(...dbgCam.p);camera.lookAt(...dbgCam.t);}   // 測試用的除錯鏡頭（例如俯視）
+    else{camera.up.set(0,1,0);camera.position.set(camX,CAMH+camY,-pos);camera.lookAt(camX,CAMH+camY-0.05,-pos-50);}
     renderer.render(scene,camera);
   }
   const CAMH=2.4;
-  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
+  let dbgCam=null;function setDebugCam(c){dbgCam=c;}
+  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,setDebugCam,oppX:s=>oppX(s),info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
 })();
