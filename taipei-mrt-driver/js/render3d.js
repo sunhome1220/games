@@ -331,6 +331,11 @@ const R3=(function(){
   }
 
   /* ---------- 車站 ---------- */
+  // 柱子的橫向位置與走道：走道固定在柱子與排隊區之外，行人才不會穿過柱子或排隊的人
+  // 月台橫向座標（相對於我方軌道，向月台側為正）：排隊區 2.1～4.1；島式柱子在 4.95（4.7～5.2）、走道 6.0／6.8／7.5；
+  // 側式柱子靠後緣（約 6.2，5.95～6.45）、走道 4.6／5.3
+  const pillarX=(sd,island,pc,px1)=>island?pc:sd*(px1-0.25);
+  const lanesFor=island=>island?[6.0,6.8,7.5]:[4.6,5.3];
   function buildStation(st){
     const g=new T.Group(),L=run.L,sd=st.side==='R'?1:-1;
     const [pa,pb]=platRange(st),len=pb-pa,mid=(pa+pb)/2;
@@ -384,7 +389,7 @@ const R3=(function(){
         const lx=TS+px1+0.7;box(g,lx-(TS-1.2),0.3,len,-(lx+TS-1.2)/2,4.95,mid,mat(0xd0d3d8));box(g,0.1,1.2,len,-lx,1.7,mid,mat(0xb0b8c4,{op:0.5}));
       }
     }
-    for(let s=Math.ceil(pa/18)*18;s<pb;s+=18)box(g,0.5,3.7,0.5,island?pc:sd*(px1-0.9),2.95,s,mat(0xbcc0c6));
+    for(let s=Math.ceil(pa/18)*18;s<pb;s+=18)box(g,0.5,3.7,0.5,pillarX(sd,island,pc,px1),2.95,s,mat(0xbcc0c6));
     // 站名牌（含站號）
     const nameM=mat(0xffffff,{basic:1,map:labelTex(st.name,L.color,'name-'+L.short+st.code,512,128,st.code)});
     for(const off of [-100,-46,14])plane(g,4.4,1.1,pc,4.0,st.pos+off,nameM);
@@ -410,20 +415,20 @@ const R3=(function(){
       const cnt=Math.floor(hash(sk+j*7)*6);
       for(let q=0;q<cnt;q++){
         const k=sk+j*97+q*13;
-        P.push(spec('queue',k,{sj,x:sd*(2.35+Math.floor(q/2)*0.75),s:sj+(q%2?0.8:-0.8),delay:1.4+hash(k+9)*3.4}));
+        P.push(spec('queue',k,{sj,x:sd*(2.35+Math.floor(q/2)*0.75),s:sj+(q%2?0.8:-0.8),delay:3.0+hash(k+9)*2.3}));   // 上車在下車之後（下車 1.4～3.0 s、上車 3.0～5.3 s），且在最早可關門（8.2 s）之前走完
       }
       // 下車旅客：開門後從車門走出來，沿月台走開
       const na=hash(sk+j*5+1)<0.5?1:2;
       for(let q=0;q<na;q++){
         const k=sk+j*131+q*29+1000;
-        P.push(spec('alight',k,{sj,delay:1.8+hash(k+9)*2.4,dir:hash(k+11)<0.5?1:-1,xo:sd*(3.0+hash(k+13)*2.5)}));
+        P.push(spec('alight',k,{sj,delay:1.4+hash(k+9)*1.6,dir:hash(k+11)<0.5?1:-1,xo:sd*(lanesFor(island)[Math.floor(hash(k+13)*lanesFor(island).length)]+(hash(k+15)-0.5)*0.12)}));
       }
     }
     // 在月台上來回走動的人
     const nw=island?9:6;
     for(let q=0;q<nw;q++){
       const k=sk+q*53+5000;
-      P.push(spec('walk',k,{lane:sd*(2.3+hash(k+3)*(pw-3.3)),sp:0.9+hash(k+5)*0.8,off:hash(k+7)*1000}));
+      P.push(spec('walk',k,{lane:sd*(lanesFor(island)[Math.floor(hash(k+3)*lanesFor(island).length)]+(hash(k+17)-0.5)*0.12),sp:0.9+hash(k+5)*0.8,off:hash(k+7)*1000}));
     }
     // 每個人 7 個部件：頭、頭髮、軀幹、左右腿、左右臂（用實體化網格一次畫完）
     const nP=P.length,cm=mat(0xffffff);
@@ -466,36 +471,43 @@ const R3=(function(){
     const te=u.t0===null?-1:now-u.t0;                                         // 開門後經過秒數
     const face=sd>0?Math.PI/2:-Math.PI/2;                                      // 面向軌道
     u.P.forEach((q,i)=>{
+      q._v=false;
+      const put=(x,z,yaw,ph,amp,sc,bob)=>{q._v=true;q._x=x;q._z=z;poseParts(parts,i,x,z,yaw,ph,amp,sc,bob);};
       if(q.kind==='queue'){
         const zw=-q.s,dx=sd*1.78-q.x,dz=-q.sj-zw;
         if(te>=q.delay){
           const len=Math.hypot(dx,dz),t=(te-q.delay)*1.35;
           if(t>=len){hidePerson(parts,i);return;}            // 走進車廂
-          const f=t/len;poseParts(parts,i,q.x+dx*f,zw+dz*f,Math.atan2(-dx,-dz),now*8+q.ph,0.75,q.sc,Math.abs(Math.sin(now*8+q.ph))*0.04);
-        }else{    // 排隊：輕微晃動、偶爾換重心
-          const bob=Math.abs(Math.sin(now*1.6+q.ph))*0.012;
-          poseParts(parts,i,q.x,zw,face+Math.sin(now*0.7+q.ph)*0.12,now*1.3+q.ph,0.05,q.sc,bob);
+          const f=t/len;put(q.x+dx*f,zw+dz*f,Math.atan2(-dx,-dz),now*8+q.ph,0.75,q.sc,Math.abs(Math.sin(now*8+q.ph))*0.04);
+        }else{    // 排隊：輕微晃動
+          put(q.x,zw,face+Math.sin(now*0.7+q.ph)*0.12,now*1.3+q.ph,0.05,q.sc,Math.abs(Math.sin(now*1.6+q.ph))*0.012);
         }
       }else if(q.kind==='alight'){
         if(te<q.delay){hidePerson(parts,i);return;}
         const age=te-q.delay,AL=16;
         if(age>AL){hidePerson(parts,i);return;}
         const sc=q.sc*Math.min(1,(AL-age)/1.2);                   // 最後 1.2 秒縮小消失
+        // 第一階段：沿車門中心線直走到走道（排隊的兩列之間有空隙）；第二階段：沿走道走開
+        const x0=sd*1.78,dxs=q.xo-x0,T1=Math.abs(dxs)/1.3;
         let x,z,yaw;
-        if(age<1.4){ // 第一階段：從車門走向月台內側
-          const f=age/1.4,dx=q.xo-sd*1.78,dz=-q.dir*0.6;
-          x=sd*1.78+dx*f;z=-q.sj+dz*f;yaw=Math.atan2(-dx,-dz);}
-        else{const a2=age-1.4;x=q.xo;z=-q.sj-q.dir*(0.6+a2*1.25);yaw=q.dir>0?0:Math.PI;}
-        poseParts(parts,i,x,z,yaw,now*6.5+q.ph,0.75,sc,Math.abs(Math.sin(now*6.5+q.ph))*0.04);
-      }else{ // walk
+        if(age<T1){x=x0+dxs*(age/T1);z=-q.sj;yaw=Math.atan2(-dxs,-1e-6);}
+        else{x=q.xo;z=-q.sj-q.dir*(age-T1)*1.25;yaw=q.dir>0?0:Math.PI;}
+        put(x,z,yaw,now*6.5+q.ph,0.75,sc,Math.abs(Math.sin(now*6.5+q.ph))*0.04);
+      }else{ // walk：只在固定走道上來回
         const L=Math.max(10,u.pb-u.pa-10),m=((q.sp*now+q.off)%(2*L)+2*L)%(2*L),fwd=m<L;
         const s=u.pa+5+pingpong(q.sp*now+q.off,L);
-        poseParts(parts,i,q.lane,-s,fwd?0:Math.PI,now*q.sp*5.2+q.ph,0.7,q.sc,Math.abs(Math.sin(now*q.sp*5.2+q.ph))*0.04);
+        put(q.lane,-s,fwd?0:Math.PI,now*q.sp*5.2+q.ph,0.7,q.sc,Math.abs(Math.sin(now*q.sp*5.2+q.ph))*0.04);
       }
     });
     for(const k in parts)parts[k].instanceMatrix.needsUpdate=true;
   }
-
+  // 測試用：回傳某站所有人的目前位置與柱子位置
+  function debugPeople(i){
+    const st=run&&run.stations[i];if(!st||!st.g3)return null;
+    const u=st.g3.userData,sd=u.sd,island=st.plat!=='side',pw=island?7:5,px1=1.45+pw,pc=sd*(1.45+pw/2);
+    const px=pillarX(sd,island,pc,px1),zs=[];for(let s=Math.ceil(u.pa/18)*18;s<u.pb;s+=18)zs.push(-s);
+    return {te:u.t0===null?-1:run.time-u.t0,people:u.P.map(q=>({k:q.kind,x:q._x,z:q._z,v:q._v,delay:q.delay,sj:q.sj})),pillar:{x:px,zs,half:0.25},sd};
+  }
   /* ---------- 突發事件：軌道上的人與號誌（位置由 g.hz 決定） ---------- */
   let hzPerson=null,hzSignal=null,hzRed=null,hzGreen=null;
   function buildHazards(){
@@ -621,5 +633,5 @@ const R3=(function(){
     renderer.render(scene,camera);
   }
   const CAMH=2.4;
-  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
+  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
 })();

@@ -13,6 +13,8 @@ META = {
     'green': dict(name='松山新店線', short='綠線', color='#008659', cars=6, trainLen=140),
     'brown': dict(name='文湖線',     short='棕線', color='#c48c31', cars=4, trainLen=76),
 }
+# 英文站名修正：維基車站表的筆誤（來源核對：所有來源寫 Sun Yat-sen，找不到 Yet-Sen）
+EN_FIX = {'國父紀念館': 'Sun Yat-sen Memorial Hall'}
 ENV = {'地下': 'tunnel', '高架': 'elev', '平面': 'grade'}
 def plat(p): return 'mixed' if '混合' in p else 'side' if p.startswith('側式') else 'island'
 # z：high 高樓／mid 中高樓／low 低矮住宅／rural 田野；L／R：行進方向（站序遞增）左右側的地貌；ro：高架下方為道路（已查證）；lm：地標
@@ -39,7 +41,7 @@ for k, m in META.items():
     rows = D[k]
     st = [r['name'] for r in rows]
     code = [r['code'] for r in rows]
-    en = [r.get('en','') for r in rows]
+    en = [EN_FIX.get(r['name'], r.get('en','')) for r in rows]
     d = [round(rows[i + 1]['dist_km'] * 1000) for i in range(len(rows) - 1)]
     env = [ENV[r['structure']] for r in rows]
     pl = [plat(r['platform']) for r in rows]
