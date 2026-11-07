@@ -94,8 +94,8 @@ const EV={
     tick(g,e,dt){
       if(e.state!=='fail'&&g.pos<e.hz)e.sub=`前方軌道上有人（約 ${Math.max(0,Math.round(e.hz-g.pos))} m）：立即 EB 緊急煞車並通報行控`;
       if(e.state==='fail'){e.failT+=dt;if(g.v<=0.05&&e.failT>6){g.segPen+=0;evFinish(g,'fail',-30,'未能在人員前方停車（遊戲不呈現後果，行控接管）');}return;}
-      if(g.v<=0.05&&g.pos<e.hz-6){e.stopped+=dt;if(e.stopped>=8){const byAtp=g.pen.atp>e.trips0;evFinish(g,byAtp?'late':'ok',byAtp?0:12,byAtp?'由 ATP 代為煞停，應自行 EB':'行控確認排除');}return;}
-      if(g.pos>=e.hz-3&&g.v>0.5){e.state='fail';g.evForceEB=true;toast('來不及停車，行控接管：緊急煞車','#ff7b7b',3.2);}
+      if(g.v<=0.3&&g.pos<e.hz-1.5){e.stopped+=dt;if(e.stopped>=8){const byAtp=g.pen.atp>e.trips0;evFinish(g,byAtp?'late':'ok',byAtp?0:12,byAtp?'由 ATP 代為煞停，應自行 EB':'行控確認排除');}return;}
+      if(g.pos>=e.hz-1.5){e.state='fail';g.evForceEB=true;toast('來不及停車，行控接管：緊急煞車','#ff7b7b',3.2);}
     }},
   doorfault:{can:g=>false,   // 由「關門完成」觸發（evOnDoorsClosed）
     start(g,e){
@@ -118,10 +118,11 @@ const EV={
     },
     tick(g,e,dt){
       if(!e.cleared){
-        e.sub=g.v<=0.05?`已停車待命，等待行控恢復（${Math.floor(e.wait)} 秒）`:`前方 ${Math.max(0,Math.round(e.hold-g.pos))} m 號誌顯示停止：請在紅燈前停車待命`;
-        // 沒有空隙的判斷：越過號誌線就是越過；沒越過且停妥就開始等待（先前漏掉「停在線前 0.5 m 內」會卡死）
-        if(g.pos>e.hold&&g.v>0.5){g.trip=true;g.tripT=0;g.segPen+=15;g.pen.atp++;g.hold=null;g.hz=null;evFinish(g,'fail',-15,'越過停止信號');return;}
-        if(g.v<=0.05&&g.pos<=e.hold){e.wait+=dt;if(e.wait>=e.need){e.cleared=true;g.hold=null;g.hz.kind='signalgreen';g.evLim=25;g.evRamp=null;e.sub='號誌恢復：以 25 km/h 以下通過故障號誌';e.title='號誌恢復';toast('行控：號誌恢復，限速 25 km/h 通過','#9be39b',3.5);}}
+        e.sub=g.v<=0.3?`已停車待命，等待行控恢復（${Math.floor(e.wait)} 秒）`:`前方 ${Math.max(0,Math.round(e.hold-g.pos))} m 號誌顯示停止：請在紅燈前停車待命`;
+        // 沒有空隙的判斷：位置越過號誌線 1 m 就是越過（不看速度，否則「緩慢蹭過去」會卡在中間）；沒越過且幾乎停住就開始等待
+        if(g.pos>e.hold+1){g.trip=true;g.tripT=0;g.segPen+=15;g.pen.atp++;g.hold=null;g.hz=null;evFinish(g,'fail',-15,'越過停止信號');return;}
+        if(g.v<=0.3&&g.pos<=e.hold+1){e.wait+=dt;   // 「幾乎停住」就算停妥：真人輕蹭手把造成的微小移動不該讓計時一直重來
+          if(e.wait>=e.need){e.cleared=true;g.hold=null;g.hz.kind='signalgreen';g.evLim=25;g.evRamp=null;e.sub='號誌恢復：以 25 km/h 以下通過故障號誌';e.title='號誌恢復';toast('行控：號誌恢復，限速 25 km/h 通過','#9be39b',3.5);}}
       }else if(g.pos>e.hold+30){shiftSchedule(g,e.wait+40);const clean=g.pen.atp===e.trips0;evFinish(g,clean?'ok':'late',clean?8:0,clean?'':'由 ATP 代為煞停，應自行在號誌前停車');}
     }},
   power:{can:g=>true,
