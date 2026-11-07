@@ -763,3 +763,26 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 長程打擊模式：點選大陸基地（紅色圖形），需擲 4～6 以上。命中會削弱火箭軍、空軍或護航艦隊。	Long-range strike mode: tap a mainland base (red shape); a roll of 4–6 is needed. A hit weakens the rocket force, air force or escort fleet.
 點選地圖上的大陸基地（紅色圖形，虛線圈標示可打擊者）進行長程打擊，每次消耗 1 發長程飛彈。	Tap a mainland base on the map (red shapes; dashed rings mark strikable ones) for a long-range strike; each costs 1 long-range missile.
 長程對地飛彈全程沒有使用：中方火箭軍與機場是主要威脅，可以考慮在渡海前就打擊火箭軍與集結港。	Long-range land-attack missiles were never used: the PLA rocket force and airfields are the main threat; consider striking the rocket force and assembly ports before the crossing.
+補給系統大改：①補給分成三條管道——補給船團（地圖上的棋子）、空投、就地徵用（靠民心）；②補給船團每回合從大陸港口出航，渡海抵達攻方掌握的港口或灘頭才卸貨，沿途會被反艦飛彈、潛艦、戰機、無人機、快艇攻擊，運輸船數量有限、被擊沉就永久損失；③攻方可建立「灘頭補給站」棋子（卸載能力 +2、庫存 +3），守方可攻擊、攻方要派兵守；④守方新增攔截補給的選擇（打船團、攔運輸機、特種部隊破壞港口設施），攻方新增護航、加大空投、徵用民間物資、加緊運補、建立補給站。另外：航艦被擊沉會有重大消息，美軍航艦沉沒時美國會擲骰決定退出、維持或強力報復；主地圖打擊大陸基地有飛彈飛行動畫；海馬士改為卡車載具連射火箭彈（或單發戰術飛彈）的動畫，選取時提示射程與目標。	Supply overhaul: (1) supply has three channels — supply convoys (pieces on the map), airdrop and local requisition (depends on popular goodwill); (2) supply convoys sail each turn from a mainland port and only unload on reaching a port or beach the attacker holds, being attacked en route by anti-ship missiles, submarines, fighters, drones and fast boats; the number of cargo ships is limited and sunk ones are lost for good; (3) the attacker can build 'Beach supply depot' pieces (unload capacity +2, storage +3) that the defender can attack and the attacker must guard; (4) the defender gets new interdiction choices (hit convoys, intercept transport aircraft, special forces sabotaging port facilities) and the attacker gets escort, bigger airdrop, requisition, rush shipping and build-depot options. Also: a carrier sinking is major news, and when a US carrier is sunk the US rolls to withdraw, hold or retaliate strongly; strikes on mainland bases on the main map now show missile flights; HIMARS now shows a truck launcher firing a rocket ripple (or a single tactical missile), with a hint on range and targets when selected.
+【重大消息】	[Major news] 
+共軍航艦遭擊沉	PLA carrier sunk
+美軍航艦遭擊沉	US carrier sunk
+第 7 艦隊的航艦打擊群在台海附近被擊沉，數千名官兵可能罹難，美國社會震動。	The 7th Fleet carrier strike group was sunk near the Taiwan Strait; thousands of crew may have died and American society is shaken.
+基地受創	Base damaged
+未命中	Missed
+戰術飛彈命中	Tactical missile hit
+火箭彈命中	Rockets hit
+海馬士只能打陸上目標：4 格內用火箭彈，14 格內動用長程飛彈存量（陸軍戰術飛彈）；每階段發射 1 次，發射後可再移動。	HIMARS can only hit land targets: rockets within 4 hexes, and within 14 hexes it uses long-range missile stock (Army tactical missile); one launch per phase, and it can still move afterwards.
+橘圈＝目前射程內可打擊的 	Orange rings = targets currently in range: 
+ 個目標，點選目標發射。	 — tap a target to fire.
+目前射程內沒有陸上目標（海上船團要靠反艦飛彈）。	No land targets in range right now (ships at sea need anti-ship missiles).
+補給船團	Supply convoy
+灘頭補給站	Beach supply depot
+補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失	Cargo ships (merchant ships, RO-RO): shuttle supplies; sunk ones are lost for good
+攔截補給（守方）	Supply interdiction (defender)
+全力打補給船團	All-out strike on supply convoys
+全力攔截運輸機	All-out interception of transport aircraft
+特種部隊破壞港口後勤設施	Special forces sabotage port facilities
+建立灘頭補給站	Build a beach supply depot
+強行徵用民間物資	Requisition civilian supplies by force
+加大空投	Bigger airdrop
