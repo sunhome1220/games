@@ -78,6 +78,7 @@ th{color:#9fb0c8;font-weight:600}
 
 <div id="top" class="hidden">
   <button id="b-pause">⏸ 暫停</button>
+  <button id="b-horn">📯</button>
   <button id="b-fs">⛶</button>
   <button id="b-snd">🔊</button>
   <button id="b-quit">← 離開</button>
@@ -115,6 +116,7 @@ th{color:#9fb0c8;font-weight:600}
   <ul class="how">
     <li>🎚 <b>主控器</b>：右側手把，上方 P1～P4 加速、中間 N 惰行、下方 B1～B7 煞車、最下 EB 緊急煞車。鍵盤：<b>↑↓</b> 加減一檔、<b>空白</b> 回 N、<b>X</b> 緊急煞車</li>
     <li>🚪 <b>停妥後</b>開門：看畫面上的月台在左或右。<b>A／←</b> 開左門、<b>D／→</b> 開右門、<b>F／Enter</b> 關門。門沒關好不能加速</li>
+    <li>🔊 <b>H</b> 或 📯 鳴笛；聽得到馬達、鐵軌接縫、煞車空氣聲與車門聲，隧道內有殘響</li>
     <li>🛑 把車頭停在<b>綠色停車線</b>（月台上的「停」字牌）；誤差越小分數越高。<b>煞車到快停時要慢慢放鬆</b>，否則會頓挫扣舒適分</li>
     <li>⚠ <b>ATP 超速防護</b>：超過限速會警示，超過太多會自動緊急煞車並扣分。進站前限速會依距離遞減</li>
     <li>⏱ 依時刻表到站：太早或太晚都會扣準點分。月台上的乘客上下車需要時間，別太早關門</li>
@@ -137,11 +139,12 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/render3d.js?v=2026-11-07.02"></script>
+<script src="js/render3d.js?v=2026-11-07.04"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-07.02';
+const DRIVER='ANDY';
+const VERSION='2026-11-07.04';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -309,7 +312,7 @@ function setNotch(n){
   if(!G||G.state==='result')return;
   n=clamp(Math.round(n),-8,4);
   if(n===-8&&G.notch!==-8)G.ebUsed=true;
-  G.notch=n;syncLever();
+  const old=G.notch;G.notch=n;syncLever();sfxNotch(old,n);
 }
 function step(dt){
   const g=G,D=g.doors;
@@ -335,7 +338,7 @@ function step(dt){
   let vN=g.v+(g.aAct-resist)*dt;
   let justStopped=false,stopA=0;
   if(vN<=0){
-    if(g.v>0){justStopped=true;stopA=Math.max(0,-g.aAct);}
+    if(g.v>0){justStopped=true;stopA=Math.max(0,-g.aAct);sfxStop();}
     vN=0;if(g.aAct<0)g.aAct=0;
   }
   g.pos+=(g.v+vN)/2*dt;g.v=vN;
@@ -422,16 +425,28 @@ function closeDoors(){
 }
 function finishRun(){G.endT=G.endT||1.5;G.state='finish';}
 
-/* ========================= 音效 ========================= */
+/* ========================= 音效（全部由 Web Audio 即時合成，無音檔） ========================= */
 let AC=null,AN=null;
+function envNow(g){const s=g.pos+8;for(const c of g.sec)if(s>=c.a&&s<c.b)return c.env;return g.sec[g.sec.length-1].env;}
 function audioInit(){
   if(AC)return;
   try{
     AC=new (window.AudioContext||window.webkitAudioContext)();
-    const master=AC.createGain();master.gain.value=0.7;master.connect(AC.destination);
+    const master=AC.createGain();master.gain.value=0.85;
+    const comp=AC.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;
+    master.connect(comp);comp.connect(AC.destination);
+    // 隧道殘響：簡單回授延遲，只在隧道內開啟
+    const dl=AC.createDelay(0.5);dl.delayTime.value=0.09;const fb=AC.createGain();fb.gain.value=0.45;
+    const wet=AC.createGain();wet.gain.value=0;
+    master.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(comp);
+    const an=AC.createAnalyser();an.fftSize=1024;master.connect(an);
+    // 馬達（低頻嗡聲）與變頻器高音（加速時音調隨車速上升）
     const mo=AC.createOscillator();mo.type='sawtooth';mo.frequency.value=60;
     const mf=AC.createBiquadFilter();mf.type='lowpass';mf.frequency.value=500;
     const mg=AC.createGain();mg.gain.value=0;mo.connect(mf);mf.connect(mg);mg.connect(master);mo.start();
+    const io=AC.createOscillator();io.type='triangle';io.frequency.value=300;
+    const ig=AC.createGain();ig.gain.value=0;io.connect(ig);ig.connect(master);io.start();
+    // 噪音（輪軌滾動）
     const nb=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate),d=nb.getChannelData(0);
     for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
     const ns=AC.createBufferSource();ns.buffer=nb;ns.loop=true;
@@ -441,7 +456,7 @@ function audioInit(){
     const sg=AC.createGain();sg.gain.value=0;so.connect(sg);sg.connect(master);so.start();
     const bo=AC.createOscillator();bo.type='square';bo.frequency.value=700;
     const bg=AC.createGain();bg.gain.value=0;bo.connect(bg);bg.connect(master);bo.start();
-    AN={master,mo,mg,mf,nf,ng,so,sg,bo,bg};
+    AN={master,wet,an,nb,mo,mg,mf,io,ig,nf,ng,so,sg,bo,bg,lastClk:0};
   }catch(e){AC=null;AN=null;}
 }
 function beep(freq,dur,type,vol,delay){
@@ -453,22 +468,59 @@ function beep(freq,dur,type,vol,delay){
     o.connect(g);g.connect(AN.master);o.start(t);o.stop(t+dur+0.05);
   }catch(e){}
 }
-function playChime(){beep(988,0.5,'sine',0.18,0);beep(784,0.7,'sine',0.18,0.28);}
-function chimeOpen(){beep(1175,0.35,'sine',0.16,0);beep(880,0.5,'sine',0.16,0.22);}
-function chimeClose(){for(let i=0;i<5;i++)beep(1318,0.16,'square',0.09,i*0.42);}
+// 噪音爆音：頻率由 f0 掃到 f1，用於空氣聲、門滑動聲、鐵軌接縫聲
+function burst(dur,f0,f1,q,vol,delay,attack){
+  if(!AC||!SET.snd)return;
+  try{
+    const t=AC.currentTime+(delay||0);
+    const s=AC.createBufferSource();s.buffer=AN.nb;
+    const f=AC.createBiquadFilter();f.type='bandpass';f.Q.value=q;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(Math.max(40,f1),t+dur);
+    const g=AC.createGain();const at=attack||0.01;
+    g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+at);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    s.connect(f);f.connect(g);g.connect(AN.master);s.start(t,Math.random()*1.5);s.stop(t+dur+0.05);
+  }catch(e){}
+}
+function playChime(){beep(988,0.5,'sine',0.22,0);beep(784,0.7,'sine',0.22,0.28);}
+function chimeOpen(){beep(1175,0.35,'sine',0.2,0);beep(880,0.5,'sine',0.2,0.22);burst(0.5,2500,1200,0.8,0.18,0.1);burst(2.0,500,260,1.2,0.14,0.35,0.3);}
+function chimeClose(){for(let i=0;i<5;i++)beep(1318,0.16,'square',0.1,i*0.42);burst(1.8,300,520,1.2,0.14,0.9,0.4);burst(0.35,2200,1000,0.8,0.18,2.6);}
+function sfxNotch(old,n){
+  if(!AC||old===n)return;
+  burst(0.05,1800,900,3,0.16,0);                       // 檔位喀嗒
+  if(n<old&&n<0)burst(0.45,3500,1800,0.7,0.12*Math.min(1,(old-n)/3+0.3),0.02,0.02);   // 施放煞車：空氣聲
+  if(n>old&&old<0)burst(0.8,2800,1400,0.6,0.16*Math.min(1,(n-old)/3+0.3),0.02,0.04);   // 緩解煞車：洩氣聲
+  if(n===-8)burst(1.4,3000,1200,0.5,0.3,0.02,0.02);   // 緊急煞車
+}
+function sfxStop(){burst(0.9,3200,1500,0.6,0.2,0.05,0.05);}
+function sfxClack(g){
+  const tun=envNow(g)==='tunnel',v=g.v,vol=Math.min(0.22,0.03+v*0.011)*(tun?1.25:1);
+  const f=tun?520:800;
+  burst(0.09,f,f*0.5,2,vol,0);burst(0.09,f*0.9,f*0.45,2,vol*0.8,Math.min(0.35,2.3/Math.max(v,3)));  // 前後轉向架兩下
+}
+let hornT=0;
+function horn(){
+  if(!AC||!SET.snd||performance.now()-hornT<1200)return;hornT=performance.now();
+  [415,523].forEach(f=>beep(f,0.9,'sawtooth',0.1,0));
+  burst(0.9,900,600,1.5,0.05,0);
+}
 function audioUpdate(){
   if(!AC||!AN||!G)return;
   const t=AC.currentTime,on=SET.snd&&(G.state==='run'||G.state==='ready'||G.state==='finish')&&!paused;
-  const v=G.v,pw=Math.max(0,G.aAct),br=Math.max(0,-G.aAct);
+  const v=G.v,pw=Math.max(0,G.aAct),br=Math.max(0,-G.aAct),tun=envNow(G)==='tunnel';
+  AN.master.gain.setTargetAtTime(SET.snd?0.85:0,t,0.05);
+  AN.wet.gain.setTargetAtTime(on&&tun?0.4:0,t,0.4);
   AN.mo.frequency.setTargetAtTime(48+v*6,t,0.12);
   AN.mf.frequency.setTargetAtTime(280+v*30,t,0.15);
-  AN.mg.gain.setTargetAtTime(on?(v>0.1?(0.012+pw*0.06+br*0.02):0):0,t,0.12);
-  AN.nf.frequency.setTargetAtTime(160+v*22,t,0.2);
-  AN.ng.gain.setTargetAtTime(on?Math.min(0.22,v*0.011):0,t,0.2);
-  AN.sg.gain.setTargetAtTime(on&&br>0.3&&v<5&&v>0.4?0.012*Math.min(1,br):0,t,0.08);
+  AN.mg.gain.setTargetAtTime(on?(v>0.1?(0.035+pw*0.1+br*0.04):0.012):0,t,0.12);
+  AN.io.frequency.setTargetAtTime(220+v*38,t,0.1);
+  AN.ig.gain.setTargetAtTime(on&&pw>0.08&&v>0.3?0.035*Math.min(1,pw):0,t,0.15);
+  AN.nf.frequency.setTargetAtTime((tun?130:160)+v*22,t,0.2);
+  AN.ng.gain.setTargetAtTime(on?Math.min(0.4,v*0.02)*(tun?1.4:1):0,t,0.2);
+  AN.sg.gain.setTargetAtTime(on&&br>0.3&&v<5&&v>0.4?0.03*Math.min(1,br):0,t,0.08);
   AN.so.frequency.setTargetAtTime(900+v*120,t,0.1);
   const buzz=on&&(G.over||G.trip);
-  AN.bg.gain.setTargetAtTime(buzz&&(Math.floor(G.time*4)&1)?0.05:0,t,0.01);
+  AN.bg.gain.setTargetAtTime(buzz&&(Math.floor(G.time*4)&1)?0.07:0,t,0.01);
+  // 鐵軌接縫聲：每 12.5 公尺一次
+  if(on&&v>1){const k=Math.floor(G.pos/12.5);if(k!==AN.lastClk){if(AN.lastClk&&k-AN.lastClk<3)sfxClack(G);AN.lastClk=k;}}
 }
 function speak(text){
   if(!SET.voice||!('speechSynthesis' in window))return;
@@ -737,6 +789,12 @@ function drawDash(g){
   X.fillStyle=gr;
   if(land){rr(dashX0,top,dashX1-dashX0,H-top+12,12);X.fill();X.fillStyle='#394760';X.fillRect(dashX0+8,top,dashX1-dashX0-16,2);}
   else{X.fillRect(0,top,W,H-top);X.fillStyle='#394760';X.fillRect(0,top,W,2);}
+  // 駕駛名牌
+  {const pw=Math.min(150,(dashX1-dashX0)*0.3),ph=22,px=(dashX0+dashX1)/2-pw/2,py=top-ph/2;
+   const pg=X.createLinearGradient(0,py,0,py+ph);pg.addColorStop(0,'#e9d49a');pg.addColorStop(0.5,'#b99a4e');pg.addColorStop(1,'#8d7234');
+   X.fillStyle=pg;rr(px,py,pw,ph,4);X.fill();X.strokeStyle='#5a4a20';X.lineWidth=1.2;X.stroke();
+   X.fillStyle='#3a2f10';[px+6,px+pw-6].forEach(sx=>{X.beginPath();X.arc(sx,py+ph/2,1.8,0,6.3);X.fill();});
+   T('駕駛 '+DRIVER,px+pw/2,py+ph/2+1,13,'#2b2208','center',800);}
   const gx0=dashX0+10,gx1=land?dashX1-8:W-92,gh=H-barH-top-(land?10:18);
   const dia=Math.min(gh,(gx1-gx0)*0.5,240),R=dia/2;
   const cx=gx0+R+6,cy=top+(land?6:10)+R;
@@ -913,6 +971,7 @@ addEventListener('keydown',e=>{
   else if(k==='ArrowLeft'||k==='a'||k==='A'){openDoors('L');e.preventDefault();}
   else if(k==='ArrowRight'||k==='d'||k==='D'){openDoors('R');e.preventDefault();}
   else if(k==='f'||k==='F'||k==='Enter'){closeDoors();e.preventDefault();}
+  else if(k==='h'||k==='H'){horn();}
   else if(k==='p'||k==='P'||k==='Escape'){togglePause();}
 });
 $('b-ol').onclick=()=>openDoors('L');
@@ -928,6 +987,7 @@ function togglePause(){
   if(AC){paused?AC.suspend():AC.resume();}
 }
 $('b-pause').onclick=togglePause;
+$('b-horn').onclick=horn;
 function goFullscreen(){
   const el=document.documentElement;
   try{
@@ -1006,7 +1066,7 @@ function showResult(){
   const avg=rs.length?Math.round(rs.reduce((a,r)=>a+r.score,0)/n):0;
   const grade=avg>=92?'S':avg>=85?'A':avg>=70?'B':avg>=55?'C':'D';
   const gc={S:'#ffd54a',A:'#7bd88f',B:'#7fb0ff',C:'#f0b46a',D:'#ff7b7b'}[grade];
-  $('r-title').textContent=`${g.L.name}　${g.stations[0].name} → ${g.stations[g.S.length-1].name}`;
+  $('r-title').textContent=`駕駛 ${DRIVER}　${g.L.name}　${g.stations[0].name} → ${g.stations[g.S.length-1].name}`;
   $('r-grade').innerHTML=`<span style="color:${gc}">${grade}</span> <span style="font-size:24px;color:#cfd8e6">${avg} 分</span>`;
   const done=rs.filter(r=>!r.miss);
   const mean=k=>done.length?Math.round(done.reduce((a,r)=>a+r[k],0)/done.length):0;
