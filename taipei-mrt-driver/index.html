@@ -54,6 +54,7 @@ h1 small{font-size:13px;color:#9fb0c8;font-weight:400;margin-left:8px}
 .chip.on{background:#27406a;border-color:#7fb0ff;color:#fff}
 .chip.ln{border-left:6px solid var(--c)}
 select{width:100%;background:#1a2231;color:#eef2f7;border:1px solid #3d4b63;border-radius:9px;padding:8px;font:inherit}
+.row3{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 label.ck{display:flex;gap:8px;align-items:center;margin:6px 0;font-size:14px}
 .how{margin:12px 0;padding:10px 14px;background:#141b27;border:1px solid #2c3850;border-radius:10px;font-size:13px;color:#c3cfe2}
@@ -102,12 +103,16 @@ th{color:#9fb0c8;font-weight:600}
   <div class="lab">路線</div>
   <div class="chips" id="m-lines"></div>
 
-  <div class="row2">
-    <div><div class="lab">行駛方向</div><select id="m-dir"></select></div>
-    <div><div class="lab">起始站</div><select id="m-start"></select></div>
+  <div class="lab">預設關卡</div>
+  <div class="chips" id="m-presets"></div>
+  <div class="lab">自訂關卡：從哪一站，到哪一站</div>
+  <div class="row3">
+    <div><select id="m-from"></select></div>
+    <button class="chip" id="m-swap" title="起點與終點對調">⇄</button>
+    <div><select id="m-to"></select></div>
   </div>
-  <div class="row2">
-    <div><div class="lab">本班停靠站數</div><select id="m-n"></select></div>
+  <div id="m-info" class="sub" style="margin:6px 0 0"></div>
+  <div class="row2" style="margin-top:6px">
     <div><div class="lab">天色</div><select id="m-theme">
       <option value="auto">自動（隨機）</option><option value="day">白天</option><option value="dusk">黃昏</option><option value="night">夜晚</option></select></div>
   </div>
@@ -116,7 +121,7 @@ th{color:#9fb0c8;font-weight:600}
 
   <ul class="how">
     <li>🎚 <b>主控器</b>：右側手把，上方 P1～P4 加速、中間 N 惰行、下方 B1～B7 煞車、最下 EB 緊急煞車。鍵盤：<b>↑↓</b> 加減一檔、<b>空白</b> 回 N、<b>X</b> 緊急煞車</li>
-    <li>🚪 <b>停妥後</b>開門：看畫面上的月台在左或右。<b>A／←</b> 開左門、<b>D／→</b> 開右門、<b>F／Enter</b> 關門。門沒關好不能加速</li>
+    <li>🚪 <b>停妥後</b>開門：看畫面上的月台在左或右（島式月台在左、側式月台在右，依靠右行駛推得）。<b>A／←</b> 開左門、<b>D／→</b> 開右門、<b>F／Enter</b> 關門。門沒關好不能加速</li>
     <li>🔊 <b>H</b> 或 📯 鳴笛；聽得到馬達、鐵軌接縫、煞車空氣聲與車門聲，隧道內有殘響</li>
     <li>🛑 把車頭停在<b>綠色停車線</b>（月台上的「停」字牌）；誤差越小分數越高。<b>煞車到快停時要慢慢放鬆</b>，否則會頓挫扣舒適分</li>
     <li>⚠ <b>ATP 超速防護</b>：超過限速會警示，超過太多會自動緊急煞車並扣分。進站前限速會依距離遞減</li>
@@ -125,7 +130,7 @@ th{color:#9fb0c8;font-weight:600}
   <button class="big" id="m-go">開始值勤</button>
   <div id="m-best" class="sub" style="text-align:center;margin-top:8px"></div>
   <button class="btn2" id="m-board">🏆 排行榜</button>
-  <p class="sub" style="font-size:12px;text-align:center">站序為真實站名；站間距離、限速與沿線場景（高架／地下）皆為遊戲示意，非實際營運資料。</p>
+  <p class="sub" style="font-size:12px;text-align:center">站序、站體（高架／平面／地下）、月台形式（島式／側式）與站間距離依維基百科車站表（2026-11 擷取）；限速區間與沿線地貌（河、山、湖、建築疏密）為遊戲示意，未逐站查證。</p>
   <div id="ver"></div>
 </div>
 </section>
@@ -152,12 +157,13 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/render3d.js?v=2026-11-07.06"></script>
+<script src="js/lines.js?v=2026-11-07.07"></script>
+<script src="js/render3d.js?v=2026-11-07.07"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
 const DRIVER='ANDY';
-const VERSION='2026-11-07.06';
+const VERSION='2026-11-07.07';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -169,26 +175,7 @@ const $=id=>document.getElementById(id);
 const fmtT=s=>{const a=Math.abs(Math.round(s));return (s<0?'-':'')+String(Math.floor(a/60)).padStart(2,'0')+':'+String(a%60).padStart(2,'0');};
 function store(k,v){try{if(v===undefined){return JSON.parse(localStorage.getItem(k));}localStorage.setItem(k,JSON.stringify(v));}catch(e){return null;}}
 
-/* ========================= 路線資料 ========================= */
-// st：站名；d：到下一站的概略距離（公尺）；env(i)：第 i 站的場景（elev 高架／tunnel 地下，示意）
-const LINES={
-  red:{name:'淡水信義線',short:'紅線',color:'#e3002c',cars:6,trainLen:140,
-    st:['淡水','紅樹林','竹圍','關渡','忠義','復興崗','北投','奇岩','唭哩岸','石牌','明德','芝山','士林','劍潭','圓山','民權西路','雙連','中山','台北車站','台大醫院','中正紀念堂','東門','大安森林公園','大安','信義安和','台北101/世貿','象山'],
-    d:[2100,1500,3300,1400,1000,1300,1700,900,1000,1100,1000,1000,1300,1200,1100,800,700,1000,700,1000,800,1000,800,1100,1000,1000],
-    env:i=>(i<=13||i===26)?'elev':'tunnel'},
-  blue:{name:'板南線',short:'藍線',color:'#0070bd',cars:6,trainLen:140,
-    st:['頂埔','永寧','土城','海山','亞東醫院','府中','板橋','新埔','江子翠','龍山寺','西門','台北車站','善導寺','忠孝新生','忠孝復興','忠孝敦化','國父紀念館','市政府','永春','後山埤','昆陽','南港','南港展覽館'],
-    d:[1500,1400,1700,1500,1400,1000,1200,1000,2300,1000,1000,1000,800,800,900,800,1000,1000,900,1300,1400,1200],
-    env:i=>'tunnel'},
-  green:{name:'松山新店線',short:'綠線',color:'#008659',cars:6,trainLen:140,
-    st:['新店','新店區公所','七張','大坪林','景美','萬隆','公館','台電大樓','古亭','中正紀念堂','小南門','西門','北門','中山','松江南京','南京復興','台北小巨蛋','南京三民','松山'],
-    d:[1200,1000,1500,1700,1200,1500,1100,900,800,700,700,800,1000,800,700,900,700,1000],
-    env:i=>i<=3?'elev':'tunnel'},
-  brown:{name:'文湖線',short:'棕線',color:'#c48c31',cars:4,trainLen:76,
-    st:['動物園','木柵','萬芳社區','萬芳醫院','辛亥','麟光','六張犁','科技大樓','大安','忠孝復興','南京復興','中山國中','松山機場','大直','劍南路','西湖','港墘','文德','內湖','大湖公園','葫洲','東湖','南港軟體園區','南港展覽館'],
-    d:[1200,1100,800,800,900,1000,1100,1000,1100,1000,900,800,2000,1300,1000,1100,1400,1000,900,1100,1100,1300,1200],
-    env:i=>(i===13||i===14)?'tunnel':'elev'}
-};
+/* ========================= 路線資料（js/lines.js，由 tools/gen_lines.py 產生） ========================= */
 const LINE_KEYS=['red','blue','green','brown'];
 
 /* ========================= 列車與物理參數 ========================= */
@@ -267,24 +254,29 @@ const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e
 
 /* ========================= 遊戲狀態 ========================= */
 let G=null;          // 目前這一班
-let SET={line:'red',dir:0,start:0,n:6,theme:'auto',assist:true,voice:false,snd:true};
+let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true};
 const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
 if(!LINES[SET.line])SET.line='red';
 
 function buildRun(opt){
-  const L=LINES[opt.line];
-  let names=L.st.slice(),dist=L.d.slice(),envs=L.st.map((_,i)=>L.env(i));
-  if(opt.dir){names.reverse();dist.reverse();envs.reverse();}
-  const start=clamp(opt.start,0,names.length-2);
-  const last=Math.min(names.length-1,start+opt.n);
+  const L=LINES[opt.line],N=L.st.length;
+  let from=clamp(opt.from|0,0,N-1),to=clamp(opt.to|0,0,N-1);
+  if(from===to)to=from<N-1?from+1:from-1;
+  const rev=to<from;                                   // 站序遞減＝反向行駛
+  const idxs=[];for(let i=from;i!==to+(rev?-1:1);i+=rev?-1:1)idxs.push(i);
   const stations=[];let pos=0;
-  for(let i=start;i<=last;i++){
-    stations.push({name:names[i],pos,idx:i,env:envs[i],side:(hstr(names[i]+opt.dir)&1)?'L':'R'});
-    if(i<last)pos+=dist[i];
-  }
+  idxs.forEach((i,k)=>{
+    if(k>0)pos+=L.d[rev?i:i-1];                        // 站序 i-1 與 i 之間的距離
+    const sc=L.sc[i]||{};
+    // 靠右行駛：島式月台在車的左側、側式月台在右側（混合式視為島式）
+    const side=L.plat[i]==='side'?'R':'L';
+    // 風景的左右以站序遞增方向定義，反向行駛時左右對調
+    const sw=rev?{L:sc.R,R:sc.L}:{L:sc.L,R:sc.R};
+    stations.push({name:L.st[i],code:L.code[i],pos,idx:i,env:L.env[i],plat:L.plat[i],side,sc:{z:sc.z||'mid',L:sw.L||[],R:sw.R||[],ro:!!sc.ro,lm:sc.lm||[]}});
+  });
   const S=stations.map(s=>s.pos);
   // 場景分段（以站間中點為界，同一站的月台都在同一種場景）
-  const sec=stations.map((s,i)=>({a:i===0?-1e9:(S[i-1]+S[i])/2,b:i===stations.length-1?1e9:(S[i]+S[i+1])/2,env:s.env}));
+  const sec=stations.map((s,i)=>({a:i===0?-1e9:(S[i-1]+S[i])/2,b:i===stations.length-1?1e9:(S[i]+S[i+1])/2,env:s.env,sc:s.sc,pos:s.pos}));
   // 限速區間
   const zones=[];
   for(let i=0;i<stations.length-1;i++){
@@ -570,7 +562,7 @@ function drawWorld(g){
     const s=g.sec[i];
     const za=Math.max(s.a-g.pos,NEAR),zb=Math.min(s.b-g.pos,MAXZ);
     if(zb<=za)continue;
-    if(s.env==='elev')drawElev(g,za,zb);else drawTunnel(g,za,zb);
+    if(s.env==='tunnel')drawTunnel(g,za,zb);else drawElev(g,za,zb);   // 2D 備援：平面段以高架畫法近似
     drawTrack(g,za,zb,s.env);
     for(const st of g.stations)drawStation(g,st,s,za,zb);
     drawSigns(g,za,zb);
@@ -1075,33 +1067,39 @@ function showBoard(sel){
 }
 $('m-board').onclick=()=>showBoard();
 $('b-back').onclick=()=>{$('board').classList.add('hidden');$('menu').classList.remove('hidden');};
+const PRESETS={
+  red:[['淡水 → 北投（平面轉高架）',27,21],['士林 → 台北車站',15,9],['台北車站 → 廣慈/奉天宮（新延伸段）',9,0],['紅樹林 → 淡水',26,27]],
+  blue:[['板橋 → 台北車站',6,11],['台北車站 → 南港展覽館',11,22],['頂埔 → 板橋',0,6]],
+  green:[['松山 → 西門',18,11],['西門 → 公館',11,6],['新店 → 公館',0,6]],
+  brown:[['動物園 → 大安',0,8],['中山國中 → 劍南路（地下轉高架）',11,14],['港墘 → 南港展覽館',16,23]]
+};
 function fillMenu(){
   const ml=$('m-lines');ml.innerHTML='';
   LINE_KEYS.forEach(k=>{
     const b=document.createElement('button');b.className='chip ln'+(SET.line===k?' on':'');b.style.setProperty('--c',LINES[k].color);b.textContent=LINES[k].name;
-    b.onclick=()=>{SET.line=k;SET.dir=0;SET.start=0;fillMenu();G=buildRun(SET);updateBest();};ml.appendChild(b);
+    b.onclick=()=>{SET.line=k;const p=PRESETS[k][0];SET.from=p[1];SET.to=p[2];fillMenu();G=buildRun(SET);updateBest();};ml.appendChild(b);
   });
-  const L=LINES[SET.line],names=L.st;
-  const dirSel=$('m-dir');dirSel.innerHTML='';
-  [0,1].forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent='往 '+(d?names[0]:names[names.length-1]);dirSel.appendChild(o);});
-  dirSel.value=SET.dir;
-  const order=SET.dir?names.slice().reverse():names.slice();
-  const stSel=$('m-start');stSel.innerHTML='';
-  order.slice(0,-1).forEach((n,i)=>{const o=document.createElement('option');o.value=i;o.textContent=n;stSel.appendChild(o);});
-  SET.start=clamp(SET.start,0,order.length-2);stSel.value=SET.start;
-  const nSel=$('m-n');nSel.innerHTML='';
-  const maxN=order.length-1-SET.start;
-  [3,6,10,99].forEach(n=>{
-    if(n!==99&&n>=maxN)return;
-    const o=document.createElement('option');o.value=n;o.textContent=n===99?`直到終點（${maxN} 站）`:`${n} 站`;nSel.appendChild(o);
+  const L=LINES[SET.line],N=L.st.length;
+  SET.from=clamp(SET.from|0,0,N-1);SET.to=clamp(SET.to|0,0,N-1);if(SET.from===SET.to)SET.to=SET.from<N-1?SET.from+1:SET.from-1;
+  const icon={tunnel:'地下',elev:'高架',grade:'平面'};
+  ['m-from','m-to'].forEach(id=>{
+    const s=$(id);s.innerHTML='';
+    L.st.forEach((n,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`${L.code[i]} ${n}（${icon[L.env[i]]}）`;s.appendChild(o);});
   });
-  if(![...nSel.options].some(o=>+o.value===SET.n))SET.n=6<maxN?6:99;
-  nSel.value=SET.n;
+  $('m-from').value=SET.from;$('m-to').value=SET.to;
+  const pr=$('m-presets');pr.innerHTML='';
+  PRESETS[SET.line].forEach(([label,f,t])=>{
+    const b=document.createElement('button');b.className='chip'+(SET.from===f&&SET.to===t?' on':'');b.textContent=label;
+    b.onclick=()=>{SET.from=f;SET.to=t;fillMenu();G=buildRun(SET);updateBest();};pr.appendChild(b);
+  });
+  const n=Math.abs(SET.to-SET.from),km=(()=>{let m=0;const a=Math.min(SET.from,SET.to),b=Math.max(SET.from,SET.to);for(let i=a;i<b;i++)m+=L.d[i];return m/1000;})();
+  $('m-info').textContent=`往 ${L.st[SET.to]}，共 ${n} 站、約 ${km.toFixed(1)} 公里`;
   $('m-theme').value=SET.theme;$('m-assist').checked=SET.assist;$('m-voice').checked=SET.voice;
 }
-$('m-dir').onchange=e=>{SET.dir=+e.target.value;SET.start=0;fillMenu();G=buildRun(SET);updateBest();};
-$('m-start').onchange=e=>{SET.start=+e.target.value;fillMenu();G=buildRun(SET);updateBest();};
-$('m-n').onchange=e=>{SET.n=+e.target.value;G=buildRun(SET);updateBest();};
+const rebuild=()=>{fillMenu();G=buildRun(SET);updateBest();};
+$('m-from').onchange=e=>{SET.from=+e.target.value;rebuild();};
+$('m-to').onchange=e=>{SET.to=+e.target.value;rebuild();};
+$('m-swap').onclick=()=>{const f=SET.from;SET.from=SET.to;SET.to=f;rebuild();};
 $('m-theme').onchange=e=>{SET.theme=e.target.value;G=buildRun(SET);};
 $('m-assist').onchange=e=>{SET.assist=e.target.checked;};
 $('m-voice').onchange=e=>{SET.voice=e.target.checked;};

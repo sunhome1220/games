@@ -1,0 +1,33 @@
+// 由 tools/gen_lines.py 自 data/stations.json 產生，請勿手改（改 gen_lines.py 的 SCENE 後重新產生）。
+// 已查證：站序、站名、站體 env（elev 高架／grade 平面／tunnel 地下）、月台 plat、站間距離 d（公尺）。
+// 示意：sc（周邊疏密與地貌）。
+const LINES={
+  red:{name:"淡水信義線",short:"紅線",color:'#e3002c',cars:6,trainLen:140,
+    st:["廣慈/奉天宮", "象山", "台北101/世貿", "信義安和", "大安", "大安森林公園", "東門", "中正紀念堂", "台大醫院", "台北車站", "中山", "雙連", "民權西路", "圓山", "劍潭", "士林", "芝山", "明德", "石牌", "唭哩岸", "奇岩", "北投", "復興崗", "忠義", "關渡", "竹圍", "紅樹林", "淡水"],
+    code:["R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09", "R10", "R11", "R12", "R13", "R14", "R15", "R16", "R17", "R18", "R19", "R20", "R21", "R22", "R23", "R24", "R25", "R26", "R27", "R28"],
+    d:[1360, 740, 990, 990, 790, 670, 1560, 990, 630, 660, 550, 530, 1030, 1520, 1090, 1100, 880, 600, 1260, 830, 760, 1610, 1450, 870, 2140, 1910, 2090],
+    env:["tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "grade", "grade", "grade", "grade", "grade", "elev"],
+    plat:["island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "mixed", "side", "side", "side", "side", "side", "island"],
+    sc:[{},{},{},{},{},{},{},{},{},{},{},{},{},{"z":"mid"},{"z":"high"},{"z":"high"},{"z":"mid"},{"z":"mid"},{"z":"mid","R":["mtn"]},{"z":"mid","R":["mtn"]},{"z":"mid","R":["mtn"]},{"z":"mid","R":["mtn"]},{"z":"low","R":["mtn","depot"]},{"z":"low","L":["field"],"R":["mtn"]},{"z":"rural","L":["field","river","mtn"],"R":["field","mtn"]},{"z":"low","L":["river","mtn"]},{"z":"low","L":["river","trees","mtn"]},{"z":"mid","L":["river","mtn"]}]},
+  blue:{name:"板南線",short:"藍線",color:'#0070bd',cars:6,trainLen:140,
+    st:["頂埔", "永寧", "土城", "海山", "亞東醫院", "府中", "板橋", "新埔", "江子翠", "龍山寺", "西門", "台北車站", "善導寺", "忠孝新生", "忠孝復興", "忠孝敦化", "國父紀念館", "市政府", "永春", "後山埤", "昆陽", "南港", "南港展覽館"],
+    code:["BL01", "BL02", "BL03", "BL04", "BL05", "BL06", "BL07", "BL08", "BL09", "BL10", "BL11", "BL12", "BL13", "BL14", "BL15", "BL16", "BL17", "BL18", "BL19", "BL20", "BL21", "BL22", "BL23"],
+    d:[1950, 1110, 1470, 1640, 1450, 650, 1280, 870, 3080, 1310, 1350, 680, 940, 1120, 670, 730, 840, 990, 820, 1360, 1420, 1090],
+    env:["tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel"],
+    plat:["island", "island", "island", "island", "island", "side", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island", "island"],
+    sc:[{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]},
+  green:{name:"松山新店線",short:"綠線",color:'#008659',cars:6,trainLen:140,
+    st:["新店", "新店區公所", "七張", "大坪林", "景美", "萬隆", "公館", "台電大樓", "古亭", "中正紀念堂", "小南門", "西門", "北門", "中山", "松江南京", "南京復興", "台北小巨蛋", "南京三民", "松山"],
+    code:["G01", "G02", "G03", "G04", "G05", "G06", "G07", "G08", "G09", "G10", "G11", "G12", "G13", "G14", "G15", "G16", "G17", "G18", "G19"],
+    d:[1110, 900, 850, 1150, 1060, 1560, 900, 880, 930, 760, 820, 810, 1260, 1300, 990, 940, 1200, 1350],
+    env:["tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel", "tunnel"],
+    plat:["island", "side", "side", "island", "island", "island", "island", "island", "island", "island", "island", "island", "side", "island", "side", "island", "island", "island", "island"],
+    sc:[{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]},
+  brown:{name:"文湖線",short:"棕線",color:'#c48c31',cars:4,trainLen:76,
+    st:["動物園", "木柵", "萬芳社區", "萬芳醫院", "辛亥", "麟光", "六張犁", "科技大樓", "大安", "忠孝復興", "南京復興", "中山國中", "松山機場", "大直", "劍南路", "西湖", "港墘", "文德", "內湖", "大湖公園", "葫洲", "東湖", "南港軟體園區", "南港展覽館"],
+    code:["BR01", "BR02", "BR03", "BR04", "BR05", "BR06", "BR07", "BR08", "BR09", "BR10", "BR11", "BR12", "BR13", "BR14", "BR15", "BR16", "BR17", "BR18", "BR19", "BR20", "BR21", "BR22", "BR23", "BR24"],
+    d:[680, 510, 1140, 760, 1600, 820, 1140, 750, 890, 1270, 930, 1480, 2590, 1330, 1280, 830, 1010, 1130, 870, 1630, 850, 1010, 650],
+    env:["elev", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "tunnel", "tunnel", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "elev", "elev"],
+    plat:["side", "side", "side", "side", "side", "side", "side", "side", "side", "side", "side", "side", "island", "island", "side", "island", "side", "side", "side", "side", "side", "side", "side", "island"],
+    sc:[{"z":"low","L":["mtn"],"R":["mtn"],"ro":true},{"z":"low","L":["mtn"],"R":["mtn"]},{"z":"mid","L":["mtn"],"R":["mtn"]},{"z":"mid","R":["hospital"]},{"z":"mid"},{"z":"high","ro":true},{"z":"high","ro":true},{"z":"high","ro":true},{"z":"high","ro":true},{"z":"high","ro":true},{"z":"high","ro":true},{"z":"mid","ro":true},{},{},{"z":"mid","ro":true},{"z":"mid","ro":true},{"z":"high","ro":true},{"z":"high","ro":true},{"z":"mid","ro":true},{"z":"mid","R":["lake","trees"],"ro":true},{"z":"low","ro":true},{"z":"low","L":["mtn"],"R":["mtn"],"ro":true},{"z":"high"},{"z":"high","lm":["expo"]}]},
+};
