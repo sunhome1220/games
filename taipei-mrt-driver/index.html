@@ -137,11 +137,12 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/render3d.js?v=2026-11-07.02"></script>
+<script src="js/render3d.js?v=2026-11-07.03"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-07.02';
+const DRIVER='ANDY';
+const VERSION='2026-11-07.03';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -737,6 +738,12 @@ function drawDash(g){
   X.fillStyle=gr;
   if(land){rr(dashX0,top,dashX1-dashX0,H-top+12,12);X.fill();X.fillStyle='#394760';X.fillRect(dashX0+8,top,dashX1-dashX0-16,2);}
   else{X.fillRect(0,top,W,H-top);X.fillStyle='#394760';X.fillRect(0,top,W,2);}
+  // 駕駛名牌
+  {const pw=Math.min(150,(dashX1-dashX0)*0.3),ph=22,px=(dashX0+dashX1)/2-pw/2,py=top-ph/2;
+   const pg=X.createLinearGradient(0,py,0,py+ph);pg.addColorStop(0,'#e9d49a');pg.addColorStop(0.5,'#b99a4e');pg.addColorStop(1,'#8d7234');
+   X.fillStyle=pg;rr(px,py,pw,ph,4);X.fill();X.strokeStyle='#5a4a20';X.lineWidth=1.2;X.stroke();
+   X.fillStyle='#3a2f10';[px+6,px+pw-6].forEach(sx=>{X.beginPath();X.arc(sx,py+ph/2,1.8,0,6.3);X.fill();});
+   T('駕駛 '+DRIVER,px+pw/2,py+ph/2+1,13,'#2b2208','center',800);}
   const gx0=dashX0+10,gx1=land?dashX1-8:W-92,gh=H-barH-top-(land?10:18);
   const dia=Math.min(gh,(gx1-gx0)*0.5,240),R=dia/2;
   const cx=gx0+R+6,cy=top+(land?6:10)+R;
@@ -1006,7 +1013,7 @@ function showResult(){
   const avg=rs.length?Math.round(rs.reduce((a,r)=>a+r.score,0)/n):0;
   const grade=avg>=92?'S':avg>=85?'A':avg>=70?'B':avg>=55?'C':'D';
   const gc={S:'#ffd54a',A:'#7bd88f',B:'#7fb0ff',C:'#f0b46a',D:'#ff7b7b'}[grade];
-  $('r-title').textContent=`${g.L.name}　${g.stations[0].name} → ${g.stations[g.S.length-1].name}`;
+  $('r-title').textContent=`駕駛 ${DRIVER}　${g.L.name}　${g.stations[0].name} → ${g.stations[g.S.length-1].name}`;
   $('r-grade').innerHTML=`<span style="color:${gc}">${grade}</span> <span style="font-size:24px;color:#cfd8e6">${avg} 分</span>`;
   const done=rs.filter(r=>!r.miss);
   const mean=k=>done.length?Math.round(done.reduce((a,r)=>a+r[k],0)/done.length):0;
