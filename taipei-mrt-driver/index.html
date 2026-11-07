@@ -80,6 +80,11 @@ th,td{padding:5px 6px;border-bottom:1px solid #26324a;text-align:right}
 th:first-child,td:first-child{text-align:left}
 th{color:#9fb0c8;font-weight:600}
 .grade{font-size:64px;font-weight:800;line-height:1;margin:6px 0}
+.evd{margin:4px 0;font-size:13px;color:#c3cfe2}.evd summary{cursor:pointer;padding:6px 0}
+.evd label{display:flex;gap:8px;align-items:flex-start;margin:6px 0;line-height:1.35}.evd small{color:#8fa0b8;display:block}
+.card{background:#141b27;border:1px solid #2c3850;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:13.5px;color:#d3ddee}
+.card h3{margin:0 0 6px;font-size:14px;color:#e8c88a}.card li{margin:5px 0}.card .nw{display:block;color:#8fa0b8;font-size:12px;margin-top:2px}
+.ok{color:#7bd88f}.bad{color:#ff9b7b}.mid{color:#ffd37a}
 .rk{width:100%}.rk tr.me td{background:rgba(232,200,138,.18);color:#ffe9a0;font-weight:700}.rk td:nth-child(2){text-align:left}
 .pill{display:inline-block;background:#1a2231;border:1px solid #3d4b63;border-radius:8px;padding:3px 10px;margin:2px 4px 2px 0;font-size:13px}
 #newver{position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:30;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:20px;padding:8px 16px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.4)}
@@ -93,6 +98,7 @@ th{color:#9fb0c8;font-weight:600}
 
 <div id="top" class="hidden">
   <button id="b-pause">⏸ 暫停</button>
+  <button id="b-call" style="display:none">📞 行控</button>
   <button id="b-horn">📯</button>
   <button id="b-fs">⛶</button>
   <button id="b-snd">🔊</button>
@@ -132,6 +138,13 @@ th{color:#9fb0c8;font-weight:600}
     <div><div class="lab">天色</div><select id="m-theme">
       <option value="auto">自動（隨機）</option><option value="day">白天</option><option value="dusk">黃昏</option><option value="night">夜晚</option></select></div>
   </div>
+  <div class="row2" style="margin-top:6px">
+    <div><div class="lab">車型</div><select id="m-model"></select></div>
+    <div><div class="lab">突發事件頻率</div><select id="m-evrate"><option value="low">低</option><option value="mid">中</option><option value="high">高</option></select></div>
+  </div>
+  <div id="m-minfo" class="sub" style="margin:4px 0 0;font-size:12px"></div>
+  <label class="ck"><input type="checkbox" id="m-ev" checked> 突發事件（依新聞事件設計，預設開啟）</label>
+  <details class="evd"><summary>選擇要出現的事件種類</summary><div id="m-evlist"></div></details>
   <label class="ck"><input type="checkbox" id="m-assist" checked> 新手輔助（顯示建議煞車檔位）</label>
   <label class="ck"><input type="checkbox" id="m-voice"> 車內廣播（語音報站，需瀏覽器支援）</label>
 
@@ -143,6 +156,7 @@ th{color:#9fb0c8;font-weight:600}
     <li>🛑 把車頭停在<b>綠色停車線</b>（月台上的「停」字牌）；誤差越小分數越高。<b>煞車到快停時要慢慢放鬆</b>，否則會頓挫扣舒適分</li>
     <li>⚠ <b>ATP 超速防護</b>：超過限速會警示，超過太多會自動緊急煞車並扣分。進站前限速會依距離遞減</li>
     <li>🧍 月台上有排隊、走動的卡通旅客；停妥開門後會看到他們上車，也有人下車走開（從駕駛座只看得到車頭前方的月台）</li>
+    <li>⚠ <b>突發事件</b>（預設開啟，依真實新聞與北捷規定設計）：地震、強風、旅客誤入軌道、車門故障、號誌異常、供電異常、列車故障清客。處置得宜加分，結算時會附建議與依據；可在選單關閉或調整頻率</li>
     <li>⏱ 依時刻表到站：太早或太晚都會扣準點分。月台上的乘客上下車需要時間，別太早關門</li>
   </ul>
   <button class="big" id="m-go">開始值勤</button>
@@ -169,19 +183,23 @@ th{color:#9fb0c8;font-weight:600}
   <div class="grade" id="r-grade"></div>
   <div id="r-sum"></div>
   <div id="r-rank"></div>
+  <div id="r-ev"></div>
+  <div id="r-coach"></div>
   <table id="r-tbl"></table>
   <button class="big" id="r-again">再開一班</button>
   <button class="btn2" id="r-menu">回到選單</button>
 </div>
 </section>
 
-<script src="js/lines.js?v=2026-11-07.08"></script>
-<script src="js/render3d.js?v=2026-11-07.08"></script>
+<script src="js/models.js?v=2026-11-07.09"></script>
+<script src="js/events.js?v=2026-11-07.09"></script>
+<script src="js/lines.js?v=2026-11-07.09"></script>
+<script src="js/render3d.js?v=2026-11-07.09"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
 const DRIVER='ANDY';
-const VERSION='2026-11-07.08';
+const VERSION='2026-11-07.09';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -197,12 +215,10 @@ function store(k,v){try{if(v===undefined){return JSON.parse(localStorage.getItem
 const LINE_KEYS=['red','blue','green','brown'];
 
 /* ========================= 列車與物理參數 ========================= */
-const ACC_P=[0.30,0.55,0.80,1.00];                 // P1～P4 最大加速度 m/s²
-const DEC_B=[0.25,0.45,0.65,0.85,1.05,1.20,1.35];  // B1～B7 減速度 m/s²
-const DEC_EB=1.5;
-const VMAX=80;                                      // 路線最高速 km/h
-const ATP_DEC=1.2;                                  // ATP 停車曲線採用的減速度
-const ZONE_DEC=1.0;                                 // 限速區間前的減速曲線
+const ACC_FR=[0.30,0.55,0.80,1.00];                 // P1～P4 佔車型最大加速度的比例（最大值見 MODELS.accel）
+const DEC_FR=[0.15,0.30,0.45,0.60,0.75,0.88,1.00];  // B1～B7 佔車型正常減速度的比例（正常減速度、緊急減速度見 MODELS）
+const ATP_FR=0.95;                                  // ATP 停車曲線採用的減速度（占正常減速度）
+const ZONE_FR=0.75;                                 // 限速區間前的減速曲線
 const REV_LIM=5;                                     // 退行限速 km/h
 const MIN_OPEN=6;                                   // 開門後最少停留秒數
 const DWELL=22;                                     // 時刻表停站秒數
@@ -273,12 +289,16 @@ const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e
 
 /* ========================= 遊戲狀態 ========================= */
 let G=null;          // 目前這一班
-let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true};
+let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',events:true,evRate:'mid',evOff:[]};
 const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
 if(!LINES[SET.line])SET.line='red';
 
+// 由 0 加速到 vc（P4）所損失的時間 = 加速時間 − 加速距離/vc，依車型的恆定加速度區與功率區計算
+function accLoss(M,vc){let v=0,s=0,tt=0;const dt=0.05;while(v<vc&&tt<200){const a=M.accel*Math.min(1,M.knee/Math.max(v,0.1))-(0.02+0.00008*v*v);if(a<=0.02)break;s+=v*dt+0.5*a*dt*dt;v+=a*dt;tt+=dt;}return tt-s/vc;}
 function buildRun(opt){
-  const L=LINES[opt.line],N=L.st.length;
+  const mid=pickModel(opt.line,opt.model),M=MODELS[mid],formation=pickFormation(opt.line,mid);
+  // 路線資料＋車型決定的列車長度、車廂數與每節車門數（月台門位置依此計算）
+  const L=Object.assign({},LINES[opt.line],{trainLen:M.len,cars:M.cars,carLen:M.carLen,doorsPerCar:M.doorsPerCar}),N=L.st.length;
   let from=clamp(opt.from|0,0,N-1),to=clamp(opt.to|0,0,N-1);
   if(from===to)to=from<N-1?from+1:from-1;
   const rev=to<from;                                   // 站序遞減＝反向行駛
@@ -306,20 +326,21 @@ function buildRun(opt){
   // 時刻表
   const tArr=[0],tDep=[20];
   for(let i=1;i<stations.length;i++){
-    const d=S[i]-S[i-1],vc=20;
+    const d=S[i]-S[i-1],vc=Math.min(20,M.vmax/3.6*0.93);
     let rest=d,tz=0;
     for(const z of zones){if(z.s0>=S[i-1]&&z.s1<=S[i]){const len=z.s1-z.s0;tz+=len/Math.min(vc,z.lim/3.6)+6;rest-=len;}} // 限速區間：低速行駛＋進出區間的加減速
-    const run=(rest/vc+tz+vc/(2*0.8)+vc/(2*0.9))*1.06+6; // +6 秒：進站最後的慢行對位
+    const run=(rest/vc+tz+accLoss(M,vc)+vc/(2*0.85*M.brake))*1.06+6; // 加速損失依車型功率計算；+6 秒：進站最後的慢行對位
     tArr[i]=tDep[i-1]+run;tDep[i]=tArr[i]+DWELL;
   }
   const th=opt.theme==='auto'?['day','dusk','night'][Math.floor(Math.random()*3)]:opt.theme;
-  return {L,opt,stations,S,sec,zones,tArr,tDep,theme:th,
+  const g={L,M,formation,opt,stations,S,sec,zones,tArr,tDep,theme:th,dec:DEC_FR.map(x=>x*M.brake),
     state:'ready',pos:0,v:0,aAct:0,notch:0,time:0,k:1,cur:0,
     doors:{state:'closed',side:null,t:0,frac:0,openT:0},stopSt:null,
-    trip:false,tripT:0,overT:0,lim:VMAX,over:false,interlock:false,rev:false,
+    trip:false,tripT:0,overT:0,lim:M.vmax,over:false,interlock:false,rev:false,rain:false,
     results:[],segPen:0,pen:{atp:0,door:0,miss:0,rev:0},ebUsed:false,
     lastStop:null,arrTime:null,boardFrac:0,toast:null,endT:0,warnAt:0,
     nextAnn:-1};
+  evInit(g);return g;
 }
 
 function toast(text,color,dur){G.toast={text,color:color||'#fff',t:0,dur:dur||2.6};}
@@ -327,16 +348,20 @@ function toast(text,color,dur){G.toast={text,color:color||'#fff',t:0,dur:dur||2.
 /* ========================= 物理與規則 ========================= */
 function atpLimit(g){
   if(g.rev)return REV_LIM;                             // 退行：低速限制
-  let lim=VMAX;
+  let lim=g.M.vmax;
   for(const z of g.zones){
     if(g.pos>z.s1)continue;
     if(g.pos>=z.s0)lim=Math.min(lim,z.lim);
-    else{const vz=z.lim/3.6;lim=Math.min(lim,Math.sqrt(vz*vz+2*ZONE_DEC*(z.s0-g.pos))*3.6+3);} // 牌子前以平緩曲線遞減，到牌子時剛好降到限速
+    else{const vz=z.lim/3.6;lim=Math.min(lim,Math.sqrt(vz*vz+2*ZONE_FR*g.M.brake*(z.s0-g.pos))*3.6+3);} // 牌子前以平緩曲線遞減，到牌子時剛好降到限速
   }
   if(g.k<g.S.length){
     const d=g.S[g.k]-g.pos;
     const dd=Math.max(d,0);
-    lim=Math.min(lim,Math.sqrt(2*ATP_DEC*dd)*3.6+8);
+    lim=Math.min(lim,Math.sqrt(2*ATP_FR*g.M.brake*dd)*3.6+8);
+  }
+  lim=Math.min(lim,evLimit(g));                         // 突發事件的臨時限速
+  if(g.hold!=null){                                      // 前方停止信號：像停車線一樣的減速曲線
+    const dh=g.hold-g.pos;lim=dh<=0.5?0:Math.min(lim,Math.sqrt(2*ATP_FR*g.M.brake*(dh-0.5))*3.6+3);
   }
   return lim;
 }
@@ -375,18 +400,19 @@ function step(dt){
   // 車門動作
   if(D.state==='opening'){D.t+=dt;D.frac=Math.min(1,D.t/2.2);if(D.t>=2.2){D.state='open';D.openT=0;}}
   else if(D.state==='open'){D.openT+=dt;g.boardFrac=Math.min(1,D.openT/8);}
-  else if(D.state==='closing'){D.t+=dt;D.frac=Math.max(0,1-D.t/2.6);if(D.t>=2.6){D.state='closed';D.frac=0;D.side=null;}}
+  else if(D.state==='closing'){D.t+=dt;D.frac=Math.max(0,1-D.t/2.6);if(D.t>=2.6){D.state='closed';D.frac=0;D.side=null;evOnDoorsClosed(g);}}
   // 有效檔位
   let n=g.notch;
-  if(g.trip)n=-8;
+  if(g.trip||g.evForceEB)n=-8;
   g.interlock=false;
-  if(D.state!=='closed'&&n>0){n=0;g.interlock=true;}
+  if(g.evHold>0){g.evHold-=dt;if(n>0)n=0;}                    // 地震：暫停發車
+  if((D.state!=='closed'||g.doorFault)&&n>0){n=0;g.interlock=true;}   // 車門未關或閉鎖燈未亮：不能加速
   // 目標加速度
   const kmh=g.v*3.6;
   let cmd=0,jl=1.1;
-  if(n>0){cmd=ACC_P[n-1]*(g.v<11?1:11/g.v);jl=1.1;}
-  else if(n>-8&&n<0){cmd=-DEC_B[-n-1];jl=1.6;}
-  else if(n===-8){cmd=-DEC_EB;jl=4;}
+  if(n>0){cmd=ACC_FR[n-1]*g.M.accel*Math.min(1,g.M.knee/Math.max(g.v,0.1))*g.evAcc;jl=1.1;}   // 低速恆定加速度，高速受功率限制
+  else if(n>-8&&n<0){cmd=-g.dec[-n-1];jl=1.6;}
+  else if(n===-8){cmd=-g.M.eb;jl=4;}
   const da=cmd-g.aAct;g.aAct+=clamp(da,-jl*dt,jl*dt);
   const resist=g.v>0?(0.02+0.00008*g.v*g.v):0;
   let vN=g.v+(g.aAct-resist)*dt;
@@ -405,6 +431,7 @@ function step(dt){
   }else{
     if(g.v<=0){g.tripT+=dt;if(g.tripT>2&&g.notch<=0){g.trip=false;toast('ATP 已復歸，可重新發車','#9be39b');}else if(g.tripT>2&&g.tripT<2.1){toast('請將主控器回到 N 位以復歸 ATP','#ffd37a',3);}}
   }
+  evTick(g,dt);                                             // 突發事件
   // 退行超出月台範圍：ATP 動作
   if(g.rev&&!g.trip&&g.k<g.S.length&&g.pos<g.S[g.k]-25){g.trip=true;g.tripT=0;g.segPen+=10;g.pen.atp++;toast('退行超出月台範圍，ATP 緊急煞車','#ff7b7b',3.2);beep(520,0.6,'square',0.18);}
   // 停車事件
@@ -476,6 +503,7 @@ function closeDoors(){
   const D=g.doors;
   if(D.state==='open'){
     if(D.openT<MIN_OPEN){toast('乘客上下車中，請稍候','#ffd37a');return;}
+    if(g.evBlockClose){toast('清客中，旅客換乘完成前請保持開門','#ffd37a');return;}
     if(g.state==='finish'){return;}
     D.state='closing';D.t=0;chimeClose();
   }
@@ -801,7 +829,7 @@ function hexa(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),par
 
 function drawSigns(g,za,zb){
   const sd=[];
-  for(const z of g.zones){sd.push([z.s0,z.lim]);sd.push([z.s1,VMAX]);}
+  for(const z of g.zones){sd.push([z.s0,z.lim]);sd.push([z.s1,g.M.vmax]);}
   for(const [s,lim] of sd){
     const z=s-g.pos;if(z<za||z>Math.min(zb,300))continue;
     const p=pj(-2.05,2.5,z),r=0.5*F/z;if(r<2.5)continue;
@@ -814,14 +842,36 @@ function drawSigns(g,za,zb){
 }
 
 /* ========================= 儀表與 HUD ========================= */
-function drawCabFrame(){
+function drawCabFrame(g){
+  const cab=g.M.cab;
+  // 立柱（車型飾邊色細線）
   X.fillStyle='#0a0d13';
   X.beginPath();X.moveTo(0,0);X.lineTo(W*0.06,0);X.lineTo(W*0.035,dashTop);X.lineTo(0,dashTop);X.closePath();X.fill();
   X.beginPath();X.moveTo(W,0);X.lineTo(W*0.94,0);X.lineTo(W*0.965,dashTop);X.lineTo(W,dashTop);X.closePath();X.fill();
+  X.strokeStyle=cab.trim;X.globalAlpha=0.35;X.lineWidth=1.5;
+  X.beginPath();X.moveTo(W*0.06,0);X.lineTo(W*0.035,dashTop);X.moveTo(W*0.94,0);X.lineTo(W*0.965,dashTop);X.stroke();X.globalAlpha=1;
+  // 上緣遮陽板
+  const vh=Math.max(10,dashTop*0.045),vg=X.createLinearGradient(0,0,0,vh*2.2);vg.addColorStop(0,'rgba(8,10,14,.95)');vg.addColorStop(1,'rgba(8,10,14,0)');
+  X.fillStyle=vg;X.fillRect(W*0.035,0,W*0.93,vh*2.2);
+  // 玻璃反光（斜向淡帶）
+  X.fillStyle='rgba(255,255,255,.035)';
+  X.beginPath();X.moveTo(W*0.18,0);X.lineTo(W*0.30,0);X.lineTo(W*0.17,dashTop);X.lineTo(W*0.07,dashTop);X.closePath();X.fill();
   const gr=X.createLinearGradient(0,dashTop-26,0,dashTop);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(0,0,0,.55)');
   X.fillStyle=gr;X.fillRect(0,dashTop-26,W,26);
 }
-
+// 強風：雨絲與雨刷（雨刷以 1.6 秒為週期擺動）
+function drawRain(g){
+  X.save();X.beginPath();X.rect(0,0,W,dashTop);X.clip();
+  X.fillStyle='rgba(20,30,50,.14)';X.fillRect(0,0,W,dashTop);
+  X.strokeStyle='rgba(200,225,255,.38)';X.lineWidth=1.2;X.beginPath();
+  const k=Math.floor(g.time*40);
+  for(let i=0;i<90;i++){const h=hash(k*131+i*17),h2=hash(k*7+i*29);const x=h*W,y=((h2*1.6+g.time*1.8*(0.6+h))%1.2)*dashTop-20;X.moveTo(x,y);X.lineTo(x-6,y+16+h*10);}
+  X.stroke();
+  const ph=(g.time%1.6)/1.6,ang=-0.35+Math.PI*0.62*(ph<0.5?ph*2:2-ph*2),px=W*0.5,py=dashTop+4,len=Math.min(W*0.42,dashTop*0.95);
+  X.strokeStyle='#15181d';X.lineWidth=5;X.lineCap='round';X.beginPath();X.moveTo(px,py);X.lineTo(px-Math.cos(ang)*len,py-Math.sin(ang)*len);X.stroke();
+  X.strokeStyle='#3a4150';X.lineWidth=2;X.beginPath();X.moveTo(px,py);X.lineTo(px-Math.cos(ang)*len,py-Math.sin(ang)*len);X.stroke();X.lineCap='butt';
+  X.restore();
+}
 function needAssist(g){
   if(!SET.assist||g.k>=g.S.length)return '';
   if(g.doors.state!=='closed')return '';
@@ -834,7 +884,7 @@ function needAssist(g){
   if(a>1.4)return '來不及了！EB 緊急煞車';
   const braking=g.notch<0;
   // 還沒開始煞車時，要惰行到需要 B4 左右的距離才煞，太早煞會誤點；開始煞車後再依所需減速度逐步放鬆
-  if(a>=(braking?0.12:0.72)){let i=DEC_B.findIndex(b=>b>=a*1.08);if(i<0)i=6;return v<2.5?'輕煞（B1），快停時放鬆':`建議 B${i+1} 煞車`+(braking&&i<g.notch*-1-1?'（可放鬆）':'');}
+  if(a>=(braking?0.12:0.72)){let i=g.dec.findIndex(b=>b>=a*1.08);if(i<0)i=6;return v<2.5?'輕煞（B1），快停時放鬆':`建議 B${i+1} 煞車`+(braking&&i<g.notch*-1-1?'（可放鬆）':'');}
   const kmh=v*3.6;
   const nz=g.zones.find(z=>z.s0>g.pos&&z.s0-g.pos<400&&kmh>z.lim+2);
   if(nz)return `前方 ${Math.round(nz.s0-g.pos)} m 限速 ${nz.lim}，請減速`;
@@ -844,16 +894,22 @@ function needAssist(g){
 
 function drawDash(g){
   const top=dashTop;
-  let gr=X.createLinearGradient(0,top,0,H);gr.addColorStop(0,'#232b3a');gr.addColorStop(0.18,'#161c28');gr.addColorStop(1,'#0a0d14');
+  const cab=g.M.cab;
+  let gr=X.createLinearGradient(0,top,0,H);gr.addColorStop(0,cab.dash0);gr.addColorStop(0.18,cab.dash1);gr.addColorStop(1,'#0a0d14');
   X.fillStyle=gr;
   if(land){rr(dashX0,top,dashX1-dashX0,H-top+12,12);X.fill();X.fillStyle='#394760';X.fillRect(dashX0+8,top,dashX1-dashX0-16,2);}
-  else{X.fillRect(0,top,W,H-top);X.fillStyle='#394760';X.fillRect(0,top,W,2);}
+  else{X.fillRect(0,top,W,H-top);X.fillStyle=cab.trim;X.globalAlpha=0.55;X.fillRect(0,top,W,2);X.globalAlpha=1;}
   // 駕駛名牌
   {const pw=Math.min(150,(dashX1-dashX0)*0.3),ph=22,px=(dashX0+dashX1)/2-pw/2,py=top-ph/2;
    const pg=X.createLinearGradient(0,py,0,py+ph);pg.addColorStop(0,'#e9d49a');pg.addColorStop(0.5,'#b99a4e');pg.addColorStop(1,'#8d7234');
    X.fillStyle=pg;rr(px,py,pw,ph,4);X.fill();X.strokeStyle='#5a4a20';X.lineWidth=1.2;X.stroke();
    X.fillStyle='#3a2f10';[px+6,px+pw-6].forEach(sx=>{X.beginPath();X.arc(sx,py+ph/2,1.8,0,6.3);X.fill();});
    T('駕駛 '+DRIVER,px+pw/2,py+ph/2+1,13,'#2b2208','center',800);}
+  // 車型銘板（左上）：型號與編組；無人駕駛車型另標示
+  {const label=g.M.name.replace(' 型','')+(g.formation?'  '+g.formation:''),pw=Math.min(Math.max(120,label.length*9+22),(dashX1-dashX0)*0.36),ph=20,px=dashX0+10,py=top-ph/2;
+   X.fillStyle='#d9dde4';rr(px,py,pw,ph,4);X.fill();X.fillStyle=cab.trim;X.fillRect(px,py,5,ph);
+   T(label,px+pw/2+2,py+ph/2+1,12,'#1b2230','center',800);
+   if(g.M.driverless)T('無人駕駛車型・模擬手動',px+pw+8,py+ph/2+1,10,'#ffb347','left',700);}
   const gx0=dashX0+10,gx1=land?dashX1-8:W-(lrPx+82),gh=H-barH-top-(land?10:18);
   const dia=Math.min(gh,(gx1-gx0)*0.5,240),R=dia/2;
   const cx=gx0+R+6,cy=top+(land?6:10)+R;
@@ -923,11 +979,34 @@ function drawDash(g){
     y+=rh;
     const h=land?'':needAssist(g);
     if(h)T('💡 '+h,ix,y,fit('💡 '+h,fs*0.95,iw+40,700),'#9bd1ff','left',700);
+    drawTcms(g,ix+iw+16,top+10,gx1-(ix+iw+16)-4,gh);
   }
+}
+// TCMS 車輛資訊面板：編組、各車門狀態、牽引／煞車、供電（DC 750 V 第三軌，各車型條目所載）
+function drawTcms(g,x,y,w,h){
+  if(w<170||h<95)return;
+  const cab=g.M.cab,n=g.L.cars,D=g.doors;
+  X.fillStyle='#070b10';rr(x,y,w,h,8);X.fill();X.strokeStyle=cab.trim;X.globalAlpha=0.45;X.lineWidth=1.2;X.stroke();X.globalAlpha=1;
+  T('TCMS',x+10,y+12,10,cab.screen,'left',800);T('DC 750 V 第三軌',x+w-10,y+12,10,'#7f8fa8','right',600);
+  // 編組：車頭在右（前進方向），各節車門以上（左側）下（右側）兩排小方塊表示
+  const cx0=x+12,cw=(w-24-(n-1)*3)/n,cy=y+30;
+  for(let i=0;i<n;i++){
+    const car=n-i,bx=cx0+i*(cw+3),fault=g.doorFault&&g.doorFault.car===car&&Math.floor(g.time*2)%2===0;
+    X.fillStyle=i===n-1?'#2b3a52':'#1d2735';rr(bx,cy,cw,22,3);X.fill();
+    for(const s of [0,1]){const open=D.state!=='closed'&&D.side===(s?'R':'L')&&D.frac>0.2;
+      X.fillStyle=fault?'#ff4a4a':open?'#7bd88f':'#3b4658';X.fillRect(bx+3,cy+(s?14:3),cw-6,5);}
+  }
+  T('◀ 後　　　　　　　　前 ▶',x+w/2,cy+36,9,'#6b7b94','center',600);
+  // 牽引與煞車（依目前加速度占車型最大值）
+  const pw=Math.max(0,g.aAct)/g.M.accel,bk=Math.max(0,-g.aAct)/g.M.eb,by=cy+50;
+  const bar=(label,f,yy,c)=>{T(label,x+12,yy+5,10,'#9fb0c8','left',600);X.fillStyle='#1a2330';X.fillRect(x+54,yy,w-54-46,10);X.fillStyle=c;X.fillRect(x+54,yy,(w-54-46)*clamp(f,0,1),10);T(Math.round(clamp(f,0,1)*100)+'%',x+w-12,yy+5,10,'#cfd8e6','right',700);};
+  if(h>=130){bar('牽引',pw,by,'#7bd88f');bar('煞車',bk,by+16,'#f0b46a');}
+  const mode=g.M.driverless?'ATO（模擬手動）':g.trip?'ATP 動作':'ATP 手動';
+  T('模式 '+mode,x+12,y+h-12,10,g.trip?'#ff7b7b':cab.screen,'left',700);
 }
 
 function drawStrip(g){
-  const x0=18,x1=W-(land?lrPx+68+8+345:290),y=24,total=g.S[g.S.length-1]||1;
+  const x0=18,x1=W-(land?lrPx+68+8+345:360),y=24,total=g.S[g.S.length-1]||1;
   X.fillStyle='rgba(8,12,20,.74)';rr(6,6,x1-x0+24+54,36,10);X.fill();
   X.strokeStyle='rgba(255,255,255,.25)';X.lineWidth=3;X.beginPath();X.moveTo(x0,y);X.lineTo(x1,y);X.stroke();
   X.strokeStyle=g.L.color;X.lineWidth=4;X.beginPath();X.moveTo(x0,y);X.lineTo(x0+(x1-x0)*clamp(g.pos/total,0,1),y);X.stroke();
@@ -964,8 +1043,24 @@ function drawStopGauge(g){
   T(txt,x0+w-8,y0+h+6,12,col,'right',800);
   T('◀ 短',x0+8,y0+h+6,10,'#9fb0c8','left',600);
 }
+function drawEvBanner(g){
+  const e=g.ev;if(!e||!e.title)return;
+  const info=EV_INFO[e.id],w=Math.min(W-24,640),x=W/2-w/2,y=48,h=46;
+  const pulse=0.55+0.45*Math.abs(Math.sin(g.time*4));
+  X.fillStyle='rgba(8,12,20,.9)';rr(x,y,w,h,10);X.fill();
+  X.strokeStyle=info.color;X.globalAlpha=pulse;X.lineWidth=2;rr(x,y,w,h,10);X.stroke();X.globalAlpha=1;
+  X.fillStyle=info.color;rr(x,y,6,h,3);X.fill();
+  X.font='800 15px sans-serif';
+  T('⚠ '+e.title,x+16,y+15,15,info.color,'left',800);
+  X.font='600 12px sans-serif';let sub=e.sub||'';const maxW=w-30;let fs=12;
+  while(X.measureText(sub).width>maxW&&fs>9){fs-=0.5;X.font='600 '+fs+'px sans-serif';}
+  T(sub,x+16,y+34,fs,'#d3ddee','left',600);
+  if(e.dur){const left=Math.max(0,e.dur-(g.time-e.t0));T('剩 '+Math.ceil(left)+' 秒',x+w-12,y+15,13,'#fff','right',800);}
+  else if(g.doorFault&&g.doorFault.call>0)T('行控回覆中 '+Math.ceil(g.doorFault.call)+' 秒',x+w-12,y+15,13,'#fff','right',800);
+}
 function drawHud(g){
   drawStrip(g);
+  drawEvBanner(g);
   drawStopGauge(g);
   // 限速牌
   const r=24,cx=r+14,cy=64+r;
@@ -996,9 +1091,9 @@ function drawHud(g){
     const a=clamp(Math.min(1,(g.toast.dur-g.toast.t)*2,g.toast.t*5),0,1);
     X.globalAlpha=a;
     X.font='700 16px sans-serif';const w=Math.min(W-20,X.measureText(g.toast.text).width+34);
-    X.fillStyle='rgba(8,12,20,.86)';rr(W/2-w/2,HY*0.62,w,38,12);X.fill();
+    X.fillStyle='rgba(8,12,20,.86)';rr(W/2-w/2,HY*0.62+(g.ev&&g.ev.title?54:0),w,38,12);X.fill();
     X.strokeStyle=g.toast.color;X.lineWidth=1.5;X.stroke();
-    T(g.toast.text,W/2,HY*0.62+19,16,g.toast.color,'center',700);
+    T(g.toast.text,W/2,HY*0.62+19+(g.ev&&g.ev.title?54:0),16,g.toast.color,'center',700);
     X.globalAlpha=1;
   }
 }
@@ -1021,8 +1116,11 @@ function render(){
     drawWorld(g);
     X.restore();
   }
-  drawCabFrame();
+  if(g.rain)drawRain(g);
+  if(g.flicker&&Math.random()<0.16){X.fillStyle='rgba(0,0,0,'+(0.35+Math.random()*0.4)+')';X.fillRect(0,0,W,dashTop);}   // 供電異常：燈光閃爍
+  drawCabFrame(g);
   drawDash(g);
+  const bc=$('b-call'),want=g.doorFault&&!g.doorFault.call?'':'none';if(bc.style.display!==want)bc.style.display=want;
   if($('menu').classList.contains('hidden')&&$('result').classList.contains('hidden'))drawHud(g); // 選單／結算頁底下不畫 HUD，避免文字透出
 }
 let force2d=false;
@@ -1067,6 +1165,7 @@ $('b-or').onclick=()=>openDoors('R');
 $('b-close').onclick=()=>closeDoors();
 $('b-eb').onclick=()=>setNotch(-8);
 $('b-rev').onclick=toggleReverse;
+$('b-call').onclick=()=>evCallControl();
 
 /* ========================= 選單與流程 ========================= */
 let paused=false;
@@ -1156,7 +1255,7 @@ function fillMenu(){
   const ml=$('m-lines');ml.innerHTML='';
   LINE_KEYS.forEach(k=>{
     const b=document.createElement('button');b.className='chip ln'+(SET.line===k?' on':'');b.style.setProperty('--c',LINES[k].color);b.textContent=LINES[k].name;
-    b.onclick=()=>{SET.line=k;const p=PRESETS[k][0];SET.from=p[1];SET.to=p[2];fillMenu();G=buildRun(SET);updateBest();};ml.appendChild(b);
+    b.onclick=()=>{SET.line=k;SET.model='auto';const p=PRESETS[k][0];SET.from=p[1];SET.to=p[2];fillMenu();G=buildRun(SET);updateBest();};ml.appendChild(b);
   });
   const L=LINES[SET.line],N=L.st.length;
   SET.from=clamp(SET.from|0,0,N-1);SET.to=clamp(SET.to|0,0,N-1);if(SET.from===SET.to)SET.to=SET.from<N-1?SET.from+1:SET.from-1;
@@ -1164,7 +1263,21 @@ function fillMenu(){
   fillPresets();
   $('m-info').textContent=infoText();
   $('m-theme').value=SET.theme;$('m-assist').checked=SET.assist;$('m-voice').checked=SET.voice;
+  // 車型：該路線實際使用的車型（列數為加權）
+  const ms=$('m-model');ms.innerHTML='<option value="auto">隨機（依各車型列數加權）</option>';
+  FLEETS[SET.line].forEach(([id,n])=>{const o=document.createElement('option');o.value=id;o.textContent=MODELS[id].name+(FLEETS[SET.line].length>1&&n>1?`（${n} 列）`:'');ms.appendChild(o);});
+  if(!FLEETS[SET.line].some(x=>x[0]===SET.model))SET.model='auto';ms.value=SET.model;
+  const M=SET.model==='auto'?null:MODELS[SET.model];
+  $('m-minfo').innerHTML=M?`${M.name}｜${M.maker}（${M.year}）｜營運最高 ${M.vmax} km/h｜起動加速 ${M.accel.toFixed(1)} m/s²、正常減速 ${M.brake.toFixed(1)}、緊急 ${M.eb.toFixed(2)} m/s²${M.kw?`｜編組輸出 ${M.kw} kW`:''}${M.driverless?'<br><b style="color:#ffb347">真實的文湖線是全自動無人駕駛，這裡的手動駕駛是模擬設定</b>':''}`:'每次值勤隨機派車，列數多的車型出現機率較高。';
+  $('m-ev').checked=SET.events;$('m-evrate').value=SET.evRate;$('m-evrate').disabled=!SET.events;
+  const el=$('m-evlist');el.innerHTML='';
+  EV_ORDER.forEach(id=>{const I=EV_INFO[id],lb=document.createElement('label');
+    lb.innerHTML=`<input type="checkbox" ${(SET.evOff||[]).includes(id)?'':'checked'} data-ev="${id}"><span><b style="color:${I.color}">${I.name}</b><small>${I.news.split('。')[0]}。</small></span>`;
+    lb.querySelector('input').onchange=e=>{const off=new Set(SET.evOff||[]);e.target.checked?off.delete(id):off.add(id);SET.evOff=[...off];};el.appendChild(lb);});
 }
+$('m-model').onchange=e=>{SET.model=e.target.value;fillMenu();G=buildRun(SET);};
+$('m-ev').onchange=e=>{SET.events=e.target.checked;$('m-evrate').disabled=!SET.events;};
+$('m-evrate').onchange=e=>{SET.evRate=e.target.value;};
 const rebuild=()=>{fillMenu();G=buildRun(SET);updateBest();};
 /* ---------- 雙頭滑桿：起點「起」與終點「終」，可相鄰、可交叉 ---------- */
 const rs=$('rs');let rsLine=null,rsActive=null,rsLast='b';
@@ -1225,21 +1338,49 @@ $('m-go').onclick=startRun;
 $('r-again').onclick=startRun;
 $('r-menu').onclick=showMenu;
 
+// 依這一班的表現產生個人化建議（規則式）；突發事件處置不佳時附上北捷的規定與新聞依據
+function coachTips(g,done){
+  const tips=[],good=[];
+  const n=done.length||1,sum=k=>done.reduce((a,r)=>a+r[k],0);
+  const absErr=done.reduce((a,r)=>a+Math.abs(r.err),0)/n,sErr=done.reduce((a,r)=>a+r.err,0)/n;   // err=停車線−車頭：正＝短、負＝過
+  const com=sum('com')/n,dt=done.reduce((a,r)=>a+r.dt,0)/n,punAvg=sum('pun')/n;
+  if(absErr>1.5){
+    if(sErr>1)tips.push(`多數站<b>停得太短</b>（平均短 ${sErr.toFixed(1)} m）：煞車點太早或煞太重。靠近停車線時看畫面下方的<b>對位指示條</b>，快到線前把煞車放鬆到 B1，讓車滑到線上；真的短了可以關門後再推 P1 前進補一點。`);
+    else if(sErr<-1)tips.push(`多數站<b>過線</b>（平均過 ${(-sErr).toFixed(1)} m）：煞車點太晚。開啟「新手輔助」並照提示的檔位煞車，通常要在離站約 ${Math.round(g.M.vmax/3.6*g.M.vmax/3.6/(2*0.85*g.M.brake))} m 前就開始 B4 左右；過線後可按 R「退行」倒回，但每次扣 5 分。`);
+    else tips.push(`停車位置忽短忽長（平均誤差 ${absErr.toFixed(1)} m）：每站固定「同一個煞車點、同一個檔位」，再靠對位指示條微調。`);
+  }else good.push('停車位置很準');
+  if(com<70)tips.push(`停車瞬間<b>頓挫</b>（舒適平均 ${Math.round(com)}）：速度降到約 2 m/s（7 km/h）時，把主控器從 B3～B4 鬆到 B1，最後 N 位滑停，不要一路煞到底。`);
+  else good.push('停車平順');
+  if(dt>15)tips.push(`平均<b>誤點 ${Math.round(dt)} 秒</b>：多半是進站太早開始煞車或巡航太慢。輔助提示說「惰行」時就放 N，等到需要 B4 才煞；巡航盡量貼近限速（${g.M.vmax} km/h 以下）。`);
+  else if(dt<-15)tips.push(`平均<b>早到 ${Math.round(-dt)} 秒</b>：時刻表沒有要你搶快，早到也扣準點分。可以稍微減速或延後關門。`);
+  else if(punAvg>=90)good.push('準點');
+  if(g.pen.atp>0)tips.push(`超速防護動作 <b>${g.pen.atp} 次</b>：限速牌前要提早減速（儀表的限速值會在牌子前就開始降），別等 ATP 自動 EB。`);
+  if(g.pen.door>0)tips.push(`開錯門 <b>${g.pen.door} 次</b>：靠右行駛，<b>島式月台在車左、側式月台在車右</b>；進站前畫面上方會提示月台在哪一側。`);
+  if(g.pen.miss>0)tips.push(`冒進過站 <b>${g.pen.miss} 次</b>：過站不停會被扣到 0 分。看到「建議 B5～B7」代表已經來不及，直接 EB。`);
+  if(g.pen.rev>0)tips.push(`退行 ${g.pen.rev} 次：退行限速 5 km/h 且每次扣分，盡量一次停準；過線不多時，通常慢慢滑停就能壓進 ±1 m。`);
+  for(const e of g.evLog){
+    if(e.outcome==='ok')good.push(`${e.name}處置得宜`);
+    else tips.push(`<b>${e.name}</b>${e.outcome==='fail'?'處置失敗':'未能完成'}${e.note?`（${e.note}）`:''}：${e.tip}<span class="nw">依據：${e.news}</span>`);
+  }
+  if(g.evOn&&g.evLog.length===0)good.push('這一班沒有遇到突發事件（可在選單調高頻率）');
+  if(!tips.length)tips.push('這一班沒有明顯的弱點，可以換一條路線、車型，或把突發事件頻率調高挑戰。');
+  return {tips,good};
+}
 function showResult(){
-  const g=G;g.state='result';
+  const g=G;evAbort(g);g.state='result';
   ['top','lever','bar'].forEach(i=>$(i).classList.add('hidden'));
   const rs=g.results.filter((_,i)=>true);
   const n=g.S.length-1;
-  const total=rs.reduce((a,r)=>a+r.score,0);
+  const stTotal=rs.reduce((a,r)=>a+r.score,0),total=stTotal+(g.evPts||0);   // 事件處置分計入總分
   const avg=rs.length?Math.round(total/n):0;
   const grade=avg>=92?'S':avg>=85?'A':avg>=70?'B':avg>=55?'C':'D';
   const gc={S:'#ffd54a',A:'#7bd88f',B:'#7fb0ff',C:'#f0b46a',D:'#ff7b7b'}[grade];
-  $('r-title').textContent=`駕駛 ${DRIVER}　${g.L.name}　${g.stations[0].name} → ${g.stations[g.S.length-1].name}`;
-  $('r-grade').innerHTML=`<span style="color:${gc}">${grade}</span> <span style="font-size:24px;color:#cfd8e6">總分 ${total}　平均 ${avg}</span>`;
+  $('r-title').textContent=`駕駛 ${DRIVER}　${g.L.name} ${g.M.name}${g.formation?' '+g.formation:''}　${g.stations[0].name} → ${g.stations[g.S.length-1].name}`;
+  $('r-grade').innerHTML=`<span style="color:${gc}">${grade}</span> <span style="font-size:24px;color:#cfd8e6">總分 ${total}　平均 ${avg}${g.evPts?`　<span style="font-size:16px">（含事件 ${g.evPts>0?'+':''}${g.evPts}）</span>`:''}</span>`;
   const done=rs.filter(r=>!r.miss);
   const mean=k=>done.length?Math.round(done.reduce((a,r)=>a+r[k],0)/done.length):0;
   $('r-sum').innerHTML=`<span class="pill">平均停車 ${mean('acc')}</span><span class="pill">平均準點 ${mean('pun')}</span><span class="pill">平均舒適 ${mean('com')}</span>`+
-    `<span class="pill">ATP 動作 ${g.pen.atp} 次</span><span class="pill">開錯門 ${g.pen.door} 次</span><span class="pill">冒進過站 ${g.pen.miss} 次</span><span class="pill">退行 ${g.pen.rev} 次</span>`;
+    `<span class="pill">ATP 動作 ${g.pen.atp} 次</span><span class="pill">開錯門 ${g.pen.door} 次</span><span class="pill">冒進過站 ${g.pen.miss} 次</span><span class="pill">退行 ${g.pen.rev} 次</span><span class="pill">突發事件 ${g.evLog.length} 件</span>`;
   $('r-tbl').innerHTML='<tr><th>站</th><th>停車誤差</th><th>時刻差</th><th>停車</th><th>準點</th><th>舒適</th><th>得分</th></tr>'+
     rs.map(r=>r.miss?`<tr><td>${r.name}</td><td colspan="5" style="color:#ff9b7b">冒進過站</td><td>0</td></tr>`:
     `<tr><td>${r.name}</td><td>${r.err>=0?'短':'過'} ${Math.abs(r.err).toFixed(1)} m</td><td>${r.dt>=0?'+':'-'}${Math.abs(Math.round(r.dt))} 秒</td><td>${r.acc}</td><td>${r.pun}</td><td>${r.com}</td><td><b>${r.score}</b></td></tr>`).join('');
@@ -1248,7 +1389,13 @@ function showResult(){
   $('r-rank').innerHTML=`<p style="margin:10px 0 4px;font-weight:700;color:${sub.rank===0?'#ffd54a':'#cfd8e6'}">`+
     (sub.rank<0?'沒有進入前 10 名':sub.rank===0?(first?'🏆 第一筆紀錄，目前第 1 名':'🏆 新紀錄！第 1 名'):`排名：第 ${sub.rank+1} 名`)+
     `　<span style="font-weight:400;color:#9fb0c8;font-size:13px">${routeLabel(g)}</span></p>`+boardTable(sub.list,sub.e);
+  // 突發事件處置
+  $('r-ev').innerHTML=g.evLog.length?`<div class="card"><h3>突發事件處置</h3><ul style="margin:0;padding-left:18px">`+g.evLog.map(e=>`<li><b style="color:${EV_INFO[e.id].color}">${e.name}</b>　<span class="${e.outcome==='ok'?'ok':e.outcome==='fail'?'bad':'mid'}">${e.outcome==='ok'?'處置完成':e.outcome==='fail'?'處置失敗':'未完成'}　${e.pts>=0?'+':''}${e.pts} 分</span>${e.note?`　<small style="color:#9fb0c8">${e.note}</small>`:''}</li>`).join('')+'</ul></div>':'';
+  // 建議
+  const c=coachTips(g,done);
+  $('r-coach').innerHTML=`<div class="card"><h3>給你的建議</h3>${c.good.length?`<div class="ok" style="margin-bottom:6px">👍 ${c.good.join('、')}</div>`:''}<ul style="margin:0;padding-left:18px">${c.tips.map(s=>`<li>${s}</li>`).join('')}</ul></div>`;
   $('result').classList.remove('hidden');
+  $('result').scrollTop=0;
 }
 
 /* ========================= 主迴圈 ========================= */
@@ -1282,7 +1429,7 @@ if(location.protocol.startsWith('http')){
 resize();fillMenu();G=buildRun(SET);
 R3.load().then(ok=>{if(ok&&R3.init($('gl')))resize();else force2d=true;});
 syncLever();updateBest();
-window.__mrt={get G(){return G;},setNotch,openDoors,closeDoors,toggleReverse,startRun,step,SET,buildRun,render,LINES};
+window.__mrt={get G(){return G;},setNotch,openDoors,closeDoors,toggleReverse,startRun,step,SET,buildRun,render,LINES,MODELS,evStart,evOnDoorsClosed,evCallControl,EV_INFO};
 requestAnimationFrame(loop);
 </script>
 </body>
