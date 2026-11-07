@@ -962,3 +962,10 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 強行徵用民間物資	Requisition civilian supplies by force	
 加大空投	Bigger airdrop	
 空戰與轟炸動畫的飛機換成戰機剪影：第四代戰機（三角翼加平尾）、隱形戰機（菱形折線機身，近似殲-20／F-22）、轟炸機（長直翼雙發），帶座艙與尾焰，紅藍分明，取代原本的小箭頭。	Aircraft in the air-combat and bombing animations are now proper silhouettes: 4th-generation fighters (delta wing with tailplanes), stealth fighters (faceted diamond body, similar to J-20/F-22) and bombers (long straight wings, twin engines), with canopy and exhaust glow in clear red and blue, replacing the small arrows.	
+補給決策只列出有實際數據的選項，並附上相關資料：守方「攔截補給」顯示攻方島上部隊與補給容量（船團／空投／就地／庫存）、海上補給船團數量與貨量、最近的離卸載點幾格、空投每回合點數與目前被擊落機率、卸載能力，各選項預估能少多少補給；沒有船團就不列「打補給船團」，沒有空投能力就不列「攔截運輸機」，卸載點不足就不列破壞設施。攻方的補給決策同樣依實際狀況列出（護航、空投、徵用、加緊運補、建立補給站），沒有任何可調整項目時直接略過。	Supply decisions list only options backed by real data, with the relevant figures: the defender's 'Interdict supply' shows the attacker's units ashore and supply capacity (convoys / airdrop / local / stock), the number and cargo of supply convoys at sea, how many hexes the nearest one is from an unloading point, airdrop points per turn and the current shoot-down chance, and unload capacity, plus the estimated supply each option removes; with no convoys the 'hit convoys' option is not listed, with no airdrop capacity 'intercept transport aircraft' is not listed, and with too few unloading points 'sabotage facilities' is not listed. The attacker's supply decisions are likewise listed by actual situation (escort, airdrop, requisition, rush shipping, build depot), and skipped when nothing can be adjusted.	
+攻方補給現況：島上部隊 	Attacker supply status: units ashore 	
+；海上補給船團 	; supply convoys at sea 	
+ 個。下面只列出攻方真的有、可以打的管道，預估對應下回合補給結算的影響。	 . Only channels the attacker really has and that can be hit are listed, with the estimated effect on next turn's supply.	
+目前運輸機被擊落機率約 	Transport aircraft are currently shot down with about 	
+集中攔截後約 	after concentrated interception about 	
+沒有任何可調整項目時直接略過	skipped when nothing can be adjusted	
