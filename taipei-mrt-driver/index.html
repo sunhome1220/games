@@ -59,6 +59,7 @@ h1 small{font-size:13px;color:#9fb0c8;font-weight:400;margin-left:8px}
 .chip{border:1px solid #3d4b63;background:#1a2231;border-radius:9px;padding:9px 12px;font-size:14px;min-height:40px}
 .chip.on{background:#27406a;border-color:#7fb0ff;color:#fff}
 .chip.ln{border-left:6px solid var(--c)}
+input[type=text]{width:100%;background:#1a2231;color:#eef2f7;border:1px solid #3d4b63;border-radius:9px;padding:9px 10px;font:inherit;font-size:16px}   /* 16px：避免 iOS 對輸入欄位自動放大 */
 select{width:100%;background:#1a2231;color:#eef2f7;border:1px solid #3d4b63;border-radius:9px;padding:9px 8px;font:inherit;font-size:16px}   /* 16px：iOS 對小於 16px 的輸入欄位會自動放大，造成觸控位置錯位 */
 .rs-row{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;margin-top:4px}
 .rs-c{display:flex;align-items:center;gap:4px;min-width:0}
@@ -127,6 +128,8 @@ th{color:#9fb0c8;font-weight:600}
   <h1>🚇 北捷駕駛模擬<small>第一人稱・手動駕駛</small></h1>
   <p class="sub">加速、惰行、煞車，準點、準確地把列車停在月台停車位置，並維持乘坐舒適。</p>
 
+  <div class="lab">駕駛名稱（顯示在駕駛室名牌、成績與排行榜）</div>
+  <input id="m-driver" type="text" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="ANDY">
   <div class="lab">路線</div>
   <div class="chips" id="m-lines"></div>
 
@@ -207,17 +210,20 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-07.13"></script>
-<script src="js/broadcast.js?v=2026-11-07.13"></script>
-<script src="js/haptics.js?v=2026-11-07.13"></script>
-<script src="js/events.js?v=2026-11-07.13"></script>
-<script src="js/lines.js?v=2026-11-07.13"></script>
-<script src="js/render3d.js?v=2026-11-07.13"></script>
+<script src="js/models.js?v=2026-11-07.14"></script>
+<script src="js/broadcast.js?v=2026-11-07.14"></script>
+<script src="js/haptics.js?v=2026-11-07.14"></script>
+<script src="js/events.js?v=2026-11-07.14"></script>
+<script src="js/lines.js?v=2026-11-07.14"></script>
+<script src="js/render3d.js?v=2026-11-07.14"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
-const DRIVER='ANDY';
-const VERSION='2026-11-07.13';
+const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
+// 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
+function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
+const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const VERSION='2026-11-07.14';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -307,7 +313,7 @@ const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e
 
 /* ========================= 遊戲狀態 ========================= */
 let G=null;          // 目前這一班
-let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
+let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
 const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
 if(!LINES[SET.line])SET.line='red';
 
@@ -924,7 +930,7 @@ function drawDash(g){
    const pg=X.createLinearGradient(0,py,0,py+ph);pg.addColorStop(0,'#e9d49a');pg.addColorStop(0.5,'#b99a4e');pg.addColorStop(1,'#8d7234');
    X.fillStyle=pg;rr(px,py,pw,ph,4);X.fill();X.strokeStyle='#5a4a20';X.lineWidth=1.2;X.stroke();
    X.fillStyle='#3a2f10';[px+6,px+pw-6].forEach(sx=>{X.beginPath();X.arc(sx,py+ph/2,1.8,0,6.3);X.fill();});
-   T('駕駛 '+DRIVER,px+pw/2,py+ph/2+1,13,'#2b2208','center',800);}
+   T('駕駛 '+drvName(),px+pw/2,py+ph/2+1,13,'#2b2208','center',800);}
   // 車型銘板（左上）：型號與編組；無人駕駛車型另標示
   {const label=g.M.name.replace(' 型','')+(g.formation?'  '+g.formation:''),pw=Math.min(Math.max(120,label.length*9+22),(dashX1-dashX0)*0.36),ph=20,px=dashX0+10,py=top-ph/2;
    X.fillStyle='#d9dde4';rr(px,py,pw,ph,4);X.fill();X.fillStyle=cab.trim;X.fillRect(px,py,5,ph);
@@ -1241,7 +1247,7 @@ function loadBoard(){return store(BOARD_KEY)||{};}
 function submitScore(g,total,avg,grade){
   const all=loadBoard(),k=routeKey(g);
   const bd=all[k]||(all[k]={label:routeLabel(g),line:g.opt.line,list:[]});
-  const e={name:DRIVER,total,avg,grade,t:Date.now()};
+  const e={name:drvName(),total,avg,grade,t:Date.now()};
   bd.list.push(e);
   bd.list.sort((a,b)=>b.total-a.total||a.t-b.t);   // 同分先達成者在前
   const rank=bd.list.indexOf(e);
@@ -1252,7 +1258,7 @@ function submitScore(g,total,avg,grade){
 function boardTable(list,hl){
   const d=ts=>{const x=new Date(ts);return (x.getMonth()+1)+'/'+x.getDate();};
   return '<table class="rk"><tr><th>名次</th><th>駕駛</th><th>總分</th><th>平均</th><th>評級</th><th>日期</th></tr>'+
-    list.map((e,i)=>`<tr class="${e===hl||(hl&&e.t===hl.t&&e.total===hl.total)?'me':''}"><td>${['🥇','🥈','🥉'][i]||(i+1)}</td><td>${e.name}</td><td>${e.total}</td><td>${e.avg}</td><td>${e.grade}</td><td>${d(e.t)}</td></tr>`).join('')+'</table>';
+    list.map((e,i)=>`<tr class="${e===hl||(hl&&e.t===hl.t&&e.total===hl.total)?'me':''}"><td>${['🥇','🥈','🥉'][i]||(i+1)}</td><td>${escHtml(e.name)}</td><td>${e.total}</td><td>${e.avg}</td><td>${e.grade}</td><td>${d(e.t)}</td></tr>`).join('')+'</table>';
 }
 function updateBest(){
   const k=routeKey(G),bd=loadBoard()[k];
@@ -1305,6 +1311,7 @@ function fillMenu(){
   if(!FLEETS[SET.line].some(x=>x[0]===SET.model))SET.model='auto';ms.value=SET.model;
   const M=SET.model==='auto'?null:MODELS[SET.model];
   $('m-minfo').innerHTML=M?`${M.name}｜${M.maker}（${M.year}）｜營運最高 ${M.vmax} km/h｜起動加速 ${M.accel.toFixed(1)} m/s²、正常減速 ${M.brake.toFixed(1)}、緊急 ${M.eb.toFixed(2)} m/s²${M.kw?`｜編組輸出 ${M.kw} kW`:''}${M.driverless?'<br><b style="color:#ffb347">真實的文湖線是全自動無人駕駛，這裡的手動駕駛是模擬設定</b>':''}`:'每次值勤隨機派車，列數多的車型出現機率較高。';
+  $('m-driver').value=SET.driver===DRIVER_DEFAULT?DRIVER_DEFAULT:SET.driver;
   $('m-bc').checked=SET.bcOn;$('m-bcjk').value=SET.bcJk;$('m-hap').checked=SET.haptic;
   const bl=$('m-bclang');bl.innerHTML='';
   BC_LANGS.forEach(L=>{const b=document.createElement('button');b.className='chip sm'+(SET.bcLangs.includes(L.id)?' on':'');b.textContent=L.name;
@@ -1367,6 +1374,9 @@ $('b-prev').onclick=()=>{rsSet('b',SET.to-1);rsCommit();};$('b-next').onclick=()
 $('m-swap').onclick=()=>{const f=SET.from;SET.from=SET.to;SET.to=f;rebuild();};
 $('m-theme').onchange=e=>{SET.theme=e.target.value;G=buildRun(SET);};
 $('m-assist').onchange=e=>{SET.assist=e.target.checked;};
+$('m-driver').oninput=e=>{SET.driver=e.target.value;store('mrt-set',SET);};
+$('m-driver').onblur=e=>{e.target.value=drvName();SET.driver=e.target.value;store('mrt-set',SET);};   // 離開欄位時整理成實際使用的名稱（空白會回到 ANDY）
+$('m-driver').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}e.stopPropagation();};   // 輸入時不要觸發遊戲快捷鍵
 $('m-bc').onchange=e=>{SET.bcOn=e.target.checked;};
 $('m-bcjk').onchange=e=>{SET.bcJk=e.target.value;};
 $('m-hap').onchange=e=>{SET.haptic=e.target.checked;if(SET.haptic)haptic('n');};
@@ -1424,7 +1434,7 @@ function showResult(){
   const avg=rs.length?Math.round(total/n):0;
   const grade=avg>=92?'S':avg>=85?'A':avg>=70?'B':avg>=55?'C':'D';
   const gc={S:'#ffd54a',A:'#7bd88f',B:'#7fb0ff',C:'#f0b46a',D:'#ff7b7b'}[grade];
-  $('r-title').textContent=`駕駛 ${DRIVER}　${g.L.name} ${g.M.name}${g.formation?' '+g.formation:''}　${g.stations[0].name} → ${g.stations[g.S.length-1].name}`;
+  $('r-title').textContent=`駕駛 ${drvName()}　${g.L.name} ${g.M.name}${g.formation?' '+g.formation:''}　${g.stations[0].name} → ${g.stations[g.S.length-1].name}`;
   $('r-grade').innerHTML=`<span style="color:${gc}">${grade}</span> <span style="font-size:24px;color:#cfd8e6">總分 ${total}　平均 ${avg}${g.evPts?`　<span style="font-size:16px">（含事件 ${g.evPts>0?'+':''}${g.evPts}）</span>`:''}</span>`;
   const done=rs.filter(r=>!r.miss);
   const mean=k=>done.length?Math.round(done.reduce((a,r)=>a+r[k],0)/done.length):0;
