@@ -45,7 +45,11 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 #rot{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:8;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:18px;padding:7px 14px;font-weight:700;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.4);display:none}
 
 /* 選單與結算 */
-.screen{position:fixed;inset:0;z-index:10;background:rgba(8,11,18,.94);overflow:auto;-webkit-overflow-scrolling:touch;padding:calc(16px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(30px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));touch-action:pan-y;overscroll-behavior:contain}
+.screen{position:absolute;top:0;left:0;right:0;min-height:100vh;min-height:100dvh;z-index:10;background:rgba(8,11,18,.94);padding:calc(16px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(30px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left))}
+/* 選單、結算、排行榜顯示時，讓整份文件自然捲動。先前用 position:fixed＋內部捲動容器，在 iPhone Safari 工具列收合後，
+   點擊位置會和畫面上看到的位置錯開一段（點地震卻選到下面的強風），所以不再使用。遊戲進行中維持不可捲動。 */
+html.scroll{height:auto;overflow-y:auto;overflow-x:hidden;touch-action:pan-y}
+html.scroll body{height:auto;overflow:visible;touch-action:pan-y;user-select:auto;-webkit-user-select:auto}
 .screen>div{max-width:680px;margin:0 auto}
 h1{margin:6px 0 2px;font-size:26px;letter-spacing:1px}
 h1 small{font-size:13px;color:#9fb0c8;font-weight:400;margin-left:8px}
@@ -81,7 +85,10 @@ th:first-child,td:first-child{text-align:left}
 th{color:#9fb0c8;font-weight:600}
 .grade{font-size:64px;font-weight:800;line-height:1;margin:6px 0}
 .evd{margin:4px 0;font-size:13px;color:#c3cfe2}.evd summary{cursor:pointer;padding:6px 0}
-.evd label{display:flex;gap:8px;align-items:flex-start;margin:6px 0;line-height:1.35}.evd small{color:#8fa0b8;display:block}
+.evd small{color:#8fa0b8;display:block}
+.evrow{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:#141b27;border:1px solid #2c3850;border-radius:10px;padding:11px 12px;margin:6px 0;line-height:1.4;color:#d3ddee;font-size:13px}
+.evrow .sw{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid #5d6e8c;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#10151f}
+.evrow.on{border-color:#5f87c9;background:#17233a}.evrow.on .sw{background:#7fb0ff;border-color:#7fb0ff}.evrow.on .sw::after{content:'✓';font-weight:800}
 .card{background:#141b27;border:1px solid #2c3850;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:13.5px;color:#d3ddee}
 .card h3{margin:0 0 6px;font-size:14px;color:#e8c88a}.card li{margin:5px 0}.card .nw{display:block;color:#8fa0b8;font-size:12px;margin-top:2px}
 .ok{color:#7bd88f}.bad{color:#ff9b7b}.mid{color:#ffd37a}
@@ -200,17 +207,17 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-07.12"></script>
-<script src="js/broadcast.js?v=2026-11-07.12"></script>
-<script src="js/haptics.js?v=2026-11-07.12"></script>
-<script src="js/events.js?v=2026-11-07.12"></script>
-<script src="js/lines.js?v=2026-11-07.12"></script>
-<script src="js/render3d.js?v=2026-11-07.12"></script>
+<script src="js/models.js?v=2026-11-07.13"></script>
+<script src="js/broadcast.js?v=2026-11-07.13"></script>
+<script src="js/haptics.js?v=2026-11-07.13"></script>
+<script src="js/events.js?v=2026-11-07.13"></script>
+<script src="js/lines.js?v=2026-11-07.13"></script>
+<script src="js/render3d.js?v=2026-11-07.13"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
 const DRIVER='ANDY';
-const VERSION='2026-11-07.12';
+const VERSION='2026-11-07.13';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -1306,9 +1313,13 @@ function fillMenu(){
   const hs=hapSupport();$('m-hapinfo').textContent=hs==='vibrate'?'此裝置支援震動（Android 等）。':hs==='ios'?'iPhone 的 Safari 不支援標準震動；這裡用 iOS 17.4 起的替代做法近似（實驗性，效果未在真機驗證）。':'這台裝置／瀏覽器不支援震動。';
   $('m-ev').checked=SET.events;$('m-evrate').value=SET.evRate;$('m-evrate').disabled=!SET.events;
   const el=$('m-evlist');el.innerHTML='';
-  EV_ORDER.forEach(id=>{const I=EV_INFO[id],lb=document.createElement('label');
-    lb.innerHTML=`<input type="checkbox" ${(SET.evOff||[]).includes(id)?'':'checked'} data-ev="${id}"><span><b style="color:${I.color}">${I.name}</b><small>${I.news.split('。')[0]}。</small></span>`;
-    lb.querySelector('input').onchange=e=>{const off=new Set(SET.evOff||[]);e.target.checked?off.delete(id):off.add(id);SET.evOff=[...off];};el.appendChild(lb);});
+  EV_ORDER.forEach(id=>{
+    const I=EV_INFO[id],on=!(SET.evOff||[]).includes(id),b=document.createElement('button');
+    b.type='button';b.className='evrow'+(on?' on':'');b.setAttribute('role','switch');b.setAttribute('aria-checked',on?'true':'false');b.dataset.ev=id;
+    b.innerHTML=`<span class="sw"></span><span><b style="color:${I.color}">${I.name}</b><small>${I.news.split('。')[0]}。</small></span>`;
+    b.onclick=()=>{const off=new Set(SET.evOff||[]);const now=off.has(id);now?off.delete(id):off.add(id);SET.evOff=[...off];b.classList.toggle('on',now);b.setAttribute('aria-checked',now?'true':'false');};
+    el.appendChild(b);
+  });
 }
 $('m-model').onchange=e=>{SET.model=e.target.value;fillMenu();G=buildRun(SET);};
 $('m-ev').onchange=e=>{SET.events=e.target.checked;$('m-evrate').disabled=!SET.events;};
@@ -1433,7 +1444,7 @@ function showResult(){
   const c=coachTips(g,done);
   $('r-coach').innerHTML=`<div class="card"><h3>給你的建議</h3>${c.good.length?`<div class="ok" style="margin-bottom:6px">👍 ${c.good.join('、')}</div>`:''}<ul style="margin:0;padding-left:18px">${c.tips.map(s=>`<li>${s}</li>`).join('')}</ul></div>`;
   $('result').classList.remove('hidden');
-  $('result').scrollTop=0;
+  window.scrollTo(0,0);
 }
 
 /* ========================= 主迴圈 ========================= */
@@ -1447,6 +1458,10 @@ function loop(ts){
 }
 
 /* ========================= 版本更新提示 ========================= */
+// 選單、結算、排行榜任一顯示時，讓整份文件可以自然捲動；遊戲進行中維持不可捲動
+{const scr=['menu','result','board'].map($);
+ const syncScroll=()=>{const open=scr.some(e=>!e.classList.contains('hidden'));document.documentElement.classList.toggle('scroll',open);if(!open)window.scrollTo(0,0);};
+ const mo=new MutationObserver(syncScroll);scr.forEach(e=>mo.observe(e,{attributes:true,attributeFilter:['class']}));syncScroll();}
 $('ver').textContent='版本 '+VERSION;
 const newverBtn=$('newver');
 async function checkUpdate(){
