@@ -1279,7 +1279,7 @@ function doMove(u,k,kind){
     const hot=inZOC(u.side,h);
     if(trial(hot?.5:1/6)){msg+='，'+(hot?'落點遭地面火力壓制':'運輸機群遭防空攔截')+'（'+lastTxt()+'）損失 1 步';log(msg);damage(u,1,'空降損失');return;}
     log(msg);
-  } else{if(kind==='sail'&&from.t!=='sea')log(uname(u)+' 自 '+hname(from)+' 出航');if(kind==='sail'||kind==='move')mineCheck(u,h);}
+  } else{if(kind==='sail'&&from.t!=='sea'&&!subHidden(u))log(uname(u)+' 自 '+hname(from)+' 出航');if(kind==='sail'||kind==='move')mineCheck(u,h);}
 }
 function attack(u,t){
   const th=hexOf(t);if(th.isl==='TW'||th.isl==='PH')civHit('TW',th,'combat');
@@ -1515,7 +1515,7 @@ function endingKind(v){
   const t=v.t||'',d=v.d||'',truce=/停戰|停火|談判|斡旋/.test(t);
   if(v.s==='draw')return 'd3';
   if(v.s==='atk')return truce?'a3':(/決定性|投降/.test(t)||/全滅|崩潰|八成|連續兩個回合/.test(d))?'a1':'a2';
-  return truce?'d3':/慘勝/.test(t)?'d2':'d1';
+  return truce&&!/守方守住/.test(t)?'d3':/慘勝/.test(t)?'d2':'d1'; // 攻方沒達成任何條件就停火＝守方守住（海峽天險）；烽火暫歇只留給真正的僵局
 }
 function endScores(){ // 雙方評分：各 100 分，三大項。分數不等於勝負（慘勝會被扣分）
   const cs=conditions(true),n=cs.filter(c=>c.atk).length,b=snap(),c=costSummary(),pd=Object.keys(S.portDown||{}).length,wh=S.stats.winHold||0;
@@ -3039,8 +3039,10 @@ function truceAuto(side,info){
   if(side==='atk')w=ol<12?[['truce',22],['retreat',9],['escalate',42]]:[['truce',9],['retreat',4],['escalate',74]];
   else{const bad=S.owner[TAIPEI]==='atk'&&PORTS.filter(k=>S.owner[k]==='atk').length>=2;w=bad?[['talks',50],['surrender',15],['resist',25],['seek',10]]:[['talks',25],['surrender',5],['resist',50],['seek',20]];}
   if(side==='def'&&conditions().filter(c=>c.atk).length>=3)w=[['surrender',60],['resist',40]];
-  w=w.filter(([id])=>info.opts.some(o=>o.id===id));
-  if(!w.length)return info.opts[0];
+  // 停火只在條件真的不利時才請求：守方電腦要等攻方已達成 2 項以上條件才會求和／求外援；攻方電腦只在攻勢停滯（勝算 <12%）時才請和
+  const n3=conditions().filter(c=>c.atk).length,noAsk=side==='def'?n3<2:ol>=12;
+  w=w.filter(([id])=>info.opts.some(o=>o.id===id)&&!(noAsk&&['truce','talks','seek'].includes(id)));
+  if(!w.length)return info.opts.find(o=>o.id==='resist'||o.id==='escalate')||info.opts[0];
   const id=wpick(w);return info.opts.find(o=>o.id===id)||info.opts[0];
 }
 function applyTruce(side,o){
@@ -3070,6 +3072,20 @@ function applyTruce(side,o){
   S.stats.truce=(S.stats.truce||[]);S.stats.truce.push(side+':'+o.id);
   if(end&&!S.over)endGame(end.d,end.s,end.t);
 }
+// 請和是單方面的：對方不一定接受。對方是玩家時跳出選項；是電腦時依局勢擲骰（攻方請和：守方多半樂意；守方求和：攻方佔優時多半拒絕）
+async function truceAccept(req){
+  const opp=req==='atk'?'def':'atk',n=conditions().filter(c=>c.atk).length;
+  let p;if(req==='atk')p=n===0?.85:.6;else p=n>=3?.15:n===2?.45:.7;
+  if(req==='def'&&atkOutlook()<12)p+=.2;p=Math.min(.95,p);
+  const manual=(S.sim&&!S.simAuto)||(!S.video&&S.ctrl[opp]==='human');
+  if(!manual)return trial(p);
+  const tv=truceVerdict(req==='atk'?'truce':'talks');
+  const info={title:'對方請求停火',blurb:SIDE[req]+'提出依目前局勢停火。接受則戰事結束，拒絕則繼續作戰。',opts:[
+    {id:'yes',label:'接受停火',desc:'依目前控制的位置判定，戰事結束。',est:'結果：'+tv.t,rec:false},
+    {id:'no',label:'拒絕，繼續作戰',desc:'不接受對方的條件，戰事繼續。',est:'對方仍可能再次請求',rec:false}]};
+  const o=await askTruce(info,()=>trial(p)?info.opts[0]:info.opts[1]);
+  return o.id==='yes';
+}
 async function truceEval(side){
   if(S.over)return;
   const T=S.truce[side];
@@ -3081,6 +3097,11 @@ async function truceEval(side){
   if(manual){o=await askTruce(info,()=>truceAuto(side,info));}
   else{o=truceAuto(side,info);if(!(S.rec&&REC.quiet))toast(info.title+'：'+o.label);
     if(S.rec&&!REC.quiet)recordFrame({html:'<div class="eyebrow">第 '+S.turn+' 回合</div><h3>'+info.title+'</h3><p>'+info.blurb+'</p><p><span class="badge '+side+'">'+SIDE[side]+'決策</span>選擇「'+o.label+'」</p><p class="dd">'+o.desc+'<br>預估：'+o.est+'</p>',kind:'event',dur:7000});}
+  if(o.id==='truce'||o.id==='talks'){
+    const ok=await truceAccept(side);
+    if(S.over)return;
+    if(!ok){log('【停火請求】'+SIDE[side]+'請求停火，'+SIDE[side==='atk'?'def':'atk']+'拒絕，戰事繼續');if(!(S.rec&&REC.quiet))toast(SIDE[side==='atk'?'def':'atk']+'拒絕停火，戰事繼續');S.stats.truceRej=(S.stats.truceRej||0)+1;return;}
+  }
   applyTruce(side,o);
 }
 async function beginPhase(side){
@@ -3364,7 +3385,7 @@ function fireSub(u,t){
   if(w==='tp')u.tp--;else u.hm--;u.shots=0;u.acted=true;u.revealed=true;
   const hit=trial(w==='hm'?Math.max(.1,hkP(t)-.12):hkP(t)),nm=w==='hm'?'魚叉飛彈':'重型魚雷';
   log('海鯤潛艦以'+nm+'攻擊 '+uname(t)+(hit?'：命中':'：未命中')+'（魚雷 '+u.tp+' 齊射、魚叉 '+u.hm+' 枚）');
-  fxq({t:'atk',from:[u.c,u.r],to:[t.c,t.r],hit,side:'def'});
+  fxq({t:'sub',from:[u.c,u.r],to:[t.c,t.r],hit,w});
   if(hit){S.stats.subHits=(S.stats.subHits||0)+1;if(t.type==='cv')plaCarrierLost('潛艦'+nm);damage(t,1,'海鯤潛艦'+nm);}
   const d=S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&hd(hexOf(u),hexOf(e))<=4).length,pa=Math.min(.65,(.1+.12*d)*hkE()[1]*(w==='hm'?.5:1));
   if(trial(pa)){log('海鯤潛艦被反潛兵力發現並攻擊');damage(u,1,'反潛攻擊');}
@@ -3384,7 +3405,7 @@ async function subTurn(u){ // 電腦操作海鯤：依指揮官意圖選目標�
   const pool=S.units.filter(e=>e.side==='atk'&&atSea(e)&&HK_P[e.type]&&(!types||types.includes(e.type)));
   const best=()=>{const ts=subTargets(u).filter(e=>!types||types.includes(e.type));ts.sort((a,b)=>HK_V[b.type]*hkP(b)-HK_V[a.type]*hkP(a));return ts[0];};
   if(hkSpent(u)){ // 彈藥用盡：自動回母港補彈
-    const st=hkHomeStep(u);if(st&&st.k){doMove(u,st.k,'sail');log('海鯤潛艦彈藥用盡，返回母港補彈');render();await sleep(240);}return;}
+    const st=hkHomeStep(u);if(st&&st.k){doMove(u,st.k,'sail');if(!subHidden(u))log('海鯤潛艦彈藥用盡，返回母港補彈');render();await sleep(240);}return;}
   let t=best();
   if(!t&&pool.length){
     const rc=reach(u),want=hkRange(u)>3?5:2;let bk=null,bs=Math.min.apply(null,pool.map(e=>hd(hexOf(u),hexOf(e))));
@@ -3896,7 +3917,7 @@ function renderMap(){
   if(humanTurn()&&S.sel&&alive(S.sel)&&S.sel.side===S.phase){
     for(const [k,v] of reach(S.sel)){const [x,y]=cen(TER[k].c,TER[k].r);o+='<polygon class="hl '+v.kind+'" points="'+hexPts(x,y,R-2)+'"/>';}
   }
-  S.units.slice().sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
+  S.units.filter(u=>!subHidden(u)).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
   o+=baseMarkersSVG();
   for(const k of Object.keys(MINOR_PORTS)){const h=TER[k];if(!h)continue;const [x,y]=cen(h.c,h.r);o+='<text class="mport" x="'+(x+R*.7).toFixed(1)+'" y="'+(y-R*.35).toFixed(1)+'">⚓</text>';} // 次要港口標記畫在單位之上
   Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<g class="mine" pointer-events="none"><circle cx="'+x.toFixed(1)+'" cy="'+(y+8).toFixed(1)+'" r="4.5" fill="#222" stroke="#ffd45a" stroke-width="1.2"/><path d="M'+(x-7).toFixed(1)+' '+(y+8).toFixed(1)+'h14M'+x.toFixed(1)+' '+(y+1).toFixed(1)+'v14" stroke="#ffd45a" stroke-width="1"/></g>';});
@@ -4029,7 +4050,7 @@ if(/[?&]debug=1/.test(location.search))window.__ext=()=>{const out=[],real=S;
   ['atk','def'].forEach(side=>truceOptions(side).opts.filter(o=>o.x).forEach(o=>tryit('truce:'+o.id,()=>applyTruce(side,o))));
   tryit('port',()=>applyPort(PORTS[0],portOptions(PORTS[0]).opts.find(o=>o.x)));
   return out;};
-if(/[?&]debug=1/.test(location.search)){window.__truceDef=()=>truceOptions('def').opts.map(o=>o.id);window.__instant=()=>checkInstant();window.__hm=(id)=>{const u=S.units.find(z=>z.id===id);const m=[...reach(u).entries()].find(([k,v])=>v.kind==='sail'||v.kind==='move');if(!m)return null;humanMove(u,m[0],m[1].kind);return {avail:undoAvail(),c:u.c,r:u.r};};window.__undo=()=>{const u0=S.undo&&S.units.find(z=>z.id===S.undo.id);undoMove();return u0?{c:u0.c,r:u0.r,moved:u0.moved,avail:undoAvail()}:null;};window.__guard=()=>endPhaseGuard();window.__hkdbg=()=>{const u=S.units.find(z=>z.type==='hk');return {human:humanTurn(),phase:S.phase,busy:S.busy,moved:u.moved,acted:u.acted,reach:[...reach(u).entries()].map(([k,v])=>k+':'+v.kind).slice(0,6),step:hkHomeStep(u)};};window.__hkhome=()=>{const u=S.units.find(z=>z.type==='hk');if(!u)return null;S.sel=u;S.phase='def';S.ctrl.def='human';S.busy=false;u.moved=false;u.acted=false;const b={c:u.c,r:u.r};hkGoHome();return {b,a:{c:u.c,r:u.r},port:hexOf(u).t};};window.__collapse=n=>{S.turn=Math.max(S.turn,4);S.pools.plaLift=0;S.units=S.units.filter(u=>!(u.side==='atk'&&u.type==='cvy'));S.sup={t:S.turn,total:0};const r=[];for(let i=0;i<n&&!S.over;i++){supplyAttrition();r.push(S.stats.supDef);}return {r,over:S.over,used:supply().used};};window.__sup=()=>{const r0=supply().cap;Object.keys(MINOR_PORTS).forEach(k=>{S.owner[k]='atk';});const r1=supply().cap;S.turn=Math.max(S.turn,3);S.bh={};['22,4','19,7','18,10'].forEach(k=>{S.owner[k]='atk';S.bh[k]=S.turn-1;});const r2=supply().cap;render();return [r0,r1,r2];};window.__owner=r=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h));hs.slice(0,Math.round(hs.length*r)).forEach(h=>{S.owner[h.k]='atk';});return twControl();};window.__wipe=()=>{S.stats.sailed=true;S.turn=Math.max(S.turn,3);S.units=S.units.filter(u=>!(u.side==='atk'&&!isShip(u)&&(atSea(u)||onTW(u)||hexOf(u).isl==='PH')));checkInstant();};window.__attr=()=>{S.turn=Math.max(S.turn,3);const a=S.units.filter(u=>u.side==='atk'&&!isShip(u));const tw=TER[TAIPEI];a.slice(0,18).forEach(u=>{u.c=tw.c;u.r=tw.r;});const b=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);supplyAttrition();const c=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);return [b,c,supply()];};window.__force3=keep=>{PORTS.concat([TAIPEI]).forEach(k=>{S.owner[k]='atk';delete S.portDown[k];});const tw=TER[TAIPEI];S.units.filter(u=>u.side==='atk'&&!isShip(u)).slice(0,16).forEach(u=>{u.c=tw.c;u.r=tw.r;u.hp=TYPES[u.type].hp;});let left=keep;S.units.filter(u=>u.side==='def'&&onTW(u)).forEach(u=>{if(left>0){u.hp=Math.min(u.hp,left);left-=u.hp;}else S.units=S.units.filter(x=>x!==u);});S.turn=Math.max(S.turn,3);const a=snap();return [a.n,a.as,a.ds];};}
+if(/[?&]debug=1/.test(location.search)){window.__truceDef=()=>truceOptions('def').opts.map(o=>o.id);window.__instant=()=>checkInstant();window.__hm=(id)=>{const u=S.units.find(z=>z.id===id);const m=[...reach(u).entries()].find(([k,v])=>v.kind==='sail'||v.kind==='move');if(!m)return null;humanMove(u,m[0],m[1].kind);return {avail:undoAvail(),c:u.c,r:u.r};};window.__undo=()=>{const u0=S.undo&&S.units.find(z=>z.id===S.undo.id);undoMove();return u0?{c:u0.c,r:u0.r,moved:u0.moved,avail:undoAvail()}:null;};window.__guard=()=>endPhaseGuard();window.__fxSub=o=>fxSub(o);window.__hkdbg=()=>{const u=S.units.find(z=>z.type==='hk');return {human:humanTurn(),phase:S.phase,busy:S.busy,moved:u.moved,acted:u.acted,reach:[...reach(u).entries()].map(([k,v])=>k+':'+v.kind).slice(0,6),step:hkHomeStep(u)};};window.__hkhome=()=>{const u=S.units.find(z=>z.type==='hk');if(!u)return null;S.sel=u;S.phase='def';S.ctrl.def='human';S.busy=false;u.moved=false;u.acted=false;const b={c:u.c,r:u.r};hkGoHome();return {b,a:{c:u.c,r:u.r},port:hexOf(u).t};};window.__collapse=n=>{S.turn=Math.max(S.turn,4);S.pools.plaLift=0;S.units=S.units.filter(u=>!(u.side==='atk'&&u.type==='cvy'));S.sup={t:S.turn,total:0};const r=[];for(let i=0;i<n&&!S.over;i++){supplyAttrition();r.push(S.stats.supDef);}return {r,over:S.over,used:supply().used};};window.__sup=()=>{const r0=supply().cap;Object.keys(MINOR_PORTS).forEach(k=>{S.owner[k]='atk';});const r1=supply().cap;S.turn=Math.max(S.turn,3);S.bh={};['22,4','19,7','18,10'].forEach(k=>{S.owner[k]='atk';S.bh[k]=S.turn-1;});const r2=supply().cap;render();return [r0,r1,r2];};window.__owner=r=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h));hs.slice(0,Math.round(hs.length*r)).forEach(h=>{S.owner[h.k]='atk';});return twControl();};window.__wipe=()=>{S.stats.sailed=true;S.turn=Math.max(S.turn,3);S.units=S.units.filter(u=>!(u.side==='atk'&&!isShip(u)&&(atSea(u)||onTW(u)||hexOf(u).isl==='PH')));checkInstant();};window.__attr=()=>{S.turn=Math.max(S.turn,3);const a=S.units.filter(u=>u.side==='atk'&&!isShip(u));const tw=TER[TAIPEI];a.slice(0,18).forEach(u=>{u.c=tw.c;u.r=tw.r;});const b=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);supplyAttrition();const c=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);return [b,c,supply()];};window.__force3=keep=>{PORTS.concat([TAIPEI]).forEach(k=>{S.owner[k]='atk';delete S.portDown[k];});const tw=TER[TAIPEI];S.units.filter(u=>u.side==='atk'&&!isShip(u)).slice(0,16).forEach(u=>{u.c=tw.c;u.r=tw.r;u.hp=TYPES[u.type].hp;});let left=keep;S.units.filter(u=>u.side==='def'&&onTW(u)).forEach(u=>{if(left>0){u.hp=Math.min(u.hp,left);left-=u.hp;}else S.units=S.units.filter(x=>x!==u);});S.turn=Math.max(S.turn,3);const a=snap();return [a.n,a.as,a.ds];};}
 if(/[?&]debug=1/.test(location.search))window.__reach=id=>{const u=S.units.find(x=>x.id===id);if(!u)return null;const h=hexOf(u);return {at:h.k,t:h.t,isl:h.isl,coastal:h.coastal,zones:{pen:ZONES.penghu,sp:SPOT.penghu,mg:SPOT.magong},reach:[...reach(u)].map(([k,v])=>k+':'+v.kind).slice(0,40),moved:u.moved,acted:u.acted};};
 if(/[?&]debug=1/.test(location.search))window.__af=()=>({n:airfields().length,names:airfields().map(h=>h.k+':'+(h.name||'')),share:afShare(),rocAir:S.pools.rocAir,pick:pickAirfield()});
 if(/[?&]debug=1/.test(location.search))window.__score=async(cfg)=>{ // 測試用：依設定跑一場電腦推演，回傳雙方原始分數
@@ -4162,12 +4183,29 @@ function fxHimars(o){
     }});
   },(380+i*(o.atc?0:140))*fxK());
 }
+// 潛艦：魚雷在水下留下氣泡航跡、命中時水柱；魚叉先浮出水面（水花）再破水而出貼海面飛行
+function fxSub(o){
+  const a=cen(o.from[0],o.from[1]),b=cen(o.to[0],o.to[1]);if(reduce())return;
+  const done=()=>fxImpact(b,o.hit,true,true);
+  if(o.w==='hm'){
+    fxRing(a,2,18,'#dff4ff',560,1.8);fxRing(a,1,10,'#ffffff',420,1.2);
+    for(let i=0;i<4;i++)setTimeout(()=>fxPuff([a[0]+(Math.random()-.5)*14,a[1]-2-i*3],2,7,'#eaf6ff',.8,700),i*60*fxK());
+    setTimeout(()=>fxFlight(a,b,'cm',done),360*fxK());
+  }else{
+    fxRing(a,2,12,'#cfeaf5',420,1.5);
+    fxFlight(a,b,'torp',()=>{if(o.hit){fxRing(b,4,40,'#e8fbff',700,2.5);for(let i=0;i<3;i++)setTimeout(()=>fxFlash([b[0]+(Math.random()-.5)*10,b[1]-6-i*7],2,10,'#dff4ff',520),i*90*fxK());}done();});
+  }
+}
+// 守方潛艦對攻方玩家隱蔽：沒開火暴露前看不到（雙方都由人操作、守方玩家、或電腦對電腦觀戰時看得到）
+const subHidden=u=>u.type==='hk'&&u.side==='def'&&!u.revealed&&!S.over&&S.ctrl.atk==='human'&&S.ctrl.def!=='human'&&!S.video&&!S.sim;
+const unitAtVis=k=>S.units.find(u=>K(u.c,u.r)===k&&!subHidden(u));
 function runFx(o){
   const PO=h=>{const q=oCenter(h[0],h[1]);return [q[0]*KS,q[1]*KS];}; // 外圍／港口出發點（舊座標）
   const P=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);
   if(o.t==='atk'){
     const a=P(o.from),b=P(o.to),n=o.sea?1:3;
     for(let i=0;i<n;i++)setTimeout(()=>{if(o.sea){fxFlash(a,2,9,'#ffe08a',150);fxShot(a,b,{arc:42,dur:340,end:()=>fxImpact(b,o.hit&&i===n-1,o.tsea,false)});}else fxFlight(a,b,'arty',()=>fxImpact(b,o.hit&&i===n-1,o.tsea,false));},i*95*fxK());
+  }else if(o.t==='sub'){fxSub(o);
   }else if(o.t==='msl'){
     const a=P(o.from),b=P(o.to);fxFlight(a,b,'cm',()=>fxImpact(b,o.hit,true,true));
   }else if(o.t==='air'){
@@ -4197,7 +4235,7 @@ function playFx(list){
   const nShots=list.filter(x=>x.t==='air'||x.t==='msl').length,stepAir=nShots>=8?45:nShots>=4?85:170,stepMsl=nShots>=8?45:nShots>=4?70:110; // 齊射：發數多時間隔縮短，看起來是一起發射
   list.forEach(o=>{
     let start;
-    if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='air'||o.t==='tfa'){start=t;last=t;t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
+    if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='sub'||o.t==='air'||o.t==='tfa'){start=t;last=t;t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
     else if(o.t==='dmg'||o.t==='dead'||o.t==='txt')start=last+(o.t==='atk'?0:(list.some(x=>x.t==='msl')?500:360));
     else start=0;
     if(start>0)setTimeout(()=>runFx(o),start*k);else runFx(o);
@@ -4756,8 +4794,8 @@ $('#map').addEventListener('click',async e=>{
   if(fe){FARSEL=fe.getAttribute('data-far');S.sel=null;S.hover=null;renderInfo();return;}
   const el=e.target.closest('[data-k]');if(!el)return;const k=el.getAttribute('data-k');FARSEL=null;
   S.hover=k;const idEl=e.target.closest('[data-id]'),hitU=idEl?S.units.find(x=>x.id===+idEl.dataset.id):null;S.hoverId=hitU?hitU.id:null;
-  if(!humanTurn()){S.sel=hitU||unitAt(k)||null;render();return;}
-  const u=hitU||unitAt(k);
+  if(!humanTurn()){S.sel=hitU||unitAtVis(k)||null;render();return;}
+  const u=hitU||unitAtVis(k);
   if(S.mode==='strike'){
     if(S.phase==='atk'&&u&&u.side==='def'&&S.fire>0){strike(u);if(S.fire<=0)S.mode=null;}
     else if(S.phase==='atk'&&!u&&S.fire>0&&TER[k]&&TER[k].t==='air'&&TER[k].isl==='TW'&&strikeAirfield(k)){if(S.fire<=0)S.mode=null;}
