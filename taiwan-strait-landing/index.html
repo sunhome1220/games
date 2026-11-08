@@ -3964,7 +3964,7 @@ function fxFlight(a,b,k,end){
     fxShot(a,b,{arc:Math.min(46,dd*.4+14),dur:260,color:'#ffe08a',trail:'#ffb347',w:2,r:2.4,end});
   }else{ // 'bomb'：飛機低空飛過、投下炸彈
     const ang=Math.atan2(b[1]-a[1],b[0]-a[0]),rel=[a[0]+(b[0]-a[0])*.72,a[1]+(b[1]-a[1])*.72-14];
-    const pl=airGlyph('bm','#e9edf0',{glow:true});pl.querySelector('path').setAttribute('stroke','#555');pl.setAttribute('data-sc','1');
+    const pl=airGlyph('bm','#e9edf0',{glow:true});pl.querySelectorAll('path[stroke]').forEach(q=>q.setAttribute('stroke','#555'));pl.setAttribute('data-sc','1');
     tween(Math.min(900,380+dd*.8),t=>{const x=a[0]+(rel[0]-a[0])*t,y=a[1]+(rel[1]-a[1])*t;pl.setAttribute('transform','translate('+x.toFixed(1)+' '+y.toFixed(1)+') rotate('+(ang*180/Math.PI).toFixed(0)+') scale(.85)');},()=>{
       pl.remove();const bomb=el('circle',{r:2.6,fill:'#222',stroke:'#ffd45a','stroke-width':.8});
       tween(300,t=>{bomb.setAttribute('cx',rel[0]+(b[0]-rel[0])*t+4*t);bomb.setAttribute('cy',rel[1]+(b[1]-rel[1])*t*t);},()=>{bomb.remove();if(end)end();});});
@@ -4025,11 +4025,15 @@ const AIRG={
   f4:'M13,0 L6,-1.6 L3.5,-8 L-0.5,-8 L1.5,-1.6 L-6,-2 L-8.5,-5 L-11,-5 L-9,0 L-11,5 L-8.5,5 L-6,2 L1.5,1.6 L-0.5,8 L3.5,8 L6,1.6Z',
   st:'M14,0 L5,-2.4 L-0.5,-9 L-5,-9 L-3.8,-2.8 L-9,-4 L-11,-1.6 L-9,0 L-11,1.6 L-9,4 L-3.8,2.8 L-5,9 L-0.5,9 L5,2.4Z',
   bm:'M15,0 L5,-2.2 L2.5,-15 L-1,-15 L-1.5,-2.4 L-8,-3 L-9.5,-6 L-12,-6 L-10.5,0 L-12,6 L-9.5,6 L-8,3 L-1.5,2.4 L-1,15 L2.5,15 L5,2.2Z'};
-function airGlyph(kind,col,opt,parent){ // 回傳一個 <g>；opt:{stealth:半透明虛線, glow:尾焰}
+function airGlyph(kind,col,opt,parent){ // 回傳一個 <g>：三機楔形編隊（長機在前、僚機左右後方），單機縮小；opt:{stealth:半透明虛線, glow:尾焰, one:只畫單機}
   const g=el('g',{opacity:opt&&opt.stealth?.28:1},parent);
-  el('path',{d:AIRG[kind],fill:col,stroke:'#fff','stroke-width':.9,'stroke-linejoin':'round','stroke-dasharray':opt&&opt.stealth?'2 1.5':'0'},g);
-  el('path',{d:kind==='bm'?'M6,-1.2 L10,0 L6,1.2Z':'M5,-1.1 L9,0 L5,1.1Z',fill:'#cfeaff',opacity:.85},g); // 座艙
-  if(!opt||opt.glow!==false){const n=kind==='bm'?2:1;for(let i=0;i<n;i++)el('circle',{cx:-11.5,cy:n===1?0:(i?5.5:-5.5),r:1.8,fill:'#ffb347',opacity:.9},g);}
+  const SC=.5,off=opt&&opt.one?[[0,0]]:[[7,0],[-5,-9],[-5,9]];
+  off.forEach(([dx,dy])=>{
+    const s1=el('g',{transform:'translate('+dx+' '+dy+') scale('+SC+')'},g);
+    el('path',{d:AIRG[kind],fill:col,stroke:'#fff','stroke-width':1.3,'stroke-linejoin':'round','stroke-dasharray':opt&&opt.stealth?'2 1.5':'0'},s1);
+    el('path',{d:kind==='bm'?'M6,-1.2 L10,0 L6,1.2Z':'M5,-1.1 L9,0 L5,1.1Z',fill:'#cfeaff',opacity:.85},s1); // 座艙
+    if(!opt||opt.glow!==false){const n=kind==='bm'?2:1;for(let i=0;i<n;i++)el('circle',{cx:-11.5,cy:n===1?0:(i?5.5:-5.5),r:1.8,fill:'#ffb347',opacity:.9},s1);}
+  });
   return g;
 }
 function fxDog(o){
@@ -4931,7 +4935,7 @@ const VERSION='2026-11-10.31';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
- {v:'2026-11-10.31',items:['手機版面精簡：開始後標題、狀態列、地圖工具列各壓成一行（可左右滑動），第一眼就看到地圖，地圖多出約一半螢幕高度','新手引導：人類操作的第 1～2 回合，畫面下方依目前動作顯示「下一步該做什麼」（選單位→下令→收尾），按 ✕ 可永久關閉','「若現在判定」不再開局就顯示：只列出目前達成的條件數；判定回合快到（最後 2 回合）或達成條件數有變化的那一兩回合，才提示判定結果','狀態列白話說明：點「回合／階段／天候／火力／制空／補給」標籤，彈出白話解釋與目前實際數值（再點一次或點別處關閉，鍵盤 Enter 也可）','操作防呆與復原：普通移動／出航可按「↶ 撤銷移動」（或 Ctrl＋Z）退回，做了其他動作前都能撤銷；按「結束階段」時若還有沒用的火力（不會累積）或第 1～2 回合還有可行動單位，會先提示，需再按一次確認']},
+ {v:'2026-11-10.31',items:['手機版面精簡：開始後標題、狀態列、地圖工具列各壓成一行（可左右滑動），第一眼就看到地圖，地圖多出約一半螢幕高度','新手引導：人類操作的第 1～2 回合，畫面下方依目前動作顯示「下一步該做什麼」（選單位→下令→收尾），按 ✕ 可永久關閉','「若現在判定」不再開局就顯示：只列出目前達成的條件數；判定回合快到（最後 2 回合）或達成條件數有變化的那一兩回合，才提示判定結果','狀態列白話說明：點「回合／階段／天候／火力／制空／補給」標籤，彈出白話解釋與目前實際數值（再點一次或點別處關閉，鍵盤 Enter 也可）','操作防呆與復原：普通移動／出航可按「↶ 撤銷移動」（或 Ctrl＋Z）退回，做了其他動作前都能撤銷；按「結束階段」時若還有沒用的火力（不會累積）或第 1～2 回合還有可行動單位，會先提示，需再按一次確認','空戰與轟炸動畫的飛機縮小，並改為三機一組的楔形編隊（長機在前、兩僚機在後）']},
  {v:'2026-11-10.30',items:['海鯤潛艦成為守方棋子：從花蓮、高雄等港口出港（數量依年代：2028 年起 1 艘、2031 年 2 艘…），魚雷有限（4 次齊射，回港補彈）、射程 3 格；可手動選目標發射，命中率依目標類型——補給船團 85%（附近每有一艘護航艦 −10%）、登陸艦與運兵船 50%、護航艦 35%、航艦 30%；射擊後暴露，附近護航艦越多越容易被反潛','後續批次的海鯤逐步改良（推估）：魚雷齊射數 4 → 6（2032）、被反潛發現的機率降到 70%、命中率最多 +8%；守方指揮官意圖新增「海鯤潛艦任務」：專打補給船團、專打登陸船團、專打航艦、專打護航艦，或由電腦依目標價值×命中率判斷']},
  {v:'2026-11-10.29',items:['守方電腦會調兵了：攻方還沒上岸時，步兵與後備旅依海上船團的位置向北部或中部預先移動（受移動力限制，要幾回合才到位；船團未出海前北中部平均分配，不預知攻方計畫），不再讓南部兵力一直閒置','共軍渡海能力隨年代成長：補給運輸船 8 → 14（2032），首波兩棲旅約每 2 年 +1 個（2032 年 +3）；依 075／076 兩棲攻擊艦、滾裝船與水橋登陸駁船的公開建造進度推估']},
  {v:'2026-11-10.28',items:['補給斷絕會導致攻方失敗：島上補給不足時，損耗隨連續缺糧回合數加重；若補給船團與運輸船全數損失、連續 2 回合缺補給，或連續 5 回合缺補給，攻方彈盡糧絕而崩潰，守方獲勝（即使一度占領台北也一樣）','超過預計回合時，可選擇由電腦接手推演到分出勝負']},
