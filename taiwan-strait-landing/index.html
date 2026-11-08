@@ -1279,7 +1279,7 @@ function doMove(u,k,kind){
     const hot=inZOC(u.side,h);
     if(trial(hot?.5:1/6)){msg+='，'+(hot?'落點遭地面火力壓制':'運輸機群遭防空攔截')+'（'+lastTxt()+'）損失 1 步';log(msg);damage(u,1,'空降損失');return;}
     log(msg);
-  } else{if(kind==='sail'&&from.t!=='sea')log(uname(u)+' 自 '+hname(from)+' 出航');if(kind==='sail'||kind==='move')mineCheck(u,h);}
+  } else{if(kind==='sail'&&from.t!=='sea'&&!subHidden(u))log(uname(u)+' 自 '+hname(from)+' 出航');if(kind==='sail'||kind==='move')mineCheck(u,h);}
 }
 function attack(u,t){
   const th=hexOf(t);if(th.isl==='TW'||th.isl==='PH')civHit('TW',th,'combat');
@@ -3364,7 +3364,7 @@ function fireSub(u,t){
   if(w==='tp')u.tp--;else u.hm--;u.shots=0;u.acted=true;u.revealed=true;
   const hit=trial(w==='hm'?Math.max(.1,hkP(t)-.12):hkP(t)),nm=w==='hm'?'魚叉飛彈':'重型魚雷';
   log('海鯤潛艦以'+nm+'攻擊 '+uname(t)+(hit?'：命中':'：未命中')+'（魚雷 '+u.tp+' 齊射、魚叉 '+u.hm+' 枚）');
-  fxq({t:'atk',from:[u.c,u.r],to:[t.c,t.r],hit,side:'def'});
+  fxq({t:'sub',from:[u.c,u.r],to:[t.c,t.r],hit,w});
   if(hit){S.stats.subHits=(S.stats.subHits||0)+1;if(t.type==='cv')plaCarrierLost('潛艦'+nm);damage(t,1,'海鯤潛艦'+nm);}
   const d=S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&hd(hexOf(u),hexOf(e))<=4).length,pa=Math.min(.65,(.1+.12*d)*hkE()[1]*(w==='hm'?.5:1));
   if(trial(pa)){log('海鯤潛艦被反潛兵力發現並攻擊');damage(u,1,'反潛攻擊');}
@@ -3384,7 +3384,7 @@ async function subTurn(u){ // 電腦操作海鯤：依指揮官意圖選目標�
   const pool=S.units.filter(e=>e.side==='atk'&&atSea(e)&&HK_P[e.type]&&(!types||types.includes(e.type)));
   const best=()=>{const ts=subTargets(u).filter(e=>!types||types.includes(e.type));ts.sort((a,b)=>HK_V[b.type]*hkP(b)-HK_V[a.type]*hkP(a));return ts[0];};
   if(hkSpent(u)){ // 彈藥用盡：自動回母港補彈
-    const st=hkHomeStep(u);if(st&&st.k){doMove(u,st.k,'sail');log('海鯤潛艦彈藥用盡，返回母港補彈');render();await sleep(240);}return;}
+    const st=hkHomeStep(u);if(st&&st.k){doMove(u,st.k,'sail');if(!subHidden(u))log('海鯤潛艦彈藥用盡，返回母港補彈');render();await sleep(240);}return;}
   let t=best();
   if(!t&&pool.length){
     const rc=reach(u),want=hkRange(u)>3?5:2;let bk=null,bs=Math.min.apply(null,pool.map(e=>hd(hexOf(u),hexOf(e))));
@@ -3896,7 +3896,7 @@ function renderMap(){
   if(humanTurn()&&S.sel&&alive(S.sel)&&S.sel.side===S.phase){
     for(const [k,v] of reach(S.sel)){const [x,y]=cen(TER[k].c,TER[k].r);o+='<polygon class="hl '+v.kind+'" points="'+hexPts(x,y,R-2)+'"/>';}
   }
-  S.units.slice().sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
+  S.units.filter(u=>!subHidden(u)).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
   o+=baseMarkersSVG();
   for(const k of Object.keys(MINOR_PORTS)){const h=TER[k];if(!h)continue;const [x,y]=cen(h.c,h.r);o+='<text class="mport" x="'+(x+R*.7).toFixed(1)+'" y="'+(y-R*.35).toFixed(1)+'">⚓</text>';} // 次要港口標記畫在單位之上
   Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<g class="mine" pointer-events="none"><circle cx="'+x.toFixed(1)+'" cy="'+(y+8).toFixed(1)+'" r="4.5" fill="#222" stroke="#ffd45a" stroke-width="1.2"/><path d="M'+(x-7).toFixed(1)+' '+(y+8).toFixed(1)+'h14M'+x.toFixed(1)+' '+(y+1).toFixed(1)+'v14" stroke="#ffd45a" stroke-width="1"/></g>';});
@@ -4029,7 +4029,7 @@ if(/[?&]debug=1/.test(location.search))window.__ext=()=>{const out=[],real=S;
   ['atk','def'].forEach(side=>truceOptions(side).opts.filter(o=>o.x).forEach(o=>tryit('truce:'+o.id,()=>applyTruce(side,o))));
   tryit('port',()=>applyPort(PORTS[0],portOptions(PORTS[0]).opts.find(o=>o.x)));
   return out;};
-if(/[?&]debug=1/.test(location.search)){window.__truceDef=()=>truceOptions('def').opts.map(o=>o.id);window.__instant=()=>checkInstant();window.__hm=(id)=>{const u=S.units.find(z=>z.id===id);const m=[...reach(u).entries()].find(([k,v])=>v.kind==='sail'||v.kind==='move');if(!m)return null;humanMove(u,m[0],m[1].kind);return {avail:undoAvail(),c:u.c,r:u.r};};window.__undo=()=>{const u0=S.undo&&S.units.find(z=>z.id===S.undo.id);undoMove();return u0?{c:u0.c,r:u0.r,moved:u0.moved,avail:undoAvail()}:null;};window.__guard=()=>endPhaseGuard();window.__hkdbg=()=>{const u=S.units.find(z=>z.type==='hk');return {human:humanTurn(),phase:S.phase,busy:S.busy,moved:u.moved,acted:u.acted,reach:[...reach(u).entries()].map(([k,v])=>k+':'+v.kind).slice(0,6),step:hkHomeStep(u)};};window.__hkhome=()=>{const u=S.units.find(z=>z.type==='hk');if(!u)return null;S.sel=u;S.phase='def';S.ctrl.def='human';S.busy=false;u.moved=false;u.acted=false;const b={c:u.c,r:u.r};hkGoHome();return {b,a:{c:u.c,r:u.r},port:hexOf(u).t};};window.__collapse=n=>{S.turn=Math.max(S.turn,4);S.pools.plaLift=0;S.units=S.units.filter(u=>!(u.side==='atk'&&u.type==='cvy'));S.sup={t:S.turn,total:0};const r=[];for(let i=0;i<n&&!S.over;i++){supplyAttrition();r.push(S.stats.supDef);}return {r,over:S.over,used:supply().used};};window.__sup=()=>{const r0=supply().cap;Object.keys(MINOR_PORTS).forEach(k=>{S.owner[k]='atk';});const r1=supply().cap;S.turn=Math.max(S.turn,3);S.bh={};['22,4','19,7','18,10'].forEach(k=>{S.owner[k]='atk';S.bh[k]=S.turn-1;});const r2=supply().cap;render();return [r0,r1,r2];};window.__owner=r=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h));hs.slice(0,Math.round(hs.length*r)).forEach(h=>{S.owner[h.k]='atk';});return twControl();};window.__wipe=()=>{S.stats.sailed=true;S.turn=Math.max(S.turn,3);S.units=S.units.filter(u=>!(u.side==='atk'&&!isShip(u)&&(atSea(u)||onTW(u)||hexOf(u).isl==='PH')));checkInstant();};window.__attr=()=>{S.turn=Math.max(S.turn,3);const a=S.units.filter(u=>u.side==='atk'&&!isShip(u));const tw=TER[TAIPEI];a.slice(0,18).forEach(u=>{u.c=tw.c;u.r=tw.r;});const b=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);supplyAttrition();const c=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);return [b,c,supply()];};window.__force3=keep=>{PORTS.concat([TAIPEI]).forEach(k=>{S.owner[k]='atk';delete S.portDown[k];});const tw=TER[TAIPEI];S.units.filter(u=>u.side==='atk'&&!isShip(u)).slice(0,16).forEach(u=>{u.c=tw.c;u.r=tw.r;u.hp=TYPES[u.type].hp;});let left=keep;S.units.filter(u=>u.side==='def'&&onTW(u)).forEach(u=>{if(left>0){u.hp=Math.min(u.hp,left);left-=u.hp;}else S.units=S.units.filter(x=>x!==u);});S.turn=Math.max(S.turn,3);const a=snap();return [a.n,a.as,a.ds];};}
+if(/[?&]debug=1/.test(location.search)){window.__truceDef=()=>truceOptions('def').opts.map(o=>o.id);window.__instant=()=>checkInstant();window.__hm=(id)=>{const u=S.units.find(z=>z.id===id);const m=[...reach(u).entries()].find(([k,v])=>v.kind==='sail'||v.kind==='move');if(!m)return null;humanMove(u,m[0],m[1].kind);return {avail:undoAvail(),c:u.c,r:u.r};};window.__undo=()=>{const u0=S.undo&&S.units.find(z=>z.id===S.undo.id);undoMove();return u0?{c:u0.c,r:u0.r,moved:u0.moved,avail:undoAvail()}:null;};window.__guard=()=>endPhaseGuard();window.__fxSub=o=>fxSub(o);window.__hkdbg=()=>{const u=S.units.find(z=>z.type==='hk');return {human:humanTurn(),phase:S.phase,busy:S.busy,moved:u.moved,acted:u.acted,reach:[...reach(u).entries()].map(([k,v])=>k+':'+v.kind).slice(0,6),step:hkHomeStep(u)};};window.__hkhome=()=>{const u=S.units.find(z=>z.type==='hk');if(!u)return null;S.sel=u;S.phase='def';S.ctrl.def='human';S.busy=false;u.moved=false;u.acted=false;const b={c:u.c,r:u.r};hkGoHome();return {b,a:{c:u.c,r:u.r},port:hexOf(u).t};};window.__collapse=n=>{S.turn=Math.max(S.turn,4);S.pools.plaLift=0;S.units=S.units.filter(u=>!(u.side==='atk'&&u.type==='cvy'));S.sup={t:S.turn,total:0};const r=[];for(let i=0;i<n&&!S.over;i++){supplyAttrition();r.push(S.stats.supDef);}return {r,over:S.over,used:supply().used};};window.__sup=()=>{const r0=supply().cap;Object.keys(MINOR_PORTS).forEach(k=>{S.owner[k]='atk';});const r1=supply().cap;S.turn=Math.max(S.turn,3);S.bh={};['22,4','19,7','18,10'].forEach(k=>{S.owner[k]='atk';S.bh[k]=S.turn-1;});const r2=supply().cap;render();return [r0,r1,r2];};window.__owner=r=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h));hs.slice(0,Math.round(hs.length*r)).forEach(h=>{S.owner[h.k]='atk';});return twControl();};window.__wipe=()=>{S.stats.sailed=true;S.turn=Math.max(S.turn,3);S.units=S.units.filter(u=>!(u.side==='atk'&&!isShip(u)&&(atSea(u)||onTW(u)||hexOf(u).isl==='PH')));checkInstant();};window.__attr=()=>{S.turn=Math.max(S.turn,3);const a=S.units.filter(u=>u.side==='atk'&&!isShip(u));const tw=TER[TAIPEI];a.slice(0,18).forEach(u=>{u.c=tw.c;u.r=tw.r;});const b=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);supplyAttrition();const c=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);return [b,c,supply()];};window.__force3=keep=>{PORTS.concat([TAIPEI]).forEach(k=>{S.owner[k]='atk';delete S.portDown[k];});const tw=TER[TAIPEI];S.units.filter(u=>u.side==='atk'&&!isShip(u)).slice(0,16).forEach(u=>{u.c=tw.c;u.r=tw.r;u.hp=TYPES[u.type].hp;});let left=keep;S.units.filter(u=>u.side==='def'&&onTW(u)).forEach(u=>{if(left>0){u.hp=Math.min(u.hp,left);left-=u.hp;}else S.units=S.units.filter(x=>x!==u);});S.turn=Math.max(S.turn,3);const a=snap();return [a.n,a.as,a.ds];};}
 if(/[?&]debug=1/.test(location.search))window.__reach=id=>{const u=S.units.find(x=>x.id===id);if(!u)return null;const h=hexOf(u);return {at:h.k,t:h.t,isl:h.isl,coastal:h.coastal,zones:{pen:ZONES.penghu,sp:SPOT.penghu,mg:SPOT.magong},reach:[...reach(u)].map(([k,v])=>k+':'+v.kind).slice(0,40),moved:u.moved,acted:u.acted};};
 if(/[?&]debug=1/.test(location.search))window.__af=()=>({n:airfields().length,names:airfields().map(h=>h.k+':'+(h.name||'')),share:afShare(),rocAir:S.pools.rocAir,pick:pickAirfield()});
 if(/[?&]debug=1/.test(location.search))window.__score=async(cfg)=>{ // 測試用：依設定跑一場電腦推演，回傳雙方原始分數
@@ -4159,12 +4159,29 @@ function fxHimars(o){
     }});
   },(380+i*(o.atc?0:140))*fxK());
 }
+// 潛艦：魚雷在水下留下氣泡航跡、命中時水柱；魚叉先浮出水面（水花）再破水而出貼海面飛行
+function fxSub(o){
+  const a=cen(o.from[0],o.from[1]),b=cen(o.to[0],o.to[1]);if(reduce())return;
+  const done=()=>fxImpact(b,o.hit,true,true);
+  if(o.w==='hm'){
+    fxRing(a,2,18,'#dff4ff',560,1.8);fxRing(a,1,10,'#ffffff',420,1.2);
+    for(let i=0;i<4;i++)setTimeout(()=>fxPuff([a[0]+(Math.random()-.5)*14,a[1]-2-i*3],2,7,'#eaf6ff',.8,700),i*60*fxK());
+    setTimeout(()=>fxFlight(a,b,'cm',done),360*fxK());
+  }else{
+    fxRing(a,2,12,'#cfeaf5',420,1.5);
+    fxFlight(a,b,'torp',()=>{if(o.hit){fxRing(b,4,40,'#e8fbff',700,2.5);for(let i=0;i<3;i++)setTimeout(()=>fxFlash([b[0]+(Math.random()-.5)*10,b[1]-6-i*7],2,10,'#dff4ff',520),i*90*fxK());}done();});
+  }
+}
+// 守方潛艦對攻方玩家隱蔽：沒開火暴露前看不到（雙方都由人操作、守方玩家、或電腦對電腦觀戰時看得到）
+const subHidden=u=>u.type==='hk'&&u.side==='def'&&!u.revealed&&!S.over&&S.ctrl.atk==='human'&&S.ctrl.def!=='human'&&!S.video&&!S.sim;
+const unitAtVis=k=>S.units.find(u=>K(u.c,u.r)===k&&!subHidden(u));
 function runFx(o){
   const PO=h=>{const q=oCenter(h[0],h[1]);return [q[0]*KS,q[1]*KS];}; // 外圍／港口出發點（舊座標）
   const P=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);
   if(o.t==='atk'){
     const a=P(o.from),b=P(o.to),n=o.sea?1:3;
     for(let i=0;i<n;i++)setTimeout(()=>{if(o.sea){fxFlash(a,2,9,'#ffe08a',150);fxShot(a,b,{arc:42,dur:340,end:()=>fxImpact(b,o.hit&&i===n-1,o.tsea,false)});}else fxFlight(a,b,'arty',()=>fxImpact(b,o.hit&&i===n-1,o.tsea,false));},i*95*fxK());
+  }else if(o.t==='sub'){fxSub(o);
   }else if(o.t==='msl'){
     const a=P(o.from),b=P(o.to);fxFlight(a,b,'cm',()=>fxImpact(b,o.hit,true,true));
   }else if(o.t==='air'){
@@ -4194,7 +4211,7 @@ function playFx(list){
   const nShots=list.filter(x=>x.t==='air'||x.t==='msl').length,stepAir=nShots>=8?45:nShots>=4?85:170,stepMsl=nShots>=8?45:nShots>=4?70:110; // 齊射：發數多時間隔縮短，看起來是一起發射
   list.forEach(o=>{
     let start;
-    if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='air'||o.t==='tfa'){start=t;last=t;t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
+    if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='sub'||o.t==='air'||o.t==='tfa'){start=t;last=t;t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
     else if(o.t==='dmg'||o.t==='dead'||o.t==='txt')start=last+(o.t==='atk'?0:(list.some(x=>x.t==='msl')?500:360));
     else start=0;
     if(start>0)setTimeout(()=>runFx(o),start*k);else runFx(o);
@@ -4753,8 +4770,8 @@ $('#map').addEventListener('click',async e=>{
   if(fe){FARSEL=fe.getAttribute('data-far');S.sel=null;S.hover=null;renderInfo();return;}
   const el=e.target.closest('[data-k]');if(!el)return;const k=el.getAttribute('data-k');FARSEL=null;
   S.hover=k;const idEl=e.target.closest('[data-id]'),hitU=idEl?S.units.find(x=>x.id===+idEl.dataset.id):null;S.hoverId=hitU?hitU.id:null;
-  if(!humanTurn()){S.sel=hitU||unitAt(k)||null;render();return;}
-  const u=hitU||unitAt(k);
+  if(!humanTurn()){S.sel=hitU||unitAtVis(k)||null;render();return;}
+  const u=hitU||unitAtVis(k);
   if(S.mode==='strike'){
     if(S.phase==='atk'&&u&&u.side==='def'&&S.fire>0){strike(u);if(S.fire<=0)S.mode=null;}
     else if(S.phase==='atk'&&!u&&S.fire>0&&TER[k]&&TER[k].t==='air'&&TER[k].isl==='TW'&&strikeAirfield(k)){if(S.fire<=0)S.mode=null;}
@@ -4976,10 +4993,11 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn），並在下方 CHANGELOG 最前面補一筆更新內容（再補 tools/i18n/extras.tsv 的英日譯文）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-10.33';
+const VERSION='2026-11-10.35';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
+ {v:'2026-11-10.35',items:['海鯤專屬攻擊動畫：魚雷在水下留下氣泡航跡、命中時水柱；魚叉先浮出水面（水花與氣泡）再破水而出，貼海面飛行','攻方隱蔽顯示：你操作攻方、守方由電腦時，海鯤在開火暴露前看不到（地圖上不畫、點不到、戰報也不寫出航與返航）；開火後到下個守方階段前會顯示在地圖上；守方玩家、雙方都由人操作、電腦對電腦觀戰時仍看得到']},
  {v:'2026-11-10.33',items:['修正火力動畫的抖動：巡弋飛彈改為貼海面直飛，不再蛇行；其他帶擺動的彈道（無人機、魚雷）改為沿飛行方向的垂直線擺動，不再只改畫面 y 座標（近乎垂直飛行時會變成忽快忽慢）；飛彈朝向取較長的間隔，不再隨擺動亂轉']},
  {v:'2026-11-10.32',items:['海鯤潛艦手動操作新增「⚓ 回母港」按鈕（選取潛艦後，朝最近的守方港口前進，到港後下個階段補滿彈藥）與「武器：自動／只用魚雷／只用魚叉」切換；電腦操作時彈藥用盡會自動回母港（修正：先前潛艦其實無法靠港，現在可以靠進守方港口）','海鯤武器依公開資料：6 具 533 公厘魚雷管，Mk 48 Mod 6 重型魚雷（兩枚一次齊射、射程約 60 公里＝3 格）與 UGM-84L 潛射魚叉反艦飛彈（射程約 120 公里＝6 格，命中率較低、發射較不易暴露），全艇武器上限 18 枚；電腦會先用魚叉遠距攻擊、近距離改用魚雷']},
  {v:'2026-11-10.31',items:['手機版面精簡：開始後標題、狀態列、地圖工具列各壓成一行（可左右滑動），第一眼就看到地圖，地圖多出約一半螢幕高度','新手引導：人類操作的第 1～2 回合，畫面下方依目前動作顯示「下一步該做什麼」（選單位→下令→收尾），按 ✕ 可永久關閉','「若現在判定」不再開局就顯示：只列出目前達成的條件數；判定回合快到（最後 2 回合）或達成條件數有變化的那一兩回合，才提示判定結果','狀態列白話說明：點「回合／階段／天候／火力／制空／補給」標籤，彈出白話解釋與目前實際數值（再點一次或點別處關閉，鍵盤 Enter 也可）','操作防呆與復原：普通移動／出航可按「↶ 撤銷移動」（或 Ctrl＋Z）退回，做了其他動作前都能撤銷；按「結束階段」時若還有沒用的火力（不會累積）或第 1～2 回合還有可行動單位，會先提示，需再按一次確認','空戰與轟炸動畫的飛機縮小，並改為三機一組的楔形編隊（長機在前、兩僚機在後）；編隊每架各射一發縮小的空對空飛彈，命中時只打下被擊中的那一架，其餘編隊繼續飛']},
