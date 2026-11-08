@@ -986,3 +986,13 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
  回合結束時才判定。	.	
 判定有變化：攻方達成 	Judgment changed: attacker meets 	
 ，若現在判定 → 	; if judged now → 	
+【回合】目前第 	[Turn] Now turn 	
+【階段】每回合分「攻方階段」與「守方階段」，輪流行動。目前輪到	[Phase] Each turn has an attacker phase and a defender phase, taken in turn. Now it is 	
+【天候】	[Weather] 	
+【火力】攻方這個階段可以打擊 	[Firepower] This phase the attacker can strike 	
+ 個目標（火箭軍飛彈、空軍、艦砲等的總和，按「火力打擊」再點目標；每點命中率不高，優先打威脅大的目標）。	 targets (rocket-force missiles, air force, naval guns combined; press "Fire strike", then tap a target; each point has a modest hit chance, so hit the biggest threats first).	
+【制空】雙方空軍對抗的結果：	[Air control] Result of the air contest: 	
+【補給】攻方島上有 	[Supply] The attacker has 	
+ 個部隊需要彈藥與油糧，補給容量 	 units on the island needing ammo and fuel; supply capacity 	
+需求超過容量，部隊會一回合比一回合損耗，連續多回合缺補給攻方會崩潰。要打開港口、灘頭或補給站來提高容量。	Demand exceeds capacity: units wear down each turn, and several turns without supply make the attack collapse. Open ports, beaches or depots to raise capacity.	
+容量足夠。補給靠港口、灘頭卸貨、空投與就地徵用。	Capacity is sufficient. Supply comes from port/beach unloading, airdrops and local requisition.	
