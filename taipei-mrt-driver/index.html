@@ -16,6 +16,12 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 
 /* 右上角小按鈕 */
 #top{position:fixed;top:calc(6px + env(safe-area-inset-top));right:var(--tr,8px);display:flex;gap:6px;z-index:6}
+#rmap{position:fixed;left:6px;right:8px;top:calc(140px + env(safe-area-inset-top));height:136px;background:rgba(8,12,20,.95);border:1px solid #39465c;border-radius:10px;z-index:4;overflow:hidden}
+#rmap[hidden]{display:none}
+#rmap-hd{display:flex;font-size:11px;justify-content:space-between;gap:8px;padding:3px 8px;font-size:12px;color:#ffd37a;font-weight:700;white-space:nowrap;overflow:hidden}
+#rmap .rmap-lg{color:#9fb0c8;font-weight:400}#rmap .rmap-lg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin:0 2px 0 6px}
+#rmap-in{height:calc(100% - 22px);overflow-x:auto;overflow-y:hidden;touch-action:pan-x;-webkit-overflow-scrolling:touch}
+#top button.on{border-color:#ffd37a}
 #top button{background:rgba(8,12,20,.78);border:1px solid #39465c;border-radius:8px;padding:5px 9px;font-size:13px;line-height:1.2}
 
 /* 主控器（手把） */
@@ -41,6 +47,7 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
   #bar button{flex:none;height:42px;font-size:13px;padding:0}
   #bar #b-eb,#bar #b-rev{flex:none}
   #top{top:4px}
+  #rmap{left:176px;right:calc(var(--lr,10px) + 76px);top:50px;height:136px}
 }
 #rot{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:8;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:18px;padding:7px 14px;font-weight:700;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.4);display:none}
 
@@ -105,9 +112,11 @@ th{color:#9fb0c8;font-weight:600}
 <button id="rot">📱 橫放手機操作更順手（點此全螢幕橫向）</button>
 <button id="newver" hidden>🔔 有新版本，點此重新整理</button>
 
+<div id="rmap" hidden><div id="rmap-hd"><span id="rmap-now"></span><span class="rmap-lg"><i style="background:#f0a64a"></i>高架 <i style="background:#4a8fe0"></i>地下 <i style="background:#5bbf6a"></i>平面 <i style="background:#d32f2f"></i>限速（遊戲設定）</span></div><div id="rmap-in"></div></div>
 <div id="top" class="hidden">
   <button id="b-pause">⏸ 暫停</button>
   <button id="b-call" style="display:none">📞 行控</button>
+  <button id="b-map">🗺</button>
   <button id="b-horn">📯</button>
   <button id="b-fs">⛶</button>
   <button id="b-snd">🔊</button>
@@ -230,14 +239,15 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-07.18"></script>
-<script src="js/broadcast.js?v=2026-11-07.18"></script>
-<script src="js/haptics.js?v=2026-11-07.18"></script>
-<script src="js/feedback.js?v=2026-11-07.18"></script>
-<script src="js/share.js?v=2026-11-07.18"></script>
-<script src="js/events.js?v=2026-11-07.18"></script>
-<script src="js/lines.js?v=2026-11-07.18"></script>
-<script src="js/render3d.js?v=2026-11-07.18"></script>
+<script src="js/models.js?v=2026-11-08.01"></script>
+<script src="js/broadcast.js?v=2026-11-08.01"></script>
+<script src="js/haptics.js?v=2026-11-08.01"></script>
+<script src="js/feedback.js?v=2026-11-08.01"></script>
+<script src="js/routemap.js?v=2026-11-08.01"></script>
+<script src="js/share.js?v=2026-11-08.01"></script>
+<script src="js/events.js?v=2026-11-08.01"></script>
+<script src="js/lines.js?v=2026-11-08.01"></script>
+<script src="js/render3d.js?v=2026-11-08.01"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -245,7 +255,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-07.18';
+const VERSION='2026-11-08.01';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -1066,6 +1076,7 @@ function drawStrip(g){
   X.fillStyle='rgba(8,12,20,.74)';rr(6,6,x1-x0+24+54,36,10);X.fill();
   X.strokeStyle='rgba(255,255,255,.25)';X.lineWidth=3;X.beginPath();X.moveTo(x0,y);X.lineTo(x1,y);X.stroke();
   X.strokeStyle=g.L.color;X.lineWidth=4;X.beginPath();X.moveTo(x0,y);X.lineTo(x0+(x1-x0)*clamp(g.pos/total,0,1),y);X.stroke();
+  for(const z of g.zones){const a=x0+(x1-x0)*z.s0/total,b=x0+(x1-x0)*z.s1/total;X.fillStyle='#e0452f';X.fillRect(a,y-3,Math.max(2,b-a),6);}   // 限速區間
   for(let i=0;i<g.S.length;i++){
     const x=x0+(x1-x0)*g.S[i]/total,done=i<g.k||(g.results[i-1]&&true);
     X.fillStyle=i<g.k?g.L.color:'#2b3345';X.strokeStyle=i===g.k?'#fff':'#b8c4d8';X.lineWidth=i===g.k?2.5:1.2;
@@ -1140,6 +1151,11 @@ function drawHud(g){
   X.strokeStyle=g.over||g.trip?'#ff2a2a':'#d32f2f';X.lineWidth=5;X.beginPath();X.arc(cx,cy,r-3,0,6.3);X.stroke();
   T(String(Math.round(g.lim)),cx,cy,r*0.85,'#111','center',800);
   if(g.over||g.trip){T(g.trip?'ATP 動作':'超速！',cx,cy+r+12,13,'#ff6b6b','center',800);}
+  { // 限速預告（距離與數值）
+    const t=RM.on?'':nextLimitText(g);
+    if(t){X.font='700 12px sans-serif';const w=X.measureText(t).width+18,y0=64+12+32;
+      X.fillStyle='rgba(8,12,20,.78)';rr(14,y0,w,22,11);X.fill();T(t,14+w/2,y0+11,12,'#ffb3a0','center',700);}
+  }
   // 到站前提示
   const nxt=g.k<g.S.length?g.stations[g.k]:null;
   if(nxt&&g.doors.state==='closed'&&nxt.pos-g.pos<420&&nxt.pos-g.pos>-30&&g.v>0.5){
@@ -1192,6 +1208,7 @@ function render(){
   if(g.flicker&&Math.random()<0.16){X.fillStyle='rgba(0,0,0,'+(0.35+Math.random()*0.4)+')';X.fillRect(0,0,W,dashTop);}   // 供電異常：燈光閃爍
   drawCabFrame(g);
   drawDash(g);
+  if(typeof rmUpdate==='function')rmUpdate(g);
   const bc=$('b-call'),want=g.doorFault&&!g.doorFault.call?'':'none';if(bc.style.display!==want)bc.style.display=want;
   if($('menu').classList.contains('hidden')&&$('result').classList.contains('hidden'))drawHud(g); // 選單／結算頁底下不畫 HUD，避免文字透出
 }
@@ -1271,7 +1288,7 @@ $('b-snd').onclick=()=>{SET.snd=!SET.snd;$('b-snd').textContent=SET.snd?'🔊':'
 $('b-quit').onclick=()=>{showMenu();};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!paused&&$('menu').classList.contains('hidden')&&$('result').classList.contains('hidden'))togglePause();});
 
-function showMenu(){
+function showMenu(){if(typeof rmHide==="function")rmHide();
   paused=false;$('b-pause').textContent='⏸ 暫停';
   if(AC)AC.resume();
   $('menu').classList.remove('hidden');$('result').classList.add('hidden');
@@ -1315,7 +1332,7 @@ function showBoard(sel){
   $('menu').classList.add('hidden');$('result').classList.add('hidden');$('board').classList.remove('hidden');
 }
 $('m-board').onclick=()=>showBoard();
-fbInit();
+fbInit();rmInit();
 $('m-share').onclick=()=>{shareLevel();};   // 必須在點擊當下同步呼叫 navigator.share
 $('r-share').onclick=()=>{shareResult();};
 $('b-back').onclick=()=>{$('board').classList.add('hidden');$('menu').classList.remove('hidden');};
@@ -1430,10 +1447,10 @@ $('m-haptest').onclick=()=>{SET.haptic=true;$('m-hap').checked=true;haptic('p',2
 function startRun(){
   audioInit();if(AC&&AC.state==='suspended')AC.resume();
   store('mrt-set',SET);
-  G=buildRun(SET);syncLever();paused=false;
+  G=buildRun(SET);syncLever();paused=false;rmHide();
   $('menu').classList.add('hidden');$('result').classList.add('hidden');
   ['top','lever','bar'].forEach(i=>$(i).classList.remove('hidden'));
-  resize();
+  resize();rmBuild(G);
   $('b-snd').textContent=SET.snd?'🔊':'🔇';
   toast(`${G.L.name}　往 ${G.stations[G.stations.length-1].name}　共 ${G.S.length-1} 站`,'#fff',3.5);
   announce('lead',G.stations[G.stations.length-1]);
@@ -1471,7 +1488,7 @@ function coachTips(g,done){
   return {tips,good};
 }
 function showResult(){
-  const g=G;evAbort(g);g.state='result';
+  const g=G;evAbort(g);g.state='result';rmHide();
   ['top','lever','bar'].forEach(i=>$(i).classList.add('hidden'));
   const rs=g.results.filter((_,i)=>true);
   const n=g.S.length-1;
