@@ -4027,9 +4027,9 @@ const AIRG={
   bm:'M15,0 L5,-2.2 L2.5,-15 L-1,-15 L-1.5,-2.4 L-8,-3 L-9.5,-6 L-12,-6 L-10.5,0 L-12,6 L-9.5,6 L-8,3 L-1.5,2.4 L-1,15 L2.5,15 L5,2.2Z'};
 function airGlyph(kind,col,opt,parent){ // 回傳一個 <g>：三機楔形編隊（長機在前、僚機左右後方），單機縮小；opt:{stealth:半透明虛線, glow:尾焰, one:只畫單機}
   const g=el('g',{opacity:opt&&opt.stealth?.28:1},parent);
-  const SC=.5,off=opt&&opt.one?[[0,0]]:[[7,0],[-5,-9],[-5,9]];
+  const SC=.5,off=opt&&opt.one?[[0,0]]:[[7,0],[-5,-9],[-5,9]];g._pl=[];
   off.forEach(([dx,dy])=>{
-    const s1=el('g',{transform:'translate('+dx+' '+dy+') scale('+SC+')'},g);
+    const s1=el('g',{transform:'translate('+dx+' '+dy+') scale('+SC+')'},g);g._pl.unshift({el:s1,dx,dy});
     el('path',{d:AIRG[kind],fill:col,stroke:'#fff','stroke-width':1.3,'stroke-linejoin':'round','stroke-dasharray':opt&&opt.stealth?'2 1.5':'0'},s1);
     el('path',{d:kind==='bm'?'M6,-1.2 L10,0 L6,1.2Z':'M5,-1.1 L9,0 L5,1.1Z',fill:'#cfeaff',opacity:.85},s1); // 座艙
     if(!opt||opt.glow!==false){const n=kind==='bm'?2:1;for(let i=0;i<n;i++)el('circle',{cx:-11.5,cy:n===1?0:(i?5.5:-5.5),r:1.8,fill:'#ffb347',opacity:.9},s1);}
@@ -4045,15 +4045,22 @@ function fxDog(o){
   const jet=(col,stealth)=>airGlyph(stealth?'st':'f4',col,{stealth});
   const place=(g,p,ang,sc)=>g.setAttribute('transform','translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+(ang*180/Math.PI).toFixed(0)+') scale('+(.95*(sc||1))+')');
   const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
-  const missile=(a,b,col,hit,done)=>{ // 一發空對空飛彈：命中＝在目標爆炸；落空＝中途被干擾、撒出熱焰彈
-    const miss=[b[0]+(Math.random()-.5)*70,b[1]+(Math.random()<.5?-1:1)*(26+Math.random()*24)];
-    fxFlash(a,2,9,'#fff',200);
-    fxShot(a,hit?b:miss,{arc:(Math.random()-.5)*26,dur:Math.min(1100,520+Math.hypot(b[0]-a[0],b[1]-a[1])*1.3),color:'#f4f4f4',trail:col,w:1.8,r:2.1,style:'mis',end:()=>{
-      if(hit){fxFlash(b,3,26,'#ffb347',380);fxFlash(b,2,12,'#fff3c4',260);fxRing(b,5,34,'#ff7a3d',460,2);}
-      else{for(let i=0;i<4;i++)setTimeout(()=>fxFlash([miss[0]+(Math.random()-.5)*16,miss[1]+(Math.random()-.5)*12],1.5,7,'#ffd45a',420),i*70*fxK());fxText(miss,'被干擾','dead',700);}
+  const one=(a,b,col,hit,done)=>{ // 一發空對空飛彈（縮小）：命中＝在目標爆炸；落空＝中途被干擾、撒出熱焰彈
+    const miss=[b[0]+(Math.random()-.5)*70,b[1]+(Math.random()<.5?-1:1)*(18+Math.random()*24)];
+    fxFlash(a,1.2,5,'#fff',160);
+    fxShot(a,hit?b:miss,{arc:(Math.random()-.5)*20,dur:Math.min(1100,520+Math.hypot(b[0]-a[0],b[1]-a[1])*1.3),color:'#f4f4f4',trail:col,w:1,r:1.2,style:'mis',end:()=>{
+      if(hit){fxFlash(b,2,14,'#ffb347',320);fxFlash(b,1.2,7,'#fff3c4',220);fxRing(b,3,20,'#ff7a3d',380,1.4);}
+      else{for(let i=0;i<3;i++)setTimeout(()=>fxFlash([miss[0]+(Math.random()-.5)*12,miss[1]+(Math.random()-.5)*10],1,5,'#ffd45a',360),i*70*fxK());fxText(miss,'被干擾','dead',600);}
       if(done)done();}});
   };
-  const fall=(g,p,ang,txt,cls)=>{fxText(p,txt,cls,1100);tween(760,k=>{place(g,[p[0]+26*k,p[1]+44*k*k+10*k],ang+k*9,1-.35*k);g.setAttribute('opacity',1-k*k);if(!LITE&&Math.random()<.45)fxPuff([p[0]+26*k,p[1]+44*k*k+10*k],2,7,'#4a4a4a',.7,640);},()=>g.remove());};
+  // 一個編隊齊射：每架各射一發（最多 3 發）；是否有飛彈命中由戰況決定，命中時只打下編隊中的一架
+  const missile=(a,b,col,hit,done)=>{const n=LITE?2:3,hi=hit?Math.floor(Math.random()*n):-1;for(let j=0;j<n;j++)setTimeout(()=>one([a[0]+(Math.random()-.5)*8,a[1]+(Math.random()-.5)*8],[b[0]+(Math.random()-.5)*10,b[1]+(Math.random()-.5)*10],col,j===hi,j===hi?done:null),j*130*fxK());};
+  const fall=(g,p,ang,txt,cls)=>{ // 只有被打中的那一架墜落，編隊其餘繼續
+    const v=g._pl&&g._pl.length>1?g._pl.shift():null;
+    fxText(p,txt,cls,1100);
+    if(!v){tween(760,k=>{place(g,[p[0]+26*k,p[1]+44*k*k+10*k],ang+k*9,1-.35*k);g.setAttribute('opacity',1-k*k);},()=>g.remove());return;}
+    tween(760,k=>{v.el.setAttribute('transform','translate('+(v.dx+10*k)+' '+(v.dy+28*k*k+6*k)+') rotate('+(k*160).toFixed(0)+') scale('+(.5*(1-.4*k))+')');v.el.setAttribute('opacity',1-k*k);if(!LITE&&Math.random()<.4)fxPuff([p[0]+10*k+v.dx,p[1]+28*k*k+v.dy],2,5,'#4a4a4a',.7,560);},()=>v.el.remove());
+  };
   for(let i=0;i<N;i++){
     const a=pla[i%pla.length].slice(),b=bases[i%bases.length].slice();a[1]+=(i>>2)*10;
     const m=lerp(a,b,sh);m[1]+=(Math.random()-.5)*60;
@@ -4935,7 +4942,7 @@ const VERSION='2026-11-10.31';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
- {v:'2026-11-10.31',items:['手機版面精簡：開始後標題、狀態列、地圖工具列各壓成一行（可左右滑動），第一眼就看到地圖，地圖多出約一半螢幕高度','新手引導：人類操作的第 1～2 回合，畫面下方依目前動作顯示「下一步該做什麼」（選單位→下令→收尾），按 ✕ 可永久關閉','「若現在判定」不再開局就顯示：只列出目前達成的條件數；判定回合快到（最後 2 回合）或達成條件數有變化的那一兩回合，才提示判定結果','狀態列白話說明：點「回合／階段／天候／火力／制空／補給」標籤，彈出白話解釋與目前實際數值（再點一次或點別處關閉，鍵盤 Enter 也可）','操作防呆與復原：普通移動／出航可按「↶ 撤銷移動」（或 Ctrl＋Z）退回，做了其他動作前都能撤銷；按「結束階段」時若還有沒用的火力（不會累積）或第 1～2 回合還有可行動單位，會先提示，需再按一次確認','空戰與轟炸動畫的飛機縮小，並改為三機一組的楔形編隊（長機在前、兩僚機在後）']},
+ {v:'2026-11-10.31',items:['手機版面精簡：開始後標題、狀態列、地圖工具列各壓成一行（可左右滑動），第一眼就看到地圖，地圖多出約一半螢幕高度','新手引導：人類操作的第 1～2 回合，畫面下方依目前動作顯示「下一步該做什麼」（選單位→下令→收尾），按 ✕ 可永久關閉','「若現在判定」不再開局就顯示：只列出目前達成的條件數；判定回合快到（最後 2 回合）或達成條件數有變化的那一兩回合，才提示判定結果','狀態列白話說明：點「回合／階段／天候／火力／制空／補給」標籤，彈出白話解釋與目前實際數值（再點一次或點別處關閉，鍵盤 Enter 也可）','操作防呆與復原：普通移動／出航可按「↶ 撤銷移動」（或 Ctrl＋Z）退回，做了其他動作前都能撤銷；按「結束階段」時若還有沒用的火力（不會累積）或第 1～2 回合還有可行動單位，會先提示，需再按一次確認','空戰與轟炸動畫的飛機縮小，並改為三機一組的楔形編隊（長機在前、兩僚機在後）；編隊每架各射一發縮小的空對空飛彈，命中時只打下被擊中的那一架，其餘編隊繼續飛']},
  {v:'2026-11-10.30',items:['海鯤潛艦成為守方棋子：從花蓮、高雄等港口出港（數量依年代：2028 年起 1 艘、2031 年 2 艘…），魚雷有限（4 次齊射，回港補彈）、射程 3 格；可手動選目標發射，命中率依目標類型——補給船團 85%（附近每有一艘護航艦 −10%）、登陸艦與運兵船 50%、護航艦 35%、航艦 30%；射擊後暴露，附近護航艦越多越容易被反潛','後續批次的海鯤逐步改良（推估）：魚雷齊射數 4 → 6（2032）、被反潛發現的機率降到 70%、命中率最多 +8%；守方指揮官意圖新增「海鯤潛艦任務」：專打補給船團、專打登陸船團、專打航艦、專打護航艦，或由電腦依目標價值×命中率判斷']},
  {v:'2026-11-10.29',items:['守方電腦會調兵了：攻方還沒上岸時，步兵與後備旅依海上船團的位置向北部或中部預先移動（受移動力限制，要幾回合才到位；船團未出海前北中部平均分配，不預知攻方計畫），不再讓南部兵力一直閒置','共軍渡海能力隨年代成長：補給運輸船 8 → 14（2032），首波兩棲旅約每 2 年 +1 個（2032 年 +3）；依 075／076 兩棲攻擊艦、滾裝船與水橋登陸駁船的公開建造進度推估']},
  {v:'2026-11-10.28',items:['補給斷絕會導致攻方失敗：島上補給不足時，損耗隨連續缺糧回合數加重；若補給船團與運輸船全數損失、連續 2 回合缺補給，或連續 5 回合缺補給，攻方彈盡糧絕而崩潰，守方獲勝（即使一度占領台北也一樣）','超過預計回合時，可選擇由電腦接手推演到分出勝負']},
