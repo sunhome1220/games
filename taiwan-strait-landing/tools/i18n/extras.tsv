@@ -1005,3 +1005,16 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
  點火力沒用（不會累積到下回合）	 point(s) of firepower unused (it does not carry over)	
  個單位可以行動	 unit(s) can still act	
 。再按一次「結束階段」確認。	. Press "End phase" again to confirm.	
+⚓ 回母港	⚓ Return to port	
+把選取的潛艦開回最近的母港（回港補滿彈藥）	Sail the selected submarine to the nearest home port (rearms in port)	
+切換潛艦使用的武器	Switch the submarine's weapon	
+武器：	Weapon: 	
+自動	Auto	
+只用魚雷	Torpedoes only	
+只用魚叉	Harpoon only	
+找不到可回的母港	No home port available	
+已在母港，會自動補滿彈藥	Already in port; ammunition is restocked automatically	
+這回合無法移動	Cannot move this turn	
+抵達母港，下個階段補滿彈藥	Reached port; ammunition will be restocked next phase	
+朝母港前進（約還需 	Heading for port (about 	
+ 回合）	 more turn(s))	
