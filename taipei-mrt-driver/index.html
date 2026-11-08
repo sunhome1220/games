@@ -16,6 +16,8 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 
 /* 右上角小按鈕 */
 #top{position:fixed;top:calc(6px + env(safe-area-inset-top));right:var(--tr,8px);display:flex;gap:6px;z-index:6}
+#tut{position:fixed;inset:0;z-index:25;background:rgba(5,8,14,.78);display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}#tut[hidden]{display:none}
+.tut-c{max-width:460px;background:#141b27;border:1px solid #39465c;border-radius:14px;padding:14px 18px;font-size:14px;color:#dfe7f3}.tut-c h2{margin:0 0 6px;font-size:18px}.tut-c ol{padding-left:20px;margin:6px 0}.tut-c li{margin:6px 0}.tut-c .big{margin-top:8px}
 #rmap{position:fixed;left:6px;right:8px;top:calc(140px + env(safe-area-inset-top));height:136px;background:rgba(8,12,20,.95);border:1px solid #39465c;border-radius:10px;z-index:4;overflow:hidden}
 #rmap[hidden]{display:none}
 #rmap-hd{display:flex;font-size:11px;justify-content:space-between;gap:8px;padding:3px 8px;font-size:12px;color:#ffd37a;font-weight:700;white-space:nowrap;overflow:hidden}
@@ -93,6 +95,7 @@ th:first-child,td:first-child{text-align:left}
 th{color:#9fb0c8;font-weight:600}
 .grade{font-size:64px;font-weight:800;line-height:1;margin:6px 0}
 .evd{margin:4px 0;font-size:13px;color:#c3cfe2}.evd summary{cursor:pointer;padding:6px 0}
+.adv>summary{font-weight:700;color:#e4ecf8;padding:10px 12px;background:#141b27;border:1px solid #2c3850;border-radius:10px;margin-top:10px}.adv[open]>summary{border-radius:10px 10px 0 0}
 .evd small{color:#8fa0b8;display:block}
 .evrow{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:#141b27;border:1px solid #2c3850;border-radius:10px;padding:11px 12px;margin:6px 0;line-height:1.4;color:#d3ddee;font-size:13px}
 .evrow .sw{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid #5d6e8c;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#10151f}
@@ -113,6 +116,7 @@ th{color:#9fb0c8;font-weight:600}
 <button id="newver" hidden>🔔 有新版本，點此重新整理</button>
 
 <div id="rmap" hidden><div id="rmap-hd"><span id="rmap-now"></span><span class="rmap-lg"><i style="background:#f0a64a"></i>高架 <i style="background:#4a8fe0"></i>地下 <i style="background:#5bbf6a"></i>平面 <i style="background:#d32f2f"></i>限速（遊戲設定）</span></div><div id="rmap-in"></div></div>
+<div id="tut" hidden><div class="tut-c"><h2>第一次開車？30 秒學會</h2><ol><li><b>發車</b>：關好門，把右側手把往上推到 <b>P2</b>（鍵盤 ↑）。</li><li><b>看限速與距離</b>：左上圓牌是現在的限速；下方儀表顯示離停車線還有多遠。接近站時，把手把往下拉到 <b>B 位</b>煞車，畫面會 💡 建議檔位。</li><li><b>停準</b>：車頭停在<b>綠色停車線</b>，越準分數越高；快停時要<b>慢慢放鬆</b>煞車。</li><li><b>開門</b>：照畫面提示開左門或右門，乘客上下車後再<b>關門</b>，繼續下一站。</li></ol><p class="sub">超速太多會被自動煞車（ATP），不用緊張，回到 N 位就能繼續。需要時可在選單看完整「操作說明」。</p><button class="big" id="tut-ok">知道了，開始駕駛</button></div></div>
 <div id="top" class="hidden">
   <button id="b-pause">⏸ 暫停</button>
   <button id="b-call" style="display:none">📞 行控</button>
@@ -139,13 +143,17 @@ th{color:#9fb0c8;font-weight:600}
   <div id="sharebanner" class="card" hidden></div>
   <p class="sub">加速、惰行、煞車，準點、準確地把列車停在月台停車位置，並維持乘坐舒適。</p>
 
-  <div class="lab">駕駛名稱（顯示在駕駛室名牌、成績與排行榜）</div>
-  <input id="m-driver" type="text" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="ANDY">
   <div class="lab">路線</div>
   <div class="chips" id="m-lines"></div>
 
   <div class="lab">預設關卡</div>
   <div class="chips" id="m-presets"></div>
+  <div id="m-info" class="sub" style="margin:6px 0 0"></div>
+  <button class="big" id="m-go">開始值勤</button>
+  <div id="m-best" class="sub" style="text-align:center;margin-top:8px"></div>
+  <details class="evd adv" id="m-adv"><summary>⚙ 自訂關卡與遊戲設定（可略過，用預設即可）</summary>
+  <div class="lab">駕駛名稱（顯示在駕駛室名牌、成績與排行榜）</div>
+  <input id="m-driver" type="text" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="ANDY">
   <div class="lab">自訂關卡：拖曳「起」「終」兩端選站（可選相鄰兩站；兩端交叉就是反向）</div>
   <div id="rs"><div id="rs-ticks"></div><div id="rs-fill"></div><div class="th a" id="rs-a">起</div><div class="th b" id="rs-b">終</div></div>
   <div class="rs-leg"><span style="color:#e0a040">▮高架</span><span style="color:#5fbf6f">▮平面</span><span style="color:#7d8bab">▮地下</span></div>
@@ -154,7 +162,6 @@ th{color:#9fb0c8;font-weight:600}
     <button class="chip" id="m-swap" title="起點與終點對調">⇄</button>
     <div class="rs-c"><button class="chip sm" id="b-prev">◀</button><span id="rs-lb"></span><button class="chip sm" id="b-next">▶</button></div>
   </div>
-  <div id="m-info" class="sub" style="margin:6px 0 0"></div>
   <div class="row2" style="margin-top:6px">
     <div><div class="lab">天色</div><select id="m-theme">
       <option value="auto">自動（隨機）</option><option value="day">白天</option><option value="dusk">黃昏</option><option value="night">夜晚</option></select></div>
@@ -180,6 +187,10 @@ th{color:#9fb0c8;font-weight:600}
     <button class="chip sm" id="m-haptest">試震動</button>
   </details>
 
+  <div class="lab">畫質（覺得卡頓可選「省電」）</div>
+  <select id="m-quality"><option value="auto">自動：太卡時自動降低畫質（預設）</option><option value="high">高畫質</option><option value="low">省電：較低畫質，較順暢</option></select>
+  </details>
+  <details class="evd adv" id="m-howto"><summary>📖 操作說明</summary>
   <ul class="how">
     <li>🎚 <b>主控器</b>：右側手把，上方 P1～P4 加速、中間 N 惰行、下方 B1～B7 煞車、最下 EB 緊急煞車。鍵盤：<b>↑↓</b> 加減一檔、<b>空白</b> 回 N、<b>X</b> 緊急煞車</li>
     <li>🚪 <b>停妥後</b>開門：看畫面上的月台在左或右（島式月台在左、側式月台在右，依靠右行駛推得）。<b>A／←</b> 開左門、<b>D／→</b> 開右門、<b>F／Enter</b> 關門。門沒關好不能加速</li>
@@ -191,8 +202,7 @@ th{color:#9fb0c8;font-weight:600}
     <li>⚠ <b>突發事件</b>（預設開啟，依真實新聞與北捷規定設計）：地震、強風、旅客誤入軌道、車門故障、號誌異常、供電異常、列車故障清客。處置得宜加分，結算時會附建議與依據；可在選單關閉或調整頻率</li>
     <li>⏱ 依時刻表到站：太早或太晚都會扣準點分。月台上的乘客上下車需要時間，別太早關門</li>
   </ul>
-  <button class="big" id="m-go">開始值勤</button>
-  <div id="m-best" class="sub" style="text-align:center;margin-top:8px"></div>
+  </details>
   <button class="btn2" id="m-share">🔗 分享這個關卡（可用 AirDrop）</button>
   <div id="sh-menu" class="card" hidden></div>
   <button class="btn2" id="m-board">🏆 排行榜</button>
@@ -239,15 +249,15 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-08.01"></script>
-<script src="js/broadcast.js?v=2026-11-08.01"></script>
-<script src="js/haptics.js?v=2026-11-08.01"></script>
-<script src="js/feedback.js?v=2026-11-08.01"></script>
-<script src="js/routemap.js?v=2026-11-08.01"></script>
-<script src="js/share.js?v=2026-11-08.01"></script>
-<script src="js/events.js?v=2026-11-08.01"></script>
-<script src="js/lines.js?v=2026-11-08.01"></script>
-<script src="js/render3d.js?v=2026-11-08.01"></script>
+<script src="js/models.js?v=2026-11-08.02"></script>
+<script src="js/broadcast.js?v=2026-11-08.02"></script>
+<script src="js/haptics.js?v=2026-11-08.02"></script>
+<script src="js/feedback.js?v=2026-11-08.02"></script>
+<script src="js/routemap.js?v=2026-11-08.02"></script>
+<script src="js/share.js?v=2026-11-08.02"></script>
+<script src="js/events.js?v=2026-11-08.02"></script>
+<script src="js/lines.js?v=2026-11-08.02"></script>
+<script src="js/render3d.js?v=2026-11-08.02"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -255,7 +265,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-08.01';
+const VERSION='2026-11-08.02';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -283,6 +293,7 @@ const TOL_OPEN_SHORT=10, TOL_OPEN_LONG=30;          // 可開門的停車誤差�
 /* ========================= 畫面尺寸與投影 ========================= */
 const cv=$('c'),X=cv.getContext('2d');
 const NEAR=2.5,MAXZ=420,CAM=2.4,BAR=58;
+let QS=1;   // 3D 解析度倍率：自動模式下太卡會降低
 let W=0,H=0,DPR=1,HY=0,dashTop=0,dashH=0,F=700,land=false,lrPx=10,barH=BAR,dashX0=0,dashX1=0,sceneH=0;
 function resize(){
   DPR=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;
@@ -300,7 +311,7 @@ function resize(){
   dashTop=H-dashH;HY=dashTop*0.46;F=Math.max(W*0.72,dashTop*0.9);
   sceneH=land?H:dashTop;   // 橫握時 3D 畫面鋪滿整個螢幕，儀表只蓋在中間下緣
   const gl=$('gl');gl.style.height=sceneH+'px';
-  if(typeof R3!=='undefined'&&R3.ok)R3.resize(W,sceneH,DPR);
+  if(typeof R3!=='undefined'&&R3.ok)R3.resize(W,sceneH,Math.min(DPR,1.5)*QS);
   const rot=$('rot');if(rot)rot.style.display=(!land&&W<H&&('ontouchstart' in window)&&!rotDismissed&&document.getElementById('top')&&!$('top').classList.contains('hidden'))?'block':'none';
 }
 let rotDismissed=false;
@@ -345,7 +356,7 @@ const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e
 
 /* ========================= 遊戲狀態 ========================= */
 let G=null;          // 目前這一班
-let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
+let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,quality:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
 const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
 if(!LINES[SET.line])SET.line='red';
 
@@ -1373,6 +1384,7 @@ function fillMenu(){
   $('m-minfo').innerHTML=M?`${M.name}｜${M.maker}（${M.year}）｜營運最高 ${M.vmax} km/h｜起動加速 ${M.accel.toFixed(1)} m/s²、正常減速 ${M.brake.toFixed(1)}、緊急 ${M.eb.toFixed(2)} m/s²${M.kw?`｜編組輸出 ${M.kw} kW`:''}${M.driverless?'<br><b style="color:#ffb347">真實的文湖線是全自動無人駕駛，這裡的手動駕駛是模擬設定</b>':''}`:'每次值勤隨機派車，列數多的車型出現機率較高。';
   $('m-driver').value=SET.driver===DRIVER_DEFAULT?DRIVER_DEFAULT:SET.driver;
   $('m-atp').value=SET.atpStrict?'strict':'relaxed';
+  $('m-quality').value=SET.quality||'auto';
   $('m-bc').checked=SET.bcOn;$('m-bcjk').value=SET.bcJk;$('m-hap').checked=SET.haptic;
   const bl=$('m-bclang');bl.innerHTML='';
   BC_LANGS.forEach(L=>{const b=document.createElement('button');b.className='chip sm'+(SET.bcLangs.includes(L.id)?' on':'');b.textContent=L.name;
@@ -1438,16 +1450,24 @@ $('m-assist').onchange=e=>{SET.assist=e.target.checked;};
 $('m-driver').oninput=e=>{SET.driver=e.target.value;store('mrt-set',SET);};
 $('m-driver').onblur=e=>{e.target.value=drvName();SET.driver=e.target.value;store('mrt-set',SET);};   // 離開欄位時整理成實際使用的名稱（空白會回到 ANDY）
 $('m-driver').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}e.stopPropagation();};   // 輸入時不要觸發遊戲快捷鍵
+$('m-quality').onchange=e=>{SET.quality=e.target.value;store('mrt-set',SET);applyQuality();};
 $('m-atp').onchange=e=>{SET.atpStrict=e.target.value==='strict';store('mrt-set',SET);};
 $('m-bc').onchange=e=>{SET.bcOn=e.target.checked;};
 $('m-bcjk').onchange=e=>{SET.bcJk=e.target.value;};
 $('m-hap').onchange=e=>{SET.haptic=e.target.checked;if(SET.haptic)haptic('n');};
 $('m-haptest').onclick=()=>{SET.haptic=true;$('m-hap').checked=true;haptic('p',2);setTimeout(()=>haptic('n'),350);setTimeout(()=>haptic('b',5),800);setTimeout(()=>haptic('eb'),1300);};
 
+function showTutorial(){
+  let seen=false;try{seen=localStorage.getItem('mrt-tut')==='1';}catch(e){}
+  if(seen)return;
+  paused=true;$('b-pause').textContent='▶ 繼續';if(AC)AC.suspend();$('tut').hidden=false;
+}
+$('tut-ok').onclick=()=>{try{localStorage.setItem('mrt-tut','1');}catch(e){}$('tut').hidden=true;paused=false;$('b-pause').textContent='⏸ 暫停';if(AC)AC.resume();};
 function startRun(){
+  QS=SET.quality==='low'?0.6:1;pf={n:0,t:0,warm:0};
   audioInit();if(AC&&AC.state==='suspended')AC.resume();
   store('mrt-set',SET);
-  G=buildRun(SET);syncLever();paused=false;rmHide();
+  G=buildRun(SET);syncLever();paused=false;rmHide();showTutorial();
   $('menu').classList.add('hidden');$('result').classList.add('hidden');
   ['top','lever','bar'].forEach(i=>$(i).classList.remove('hidden'));
   resize();rmBuild(G);
@@ -1521,11 +1541,24 @@ function showResult(){
 }
 
 /* ========================= 主迴圈 ========================= */
-let last=0,acc=0;
+let last=0,acc=0,pf={n:0,t:0,warm:0};
+function applyQuality(){QS=SET.quality==='low'?0.6:1;pf={n:0,t:0,warm:0};resize();}
+// 自動畫質：連續約 1.5 秒平均每格超過 28 ms（低於約 36 fps）就把 3D 解析度降一級，最低 0.5 倍；只降不升，避免忽高忽低
+function perfAdapt(raw,playing){
+  if(SET.quality!=='auto'||!playing||raw>0.5){pf.n=0;pf.t=0;return;}
+  if(pf.warm<90){pf.warm++;return;}      // 剛開始或剛切換時的前幾格不算
+  pf.n++;pf.t+=raw;
+  if(pf.n>=90){
+    const avg=pf.t/pf.n;pf.n=0;pf.t=0;
+    if(avg>0.028&&QS>0.5){QS=Math.max(0.5,QS*0.8);pf.warm=0;resize();toast('已自動降低畫質以維持順暢（選單可改）','#cfd8e6',3);}
+  }
+}
 function loop(ts){
-  const dt=Math.min(0.1,(ts-last)/1000||0);last=ts;frameDt=dt;
+  const raw=(ts-last)/1000||0;
+  const dt=Math.min(0.1,raw);last=ts;frameDt=dt;
   const playing=G&&$('menu').classList.contains('hidden')&&$('result').classList.contains('hidden')&&!paused;
   if(playing){acc+=dt;let c=0;while(acc>=1/60&&c<12){step(1/60);acc-=1/60;c++;}if(c>=12)acc=0;}
+  perfAdapt(raw,!!playing);
   render();audioUpdate();
   requestAnimationFrame(loop);
 }
