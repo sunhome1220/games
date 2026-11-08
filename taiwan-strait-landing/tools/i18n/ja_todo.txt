@@ -14,6 +14,7 @@
 守方空軍 −1	Defender air force −1
 制空：	Air control: 
 已癱瘓	Knocked out
+ 回合）	 more turn(s))
 天候機率：良好 50%、普通 30%、惡劣 20%	Weather odds: good 50%, fair 30%, bad 20%
 攔截失敗	Intercept failed
 若現在判定：攻方達成 	If judged now: attacker meets 
@@ -829,3 +830,15 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
  點火力沒用（不會累積到下回合）	 point(s) of firepower unused (it does not carry over)
  個單位可以行動	 unit(s) can still act
 。再按一次「結束階段」確認。	. Press "End phase" again to confirm.
+⚓ 回母港	⚓ Return to port
+把選取的潛艦開回最近的母港（回港補滿彈藥）	Sail the selected submarine to the nearest home port (rearms in port)
+切換潛艦使用的武器	Switch the submarine's weapon
+武器：	Weapon: 
+自動	Auto
+只用魚雷	Torpedoes only
+只用魚叉	Harpoon only
+找不到可回的母港	No home port available
+已在母港，會自動補滿彈藥	Already in port; ammunition is restocked automatically
+這回合無法移動	Cannot move this turn
+抵達母港，下個階段補滿彈藥	Reached port; ammunition will be restocked next phase
+朝母港前進（約還需 	Heading for port (about 
