@@ -806,3 +806,8 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 還有單位想動就繼續；想打擊按「火力打擊」，不想一個個點就按「電腦代打」；做完按「結束階段」。	Keep moving units if you like; press "Fire strike" to strike, or "AI auto-play" to skip the rest; press "End phase" when done.
 關閉引導	Close tutorial
 關閉引導（之後不再顯示）	Close tutorial (won't show again)
+攻方目前達成 	Attacker currently meets 
+ 項條件；第 	 condition(s); judged at the end of turn 
+ 回合結束時才判定。	.
+判定有變化：攻方達成 	Judgment changed: attacker meets 
+，若現在判定 → 	; if judged now → 
