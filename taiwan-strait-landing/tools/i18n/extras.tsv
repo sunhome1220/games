@@ -1018,3 +1018,10 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 抵達母港，下個階段補滿彈藥	Reached port; ammunition will be restocked next phase	
 朝母港前進（約還需 	Heading for port (about 	
  回合）	 more turn(s))	
+對方請求停火	The other side requests a ceasefire	
+接受停火	Accept ceasefire	
+拒絕，繼續作戰	Refuse and keep fighting	
+依目前控制的位置判定，戰事結束。	Judged by current positions; the war ends.	
+不接受對方的條件，戰事繼續。	Reject their terms; the war continues.	
+對方仍可能再次請求	They may ask again	
+提出依目前局勢停火。接受則戰事結束，拒絕則繼續作戰。	proposes a ceasefire at the current situation. Accepting ends the war; refusing continues it.	
