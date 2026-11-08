@@ -796,3 +796,13 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 專打登陸船團	Target landing ships only
 專打航艦	Target carriers only
 專打護航艦	Target escort ships only
+新手引導 · 	Tutorial · 
+第 1 步：選單位	Step 1: Select a unit
+第 2 步：火力打擊	Step 2: Fire strike
+第 2 步：下令	Step 2: Give an order
+第 3 步：收尾	Step 3: Wrap up
+點地圖上有橘圈的敵方目標來打擊；不想打了，再按一次「火力打擊」取消。	Tap an enemy target with an orange ring to strike it; press "Fire strike" again to cancel.
+點綠色格子＝移動；點橘圈的敵方單位＝攻擊。點空白處可取消選取。	Green hex = move; orange-ringed enemy = attack. Tap empty ground to deselect.
+還有單位想動就繼續；想打擊按「火力打擊」，不想一個個點就按「電腦代打」；做完按「結束階段」。	Keep moving units if you like; press "Fire strike" to strike, or "AI auto-play" to skip the rest; press "End phase" when done.
+關閉引導	Close tutorial
+關閉引導（之後不再顯示）	Close tutorial (won't show again)
