@@ -996,3 +996,12 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
  個部隊需要彈藥與油糧，補給容量 	 units on the island needing ammo and fuel; supply capacity 	
 需求超過容量，部隊會一回合比一回合損耗，連續多回合缺補給攻方會崩潰。要打開港口、灘頭或補給站來提高容量。	Demand exceeds capacity: units wear down each turn, and several turns without supply make the attack collapse. Open ports, beaches or depots to raise capacity.	
 容量足夠。補給靠港口、灘頭卸貨、空投與就地徵用。	Capacity is sufficient. Supply comes from port/beach unloading, airdrops and local requisition.	
+↶ 撤銷移動	↶ Undo move	
+↶ 撤銷	↶ Undo	
+撤銷剛才的移動（還沒進行其他動作前）	Undo the last move (before any other action)	
+已撤銷移動	Move undone	
+確定結束階段？	End phase?	
+還有 	 	
+ 點火力沒用（不會累積到下回合）	 point(s) of firepower unused (it does not carry over)	
+ 個單位可以行動	 unit(s) can still act	
+。再按一次「結束階段」確認。	. Press "End phase" again to confirm.	
