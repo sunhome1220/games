@@ -966,3 +966,8 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 超過預計回合時，可選擇由電腦接手推演到分出勝負	After the planned turn limit you may let the computer play on until a winner emerges	
 共軍渡海運力成長：首波增加 	PLA sealift growth: first wave gains 	
  個兩棲旅，補給運輸船 	 amphibious brigades, supply transports 	
+海鯤潛艦任務	Hai Kun submarine mission	
+專打補給船團	Target supply convoys only	
+專打登陸船團	Target landing ships only	
+專打航艦	Target carriers only	
+專打護航艦	Target escort ships only	
