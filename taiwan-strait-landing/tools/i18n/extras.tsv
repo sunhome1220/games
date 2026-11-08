@@ -971,3 +971,37 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 專打登陸船團	Target landing ships only	
 專打航艦	Target carriers only	
 專打護航艦	Target escort ships only	
+新手引導 · 	Tutorial · 	
+第 1 步：選單位	Step 1: Select a unit	
+第 2 步：火力打擊	Step 2: Fire strike	
+第 2 步：下令	Step 2: Give an order	
+第 3 步：收尾	Step 3: Wrap up	
+點地圖上有橘圈的敵方目標來打擊；不想打了，再按一次「火力打擊」取消。	Tap an enemy target with an orange ring to strike it; press "Fire strike" again to cancel.	
+點綠色格子＝移動；點橘圈的敵方單位＝攻擊。點空白處可取消選取。	Green hex = move; orange-ringed enemy = attack. Tap empty ground to deselect.	
+還有單位想動就繼續；想打擊按「火力打擊」，不想一個個點就按「電腦代打」；做完按「結束階段」。	Keep moving units if you like; press "Fire strike" to strike, or "AI auto-play" to skip the rest; press "End phase" when done.	
+關閉引導	Close tutorial	
+關閉引導（之後不再顯示）	Close tutorial (won't show again)	
+攻方目前達成 	Attacker currently meets 	
+ 項條件；第 	 condition(s); judged at the end of turn 	
+ 回合結束時才判定。	.	
+判定有變化：攻方達成 	Judgment changed: attacker meets 	
+，若現在判定 → 	; if judged now → 	
+【回合】目前第 	[Turn] Now turn 	
+【階段】每回合分「攻方階段」與「守方階段」，輪流行動。目前輪到	[Phase] Each turn has an attacker phase and a defender phase, taken in turn. Now it is 	
+【天候】	[Weather] 	
+【火力】攻方這個階段可以打擊 	[Firepower] This phase the attacker can strike 	
+ 個目標（火箭軍飛彈、空軍、艦砲等的總和，按「火力打擊」再點目標；每點命中率不高，優先打威脅大的目標）。	 targets (rocket-force missiles, air force, naval guns combined; press "Fire strike", then tap a target; each point has a modest hit chance, so hit the biggest threats first).	
+【制空】雙方空軍對抗的結果：	[Air control] Result of the air contest: 	
+【補給】攻方島上有 	[Supply] The attacker has 	
+ 個部隊需要彈藥與油糧，補給容量 	 units on the island needing ammo and fuel; supply capacity 	
+需求超過容量，部隊會一回合比一回合損耗，連續多回合缺補給攻方會崩潰。要打開港口、灘頭或補給站來提高容量。	Demand exceeds capacity: units wear down each turn, and several turns without supply make the attack collapse. Open ports, beaches or depots to raise capacity.	
+容量足夠。補給靠港口、灘頭卸貨、空投與就地徵用。	Capacity is sufficient. Supply comes from port/beach unloading, airdrops and local requisition.	
+↶ 撤銷移動	↶ Undo move	
+↶ 撤銷	↶ Undo	
+撤銷剛才的移動（還沒進行其他動作前）	Undo the last move (before any other action)	
+已撤銷移動	Move undone	
+確定結束階段？	End phase?	
+還有 	 	
+ 點火力沒用（不會累積到下回合）	 point(s) of firepower unused (it does not carry over)	
+ 個單位可以行動	 unit(s) can still act	
+。再按一次「結束階段」確認。	. Press "End phase" again to confirm.	
