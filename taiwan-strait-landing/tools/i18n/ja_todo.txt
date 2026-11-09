@@ -849,3 +849,12 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 不接受對方的條件，戰事繼續。	Reject their terms; the war continues.
 對方仍可能再次請求	They may ask again
 提出依目前局勢停火。接受則戰事結束，拒絕則繼續作戰。	proposes a ceasefire at the current situation. Accepting ends the war; refusing continues it.
+演習序幕 · 	Exercise prelude · 
+小規模演習	Small exercise
+中規模演習	Medium exercise
+空前大規模演習	Unprecedented large exercise
+共軍宣布在台灣周邊海空域實施聯合演習，劃設環台演習區，艦機群出港環島機動。	The PLA announces joint exercises in the air and sea around Taiwan, declares exercise zones encircling the island, and ships and aircraft sortie to circle it.
+守方情報部門察覺異常：這次演習的規模與部署不尋常，後備部隊提前動員。	Defender intelligence senses something wrong: the scale and deployment are unusual, and reserves mobilize early.
+守方研判為例行演習，沒有採取額外動員。	The defender judges it a routine exercise and takes no extra mobilization.
+演習結束的瞬間，艦艇與登陸部隊轉向台灣——演習轉為攻擊。	The moment the exercise ends, ships and landing forces turn toward Taiwan: the exercise becomes an attack.
+略過	Skip
