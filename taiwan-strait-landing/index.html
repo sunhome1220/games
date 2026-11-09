@@ -840,7 +840,7 @@ const TYPES={
   cv:{n:'共軍航艦群',s:'航艦',atk:0,def:2,mv:3,hp:3},
   ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:3,hp:2},
   hk:{n:'海鯤潛艦',s:'潛艦',atk:0,def:1,mv:3,hp:2},
-  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:3,hp:2},
+  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:2,hp:2}, // 滾裝客貨輪比軍艦慢：每回合最多航行 2 個舊格
   fob:{n:'灘頭補給站',s:'補給站',atk:0,def:2,mv:0,hp:3}
 };
 const WEATHER={
@@ -1122,9 +1122,10 @@ function convoyTurn(){ // 攻方階段開始：運輸船返航入列、派出新
   const sinks=unloadHexes();if(!sinks.length)return;
   const maxSend=Math.min(3,Math.floor((unloadCap()+S.units.filter(x=>x.side==='atk'&&x.type==='fob').length*2)/2)),have=S.units.filter(x=>x.side==='atk'&&x.type==='cvy').length;
   const ord=(S.supOrd&&S.supOrd[t])||{},n=Math.max(0,Math.min(P.plaLift,maxSend+(ord.rush?1:0)-have));
-  for(let i=0;i<n;i++){const h=placeNear(FK('4,4'),x=>x.isl==='CN'&&x.t==='port');if(!h)break;S.units.push(mkUnit('atk','cvy',h.k));P.plaLift--;}
+  for(let i=0;i<n;i++){const h=placeNear(FK('4,4'),x=>x.isl==='CN'&&x.t==='port');if(!h)break;S.units.push(mkUnit('atk','cvy',h.k,{fresh:t}));P.plaLift--;}
   if(n>0)log('攻方派出 '+n+' 個補給船團，目標：已掌握的港口與灘頭（運輸船剩 '+P.plaLift+'）');
   for(const u of S.units.filter(x=>x.side==='atk'&&x.type==='cvy')){
+    if(u.fresh===t){u.moved=true;continue;} // 剛裝載好的船團這回合留在港內集結，下回合才出航（港內時守方的長程飛彈可以打到）
     u.moved=false;const rc=reach(u),h=hexOf(u);let best=null,bs=Math.min.apply(null,sinks.map(s2=>hd(h,s2)))+ssmThreat(h.k)*.6;
     for(const [k,v] of rc){if(v.kind!=='sail')continue;const hh=TER[k],sc=Math.min.apply(null,sinks.map(s2=>hd(hh,s2)))+ssmThreat(k)*.6+Math.random()*.3-(S.units.some(x=>x.side==='atk'&&x.type==='dd'&&hd(hexOf(x),hh)<=2)?.8:0);if(sc<bs-.2){bs=sc;best=k;}}
     if(best)doMove(u,best,'sail');u.moved=true;u.acted=true;
@@ -1178,7 +1179,7 @@ function support(u,t){
   for(const h of ring2(t))for(const f of unitsAt(h.k))if(f!==u&&f.side===u.side&&!isMsl(f)&&!(h.isl==='CN'))n++;
   return Math.min(2,n);
 }
-const canSail=u=>u.type==='ff'||u.type==='hk'||(u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm'||u.type==='dd'||u.type==='cv'));
+const canSail=u=>u.type==='ff'||u.type==='hk'||(u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm'||u.type==='dd'||u.type==='cv'||u.type==='cvy'||u.type==='lst'||u.type==='ro'));
 function canEmbark(u,h){
   if(u.type==='ff'||u.type==='hk')return h.t==='port'&&unitsAt(h.k).every(x=>x.side===u.side);
   if(!isLand(h)||!h.coastal||S.owner[h.k]!=='atk')return false;
@@ -1350,7 +1351,7 @@ function fireMissile(m,t){
   if(m.type==='ssm'&&S.pools&&S.pools.rocAS!==undefined)S.pools.rocAS=Math.max(0,Math.round((S.pools.rocAS-.2)*10)/10);
   m.shots--;if(m.shots<=0&&m.type!=='ssm')m.acted=true; // 岸置發射車打完仍可機動轉移
   if(m.type==='ssm')m.revealed=true; // 開火後暴露
-  const sat=satHit(t),need=(m.type==='ff'?4:S.mods.ssmNeed)+escortMod()-sat,hit=sat>=3||hitP(pNeed(need),'ms:'+m.type+'>'+t.type);
+  const sat=satHit(t),need=(m.type==='ff'?4:S.mods.ssmNeed)+(t.type==='cvy'?cvyMod(t):escortMod())-sat,hit=sat>=3||hitP(pNeed(need),'ms:'+m.type+'>'+t.type);
   fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit});
   if(hit){log('反艦飛彈命中海上的 '+TYPES[t.type].n+(sat>=2?'（飽和攻擊）':'（'+lastTxt()+'）'));damage(t,sat>=2?2:1,sat>=2?'飽和攻擊':'反艦飛彈');}
   else log('反艦飛彈未命中（'+lastTxt()+'）');
@@ -1955,6 +1956,11 @@ function repairAirfields(){ // 守方每 2 回合修復一級（未被占領的�
   for(const k of Object.keys(S.afDmg)){if(S.owner[k]==='atk')continue;S.afDmg[k]--;log('守方搶修機場：'+(TER[k].name||'機場')+(S.afDmg[k]>0?'，仍受損':'，恢復運作'));if(S.afDmg[k]<=0)delete S.afDmg[k];}
 }
 function allyAir(){return rocAirEff()+S.fx.units.filter(f=>f.kind==='air'&&fxActive(f)).reduce((a,f)=>a+f.hp,0);}
+// 補給船團（慢速、無防空的商船）：比軍艦好打，只有附近的護航艦才能保護它——無護航 −1（命中門檻降低）、每有一艘護航艦在 2 格內 +1（最多 +2）
+function cvyMod(t){const near=S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&hd(hexOf(e),hexOf(t))<=2).length;return -1+Math.min(2,near);}
+// 守方選目標的價值：航艦最高，其次是補給船團（打掉補給就是斷攻方的後路）、載著登陸部隊的船，護航艦最低
+const tgtVal=e=>e.type==='cv'?4:e.type==='cvy'?3:(e.type==='amph'||e.type==='mar'||e.type==='arm')?2.5:e.type==='dd'?1:1.5;
+function pickW(arr,f){let t=arr.reduce((a,x)=>a+f(x),0),r=Math.random()*t;for(const x of arr){if((r-=f(x))<=0)return x;}return arr[0];}
 function escortMod(){return S.pools.plaNavy>=5?1:0;}
 // 大陸基地損傷：火箭軍旅駐地、空軍機場被打掉的比例，就是對應發射與出擊能量的損失（發射架、跑道損毀就發射不出去）
 function cnShare(kind){let a=0,b=0;for(const id of Object.keys(CNB)){if(CNB[id].kind!==kind)continue;a+=Math.max(0,S.cn[id]);b+=CNB[id].hp;}return b?a/b:1;}
@@ -2007,7 +2013,7 @@ function antiShip(who,shots,need,canLand,tag,ok0,fk){
   const P=S.pools;let hc=0,he=0,hl=0,cvh=0;
   for(let i=0;i<shots;i++){
     const fleet=S.units.filter(u=>u.side==='atk'&&atSea(u)&&(!isShip(u)||u.type==='cv'||u.type==='cvy'));
-    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pick(fleet),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&hd(hexOf(x),hexOf(tg))<=2)?1:0,sat=satHit(tg),ok=sat>=3||hitP(pNeed(need+escortMod()+cov-sat),'antiShip');fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:orgPick(base),k:fk||'cm',ad:P.plaAD>0&&fk!=='torp'?(ok?'pass':'int'):undefined,adSide:'atk'});if(ok){hc++;damage(tg,sat>=2?2:1,sat>=2?'飽和攻擊':who);}}
+    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pickW(fleet,tgtVal),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&hd(hexOf(x),hexOf(tg))<=2)?1:0,sat=satHit(tg),ok=sat>=3||hitP(pNeed(need+(tg.type==='cvy'?cvyMod(tg):escortMod()+cov)-sat),'antiShip');fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:orgPick(base),k:fk||'cm',ad:P.plaAD>0&&fk!=='torp'?(ok?'pass':'int'):undefined,adSide:'atk'});if(ok){hc++;damage(tg,sat>=2?2:1,sat>=2?'飽和攻擊':who);}}
     else if(P.plaNavy>0){if(hitP(pNeed(need),'antiShip')){he++;P.plaNavy--;if(P.plaCV>0&&hitP(pNeed(5+(P.plaNavy>=5?1:0)),'antiShip')){P.plaCV--;cvh++;plaCarrierLost('反艦飛彈');}}}
     else if(canLand){
       const land=S.units.filter(u=>u.side==='atk'&&onTW(u));if(!land.length)break;
@@ -2128,7 +2134,7 @@ function strikeCN(id,by){
     if(B.kind==='rf'){const d=Math.min(3,P.rf);P.rf-=d;fx='火箭軍飛彈存量 −'+d;}
     else if(B.kind==='air'){if(P.plaAir>0){P.plaAir--;fx='攻方空軍 −1';}}
     else if(B.kind==='navy'){if(P.plaNavy>0){P.plaNavy--;fx='攻方護航艦隊 −1';}}
-    else{const us=S.units.filter(u=>u.side==='atk'&&hexOf(u).isl==='CN');if(us.length){const u=pick(us);damage(u,1,'大陸集結區遭打擊');fx=TYPES[u.type].n+' 損失 1 步';}}
+    else{const us=S.units.filter(u=>u.side==='atk'&&hexOf(u).isl==='CN'),sh=us.filter(u=>u.type==='cvy'||u.type==='lst'||u.type==='ro');if(us.length){const u=pickW(sh.length?sh:us,tgtVal);damage(u,1,'大陸集結區遭打擊');fx=TYPES[u.type].n+' 損失 1 步';}} // 港口裝載中的船團是最好打的目標，優先被打到
     if(S.cn[id]<=0)fx+=(fx?'，':'')+B.n+'已癱瘓';
   }
   S.cnLog.push({t:S.turn,id,by,hit});
@@ -3627,7 +3633,7 @@ async function aiDef(){
     while(alive(m)&&m.shots>0&&!S.over){
       let ts=targets(m);if(MS==='save')ts=ts.filter(t=>HV.includes(t.type));if(!ts.length)break;
       if(m.type==='hmr'){const w={arm:4,tank:4,amph:4,mar:4,abn:3,inf:2,res:2};ts.sort((a,b)=>(w[b.type]||1)-(w[a.type]||1)||a.hp-b.hp);}
-      else ts.sort((a,b)=>(b.type==='cv')-(a.type==='cv')||a.hp-b.hp);
+      else ts.sort((a,b)=>tgtVal(b)-tgtVal(a)||a.hp-b.hp);
       if(MS==='salvo'){if(!(salvoT&&alive(salvoT)&&ts.includes(salvoT)))salvoT=ts[0];else ts=[salvoT];}
       fireMissile(m,ts[0]);vol++;
       if(MS==='scoot'&&alive(m))m.revealed=false;
@@ -4240,12 +4246,12 @@ if(/[?&]debug=1/.test(location.search))window.__ext=()=>{const out=[],real=S;
   ['atk','def'].forEach(side=>truceOptions(side).opts.filter(o=>o.x).forEach(o=>tryit('truce:'+o.id,()=>applyTruce(side,o))));
   tryit('port',()=>applyPort(PORTS[0],portOptions(PORTS[0]).opts.find(o=>o.x)));
   return out;};
-if(/[?&]debug=1/.test(location.search)){window.__truceDef=()=>truceOptions('def').opts.map(o=>o.id);window.__instant=()=>checkInstant();window.__hm=(id)=>{const u=S.units.find(z=>z.id===id);const m=[...reach(u).entries()].find(([k,v])=>v.kind==='sail'||v.kind==='move');if(!m)return null;humanMove(u,m[0],m[1].kind);return {avail:undoAvail(),c:u.c,r:u.r};};window.__undo=()=>{const u0=S.undo&&S.units.find(z=>z.id===S.undo.id);undoMove();return u0?{c:u0.c,r:u0.r,moved:u0.moved,avail:undoAvail()}:null;};window.__guard=()=>endPhaseGuard();window.__fxSub=o=>fxSub(o);window.__kill=id=>{const u=S.units.find(z=>z.id===id);if(!u)return null;damage(u,u.hp,'test');render();return GHOSTS.size;};window.__gh=()=>GHOSTS.size;window.__sd=()=>{const u=S.units.find(z=>z.type==='hk');const d=S.units.find(z=>z.type==='dd');if(!u||!d)return null;const rc=[...reach(u).entries()].find(([k,v])=>v.kind==='sail');if(rc){u.c=TER[rc[0]].c;u.r=TER[rc[0]].r;}d.c=u.c;d.r=u.r;let seen=0,hit=0;for(let i=0;i<200;i++){u.revealed=false;u.hp=2;S.log.length=0;subDetect();if(u.revealed)seen++;if(u.hp<2)hit++;}return {seen,hit,atSea:atSea(u)};};window.__hit=(p,n)=>{for(const k in ACC)delete ACC[k];let h=0;for(let i=0;i<n;i++)if(hitP(p,'t'))h++;return h;};window.__wx=()=>({m:S.month,wx:S.mods.wx});window.__wave=(mo,n)=>{const keep=[S.month,S.typhoon,S.waveZ,S.typhoonNew];S.month=mo;S.typhoon=null;S.waveZ=0;let sum=0,hi=0,ty=0,mx=0,prevT=false,ev=0;for(let i=0;i<n;i++){const w=nextWave();sum+=w.wave;if(w.wave>=2.5)hi++;if(w.wave>=5)ty++;mx=Math.max(mx,w.wave);const t=!!S.typhoon||w.wave>=5;if(t&&!prevT)ev++;prevT=t;}[S.month,S.typhoon,S.waveZ,S.typhoonNew]=keep;return {mo,mean:+(sum/n).toFixed(2),pGe25:+(hi/n).toFixed(3),pTyph:+(ty/n).toFixed(3),max:+mx.toFixed(1),typhoonEvents:ev};};window.__hkdbg=()=>{const u=S.units.find(z=>z.type==='hk');return {human:humanTurn(),phase:S.phase,busy:S.busy,moved:u.moved,acted:u.acted,reach:[...reach(u).entries()].map(([k,v])=>k+':'+v.kind).slice(0,6),step:hkHomeStep(u)};};window.__hkhome=()=>{const u=S.units.find(z=>z.type==='hk');if(!u)return null;S.sel=u;S.phase='def';S.ctrl.def='human';S.busy=false;u.moved=false;u.acted=false;const b={c:u.c,r:u.r};hkGoHome();return {b,a:{c:u.c,r:u.r},port:hexOf(u).t};};window.__collapse=n=>{S.turn=Math.max(S.turn,4);S.pools.plaLift=0;S.units=S.units.filter(u=>!(u.side==='atk'&&u.type==='cvy'));S.sup={t:S.turn,total:0};const r=[];for(let i=0;i<n&&!S.over;i++){supplyAttrition();r.push(S.stats.supDef);}return {r,over:S.over,used:supply().used};};window.__sup=()=>{const r0=supply().cap;Object.keys(MINOR_PORTS).forEach(k=>{S.owner[k]='atk';});const r1=supply().cap;S.turn=Math.max(S.turn,3);S.bh={};['22,4','19,7','18,10'].forEach(k=>{S.owner[k]='atk';S.bh[k]=S.turn-1;});const r2=supply().cap;render();return [r0,r1,r2];};window.__owner=r=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h));hs.slice(0,Math.round(hs.length*r)).forEach(h=>{S.owner[h.k]='atk';});return twControl();};window.__wipe=()=>{S.stats.sailed=true;S.turn=Math.max(S.turn,3);S.units=S.units.filter(u=>!(u.side==='atk'&&!isShip(u)&&(atSea(u)||onTW(u)||hexOf(u).isl==='PH')));checkInstant();};window.__attr=()=>{S.turn=Math.max(S.turn,3);const a=S.units.filter(u=>u.side==='atk'&&!isShip(u));const tw=TER[TAIPEI];a.slice(0,18).forEach(u=>{u.c=tw.c;u.r=tw.r;});const b=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);supplyAttrition();const c=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);return [b,c,supply()];};window.__force3=keep=>{PORTS.concat([TAIPEI]).forEach(k=>{S.owner[k]='atk';delete S.portDown[k];});const tw=TER[TAIPEI];S.units.filter(u=>u.side==='atk'&&!isShip(u)).slice(0,16).forEach(u=>{u.c=tw.c;u.r=tw.r;u.hp=TYPES[u.type].hp;});let left=keep;S.units.filter(u=>u.side==='def'&&onTW(u)).forEach(u=>{if(left>0){u.hp=Math.min(u.hp,left);left-=u.hp;}else S.units=S.units.filter(x=>x!==u);});S.turn=Math.max(S.turn,3);const a=snap();return [a.n,a.as,a.ds];};}
+if(/[?&]debug=1/.test(location.search)){window.__truceDef=()=>truceOptions('def').opts.map(o=>o.id);window.__instant=()=>checkInstant();window.__hm=(id)=>{const u=S.units.find(z=>z.id===id);const m=[...reach(u).entries()].find(([k,v])=>v.kind==='sail'||v.kind==='move');if(!m)return null;humanMove(u,m[0],m[1].kind);return {avail:undoAvail(),c:u.c,r:u.r};};window.__undo=()=>{const u0=S.undo&&S.units.find(z=>z.id===S.undo.id);undoMove();return u0?{c:u0.c,r:u0.r,moved:u0.moved,avail:undoAvail()}:null;};window.__guard=()=>endPhaseGuard();window.__fxSub=o=>fxSub(o);window.__kill=id=>{const u=S.units.find(z=>z.id===id);if(!u)return null;damage(u,u.hp,'test');render();return GHOSTS.size;};window.__gh=()=>GHOSTS.size;window.__sd=()=>{const u=S.units.find(z=>z.type==='hk');const d=S.units.find(z=>z.type==='dd');if(!u||!d)return null;const rc=[...reach(u).entries()].find(([k,v])=>v.kind==='sail');if(rc){u.c=TER[rc[0]].c;u.r=TER[rc[0]].r;}d.c=u.c;d.r=u.r;let seen=0,hit=0;for(let i=0;i<200;i++){u.revealed=false;u.hp=2;S.log.length=0;subDetect();if(u.revealed)seen++;if(u.hp<2)hit++;}return {seen,hit,atSea:atSea(u)};};window.__hit=(p,n)=>{for(const k in ACC)delete ACC[k];let h=0;for(let i=0;i<n;i++)if(hitP(p,'t'))h++;return h;};window.__wx=()=>({m:S.month,wx:S.mods.wx});window.__wave=(mo,n)=>{const keep=[S.month,S.typhoon,S.waveZ,S.typhoonNew];S.month=mo;S.typhoon=null;S.waveZ=0;let sum=0,hi=0,ty=0,mx=0,prevT=false,ev=0;for(let i=0;i<n;i++){const w=nextWave();sum+=w.wave;if(w.wave>=2.5)hi++;if(w.wave>=5)ty++;mx=Math.max(mx,w.wave);const t=!!S.typhoon||w.wave>=5;if(t&&!prevT)ev++;prevT=t;}[S.month,S.typhoon,S.waveZ,S.typhoonNew]=keep;return {mo,mean:+(sum/n).toFixed(2),pGe25:+(hi/n).toFixed(3),pTyph:+(ty/n).toFixed(3),max:+mx.toFixed(1),typhoonEvents:ev};};window.__cvt=n=>{window.__sup&&window.__sup();S.turn=Math.max(S.turn,3);const out=[];for(let i=0;i<n;i++){convoyTurn();out.push(S.units.filter(u=>u.type==='cvy').map(u=>u.c+','+u.r).join(' '));S.turn++;}return {out,can:S.units.filter(u=>u.type==='cvy').map(u=>canSail(u))};};window.__hkdbg=()=>{const u=S.units.find(z=>z.type==='hk');return {human:humanTurn(),phase:S.phase,busy:S.busy,moved:u.moved,acted:u.acted,reach:[...reach(u).entries()].map(([k,v])=>k+':'+v.kind).slice(0,6),step:hkHomeStep(u)};};window.__hkhome=()=>{const u=S.units.find(z=>z.type==='hk');if(!u)return null;S.sel=u;S.phase='def';S.ctrl.def='human';S.busy=false;u.moved=false;u.acted=false;const b={c:u.c,r:u.r};hkGoHome();return {b,a:{c:u.c,r:u.r},port:hexOf(u).t};};window.__collapse=n=>{S.turn=Math.max(S.turn,4);S.pools.plaLift=0;S.units=S.units.filter(u=>!(u.side==='atk'&&u.type==='cvy'));S.sup={t:S.turn,total:0};const r=[];for(let i=0;i<n&&!S.over;i++){supplyAttrition();r.push(S.stats.supDef);}return {r,over:S.over,used:supply().used};};window.__sup=()=>{const r0=supply().cap;Object.keys(MINOR_PORTS).forEach(k=>{S.owner[k]='atk';});const r1=supply().cap;S.turn=Math.max(S.turn,3);S.bh={};['22,4','19,7','18,10'].forEach(k=>{S.owner[k]='atk';S.bh[k]=S.turn-1;});const r2=supply().cap;render();return [r0,r1,r2];};window.__owner=r=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h));hs.slice(0,Math.round(hs.length*r)).forEach(h=>{S.owner[h.k]='atk';});return twControl();};window.__wipe=()=>{S.stats.sailed=true;S.turn=Math.max(S.turn,3);S.units=S.units.filter(u=>!(u.side==='atk'&&!isShip(u)&&(atSea(u)||onTW(u)||hexOf(u).isl==='PH')));checkInstant();};window.__attr=()=>{S.turn=Math.max(S.turn,3);const a=S.units.filter(u=>u.side==='atk'&&!isShip(u));const tw=TER[TAIPEI];a.slice(0,18).forEach(u=>{u.c=tw.c;u.r=tw.r;});const b=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);supplyAttrition();const c=S.units.filter(u=>u.side==='atk'&&onTW(u)).reduce((x,u)=>x+u.hp,0);return [b,c,supply()];};window.__force3=keep=>{PORTS.concat([TAIPEI]).forEach(k=>{S.owner[k]='atk';delete S.portDown[k];});const tw=TER[TAIPEI];S.units.filter(u=>u.side==='atk'&&!isShip(u)).slice(0,16).forEach(u=>{u.c=tw.c;u.r=tw.r;u.hp=TYPES[u.type].hp;});let left=keep;S.units.filter(u=>u.side==='def'&&onTW(u)).forEach(u=>{if(left>0){u.hp=Math.min(u.hp,left);left-=u.hp;}else S.units=S.units.filter(x=>x!==u);});S.turn=Math.max(S.turn,3);const a=snap();return [a.n,a.as,a.ds];};}
 if(/[?&]debug=1/.test(location.search))window.__reach=id=>{const u=S.units.find(x=>x.id===id);if(!u)return null;const h=hexOf(u);return {at:h.k,t:h.t,isl:h.isl,coastal:h.coastal,zones:{pen:ZONES.penghu,sp:SPOT.penghu,mg:SPOT.magong},reach:[...reach(u)].map(([k,v])=>k+':'+v.kind).slice(0,40),moved:u.moved,acted:u.acted};};
 if(/[?&]debug=1/.test(location.search))window.__af=()=>({n:airfields().length,names:airfields().map(h=>h.k+':'+(h.name||'')),share:afShare(),rocAir:S.pools.rocAir,pick:pickAirfield()});
 if(/[?&]debug=1/.test(location.search))window.__score=async(cfg)=>{ // 測試用：依設定跑一場電腦推演，回傳雙方原始分數
   for(const [k,v] of Object.entries(cfg||{})){const e=document.getElementById(k);if(e)e.value=v;}
-  const keep=S;await simRun(true);const m=endScores(),r={A:m.A.total,D:m.D.total,win:(S.result&&S.result.side)||null,US:S.fx.lv.US,JP:S.fx.lv.JP};S=keep;return r;};
+  const keep=S;await simRun(true);const m=endScores(),r={A:m.A.total,D:m.D.total,win:(S.result&&S.result.side)||null,US:S.fx.lv.US,JP:S.fx.lv.JP,cvySunk:S.stats.cvySunk||0,arr:S.log.reduce((a,l)=>{const q=/補給船團 (\d+) 個抵達卸貨/.exec(l.msg);return a+(q?+q[1]:0);},0),sent:S.log.reduce((a,l)=>{const q=/攻方派出 (\d+) 個補給船團/.exec(l.msg);return a+(q?+q[1]:0);},0),turn:S.turn};S=keep;return r;};
 if(/[?&]debug=1/.test(location.search))window.__sup2=()=>S.sup;
 if(/[?&]debug=1/.test(location.search))window.__cvTest=side=>{if(side==='US')usCarrierSunk();else plaCarrierLost('測試');return S.log.slice(0,4).map(l=>l.msg);};
 if(/[?&]debug=1/.test(location.search))window.__targets=id=>{const u=S.units.find(x=>x.id===id);return u?{type:u.type,shots:u.shots,acted:u.acted,moved:u.moved,hex:hexOf(u).k,t:targets(u).map(e=>e.type+'@'+hexOf(e).k+(atSea(e)?'(sea)':'')+' d='+hd(hexOf(u),hexOf(e)))}:null;};
@@ -5214,10 +5220,11 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn），並在下方 CHANGELOG 最前面補一筆更新內容（再補 tools/i18n/extras.tsv 的英日譯文）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-10.48';
+const VERSION='2026-11-10.49';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
+ {v:'2026-11-10.49',items:['修正補給船團不會航行：自 v.24 起，補給船團出現後一直停在大陸港口、從來沒送過補給（漏列在「能航行的單位」）；現在會依序出航，卸載點抵達才算','補給船團是脆弱目標：滾裝客貨輪比軍艦慢（每回合最多 2 格）、剛裝載好的船團先在港內集結一回合（守方長程飛彈打擊大陸集結區時，港內裝載中的船團是優先目標）；守方飛彈與反艦攻擊把補給船團視為高價值目標（僅次於航艦）；船團沒有防空，命中門檻 −1，每有一艘護航艦在 2 格內 +1（最多 +2）']},
  {v:'2026-11-10.48',items:['兵棋上海馬士的縮寫由「海馬」改為「海馬士」，並統一美軍多域特遣隊說明中的「海馬斯」為「海馬士」']},
  {v:'2026-11-10.47',items:['棋子色調分三類，一眼辨識：攻方紅、守方藍各自有深、標準、淡三種——深＝火力打擊（岸置反艦飛彈、海馬士、潛艦、飛彈艇）、標準＝作戰部隊（各旅、護航艦、航艦）、淡＝後勤運輸（補給船團、補給站、運輸船）；海上與陸上棋子共用同一套色調（海陸本來就容易分辨），圖例也加了說明']},
  {v:'2026-11-10.46',items:['設定視窗新增「☕ 請作者喝杯咖啡」：純屬好玩、不給也能玩，連結沿用「瘋狂象棋」的街口支付轉帳（預設 50 元，付款時可自行修改），在新分頁開啟、不會干擾遊戲']},
