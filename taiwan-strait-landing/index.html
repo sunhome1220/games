@@ -2594,7 +2594,7 @@ async function runEvents(side){
     const ev=EVENTS[i],[t,p]=ev.at(S.T);
     if(t!==S.turn||p!==side||S.events.some(e=>e.id===ev.id))continue;
     if(ev.dice&&!ev.choice&&ev.dice.every(d=>d.skip&&d.skip()))continue;
-    if(ev.id==='timing'){S.events.push({turn:S.turn,phase:S.phase,title:ev.title,id:ev.id,choice:'依開戰月份：'+MONTHN[S.month||4],who:'atk',rolls:[],effects:[]});continue;} // 發起時機由設定的月份決定
+    if(ev.id==='timing'){S.events.push({turn:S.turn,phase:S.phase,title:ev.title,id:ev.id,choice:'依開戰月份：'+MONTHN[S.month||4],who:'atk',rolls:[],effects:[],snap:snap()});continue;} // 發起時機由設定的月份決定
     if(S.sim&&S.simAuto)autoDecide(ev);
     else if(S.sim){toast('事件節點：'+ev.title);await playEvent(ev,i);}
     else if(S.video){if(ev.id!=='buildup')autoEvent(ev,i);}
