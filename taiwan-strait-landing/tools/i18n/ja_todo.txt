@@ -991,3 +991,22 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 開戰前守方的外交、備戰、預警反應與兵力部署，都在這裡先決定，開戰後不再彈窗。選「電腦決定」就由電腦隨機挑一項（不含🔥）。每項都標明好處與代價。	The defender's diplomacy, readiness, early-warning reaction and force deployment before the war are decided here, with no pop-ups once the war starts. Choose "Computer decides" to have the computer pick one at random (excluding 🔥). Each option states its benefit and cost.
 電腦決定	Computer decides
 由電腦隨機挑一項。	The computer picks one at random.
+雷霆2000多管火箭	Thunder-2000 multiple rocket launcher
+雷霆	Thunder
+雷霆2000火箭彈庫存（每發 1 點）	Thunder-2000 rocket stock (1 point per shot)
+雷霆2000（RT-2000）多管火箭系統（陸軍）	Thunder-2000 (RT-2000) multiple rocket system (Army)
+守方陸軍遠程火力：反登陸與區域火力打擊，面積性火力。	Defender Army long-range fires: anti-landing and area fire strikes, area-effect firepower.
+射程依彈種 15／30／45 km（每格約 20 km，遊戲取最遠 2 格）；防護低、機動高	Range 15/30/45 km depending on the round (about 20 km per cell; the game uses 2 cells at most); low protection, high mobility
+無導引面積火力，命中比海馬士低、打船更難；打海灘上的部隊與靠岸船團	Unguided area fire: lower hit chance than HIMARS and harder against ships; hits troops on the beach and ships near the shore
+彈藥有限（庫存點數）；開火後暴露，下一階段要再裝填，所以隔一個階段才能再打	Limited ammunition (stock points); exposed after firing and needs a phase to reload, so it can fire only every other phase
+每格約 20 km	About 20 km per cell
+地圖尺度：	Map scale: 
+每格約 20 km（相鄰格中心距離，面積約 300 多平方公里）。海馬士火箭彈 4 格約 80 km、雷霆2000 最遠 2 格約 45 km、陸軍戰術飛彈 14 格約 300 km。	About 20 km per cell (distance between adjacent cell centers; area roughly 300-plus square km). HIMARS rockets reach 4 cells (about 80 km), Thunder-2000 at most 2 cells (about 45 km), Army tactical missiles 14 cells (about 300 km).
+新增守方砲兵「雷霆2000多管火箭」：4 組、無導引面積火力，射程依彈種 15／30／45 km（最遠 2 格），可打海灘上的部隊與靠岸船團（反登陸），命中比海馬士低（海上目標更低）；彈藥庫存 8 點（遊戲推估），開火後暴露、下一階段要再裝填	New defender artillery "Thunder-2000 multiple rocket launcher": 4 batteries of unguided area fire, range 15/30/45 km depending on the round (2 cells at most), able to hit troops on the beach and ships near the shore (anti-landing), with a lower hit chance than HIMARS (lower still against ships at sea); ammunition stock 8 points (a game estimate); exposed after firing and needs the next phase to reload
+規則頁與地圖圖例新增比例說明：每格約 20 km	Rules page and map legend now state the scale: about 20 km per cell
+雷霆2000發射火箭彈（	Thunder-2000 fires rockets (
+15 km 級	15 km class
+30～45 km 級	30–45 km class
+雷霆2000：射程最遠 2 格（約 45 km），面積火力、命中比海馬士低；彈藥庫存剩 	Thunder-2000: range at most 2 cells (about 45 km), area fire with a lower hit chance than HIMARS; ammunition stock left 
+ 點；開火後下一階段要再裝填	 points; needs a phase to reload after firing
+（再裝填中，本階段不能開火）	 (reloading; cannot fire this phase)
