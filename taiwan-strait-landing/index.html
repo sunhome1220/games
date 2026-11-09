@@ -4939,20 +4939,20 @@ function exportStatus(){
   return [TX('第 ')+S.turn+TX(' 回合 · ')+TX(SIDE[S.phase]+'階段')+' · '+TX('判定回合：第 ')+S.T+' · '+TX(ERA[S.era]?ERA[S.era].n:S.era),
     TX('若現在判定：攻方達成 ')+b.n+' / 3 → '+TX(verdict(b.n).t)];
 }
-async function mapImage(){ // 把目前地圖轉成圖片（太大時逐步降低解析度）；回傳 {img,W,H,rcs}
+async function mapImage(opt){ // 把目前地圖轉成圖片（太大時逐步降低解析度）；回傳 {img,W,H,rcs}。opt={vb:[x,y,w,h],w:輸出寬度}＝直接輸出指定範圍的小圖（不靠 drawImage 裁切，Safari 才不會畫出空白）
   const svg=$('#map');if(!svg||!svg.getAttribute('viewBox'))throw new Error('map');
   const [vx,vy,vw,vh]=svg.getAttribute('viewBox').split(/\s+/).map(Number);
   let css='';for(const sh of document.styleSheets){try{for(const r of sh.cssRules)css+=r.cssText+'\n';}catch(e){}}
   const rcs=getComputedStyle(document.documentElement);
   const vars=[...new Set(css.match(/--[a-z0-9-]+/g)||[])].map(v=>v+':'+rcs.getPropertyValue(v)+';').join('');
   let img=null,W=0,H=0;
-  for(const sc of [Math.min(2,1900/vw),1,.6]){
-    W=Math.round(vw*sc);H=Math.round(vh*sc);
-    const clone=svg.cloneNode(true);
+  for(const sc of (opt&&opt.vb?[1]:[Math.min(2,1900/vw),1,.6])){
+    W=opt&&opt.vb?opt.w:Math.round(vw*sc);H=opt&&opt.vb?Math.round(opt.w*opt.vb[3]/opt.vb[2]):Math.round(vh*sc);
+    const clone=svg.cloneNode(true);if(opt&&opt.vb)clone.setAttribute('viewBox',opt.vb.join(' '));
     clone.setAttribute('xmlns','http://www.w3.org/2000/svg');clone.setAttribute('width',W);clone.setAttribute('height',H);clone.setAttribute('style',vars);
     const st=document.createElementNS('http://www.w3.org/2000/svg','style');st.textContent=css;clone.insertBefore(st,clone.firstChild);
     const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml;charset=utf-8'}));
-    try{img=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=url;});break;}catch(e){img=null;}finally{setTimeout(()=>URL.revokeObjectURL(url),5000);}
+    try{img=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=url;});try{if(img.decode)await img.decode();}catch(e){}break;}catch(e){img=null;}finally{setTimeout(()=>URL.revokeObjectURL(url),5000);}
   }
   if(!img)throw new Error('render');
   return {img,W,H,rcs};
@@ -4964,11 +4964,14 @@ function hlCount(turn){let sunk=0,lost=0,land=0;S.log.forEach(l=>{if(l.t!==turn)
   if(/搶灘|占領|空降/.test(m))land++;});return {sunk,lost,land};}
 function captureHL(tag,end){
   if(S.sim||S.video||S.rec||!S.started)return;
-  const turn=S.turn,c=hlCount(end?S.turn:turn),p=mapImage().then(({img,W,H})=>{
-    const vb=$('#map').getAttribute('viewBox').split(/\s+/).map(Number),sc=W/vb[2],sx=Math.max(0,(MX0-vb[0])*sc),sy=Math.max(0,(MY0-vb[1])*sc),sw=Math.min(W-sx,VBW*sc),sh=Math.min(H-sy,VBH*sc); // 只取台灣遊戲區（不含外圍示意區）
-    const w=640,h=Math.round(sh*w/sw),cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,sx,sy,sw,sh,0,0,w,h);
-    const old=HL.shots.findIndex(x=>x.tag===tag);const o={tag,turn:end?turn:turn-0,cv,c,end:!!end};if(old>=0)HL.shots[old]=o;else HL.shots.push(o);}).catch(()=>{});
+  const turn=end?S.turn:S.turn-1,c=hlCount(turn),why=hlLines(turn),p=mapImage({vb:[MX0+.02*VBW,MY0,.8*VBW,.74*VBH],w:640}).then(({img,W,H})=>{ // 只取台灣遊戲區，直接輸出 640 寬小圖
+    const cv=document.createElement('canvas');cv.width=W;cv.height=H;cv.getContext('2d').drawImage(img,0,0,W,H);
+    const old=HL.shots.findIndex(x=>x.tag===tag);const o={tag,turn,cv,c,why,end:!!end};if(old>=0)HL.shots[old]=o;else HL.shots.push(o);}).catch(()=>{});
   HL.pend.push(p);
+}
+function hlLines(turn){ // 這一回合最值得一提的 2 件事（去掉括號細節）
+  const ms=S.log.filter(l=>l.t===turn&&/被(殲滅|擊沉)|搶灘|占領|空降|癱瘓|摧毀|遭|命中/.test(l.msg)).map(l=>String(l.msg).replace(/（[^）]*）/g,'').replace(/\s+/g,' ').slice(0,26).replace(/[）)]+$/,''));
+  return [...new Set(ms.reverse())].slice(0,2);
 }
 function hlCaption(o){const a=[];if(o.end)return '';a.push('第 '+o.turn+' 回合');const c=o.c;
   const t=[];if(c.sunk)t.push('攻方船艦損失 '+c.sunk);if(c.lost)t.push('守方損失 '+c.lost);if(c.land)t.push('登陸／空降行動 '+c.land);return a.concat([t.length?t.join('　'):'雙方調動兵力']).join('　·　');}
@@ -4976,7 +4979,7 @@ async function exportHighlight(){
   toast(TX('正在合成十秒精華影片（約 12 秒，請稍候）…'),3000);
   try{
     await Promise.all(HL.pend);
-    if(!HL.shots.length){const {img,W,H}=await mapImage();const vb=$('#map').getAttribute('viewBox').split(/\s+/).map(Number),sc=W/vb[2],sx=Math.max(0,(MX0-vb[0])*sc),sy=Math.max(0,(MY0-vb[1])*sc),sw=Math.min(W-sx,VBW*sc),sh=Math.min(H-sy,VBH*sc),w=640,h=Math.round(sh*w/sw),cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,sx,sy,sw,sh,0,0,w,h);HL.shots.push({tag:'now',turn:S.turn,cv,c:{sunk:0,lost:0,land:0},end:true});}
+    if(!HL.shots.length){const {img,W,H}=await mapImage({vb:[MX0+.02*VBW,MY0,.8*VBW,.74*VBH],w:640}),cv=document.createElement('canvas');cv.width=W;cv.height=H;cv.getContext('2d').drawImage(img,0,0,W,H);HL.shots.push({tag:'now',turn:S.turn,cv,c:{sunk:0,lost:0,land:0},why:[],end:true});}
     const sc=x=>x.c.sunk+x.c.lost+x.c.land*2,mid=HL.shots.filter(x=>!x.end);
     const pick=mid.length<=6?mid.slice():(()=>{const keep=new Set([mid[0],mid[mid.length-1]]);mid.slice().sort((a,b)=>sc(b)-sc(a)).forEach(x=>{if(keep.size<6)keep.add(x);});return mid.filter(x=>keep.has(x));})();
     const endShot=HL.shots.find(x=>x.end)||pick[pick.length-1];
@@ -4993,7 +4996,8 @@ async function exportHighlight(){
     const drawScene=(o,alpha)=>{c.globalAlpha=alpha;c.fillStyle=bg;c.fillRect(0,0,W,H);
       const h=Math.round(o.cv.height*W/o.cv.width),y=Math.round((H-h)/2);c.drawImage(o.cv,0,y,W,h);
       c.fillStyle=ink;c.textBaseline='top';c.font='900 40px '+ff;c.fillText(TX('台海兵棋推演'),28,36);
-      c.font='600 28px '+ff;c.fillStyle=mu;c.fillText(TX(hlCaption(o)),28,y+h+28);c.globalAlpha=1;};
+      c.font='700 34px '+ff;c.fillStyle=ink;c.fillText(TX(hlCaption(o)),28,y+h+26);
+      let ty=y+h+80;c.font='500 30px '+ff;c.fillStyle=ink;(o.why||[]).forEach(wl=>{wrap(TX(wl),W-56,'500 30px '+ff).slice(0,2).forEach(t=>{c.font='500 30px '+ff;c.fillText(t,28,ty);ty+=42;});});c.globalAlpha=1;};
     const frameAt=t=>{
       if(t<T_INTRO){card(TX('台海兵棋推演'),TX('十秒精華'),[TX(ERA[S.era]?ERA[S.era].n:'')].filter(Boolean));return;}
       const u=t-T_INTRO;if(u<TS*scenes.length){const i=Math.min(scenes.length-1,Math.floor(u/TS)),f=(u-i*TS)/TS;drawScene(scenes[i],1);
