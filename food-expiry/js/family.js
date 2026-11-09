@@ -22,6 +22,7 @@
     const upload = local && confirm(`把這支手機上的 ${items.length} 筆食品、${stock.length} 項必備品也上傳到家庭「${code}」嗎？\n（取消＝不上傳，改用家庭裡現有的清單）`);
     lsSet(code);
     await Sync.join(code, upload ? { items, known, stock } : null);
+    Sync.saveFamily(code);
     ui();
   }
   bJoin.onclick = () => {
@@ -36,10 +37,28 @@
   };
   bLeave.onclick = () => {
     if (!confirm('離開家庭共用？這支手機會保留目前的清單，但不再同步。')) return;
-    Sync.leave(); lsSet(''); ui();
+    Sync.leave(); Sync.saveFamily(''); lsSet(''); ui();
   };
-  ui();
+  // ---- Google 帳號 ----
+  const aSt = document.getElementById('acctStatus'), aIn = document.getElementById('acctIn'), aOut = document.getElementById('acctOut');
+  function acctUi() {
+    if (!Sync.available) { aSt.textContent = '尚未設定 Firebase'; aIn.disabled = true; return; }
+    const u = Sync.user;
+    aSt.textContent = u ? '✅ 已登入：' + (u.email || u.displayName || '') : (Sync.authErr ? '⚠️ ' + Sync.authErr : '未登入');
+    aIn.hidden = !!u; aOut.hidden = !u;
+  }
+  Sync.onUser = acctUi;
+  aIn.onclick = () => Sync.signIn();
+  aOut.onclick = () => { if (confirm('登出 Google 帳號？家庭同步會繼續，但換手機時要輸入家庭代碼。')) Sync.signOut(); };
+  // 登入後：帳號裡有家庭代碼就自動加入；本機有家庭但帳號沒記錄就存進帳號
+  Sync.onRestore = code => {
+    if (code && !Sync.code) join(code);
+    else if (!code && Sync.code) Sync.saveFamily(Sync.code);
+    else if (code && Sync.code && code !== Sync.code) Sync.saveFamily(Sync.code);
+  };
+  ui(); acctUi();
   if (!Sync.available) return;
+  Sync.initAuth().catch(() => {});
   const p = new URLSearchParams(location.search), link = Sync.normalize(p.get('family'));
   if (link) { history.replaceState(null, '', location.pathname); }
   const saved = lsGet();

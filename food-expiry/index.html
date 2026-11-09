@@ -192,6 +192,9 @@ dialog{max-height:90vh;overflow:auto}
   <h3 style="margin:0 0 8px">選單</h3>
   <div class="row"><button class="ghost" id="addManual">手動新增</button><button class="ghost" id="notifBtn">開啟到期提醒</button></div>
   <div class="row" style="margin-top:8px"><button class="ghost" id="exportBtn">匯出備份</button><button class="ghost" id="importBtn">匯入備份</button></div>
+  <label>Google 帳號（換手機登入就能還原家庭）</label>
+  <div class="hint" id="acctStatus"></div>
+  <div class="row" style="margin-top:6px"><button class="ghost" id="acctIn">使用 Google 登入</button><button class="ghost" id="acctOut" hidden>登出</button></div>
   <label>家庭共用（多人同步同一份清單）</label>
   <div class="hint" id="famStatus"></div>
   <div class="row" style="margin-top:6px"><button class="ghost" id="famJoin">加入／建立</button><button class="ghost" id="famShare" hidden>分享連結</button><button class="ghost" id="famLeave" hidden>離開</button></div>
@@ -201,7 +204,7 @@ dialog{max-height:90vh;overflow:auto}
   <div class="btns"><button id="menuClose">關閉</button></div>
 </dialog>
 
-<script src="js/version.js?v=2026-11-05.17"></script>
+<script src="js/version.js?v=2026-11-09.01"></script>
 <script>
 const $=s=>document.querySelector(s);
 const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -417,9 +420,9 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 render();notifyDue();
 </script>
 <script src="firebase-config.js"></script>
-<script src="js/sync.js?v=2026-11-05.17"></script>
-<script src="js/family.js?v=2026-11-05.17"></script>
-<script src="js/stock.js?v=2026-11-05.17"></script>
-<script src="js/update.js?v=2026-11-05.17"></script>
+<script src="js/sync.js?v=2026-11-09.01"></script>
+<script src="js/family.js?v=2026-11-09.01"></script>
+<script src="js/stock.js?v=2026-11-09.01"></script>
+<script src="js/update.js?v=2026-11-09.01"></script>
 </body>
 </html>
