@@ -860,3 +860,14 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 開戰月份（決定天候機率）	War start month (sets weather odds)
 命中率 	Hit rate 
 （固定規則）	 (fixed rule)
+假設情境（沙盒）	What-if scenarios (sandbox)
+假設	What-if
+【攻方向】台軍軍購不順	[Attacker-side] Taiwan arms purchases go badly
+【攻方向】砸鍋賣鐵加速造艦	[Attacker-side] Crash shipbuilding at any cost
+【攻方向】海象永遠適合登陸（純沙盒）	[Attacker-side] Sea state always suits landings (pure sandbox)
+【守方向】軍購準時到貨	[Defender-side] Arms deliveries arrive on time
+【守方向】國造武器提前量產	[Defender-side] Domestic weapons enter mass production early
+【守方向】美日提前介入	[Defender-side] US and Japan intervene early
+套用到下一局	Apply to next game
+已套用到下一局設定，請確認後按「開始」	Applied to the next game's setup; please check and press Start
+沙盒	Sandbox
