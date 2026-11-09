@@ -181,6 +181,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .itc{display:flex;flex-direction:column;gap:2px;font-size:13px}
 .itc b{font-size:14px}.itc span{font-size:12px;font-weight:400;color:var(--muted);line-height:1.4}.itc .cost{color:color-mix(in srgb,var(--atk) 75%,var(--muted))}
 .itbox{display:flex;flex-direction:column;max-height:88vh;overflow:hidden}.itbox .itbody{overflow-y:auto;flex:1;min-height:0;padding-right:2px}
+.itskip{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted);margin-top:8px}.itskip input{min-width:0}
 .itfoot{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
 .itsum{font-size:12.5px;color:var(--muted);margin-bottom:8px;line-height:1.4}
 .itbtns{display:flex;gap:8px;justify-content:flex-end}.itbtns #itGo{flex:1;max-width:14em;padding:10px 14px;font-size:16px;font-weight:700;background:var(--accent);border-color:var(--accent);color:#fff;border-radius:6px}
@@ -651,7 +652,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
             <select id="optFx"><option value="dice" selected>dice</option><option value="interest">interest</option><option value="intel">intel</option><option value="none">none</option><option value="full">full</option></select>
             <select id="optEra"><option value="2026" selected>2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option></select>
             <select id="optVoice"><option value="0" selected>off</option><option value="1">on</option></select>
-            <select id="optNews"><option value="1" selected>on</option><option value="0">off</option></select>
+            <select id="optNews"><option value="1" selected>on</option><option value="2">compact</option><option value="0">off</option></select>
           </div>
         </div>
         <div class="card" id="ctrl" hidden>
@@ -662,6 +663,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
             <button class="ghost" id="btnHkHome" hidden title="把選取的潛艦開回最近的母港（回港補滿彈藥）">⚓ 回母港</button>
             <button class="ghost" id="btnHkWpn" hidden title="切換潛艦使用的武器">武器：自動</button>
             <button class="ghost" id="btnUndo" hidden title="撤銷剛才的移動（還沒進行其他動作前）">↶ 撤銷移動</button>
+            <button class="ghost" id="btnIntentReset" hidden title="重新設定電腦代打的指揮官意圖">重設意圖</button>
             <button class="ghost" id="btnAssist" title="還沒行動的單位交給電腦處理，然後結束這個階段">電腦代打剩餘單位</button>
           </div>
           <button class="lnk" id="btnRestart" hidden>↺ 重新開始</button> <button class="lnk" id="btnAI" hidden title="你操作的一方改由電腦指揮，之後的回合自動進行">🤖 改由電腦接手</button>
@@ -3237,7 +3239,7 @@ async function endPhase(){
   if((S.stats.fullHold||0)>=2)return endGame('攻方連續兩個回合同時控制首都、主要港口並取得兵力優勢，提前判定攻方勝利。','atk','攻方提前取勝');
   const n=buildNews();S.news.push(n);
   if(S.rec){render();if(S.newsOn)recordFrame({html:newsBody(n),kind:'news',dur:6500});}
-  else if(S.newsOn&&!S.simAuto){S.busy=true;render();await showNews(n);S.busy=false;}
+  else if(S.newsOn&&!S.simAuto){if(S.newsCompact){render();toast('📰 '+((n.items&&n.items[0])||'本回合快訊'),3200);}else{S.busy=true;render();await showNews(n);S.busy=false;}}
   if(S.over)return;
   S.turn++;beginPhase('atk');
 }
@@ -4375,6 +4377,7 @@ function renderCtrl(){
   bs.textContent=S.mode==='strike'?'取消打擊（剩 '+pts+'）':(atkP?'火力打擊（'+pts+' 點）':'打擊大陸（'+pts+' 發）');
   $('#btnEnd').disabled=!h;$('#btnEnd').hidden=S.sim;if(S.sim)bs.hidden=true;
   const ba=$('#btnAssist');ba.disabled=!h;ba.hidden=S.sim||S.video;
+  {const ir=$('#btnIntentReset');if(ir)ir.hidden=!(h&&S.intentSkip&&S.intentSkip[S.phase]);}
   let hint;
   if(S.over)hint='作戰已結束，可在戰報中回顧過程。';
   else if(S.sim)hint=S.busy?'電腦推演中：'+SIDE[S.phase]+'正在行動…':'推演暫停，等待事件節點的決定。';
@@ -5070,7 +5073,7 @@ function readSetup(){
   S.T=+$('#optT').value;S.sim=$('#optMode').value==='sim';S.video=$('#optMode').value==='video';S.speed=S.sim?+$('#optSpeed').value:1;
   const sd=$('#optSide').value;
   S.ctrl=S.sim||S.video?{atk:'ai',def:'ai'}:{atk:sd==='atk'||sd==='both'?'human':'ai',def:sd==='def'||sd==='both'?'human':'ai'};
-  S.newsOn=$('#optNews').value==='1';S.fxScen=$('#optFx').value;S.airGen=$('#optAirGen').value;S.airModel=$('#optAirModel').value;S.ewLv=$('#optEW').value;
+  S.newsOn=$('#optNews').value!=='0';S.newsCompact=$('#optNews').value==='2';S.fxScen=$('#optFx').value;S.airGen=$('#optAirGen').value;S.airModel=$('#optAirModel').value;S.ewLv=$('#optEW').value;
 }
 ['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optExer','#optMonth','#optFxBias','#optNews','#optVoice','#optFx','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
 const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optExer:'small',optMonth:'4',optFxBias:'0',optFx:'dice',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optAxN:'0',optAxC:'0',optAxP:'1'};
@@ -5257,7 +5260,7 @@ function applyPref(id,v){ // 設定視窗改選項：開始前走一般流程；
   const el=$('#'+id);if(!el)return;el.value=v;
   if(!S||!S.started){el.dispatchEvent(new Event('change'));return;}
   if(id==='optSpeed'){if(S.sim&&!S.simAuto)S.speed=+v;}
-  else if(id==='optNews')S.newsOn=v==='1';
+  else if(id==='optNews'){S.newsOn=v!=='0';S.newsCompact=v==='2';}
   else if(id==='optVoice'){try{localStorage.setItem('tsl-voice-user','1');}catch(e){}voiceBtn();}
   else if(id==='optVSpeed'){if(S.video)V.sp=+v||2;}
   saveSetup();
@@ -5297,7 +5300,7 @@ const isVideo=()=>$('#optMode').value==='video';
 const PREF_FIELDS=[
   {sel:'optSpeed',q:'推演速度（電腦推演模式）',opts:{'1':['一般','每個動作有短暫停頓，方便看清楚。'],'0.35':['快速','縮短動作之間的停頓。']}},
   {sel:'optVSpeed',q:'播放速度（純模擬影片模式）',opts:{'1':['1×','逐步閱讀，一場約需數分鐘。'],'2':['2×','建議速度。'],'4':['4×','快轉，適合只看結果與重點。']}},
-  {sel:'optNews',q:'每回合結束時顯示國際快訊',opts:{'1':['開啟','戰場插圖、頭條與戰況摘要。'],'0':['不顯示','直接進入下一回合。']}},
+  {sel:'optNews',q:'每回合結束時顯示國際快訊',opts:{'1':['完整快訊','戰場插圖、頭條與戰況摘要，每回合跳出一個視窗。'],'2':['簡訊','只在畫面上閃一行頭條，不跳視窗；完整內容仍寫入戰報。'],'0':['不顯示','直接進入下一回合。']}},
   {sel:'optVoice',q:'戰報語音播放',opts:{'0':['不播放','（預設）安靜閱讀。瀏覽器內建語音較機械，所以預設不開。'],'1':['自動播放','每回合結束時，用瀏覽器內建語音簡短唸出「海峽快訊」的重點（不逐條唸戰報、不唸生硬的數字），語言隨介面語言；也可隨時用地圖上方的「語音」按鈕開關。']}}
 ];
 const SETUP_PAGES=[
@@ -5477,25 +5480,28 @@ function askIntent(side){
     const sumTxt=()=>{const a=intentGroups(side).map(g=>{const o=g.o.find(x=>x[0]===(cur[g.k]||''));return o&&o[0]?g.t+'：'+o[1]:'';}).filter(Boolean);return a.length?a.join('　·　'):'全部照電腦判斷';};
     box.innerHTML='<div class="eyebrow">第 '+S.turn+' 回合 · '+SIDE[side]+'階段</div><h3>指揮官意圖</h3><p class="dd">電腦代打前，先下達本階段的作戰重點（只影響這一階段）。每組選一個。</p>'+
       '<div class="itbody">'+intentGroups(side).map(g=>'<div class="intg">'+g.t+'</div><div class="itcards" role="radiogroup" aria-label="'+g.t+'">'+g.o.map(o=>'<button class="segb itc'+((cur[g.k]||'')===o[0]?' on':'')+'" role="radio" data-g="'+g.k+'" data-v="'+o[0]+'"><b>'+o[1]+'</b>'+(o[2]?'<span>效果：'+o[2]+'</span>':'')+(o[3]?'<span class="cost">代價：'+o[3]+'</span>':'')+'</button>').join('')+'</div>').join('')+'</div>'+
-      '<div class="itfoot"><div class="itsum" id="itSum"></div><div class="itbtns"><button class="ghost" id="itNo">取消</button><button id="itGo">開始代打</button></div></div>';
+      '<label class="itskip"><input type="checkbox" id="itSkip"> '+TX('這一局之後不再詢問，沿用這次的設定（可按「重設意圖」改）')+'</label><div class="itfoot"><div class="itsum" id="itSum"></div><div class="itbtns"><button class="ghost" id="itNo">取消</button><button id="itGo">開始代打</button></div></div>';
     box.classList.add('itbox');
     const fin=r=>{box.classList.remove('itbox');$('#modal').hidden=true;box.classList.remove('ev');done(r);};
     const upd=()=>{$('#itSum').textContent='本次：'+sumTxt();};upd();
     box.querySelectorAll('.itc').forEach(b=>b.onclick=()=>{cur[b.dataset.g]=b.dataset.v;box.querySelectorAll('.itc[data-g="'+b.dataset.g+'"]').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-checked',on);});upd();});
-    $('#itGo').onclick=()=>{S.lastIntent=S.lastIntent||{};S.lastIntent[side]=Object.assign({},cur);fin(cur);};
+    $('#itGo').onclick=()=>{S.lastIntent=S.lastIntent||{};S.lastIntent[side]=Object.assign({},cur);S.intentSkip=S.intentSkip||{};S.intentSkip[side]=!!$('#itSkip').checked;fin(cur);};
     $('#itNo').onclick=()=>fin(null);
     $('#itGo').focus();
   });
 }
 async function assistPhase(){
   if(!humanTurn())return;
-  const side=S.phase;const it=await askIntent(side);if(!it)return;
+  const side=S.phase;const sk=S.intentSkip&&S.intentSkip[side];
+  const it=sk?Object.assign({},(S.lastIntent&&S.lastIntent[side])||{}):await askIntent(side);if(!it)return;
+  if(sk)toast('沿用上次的指揮官意圖（按「重設意圖」可以修改）',1800);
   S.intent=it;S.busy=true;S.sel=null;S.mode=null;render();
   if(Object.values(it).some(Boolean))log('【指揮官意圖】'+SIDE[side]+'：'+intentGroups(side).map(g=>{const o=g.o.find(x=>x[0]===(it[g.k]||''));return o&&o[0]?g.t+'＝'+o[1]:'';}).filter(Boolean).join('、'));
   try{if(side==='atk')await aiAtk();else await aiDef();}catch(e){console.error(e);}
   S.intent=null;S.busy=false;render();
   if(!S.over)endPhase();
 }
+$('#btnIntentReset').onclick=()=>{if(S.intentSkip)S.intentSkip[S.phase]=false;toast('下次按「電腦代打」會再詢問指揮官意圖',1800);render();};
 $('#btnAssist').onclick=assistPhase;$('#fsAssist').onclick=assistPhase;$('#mbAssist').onclick=assistPhase;
 $('#mbEnd').onclick=()=>$('#btnEnd').click();$('#mbStrike').onclick=()=>$('#btnStrike').click();
 function reset(){newState();readSetup();render();renderWizard();}
