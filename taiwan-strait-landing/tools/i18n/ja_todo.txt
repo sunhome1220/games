@@ -928,3 +928,12 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 戰局碼：	Match code: 
 加速造艦（護航艦隊 +2、航艦 +1、兩棲艦群與滾裝船團各 +2；代價：美日警覺上升）	Accelerated shipbuilding (escorts +2, carrier +1, amphibious groups and ro-ro fleets +2 each; cost: US/Japan alertness rises)
 軍購延宕（守方反艦飛彈 −3、長程飛彈 −2、防空 −1，依公開報導）	Arms purchases delayed (defender anti-ship missiles −3, long-range missiles −2, air defense −1, per public reports)
+手機版：點選單位或地格的資訊改成地圖上的小浮動卡片（預設在右下角），可拖曳移動、按 ✕ 關閉、連點兩下回到右下角；位置記在這台裝置，下次開啟仍在同一處。換選別的單位時卡片會再出現	Mobile: unit/hex info is now a small floating card on the map (bottom-right by default). Drag to move, tap ✕ to close, double-tap to return to the corner; its position is remembered on this device. It reappears when you select another unit.
+單位資訊新增「數值修正」一行，逐項說明攻防為什麼不是表定值：受傷（剩 1 步）攻防各 −1、同格多單位防禦 −1、補給不足、事件／政策加減值	Unit info gains a "Modifiers" line explaining why attack/defense differ from the base values: wounded (1 step left) −1 each, stacking −1 defense, supply shortage, event/policy bonuses
+數值修正：	Modifiers: 
+受傷（剩 1 步）攻防各 −1	wounded (1 step left) attack and defense −1 each
+事件／政策 攻擊 	event/policy attack 
+事件／政策／工事 防禦 	event/policy/fortification defense 
+補給不足 攻防各 −1	supply shortage attack and defense −1 each
+同格多單位 防禦 −1	stacked units defense −1
+關閉（拖曳可移動，連點兩下回到右下角）	Close (drag to move, double-tap to return to the bottom-right corner)
