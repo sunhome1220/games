@@ -57,6 +57,7 @@ h1{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,4vw,38px);l
 .sub{color:var(--muted);font-size:13px;margin-top:4px}
 #btnSettings{position:absolute;top:0;right:0;z-index:2}
 .statusbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btnlink{display:block;border:1px solid var(--ink);border-radius:3px;padding:10px 12px;margin-top:8px;text-align:center;text-decoration:none;color:var(--ink);font-weight:700;background:var(--panel)}.btnlink small{display:block;font-weight:400;color:var(--muted);margin-top:2px}.btnlink:hover{background:var(--ink);color:var(--paper,#fff)}.btnlink:hover small{color:inherit}
 .chip.tp{cursor:help}.chip.tp:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 .chiptip{position:fixed;z-index:30;background:var(--ink);color:var(--paper,#fff);border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.5;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:4px 10px;font-size:13px;white-space:nowrap}
@@ -144,6 +145,8 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .ring.strike{stroke:var(--atk);stroke-dasharray:4 3}
 .u{cursor:pointer}
 .u .body.atk{fill:url(#gu-atk)} .u .body.def{fill:url(#gu-def)}
+.u .body.atk.cf{fill:url(#gu-atk-f)} .u .body.def.cf{fill:url(#gu-def-f)} .u .body.atk.cl{fill:url(#gu-atk-l)} .u .body.def.cl{fill:url(#gu-def-l)}
+.u .body.cl .tx,.u .body.cl~.tx{fill:var(--on-unit)}
 .u .uside.atk{fill:color-mix(in srgb,var(--atk) 55%,#000)} .u .uside.def{fill:color-mix(in srgb,var(--def) 55%,#000)}
 .u .uside{fill:#444;stroke:none} .u .ush{fill:#000;opacity:.28;pointer-events:none} .u .uhi{fill:#fff;opacity:.28;pointer-events:none}
 .u .wk{fill:none;stroke:#fff;stroke-opacity:.55;stroke-width:1.3;transform-box:fill-box;transform-origin:center;animation:wake 2.6s ease-out infinite;pointer-events:none}
@@ -609,6 +612,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
         <span>虛線邊＝斷崖海岸、點線邊＝泥灘潮間帶，皆不可登陸</span>
         <span style="color:var(--accent)">★ 勝負目標</span>
         <span><i style="background:var(--accent);border-radius:50%"></i>棋子下方圓點＝戰力「步」，實心為剩餘、空心為已損失</span>
+        <span><i style="background:color-mix(in srgb,var(--def) 52%,#000)"></i><i style="background:var(--def)"></i><i style="background:color-mix(in srgb,var(--def) 45%,#fff)"></i>棋子色調（攻守各自）：深＝火力打擊（飛彈、海馬士、潛艦、飛彈艇）、標準＝作戰部隊、淡＝後勤運輸（補給船團、補給站、運輸船）</span>
       </div>
       <div class="card theater collapsed">
         <div class="th-head"><h2>西太平洋戰區</h2><button class="ghost sm" id="btnThFold" aria-expanded="false">展開戰區圖</button><button class="ghost sm" id="btnThWide">放大戰區圖</button><span class="hint" id="thHint"></span></div>
@@ -3969,6 +3973,7 @@ function buildStatic(){
   const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+tileGrad('gt-plain2','land2','#d3d0a8')+tileGrad('gt-plain3','land3','#dfd5b3')+tileGrad('gt-hill','hill','#c9bd92')+tileGrad('gt-main2','main2','#c3c6b6')+tileGrad('gt-main3','main3','#cec8b8')+tileGrad('gt-mainhill','mainhill','#b9b3a1')+tileGrad('gt-mainmtn','mainmtn','#a39d8c')+tileGrad('gt-maincity','maincity','#d4cfc2')+
     '<linearGradient id="gu-atk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d4574d" style="stop-color:color-mix(in srgb,var(--atk) 72%,#fff)"/><stop offset="1" stop-color="#a02a24" style="stop-color:color-mix(in srgb,var(--atk) 90%,#000)"/></linearGradient>'+
     '<linearGradient id="gu-def" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a82c8" style="stop-color:color-mix(in srgb,var(--def) 72%,#fff)"/><stop offset="1" stop-color="#18457d" style="stop-color:color-mix(in srgb,var(--def) 90%,#000)"/></linearGradient>'+
+'<linearGradient id="gu-atk-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--atk) 84%,#000)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--atk) 52%,#000)"/></linearGradient>'+'<linearGradient id="gu-def-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--def) 84%,#000)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--def) 52%,#000)"/></linearGradient>'+'<linearGradient id="gu-atk-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--atk) 38%,#fff)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--atk) 62%,#fff)"/></linearGradient>'+'<linearGradient id="gu-def-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--def) 38%,#fff)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--def) 62%,#fff)"/></linearGradient>'+
     '<linearGradient id="gSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9c5ce" style="stop-color:color-mix(in srgb,var(--sea) 78%,#fff)"/><stop offset="1" stop-color="#8fb0bb" style="stop-color:color-mix(in srgb,var(--sea) 94%,#000)"/></linearGradient>';
   $('#mdefs').innerHTML=defs;
   const sea=[],land=[];Object.values(TER).forEach(h=>(isLand(h)?land:sea).push(h));
@@ -4016,6 +4021,8 @@ function ghostDrop(id){
   if(!GHOSTS.has(id))return;GHOSTS.delete(id);
   document.querySelectorAll('[data-id="'+id+'"]').forEach(e=>{if(!e.closest('#gF'))e.remove();});
 }
+// 棋子色調分三類（攻方紅、守方藍各自三種深淺，海上與陸上共用）：深＝火力打擊（飛彈、火箭砲、潛艦、飛彈艇）、標準＝作戰部隊、淡＝後勤運輸（船團、補給站、運輸船）
+const unitCat=t=>(t==='ssm'||t==='hmr'||t==='hk'||t==='ff')?'f':(t==='cvy'||t==='fob'||t==='lst'||t==='ro')?'l':'m';
 function unitSVG(u){
   const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy,stacked=sx!==0,T=TYPES[u.type];
   const done=S.started&&u.side===S.phase&&u.acted,sel=S.sel===u,yy=y-2;
@@ -4039,7 +4046,7 @@ function unitSVG(u){
   return '<g class="u'+(sel?' sel':'')+(done?' done':'')+'" data-k="'+K(u.c,u.r)+'" data-id="'+u.id+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+wake+
     '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')">'+'<ellipse class="ush" cx="'+x+'" cy="'+(y+11)+'" rx="16" ry="5"/>'+
     '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
-    '<rect class="body '+u.side+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="23" rx="3"/>'+
+    '<rect class="body '+u.side+' c'+unitCat(u.type)+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="23" rx="3"/>'+
     '<rect class="uhi" x="'+(x-13)+'" y="'+(y-13)+'" width="26" height="3" rx="1.5"/>'+sym+
     '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+T.s+'</text>'+pips+(sea?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-12)+'" r="2.6"/>':'')+'</g></g></g>';
 }
@@ -5370,6 +5377,7 @@ function renderSettings(){
   h+='<div class="wz-q" style="margin-top:16px">進階：用目前設定跑統計</div><div class="wz-note">想知道這組設定誰比較有利？讓電腦自動模擬多局，統計勝率、代價與決策的影響。</div>'+
     '<div style="margin-top:8px">'+seg('data-statn',[['50',['50 局']],['100',['100 局']],['300',['300 局']]],SETTINGS_STATN,3)+'</div>'+
     '<div class="btns" style="margin-top:10px"><button class="ghost" id="stRun"'+(STAT.running?' disabled':'')+'>開始統計</button></div>';
+  h+='<div class="wz-q" style="margin-top:16px">支持作者</div><a id="stTip" class="btnlink" href="https://service.jkopay.com/r/transfer?j=Transfer:900386051&amp;amount=50" target="_blank" rel="noopener noreferrer">☕ 請作者喝杯咖啡<br><small>純屬好玩！不給也能玩到爆。金額預設 50 元（約一杯超商咖啡），付款時可以自己改。</small></a>';
   h+='<div class="btns" style="margin-top:16px"><button id="stClose">關閉</button></div>';
   box.innerHTML=h;
   box.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{
