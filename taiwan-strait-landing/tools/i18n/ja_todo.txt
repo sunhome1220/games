@@ -1,6 +1,8 @@
 對戰	Play
 電腦推演	Computer simulation
 純模擬	Pure simulation
+攻方	Attacker
+守方	Defender
 戰爭代價	Cost of war
  步	 steps
 攻方控制 	The attacker holds 
@@ -891,3 +893,18 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 【攻方向】海象永遠適合登陸（純假設）	[Attacker-side] Sea state always suits landings (pure what-if)
 本局使用了假設情境：	This game used what-if scenarios: 
 。結果不代表真實預測。	. The result does not represent a real prediction.
+軍購延宕	Arms purchases delayed
+加速造艦	Accelerated shipbuilding
+海運運力無限（舊版外掛）	Unlimited sealift (legacy cheat)
+海象永遠適合登陸（純假設）	Sea state always suits landings (pure what-if)
+國造武器提前量產	Domestic weapons enter mass production early
+美日提前介入	US and Japan intervene early
+軍購準時到貨	Arms deliveries arrive on time
+攻方、守方各有選項，點開分組查看。	Both sides have options; open a group to see them.
+想玩「如果……」的情境嗎？下面全部預設關閉，每一項都標明依據與代價；開啟後結算頁會標示使用了哪些假設，結果不代表真實預測。攻方、守方各有選項，點開分組查看。	Want to play a "what if" scenario? Everything below is off by default, and each option states its basis and cost. When on, the results page lists which assumptions were used; results are not a real forecast. Attacker and defender each have options; open a group to see them.
+美對台軍售積壓約 297 億美元（2026 年 8 月），F-16V 由 2026 年延到 2027～2028 年。守方反艦飛彈 −3、長程飛彈 −2、防空 −1、海馬士 −1（依公開報導）。	US arms sales to Taiwan are backlogged by about US$29.7 billion (Aug 2026), and the F-16V slips from 2026 to 2027–2028. Defender anti-ship missiles −3, long-range missiles −2, air defense −1, HIMARS −1 (per public reports).
+空戰動畫改為一路飛行：戰機直線接近、通過交戰點時齊射，不再停在空中；之後以半圓 U 形轉彎，沿平行航線返航。飛彈瞄準的是飛機預計抵達的位置，被擊落的戰機就地墜落	Air-combat animation is now one continuous flight: jets fly straight in, fire as they pass the engagement point without hovering, then make a semicircular U-turn and return on a parallel track. Missiles aim at where the aircraft will be, and downed jets fall on the spot.
+手機上更容易打擊大陸：地圖上大陸與美日基地圖示的點擊範圍加大；守方打擊大陸時，也可以直接點右側「中方基地」清單的一列（可打擊者會有框線，手機版列高加大）。人工與電腦代打共用同一套長程飛彈存量與每回合發數（S.dfire），結算流程完全相同，差別只在目標由誰選	Striking the mainland is easier on phones: the tap area of mainland and US/Japan base icons is larger, and when striking the mainland as defender you can tap a row in the "PRC bases" list on the right (strikeable rows get an outline; rows are taller on phones). Manual and computer-assisted strikes share the same long-range missile stock and per-turn salvo count (S.dfire) and the same resolution; only who picks the target differs.
+點選地圖上的大陸基地（紅色圖形），或直接點右側「中方基地」清單的一列，進行長程打擊，每次消耗 1 發長程飛彈。	Tap a mainland base on the map (red shapes), or tap a row in the "PRC bases" list on the right, to strike; each strike uses 1 long-range missile.
+指揮官意圖介面精簡：一開啟只看到每一項目前的選擇（例如「打擊重點：照電腦判斷」），點某一列才展開可選項目，選好自動收回；一次只展開一項	Commander-intent panel simplified: it opens showing only the current choice for each item (e.g. "Strike focus: computer judgment"); tap a row to expand its options, and it collapses after you choose; one item open at a time.
+電腦代打前，先下達本階段的作戰重點（只影響這一階段）。下面是目前的選擇，點一列可更改。	Before the computer plays for you, set this phase's operational focus (applies to this phase only). Below are the current choices; tap a row to change one.
