@@ -1146,3 +1146,17 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 戰機升空避敵（機場起降能量約 	Fighters launch to evade (airfield takeoff capacity about 	
 ）：第 1～2 回合地面戰機不會被炸毀，沒有新增任何戰機	): on turns 1–2 aircraft on the ground are not destroyed; no aircraft are added	
 代價：在空中多一輪空戰，擊落風險由 p 變成 1−(1−p)²	Cost: one extra round of air combat; shootdown risk goes from p to 1−(1−p)²	
+新增「🎬 十秒精華影片」：每回合自動存一張戰況縮圖，結局報告按鈕即可合成 10 秒直式影片（720×1280）——標題、至多 6 個重點場景（依船艦損失與登陸行動挑選）、結局與戰局碼；手機支援時直接開啟分享，否則下載 mp4／webm。影片只錄台灣遊戲區，電腦推演與純模擬模式會用結束時的畫面	New "🎬 10-second highlight video": a battle thumbnail is saved automatically every turn, and a button in the ending report composes a 10-second vertical video (720×1280): title, up to 6 key scenes (picked by ship losses and landing actions), the result and the match code. On phones that support it the share sheet opens directly; otherwise an mp4/webm is downloaded. Only the Taiwan play area is recorded; computer-simulation and pure-simulation modes use the end-of-game view.	
+🎬 十秒精華影片	🎬 10-second highlight video	
+正在合成十秒精華影片（約 12 秒，請稍候）…	Composing the 10-second highlight video (about 12 s, please wait)…	
+台海兵棋推演 十秒精華	Taiwan Strait Wargame 10-second highlights	
+已開啟分享	Share sheet opened	
+精華影片已產生	Highlight video created	
+無法產生影片（此瀏覽器不支援錄製，或本機檔案開啟限制畫面擷取）	Cannot create the video (this browser does not support recording, or opening from a local file blocks capture)	
+十秒精華	10-second highlights	
+戰局碼 	Match code 	
+雙方調動兵力	Both sides maneuvering	
+攻方船艦損失 	Attacker ship losses 	
+守方損失 	Defender losses 	
+登陸／空降行動 	Landing/airdrop actions 	
+作戰結束	Operation ended	
