@@ -16,6 +16,8 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 
 /* 右上角小按鈕 */
 #top{position:fixed;top:calc(6px + env(safe-area-inset-top));right:var(--tr,8px);display:flex;gap:6px;z-index:6}
+#gptut{position:fixed;inset:0;z-index:26;background:rgba(5,8,14,.78);display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}#gptut[hidden]{display:none}
+table.gp{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}table.gp td{border-bottom:1px solid #2c3850;padding:4px 6px}table.gp td:first-child{white-space:nowrap}
 #tut{position:fixed;inset:0;z-index:25;background:rgba(5,8,14,.78);display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}#tut[hidden]{display:none}
 .tut-c{max-width:460px;background:#141b27;border:1px solid #39465c;border-radius:14px;padding:14px 18px;font-size:14px;color:#dfe7f3}.tut-c h2{margin:0 0 6px;font-size:18px}.tut-c ol{padding-left:20px;margin:6px 0}.tut-c li{margin:6px 0}.tut-c .big{margin-top:8px}
 #rmap{position:fixed;left:6px;right:8px;top:calc(140px + env(safe-area-inset-top));height:136px;background:rgba(8,12,20,.95);border:1px solid #39465c;border-radius:10px;z-index:4;overflow:hidden}
@@ -117,6 +119,7 @@ th{color:#9fb0c8;font-weight:600}
 
 <div id="rmap" hidden><div id="rmap-hd"><span id="rmap-now"></span><span class="rmap-lg"><i style="background:#f0a64a"></i>高架 <i style="background:#4a8fe0"></i>地下 <i style="background:#5bbf6a"></i>平面 <i style="background:#d32f2f"></i>限速（遊戲設定）</span></div><div id="rmap-in"></div></div>
 <div id="tut" hidden><div class="tut-c"><h2>第一次開車？30 秒學會</h2><ol><li><b>發車</b>：關好門，把右側手把往上推到 <b>P2</b>（鍵盤 ↑）。</li><li><b>看限速與距離</b>：左上圓牌是現在的限速；下方儀表顯示離停車線還有多遠。接近站時，把手把往下拉到 <b>B 位</b>煞車，畫面會 💡 建議檔位。</li><li><b>停準</b>：車頭停在<b>綠色停車線</b>，越準分數越高；快停時要<b>慢慢放鬆</b>煞車。</li><li><b>開門</b>：照畫面提示開左門或右門，乘客上下車後再<b>關門</b>，繼續下一站。</li></ol><p class="sub">超速太多會被自動煞車（ATP），不用緊張，回到 N 位就能繼續。需要時可在選單看完整「操作說明」。</p><button class="big" id="tut-ok">知道了，開始駕駛</button></div></div>
+<div id="gptut" hidden><div class="tut-c"><h2>🎮 手把操作</h2><table class="gp"><tr><td><b>十字鍵 ↑／↓</b>或<b>左搖桿</b>上／下</td><td>加／減一檔（長按連續）</td></tr><tr><td><b>A</b>（PS：✕）</td><td>主控器回 N 位</td></tr><tr><td><b>B</b>（PS：○）</td><td>緊急煞車 EB</td></tr><tr><td><b>LB</b>／<b>RB</b></td><td>開左門／開右門</td></tr><tr><td><b>X</b>（PS：□）</td><td>關門</td></tr><tr><td><b>Y</b>（PS：△）</td><td>鳴笛</td></tr><tr><td><b>Back／Select</b></td><td>退行（超過停車線時）</td></tr><tr><td><b>Start</b></td><td>暫停／繼續</td></tr><tr><td>選單、教學、結算頁</td><td><b>A</b> 確認／開始，<b>B</b> 回選單</td></tr></table><p class="sub">手把有震動馬達的話，換檔與緊急煞車會震動（設定裡關閉震動即停用）。按下手把任何按鍵即啟用；若按鍵與預期不同，可能是手把非標準對應。</p><button class="big" id="gptut-ok">知道了</button></div></div>
 <div id="top" class="hidden">
   <button id="b-pause">⏸ 暫停</button>
   <button id="b-call" style="display:none">📞 行控</button>
@@ -192,6 +195,7 @@ th{color:#9fb0c8;font-weight:600}
   </details>
   <details class="evd adv" id="m-howto"><summary>📖 操作說明</summary>
   <ul class="how">
+    <li>🎮 <b>手把</b>（Xbox／PS／Switch Pro 等，藍牙或 USB；iPhone 需 MFi 手把）：接上後按任一鍵啟用。<br><table class="gp"><tr><td><b>十字鍵 ↑／↓</b>或<b>左搖桿</b>上／下</td><td>加／減一檔（長按連續）</td></tr><tr><td><b>A</b>（PS：✕）</td><td>主控器回 N 位</td></tr><tr><td><b>B</b>（PS：○）</td><td>緊急煞車 EB</td></tr><tr><td><b>LB</b>／<b>RB</b></td><td>開左門／開右門</td></tr><tr><td><b>X</b>（PS：□）</td><td>關門</td></tr><tr><td><b>Y</b>（PS：△）</td><td>鳴笛</td></tr><tr><td><b>Back／Select</b></td><td>退行（超過停車線時）</td></tr><tr><td><b>Start</b></td><td>暫停／繼續</td></tr><tr><td>選單、教學、結算頁</td><td><b>A</b> 確認／開始，<b>B</b> 回選單</td></tr></table></li>
     <li>🎚 <b>主控器</b>：右側手把，上方 P1～P4 加速、中間 N 惰行、下方 B1～B7 煞車、最下 EB 緊急煞車。鍵盤：<b>↑↓</b> 加減一檔、<b>空白</b> 回 N、<b>X</b> 緊急煞車</li>
     <li>🚪 <b>停妥後</b>開門：看畫面上的月台在左或右（島式月台在左、側式月台在右，依靠右行駛推得）。<b>A／←</b> 開左門、<b>D／→</b> 開右門、<b>F／Enter</b> 關門。門沒關好不能加速</li>
     <li>🔊 <b>H</b> 或 📯 鳴笛；聽得到馬達、鐵軌接縫、煞車空氣聲與車門聲，隧道內有殘響</li>
@@ -249,15 +253,16 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-08.02"></script>
-<script src="js/broadcast.js?v=2026-11-08.02"></script>
-<script src="js/haptics.js?v=2026-11-08.02"></script>
-<script src="js/feedback.js?v=2026-11-08.02"></script>
-<script src="js/routemap.js?v=2026-11-08.02"></script>
-<script src="js/share.js?v=2026-11-08.02"></script>
-<script src="js/events.js?v=2026-11-08.02"></script>
-<script src="js/lines.js?v=2026-11-08.02"></script>
-<script src="js/render3d.js?v=2026-11-08.02"></script>
+<script src="js/models.js?v=2026-11-09.01"></script>
+<script src="js/broadcast.js?v=2026-11-09.01"></script>
+<script src="js/haptics.js?v=2026-11-09.01"></script>
+<script src="js/feedback.js?v=2026-11-09.01"></script>
+<script src="js/routemap.js?v=2026-11-09.01"></script>
+<script src="js/gamepad.js?v=2026-11-09.01"></script>
+<script src="js/share.js?v=2026-11-09.01"></script>
+<script src="js/events.js?v=2026-11-09.01"></script>
+<script src="js/lines.js?v=2026-11-09.01"></script>
+<script src="js/render3d.js?v=2026-11-09.01"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -265,7 +270,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-08.02';
+const VERSION='2026-11-09.01';
 
 /* ========================= 小工具 ========================= */
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
@@ -1343,7 +1348,7 @@ function showBoard(sel){
   $('menu').classList.add('hidden');$('result').classList.add('hidden');$('board').classList.remove('hidden');
 }
 $('m-board').onclick=()=>showBoard();
-fbInit();rmInit();
+fbInit();rmInit();gpInit();
 $('m-share').onclick=()=>{shareLevel();};   // 必須在點擊當下同步呼叫 navigator.share
 $('r-share').onclick=()=>{shareResult();};
 $('b-back').onclick=()=>{$('board').classList.add('hidden');$('menu').classList.remove('hidden');};
@@ -1558,6 +1563,7 @@ function loop(ts){
   const dt=Math.min(0.1,raw);last=ts;frameDt=dt;
   const playing=G&&$('menu').classList.contains('hidden')&&$('result').classList.contains('hidden')&&!paused;
   if(playing){acc+=dt;let c=0;while(acc>=1/60&&c<12){step(1/60);acc-=1/60;c++;}if(c>=12)acc=0;}
+  gpPoll(dt);
   perfAdapt(raw,!!playing);
   render();audioUpdate();
   requestAnimationFrame(loop);
