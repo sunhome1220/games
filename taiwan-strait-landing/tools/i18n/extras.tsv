@@ -1139,3 +1139,10 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 ），戰機升不了空	), aircraft cannot take off	
 守方第 1～2 回合防禦 −1（近距支援戰機被抽去爭制空）	Defender defense −1 on turns 1–2 (close-support aircraft pulled into the air-control fight)	
 局勢升高：美日參戰擲骰 −1	Tension rises: US/Japan intervention rolls −1	
+修正「戰機升空疏散並出擊」憑空增加戰機：戰機被擊落或炸毀就不會復原。改為「戰機升空避敵」：第 1～2 回合戰機不在機場挨炸（不新增任何戰機），代價是在空中多一輪空戰（擊落風險 p 變 1−(1−p)²）；跑道受損嚴重時升不了空	Fixed "fighters sortie" creating aircraft from nothing: shot-down or destroyed aircraft do not come back. It is now "Fighters launch to evade": on turns 1–2 aircraft are not caught and destroyed on the ground (no aircraft are added); the cost is one extra round of air combat (shootdown risk p becomes 1−(1−p)²); with badly damaged runways they cannot launch	
+戰機升空避敵	Fighters launch to evade	
+戰機不留在地面挨打，分批升空或轉場：第 1～2 回合不會在機場被炸毀（不新增任何戰機）。但在空中就多一輪空戰，每回合的擊落風險由 p 變成 1−(1−p)²；跑道受損嚴重（起降能量不足一半）就升不了空，等於沒有效果。	Aircraft do not sit on the ground to be hit: they launch in batches or redeploy, so on turns 1–2 none are destroyed on the airfield (no aircraft are added). In the air they fight one extra round, so each turn's shootdown risk goes from p to 1−(1−p)²; with badly damaged runways (under half takeoff capacity) they cannot launch, so there is no effect.	
+），戰機升不了空，沒有效果	), aircraft cannot launch; no effect	
+戰機升空避敵（機場起降能量約 	Fighters launch to evade (airfield takeoff capacity about 	
+）：第 1～2 回合地面戰機不會被炸毀，沒有新增任何戰機	): on turns 1–2 aircraft on the ground are not destroyed; no aircraft are added	
+代價：在空中多一輪空戰，擊落風險由 p 變成 1−(1−p)²	Cost: one extra round of air combat; shootdown risk goes from p to 1−(1−p)²	
