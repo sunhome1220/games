@@ -944,3 +944,8 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 點一下回到原本大小	Tap to restore
 縮到最小	Minimize
 縮到最小（會停在左下角，再按展開）	Minimize (stays at the bottom-left; tap to expand)
+「反制先制打擊」決策先說明被打了什麼：攻方選的打擊重點、攔截判定結果、造成的損失，以及目前守方空軍、防空、反艦飛彈、長程飛彈存量與指揮通信狀態，再讓你選擇因應	The "Counter the preemptive strike" decision now first explains what was hit: the attacker's chosen focus, the interception result, the damage caused, and the defender's current air force, air defense, anti-ship and long-range missile stocks and command-and-communications status, before you choose a response
+被打了什麼：	What was hit: 
+。結果：	。Result: 
+目前守方：	Defender now: 
+指揮通信受重創	command and communications badly hit
