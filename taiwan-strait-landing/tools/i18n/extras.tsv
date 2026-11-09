@@ -1026,3 +1026,13 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 對方仍可能再次請求	They may ask again	
 提出依目前局勢停火。接受則戰事結束，拒絕則繼續作戰。	proposes a ceasefire at the current situation. Accepting ends the war; refusing continues it.	
 潛艦 上次發現點	Submarine last detected point	
+數值來源與推估	Sources and estimates of the numbers	
+公開資料	Public data	
+公開資料＋推估	Public data + estimate	
+推估	Estimate	
+設計值	Design value	
+實測	Measured	
+美日參戰傾向（只在「擲骰決定參戰」時有效）	US-Japan intervention leaning (only when "dice decide intervention")	
+開戰月份（決定天候機率）	War start month (sets weather odds)	
+命中率 	Hit rate 	
+（固定規則）	 (fixed rule)	
