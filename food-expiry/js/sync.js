@@ -2,7 +2,7 @@
 // 沒設定 firebase-config.js 時 Sync.available=false，App 當單機版使用。
 window.Sync = (() => {
   const cfg = window.FIREBASE_CONFIG;
-  const S = { err: '', available: !!(cfg && cfg.projectId), code: null, status: 'off', onItems() {}, onKnown() {}, onStock() {}, onStatus() {} };
+  const S = { user: null, onUser() {}, onRestore() {}, authErr: '', err: '', available: !!(cfg && cfg.projectId), code: null, status: 'off', onItems() {}, onKnown() {}, onStock() {}, onStatus() {} };
   let db = null, unsubs = [], loading = null;
   const clean = o => JSON.parse(JSON.stringify(o));
   const kid = c => String(c).replace(/[\/.#$\[\]]/g, '_');
@@ -18,6 +18,50 @@ window.Sync = (() => {
     })();
     await loading;
   }
+  // ---- Google 登入 ----
+  let auth = null;
+  const AUTH_MSG = {
+    'auth/unauthorized-domain': '此網站網域尚未加入 Firebase「授權網域」',
+    'auth/operation-not-allowed': 'Firebase 尚未啟用 Google 登入',
+    'auth/popup-closed-by-user': '登入視窗被關閉',
+    'auth/cancelled-popup-request': '登入已取消',
+    'auth/network-request-failed': '網路連線失敗',
+    'auth/web-storage-unsupported': '瀏覽器擋住了儲存空間，無法登入',
+  };
+  const authMsg = e => AUTH_MSG[e && e.code] || (e && (e.code || e.message)) || '未知錯誤';
+  S.initAuth = async () => {
+    if (!S.available || auth) return;
+    await init();
+    if (!firebase.auth) await load('vendor/firebase-auth-compat.js');
+    auth = firebase.auth();
+    auth.onAuthStateChanged(u => { S.user = u; S.authErr = ''; S.onUser(u); if (u) restore(u); });
+    auth.getRedirectResult().catch(e => { S.authErr = authMsg(e); S.onUser(S.user); });
+  };
+  S.signIn = async () => {
+    try {
+      await S.initAuth();
+      S.authErr = ''; S.onUser(S.user);
+      const prov = new firebase.auth.GoogleAuthProvider();
+      prov.setCustomParameters({ prompt: 'select_account' });
+      try { await auth.signInWithPopup(prov); }
+      catch (e) {
+        if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment')) await auth.signInWithRedirect(prov);
+        else throw e;
+      }
+    } catch (e) { console.warn(e); S.authErr = authMsg(e); S.onUser(S.user); }
+  };
+  S.signOut = async () => { try { if (auth) await auth.signOut(); } catch (e) { console.warn(e); } };
+  // 帳號底下記住「我的家庭代碼」，換手機登入後自動還原
+  async function restore(u) {
+    try {
+      const d = await db.collection('users').doc(u.uid).get();
+      S.onRestore(d.exists && d.data().familyCode ? d.data().familyCode : '');
+    } catch (e) { console.warn(e); S.authErr = authMsg(e); S.onUser(S.user); }
+  }
+  S.saveFamily = code => {
+    if (!auth || !S.user) return;
+    db.collection('users').doc(S.user.uid).set({ familyCode: code || null, t: Date.now() }).catch(e => console.warn(e));
+  };
   const col = n => db.collection('families').doc(S.code).collection(n);
   function stop() { unsubs.forEach(f => f()); unsubs = []; }
   S.generate = () => { const a = new Uint8Array(10); crypto.getRandomValues(a); return Array.from(a, b => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join(''); };

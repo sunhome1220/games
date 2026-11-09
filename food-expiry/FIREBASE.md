@@ -21,3 +21,15 @@ service cloud.firestore {
 6. 改版：`python3 food-expiry/tools/bump_version.py 2026-xx-xx.nn`，推到 `main`。
 
 使用：App「⋯」選單 → 家庭共用 → 加入／建立（留白產生新代碼）→ 分享連結給家人。
+
+## Google 帳號登入（選用，換手機時自動還原家庭）
+
+1. Firebase 主控台 → **Authentication** → 開始使用 → **登入方式** → 啟用 **Google**（填專案公開名稱與支援電子郵件）。
+2. Authentication → **設定** → **已授權的網域** → 新增 `sunhome1220.github.io`。
+3. Firestore 規則加上這一段（放在 `match /databases/{database}/documents { ... }` 裡面）：
+```
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+```
+4. 使用：App「⋯」→ Google 帳號 → 使用 Google 登入。登入後，帳號會記住你的家庭代碼；換手機登入同一個 Google 帳號，家庭清單自動還原，不用輸入代碼。
