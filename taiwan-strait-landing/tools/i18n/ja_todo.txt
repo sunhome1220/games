@@ -937,3 +937,10 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 補給不足 攻防各 −1	supply shortage attack and defense −1 each
 同格多單位 防禦 −1	stacked units defense −1
 關閉（拖曳可移動，連點兩下回到右下角）	Close (drag to move, double-tap to return to the bottom-right corner)
+資訊卡片可縮到最小：按「—」縮成左下角的小標籤，再按一下回到原本大小（狀態記在這台裝置）	The info card can be minimized: tap "—" to shrink it to a small tag at the bottom-left, tap again to restore (remembered on this device)
+地圖右下角新增藍色斜箭頭按鈕「回到台灣」：地圖放大或拖離後，點一下就捲回台灣遊戲區中央（維持目前縮放）	A blue arrow "Back to Taiwan" button at the map's bottom-right: after zooming or dragging away, tap once to scroll back to the center of the Taiwan play area (current zoom kept)
+回到台灣	Back to Taiwan
+展開資訊卡片	Expand info card
+點一下回到原本大小	Tap to restore
+縮到最小	Minimize
+縮到最小（會停在左下角，再按展開）	Minimize (stays at the bottom-left; tap to expand)
