@@ -908,3 +908,23 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 點選地圖上的大陸基地（紅色圖形），或直接點右側「中方基地」清單的一列，進行長程打擊，每次消耗 1 發長程飛彈。	Tap a mainland base on the map (red shapes), or tap a row in the "PRC bases" list on the right, to strike; each strike uses 1 long-range missile.
 指揮官意圖介面精簡：一開啟只看到每一項目前的選擇（例如「打擊重點：照電腦判斷」），點某一列才展開可選項目，選好自動收回；一次只展開一項	Commander-intent panel simplified: it opens showing only the current choice for each item (e.g. "Strike focus: computer judgment"); tap a row to expand its options, and it collapses after you choose; one item open at a time.
 電腦代打前，先下達本階段的作戰重點（只影響這一階段）。下面是目前的選擇，點一列可更改。	Before the computer plays for you, set this phase's operational focus (applies to this phase only). Below are the current choices; tap a row to change one.
+指揮官意圖：戰況沒有重大變化（天候、美日參戰程度、雙方兵力、颱風都沒變）就自動沿用上次的選擇，不再每階段彈窗；有變化才重新詢問	Commander intent: if nothing major has changed (weather, US/Japan involvement, force levels, typhoon), your previous choice is reused automatically instead of popping up every phase; it asks again only when something changed
+攻方失敗時，結局頁新增「攻方失敗診斷」：海上損失的船艦與死因、首次上岸回合、海況不利回合，並列出對應的假設情境，可一鍵套用後重開（結算頁仍會標明用了假設情境）	When the attacker fails, the ending page adds an "Attacker failure diagnosis": ships lost at sea and causes, first landing turn, bad-sea-state turns, plus matching what-if scenarios you can apply and restart in one tap (the results page still states that what-ifs were used)
+守方階段提示加上彈藥帳：反艦飛彈、長程飛彈（本階段可打幾發）、防空、海鯤數量，以及海上敵船團與其中運輸船數量，讓選擇打擊對象有依據	The defender-phase hint now shows an ammunition ledger: anti-ship missiles, long-range missiles (how many can fire this phase), air defense, Hai Kun count, and enemy ships at sea with how many are transports, so target choices have a basis
+戰局碼：設定最後一頁可貼上別人的戰局碼，套用同樣的設定與亂數種子（天候、擲骰結果都固定）；結局頁顯示本局戰局碼並可複製。動畫用的亂數不吃種子，不影響結果	Match code: on the last setup page you can paste someone else's match code to apply the same settings and random seed (weather and dice are fixed); the ending page shows this game's code with a copy button. Animation randomness does not use the seed and does not affect results
+戰況沒有重大變化，沿用上次的指揮官意圖（可按「重設意圖」改）	No major change; reusing your last commander intent (press "Reset intent" to change)
+攻方失敗診斷	Attacker failure diagnosis
+套用上面的假設情境重開	Apply the what-ifs above and restart
+想看看改變條件會怎樣？這些假設情境不符合真實情況，開啟後結算頁會標明：	Curious what changes if conditions differ? These what-ifs do not match reality, and the results page will state that they were used:
+整局沒有成功搶灘。	No landing succeeded all game.
+戰局碼（選填）	Match code (optional)
+貼上別人的戰局碼，可重現同樣的設定與天候	Paste a match code to reproduce the same settings and weather
+戰局碼包含設定與亂數種子（天候、擲骰結果）；空白就自動產生，結局頁會顯示本局的碼。你的決策不同，局勢仍會不同。	A match code contains the settings and random seed (weather, dice). Leave blank to generate one; the ending page shows this game's code. Different decisions still lead to different outcomes.
+在設定最後一頁貼上這個碼，就能用同樣的設定與天候、擲骰結果重玩；你的決策不同，結果仍會不同。	Paste this code on the last setup page to replay with the same settings, weather and dice; different decisions still give different results.
+已套用戰局碼的設定	Match-code settings applied
+已複製戰局碼	Match code copied
+複製失敗，請手動選取	Copy failed; select it manually
+複製	Copy
+戰局碼：	Match code: 
+加速造艦（護航艦隊 +2、航艦 +1、兩棲艦群與滾裝船團各 +2；代價：美日警覺上升）	Accelerated shipbuilding (escorts +2, carrier +1, amphibious groups and ro-ro fleets +2 each; cost: US/Japan alertness rises)
+軍購延宕（守方反艦飛彈 −3、長程飛彈 −2、防空 −1，依公開報導）	Arms purchases delayed (defender anti-ship missiles −3, long-range missiles −2, air defense −1, per public reports)
