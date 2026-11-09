@@ -877,3 +877,13 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 浪高與天候後果	Wave height and weather effects
  · 預報 	 · forecast 
  公尺	 m
+共軍海運運力估計（登陸艦與運輸船）	PLA sealift capacity estimate (landing ships and transports)
+保守	Conservative
+中間（基準）	Medium (baseline)
+樂觀	Optimistic
+兩棲艦群	Amphibious ship group
+滾裝船團	Ro-ro ship group
+兩棲艦	Amph ship
+滾裝	Ro-ro
+海運運力（運輸船）	Sealift capacity (transport ships)
+【攻方向】海運運力無限（舊版外掛）	[Attacker-side] Unlimited sealift (legacy cheat)
