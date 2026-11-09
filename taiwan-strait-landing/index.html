@@ -1224,7 +1224,7 @@ function targets(u){
   if(u.type==='hk')return subTargets(u);
   if(isMsl(u)){if(u.shots<=0)return [];return S.units.filter(e=>e.side!==u.side&&atSea(e)&&hd(hexOf(u),hexOf(e))<=8);}
   const h=hexOf(u);if(h.isl==='CN')return [];
-  return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&e.type!=='hk'); // 潛艦不能被地面部隊直接攻擊
+  return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以
 }
 
 function damage(u,n,why){
@@ -3198,7 +3198,7 @@ async function aiTryAttack(u,thr,focus){
   if(braw>=thr){attack(u,best);render();await sleep(380);return true;}
   return false;
 }
-function enemyAdj(k,side){const h=TER[k];return ring2(h).reduce((a,n)=>a+unitsAt(n.k).filter(e=>e.side!==side&&e.type!=='hk').length,0);}
+function enemyAdj(k,side){const h=TER[k];return ring2(h).reduce((a,n)=>a+unitsAt(n.k).filter(e=>e.side!==side&&canHitSub(e)).length,0);}
 function minD(k,list){const h=TER[k];return Math.min.apply(null,list.map(x=>hd(h,TER[x])));}
 async function runAI(side){
   S.busy=true;render();await sleep(500);
@@ -3267,9 +3267,10 @@ function pickStrike(){
   const zoneKs=[].concat(ZONES.north,ZONES.central);
   let best=null,bs=-1;
   for(const d of S.units){
-    if(d.side!=='def'||d.type==='hk')continue;const h=hexOf(d); // 潛艦不在火力打擊的目標內
+    if(d.side!=='def'||!canHitSub(d))continue;const h=hexOf(d); // 海上的潛艦打不到；港內補給中的潛艦是固定目標
+    const subBonus=d.type==='hk'?4:0;
     if(h.isl==='KM')continue; // 金馬無駐軍，雙方無視
-    let s=Math.random();
+    let s=Math.random()+subBonus;
     if(d.type==='ssm')s+=9;else if(d.type==='ff')s-=3;
     if(atkLand.some(a=>hd(hexOf(a),h)<=2))s+=7+(TYPES[d.type].hp-d.hp);
     if(OBJ.includes(h.k))s+=2;
@@ -3950,7 +3951,7 @@ function renderMap(){
   (S.focus||[]).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<ellipse class="vfocus" cx="'+x.toFixed(1)+'" cy="'+(y+4).toFixed(1)+'" rx="17" ry="12"/>';});
   if(humanTurn()){
     let rings=[];
-    if(S.mode==='strike'){if(S.phase==='atk')rings=S.units.filter(u=>u.side==='def'&&u.type!=='hk').map(u=>[u,'strike']);}
+    if(S.mode==='strike'){if(S.phase==='atk')rings=S.units.filter(u=>u.side==='def'&&canHitSub(u)).map(u=>[u,'strike']);}
     else if(S.sel&&alive(S.sel)&&S.sel.side===S.phase)rings=targets(S.sel).map(u=>[u,'']);
     rings.forEach(([u,c])=>{const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy;o+='<circle class="ring '+c+'" cx="'+x+'" cy="'+y+'" r="15"/>';});
   }
@@ -4221,7 +4222,9 @@ function fxSub(o){
   }
 }
 // 守方潛艦對攻方玩家隱蔽：沒開火暴露前看不到（雙方都由人操作、守方玩家、或電腦對電腦觀戰時看得到）
-const subHidden=u=>u.type==='hk'&&u.side==='def'&&!u.revealed&&!S.over&&S.ctrl.atk==='human'&&S.ctrl.def!=='human'&&!S.video&&!S.sim;
+const subInPort=u=>u.type==='hk'&&hexOf(u).t==='port'&&hexOf(u).isl==='TW'; // 回港補給的潛艦停在碼頭，位置固定、看得到，也能被飛彈與空襲打擊
+const canHitSub=u=>u.type!=='hk'||subInPort(u);
+const subHidden=u=>u.type==='hk'&&u.side==='def'&&!u.revealed&&!subInPort(u)&&!S.over&&S.ctrl.atk==='human'&&S.ctrl.def!=='human'&&!S.video&&!S.sim;
 const unitAtVis=k=>S.units.find(u=>K(u.c,u.r)===k&&!subHidden(u));
 function runFx(o){
   const PO=h=>{const q=oCenter(h[0],h[1]);return [q[0]*KS,q[1]*KS];}; // 外圍／港口出發點（舊座標）
@@ -4326,7 +4329,7 @@ function unitStatusList(u,h){ // 單位狀態說明（資訊卡與滑鼠提示�
   if(atSea(u))st.push('海上航行中');
   if(u.type==='ssm'||u.type==='hmr')st.push(u.revealed?'已暴露（上階段開火）':'隱蔽中：火力打擊多半打到誘餌');
   if(u.type==='hmr')st.push('本階段剩 '+(u.side===S.phase?u.shots:1)+' 發：火箭彈射程 4 格，陸軍戰術飛彈射程 14 格（動用長程飛彈存量）');
-  else if(u.type==='hk')st.push('重型魚雷 '+(u.tp||0)+' / '+hkTp()+' 齊射（射程 3 格）、魚叉飛彈 '+(u.hm||0)+' / '+HK_HM+' 枚（射程 6 格）；射擊後暴露，可能遭反潛攻擊；回母港才能補彈');
+  else if(u.type==='hk')st.push((subInPort(u)?'停在母港補給中：位置固定，可被飛彈與空襲打擊。':'在海上：一般看不見也打不到。')+'重型魚雷 '+(u.tp||0)+' / '+hkTp()+' 齊射（射程 3 格）、魚叉飛彈 '+(u.hm||0)+' / '+HK_HM+' 枚（射程 6 格）；射擊後暴露，可能遭反潛攻擊；回母港才能補彈');
   else if(isMsl(u))st.push('本階段剩 '+(u.side===S.phase?u.shots:(u.type==='ff'?1:2))+' 發，射程 4');
   if(u.type==='abn'&&!u.dropped&&h.isl==='CN')st.push('待命空降');
   if(u.garrison)st.push('守備部隊');
@@ -4822,7 +4825,7 @@ $('#map').addEventListener('click',async e=>{
   if(!humanTurn()){S.sel=hitU||unitAtVis(k)||null;render();return;}
   const u=hitU||unitAtVis(k);
   if(S.mode==='strike'){
-    if(S.phase==='atk'&&u&&u.side==='def'&&u.type!=='hk'&&S.fire>0){strike(u);if(S.fire<=0)S.mode=null;}
+    if(S.phase==='atk'&&u&&u.side==='def'&&canHitSub(u)&&S.fire>0){strike(u);if(S.fire<=0)S.mode=null;}
     else if(S.phase==='atk'&&!u&&S.fire>0&&TER[k]&&TER[k].t==='air'&&TER[k].isl==='TW'&&strikeAirfield(k)){if(S.fire<=0)S.mode=null;}
     render();return;
   }
@@ -5046,7 +5049,7 @@ const VERSION='2026-11-10.41';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
- {v:'2026-11-10.41',items:['潛艦隱匿規則：火力打擊（飛彈、空襲）與地面部隊都不能直接打擊潛艦（原本火力打擊可以點到海鯤，現在不行）；攻方一般看不見守方潛艦，只有潛艦開火暴露、或攻方護航艦剛好發現時才現身（護航艦 3 格內每艘約 25% 發現，海鯤隨年代改良更難被發現；發現後約 30% 投射反潛武器命中）；下一個守方階段若沒有再被發現就回到隱匿，地圖上只留下「潛艦 上次發現點 T回合」的虛線標記']},
+ {v:'2026-11-10.41',items:['潛艦隱匿規則：海上的潛艦不能被火力打擊（飛彈、空襲）與地面部隊直接打擊（原本火力打擊可以點到海鯤）；回母港補給、停在碼頭的潛艦位置固定，看得到也可以被打擊；攻方一般看不見守方潛艦，只有潛艦開火暴露、或攻方護航艦剛好發現時才現身（護航艦 3 格內每艘約 25% 發現，海鯤隨年代改良更難被發現；發現後約 30% 投射反潛武器命中）；下一個守方階段若沒有再被發現就回到隱匿，地圖上只留下「潛艦 上次發現點 T回合」的虛線標記']},
  {v:'2026-11-10.38',items:['海峽上的共軍護航艦棋子變多：一個棋子約代表護航艦隊的一個點數（最多 8 個，含航艦群自帶的護航艦總數不超過護航艦隊點數），艦隊隨年代成長時畫面上的艦也跟著變多；護航艦隊的數值不變。300 局電腦推演勝率無變化（2026 年無外援 37%→37%、外援擲骰 2%→2%）']},
  {v:'2026-11-10.37',items:['修正殲滅順序：被擊毀的單位圖形不再在攻擊動畫播放前就消失；棋子會先留在地圖上，等攻擊動畫播完、「殲滅」特效出現時才淡出（原本是先消失再顯示殲滅，順序顛倒）']},
  {v:'2026-11-10.36',items:['修正空戰動畫殘留：編隊被擊落一架後，剩下的機群會調頭脫離並淡出，不再一直停在海峽中間（舊版每打一次空戰就多留一隊，會越積越多）；另加保險清除，動畫結束後不會留下任何機群']},
