@@ -1350,7 +1350,7 @@ function fireMissile(m,t){
   if(m.type==='ssm'&&S.pools&&S.pools.rocAS!==undefined)S.pools.rocAS=Math.max(0,Math.round((S.pools.rocAS-.2)*10)/10);
   m.shots--;if(m.shots<=0&&m.type!=='ssm')m.acted=true; // 岸置發射車打完仍可機動轉移
   if(m.type==='ssm')m.revealed=true; // 開火後暴露
-  const sat=satHit(t),need=(m.type==='ff'?4:S.mods.ssmNeed)+escortMod()-sat,hit=sat>=3||hitP(pNeed(need),'ms:'+m.type+'>'+t.type);
+  const sat=satHit(t),need=(m.type==='ff'?4:S.mods.ssmNeed)+(t.type==='cvy'?cvyMod(t):escortMod())-sat,hit=sat>=3||hitP(pNeed(need),'ms:'+m.type+'>'+t.type);
   fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit});
   if(hit){log('反艦飛彈命中海上的 '+TYPES[t.type].n+(sat>=2?'（飽和攻擊）':'（'+lastTxt()+'）'));damage(t,sat>=2?2:1,sat>=2?'飽和攻擊':'反艦飛彈');}
   else log('反艦飛彈未命中（'+lastTxt()+'）');
@@ -1955,6 +1955,11 @@ function repairAirfields(){ // 守方每 2 回合修復一級（未被占領的�
   for(const k of Object.keys(S.afDmg)){if(S.owner[k]==='atk')continue;S.afDmg[k]--;log('守方搶修機場：'+(TER[k].name||'機場')+(S.afDmg[k]>0?'，仍受損':'，恢復運作'));if(S.afDmg[k]<=0)delete S.afDmg[k];}
 }
 function allyAir(){return rocAirEff()+S.fx.units.filter(f=>f.kind==='air'&&fxActive(f)).reduce((a,f)=>a+f.hp,0);}
+// 補給船團（慢速、無防空的商船）：比軍艦好打，只有附近的護航艦才能保護它——無護航 −1（命中門檻降低）、每有一艘護航艦在 2 格內 +1（最多 +2）
+function cvyMod(t){const near=S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&hd(hexOf(e),hexOf(t))<=2).length;return -1+Math.min(2,near);}
+// 守方選目標的價值：航艦最高，其次是補給船團（打掉補給就是斷攻方的後路）、載著登陸部隊的船，護航艦最低
+const tgtVal=e=>e.type==='cv'?4:e.type==='cvy'?3:(e.type==='amph'||e.type==='mar'||e.type==='arm')?2.5:e.type==='dd'?1:1.5;
+function pickW(arr,f){let t=arr.reduce((a,x)=>a+f(x),0),r=Math.random()*t;for(const x of arr){if((r-=f(x))<=0)return x;}return arr[0];}
 function escortMod(){return S.pools.plaNavy>=5?1:0;}
 // 大陸基地損傷：火箭軍旅駐地、空軍機場被打掉的比例，就是對應發射與出擊能量的損失（發射架、跑道損毀就發射不出去）
 function cnShare(kind){let a=0,b=0;for(const id of Object.keys(CNB)){if(CNB[id].kind!==kind)continue;a+=Math.max(0,S.cn[id]);b+=CNB[id].hp;}return b?a/b:1;}
@@ -2007,7 +2012,7 @@ function antiShip(who,shots,need,canLand,tag,ok0,fk){
   const P=S.pools;let hc=0,he=0,hl=0,cvh=0;
   for(let i=0;i<shots;i++){
     const fleet=S.units.filter(u=>u.side==='atk'&&atSea(u)&&(!isShip(u)||u.type==='cv'||u.type==='cvy'));
-    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pick(fleet),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&hd(hexOf(x),hexOf(tg))<=2)?1:0,sat=satHit(tg),ok=sat>=3||hitP(pNeed(need+escortMod()+cov-sat),'antiShip');fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:orgPick(base),k:fk||'cm',ad:P.plaAD>0&&fk!=='torp'?(ok?'pass':'int'):undefined,adSide:'atk'});if(ok){hc++;damage(tg,sat>=2?2:1,sat>=2?'飽和攻擊':who);}}
+    if(fleet.length&&(Math.random()<.67||P.plaNavy<=0)){const tg=pickW(fleet,tgtVal),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&hd(hexOf(x),hexOf(tg))<=2)?1:0,sat=satHit(tg),ok=sat>=3||hitP(pNeed(need+(tg.type==='cvy'?cvyMod(tg):escortMod()+cov)-sat),'antiShip');fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:orgPick(base),k:fk||'cm',ad:P.plaAD>0&&fk!=='torp'?(ok?'pass':'int'):undefined,adSide:'atk'});if(ok){hc++;damage(tg,sat>=2?2:1,sat>=2?'飽和攻擊':who);}}
     else if(P.plaNavy>0){if(hitP(pNeed(need),'antiShip')){he++;P.plaNavy--;if(P.plaCV>0&&hitP(pNeed(5+(P.plaNavy>=5?1:0)),'antiShip')){P.plaCV--;cvh++;plaCarrierLost('反艦飛彈');}}}
     else if(canLand){
       const land=S.units.filter(u=>u.side==='atk'&&onTW(u));if(!land.length)break;
@@ -3627,7 +3632,7 @@ async function aiDef(){
     while(alive(m)&&m.shots>0&&!S.over){
       let ts=targets(m);if(MS==='save')ts=ts.filter(t=>HV.includes(t.type));if(!ts.length)break;
       if(m.type==='hmr'){const w={arm:4,tank:4,amph:4,mar:4,abn:3,inf:2,res:2};ts.sort((a,b)=>(w[b.type]||1)-(w[a.type]||1)||a.hp-b.hp);}
-      else ts.sort((a,b)=>(b.type==='cv')-(a.type==='cv')||a.hp-b.hp);
+      else ts.sort((a,b)=>tgtVal(b)-tgtVal(a)||a.hp-b.hp);
       if(MS==='salvo'){if(!(salvoT&&alive(salvoT)&&ts.includes(salvoT)))salvoT=ts[0];else ts=[salvoT];}
       fireMissile(m,ts[0]);vol++;
       if(MS==='scoot'&&alive(m))m.revealed=false;
@@ -4245,7 +4250,7 @@ if(/[?&]debug=1/.test(location.search))window.__reach=id=>{const u=S.units.find(
 if(/[?&]debug=1/.test(location.search))window.__af=()=>({n:airfields().length,names:airfields().map(h=>h.k+':'+(h.name||'')),share:afShare(),rocAir:S.pools.rocAir,pick:pickAirfield()});
 if(/[?&]debug=1/.test(location.search))window.__score=async(cfg)=>{ // 測試用：依設定跑一場電腦推演，回傳雙方原始分數
   for(const [k,v] of Object.entries(cfg||{})){const e=document.getElementById(k);if(e)e.value=v;}
-  const keep=S;await simRun(true);const m=endScores(),r={A:m.A.total,D:m.D.total,win:(S.result&&S.result.side)||null,US:S.fx.lv.US,JP:S.fx.lv.JP};S=keep;return r;};
+  const keep=S;await simRun(true);const m=endScores(),r={A:m.A.total,D:m.D.total,win:(S.result&&S.result.side)||null,US:S.fx.lv.US,JP:S.fx.lv.JP,cvySunk:S.stats.cvySunk||0,arr:S.log.reduce((a,l)=>{const q=/補給船團 (\d+) 個抵達卸貨/.exec(l.msg);return a+(q?+q[1]:0);},0),sent:S.log.reduce((a,l)=>{const q=/攻方派出 (\d+) 個補給船團/.exec(l.msg);return a+(q?+q[1]:0);},0),turn:S.turn};S=keep;return r;};
 if(/[?&]debug=1/.test(location.search))window.__sup2=()=>S.sup;
 if(/[?&]debug=1/.test(location.search))window.__cvTest=side=>{if(side==='US')usCarrierSunk();else plaCarrierLost('測試');return S.log.slice(0,4).map(l=>l.msg);};
 if(/[?&]debug=1/.test(location.search))window.__targets=id=>{const u=S.units.find(x=>x.id===id);return u?{type:u.type,shots:u.shots,acted:u.acted,moved:u.moved,hex:hexOf(u).k,t:targets(u).map(e=>e.type+'@'+hexOf(e).k+(atSea(e)?'(sea)':'')+' d='+hd(hexOf(u),hexOf(e)))}:null;};
