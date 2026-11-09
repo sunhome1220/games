@@ -57,6 +57,7 @@ h1{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,4vw,38px);l
 .sub{color:var(--muted);font-size:13px;margin-top:4px}
 #btnSettings{position:absolute;top:0;right:0;z-index:2}
 .statusbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btnlink{display:block;border:1px solid var(--ink);border-radius:3px;padding:10px 12px;margin-top:8px;text-align:center;text-decoration:none;color:var(--ink);font-weight:700;background:var(--panel)}.btnlink small{display:block;font-weight:400;color:var(--muted);margin-top:2px}.btnlink:hover{background:var(--ink);color:var(--paper,#fff)}.btnlink:hover small{color:inherit}
 .chip.tp{cursor:help}.chip.tp:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 .chiptip{position:fixed;z-index:30;background:var(--ink);color:var(--paper,#fff);border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.5;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:4px 10px;font-size:13px;white-space:nowrap}
@@ -5376,6 +5377,7 @@ function renderSettings(){
   h+='<div class="wz-q" style="margin-top:16px">進階：用目前設定跑統計</div><div class="wz-note">想知道這組設定誰比較有利？讓電腦自動模擬多局，統計勝率、代價與決策的影響。</div>'+
     '<div style="margin-top:8px">'+seg('data-statn',[['50',['50 局']],['100',['100 局']],['300',['300 局']]],SETTINGS_STATN,3)+'</div>'+
     '<div class="btns" style="margin-top:10px"><button class="ghost" id="stRun"'+(STAT.running?' disabled':'')+'>開始統計</button></div>';
+  h+='<div class="wz-q" style="margin-top:16px">支持作者</div><a id="stTip" class="btnlink" href="https://service.jkopay.com/r/transfer?j=Transfer:900386051&amp;amount=50" target="_blank" rel="noopener noreferrer">☕ 請作者喝杯咖啡<br><small>純屬好玩！不給也能玩到爆。金額預設 50 元（約一杯超商咖啡），付款時可以自己改。</small></a>';
   h+='<div class="btns" style="margin-top:16px"><button id="stClose">關閉</button></div>';
   box.innerHTML=h;
   box.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{
