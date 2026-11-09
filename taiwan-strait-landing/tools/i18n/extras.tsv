@@ -1187,3 +1187,31 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 雷霆2000：射程最遠 2 格（約 45 km），面積火力、命中比海馬士低；彈藥庫存剩 	Thunder-2000: range at most 2 cells (about 45 km), area fire with a lower hit chance than HIMARS; ammunition stock left 	
  點；開火後下一階段要再裝填	 points; needs a phase to reload after firing	
 （再裝填中，本階段不能開火）	 (reloading; cannot fire this phase)	
+依判定：成功則守方機動部隊第 1～3 回合無法調動、社會韌性 −1；部分成功癱瘓 2 回合；失敗則沒有效果。平民傷亡 +50%。	By judgment: on success the defender's mobile forces cannot move on turns 1–3 and social resilience −1; partial success paralyzes them for 2 turns; failure has no effect. Civilian casualties +50%.	
+先制打擊的攔截擲骰 +1	Preemptive-strike interception roll +1	
+先制打擊的攔截擲骰 −1	Preemptive-strike interception roll −1	
+兵力大增（+3 兩棲旅、+1 重型旅、護航艦隊 +2）；守方提早 2 回合動員、第 1 回合防禦 +1，股市 −3。	Forces surge (+3 amphibious brigades, +1 heavy brigade, escorts +2); the defender mobilizes 2 turns early and gets +1 defense on turn 1; stocks −3.	
+兵力少一截（−2 兩棲旅、−1 重型旅），換取守方動員延後。	Forces are smaller (−2 amphibious brigades, −1 heavy brigade) in exchange for a delayed defender mobilization.	
+兵力最多（+2 兩棲旅、+1 重型旅、護航艦隊 +2），但守方提早動員、美國航艦已在附近。	Largest force (+2 amphibious brigades, +1 heavy brigade, escorts +2), but the defender mobilizes early and a US carrier is already nearby.	
+動用最多 3 發長程飛彈縱深打擊（優先火箭軍陣地，同一套命中公式）；長程飛彈存量 −3，局勢升高、美日更謹慎。	Fire up to 3 long-range missiles in a deep strike (rocket-force sites first, same hit formula); long-range missile stock −3; tension rises and the US and Japan become more cautious.	
+外交機制移除：拿掉「外交與外援」與「平時外交與盟友」兩個決策節點，玩家不再主動選擇外交政策、也不再有「美日參戰擲骰 ±N」這類加減值（含各選項、集結方式、演習、假設情境上的相關效果與字眼）	Diplomacy mechanics removed: the "Diplomacy and outside aid" and "Peacetime diplomacy and allies" decision nodes are gone, players no longer choose a diplomatic policy, and there are no more "US/Japan intervention roll ±N" modifiers (including related effects and wording on options, buildup modes, exercises and what-if scenarios)	
+守方先動手或縱深打擊，盟友不願被拖下水 −	Defender struck first or hit deep, allies reluctant to be dragged in −	
+守方先動手：盟友更不願被拖下水（反映在參戰評估）	Defender struck first: allies are more reluctant to be dragged in (reflected in the intervention assessment)	
+守方情報部門察覺異常：後備提前 1 回合動員、第 1 回合防禦 +1	Defender intelligence notices something is wrong: reserves mobilize 1 turn early, +1 defense on turn 1	
+守方未來兩回合攻擊 −1；被視為先動手，美日更謹慎（反映在參戰評估）	Defender attack −1 for the next two turns; seen as striking first, the US and Japan become more cautious (reflected in the intervention assessment)	
+守方社會韌性判定 −1。	Defender social-resilience roll −1.	
+局勢升高：美日更謹慎（反映在參戰評估）	Tension rises: the US and Japan become more cautious (reflected in the intervention assessment)	
+戰事拖過兩天，國際壓力與傷亡持續升高。還沒全面參戰的國家重新評估，參戰程度只會提高、不會降低。時間越久，越傾向介入。	The war has dragged past two days and international pressure and casualties keep rising. Countries not yet fully committed reassess; their level of involvement can only rise, never fall. The longer it lasts, the more they lean toward intervening.	
+攻方補給容量未來兩回合 −2；守方未來兩回合攻擊 −1；被視為先動手，美日更謹慎。	Attacker supply capacity −2 for the next two turns; defender attack −1 for the next two turns; seen as striking first, the US and Japan become more cautious.	
+第 1 回合必為惡劣天氣（火力 −2、海上移動 2）；守方第 1 回合攻擊 −1、動員延後 1 回合。高變異。	Turn 1 is guaranteed bad weather (fire −2, sea movement 2); defender attack −1 on turn 1 and mobilization delayed 1 turn. High variance.	
+第 1～3 回合守方防禦 +1、後備提前 1 回合、平民傷亡 −15%；股市 −3。	Defender defense +1 on turns 1–3, reserves 1 turn early, civilian casualties −15%; stocks −3.	
+美國航艦已在附近	A US carrier is already nearby	
+美日介入改為完全由戰況自動判定：只保留「依自身利益決定」（港口與台北是否失守、守軍撐不撐得住、美軍傷亡、日美彼此態度、本國基地是否被打、守方先動手或縱深打擊的升級、時間越久越傾向介入），移除「擲骰決定參戰」	US/Japan intervention is now decided entirely by the course of the war: only "decided by self-interest" remains (whether ports and Taipei fall, whether the defenders can hold, US casualties, each other's stance, whether their own bases are hit, escalation from the defender striking first or deep, and a growing lean toward intervening over time); "decided by dice" was removed	
+美軍航艦打擊群提前到位	US carrier strike group arrives early	
+美軍航艦打擊群提前到位。	US carrier strike group arrives early.	
+護航艦隊 +2、航艦 +1、兩棲艦群 +2、滾裝船團 +2	Escorts +2, carrier +1, amphibious groups +2, ro-ro fleets +2	
+護航艦隊 +2、航艦 +1（上限 4）、兩棲艦群 +2、滾裝船團 +2。代價：軍費壓力大。屬推估。	Escorts +2, carrier +1 (max 4), amphibious groups +2, ro-ro fleets +2. Cost: heavy budget pressure. An estimate.	
+軍事補給只走補給、庫存、運輸與消耗機制；守方戰前準備剩三項、戰中決策剩兩項	Military supply now runs only through the supply, stock, transport and attrition mechanics; the defender has three prewar preparations and two in-war decisions	
+重創集結中的 2 個攻方船團（各 −1 步）；被視為首先動武，美日更不願介入。	Cripple 2 attacker fleets massing in port (−1 step each); seen as firing first, the US and Japan are less willing to intervene.	
+開戰前守方的備戰、預警反應與兵力部署，都在這裡先決定，開戰後不再彈窗。選「電腦決定」就由電腦隨機挑一項（不含🔥）。每項都標明好處與代價。	The defender's readiness, early-warning reaction and force deployment before the war are decided here, with no pop-ups once the war starts. Choose "Computer decides" to have the computer pick one at random (excluding 🔥). Each option states its benefit and cost.	
+守方在不同階段有 5 個決策：開戰前的三項（戰備整備重點、預警後的反應、預先部署重點）在「作戰設定」的「守方戰前準備」頁先決定，開戰後的兩項（反制先制打擊、持久戰策略）在戰中彈窗。你當守方（或「雙方都操作」）時戰中會停下來選擇，電腦推演模式由你替守方選，電腦守方、影片與統計模式則隨機抽一項。每個選項都有好處也有代價（例如把兵力前推到海岸線，灘頭防禦更強，但暴露在火力下），效果多為小幅修正。	The defender has 5 decisions: the three before the war (readiness priorities, reaction to early warning, forward deployment) are chosen in advance on the "Defender prewar preparation" page of the setup, and the two during the war (countering the preemptive strike, protracted-war strategy) pop up in play. When you play the defender (or "both sides") the war-time ones stop for your choice; in computer-simulation mode you choose for the defender, while computer defenders, video and statistics modes pick one at random. Every option has benefits and costs (for example pushing forces forward to the coastline strengthens beach defense but exposes them to fire), and most effects are small adjustments.	
