@@ -1126,3 +1126,16 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 。結果：	。Result: 	
 目前守方：	Defender now: 	
 指揮通信受重創	command and communications badly hit	
+「反制先制打擊」四個選項依物理與常識重做：①拿掉遊戲裡本來就沒有的「備援指揮與通信」，改為「分散疏散並搶修機場」（受損機場最多 2 座各恢復 1 級、飛彈車誘餌率提高，代價是本階段飛彈車不能開火）；②戰機升空受機場起降能量限制，跑道受損嚴重就升不了空；③「立即反擊大陸基地」與「全面長程反擊」改用真正的打擊大陸公式與目標（火箭軍陣地約 1/3、機場等約 1/2 命中），不再用憑空設定的 50%／25%／60%	The four "Counter the preemptive strike" options were redone by physics and common sense: (1) removed "backup command and communications", which the game never modeled, in favor of "Disperse and repair airfields" (up to 2 damaged airfields recover 1 level each, missile-launcher decoys improve; cost: missile units cannot fire this phase); (2) fighter sorties are limited by airfield capacity, so badly damaged runways mean no takeoffs; (3) "Counter-strike mainland bases" and "Full deep counter-strike" now use the real mainland-strike formula and targets (about 1/3 to hit rocket-force sites, about 1/2 for airfields etc.) instead of invented 50%/25%/60% figures	
+分散疏散並搶修機場	Disperse and repair airfields	
+飛彈車與戰機分散到備用陣地與疏散機場，工兵搶修跑道：受損機場最多 2 座各恢復 1 級，飛彈車誘餌與分散使後續打擊更難命中；但本階段飛彈車忙著機動轉移，不能開火。	Missile launchers and aircraft disperse to reserve positions and dispersal airfields while engineers repair runways: up to 2 damaged airfields recover 1 level each, and decoys/dispersal make later strikes harder to land; but missile units are busy relocating this phase and cannot fire.	
+把疏散在分散機場的戰機重新升空：守方空軍最多恢復 1（不超過開戰時的數量）。能起降多少受跑道限制，機場受損嚴重就升不了空；近距支援的戰機被抽去爭制空，地面部隊失去空中偵察與火力支援，守方第 1～2 回合防禦 −1。	Dispersed aircraft take off again: defender air force recovers up to 1 (never above the opening number). Sorties are limited by runway capacity, so badly damaged airfields cannot launch; close-support aircraft are pulled into the fight for air control, leaving ground forces without air reconnaissance and fire support: defender defense −1 on turns 1–2.	
+動用 2 發長程飛彈（雲峰等）打大陸基地，目標依價值挑選（火箭軍陣地、機場、海軍基地）；命中用和「打擊大陸」同一套公式：火箭軍陣地約 1/3、機場等約 1/2，共軍防空強時更低。長程飛彈存量 −2。	Fire 2 long-range missiles (Yun Feng etc.) at mainland bases, targets chosen by value (rocket-force sites, airfields, naval bases); hits use the same formula as "Strike the mainland": about 1/3 for rocket-force sites, about 1/2 for airfields etc., lower if PLA air defense is strong. Long-range missile stock −2.	
+動用最多 3 發長程飛彈縱深打擊（優先火箭軍陣地，同一套命中公式）；長程飛彈存量 −3，局勢升高、美日更謹慎（參戰擲骰 −1）。	Fire up to 3 long-range missiles in a deep strike (rocket-force sites first, same hit formula); long-range missile stock −3; tension rises and the US and Japan become more cautious (intervention rolls −1).	
+搶修機場：	Airfield repairs: 	
+沒有受損的機場需要搶修	No damaged airfields need repair	
+飛彈車分散並加強誘餌（先制打擊較難命中）	Launchers disperse with stronger decoys (preemptive strikes harder to land)	
+機場跑道受損嚴重（起降能量約 	Runways badly damaged (takeoff capacity about 	
+），戰機升不了空	), aircraft cannot take off	
+守方第 1～2 回合防禦 −1（近距支援戰機被抽去爭制空）	Defender defense −1 on turns 1–2 (close-support aircraft pulled into the air-control fight)	
+局勢升高：美日參戰擲骰 −1	Tension rises: US/Japan intervention rolls −1	
