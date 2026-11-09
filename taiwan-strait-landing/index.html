@@ -840,7 +840,7 @@ const TYPES={
   cv:{n:'共軍航艦群',s:'航艦',atk:0,def:2,mv:3,hp:3},
   ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:3,hp:2},
   hk:{n:'海鯤潛艦',s:'潛艦',atk:0,def:1,mv:3,hp:2},
-  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:3,hp:2},
+  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:2,hp:2}, // 滾裝客貨輪比軍艦慢：每回合最多航行 2 個舊格
   fob:{n:'灘頭補給站',s:'補給站',atk:0,def:2,mv:0,hp:3}
 };
 const WEATHER={
@@ -1122,9 +1122,10 @@ function convoyTurn(){ // 攻方階段開始：運輸船返航入列、派出新
   const sinks=unloadHexes();if(!sinks.length)return;
   const maxSend=Math.min(3,Math.floor((unloadCap()+S.units.filter(x=>x.side==='atk'&&x.type==='fob').length*2)/2)),have=S.units.filter(x=>x.side==='atk'&&x.type==='cvy').length;
   const ord=(S.supOrd&&S.supOrd[t])||{},n=Math.max(0,Math.min(P.plaLift,maxSend+(ord.rush?1:0)-have));
-  for(let i=0;i<n;i++){const h=placeNear(FK('4,4'),x=>x.isl==='CN'&&x.t==='port');if(!h)break;S.units.push(mkUnit('atk','cvy',h.k));P.plaLift--;}
+  for(let i=0;i<n;i++){const h=placeNear(FK('4,4'),x=>x.isl==='CN'&&x.t==='port');if(!h)break;S.units.push(mkUnit('atk','cvy',h.k,{fresh:t}));P.plaLift--;}
   if(n>0)log('攻方派出 '+n+' 個補給船團，目標：已掌握的港口與灘頭（運輸船剩 '+P.plaLift+'）');
   for(const u of S.units.filter(x=>x.side==='atk'&&x.type==='cvy')){
+    if(u.fresh===t){u.moved=true;continue;} // 剛裝載好的船團這回合留在港內集結，下回合才出航（港內時守方的長程飛彈可以打到）
     u.moved=false;const rc=reach(u),h=hexOf(u);let best=null,bs=Math.min.apply(null,sinks.map(s2=>hd(h,s2)))+ssmThreat(h.k)*.6;
     for(const [k,v] of rc){if(v.kind!=='sail')continue;const hh=TER[k],sc=Math.min.apply(null,sinks.map(s2=>hd(hh,s2)))+ssmThreat(k)*.6+Math.random()*.3-(S.units.some(x=>x.side==='atk'&&x.type==='dd'&&hd(hexOf(x),hh)<=2)?.8:0);if(sc<bs-.2){bs=sc;best=k;}}
     if(best)doMove(u,best,'sail');u.moved=true;u.acted=true;
@@ -2133,7 +2134,7 @@ function strikeCN(id,by){
     if(B.kind==='rf'){const d=Math.min(3,P.rf);P.rf-=d;fx='火箭軍飛彈存量 −'+d;}
     else if(B.kind==='air'){if(P.plaAir>0){P.plaAir--;fx='攻方空軍 −1';}}
     else if(B.kind==='navy'){if(P.plaNavy>0){P.plaNavy--;fx='攻方護航艦隊 −1';}}
-    else{const us=S.units.filter(u=>u.side==='atk'&&hexOf(u).isl==='CN');if(us.length){const u=pick(us);damage(u,1,'大陸集結區遭打擊');fx=TYPES[u.type].n+' 損失 1 步';}}
+    else{const us=S.units.filter(u=>u.side==='atk'&&hexOf(u).isl==='CN'),sh=us.filter(u=>u.type==='cvy'||u.type==='lst'||u.type==='ro');if(us.length){const u=pickW(sh.length?sh:us,tgtVal);damage(u,1,'大陸集結區遭打擊');fx=TYPES[u.type].n+' 損失 1 步';}} // 港口裝載中的船團是最好打的目標，優先被打到
     if(S.cn[id]<=0)fx+=(fx?'，':'')+B.n+'已癱瘓';
   }
   S.cnLog.push({t:S.turn,id,by,hit});
@@ -5219,10 +5220,11 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn），並在下方 CHANGELOG 最前面補一筆更新內容（再補 tools/i18n/extras.tsv 的英日譯文）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-10.47';
+const VERSION='2026-11-10.49';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
+ {v:'2026-11-10.49',items:['修正補給船團不會航行：自 v.24 起，補給船團出現後一直停在大陸港口、從來沒送過補給（漏列在「能航行的單位」）；現在會依序出航，卸載點抵達才算','補給船團是脆弱目標：滾裝客貨輪比軍艦慢（每回合最多 2 格）、剛裝載好的船團先在港內集結一回合（守方長程飛彈打擊大陸集結區時，港內裝載中的船團是優先目標）；守方飛彈與反艦攻擊把補給船團視為高價值目標（僅次於航艦）；船團沒有防空，命中門檻 −1，每有一艘護航艦在 2 格內 +1（最多 +2）']},
  {v:'2026-11-10.47',items:['棋子色調分三類，一眼辨識：攻方紅、守方藍各自有深、標準、淡三種——深＝火力打擊（岸置反艦飛彈、海馬士、潛艦、飛彈艇）、標準＝作戰部隊（各旅、護航艦、航艦）、淡＝後勤運輸（補給船團、補給站、運輸船）；海上與陸上棋子共用同一套色調（海陸本來就容易分辨），圖例也加了說明']},
  {v:'2026-11-10.46',items:['設定視窗新增「☕ 請作者喝杯咖啡」：純屬好玩、不給也能玩，連結沿用「瘋狂象棋」的街口支付轉帳（預設 50 元，付款時可自行修改），在新分頁開啟、不會干擾遊戲']},
  {v:'2026-11-10.45',items:['天候改以「顯著浪高（公尺）」計算，顯示浪高與 WMO 海況等級：每回合依開戰月份的平均浪高與相關起伏抽出；颱風只在 6～11 月出現（持續 3～5 回合、浪高 5～8 公尺）、東北季風月份不會有颱風','浪高的後果（固定公式）：海上移動格數、灘頭卸載能力（≤1.25 公尺全額、≥2.5 公尺歸零）、港口卸載能力（有防波堤，最低三成）、搶灘突擊 −1／−2、浪高 ≥4 公尺停擺空降空投、火力 −1／−2；海上登陸艦、運兵船、補給船團 2.5 公尺起損耗，護航艦與航艦 5 公尺起，用零頭累積實現','天候預報與避風令：狀態列顯示下回合預報浪高（誤差約 ±0.3 公尺，颱風時 ±0.6）；預報風浪偏大時可下「⚓ 避風令」，讓海上船艇朝最近己方港口避風（進港者不受損耗，沒趕到的損耗減半）；電腦會依預報自動避風，守方艦艇浪高大時不出港。各項門檻與係數為推估，已列入數值來源']},
