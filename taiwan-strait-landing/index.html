@@ -644,6 +644,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
             <select id="optLang"><option value="zh-TW">zh-TW</option><option value="en">en</option><option value="ja">ja</option><option value="zh-CN">zh-CN</option></select>
             <select id="optAirGen"><option value="mixed" selected>mixed</option><option value="legacy">legacy</option><option value="stealthy">stealthy</option></select><select id="optAirModel"><option value="bvr" selected>bvr</option><option value="simple">simple</option></select><select id="optEW"><option value="mid" selected>mid</option><option value="low">low</option><option value="high">high</option></select><select id="optAxN"><option value="0" selected>0</option><option value="1">1</option></select><select id="optAxC"><option value="0" selected>0</option><option value="1">1</option></select><select id="optAxP"><option value="0">0</option><option value="1" selected>1</option></select>
             <select id="optBuild"><option value="open">open</option><option value="exercise" selected>exercise</option><option value="surprise">surprise</option></select>
+            <select id="optExer"><option value="small" selected>small</option><option value="mid">mid</option><option value="huge">huge</option></select>
             <select id="optFx"><option value="dice" selected>dice</option><option value="interest">interest</option><option value="intel">intel</option><option value="none">none</option><option value="full">full</option></select>
             <select id="optEra"><option value="2026" selected>2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option></select>
             <select id="optVoice"><option value="0" selected>off</option><option value="1">on</option></select>
@@ -1075,7 +1076,7 @@ function unloadCap(){ // 船團的卸載上限：攻方掌握的港口、灘岸�
     }
   }
   if(S.owner[MAGONG]==='atk')cap+=2;
-  return cap;
+  return Math.max(0,cap-((S.mods.supCut&&S.mods.supCut[S.turn])||0)); // 守方破壞港口後勤／特種部隊突襲等造成的卸載能力下降
 }
 function supply(){
   const used=S.units.filter(u=>u.side==='atk'&&onTW(u)&&!isSup(u)).length;
@@ -2151,6 +2152,47 @@ function doRetaliation(){
   }
 }
 
+// 演習掩護：借演習轉為攻擊。規模越大，預先部署越多，但規模太大，守方情報部門識破的機率也越高（識破後守方提早動員、第 1 回合防禦 +1、美日參戰擲骰 +1）
+const EXER={small:{n:'小規模演習',det:.15,navy:0,amph:0},mid:{n:'中規模演習',det:.45,navy:2,amph:0},huge:{n:'空前大規模演習',det:.85,navy:3,amph:1}};
+function applyExercise(){
+  const sc=EXER[($('#optExer')&&$('#optExer').value)||'small']||EXER.small,m=S.mods,out=[];
+  S.exer={n:sc.n,det:false,navy:sc.navy};
+  if(sc.navy){
+    S.pools.plaNavy+=sc.navy;
+    const cs=[[119.9,24.6],[120.1,24.0],[119.9,23.3],[120.2,25.0]].map(([lo,la])=>{const [c,r]=llToRC(lo,la);return TER[K(c,r)];}).filter(h=>h&&h.t==='sea');
+    let n=0;for(const h of cs){if(n>=sc.navy||S.units.filter(u=>u.type==='dd').length>=10)break;if(unitsAt(h.k).length<STACK_MAX){S.units.push(mkUnit('atk','dd',h.k,{}));n++;}}
+    out.push('演習期間護航艦隊 +'+sc.navy+'（已預先部署在海峽上）');
+  }
+  if(sc.amph){const h=placeNear(FK('3,3'),x=>x.isl==='CN'&&x.coastal);if(h)S.units.push(mkUnit('atk','amph',h.k,{zone:'central'}));out.push('戰前擴編 +'+sc.amph+' 兩棲旅');}
+  S.exer.det=trial(sc.det);
+  if(S.exer.det){
+    m.defReinfDelay-=1;addTurns(m.defDef,1,1,1);m.fxMod+=1;out.push('守方情報部門察覺異常：後備提前 1 回合動員、第 1 回合防禦 +1、美日參戰擲骰 +1');
+    if(sc.navy>=2){const cs=S.fx.units.find(f=>f.id==='csg');if(cs)cs.delay=0;out.push('美軍航艦打擊群與偵察機提前前出（參戰即到場）');}
+    if(sc.amph>=1){m.fxMod+=1;out.push('規模空前，日本重要影響事態判斷更積極：美日參戰擲骰再 +1');}
+  }
+  else out.push('守方研判為例行演習，沒有提前動員');
+  return out;
+}
+// 開局前的演習序幕：地圖上畫出環台演習區，約 8 秒後轉為攻擊（可略過）
+function exercisePrelude(){
+  return new Promise(done=>{
+    if(!S.exer||S.sim||S.video||S.rec||reduce()){done();return;}
+    const g=document.getElementById('gF'),els=[],tm=[];
+    const Z=[['A',[121.9,25.7]],['B',[123.0,25.1]],['C',[123.3,23.7]],['D',[122.4,22.1]],['E',[120.7,21.6]],['F',[119.6,22.7]],['G',[119.4,24.4]]];
+    const pxy=([lo,la])=>{const [c,r]=llToRC(lo,la);return TER[K(c,r)]?cen(c,r):center(c,r);};
+    Z.forEach(([nm,ll],i)=>{tm.push(setTimeout(()=>{const p=pxy(ll),e=document.createElementNS(SVGNS,'ellipse');e.setAttribute('cx',p[0]);e.setAttribute('cy',p[1]);e.setAttribute('rx',R*3.4);e.setAttribute('ry',R*2.4);e.setAttribute('fill','rgba(210,60,50,.16)');e.setAttribute('stroke','#d9534a');e.setAttribute('stroke-width','2');e.setAttribute('stroke-dasharray','7 5');g.appendChild(e);els.push(e);
+      const t=document.createElementNS(SVGNS,'text');t.setAttribute('x',p[0]);t.setAttribute('y',p[1]+4);t.setAttribute('text-anchor','middle');t.setAttribute('class','fxt atk');t.textContent=nm+' 區';g.appendChild(t);els.push(t);},i*520));});
+    const box=document.createElement('div');box.className='coach exer';box.setAttribute('role','status');
+    const det=S.exer.det;
+    box.innerHTML='<b>演習序幕 · '+TX(S.exer.n)+'</b><span id="exTxt">'+TX('共軍宣布在台灣周邊海空域實施聯合演習，劃設環台演習區，艦機群出港環島機動。')+'</span><button aria-label="'+TX('略過')+'" title="'+TX('略過')+'">✕</button>';
+    document.body.appendChild(box);
+    let fin=false;const end=()=>{if(fin)return;fin=true;tm.forEach(clearTimeout);els.forEach(e=>e.remove());box.remove();done();};
+    box.querySelector('button').onclick=end;
+    tm.push(setTimeout(()=>{const t=document.getElementById('exTxt');if(t)t.textContent=TX(det?'守方情報部門察覺異常：這次演習的規模與部署不尋常，後備部隊提前動員，美日也提高警戒、航艦與偵察機前出。':'守方研判為例行演習，沒有採取額外動員。');},4800));
+    tm.push(setTimeout(()=>{const t=document.getElementById('exTxt');if(t)t.textContent=TX('演習結束的瞬間，艦艇與登陸部隊轉向台灣——演習轉為攻擊。');},6600));
+    tm.push(setTimeout(end,8200));
+  });
+}
 function applyBuildup(id){
   const m=S.mods;m.buildup=id;const out=[];
   if(id==='x_mass'){
@@ -2172,7 +2214,7 @@ function applyBuildup(id){
     const a=S.units.find(u=>u.side==='atk'&&u.type==='arm'&&u.c===2&&u.r===9);if(a)S.units=S.units.filter(u=>u!==a);
     S.pools.plaNavy-=2;m.defReinfDelay+=1;m.fxMod-=1;m.strikeMod-=1;
     out.push('攻方第一波 −2 兩棲旅、−1 重型旅，護航艦隊 −2','守方後備延後 1 回合動員','先制打擊的攔截擲骰、各國參戰擲骰 −1');
-  } else out.push('雙方都只有部分預警，維持基準設定');
+  } else{out.push('雙方都只有部分預警，維持基準設定');if(id==='exercise')out.push(...applyExercise());}
   return out;
 }
 const BUILDUP=[
@@ -2353,8 +2395,8 @@ const DEFEV=[
   choice:{who:'def',options:[{id:"coast",label:"前推到海岸線",desc:"守方第 1～3 回合防禦 +1（灘頭交戰）；但兵力暴露，攻方第 1 回合打擊更容易命中（命中門檻 −1）。"},{id:"depth",label:"縱深機動、保存實力",desc:"守方第 2～4 回合攻擊 +1（反擊）；但灘頭薄弱，第 1～2 回合防禦 −1。"},{id:"hide",label:"疏散戰機與裝備、隱蔽",desc:"守方空軍 +1；但地面支援較少，守方第 1 回合攻擊 −1。"},{id:"x_water",x:1,label:"🔥 水際死守",desc:"第 1～3 回合守方防禦 +2；海岸部隊暴露，攻方第 1～2 回合打擊更容易命中（命中門檻 −1）；第 4～6 回合守方防禦 −1。",ref:"「殲敵於水際、決勝於灘頭」"},{id:"x_scorch",x:1,label:"🔥 焦土縱深",desc:"3 個主要港口自毀，攻方第 2～4 回合攻擊 −1；平民傷亡 +50%、經濟損失大增。",ref:"1938 年焦土抗戰"}]},
   apply(c){const m=S.mods;if(c=="coast"){addTurns(m.defDef,1,3,1);addTurns(m.strikeEase,1,1,1); return ["守方第 1～3 回合防禦 +1","攻方第 1 回合打擊命中門檻 −1（暴露）"];}if(c=="depth"){addTurns(m.defAtk,2,4,1);addTurns(m.defDef,1,2,-1); return ["守方第 2～4 回合攻擊 +1","守方第 1～2 回合防禦 −1"];}if(c=="hide"){pAdd('rocAir',1);addTurns(m.defAtk,1,1,-1); return ["守方空軍 +1","守方第 1 回合攻擊 −1"];}if(c=="x_water"){addTurns(m.defDef,1,3,2);addTurns(m.strikeEase,1,2,1);addTurns(m.defDef,4,6,-1);return ["守方第 1～3 回合防禦 +2、攻方第 1～2 回合打擊命中門檻 −1（暴露）", "守方第 4～6 回合防禦 −1"];}if(c=="x_scorch"){razeAllPorts();addTurns(m.atkAtk,2,4,-1);m.civMul*=1.5;S.cost.dmg.TW+=3;return ["3 個主要港口自毀（永久無法使用）", "攻方第 2～4 回合攻擊 −1", "平民傷亡 +50%、經濟損失大增"];}return [];}},
  {id:"counter",defend:true,at:()=>[1,'def'],title:"反制先制打擊",blurb:"攻方的第一波飛彈與空襲已經結束，守方要決定如何反制。",
-  choice:{who:'def',options:[{id:"backup",label:"啟用備援指揮與通信",desc:"若指揮通信被重創就恢復；否則守方第 2～3 回合攻擊 +1。但備援耗用，反艦飛彈存量 −1。"},{id:"sortie",label:"戰機升空疏散並出擊",desc:"守方空軍 +1；但地面失去掩護，守方第 1～2 回合防禦 −1。"},{id:"retaliate",label:"立即反擊大陸基地",desc:"火箭軍存量 −2、攻方空軍 −1；但長程飛彈存量 −2。"},{id:"x_deep",x:1,label:"🔥 全面長程反擊對岸縱深",desc:"攻方第 2～3 回合火力 −2；長程飛彈存量 −3、平民傷亡 +30%、美日擲骰 −1。",ref:"「重層嚇阻」"}]},
-  apply(c){const m=S.mods;if(c=="backup"){pAdd('rocAS',-1);if(m.c2Strong){m.c2Strong=false;return ['指揮通信恢復','反艦飛彈存量 −1'];}addTurns(m.defAtk,2,3,1);return ['守方第 2～3 回合攻擊 +1','反艦飛彈存量 −1'];}if(c=="sortie"){pAdd('rocAir',1);addTurns(m.defDef,1,2,-1); return ["守方空軍 +1","守方第 1～2 回合防禦 −1"];}if(c=="retaliate"){S.pools.rf=Math.max(0,S.pools.rf-2);S.pools.plaAir=Math.max(0,S.pools.plaAir-1);pAdd('rocMsl',-2); return ["火箭軍存量 −2、攻方空軍 −1","長程飛彈存量 −2"];}if(c=="x_deep"){addTurns(m.fireAdd,2,3,-2);pAdd('rocMsl',-3);m.civMul*=1.3;m.fxMod-=1;return ["攻方第 2～3 回合火力 −2", "長程飛彈存量 −3、平民傷亡 +30%", "美日參戰擲骰 −1"];}return [];}},
+  choice:{who:'def',options:[{id:"backup",label:"啟用備援指揮與通信",desc:"若指揮通信被重創就恢復；否則守方第 2～3 回合攻擊 +1。但備援耗用，反艦飛彈存量 −1。"},{id:"sortie",label:"戰機升空疏散並出擊",desc:"把疏散在分散機場的戰機重新升空：守方空軍 +1（最多恢復到開戰時的數量）；但地面失去掩護，守方第 1～2 回合防禦 −1。"},{id:"retaliate",label:"立即反擊大陸基地",desc:"動用 2 點長程飛彈打大陸基地：每點約 50% 擊毀 1 點火箭軍存量、約 25% 擊毀 1 點攻方空軍；長程飛彈存量 −2。"},{id:"x_deep",x:1,label:"🔥 全面長程反擊對岸縱深",desc:"動用最多 3 點長程飛彈打對岸縱深：每點約 60% 擊毀一批發射陣地，攻方第 2～3 回合火力減少相應點數；長程飛彈存量 −3、平民傷亡 +30%、美日擲骰 −1。",ref:"「重層嚇阻」"}]},
+  apply(c){const m=S.mods;if(c=="backup"){pAdd('rocAS',-1);if(m.c2Strong){m.c2Strong=false;return ['指揮通信恢復','反艦飛彈存量 −1'];}addTurns(m.defAtk,2,3,1);return ['守方第 2～3 回合攻擊 +1','反艦飛彈存量 −1'];}if(c=="sortie"){const P=S.pools,gain=Math.max(0,Math.min(1,(S.p0.rocAir||0)-P.rocAir));P.rocAir+=gain;addTurns(m.defDef,1,2,-1); return [gain?"疏散到分散機場的戰機重新升空：守方空軍 +1（不會超過開戰時的戰機數）":"戰機已經全數在空中或戰力已滿，沒有額外戰機（不會超過開戰時的戰機數）","守方第 1～2 回合防禦 −1"];}if(c=="retaliate"){const P=S.pools,n=Math.min(2,Math.floor(P.rocMsl));let a=0,b=0;for(let i=0;i<n;i++){if(trial(.5)&&P.rf>0){P.rf--;a++;}if(trial(.25)&&P.plaAir>0){P.plaAir--;b++;}}pAdd('rocMsl',-n);return ["發射長程飛彈 "+n+" 點，擊毀火箭軍存量 "+a+"、攻方空軍 "+b+"（每點約 50% 打到發射陣地、25% 打到機場）","長程飛彈存量 −"+n];}if(c=="x_deep"){const n=Math.min(3,Math.floor(S.pools.rocMsl));let h=0;for(let i=0;i<n;i++)if(trial(.6))h++;if(h)addTurns(m.fireAdd,2,3,-h);pAdd('rocMsl',-n);m.civMul*=1.3;m.fxMod-=1;return ["發射長程飛彈 "+n+" 點、命中 "+h+" 點：攻方第 2～3 回合火力 −"+h,"長程飛彈存量 −"+n+"、平民傷亡 +30%","美日參戰擲骰 −1"];}return [];}},
  {id:"civil",defend:true,at:()=>[2,'def'],title:"民防與社會韌性",blurb:"戰事進入第二回合，電網、通信與交通承受壓力。守方要決定如何維持社會運作。",
   choice:{who:'def',options:[{id:"shelter",label:"全面疏散與避難",desc:"台灣平民傷亡 −30%；但交通管制影響機動，守方第 2～3 回合攻擊 −1。"},{id:"civil",label:"動員民間後勤與民防隊",desc:"守方第 2～4 回合防禦 +1；但平民更靠近戰場，台灣平民傷亡 +20%。"},{id:"media",label:"資訊戰與國際宣傳",desc:"美日參戰擲骰 +1；但資源挪出前線，守方第 2 回合攻擊 −1。"},{id:"x_control",x:1,label:"🔥 戰時嚴管（宵禁、徵用民間）",desc:"社會韌性判定 +1、平民傷亡 −10%；第 2～3 回合守方攻擊 −1、股市 −3。",ref:"戒嚴與戰時管制"},{id:"x_live",x:1,label:"🔥 戰場全面公開（直播式資訊戰）",desc:"美日參戰擲骰 +1、攻方承受輿論（股市 −3）；守方第 2～4 回合防禦 −1（位置曝光）。",ref:"烏克蘭「我需要彈藥」"}]},
   apply(c){const m=S.mods;if(c=="shelter"){m.civMul*=.7;addTurns(m.defAtk,2,3,-1); return ["台灣平民傷亡 −30%","守方第 2～3 回合攻擊 −1"];}if(c=="civil"){addTurns(m.defDef,2,4,1);m.civMul*=1.2; return ["守方第 2～4 回合防禦 +1","台灣平民傷亡 +20%"];}if(c=="media"){m.fxMod+=1;addTurns(m.defAtk,2,2,-1); return ["美日參戰擲骰 +1","守方第 2 回合攻擊 −1"];}if(c=="x_control"){m.resBonus+=1;m.civMul*=.9;addTurns(m.defAtk,2,3,-1);hitMkt(3);return ["社會韌性判定 +1、平民傷亡 −10%", "守方第 2～3 回合攻擊 −1、全球股市 −3"];}if(c=="x_live"){m.fxMod+=1;hitMkt(3);addTurns(m.defDef,2,4,-1);return ["美日參戰擲骰 +1、全球股市 −3", "守方第 2～4 回合防禦 −1（位置曝光）"];}return [];}},
@@ -5005,8 +5047,8 @@ function readSetup(){
   S.ctrl=S.sim||S.video?{atk:'ai',def:'ai'}:{atk:sd==='atk'||sd==='both'?'human':'ai',def:sd==='def'||sd==='both'?'human':'ai'};
   S.newsOn=$('#optNews').value==='1';S.fxScen=$('#optFx').value;S.airGen=$('#optAirGen').value;S.airModel=$('#optAirModel').value;S.ewLv=$('#optEW').value;
 }
-['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optNews','#optVoice','#optFx','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
-const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optFx:'dice',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optAxN:'0',optAxC:'0',optAxP:'1'};
+['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optExer','#optNews','#optVoice','#optFx','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
+const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optExer:'small',optFx:'dice',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optAxN:'0',optAxC:'0',optAxP:'1'};
 $('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
 // one-off start with the default settings; the saved setup choices are left as they were
 $('#btnDefault').onclick=()=>{
@@ -5021,7 +5063,8 @@ function startGame(){
   applyEra();applyFxScenario();
   if(!S.sim){const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));applyPlan();}
   S.lastSnap=snap();
-  log((S.sim?'推演開始':'作戰開始')+'。判定回合：第 '+S.T+' 回合。');beginPhase('atk');
+  log((S.sim?'推演開始':'作戰開始')+'。判定回合：第 '+S.T+' 回合。');
+  if(S.exer&&!S.sim){S.busy=true;render();exercisePrelude().then(()=>{S.busy=false;beginPhase('atk');});}else beginPhase('atk');
 }
 function confirmBox(msg){return new Promise(res=>{const box=mboxSet('');
   box.innerHTML='<div class="eyebrow">確認打擊</div><h3>升級戰事？</h3><p>'+msg+'</p><div class="btns"><button id="cfY">確定打擊</button><button class="ghost" id="cfN">取消</button></div>';
@@ -5237,6 +5280,7 @@ const SETUP_PAGES=[
   {sel:'optT',q:'幾回合後判定？',opts:{'6':['第 6 回合','約 3 天。時間很緊，攻方多半來不及站穩。'],'8':['第 8 回合','約 4 天。基準設定。'],'10':['第 10 回合','約 5 天。攻方有較多時間奪港。'],'12':['第 12 回合','約 6 天。長期戰，攻方較有機會站穩。']}},
   {sel:'optEra',q:'兵力年代（年份）',opts:Object.fromEntries(Object.entries(ERA).map(([y,e])=>[y,[e.n,e.d,e.short]]))}]},
  {t:'戰前集結',s:'集結',d:'渡海前要先集結船團與兵員，很難完全隱藏。集結越公開，台灣與美日越早準備。',fields:[
+  {sel:'optExer',q:'演習規模（借演習轉為攻擊）',when:()=>!isSim()&&$('#optBuild').value==='exercise',opts:{small:['小規模演習','約等於歷次環台軍演（單日最多約 150 架次共機、十幾艘軍艦）：守方識破機率約 15%，沒有額外兵力。基準設定。'],mid:['中規模演習','超過歷次軍演的規模：預先部署護航艦 +2（直接在海峽上），守方識破機率約 45%。'],huge:['空前大規模演習','遠超歷次軍演、近乎戰爭的規模：預先部署護航艦 +3、戰前擴編 +1 兩棲旅；但規模太大，守方識破機率約 85%。']}},
   {sel:'optBuild',q:'攻方怎麼集結？',when:()=>!isSim(),opts:{open:['公開全面集結','兵力最多（+2 兩棲旅、+1 重型旅、護航艦隊 +2），但守方提早動員、美國航艦已在附近、各國參戰擲骰 +1。'],exercise:['演習掩護','以軍演名義集結，雙方都只有部分預警。基準設定。'],surprise:['戰略突襲','兵力少一截（−2 兩棲旅、−1 重型旅），換取守方動員延後、各國參戰擲骰 −1。']}},
   {sel:'optAxN',q:'攻擊軸線：北部（林口、桃園，可多選）',when:()=>!isSim(),opts:{'0':['不指定／電腦決定','北、中部都不勾時，由電腦選一個主攻區並集中兵力。'],'1':['選擇北部','朝台北方向（林口、淡水、桃園）。']}},
   {sel:'optAxC',q:'攻擊軸線：中部（新竹、苗栗、台中港）',when:()=>!isSim(),opts:{'0':['不選',''],'1':['選擇中部','朝台中港與新竹方向。']}},
@@ -5250,7 +5294,7 @@ const SETUP_PAGES=[
 ];
 const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
 function optLabel(sel,v){for(const f of PREF_FIELDS.concat(...SETUP_PAGES.map(pg=>pg.fields)))if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
-function saveSetup(){try{const cfg={};['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optFx','optAirGen','optAirModel','optEW','optNews','optVoice','optAxN','optAxC','optAxP'].forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
+function saveSetup(){try{const cfg={};['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optExer','optFx','optAirGen','optAirModel','optEW','optNews','optVoice','optAxN','optAxC','optAxP'].forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
 function loadSetup(){
   try{const o=JSON.parse(localStorage.getItem('tsl-setup')||'null');if(!o)return;
     let vu='';try{vu=localStorage.getItem('tsl-voice-user')||'';}catch(e){}
