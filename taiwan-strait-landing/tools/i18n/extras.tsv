@@ -1168,6 +1168,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 開戰前守方的外交、備戰、預警反應與兵力部署，都在這裡先決定，開戰後不再彈窗。選「電腦決定」就由電腦隨機挑一項（不含🔥）。每項都標明好處與代價。	The defender's diplomacy, readiness, early-warning reaction and force deployment before the war are decided here, with no pop-ups once the war starts. Choose "Computer decides" to have the computer pick one at random (excluding 🔥). Each option states its benefit and cost.	
 電腦決定	Computer decides	
 由電腦隨機挑一項。	The computer picks one at random.	
+標題列精簡：移除「兩棲登陸兵棋」小副標；右上角「設定」改成圓形齒輪圖示按鈕，與主標題同一列、垂直置中（手機與電腦皆然）	Header simplified: the small "Amphibious landing wargame" subtitle is gone, and the top-right "Settings" is now a round gear-icon button on the same row as the main title, vertically centered (on phone and desktop alike)	
 雷霆2000多管火箭	Thunder-2000 multiple rocket launcher	
 雷霆	Thunder	
 雷霆2000火箭彈庫存（每發 1 點）	Thunder-2000 rocket stock (1 point per shot)	
