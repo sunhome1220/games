@@ -1026,12 +1026,13 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 對方仍可能再次請求	They may ask again	
 提出依目前局勢停火。接受則戰事結束，拒絕則繼續作戰。	proposes a ceasefire at the current situation. Accepting ends the war; refusing continues it.	
 潛艦 上次發現點	Submarine last detected point	
-這一局之後不再詢問，沿用這次的設定（可按「重設意圖」改）	Do not ask again this game; reuse these settings (press "Reset intent" to change)	
-重設意圖	Reset intent	
-重新設定電腦代打的指揮官意圖	Reset the commander's intent used by AI auto-play	
-沿用上次的指揮官意圖（按「重設意圖」可以修改）	Reusing the last commander's intent (press "Reset intent" to change)	
-下次按「電腦代打」會再詢問指揮官意圖	Next AI auto-play will ask for commander's intent again	
-完整快訊	Full news	
-簡訊	Short news	
-只在畫面上閃一行頭條，不跳視窗；完整內容仍寫入戰報。	Flash one headline line only, no popup; full details still go to the log.	
-戰場插圖、頭條與戰況摘要，每回合跳出一個視窗。	Battlefield art, headline and summary, in a popup each turn.	
+數值來源與推估	Sources and estimates of the numbers	
+公開資料	Public data	
+公開資料＋推估	Public data + estimate	
+推估	Estimate	
+設計值	Design value	
+實測	Measured	
+美日參戰傾向（只在「擲骰決定參戰」時有效）	US-Japan intervention leaning (only when "dice decide intervention")	
+開戰月份（決定天候機率）	War start month (sets weather odds)	
+命中率 	Hit rate 	
+（固定規則）	 (fixed rule)	
