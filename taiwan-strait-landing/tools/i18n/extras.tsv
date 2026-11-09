@@ -1105,3 +1105,44 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 戰局碼：	Match code: 	
 加速造艦（護航艦隊 +2、航艦 +1、兩棲艦群與滾裝船團各 +2；代價：美日警覺上升）	Accelerated shipbuilding (escorts +2, carrier +1, amphibious groups and ro-ro fleets +2 each; cost: US/Japan alertness rises)	
 軍購延宕（守方反艦飛彈 −3、長程飛彈 −2、防空 −1，依公開報導）	Arms purchases delayed (defender anti-ship missiles −3, long-range missiles −2, air defense −1, per public reports)	
+手機版：點選單位或地格的資訊改成地圖上的小浮動卡片（預設在右下角），可拖曳移動、按 ✕ 關閉、連點兩下回到右下角；位置記在這台裝置，下次開啟仍在同一處。換選別的單位時卡片會再出現	Mobile: unit/hex info is now a small floating card on the map (bottom-right by default). Drag to move, tap ✕ to close, double-tap to return to the corner; its position is remembered on this device. It reappears when you select another unit.	
+單位資訊新增「數值修正」一行，逐項說明攻防為什麼不是表定值：受傷（剩 1 步）攻防各 −1、同格多單位防禦 −1、補給不足、事件／政策加減值	Unit info gains a "Modifiers" line explaining why attack/defense differ from the base values: wounded (1 step left) −1 each, stacking −1 defense, supply shortage, event/policy bonuses	
+數值修正：	Modifiers: 	
+受傷（剩 1 步）攻防各 −1	wounded (1 step left) attack and defense −1 each	
+事件／政策 攻擊 	event/policy attack 	
+事件／政策／工事 防禦 	event/policy/fortification defense 	
+補給不足 攻防各 −1	supply shortage attack and defense −1 each	
+同格多單位 防禦 −1	stacked units defense −1	
+關閉（拖曳可移動，連點兩下回到右下角）	Close (drag to move, double-tap to return to the bottom-right corner)	
+資訊卡片可縮到最小：按「—」縮成左下角的小標籤，再按一下回到原本大小（狀態記在這台裝置）	The info card can be minimized: tap "—" to shrink it to a small tag at the bottom-left, tap again to restore (remembered on this device)	
+地圖右下角新增藍色斜箭頭按鈕「回到台灣」：地圖放大或拖離後，點一下就捲回台灣遊戲區中央（維持目前縮放）	A blue arrow "Back to Taiwan" button at the map's bottom-right: after zooming or dragging away, tap once to scroll back to the center of the Taiwan play area (current zoom kept)	
+回到台灣	Back to Taiwan	
+展開資訊卡片	Expand info card	
+點一下回到原本大小	Tap to restore	
+縮到最小	Minimize	
+縮到最小（會停在左下角，再按展開）	Minimize (stays at the bottom-left; tap to expand)	
+「反制先制打擊」決策先說明被打了什麼：攻方選的打擊重點、攔截判定結果、造成的損失，以及目前守方空軍、防空、反艦飛彈、長程飛彈存量與指揮通信狀態，再讓你選擇因應	The "Counter the preemptive strike" decision now first explains what was hit: the attacker's chosen focus, the interception result, the damage caused, and the defender's current air force, air defense, anti-ship and long-range missile stocks and command-and-communications status, before you choose a response	
+被打了什麼：	What was hit: 	
+。結果：	。Result: 	
+目前守方：	Defender now: 	
+指揮通信受重創	command and communications badly hit	
+「反制先制打擊」四個選項依物理與常識重做：①拿掉遊戲裡本來就沒有的「備援指揮與通信」，改為「分散疏散並搶修機場」（受損機場最多 2 座各恢復 1 級、飛彈車誘餌率提高，代價是本階段飛彈車不能開火）；②戰機升空受機場起降能量限制，跑道受損嚴重就升不了空；③「立即反擊大陸基地」與「全面長程反擊」改用真正的打擊大陸公式與目標（火箭軍陣地約 1/3、機場等約 1/2 命中），不再用憑空設定的 50%／25%／60%	The four "Counter the preemptive strike" options were redone by physics and common sense: (1) removed "backup command and communications", which the game never modeled, in favor of "Disperse and repair airfields" (up to 2 damaged airfields recover 1 level each, missile-launcher decoys improve; cost: missile units cannot fire this phase); (2) fighter sorties are limited by airfield capacity, so badly damaged runways mean no takeoffs; (3) "Counter-strike mainland bases" and "Full deep counter-strike" now use the real mainland-strike formula and targets (about 1/3 to hit rocket-force sites, about 1/2 for airfields etc.) instead of invented 50%/25%/60% figures	
+分散疏散並搶修機場	Disperse and repair airfields	
+飛彈車與戰機分散到備用陣地與疏散機場，工兵搶修跑道：受損機場最多 2 座各恢復 1 級，飛彈車誘餌與分散使後續打擊更難命中；但本階段飛彈車忙著機動轉移，不能開火。	Missile launchers and aircraft disperse to reserve positions and dispersal airfields while engineers repair runways: up to 2 damaged airfields recover 1 level each, and decoys/dispersal make later strikes harder to land; but missile units are busy relocating this phase and cannot fire.	
+把疏散在分散機場的戰機重新升空：守方空軍最多恢復 1（不超過開戰時的數量）。能起降多少受跑道限制，機場受損嚴重就升不了空；近距支援的戰機被抽去爭制空，地面部隊失去空中偵察與火力支援，守方第 1～2 回合防禦 −1。	Dispersed aircraft take off again: defender air force recovers up to 1 (never above the opening number). Sorties are limited by runway capacity, so badly damaged airfields cannot launch; close-support aircraft are pulled into the fight for air control, leaving ground forces without air reconnaissance and fire support: defender defense −1 on turns 1–2.	
+動用 2 發長程飛彈（雲峰等）打大陸基地，目標依價值挑選（火箭軍陣地、機場、海軍基地）；命中用和「打擊大陸」同一套公式：火箭軍陣地約 1/3、機場等約 1/2，共軍防空強時更低。長程飛彈存量 −2。	Fire 2 long-range missiles (Yun Feng etc.) at mainland bases, targets chosen by value (rocket-force sites, airfields, naval bases); hits use the same formula as "Strike the mainland": about 1/3 for rocket-force sites, about 1/2 for airfields etc., lower if PLA air defense is strong. Long-range missile stock −2.	
+動用最多 3 發長程飛彈縱深打擊（優先火箭軍陣地，同一套命中公式）；長程飛彈存量 −3，局勢升高、美日更謹慎（參戰擲骰 −1）。	Fire up to 3 long-range missiles in a deep strike (rocket-force sites first, same hit formula); long-range missile stock −3; tension rises and the US and Japan become more cautious (intervention rolls −1).	
+搶修機場：	Airfield repairs: 	
+沒有受損的機場需要搶修	No damaged airfields need repair	
+飛彈車分散並加強誘餌（先制打擊較難命中）	Launchers disperse with stronger decoys (preemptive strikes harder to land)	
+機場跑道受損嚴重（起降能量約 	Runways badly damaged (takeoff capacity about 	
+），戰機升不了空	), aircraft cannot take off	
+守方第 1～2 回合防禦 −1（近距支援戰機被抽去爭制空）	Defender defense −1 on turns 1–2 (close-support aircraft pulled into the air-control fight)	
+局勢升高：美日參戰擲骰 −1	Tension rises: US/Japan intervention rolls −1	
+修正「戰機升空疏散並出擊」憑空增加戰機：戰機被擊落或炸毀就不會復原。改為「戰機升空避敵」：第 1～2 回合戰機不在機場挨炸（不新增任何戰機），代價是在空中多一輪空戰（擊落風險 p 變 1−(1−p)²）；跑道受損嚴重時升不了空	Fixed "fighters sortie" creating aircraft from nothing: shot-down or destroyed aircraft do not come back. It is now "Fighters launch to evade": on turns 1–2 aircraft are not caught and destroyed on the ground (no aircraft are added); the cost is one extra round of air combat (shootdown risk p becomes 1−(1−p)²); with badly damaged runways they cannot launch	
+戰機升空避敵	Fighters launch to evade	
+戰機不留在地面挨打，分批升空或轉場：第 1～2 回合不會在機場被炸毀（不新增任何戰機）。但在空中就多一輪空戰，每回合的擊落風險由 p 變成 1−(1−p)²；跑道受損嚴重（起降能量不足一半）就升不了空，等於沒有效果。	Aircraft do not sit on the ground to be hit: they launch in batches or redeploy, so on turns 1–2 none are destroyed on the airfield (no aircraft are added). In the air they fight one extra round, so each turn's shootdown risk goes from p to 1−(1−p)²; with badly damaged runways (under half takeoff capacity) they cannot launch, so there is no effect.	
+），戰機升不了空，沒有效果	), aircraft cannot launch; no effect	
+戰機升空避敵（機場起降能量約 	Fighters launch to evade (airfield takeoff capacity about 	
+）：第 1～2 回合地面戰機不會被炸毀，沒有新增任何戰機	): on turns 1–2 aircraft on the ground are not destroyed; no aircraft are added	
+代價：在空中多一輪空戰，擊落風險由 p 變成 1−(1−p)²	Cost: one extra round of air combat; shootdown risk goes from p to 1−(1−p)²	
