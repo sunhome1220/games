@@ -1058,3 +1058,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 拖曳移動；右下角可縮放	Drag to move; resize from bottom-right
 手機地圖工具列：全螢幕、截圖、語音三個按鈕只顯示圖示，省出空間（文字仍在提示與無障礙標籤中）	Mobile map toolbar: the fullscreen, screenshot and voice buttons show icons only to save space (text stays in tooltips and accessibility labels)
 手把：右搖桿平移地圖；L2／R2 縮放；按住 ✕ 拖曳天候視窗與單位資訊卡（位置會記住）；按住 L1 用左搖桿縮放天候視窗	Gamepad: right stick pans the map; L2/R2 zoom; hold ✕ to drag the weather and unit info windows (position is remembered); hold L1 and use the left stick to resize the weather window
+手把：震動提示（受損、輪到自己操作、遊戲結束、按鍵點選）；按鈕加上對應的 PS 符號（△ 火力、≡ 結束階段、✕ 確定、○ 取消），只在連接手把時顯示；底部列出手把操作速查	Gamepad: vibration cues (taking damage, your turn starts, game over, button presses); buttons show matching PlayStation symbols (△ fire, ≡ end phase, ✕ confirm, ○ cancel) only when a gamepad is connected; a quick reference of gamepad controls shows at the bottom
