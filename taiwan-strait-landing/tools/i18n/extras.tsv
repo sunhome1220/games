@@ -1237,4 +1237,18 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 手機地圖工具列：全螢幕、截圖、語音三個按鈕只顯示圖示，省出空間（文字仍在提示與無障礙標籤中）	Mobile map toolbar: the fullscreen, screenshot and voice buttons show icons only to save space (text stays in tooltips and accessibility labels)	
 手把：右搖桿平移地圖；L2／R2 縮放；按住 ✕ 拖曳天候視窗與單位資訊卡（位置會記住）；按住 L1 用左搖桿縮放天候視窗	Gamepad: right stick pans the map; L2/R2 zoom; hold ✕ to drag the weather and unit info windows (position is remembered); hold L1 and use the left stick to resize the weather window	
 手把：震動提示（受損、輪到自己操作、遊戲結束、按鍵點選）；按鈕加上對應的 PS 符號（△ 火力、≡ 結束階段、✕ 確定、○ 取消），只在連接手把時顯示；底部列出手把操作速查	Gamepad: vibration cues (taking damage, your turn starts, game over, button presses); buttons show matching PlayStation symbols (△ fire, ≡ end phase, ✕ confirm, ○ cancel) only when a gamepad is connected; a quick reference of gamepad controls shows at the bottom	
-
+航艦被擊沉或受創時，戰報寫出是哪一艦、被什麼武器、誰造成，以及擊沉後剩餘艦數或剩餘步數；美軍航艦被擊沉也會寫出是哪一種打擊造成	When a carrier is sunk or damaged, the log now says which carrier, what weapon, and who caused it, plus the remaining carrier count or steps after a sinking; a sunk US carrier also states which kind of strike caused it	
+共軍航艦遭擊沉：	PLA carrier sunk: 	
+以	by 	
+擊沉（剩餘 	sunk (remaining 	
+共軍航艦群在	PLA carrier group at 	
+被擊沉，失去戰鬥能力	sunk, out of combat	
+受創，剩 	damaged, remaining 	
+戰力下降	combat power reduced	
+美軍航艦群（	US carrier group (	
+）遭擊沉，失去戰鬥力	): sunk, out of combat	
+未知攻擊	unknown attack	
+守方岸置與空中反艦飛彈	defender shore and air anti-ship missiles	
+海鯤潛艦	Hai Kun submarine	
+中方報復打擊	PRC retaliatory strike	
+共軍	PLA 	
