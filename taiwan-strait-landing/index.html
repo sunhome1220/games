@@ -6009,5 +6009,43 @@ reset();setZoom(ZOOM,true);
 addEventListener('resize',()=>{if(!document.body.classList.contains('mapfs'))setZoom(ZOOM);});
 })();
 </script>
+<script>
+/* 手把原型（Gamepad API）：左搖桿移動游標、✕＝點選、△＝火力打擊、Options＝結束階段、○＝取消。
+   只在偵測到手把時啟動；滑鼠與觸控不受影響。DualSense 在 Chrome 用標準對應（0=✕ 1=○ 3=△ 9=Options）。 */
+(function(){
+  if(!navigator.getGamepads)return;
+  const cur=document.createElement('div');
+  cur.id='gpCur';cur.hidden=true;
+  cur.style.cssText='position:fixed;left:0;top:0;width:22px;height:22px;margin:-11px 0 0 -11px;border:2px solid #f5c542;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.55);pointer-events:none;z-index:99';
+  document.body.appendChild(cur);
+  let x=innerWidth/2,y=innerHeight/2,prev={},lastEl=null,running=false,on=false;
+  const pickPad=()=>{const ps=navigator.getGamepads?navigator.getGamepads():[];for(const p of ps)if(p&&p.connected)return p;return null;};
+  const dz=v=>Math.abs(v)<.2?0:v;
+  function frame(){
+    const pad=pickPad();
+    if(!pad){on=false;cur.hidden=true;running=false;return;}
+    if(!on){on=true;cur.hidden=false;x=innerWidth/2;y=innerHeight/2;}
+    x=Math.max(0,Math.min(innerWidth-1,x+dz(pad.axes[0]||0)*9));
+    y=Math.max(0,Math.min(innerHeight-1,y+dz(pad.axes[1]||0)*9));
+    cur.style.left=x+'px';cur.style.top=y+'px';
+    cur.style.display=document.body.classList.contains('playing')||document.querySelector('#modal:not([hidden])')?'':'none';
+    cur.hidden=cur.style.display==='none';
+    const el=document.elementFromPoint(x,y);
+    if(el&&el!==lastEl){lastEl=el;el.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:x,clientY:y}));}
+    const b=i=>!!(pad.buttons[i]&&pad.buttons[i].pressed),press=i=>b(i)&&!prev[i];
+    const ev=t=>new MouseEvent(t,{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window});
+    if(press(0)&&el)el.dispatchEvent(ev('click'));
+    if(press(3)){const s=document.querySelector('#btnStrike');if(s&&!s.disabled&&!s.hidden)s.click();}
+    if(press(9)){const e=document.querySelector('#btnEnd');if(e&&!e.disabled&&!e.hidden)e.click();}
+    if(press(1)){const c=document.querySelector('#modal:not([hidden]) .ghost, #modal:not([hidden]) button#cfN');if(c)c.click();}
+    prev={0:b(0),1:b(1),3:b(3),9:b(9)};
+    requestAnimationFrame(frame);
+  }
+  const start=()=>{if(!running){running=true;requestAnimationFrame(frame);}};
+  addEventListener('gamepadconnected',start);
+  addEventListener('gamepaddisconnected',()=>{on=false;cur.hidden=true;});
+  if(pickPad())start();
+})();
+</script>
 </body>
 </html>
