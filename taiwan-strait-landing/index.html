@@ -566,6 +566,7 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 #toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 18px;border-radius:3px;font-weight:700;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
+.vres{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}.vres>div{background:var(--panel);color:var(--ink);border-radius:10px;max-width:420px;width:100%;max-height:92vh;overflow:auto;padding:14px}.vres video{display:block;width:100%;max-height:58vh;margin-top:8px;background:#000;border-radius:6px}.vres .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.vres .dd{margin-top:8px}
 .seedc{font-family:var(--f-mono,monospace);font-size:11px;word-break:break-all;user-select:all}.wz-seed{margin-top:14px}.wz-seed label{display:block;font-weight:600;font-size:13px}.wz-seed input{display:block;width:100%;box-sizing:border-box;margin:4px 0;padding:8px;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)}.erates.fg ul{margin:4px 0;padding-left:18px}.ucard{position:fixed;right:8px;bottom:calc(168px + env(safe-area-inset-bottom,0px));z-index:17;width:min(232px,62vw);max-height:40vh;overflow:auto;padding:8px 10px 8px;background:color-mix(in srgb,var(--panel) 96%,transparent);border:1px solid var(--ink);border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.25);touch-action:none;font-size:12px;line-height:1.4}
 .ucard[hidden]{display:none}.ucard.moved{right:auto;bottom:auto}
 .ucard .uc-x{position:absolute;top:2px;right:4px;width:28px;height:28px;min-width:0;min-height:0;padding:0;font-size:16px;line-height:1;background:transparent;color:var(--ink);border:0;opacity:.7}
@@ -4990,6 +4991,15 @@ function hlLines(turn){ // 這一回合最值得一提的 2 件事（去掉括�
 }
 function hlCaption(o){const a=[];if(o.end)return '';a.push('第 '+o.turn+' 回合');const c=o.c;
   const t=[];if(c.sunk)t.push('攻方船艦損失 '+c.sunk);if(c.lost)t.push('守方損失 '+c.lost);if(c.land)t.push('登陸／空降行動 '+c.land);return a.concat([t.length?t.join('　'):'雙方調動兵力']).join('　·　');}
+function showVideoResult(blob,name,file){
+  const url=URL.createObjectURL(blob),can=!!(navigator.canShare&&navigator.canShare({files:[file]})),ov=document.createElement('div');ov.className='vres';
+  ov.innerHTML='<div role="dialog" aria-label="'+TX('精華影片已完成')+'"><b>'+TX('精華影片已完成')+'</b><video src="'+url+'" controls playsinline muted loop autoplay></video><div class="btns">'+(can?'<button id="vrShare">'+TX('分享／儲存到相簿')+'</button>':'')+'<button class="ghost" id="vrDl">'+TX('下載檔案')+'</button><button class="ghost" id="vrX">'+TX('關閉')+'</button></div><div class="dd">'+TX(can?'點「分享／儲存到相簿」會開啟系統選單，可存到相簿或傳給朋友。':'點「下載檔案」存到這台裝置。')+'</div></div>';
+  document.body.appendChild(ov);
+  const close=()=>{ov.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+  const sh=ov.querySelector('#vrShare');if(sh)sh.onclick=()=>{navigator.share({files:[file],title:TX('台海兵棋推演 十秒精華')}).catch(e=>{if(e&&e.name!=='AbortError')toast(TX('無法開啟分享，請改用下載'),2500);});};
+  ov.querySelector('#vrDl').onclick=()=>{const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();toast(TX('已下載'),1500);};
+  ov.querySelector('#vrX').onclick=close;ov.addEventListener('click',e=>{if(e.target===ov)close();});
+}
 async function exportHighlight(){
   toast(TX('正在合成十秒精華影片（約 12 秒，請稍候）…'),3000);
   try{
@@ -5028,8 +5038,7 @@ async function exportHighlight(){
     rec.stop();await done;
     const ext=/mp4/.test(mime)?'mp4':'webm',blob=new Blob(chunks,{type:mime.split(';')[0]}),name='taiwan-strait-highlight-'+stampNow()+'.'+ext;
     const file=new File([blob],name,{type:blob.type});
-    if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:TX('台海兵棋推演 十秒精華')});toast(TX('已開啟分享'),1500);return;}catch(e){if(e&&e.name==='AbortError')return;}}
-    dlBlob(blob,name);toast(TX('精華影片已產生'),2000);
+    showVideoResult(blob,name,file); // 合成要十幾秒，早已超過瀏覽器允許直接開分享的時間：改成先預覽，再由使用者點一下按鈕分享或儲存
   }catch(e){toast(TX('無法產生影片（此瀏覽器不支援錄製，或本機檔案開啟限制畫面擷取）'),4500);}
 }
 async function exportShot(){
