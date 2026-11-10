@@ -1233,3 +1233,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 手機上天候、火力等狀態區塊一直抖動：原因是輪播淡入動畫在每次重畫時重播，已移除動畫與輪播	On phones the weather and fire status blocks kept jittering: the rotating fade-in animation replayed on every redraw; the animation and rotation are removed	
 手機版天候改放在地圖上的小視窗，可拖曳移動、右下角縮放，位置會記住；其餘狀態（火力、制空、補給…）改為同時顯示、自動換行	On phones, weather moves into a small window on the map that you can drag and resize from the bottom-right corner, and remembers its position; the other status items (fire, air control, supply…) show together and wrap	
 拖曳移動；右下角可縮放	Drag to move; resize from bottom-right	
+
