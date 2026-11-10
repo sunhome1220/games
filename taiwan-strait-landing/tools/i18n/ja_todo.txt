@@ -1091,3 +1091,13 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 受創（	damaged (
 ，艦載機出擊能力下降	, carrier air sortie capacity reduced
 共軍攻擊	PLA attack
+對戰結果全部改用固定規則：空降、運輸機損失、補給線攔截、演習識破、停火接受、美國因傷亡退縮、盟軍是否打擊大陸、尋求外援、動員社會韌性等原本擲骰的判定，改為與其他命中相同的小數累計（機率不變、不再靠運氣）	All combat outcomes now use fixed rules: airdrops, airlift losses, supply-line interdiction, exercise detection, ceasefire acceptance, US withdrawal over casualties, allied mainland strikes, seeking outside help and mobilization resilience, which used to be dice rolls, now use the same fractional accumulation as other hits (same probabilities, no luck)
+打擊與海上交戰改為固定挑選最有價值的目標，不再抽籤；缺補給時先拖垮兵力最多的單位	Strikes and sea battles now always pick the most valuable target instead of drawing lots; supply shortages wear down the strongest unit first
+平民傷亡、戰損與股市影響改用期望值，不再在 70%～130% 之間浮動。天氣仍依季節隨機；電腦走位與選項的少量隨機保留	Civilian casualties, war damage and market effects use expected values instead of varying between 70% and 130%. Weather stays seasonally random; a little randomness remains in computer movement and option choices
+（退縮機率 	 (withdrawal chance 
+%，固定規則），維持現有立場	%, fixed rule), keeps its current stance
+評估對大陸打擊：出手機率 	 assesses striking the mainland: chance to act 
+%（固定規則），本回合按兵不動	% (fixed rule), holds back this turn
+%（固定規則），決定出手	% (fixed rule), decides to strike
+國際斡旋機率 33%、提高介入 33%（固定規則）	International mediation 33%, increased involvement 33% (fixed rule)
+期望值 3.5（固定規則）	Expected value 3.5 (fixed rule)
