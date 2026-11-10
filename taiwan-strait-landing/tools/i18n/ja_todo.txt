@@ -1074,3 +1074,20 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 未知攻擊	unknown attack
 守方岸置與空中反艦飛彈	defender shore and air anti-ship missiles
 海鯤潛艦	Hai Kun submarine
+美軍航艦打擊群成為地圖上的真實棋子（第 1 階段）：參戰抵達後出現在台灣東側外海，由電腦自動操作，保持在東岸外約 5～8 格並遠離共軍艦艇；共軍的火力打擊與反艦攻擊可以直接鎖定它	The US carrier strike group is now a real map piece (stage 1): after joining the war it appears in the sea east of Taiwan, is operated by the computer, keeps about 5–8 cells off the east coast and away from PLA ships; PLA fire strikes and anti-ship attacks can target it directly
+新增反航母打擊：攻方每回合最多發射 2 枚反艦彈道飛彈（東風-21D／26，耗用火箭軍存量），單發命中率＝偵察定位（航艦上一回合移動越多越難定位）× 末端穿透（護航越多越難穿透），數字皆為推估並寫在戰報。航艦扣到 0 步即擊沉	New anti-carrier strike: each turn the attacker fires up to 2 anti-ship ballistic missiles (DF-21D/26, drawing on rocket-force stock); per-missile hit chance = targeting (the more the carrier moved last turn, the harder to locate) × terminal penetration (more escorts make it harder); all figures are estimates and shown in the log. The carrier is sunk at 0 steps
+美軍航艦打擊群	US carrier strike group
+美航艦	US CV
+美軍航艦打擊群進入台灣東側海域（地圖上的「美航艦」棋子，由電腦自動操作）	The US carrier strike group enters the waters east of Taiwan (the "US CV" piece on the map, operated by the computer)
+反航母打擊：發射 	Anti-carrier strike: fired 
+ 枚反艦彈道飛彈，命中 	 anti-ship ballistic missiles, hits 
+ 枚（定位 	 (targeting 
+%：上一回合移動 	%: moved last turn 
+ 格；穿透 	 cells; penetration 
+%：護航 	%: escorts 
+ 艘；皆為推估）	 ships; all estimates)
+反艦彈道飛彈（東風-21D／26）	anti-ship ballistic missile (DF-21D/26)
+美軍航艦打擊群在	US carrier strike group at 
+受創（	damaged (
+，艦載機出擊能力下降	, carrier air sortie capacity reduced
+共軍攻擊	PLA attack
