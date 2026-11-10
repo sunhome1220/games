@@ -258,6 +258,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
   body.playing .mapbar{flex-wrap:nowrap;overflow-x:auto;gap:6px;scrollbar-width:none}
   body.playing .mapbar>*{flex:none}
   body.playing .mapbar .mb-l{display:none}
+  .mapbar .bl{display:none} /* 手機：地圖工具列只留圖示（文字放在 title／aria-label） */
   body.playing .mapbar button{padding:4px 10px;min-height:36px}
 }
 .coach{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:13;width:min(440px,calc(100vw - 24px));background:var(--ink);color:var(--paper,#fff);border-radius:8px;padding:10px 38px 10px 12px;font-size:14px;line-height:1.45;box-shadow:0 6px 24px rgba(0,0,0,.28)}
@@ -608,9 +609,9 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
       <div class="mapbar">
         <span class="mb-l">地圖</span>
         <button class="ghost zb" data-z="-1" aria-label="縮小">－</button><button class="ghost zv" id="zLabel" title="重設為 100%">100%</button><button class="ghost zb" data-z="1" aria-label="放大">＋</button>
-        <button class="ghost" id="btnFs">⛶ 全螢幕</button>
-        <button class="ghost" id="btnShot">📷 截圖</button>
-        <button class="ghost" id="btnVoice" aria-pressed="false" hidden>🔈 語音：關</button>
+        <button class="ghost" id="btnFs" aria-label="全螢幕" title="全螢幕">⛶<span class="bl"> 全螢幕</span></button>
+        <button class="ghost" id="btnShot" aria-label="截圖" title="截圖">📷<span class="bl"> 截圖</span></button>
+        <button class="ghost" id="btnVoice" aria-pressed="false" hidden>🔈<span class="bl"> 語音：關</span></button>
         <span class="dd">Ctrl＋滾輪可縮放；縮小可看外圍示意區（美中日各方投射武力的基地與海域），放大後可拖曳</span>
       </div>
       <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"><defs id="mdefs"></defs><g id="gX"></g><g id="gS"></g><g id="gE"></g><g id="gD"></g><g id="gF" style="pointer-events:none"></g></svg><button class="loc" id="btnLoc" aria-label="回到台灣" title="回到台灣"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3.5 11.2 20.5 3.5 12.8 20.5 11 13Z" fill="#1a73e8" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg></button></div>
@@ -5155,7 +5156,7 @@ const VOICE={n:0,
     speechSynthesis.speak(u);},
   stop(){try{if(window.speechSynthesis)speechSynthesis.cancel();}catch(e){}this.n=0;}
 };
-function voiceBtn(){const b=$('#btnVoice');if(!window.speechSynthesis){b.hidden=true;return;}b.hidden=false;const on=$('#optVoice').value==='1';b.textContent=on?'🔊 語音：開':'🔈 語音：關';b.setAttribute('aria-pressed',on);if(!on)VOICE.stop();}
+function voiceBtn(){const b=$('#btnVoice');if(!window.speechSynthesis){b.hidden=true;return;}b.hidden=false;const on=$('#optVoice').value==='1';b.innerHTML=(on?'🔊':'🔈')+'<span class="bl"> 語音：'+(on?'開':'關')+'</span>';b.setAttribute('aria-pressed',on);if(!on)VOICE.stop();}
 $('#btnVoice').onclick=()=>{const e=$('#optVoice');e.value=e.value==='1'?'0':'1';e.dispatchEvent(new Event('change'));if(e.value==='1')VOICE.speak('語音播報已開啟',{flush:true});};
 $('#optVoice').addEventListener('change',()=>{try{localStorage.setItem('tsl-voice-user','1');}catch(e){}voiceBtn();});
 voiceBtn();
