@@ -1234,3 +1234,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 手機版天候改放在地圖上的小視窗，可拖曳移動、右下角縮放，位置會記住；其餘狀態（火力、制空、補給…）改為同時顯示、自動換行	On phones, weather moves into a small window on the map that you can drag and resize from the bottom-right corner, and remembers its position; the other status items (fire, air control, supply…) show together and wrap	
 拖曳移動；右下角可縮放	Drag to move; resize from bottom-right	
 
+手機地圖工具列：全螢幕、截圖、語音三個按鈕只顯示圖示，省出空間（文字仍在提示與無障礙標籤中）	Mobile map toolbar: the fullscreen, screenshot and voice buttons show icons only to save space (text stays in tooltips and accessibility labels)	
