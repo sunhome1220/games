@@ -1827,9 +1827,20 @@ function endingBlock(v){
     '<div class="enote dd">分數不等於勝負：慘勝與代價沉重會被扣分。等級 S≥90、A≥75、B≥60、C≥40。</div>'+lossColsHTML()+ratingHTML(m)+failGuide(k)+seedHTML()+
     acc('結局圖鑑','已解鎖 '+ENDORDER.filter(x=>got[x]).length+' / 6','<div class="egal">'+gal+'</div>',false)+'</div>';
 }
+// 結算時的控制權：攻方必須在該格或相鄰格還有地面部隊，才算實際控制；沒有兵力的格子歸還守方（遊戲進行中的控制權規則不變）
+function settleControl(){
+  const gnd=S.units.filter(u=>u.side==='atk'&&!isShip(u)&&!atSea(u)&&onTW(u));const back=[];
+  for(const k of Object.keys(S.owner)){
+    if(S.owner[k]!=='atk')continue;const h=TER[k];if(!h||h.isl!=='TW')continue;
+    if(gnd.some(u=>hd(hexOf(u),h)<=1))continue;
+    S.owner[k]='def';if(h.name)back.push(h.name);
+  }
+  if(back.length)log('結算：攻方已無兵力控制的地區歸還守方（'+back.slice(0,8).join('、')+(back.length>8?' 等 '+back.length+' 處':'')+'）');
+}
 function endGame(early,side,label){
   if(window.TSL_RUMBLE)TSL_RUMBLE('end');
   S.over=true;S.sel=null;S.mode=null;
+  settleControl();
   const cs=conditions(true);const n=cs.filter(c=>c.atk).length;
   let v=early?{s:side,t:label||(side==='atk'?'攻方勝利':'守方勝利'),d:early}:verdict(n,true);
   let lim=false;
@@ -5709,10 +5720,11 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn），並在下方 CHANGELOG 最前面補一筆更新內容（再補 tools/i18n/extras.tsv 的英日譯文）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-11.81';
+const VERSION='2026-11-11.82';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
+ {v:'2026-11-11.82',items:['結算時的控制權改為「需有實際兵力」：攻方必須在該格或相鄰格還有地面部隊，才算控制台北、主要港口等；部隊已被殲滅、沒有兵力的格子在結算前歸還守方，並寫進戰報。修正攻方地面部隊全滅、報告卻仍顯示攻方控制台北的矛盾。遊戲進行中的控制權規則不變']},
  {v:'2026-11-11.81',items:['結局報告新增「雙方損失」左右對照：左邊攻方、右邊守方（盟軍美日列在守方欄的小節），包括軍人與平民傷亡、戰機架數、艦艇、航艦、潛艦、運輸與補給船、被殲滅的旅；匯出的報告圖片也加上同樣的對照。數字來自既有的傷亡計算與開局／結束時的數量差']},
  {v:'2026-11-10.80',items:['空軍改用實際架數（航艦第 2 階段）：台灣約 321 架（2028 年起 387 架）、共軍東部戰區 300 架（推估）、遼寧與山東各 24 架殲-15、福建 30 架（推估）、美航艦 44 架打擊戰機；空軍點數改為有效架次（架數 × 妥善率 70% × 每日出擊率 × 半天 × 品質係數）÷ 34，雙方用同一套換算','空戰改用蘭徹斯特平方律：每回合各方損失＝2% × 出擊架次 × 敵我有效戰力比（推估），被擊落就永久減少；制空以有效戰力比 1.5 為優勢分界','共軍空軍火力改為對地打擊架次 ÷ 10（依制空狀況分配 60%／40%／20%，推估）；原本整點扣空軍的事件改成實際架數（地面被毀、出擊折損，數字為推估）；空投損失的是運輸機，不再扣戰機；「疏散戰機」不再憑空 +1，改為第 1～2 回合不在地面挨炸']},
  {v:'2026-11-10.79',items:['對戰結果全部改用固定規則：空降、運輸機損失、補給線攔截、演習識破、停火接受、美國因傷亡退縮、盟軍是否打擊大陸、尋求外援、動員社會韌性等原本擲骰的判定，改為與其他命中相同的小數累計（機率不變、不再靠運氣）','打擊與海上交戰改為固定挑選最有價值的目標，不再抽籤；缺補給時先拖垮兵力最多的單位','平民傷亡、戰損與股市影響改用期望值，不再在 70%～130% 之間浮動。天氣仍依季節隨機；電腦走位與選項的少量隨機保留']},
