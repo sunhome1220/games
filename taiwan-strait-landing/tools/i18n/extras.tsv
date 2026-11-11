@@ -1411,3 +1411,14 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 目前沒有日本地面部隊棋子，暫不開放登陸。	There are no Japanese ground unit pieces yet, so landings are not allowed.	
 西表	Iriomote	
 鷹擊-83K	YJ-83K	
+修正：盟軍與台灣空軍的反艦打擊命中有防空護航的航艦時，仍套用舊的「飽和攻擊」一次扣 2 步；現在和其他齊射一樣，航艦每 2 枚命中扣 1 步	Fix: allied and Taiwanese air anti-ship strikes that hit an escorted carrier still used the old "saturation attack" rule (2 steps per hit); now, like other salvos, a carrier loses 1 step per 2 hits	
+雄風岸置飛彈、守方艦艇與海鯤潛艦的魚叉打共軍艦隊時，目標在 055／052D／054A 防空涵蓋內就改用齊射模型（雄風每次 ★2 枚、魚叉 1 枚；航艦每 2 枚命中扣 1 步）；魚雷不經過防空	Hsiung Feng coastal missiles, defender warships and Hai Kun submarine Harpoons now use the salvo model when the target is under Type 055/052D/054A air-defense cover (Hsiung Feng ★2 missiles per shot, Harpoon 1; a carrier loses 1 step per 2 hits); torpedoes are not affected by air defense	
+齊射模型：同一階段內多次射擊打同一支艦隊視為協同齊射，每艘防空艦的接戰上限共用，「集中齊射」的意圖會真的造成飽和	Salvo model: multiple shots at the same fleet within one phase count as a coordinated salvo; each air-defense ship's engagement limit is shared, so the "concentrated salvo" intent can really saturate defenses	
+修正：海鯤命中共軍航艦一次就發出「航艦遭擊沉」頭條；現在只在真的擊沉時才發	Fix: a single Hai Kun hit on a PLA carrier used to trigger the "carrier sunk" headline; now it only appears when the carrier is actually sunk	
+守方艦艇	Defender warships	
+岸置反艦飛彈	Coastal anti-ship missiles	
+ 枚雄風飛彈攻擊 	 Hsiung Feng missiles attack 	
+雄風反艦飛彈	Hsiung Feng anti-ship missile	
+：對方防空發射 	: the defenders fire 	
+（航艦體積大，未造成重創）	 (the carrier is large; no critical damage)	
+；齊射模型，參數為推估	; salvo model, estimated parameters	
