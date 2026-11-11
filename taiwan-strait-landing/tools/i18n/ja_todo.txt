@@ -1190,3 +1190,45 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 ；攔截以齊射模型計算；皆為推估）	; interception by salvo model; all estimates)
  枚反艦彈道飛彈，定位成功 	 anti-ship ballistic missiles, located 
 交戰改用休斯齊射模型：每艘防空艦一波能同時接戰的來襲飛彈有上限（推估：055 型與巡洋艦 6、052D 型與柏克級 4、054A 型 2，航艦自身 2），接戰的每枚用 2 枚攔截彈、攔截率 70%（彈道飛彈 50%），超過上限的不會被攔截，突破的再乘尋標命中率 80%（皆為推估）；守方打到航艦艦隊、反航母彈道飛彈也改用此模型，防空飛彈會真的用掉	Engagements now use the Hughes salvo model: each air-defense ship can engage only a limited number of incoming missiles per salvo (estimates: Type 055 and cruisers 6, Type 052D and Burkes 4, Type 054A 2, the carrier itself 2); each engaged missile draws 2 interceptors at 70% each (50% against ballistic missiles), missiles beyond the limit are not intercepted, and those that get through hit at an 80% seeker rate (all estimates); defender strikes on carrier fleets and anti-carrier ballistic missiles use the same model, and interceptors are actually used up
+航艦艦隊第 3b 階段：艦載機依作戰半徑真的出擊。每回合把艦載機架次分給制空、對艦、對地（固定公式，攻方可用指揮官意圖調整）；對艦用 LRASM（美）或鷹擊-83K（共軍）以齊射模型對上目標艦隊的防空，打擊機會被擊落；美軍艦載機也會空襲島上的登陸部隊。作戰半徑：F/A-18E 36 格、殲-15 30 格、福建艦 40 格（★推估）	Carrier fleet stage 3b: carrier air wings now fly real missions within their combat radius. Each turn the wing's sorties are split between air superiority, anti-ship and ground attack (fixed formula; the attacker can adjust it with commander's intent); anti-ship strikes use LRASM (US) or YJ-83K (PLA) against the target fleet's air defense in the salvo model, and strike aircraft can be shot down; US carrier aircraft also strike landing forces on the island. Combat radius: F/A-18E 36 hexes, J-15 30, Fujian 40 (★estimates)
+地圖往東擴大到約東經 128.5 度：美航艦在共軍艦射鷹擊-18 射程外待命，用艦載機遠距打擊；與那國、西表、石垣、宮古、沖繩南部畫成日本的陸地格（目前沒有日本地面部隊，暫不開放登陸）。預設畫面仍是台灣，東側要捲動或縮小查看	The map now extends east to about 128.5°E: the US carrier waits outside the range of PLA ship-launched YJ-18 missiles and strikes from a distance with its aircraft; Yonaguni, Iriomote, Ishigaki, Miyako and southern Okinawa are Japanese land hexes (no Japanese ground units yet, so no landings there). The default view is still Taiwan; scroll or zoom out to see the east
+修正：空戰後的「防空壓制」判定先前被誤寫進註解而沒有執行	Fix: the air-defense suppression check after the air battle had been accidentally commented out and never ran
+修正：共軍航艦被擊沉時，扣掉的是被擊沉那一艘的艦載機（先前一律扣最後一艘）	Fix: when a PLA carrier is sunk, the aircraft lost are that carrier's (previously always the last carrier's)
+艦載機任務	Carrier air wing
+照固定公式	Fixed formula
+有敵艦在打擊距離內：制空 40%、對艦 40%、對地 20%；沒有：制空 60%、對地 40%（從下一回合開始生效）。	With enemy ships within strike range: air superiority 40%, anti-ship 40%, ground attack 20%; otherwise air superiority 60%, ground attack 40% (takes effect from next turn).
+優先打艦艇	Prioritize ships
+對艦 60%、制空 30%、對地 10%（從下一回合開始生效）。	Anti-ship 60%, air superiority 30%, ground attack 10% (takes effect from next turn).
+制空與登陸支援減弱。	Weaker air superiority and landing support.
+優先制空	Prioritize air superiority
+制空 70%、對艦 20%、對地 10%（從下一回合開始生效）。	Air superiority 70%, anti-ship 20%, ground attack 10% (takes effect from next turn).
+對艦打擊減弱。	Weaker anti-ship strikes.
+優先支援登陸	Prioritize landing support
+對地 50%、制空 40%、對艦 10%（從下一回合開始生效）。	Ground attack 50%, air superiority 40%, anti-ship 10% (takes effect from next turn).
+敵艦較少受到壓力。	Less pressure on enemy ships.
+艦載機出擊（每回合約 	 carrier aircraft sortie (about 
+ 架次；	 sorties per turn; 
+%、對艦 	%, anti-ship 
+%、對地 	%, ground attack 
+剩 	 left: 
+ 枚攻擊 	 missiles attack 
+（距離 	 (range 
+ 格）：對方防空發射 	 hexes): the defenders fire 
+，打擊機被擊落 	, strike aircraft shot down: 
+對地空襲 	Ground strikes: 
+ 次，命中島上部隊 	, hits on units on the island: 
+，被防空擊落 	, shot down by air defense: 
+：打擊距離內沒有目標，全部執行制空與艦隊防護	: no targets within strike range; all sorties fly air superiority and fleet defense
+（參數為推估）	 (parameters are estimates)
+美航艦艦載機空襲	US carrier air strike
+艦載機（	 carrier aircraft (
+艦載機 	Carrier aircraft: 
+ 架（每回合約 	 (about 
+ 架次，作戰半徑 	 sorties per turn, combat radius 
+ 格，對艦打擊距離 	 hexes, anti-ship strike reach 
+ 格）；本回合任務：	 hexes); this turn's tasking: 
+日本領土（	Japanese territory (
+琉球群島	Ryukyu Islands
+目前沒有日本地面部隊棋子，暫不開放登陸。	There are no Japanese ground unit pieces yet, so landings are not allowed.
+西表	Iriomote
+鷹擊-83K	YJ-83K
