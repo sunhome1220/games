@@ -1338,3 +1338,34 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 結算：攻方已無兵力控制的地區歸還守方（	Settlement: areas the attacker no longer holds with forces revert to the defender (	
  等 	 and others, 	
  處）	 places)	
+航艦艦隊（第 3a 階段）：雙方航艦都帶著真實的護航艦棋子——共軍航艦各配 055、052D、054A 各 1 艘；美航艦配神盾驅逐艦（2027 年以前含 1 艘巡洋艦）。護航艦跟著航艦移動，各有自己的步數與飛彈庫存（依垂直發射管數，各彈種比例為推估），海上不能補充	Carrier fleets (stage 3a): both sides' carriers now come with real escort pieces — each PLA carrier has one Type 055, one 052D and one 054A; each US carrier has Aegis destroyers (plus one cruiser through 2027). Escorts move with their carrier and each has its own steps and missile magazine (based on VLS cell counts; the mix of missile types is an estimate), which cannot be reloaded at sea	
+護航艦可以用反艦飛彈攻擊射程內的敵艦（鷹擊-18 約 27 格、鷹擊-83 約 11 格、魚叉約 6 格），電腦自動開火；你操作攻方時可以選取護航艦再點目標	Escorts can fire anti-ship missiles at enemy ships in range (YJ-18 about 27 cells, YJ-83 about 11, Harpoon about 6); the computer fires automatically, and as the attacker you can select an escort and tap a target	
+交戰改用休斯齊射模型：來襲飛彈數減去防空攔截（每枚來襲 2 枚攔截彈、攔截率 70%，彈道飛彈 50%），再乘尋標命中率 80%（皆為推估）；守方打到航艦艦隊、反航母彈道飛彈也改用此模型，防空飛彈會真的用掉	Engagements now use the Hughes salvo model: incoming missiles minus air-defense kills (2 interceptors per incoming missile, 70% each, 50% against ballistic missiles) times an 80% seeker hit rate (all estimates); defender strikes on carrier fleets and anti-carrier ballistic missiles use the same model, and interceptors are actually used up	
+055 型驅逐艦	Type 055 destroyer	
+052D 型驅逐艦	Type 052D destroyer	
+054A 型護衛艦	Type 054A frigate	
+提康德羅加級巡洋艦	Ticonderoga-class cruiser	
+柏克級驅逐艦	Arleigh Burke-class destroyer	
+巡洋艦	Cruiser	
+神盾艦	Aegis DDG	
+艦隊協同齊射（	fleet coordinated salvo (	
+）共 	), total 	
+ 枚反艦飛彈攻擊 	 anti-ship missiles at 	
+：對方防空發射 	: the defense fired 	
+ 枚攔截彈，約 	 interceptors, about 	
+ 枚突破，命中 	 got through, hits 	
+，未造成重創	, no serious damage	
+（齊射模型，參數為推估）	 (salvo model, parameters are estimates)	
+防空飛彈 	Air-defense missiles 	
+ 枚（涵蓋 	 (coverage 	
+ 枚（射程 	 (range 	
+、對地飛彈 	, land-attack missiles 	
+；海上不能補充垂直發射管；跟著航艦移動	; VLS cannot be reloaded at sea; moves with the carrier	
+美軍護航艦隨航艦打擊群撤離戰區（	US escorts withdraw with the carrier strike group (	
+美軍護航艦	US escorts	
+（含航艦護航）	 (incl. carrier escorts)	
+ 枚、護航艦發射 	, escorts fired 	
+ 枚攔截彈，命中 	 interceptors, hits 	
+；攔截以齊射模型計算；皆為推估）	; interception by salvo model; all estimates)	
+ 枚反艦彈道飛彈，定位成功 	 anti-ship ballistic missiles, located 	
+交戰改用休斯齊射模型：每艘防空艦一波能同時接戰的來襲飛彈有上限（推估：055 型與巡洋艦 6、052D 型與柏克級 4、054A 型 2，航艦自身 2），接戰的每枚用 2 枚攔截彈、攔截率 70%（彈道飛彈 50%），超過上限的不會被攔截，突破的再乘尋標命中率 80%（皆為推估）；守方打到航艦艦隊、反航母彈道飛彈也改用此模型，防空飛彈會真的用掉	Engagements now use the Hughes salvo model: each air-defense ship can engage only a limited number of incoming missiles per salvo (estimates: Type 055 and cruisers 6, Type 052D and Burkes 4, Type 054A 2, the carrier itself 2); each engaged missile draws 2 interceptors at 70% each (50% against ballistic missiles), missiles beyond the limit are not intercepted, and those that get through hit at an 80% seeker rate (all estimates); defender strikes on carrier fleets and anti-carrier ballistic missiles use the same model, and interceptors are actually used up	
