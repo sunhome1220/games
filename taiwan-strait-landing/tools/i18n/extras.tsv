@@ -1279,3 +1279,32 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 %（固定規則），決定出手	% (fixed rule), decides to strike	
 國際斡旋機率 33%、提高介入 33%（固定規則）	International mediation 33%, increased involvement 33% (fixed rule)	
 期望值 3.5（固定規則）	Expected value 3.5 (fixed rule)	
+空軍改用實際架數（航艦第 2 階段）：台灣約 321 架（2028 年起 387 架）、共軍東部戰區 300 架（推估）、遼寧與山東各 24 架殲-15、福建 30 架（推估）、美航艦 44 架打擊戰機；空軍點數改為有效架次（架數 × 妥善率 70% × 每日出擊率 × 半天 × 品質係數）÷ 34，雙方用同一套換算	Air forces now use real aircraft counts (carrier stage 2): Taiwan about 321 (387 from 2028), PLA Eastern Theater 300 (estimate), Liaoning and Shandong 24 J-15 each, Fujian 30 (estimate), each US carrier 44 strike fighters; air points are now effective sorties (aircraft × 70% availability × daily sortie rate × half a day × quality factor) ÷ 34, with the same conversion for both sides	
+空戰改用蘭徹斯特平方律：每回合各方損失＝2% × 出擊架次 × 敵我有效戰力比（推估），被擊落就永久減少；制空以有效戰力比 1.5 為優勢分界	Air combat now follows Lanchester's square law: each turn a side loses 2% × its sorties × the enemy-to-own effective strength ratio (estimate), and losses are permanent; air superiority starts at a 1.5 effective strength ratio	
+共軍空軍火力改為對地打擊架次 ÷ 10（依制空狀況分配 60%／40%／20%，推估）；原本整點扣空軍的事件改成實際架數（地面被毀、出擊折損，數字為推估）；空投損失的是運輸機，不再扣戰機；「疏散戰機」不再憑空 +1，改為第 1～2 回合不在地面挨炸	PLA air fire is now ground-attack sorties ÷ 10 (60%/40%/20% of sorties depending on air control, estimate); events that removed whole air points now remove real aircraft (destroyed on the ground or lost on sorties, estimates); airlift losses are transports and no longer reduce fighters; "Disperse aircraft" no longer adds +1 from nothing and instead keeps aircraft from being destroyed on the ground on turns 1–2	
+攻方戰機 −	Attacker fighters −	
+守方戰機 −	Defender fighters −	
+ 架	 aircraft	
+（其中艦載機 	 (of which carrier-based 	
+美航艦艦載機 −	US carrier aircraft −	
+，來不及撤離的守方戰機 −	: defender fighters unable to evacuate −	
+ 架（推估：該基地約四分之一）	 aircraft (estimate: about a quarter of that base)	
+出擊戰機折損，守方戰機 −	Sortie losses, defender fighters −	
+ 架（推估）	 aircraft (estimate)	
+，地面戰機 −	, aircraft on the ground −	
+ 架（推估：強化機堡外）	 aircraft (estimate: outside hardened shelters)	
+守方空軍出擊遭防空擊落 −	Defender air sortie shot down by air defense −	
+攻方地面戰機 −	Attacker aircraft on the ground −	
+守方戰機在地面被毀 −	Defender aircraft destroyed on the ground −	
+戰機分散到疏散機場與山洞機庫：第 1～2 回合不會在地面被炸毀（不新增戰機）；但地面支援較少，守方第 1 回合攻擊 −1。	Aircraft disperse to dispersal airfields and mountain hangars: none are destroyed on the ground on turns 1–2 (no aircraft added); but there is less ground support: defender attack −1 on turn 1.	
+戰機分散：第 1～2 回合不會在地面被炸毀	Aircraft dispersed: none destroyed on the ground on turns 1–2	
+攻方戰機 	Attacker fighters 	
+台灣戰機 	Taiwan fighters 	
+（有效戰力比 	 (effective strength ratio 	
+（有效戰力 	 (effective strength 	
+ 對 	 vs 	
+戰機實際架數：共軍東部戰區 	Actual fighter counts: PLA Eastern Theater 	
+ 架（推估）、共軍航艦艦載機 	 (estimate), PLA carrier aircraft 	
+ 架、台灣 	, Taiwan 	
+ 架、美航艦艦載機 	, US carrier aircraft 	
+ 架。空軍點數＝有效架次 ÷ 	. Air points = effective sorties ÷ 	
