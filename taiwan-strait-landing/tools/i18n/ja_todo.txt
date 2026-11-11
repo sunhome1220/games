@@ -1155,3 +1155,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 受創 −	damaged −
 未參戰或沒有損失	Did not join or no losses
  支	 groups
+結算時的控制權改為「需有實際兵力」：攻方必須在該格或相鄰格還有地面部隊，才算控制台北、主要港口等；部隊已被殲滅、沒有兵力的格子在結算前歸還守方，並寫進戰報。修正攻方地面部隊全滅、報告卻仍顯示攻方控制台北的矛盾。遊戲進行中的控制權規則不變	Control at settlement now requires actual forces: the attacker controls Taipei, major ports and other hexes only if it still has ground units in or next to them; hexes left with no forces revert to the defender before settlement and this is logged. Fixes reports that still showed the attacker holding Taipei after all its ground forces were destroyed. Control rules during play are unchanged
+結算：攻方已無兵力控制的地區歸還守方（	Settlement: areas the attacker no longer holds with forces revert to the defender (
+ 等 	 and others, 
+ 處）	 places)
