@@ -1628,3 +1628,21 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 圖例	Legend	
 取消打擊 	Cancel strike 	
 打擊大陸 	Strike mainland 	
+艦載機對地打擊：共軍艦載機的對地份額不再換算成火力點數，改成實際空襲作戰半徑內守方的陸地單位（部隊、飛彈車）與機場，戰機從航艦飛過去投彈；美軍艦載機可打作戰半徑內攻方在陸地上的任何單位，以及被攻方占領的港口。玩家操作時，點選航艦新增「艦載機對地」命令（可點單位或機場），沒用完的份額在結束階段自動出擊；對方還有防空時，出擊的戰機有機會被擊落	Carrier air ground strikes: the PLA carrier aircraft's ground share is no longer converted into fire points; it now really bombs the defender's land units (troops, missile launchers) and airfields within combat radius, with aircraft flying from the carrier to drop bombs. US carrier aircraft can hit any attacker unit on land within combat radius, plus ports the attacker has captured. When you play, selecting a carrier gives a new "Air wing ground strike" order (tap a unit or an airfield); unused allotment flies automatically when you end the phase; while the enemy still has air defense, strike aircraft can be shot down	
+艦載機對艦	Air wing vs ships	
+艦載機對地	Air wing vs ground	
+（本回合份額 	 (allotment this turn: 	
+ 次、可打 	 strikes, targets available: 	
+ 處	 	
+，作戰半徑內沒有目標	, no targets within combat radius	
+按下後點選地圖上打得到的目標（橘圈；對地也可以點機場）。沒用完的艦載機份額會在結束階段時自動出擊。	After pressing, tap a target you can reach (orange circle; for ground strikes you can also tap an airfield). Any unused air wing allotment flies automatically when you end the phase.	
+空襲機場 	Air strike on airfield 	
+空襲被占領的 	Air strike on captured 	
+：命中，卸載停擺 2 回合	: hit, unloading halted for 2 turns	
+空襲 	Air strike on 	
+：打中誘餌與空車，真正的飛彈發射車已機動轉移	: hit decoys and empty trucks; the real launchers have already moved	
+（被防空擊落 	 (shot down by air defense: 	
+對地空襲 	Ground strikes: 	
+ 次，命中 	 strikes, hits: 	
+（本回合對地份額剩 	 (ground allotment left this turn: 	
+ 次；參數為推估）	; parameters are estimates)	
