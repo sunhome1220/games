@@ -19,6 +19,7 @@
 事件 	Events 
 守方空軍 −1	Defender air force −1
 制空：	Air control: 
+ 次	 hits
 已癱瘓	Knocked out
 中方報復打擊	PRC retaliatory strike
  回合）	 more turn(s))
@@ -507,7 +508,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 灘頭堡已建立：要守住補給線	Beachhead established: hold the supply line
 補給線攻防：灘頭堡建立時提醒攻方要守住補給線；守方可每回合選「全力攻擊補給船艦」壓低攻方補給容量，攻方可選「集中護航補給船團」或「加緊運補」應對	Supply-line contest: the attacker is reminded to hold its supply line once a beachhead exists; each turn the defender can choose "all-out attack on the supply ships" to cut the attacker's supply capacity, and the attacker can answer with "concentrate escorts on the convoys" or "rush resupply"
 打擊大陸基地（	Strike mainland bases (
- 發）	 shot(s))
+ 發）	)
 請在上方（或下方）的「戰區圖」點選大陸基地（紅色圖形）進行長程打擊，每次消耗 1 發長程飛彈；這裡的台灣地圖不用點。打擊會讓中方報復。	Click a mainland base (red shape) on the Theater map to fire a long-range strike; each costs 1 long-range missile. No need to click this Taiwan map. Strikes provoke Chinese retaliation.
 修正「長程打擊」按鈕難懂：守方按鈕改稱「打擊大陸基地（N 發）」，提示說明目標在戰區圖；修正守方打擊模式下台灣地圖誤把我方單位畫上紅圈，並自動捲動到戰區圖。	Fixed the confusing long-range strike button: the defender button now reads 'Strike mainland bases (N shots)', the hint says targets are on the theater map; fixed own units wrongly ringed in red in defender strike mode and auto-scroll to the theater map.
 指揮官意圖	Commander's intent
@@ -1097,7 +1098,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 %：護航 	%: escorts 
  艘；皆為推估）	 ships; all estimates)
 反艦彈道飛彈（東風-21D／26）	anti-ship ballistic missile (DF-21D/26)
-美軍航艦打擊群在	US carrier strike group at 
+美軍航艦打擊群在	US carrier strike group hit in 
 受創（	damaged (
 ，艦載機出擊能力下降	, carrier air sortie capacity reduced
 共軍攻擊	PLA attack
@@ -1309,3 +1310,41 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 魚雷命中 	 torpedo hit 
  的共軍航艦群（−1 步）	 PLA carrier group (−1 step)
 攻擊航艦 	Carrier attacks: 
+新聞頭條改用這回合實際的戰果：寫出被擊沉與重創的船種、主要武器、地點（例如「台中外海」）與船上下落不明的官兵；航艦中彈寫出艦名、地點與武器；打擊大陸寫出命中的基地與影響。每種頭條有多種句型，依回合固定輪替	News headlines now use this turn's actual results: ship types sunk and damaged, the main weapons, the location (e.g. "off Taichung") and troops missing aboard; carrier hits name the ship, place and weapon; strikes on the mainland name the bases hit and the effect. Each headline has several wordings, rotated by turn
+血戰：	 battle: 
+共軍渡海船團在	PLA invasion convoy ambushed 
+遭伏擊，	, 
+先後命中 	 scored 
+火光沖天：	 ablaze: 
+；主要來自	; mainly from 
+守方集中火力打擊	Defenders concentrate fire on the convoy 
+的船團：	: 
+擊沉 	sunk 
+重創 	damaged 
+，船上約 	, about 
+下落不明	 aboard missing
+外海	 coast
+台灣東方海域	waters east of Taiwan
+台灣周邊海域	waters around Taiwan
+灘頭守軍火力	beach defenders' fire
+艦在	 in 
+被	 sunk by 
+擊沉，共軍剩 	; PLA carriers left: 
+海面一片油污	 an oil slick spreads
+命中，戰力下降	 hit, combat power reduced
+艦，艦載機出擊受影響	; air wing sorties affected
+美航艦中彈：	US carrier hit: 
+突破艦隊防空	 got through fleet air defense
+飛彈命中大陸 	 missiles hit mainland 
+大陸 	Mainland 
+ 遭	 struck by 
+打擊（	 (
+ 發命中 	 fired, hits: 
+對大陸發動 	 launch 
+ 次飛彈打擊，全部被攔截或落空	 missile strikes on the mainland; all intercepted or missed
+飛彈打擊大陸 	 missile strikes on mainland: 
+ 次，未見明顯戰果	; no clear results
+火箭軍發射能力下降	Rocket Force launch capacity reduced
+機場出擊能力下降	airbase sortie capacity reduced
+港口與艦隊受損	ports and fleet damaged
+集結部隊與船隻受損	staging troops and ships damaged
