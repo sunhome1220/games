@@ -1519,6 +1519,17 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 剛動員的後備旅攻防各 −1，從動員的守方階段到下一個攻方階段結束為止，之後恢復（依據：國防部指揮官表示整旅動員最大的瓶頸是裝備與人員編成；「一回合」為推估）。開局就在場的後備旅不受影響；表定攻防數值不變	A newly mobilized reserve brigade gets -1 attack and defense from the defender phase it mobilizes until the end of the next attacker phase, then recovers (basis: defense officials say equipment and unit assembly are the main bottleneck of full-brigade mobilization; 'one turn' is an estimate). Reserve brigades present at the start are unaffected; table values are unchanged.
 剛動員，裝備與人員編成中 攻防各 −1	Just mobilized, equipment and personnel still assembling: attack and defense -1 each
  完成動員（裝備與人員還在編成，攻防各 −1，到下一個攻方階段結束）	 (equipment and personnel still assembling: attack and defense -1 each until the end of the next attacker phase)
+岸置反艦飛彈改成一群分散的機動發射車（每單位約 8 輛，推估）：精準打擊命中只影響 1 輛，依毀傷評估分級——完全摧毀 50%、火力受損 30%（2 回合後修復）、機動受損 20%（無法轉移陣地，維持暴露到下一個攻方階段結束），比例為推估、以小數累計而非擲骰；可射的車少了，每階段發數跟著減少。地面戰鬥與先制打擊仍以步計，每步＝4 輛	Coastal anti-ship missiles are now a group of dispersed mobile launchers (about 8 per unit, estimated): a precision hit affects only 1 launcher and is graded by battle damage assessment: destroyed 50%, firepower kill 30% (repaired after 2 turns), mobility kill 20% (cannot relocate, stays exposed until the end of the next attacker phase). The shares are estimates, applied by fractional accumulation rather than dice. Fewer ready launchers mean fewer shots per phase. Ground combat and pre-emptive strikes still count steps; each step = 4 launchers.
+修正反艦飛彈存量扣除：每發 2 枚只扣 0.02 點（每點約 100 枚），原本扣 0.2 點＝20 枚與實際發射數不符；單位說明的射程改為約 8 格（160 km），與規則一致	Fixed anti-ship missile stock use: each shot of 2 missiles now costs 0.02 points (about 100 missiles per point); it used to cost 0.2 points = 20 missiles, which did not match what was fired. The unit description now gives the range as about 8 hexes (160 km), matching the rules.
+1 輛發射車被摧毀（剩 	1 launcher destroyed (
+ 輛）	 left)
+1 輛發射車機動受損，無法轉移陣地，整個單位到下一個攻方階段結束都維持暴露	1 launcher mobility-killed: cannot relocate, so the whole unit stays exposed until the end of the next attacker phase
+機動受損：維持暴露到下一個攻方階段結束	Mobility kill: stays exposed until the end of the next attacker phase
+火力受損	Firepower kill
+機動受損	Mobility kill
+−1 車	−1 launcher
+每單位約 8 輛發射車（推估），每階段最多 2 發、每發 2 枚，可射的車少了發數跟著減少；射程約 8 格（約 160 km），耗用「反艦飛彈」存量	About 8 launchers per unit (estimated); up to 2 shots per phase, 2 missiles each, fewer shots when fewer launchers are ready; range about 8 hexes (about 160 km); uses the anti-ship missile stock
+被精準打擊命中時只影響 1 輛，分成完全摧毀、火力受損（2 回合後修復）、機動受損（維持暴露）	A precision hit affects only 1 launcher: destroyed, firepower kill (repaired after 2 turns) or mobility kill (stays exposed)
 損失報告的戰機損失，改為分來源列出：空戰、地面（機場遭飛彈或空襲、被占領）、出擊時被防空擊落，以及隨航艦沉沒等其他損失。只是把既有的損失分類記錄與顯示，沒有改任何數字	Aircraft losses in the loss report are now broken down by source: air combat, on the ground (airfields hit by missiles or air raids, or captured), shot down by air defenses on sorties, and other losses such as going down with a sunk carrier. This only records and shows the existing losses by category; no numbers changed.
 被防空擊落	Shot down by air defense
 艦隊沉沒等	Lost with sunk fleet, etc.
