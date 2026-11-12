@@ -37,6 +37,7 @@
 、日本 	, Japan 
  次，命中 	 , hits: 
  艘	 ship(s)
+地面	On the ground
 美日參戰程度升高（若情境允許）	US/Japan entry levels rise (if the scenario allows)
 守方後備旅於 	Defender reserve brigade mobilized at 
 共軍	PLA 
@@ -1518,3 +1519,6 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 剛動員的後備旅攻防各 −1，從動員的守方階段到下一個攻方階段結束為止，之後恢復（依據：國防部指揮官表示整旅動員最大的瓶頸是裝備與人員編成；「一回合」為推估）。開局就在場的後備旅不受影響；表定攻防數值不變	A newly mobilized reserve brigade gets -1 attack and defense from the defender phase it mobilizes until the end of the next attacker phase, then recovers (basis: defense officials say equipment and unit assembly are the main bottleneck of full-brigade mobilization; 'one turn' is an estimate). Reserve brigades present at the start are unaffected; table values are unchanged.
 剛動員，裝備與人員編成中 攻防各 −1	Just mobilized, equipment and personnel still assembling: attack and defense -1 each
  完成動員（裝備與人員還在編成，攻防各 −1，到下一個攻方階段結束）	 (equipment and personnel still assembling: attack and defense -1 each until the end of the next attacker phase)
+損失報告的戰機損失，改為分來源列出：空戰、地面（機場遭飛彈或空襲、被占領）、出擊時被防空擊落，以及隨航艦沉沒等其他損失。只是把既有的損失分類記錄與顯示，沒有改任何數字	Aircraft losses in the loss report are now broken down by source: air combat, on the ground (airfields hit by missiles or air raids, or captured), shot down by air defenses on sorties, and other losses such as going down with a sunk carrier. This only records and shows the existing losses by category; no numbers changed.
+被防空擊落	Shot down by air defense
+艦隊沉沒等	Lost with sunk fleet, etc.
