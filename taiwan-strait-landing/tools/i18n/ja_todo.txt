@@ -1505,3 +1505,12 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 按下後點地圖上的大陸基地；會先警告升級後果。	After pressing, click a mainland base on the map; you will get an escalation warning first.
 打擊大陸本土會升高衝突：美軍每次打擊會讓中方累積 0.5 次回擊（美國尚未公開參戰、屬代理打擊時為 0.25），回擊的對象是美日基地與部隊；大陸的民間與經濟損失也會增加。確定要用戰斧巡弋飛彈打擊「	A strike on the mainland escalates the conflict: each US strike adds 0.5 of a counter-strike for China (0.25 while it is a proxy strike and the US has not openly joined), aimed at US/Japanese bases and forces; mainland civilian and economic losses also rise. Are you sure you want to hit '
 」嗎？	' with Tomahawks?
+精簡「戰前集結」頁文字：演習規模按鈕改為「小規模／中規模／空前大規模」（避免手機上被切掉），各項說明縮短；數字不變	Trimmed the 'Pre-war buildup' page text: exercise-scale buttons are now 'Small / Medium / Unprecedented' (no longer cut off on phones) and descriptions are shorter; numbers unchanged.
+集結越公開，台美日越早準備。	The more open the buildup, the sooner Taiwan, the US and Japan prepare.
+小規模	Small
+中規模	Medium
+空前大規模	Unprecedented
+同歷次環台軍演（單日約 150 架次、十幾艘軍艦）。識破約 15%。基準。	Same as past Taiwan-encircling drills (about 150 sorties a day, a dozen-plus ships). About 15% chance the defender sees through it. Baseline.
+超過歷次軍演。護航艦 +2（預先部署在海峽），識破約 45%。	Larger than past drills. Escorts +2 (pre-deployed in the Strait); about 45% chance of being seen through.
+近乎戰爭的規模。護航艦 +3、兩棲旅 +1，但識破約 85%。	Near-wartime scale. Escorts +3, amphibious brigade +1, but about 85% chance of being seen through.
+以軍演名義集結，雙方都只有部分預警。基準。	Buildup under the cover of a drill; both sides get only partial warning. Baseline.
