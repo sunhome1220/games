@@ -1617,3 +1617,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 疏散到東部外海：	Sortied off eastern Taiwan: 	
 分散到母港附近外海：	Dispersed offshore near home ports: 	
 戰略突襲：大型艦艇來不及出港，仍在母港	Strategic surprise: the large ships could not get out and remain in port	
+修正：手機的單位資訊卡內容很長（例如航艦艦隊）時下半部看不到、也捲不動。現在卡片內容可以用手指上下捲動，只有按住標題區（名稱與數值）才是拖曳；卡片最高可到畫面的 60%；艦隊表格改成固定欄寬，窄卡片也放得下	Fix: on phones, long unit cards (such as a carrier fleet) were cut off at the bottom and could not be scrolled. The card content now scrolls with a finger and only the header area (name and stats) drags the card; the card can be up to 60% of the screen tall; the fleet table uses fixed column widths so it fits narrow cards	
