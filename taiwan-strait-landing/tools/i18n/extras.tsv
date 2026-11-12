@@ -1623,3 +1623,8 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 美軍 戰鬥支援艦	US Navy combat support ship	
 補給	Supply	
 艦載機對艦打擊的動畫改成真的由戰機發射：2～3 架戰機從航艦飛出，飛到反艦飛彈射程前發射飛彈（LRASM 18 格、鷹擊-83K 11 格），飛彈從戰機位置飛向目標，有艦隊防空時照樣演出攔截；發射後戰機調頭返航。美軍艦載機的對地空襲也改成戰機從航艦飛過去投彈。結果依然等飛彈飛到才顯示	Carrier air strikes are now animated as real aircraft launches: 2-3 fighters leave the carrier, fly to just inside anti-ship missile range (LRASM 18 hexes, YJ-83K 11 hexes) and fire, the missiles fly from the aircraft to the target (with fleet air-defense interceptions shown as before), then the aircraft turn back. US carrier ground strikes are also shown as aircraft flying from the carrier to drop bombs. Results still appear only once the missiles arrive	
+移除「避風」按鈕（電腦代打時仍會自動避風）	Removed the "Shelter" button (computer-assisted turns still shelter ships automatically)	
+手機畫面優化：底部操作列按鈕文字簡短（火力打擊 145），「回到台灣」按鈕不再蓋住操作列；天候膠囊只在地圖看得到時顯示；指揮面板裡與操作列重複的按鈕藏起來；圖例預設收合	Phone layout polish: shorter bottom-bar button labels (Strike 145), the "back to Taiwan" button no longer covers the bar, the weather pill shows only while the map is visible, buttons duplicated between the command panel and the bar are hidden, and the legend is collapsed by default	
+圖例	Legend	
+取消打擊 	Cancel strike 	
+打擊大陸 	Strike mainland 	
