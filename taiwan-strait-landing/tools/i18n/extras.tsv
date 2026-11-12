@@ -1573,3 +1573,33 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 出雲級	Izumo-class	
 海自神盾艦	JMSDF Aegis destroyer	
 海自護衛艦	JMSDF destroyer	
+台灣海軍改成依真實編制的 6 個艦隊棋子：168 艦隊（蘇澳，基隆級＋濟陽級／新輕型巡防艦）、124 艦隊（左營，康定級）、131 艦隊（基隆，成功級）、146 艦隊（馬公，成功級＋派里級）、海蛟大隊南北（沱江級各 6＋光六快艇各 15）。組成依年份變化：濟陽級逐步除役、新輕型巡防艦 2028 年起加入。每個艦隊的防空、反艦飛彈與接戰數是全艦加總（★推估），開火時全艦隊齊射；每命中 1 枚損失 1 艘，火力與防空隨之下降。取代原本抽象的「守方海軍」點數	Taiwan's navy is now 6 fleet pieces following the real organization: 168th Fleet (Su'ao; Kee Lung class + Chi Yang class / new light frigates), 124th Fleet (Zuoying; Kang Ding class), 131st Fleet (Keelung; Cheng Kung class), 146th Fleet (Magong; Cheng Kung + Perry class), and the Hai Chiao group north and south (6 Tuo Chiang corvettes and 15 Kuang Hua VI boats each). Composition changes by year: the Chi Yang class retires and new light frigates join from 2028. Each fleet's air defense, anti-ship missiles and engagement capacity are the sum of its ships (★estimates); the whole fleet fires together, each hit sinks 1 ship, and firepower and air defense drop with it. Replaces the old abstract "defender navy" points	
+168 艦隊（蘇澳）	168th Fleet (Su'ao)	
+124 艦隊（左營）	124th Fleet (Zuoying)	
+131 艦隊（基隆）	131st Fleet (Keelung)	
+146 艦隊（馬公）	146th Fleet (Magong)	
+海蛟大隊（北）	Hai Chiao group (north)	
+海蛟大隊（南）	Hai Chiao group (south)	
+海蛟北	HC-N	
+海蛟南	HC-S	
+基隆級	Kee Lung class	
+成功級	Cheng Kung class	
+派里級	Perry class	
+康定級	Kang Ding class	
+濟陽級	Chi Yang class	
+新輕型巡防艦	new light frigate	
+沱江級	Tuo Chiang class	
+光六快艇	Kuang Hua VI boat	
+組成：	Composition: 	
+；防空飛彈 	; air-defense missiles 	
+ 枚（涵蓋 	 (coverage 	
+ 格）、反艦飛彈 	 hexes), anti-ship missiles 	
+ 格，每艘每次齊射 	 hexes, each ship fires 	
+齊射 	 fires 	
+ 枚反艦飛彈攻擊 	 anti-ship missiles at 	
+ 艘	 ship(s)	
+海軍艦艇	Naval ships	
+ 艘（開戰時 	 ships (at start: 	
+守方海軍遭攻方海空兵力打擊：	Defender navy hit by attacker air and naval forces: 	
+共軍潛艦擊沉守方艦艇：	PLA submarine sinks defender ship: 	
+攻方海空打擊	attacker air and naval strike	
