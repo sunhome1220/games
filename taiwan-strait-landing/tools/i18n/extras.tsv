@@ -1554,3 +1554,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 艦載機（指定目標）：	 air wing (chosen target): 	
 （本回合對艦份額剩 	 (anti-ship allotment left this turn: 	
  枚；參數為推估）	; parameters are estimates)	
+空戰動畫：編隊有一架被擊落後，剩下的飛機改成朝自己的基地飛走並漸漸淡出（先前用航向反轉，返航途中被擊中時會變成朝敵方飛過去再消失）	Air battle animation: after one aircraft in a formation is shot down, the rest now fly off toward their own base and fade out (previously their heading was simply reversed, so a formation hit on its way home flew toward the enemy before vanishing)	
