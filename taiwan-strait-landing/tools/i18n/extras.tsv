@@ -1446,3 +1446,20 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 海鯤潛艦高速航行 	Hai Kun moving at high speed: 	
  格（超過 	 hexes (over 	
  格），噪音大，下一次被反潛發現的機率加倍	 hexes); noisy, so the next detection chance is doubled	
+飛彈與攔截彈改成實際枚數：短程彈道飛彈約 900 枚（每回合最多 300 枚＝75 包，每包 4 枚）、PCH-191 長程火箭 ★1,440 枚（每回合 60 包，每包 8 枚，只打得到台灣西半部）；守方攔截彈約 1,086 枚（愛國者三型、二型、天弓三型），每枚來襲射 2 枚、每回合最多接戰 168 枚，只保護機場、港口與城市；飛彈打擊在實際打出時才扣存量	Missiles and interceptors now use real counts: about 900 short-range ballistic missiles (at most 300 per turn = 75 packages of 4), ★1,440 PCH-191 long-range rockets (60 packages of 8 per turn, reaching only western Taiwan); about 1,086 defender interceptors (Patriot PAC-3, PAC-2, Tien Kung III), 2 per incoming missile, at most 168 engagements per turn, protecting only airbases, ports and cities; missiles are deducted only when actually fired	
+打擊效果依目標類型：固定目標經過攔截；機動發射車維持誘餌機制；野外分散的地面部隊命中率 ★×0.3、海上移動的船 ★×0.1。守方防空點數改由攔截彈存量換算（每 250 枚＝1 點），不再直接扣攻方火力	Strike effects now depend on the target: fixed targets face interception; mobile launchers keep the decoy rule; dispersed field units ★×0.3 hit chance, moving ships at sea ★×0.1. The defender's air-defense points now come from the interceptor stock (250 per point) and no longer subtract directly from attacker fire	
+修正：反航母彈道飛彈改用東風-21D／26 的存量（先前誤用短程飛彈存量）	Fix: anti-carrier ballistic missiles now come from the DF-21D/26 stock (previously taken from the short-range missile stock)	
+短程彈道飛彈 	Short-range ballistic missiles 	
+ 包（每包 4 枚，存量 	 packages (4 each, stock 	
+ 枚）＋長程火箭 	) + long-range rockets 	
+ 包（每包 8 枚，只打得到台灣西半部，存量 	 packages (8 each, western Taiwan only, stock 	
+（守方攔截彈 	 (defender interceptors 	
+ 枚，每回合最多接戰 	, at most 	
+ 枚）	 engaged per turn)	
+短程彈道飛彈	short-range ballistic missiles	
+長程火箭	long-range rockets	
+ 枚，守方發射 	; defenders fire 	
+ 枚攔截彈，約 	 interceptors, about 	
+ 枚突破	 get through	
+；海上移動目標難以命中（×	; moving target at sea is hard to hit (×	
+；野外分散部隊（×	; dispersed field unit (×	
