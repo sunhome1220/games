@@ -1683,3 +1683,16 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 待命・美國尚未參戰	Standing by · US not yet in the war	
 航行中・第 	Underway · arrives turn 	
  回合抵達	 	
+新增設定「美日盟軍由誰操作」（守方玩家可選）：選「你操作」時，美日參戰後可以親自移動美航艦、護航艦、海自艦艇與攻擊潛艦，下達艦隊齊射、艦載機對艦／對地打擊、潛艦魚雷與魚叉、NMESIS／堤豐開火（陸基單位不能移動），以及戰斧巡弋飛彈打擊大陸（會先跳出升級警告）。沒下令的單位在結束階段由電腦代為行動，規則與數字都沿用現有設定；預設仍是電腦操作。	New setting 'Who commands the US/Japan forces' (for the defender): with 'You', once the US and Japan have joined you can move the US carrier, escorts, JMSDF ships and attack submarines, order fleet volleys, carrier-air strikes on ships or land, submarine torpedoes and Harpoons, NMESIS/Typhon fire (land units cannot move) and Tomahawk strikes on the mainland (with an escalation warning first). Units without orders are run by the computer at the end of the phase; rules and numbers are unchanged; the default is still computer control.	
+美日盟軍由誰操作	Who commands the US/Japan forces	
+美日艦隊與潛艦由電腦依戰況行動。	The computer runs the US and Japanese fleets and submarines according to the battle.	
+你操作	You	
+美日參戰後，你可以移動美航艦、護航艦、海自艦艇與攻擊潛艦，下達艦隊齊射、艦載機打擊與戰斧巡弋飛彈；沒下令的單位在結束階段由電腦代為行動。美日是否參戰仍由戰況決定。	Once the US and Japan join, you can move the US carrier, escorts, JMSDF ships and attack submarines and order fleet volleys, carrier-air strikes and Tomahawks; units without orders are run by the computer at the end of the phase. Whether they join is still decided by the battle.	
+美日盟軍由你操作：點選美航艦、護航艦、海自艦艇或攻擊潛艦，可移動與開火；沒下令的單位在你結束階段時由電腦代為行動。	The US/Japan forces are under your command: select the US carrier, escorts, JMSDF ships or attack submarines to move and fire; units without orders are run by the computer when you end the phase.	
+美日盟軍由你操作	US/Japan forces under your command	
+戰斧巡弋飛彈打擊大陸	Tomahawk strike on the mainland	
+（可發射 	（Can fire: 	
+ 艘、每次 	 ships, 	
+按下後點地圖上的大陸基地；會先警告升級後果。	After pressing, click a mainland base on the map; you will get an escalation warning first.	
+打擊大陸本土會升高衝突：美軍每次打擊會讓中方累積 0.5 次回擊（美國尚未公開參戰、屬代理打擊時為 0.25），回擊的對象是美日基地與部隊；大陸的民間與經濟損失也會增加。確定要用戰斧巡弋飛彈打擊「	A strike on the mainland escalates the conflict: each US strike adds 0.5 of a counter-strike for China (0.25 while it is a proxy strike and the US has not openly joined), aimed at US/Japanese bases and forces; mainland civilian and economic losses also rise. Are you sure you want to hit '	
+」嗎？	' with Tomahawks?	
