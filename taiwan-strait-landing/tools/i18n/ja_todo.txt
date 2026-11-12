@@ -1548,3 +1548,10 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 颱風，暴風半徑 	 typhoon, gale radius 
  km，距海峽 	 km, distance from the Strait 
 風浪（最大浪高 	Waves (max height 
+開戰時颱風逼近台灣海峽（中心距海峽在 2 倍暴風半徑加一天移動距離內），攻方會延後 D 日，每次 12 小時、最多 5 天（選「颱風季強渡」的賭注時不延後）	If a typhoon threatens the Taiwan Strait at the start (its center within twice the gale radius plus one day of movement), the attacker postpones D-day in 12-hour steps, up to 5 days (no delay if the 'typhoon-season crossing' gamble was chosen)
+避風改看所在海域：只有預報下一回合所在海域浪高達 2.2 公尺以上（颱風看預測路徑）的船艇才進港避風，守方艦艇出港也一樣	Sheltering now depends on each vessel's sea area: only vessels whose area is forecast to reach 2.2 m or more next turn (for typhoons, along the forecast track) head to port; the same applies to defender ship sorties
+颱風逼近台灣海峽：攻方將 D 日延後 	Typhoon approaching the Taiwan Strait: the attacker postpones D-day by 
+ 小時，等颱風遠離後才發起	 hours until the typhoon moves away
+颱風逼近：D 日延後 	Typhoon approaching: D-day postponed 
+預報下回合所在海域浪高達 2.2 公尺以上	waves in their area forecast to reach 2.2 m or more next turn
+颱風的預測位置會影響所在海域	 typhoon's forecast position will affect their area
