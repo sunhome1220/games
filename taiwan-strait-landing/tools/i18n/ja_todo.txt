@@ -1262,3 +1262,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 ＋艦射對地巡弋飛彈 	 + ship-launched land-attack cruise missiles 
 共軍潛艦突破反潛屏障，魚雷擊傷 	PLA submarine penetrated the ASW screen and torpedoed 
 共軍潛艦魚雷	PLA submarine torpedo
+海上移動依船種區分（每回合 12 小時的有效推進）：船團與運兵船維持依天候 5／4／2 格（要編隊、走掃雷航道、配合護航）；護航艦、航艦與守方艦艇 ★天候格數 +2；海鯤潛艦不受浪高影響，3 格以內為安靜潛航，最多 ★5 格，但超過 3 格（高速或呼吸管航行）下一次被反潛發現的機率加倍	Sea movement now depends on ship type (effective progress over a 12-hour turn): convoys and troop ships keep the weather-based 5/4/2 hexes (forming up, swept lanes, escort); escorts, carriers and defender warships get ★weather +2; Hai Kun submarines are unaffected by waves, move quietly up to 3 hexes and at most ★5, but moving more than 3 (high speed or snorkeling) doubles the chance of being detected next time
+海鯤潛艦高速航行 	Hai Kun moving at high speed: 
+ 格（超過 	 hexes (over 
+ 格），噪音大，下一次被反潛發現的機率加倍	 hexes); noisy, so the next detection chance is doubled
