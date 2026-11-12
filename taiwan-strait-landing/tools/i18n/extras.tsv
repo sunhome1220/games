@@ -1668,3 +1668,14 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
  格，跟著航艦行動	 hexes per turn, travels with the carrier	
 部署在日本領土，只能被基地打擊；	Deployed on Japanese territory; can only be hit by base strikes; 	
 美軍攻擊潛艦	US attack submarine	
+「反制先制打擊」的「被打了什麼」改成統計摘要：火力打擊次數與命中、受損的機場、海軍損失（艦隊名稱與艘數）、守方部隊損失、空降地點、地面戰機損失，每類一行；不再把戰報原文截成半句	In "Counter the opening strike", "What was hit" is now a statistical summary: fire strikes and hits, damaged airfields, naval losses (fleet names and ships), defender unit losses, airdrop locations and aircraft lost on the ground, one line per category; log lines are no longer cut off mid-sentence	
+・火力打擊 	・Fire strikes: 	
+ 次，命中 	 , hits: 	
+；機場受損：	; airfields damaged: 	
+海軍損失 	Naval losses: 	
+守方部隊與飛彈車損失 	Defender troops and launcher losses: 	
+空降：	Airdrop: 	
+守方地面戰機損失 	Defender aircraft lost on the ground: 	
+，結果：	, result: 	
+攻方打擊	Attacker strike	
+目前守方：空軍 	Defender now: air force 	
