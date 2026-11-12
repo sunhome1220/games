@@ -42,6 +42,7 @@
 守方後備旅於 	Defender reserve brigade mobilized at 
 共軍	PLA 
 潛艦	Submarines
+台灣海峽	Taiwan Strait
 作戰結束	Operation ended
 步數	Steps
 關閉	Close
@@ -1533,3 +1534,17 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 損失報告的戰機損失，改為分來源列出：空戰、地面（機場遭飛彈或空襲、被占領）、出擊時被防空擊落，以及隨航艦沉沒等其他損失。只是把既有的損失分類記錄與顯示，沒有改任何數字	Aircraft losses in the loss report are now broken down by source: air combat, on the ground (airfields hit by missiles or air raids, or captured), shot down by air defenses on sorties, and other losses such as going down with a sunk carrier. This only records and shows the existing losses by category; no numbers changed.
 被防空擊落	Shot down by air defense
 艦隊沉沒等	Lost with sunk fleet, etc.
+天氣分區：台灣海峽、北部、東部、巴士海峽各有自己的浪高（海峽為基準，依季風季節乘上係數，推估），地圖上標示各海域浪高；海上移動、搶灘、卸載、風浪損耗與艦艇出港都改看所在海域的浪高	Weather zones: the Taiwan Strait, northern waters, eastern waters and the Bashi Channel each have their own wave height (the Strait is the baseline; other zones apply seasonal monsoon factors, estimated), shown on the map; sea movement, beach assaults, unloading, wave attrition and ship sorties now use the local wave height
+颱風改成會移動的實體並畫在地圖上：自菲律賓海生成、往西北移動後轉北轉東北（轉向緯度隨機），依氣象署分級（輕度／中度／強烈）與 7 級風暴風半徑，顯示中心、暴風圈、走過的路徑與下一回合預測位置；浪高依與中心的距離（暴風圈邊緣 4 公尺、往中心增加），穿越台灣本島後減弱一級、登陸大陸後消散	Typhoons are now moving systems drawn on the map: they form in the Philippine Sea, head northwest and then recurve north and northeast (at a random latitude), with CWA intensity classes (mild/moderate/strong) and gale-force radius; the map shows the center, storm circle, past track and next-turn forecast. Wave height depends on distance from the center (4 m at the storm edge, rising toward the center); crossing Taiwan weakens a typhoon by one class and landfall in mainland China dissipates it
+北部海域	Northern waters
+東部海域	Eastern waters
+巴士海峽	Bashi Channel
+輕度	Mild
+中度	Moderate
+強烈	Strong
+颱風・暴風半徑 	 typhoon · gale radius 
+【天候・台灣海峽】	[Weather · Taiwan Strait] 
+（各海域：	(by zone: 
+颱風，暴風半徑 	 typhoon, gale radius 
+ km，距海峽 	 km, distance from the Strait 
+風浪（最大浪高 	Waves (max height 
