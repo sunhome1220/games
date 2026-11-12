@@ -1486,3 +1486,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
  架、每回合約 	 aircraft, about 	
  架次；任務：制空 	 sorties per turn; tasking: air superiority 	
 在東風-21D／26 反艦彈道飛彈範圍內（存量 	Within DF-21D/26 anti-ship ballistic missile range (stock 	
+修正：潛艦海戰與抽象反艦打擊命中共軍航艦時，先前直接把「航艦數量」減 1，地圖上的航艦棋子卻還在。現在地圖上有航艦棋子時會真的打在棋子上：魚雷命中扣 1 步（與海鯤魚雷一致）、反艦飛彈先過艦隊防空（齊射模型）、每 2 枚命中扣 1 步；只有不在地圖上的航艦（第 4 艘）才直接減數量	Fix: submarine engagements and abstract anti-ship strikes used to reduce the PLA carrier count directly while the carrier piece stayed on the map. Now, when carrier pieces are on the map, hits land on a piece: a torpedo hit costs 1 step (as with Hai Kun torpedoes), and anti-ship missiles must get through fleet air defense (salvo model), with a carrier losing 1 step per 2 hits; only carriers not on the map (the 4th) are removed from the count directly	
+魚雷命中 	 torpedo hit 	
+ 的共軍航艦群（−1 步）	 PLA carrier group (−1 step)	
+攻擊航艦 	Carrier attacks: 	
