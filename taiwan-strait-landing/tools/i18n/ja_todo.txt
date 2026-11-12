@@ -14,6 +14,7 @@
 守方決定性勝利	Decisive defender victory
  個港口遭自行破壞	 ports were demolished by the defender
 攻方達成 	The attacker met 
+防空	Air def.
 海自 護衛隊群	JMSDF escort group
 事件 	Events 
 守方空軍 −1	Defender air force −1
@@ -35,6 +36,7 @@
 共軍	PLA 
 潛艦	Submarines
 作戰結束	Operation ended
+步數	Steps
 關閉	Close
 雙方都操作	You played both sides
 判定	Ruling
@@ -1282,3 +1284,24 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
  枚突破	 get through
 ；海上移動目標難以命中（×	; moving target at sea is hard to hit (×
 ；野外分散部隊（×	; dispersed field unit (×
+航艦艦隊第 3d 階段：射程圈與艦隊資訊面板。點選航艦會在地圖上畫出艦載機作戰半徑、對艦打擊距離與整個艦隊的防空傘；點選護航艦畫出它的防空範圍與反艦飛彈射程（依格數距離畫成六角形，與能不能打到完全一致）。地圖工具列新增「射程」按鈕，一鍵顯示雙方所有航艦艦隊的防空傘與對艦打擊距離	Carrier fleet stage 3d: range rings and a fleet panel. Selecting a carrier draws its air wing's combat radius, anti-ship strike reach and the fleet's air-defense umbrella; selecting an escort draws its air-defense coverage and anti-ship missile range (drawn as hexagons by hex distance, exactly matching what can be hit). A new "Range" map button shows every carrier group's umbrella and anti-ship reach for both sides at once
+點選航艦時，資訊欄列出航艦與每艘護航艦的步數與防空、反艦、對地飛彈存量、艦載機架數與任務分配，以及目前在對方哪些武器射程內、離射程邊緣還有幾格	When a carrier is selected, the info panel lists the carrier and each escort's steps and air-defense, anti-ship and land-attack missile stocks, the air wing's aircraft and tasking, and which enemy weapons currently have it in range (or how many hexes outside range it is)
+射程	Range
+顯示雙方航艦艦隊的防空傘與艦載機對艦打擊距離	Show both sides' carrier-group air-defense umbrellas and anti-ship strike reach
+艦載機作戰半徑 	Air wing combat radius 
+對艦打擊距離 	Anti-ship strike reach 
+防空傘	Air-defense umbrella
+防空 	Air defense 
+艦	Ship
+反艦	Anti-ship
+對地	Land attack
+威脅	Threats
+在	Within 
+射程內（距離 	 range (distance 
+ 格／射程 	 hexes / range 
+：射程外 	: out of range by 
+守方岸置反艦飛彈	Defender coastal anti-ship missiles
+目前沒有已知的對方反艦武器在附近。	No known enemy anti-ship weapons nearby.
+ 架、每回合約 	 aircraft, about 
+ 架次；任務：制空 	 sorties per turn; tasking: air superiority 
+在東風-21D／26 反艦彈道飛彈範圍內（存量 	Within DF-21D/26 anti-ship ballistic missile range (stock 
