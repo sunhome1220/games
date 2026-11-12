@@ -1603,3 +1603,17 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 守方海軍遭攻方海空兵力打擊：	Defender navy hit by attacker air and naval forces: 	
 共軍潛艦擊沉守方艦艇：	PLA submarine sinks defender ship: 	
 攻方海空打擊	attacker air and naval strike	
+守方戰前準備新增「海軍部署」：留港備戰、出港疏散到東部外海（花蓮、台東外海）、分散到母港附近外海。在海上的船彈道飛彈很難命中，但沒有港口防空；戰略突襲時只有海蛟大隊來得及出港。選「電腦決定」時依預警程度挑選（預警充分→東部外海、演習掩護→分散、突襲→留港）	New defender preparation "Naval deployment": stay in port, sortie to the waters off eastern Taiwan (Hualien, Taitung), or disperse offshore near home ports. Ships at sea are hard for ballistic missiles to hit but lose port air defense; under strategic surprise only the Hai Chiao group gets out in time. "Computer decides" picks by warning level (ample warning → east coast, exercise cover → disperse, surprise → stay in port)	
+海軍部署	Naval deployment	
+台灣海軍 6 個艦隊平時停在母港。開戰第一波飛彈會打固定目標（港口）；在海上移動的船，彈道飛彈很難命中。	Taiwan's 6 fleets normally sit in their home ports. The opening missile wave hits fixed targets (ports); ballistic missiles struggle to hit ships moving at sea.	
+這次是戰略突襲，大型艦艇來不及出港，只有海蛟大隊能及時疏散。	This is a strategic surprise: the large ships cannot get out in time; only the Hai Chiao group can disperse.	
+留港備戰	Stay in port	
+艦隊留在母港，有港口防空保護、補給方便；但開戰第一波飛彈會直接打到港內的船。	Fleets stay in their home ports under port air defense and easy resupply, but the opening missile wave hits the ships in port directly.	
+出港疏散到東部外海	Sortie to waters off eastern Taiwan	
+艦隊移到花蓮、台東外海（中央山脈屏障、遠離海峽），在海上移動時彈道飛彈很難命中（★×0.1）；但沒有港口防空、離海峽較遠，而且共軍航艦艦隊在東側活動。預警有限（戰略突襲）時只有海蛟大隊來得及出港。	Fleets move off Hualien and Taitung (shielded by the Central Range, away from the Strait); moving at sea they are hard for ballistic missiles to hit (★×0.1), but they lose port air defense, are farther from the Strait, and PLA carrier groups operate to the east. With limited warning (strategic surprise) only the Hai Chiao group gets out in time.	
+分散到母港附近外海	Disperse offshore near home ports	
+各艦隊分散到母港附近 2 格內的外海，彈道飛彈很難命中；離戰場近、出擊快，但同樣沒有港口防空。預警有限（戰略突襲）時只有海蛟大隊來得及出港。	Each fleet disperses to waters within 2 hexes of its home port, hard for ballistic missiles to hit; close to the fight and quick to strike, but likewise without port air defense. With limited warning (strategic surprise) only the Hai Chiao group gets out in time.	
+台灣海軍艦隊留在母港	Taiwan's fleets stay in port	
+疏散到東部外海：	Sortied off eastern Taiwan: 	
+分散到母港附近外海：	Dispersed offshore near home ports: 	
+戰略突襲：大型艦艇來不及出港，仍在母港	Strategic surprise: the large ships could not get out and remain in port	
