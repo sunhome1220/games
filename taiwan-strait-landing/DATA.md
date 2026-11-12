@@ -56,6 +56,7 @@
 | 潛艦 | 「潛艦」點數（2026 年 3，2032 年 6），在海峽與西太平洋攻擊美日艦艇與守方海軍 | 公開報導共軍潛艦總數已超過 60 艘；IISS《Military Balance 2025》估計核動力潛艦 12 艘（彈道飛彈潛艦 6、攻擊／巡弋飛彈潛艦 6）；Type 093B 被稱為最具戰力的攻擊潛艦。**沒有找到投入台海方向的確切數量**，點數只表示相對規模 |
 | 巡弋飛彈 | 「巡弋飛彈」點數，每回合最多 1～2 點，被守方防空攔截較多 | CJ-20（長劍-20）可由轟-6K 攜載，轟-6K 戰鬥半徑報導超過 3,500 公里；演習中也曾見轟-6K 攜 YJ-12、YJ-21（未證實的報導）。**沒有找到官方庫存數量**，點數只表示相對規模 |
 | 其他 | 美國國防部 2025 年中國軍力報告 | 稱共軍高超音速飛彈居世界之冠；東風-27 已服役 |
+| 無人機（遊戲尚未模擬） | 共軍無人機目前沒有任何表示；守方只有一個抽象的「無人機與巡飛彈」點數（各年代 1～3 點，每回合最多 3 次攻擊共軍船團） | 路透社調查（台灣新聞轉載）：共軍無人機有 50 多種型號，估計達數萬；2025 年 IISS 估計軍用無人機 3,000 架以上（轉述，未見原文，與前者口徑不同）；年產能上限約 2 萬架（2025 年文章用招標與衛星影像推測，不是官方數字）；台海附近機場已部署約 200 架以上舊戰機改裝無人機（Mitchell Institute 報告經路透社報導），陸委會稱可改裝超過 500 架；2025 年共軍測試蜂群，九天無人機母機可載 100～150 架小型彈藥（CNA），但蜂群是否進入部隊未確認。沒有找到：官方庫存、東部戰區無人機數量、FPV 或單向攻擊無人機的年產量 |
 
 ## 來源
 
@@ -67,6 +68,7 @@
 - 東風-26 數量：<https://www.tandfonline.com/doi/full/10.1080/00963402.2025.2467011>（Bulletin of the Atomic Scientists, Chinese nuclear weapons, 2025）
 - PHL-16／PCH-191：<https://en.wikipedia.org/wiki/PHL-16>、<https://ssi.armywarcollege.edu/SSI-Media/Recent-Publications/Article/3622541/china-maritime-report-no-32-the-pch191-modular-long-range-rocket-launcher-resha/>
 - 美國國防部 2025 年中國軍力報告摘要：<https://fas.org/publication/the-pentagons-slimmed-down-2025-china-military-power-report/>
+- 共軍無人機：<https://www.taiwannews.com.tw/en/news/6364427>、<https://www.defenseone.com/ideas/2025/06/chinas-drone-arsenal-shows-power-civil-military-fusion/406118>、<https://www.cna.org/our-media/indepth/2025/09/china-readies-drone-swarms-for-future-war>、<https://drone-warfare.com/research/pla-drone-swarm/>、<https://interestingengineering.com/military/china-can-meet-only-60-of-wartime-drone-demand-study-finds>
 
 ## 美軍立場的基本假設
 
@@ -170,4 +172,5 @@
 
 - 沒有找到官方公布的雲峰、東風-26 的確切庫存，遊戲中的點數只用來表達「多／少」與成長趨勢。
 - 沒有納入的項目：電子戰與網路攻擊、台灣的 M1A2T、NASAMS、天弓四型（資料不足或已包含在抽象點數中）。
+- 待查證：共軍無人機（偵察、誘餌、自殺攻擊、舊戰機改裝）公開資料只有數量級，沒有逐年逐型號的可靠數字，遊戲尚未模擬；台灣自己的無人機點數（1～3）也沒有精確依據。
 - 數值經過電腦對打校準，讓各年代的勝率隨年代平順變化；校準是為了遊戲平衡，不是為了預測戰爭結果。
