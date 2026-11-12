@@ -1720,3 +1720,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 −1 車	−1 launcher	
 每單位約 8 輛發射車（推估），每階段最多 2 發、每發 2 枚，可射的車少了發數跟著減少；射程約 8 格（約 160 km），耗用「反艦飛彈」存量	About 8 launchers per unit (estimated); up to 2 shots per phase, 2 missiles each, fewer shots when fewer launchers are ready; range about 8 hexes (about 160 km); uses the anti-ship missile stock	
 被精準打擊命中時只影響 1 輛，分成完全摧毀、火力受損（2 回合後修復）、機動受損（維持暴露）	A precision hit affects only 1 launcher: destroyed, firepower kill (repaired after 2 turns) or mobility kill (stays exposed)	
+損失報告的戰機損失，改為分來源列出：空戰、地面（機場遭飛彈或空襲、被占領）、出擊時被防空擊落，以及隨航艦沉沒等其他損失。只是把既有的損失分類記錄與顯示，沒有改任何數字	Aircraft losses in the loss report are now broken down by source: air combat, on the ground (airfields hit by missiles or air raids, or captured), shot down by air defenses on sorties, and other losses such as going down with a sunk carrier. This only records and shows the existing losses by category; no numbers changed.	
+地面	On the ground	
+被防空擊落	Shot down by air defense	
+艦隊沉沒等	Lost with sunk fleet, etc.	
