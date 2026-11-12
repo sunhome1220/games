@@ -1544,3 +1544,13 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 抵達	 arrives	
 美國第 	US carrier strike group No. 	
  支航艦打擊群抵達台灣東方海域，艦載機與護航艦加入作戰。	 has arrived east of Taiwan; its aircraft and escorts join the fight.	
+玩家操作攻方時，點選共軍航艦可以下達兩種命令：「艦隊齊射」讓射程內所有護航艦一起打同一個目標（飽和對方防空）；「艦載機打擊」用本回合的對艦份額打指定目標。沒用完的艦載機份額在結束階段時自動出擊；電腦操作時照舊在回合開始自動出擊	When you play the attacker, selecting a PLA carrier gives two orders: "Fleet volley" makes every escort in range fire at the same target together (saturating its air defense), and "Air wing strike" spends this turn's anti-ship allotment on a target you pick. Any unused allotment flies automatically when you end the phase; under computer control the wing still strikes automatically at the start of the turn	
+艦隊齊射	Fleet volley	
+ 艘可射、射程內目標 	 ships ready, targets in range: 	
+艦載機打擊	Air wing strike	
+（本回合對艦份額 	 (anti-ship allotment this turn: 	
+，打擊距離內沒有目標	, no targets within strike range	
+按下後點選地圖上打得到的敵艦（橘圈）。沒用完的艦載機份額會在結束階段時自動出擊。	After pressing, tap an enemy ship you can reach (orange circle). Any unused air wing allotment flies automatically when you end the phase.	
+艦載機（指定目標）：	 air wing (chosen target): 	
+（本回合對艦份額剩 	 (anti-ship allotment left this turn: 	
+ 枚；參數為推估）	; parameters are estimates)	
