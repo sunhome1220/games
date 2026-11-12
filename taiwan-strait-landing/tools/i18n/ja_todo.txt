@@ -1250,3 +1250,15 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 天候：點一下看說明；拖曳移動，靠近邊緣或角落會吸附	Weather: tap for details; drag to move, it snaps to edges and corners
 颱風	Typhoon
 移動 	Move 
+航艦艦隊第 3c 階段：對地巡弋飛彈與反潛。美軍護航艦用實際庫存的戰斧（每次 ★4 枚）先打攻方在台灣的灘頭補給站與被占領的港口，再打大陸基地；共軍 055／052D 每回合各發射 4 枚對地巡弋飛彈，換算 1 點火力	Carrier fleet stage 3c: land-attack cruise missiles and anti-submarine warfare. US escorts fire Tomahawks from their actual magazines (★4 per strike), first at the attacker's beachhead supply depots and captured ports on Taiwan, then at mainland bases; each PLA Type 055/052D fires 4 land-attack cruise missiles per turn, counted as 1 fire point
+反潛：054A、055、052D 依型別有不同的潛艦發現率（★35%／30%／25%），艦載直升機把搜索範圍擴大到 6 格；海鯤魚雷打航艦時，每艘在 2 格內的新護航艦命中率 −5%	ASW: Type 054A, 055 and 052D detect submarines at different rates (★35%/30%/25%), and shipborne helicopters extend the search to 6 hexes; when Hai Kun torpedoes a carrier, each new escort within 2 hexes lowers the hit chance by 5%
+共軍潛艦打美航艦：命中率與被擊沉機率改依美方護航艦數與 MH-60R 直升機架數計算（★推估），命中時扣地圖上美航艦棋子的步數	PLA submarines vs the US carrier: hit and loss chances now depend on the number of US escorts and MH-60R helicopters (★estimates), and a hit takes a step off the US carrier piece on the map
+ 枚戰斧巡弋飛彈攻擊 	 Tomahawk cruise missiles at 
+ 枚戰斧巡弋飛彈打擊大陸（剩 	 Tomahawk cruise missiles at the mainland ( left: 
+灘頭補給站（	beachhead supply depot (
+被占領的 	captured 
+：命中，港口卸載停擺 2 回合	: hit, port unloading halted for 2 turns
+戰斧巡弋飛彈	Tomahawk cruise missile
+＋艦射對地巡弋飛彈 	 + ship-launched land-attack cruise missiles 
+共軍潛艦突破反潛屏障，魚雷擊傷 	PLA submarine penetrated the ASW screen and torpedoed 
+共軍潛艦魚雷	PLA submarine torpedo
