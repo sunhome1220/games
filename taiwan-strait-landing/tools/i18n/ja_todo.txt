@@ -1371,3 +1371,21 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 （本回合對艦份額剩 	 (anti-ship allotment left this turn: 
  枚；參數為推估）	; parameters are estimates)
 空戰動畫：編隊有一架被擊落後，剩下的飛機改成朝自己的基地飛走並漸漸淡出（先前用航向反轉，返航途中被擊中時會變成朝敵方飛過去再消失）	Air battle animation: after one aircraft in a formation is shot down, the rest now fly off toward their own base and fade out (previously their heading was simply reversed, so a formation hit on its way home flew toward the enemy before vanishing)
+海自護衛隊群改成地圖棋子：出雲級直升機護衛艦（2027 年起搭載 F-35B ★約 10 架，加入制空）、神盾護衛艦 2 艘（標準飛彈 ★80 枚、涵蓋 8 格；90 式反艦飛彈 ★8 枚、射程 ★10 格）、通用護衛艦 1 艘（代表其餘 5 艘）。日本參戰後 1 回合在石垣島南方海域進場，由電腦操作掩護先島群島，射程內有共軍艦艇就協同齊射；可以被擊沉，全數沉沒時發頭條。棋子在場時取代原本抽象的海自出擊	The JMSDF escort flotilla is now on the map: an Izumo-class helicopter destroyer (carrying ★about 10 F-35Bs from 2027, joining the air battle), 2 Aegis destroyers (★80 Standard missiles covering 8 hexes; ★8 Type 90 anti-ship missiles, ★10-hex range) and 1 general-purpose destroyer (standing for the other 5). It enters 1 turn after Japan joins, run by the computer to cover the Sakishima Islands, and fires coordinated salvos at PLA ships in range; its ships can be sunk, with a headline if all are lost. While on the map it replaces the old abstract JMSDF strikes
+海自 出雲級直升機護衛艦	JMSDF Izumo-class helicopter destroyer
+海自 神盾護衛艦（摩耶級／愛宕級）	JMSDF Aegis destroyer (Maya/Atago class)
+海自 通用護衛艦（代表其餘 5 艘）	JMSDF general-purpose destroyer (stands for 5)
+出雲	Izumo
+神盾	Aegis
+護衛艦	Destroyer
+90 式反艦飛彈	Type 90 anti-ship missile
+海自護衛隊群自沖繩東南方進入戰區（出雲級、神盾艦 2、通用護衛艦 1；地圖棋子，由電腦操作）	JMSDF escort flotilla enters from southeast of Okinawa (Izumo class, 2 Aegis destroyers, 1 destroyer; map pieces run by the computer)
+海自護衛隊群撤離戰區	JMSDF escort flotilla withdraws
+海自護衛隊群全數被擊沉	JMSDF escort flotilla entirely sunk
+海自護衛隊群覆沒	JMSDF flotilla wiped out
+日本海上自衛隊的護衛隊群在先島群島海域全數被擊沉，日本國內震動。	The JMSDF escort flotilla was entirely sunk near the Sakishima Islands; Japan is shaken.
+共軍潛艦魚雷命中 	PLA submarine torpedo hits 
+海自艦艇	JMSDF ships
+出雲級	Izumo-class
+海自神盾艦	JMSDF Aegis destroyer
+海自護衛艦	JMSDF destroyer
