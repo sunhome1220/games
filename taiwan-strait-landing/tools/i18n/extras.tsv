@@ -1705,3 +1705,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 超過歷次軍演。護航艦 +2（預先部署在海峽），識破約 45%。	Larger than past drills. Escorts +2 (pre-deployed in the Strait); about 45% chance of being seen through.	
 近乎戰爭的規模。護航艦 +3、兩棲旅 +1，但識破約 85%。	Near-wartime scale. Escorts +3, amphibious brigade +1, but about 85% chance of being seen through.	
 以軍演名義集結，雙方都只有部分預警。基準。	Buildup under the cover of a drill; both sides get only partial warning. Baseline.	
+剛動員的後備旅攻防各 −1，從動員的守方階段到下一個攻方階段結束為止，之後恢復（依據：國防部指揮官表示整旅動員最大的瓶頸是裝備與人員編成；「一回合」為推估）。開局就在場的後備旅不受影響；表定攻防數值不變	A newly mobilized reserve brigade gets -1 attack and defense from the defender phase it mobilizes until the end of the next attacker phase, then recovers (basis: defense officials say equipment and unit assembly are the main bottleneck of full-brigade mobilization; 'one turn' is an estimate). Reserve brigades present at the start are unaffected; table values are unchanged.	
+剛動員，裝備與人員編成中 攻防各 −1	Just mobilized, equipment and personnel still assembling: attack and defense -1 each	
+守方後備旅於 	Defender reserve brigade mobilized at 	
+ 完成動員（裝備與人員還在編成，攻防各 −1，到下一個攻方階段結束）	 (equipment and personnel still assembling: attack and defense -1 each until the end of the next attacker phase)	
