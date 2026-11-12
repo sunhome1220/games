@@ -1489,3 +1489,6 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 ，結果：	, result: 
 攻方打擊	Attacker strike
 目前守方：空軍 	Defender now: air force 
+還沒進場的美航艦艦隊，改在預定位置畫出半透明的整支編組（航艦、4 艘護航艦、補給艦、潛艦），並標示「待命・美國尚未參戰」或「航行中・第 N 回合抵達」；第 2 支一開始就看得到，第 3 支（自夏威夷調派）派出後才出現。只是顯示，不影響規則；抵達時換成真的棋子，位置不變。取代原本單一的示意圖示	US carrier groups not yet on the map are now drawn as translucent full formations (carrier, 4 escorts, supply ship, submarine) at their planned positions, labelled 'Standing by · US not yet in the war' or 'Underway · arrives turn N'. The 2nd group is visible from the start; the 3rd (sent from Hawaii) appears only once dispatched. Display only, no rule change; on arrival they become real pieces in the same place. Replaces the single abstract icon.
+待命・美國尚未參戰	Standing by · US not yet in the war
+航行中・第 	Underway · arrives turn 
