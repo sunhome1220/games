@@ -1646,3 +1646,25 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
  次，命中 	 strikes, hits: 	
 （本回合對地份額剩 	 (ground allotment left this turn: 	
  次；參數為推估）	; parameters are estimates)	
+美軍攻擊潛艦改成地圖上的隱蔽棋子（規則同海鯤：開火暴露、被護航艦發現才現身、無法被火力打擊）：每支航艦打擊群隨行 1 艘，另有 1 艘獨立在台灣東南外海；★魚雷 12 枚、魚叉 4 枚、戰斧 12 枚	US attack submarines are now hidden map pieces (same rules as Hai Kun: revealed by firing or by escort detection, immune to fire strikes): each carrier strike group has 1 escorting it plus 1 independent boat southeast of Taiwan; ★12 torpedoes, 4 Harpoons, 12 Tomahawks	
+2028 年起，陸戰隊濱海團（NMESIS，★8 枚、射程 9 格）與陸軍多域特遣隊（堤豐：戰斧 ★4、標準六型 ★6／12 格）成為日本先島群島陸地格上的棋子，只能被基地打擊（保留升級判定）；原本抽象的美軍潛艦、陸戰隊與陸軍單位在棋子在場時不再抽象出擊	From 2028 the Marine Littoral Regiment (NMESIS, ★8 missiles, 9-hex range) and the Army Multi-Domain Task Force (Typhon: Tomahawk ★4, SM-6 ★6 at 12 hexes) are pieces on the Japanese Sakishima land hexes and can only be hit by base strikes (escalation rules kept); the old abstract US sub, Marine and Army units no longer strike abstractly while their pieces are on the map	
+美軍 攻擊潛艦	US attack submarine	
+美陸戰隊 NMESIS 反艦飛彈	US Marine NMESIS anti-ship missiles	
+美陸軍 堤豐（多域特遣隊）	US Army Typhon (Multi-Domain Task Force)	
+進入台灣東南外海（隱蔽，地圖棋子由電腦操作）	enters the waters southeast of Taiwan (hidden; map piece run by the computer)	
+美軍攻擊潛艦進入台灣東南外海（隱蔽，地圖棋子由電腦操作）	US attack submarine enters the waters southeast of Taiwan (hidden; map piece run by the computer)	
+部署在 	deployed at 	
+（日本領土；地圖棋子）	 (Japanese territory; map piece)	
+海軍打擊飛彈（NMESIS）	Naval Strike Missile (NMESIS)	
+標準六型飛彈	SM-6 missile	
+美軍攻擊潛艦以	US attack submarine fires 	
+美軍攻擊潛艦被反潛兵力發現並攻擊	US attack submarine detected and attacked by ASW forces	
+美軍攻擊潛艦魚叉飛彈	US attack submarine Harpoon	
+（魚雷 	 (torpedoes 	
+、魚叉 	, Harpoons 	
+、戰斧 	, Tomahawks 	
+隱蔽：開火暴露、被護航艦發現才現身，無法被火力打擊；魚雷 	Hidden: revealed by firing or escort detection, immune to fire strikes; torpedoes 	
+ 枚（★推估），每回合移動最多 	 (★estimate), moves at most 	
+ 格，跟著航艦行動	 hexes per turn, travels with the carrier	
+部署在日本領土，只能被基地打擊；	Deployed on Japanese territory; can only be hit by base strikes; 	
+美軍攻擊潛艦	US attack submarine	
