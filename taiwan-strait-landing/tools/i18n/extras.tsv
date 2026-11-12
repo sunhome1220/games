@@ -1618,3 +1618,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 分散到母港附近外海：	Dispersed offshore near home ports: 	
 戰略突襲：大型艦艇來不及出港，仍在母港	Strategic surprise: the large ships could not get out and remain in port	
 修正：手機的單位資訊卡內容很長（例如航艦艦隊）時下半部看不到、也捲不動。現在卡片內容可以用手指上下捲動，只有按住標題區（名稱與數值）才是拖曳；卡片最高可到畫面的 60%；艦隊表格改成固定欄寬，窄卡片也放得下	Fix: on phones, long unit cards (such as a carrier fleet) were cut off at the bottom and could not be scrolled. The card content now scrolls with a finger and only the header area (name and stats) drags the card; the card can be up to 60% of the screen tall; the fleet table uses fixed column widths so it fits narrow cards	
+美軍航艦打擊群編組更完整：護航艦增為 4 艘（2026～2027 年巡洋艦 1＋柏克級 3；之後柏克級 4）並新增戰鬥支援艦 1 艘（不作戰、是高價值目標；被擊沉時該艦艦載機架次 ★×0.7）	US carrier strike groups are more complete: 4 escorts (2026-2027: 1 cruiser + 3 Burke destroyers; later 4 Burkes) plus 1 combat support ship (non-combatant, a high-value target; when it is sunk that carrier's sortie rate is ★×0.7)	
+航艦艦隊會主動行動（美、共軍對稱，電腦操作時）：想靠近到自己的對艦打擊距離內、航艦剩 1 步時撤出對方的打擊距離、友軍艦隊保持在 5～10 格內互相掩護	Carrier fleets now act on their own (symmetric for US and PLA, when computer-controlled): they close to within their own anti-ship strike reach, pull out of the enemy's reach when the carrier is down to 1 step, and friendly fleets keep within 5-10 hexes to cover each other	
+美軍 戰鬥支援艦	US Navy combat support ship	
+補給	Supply	
