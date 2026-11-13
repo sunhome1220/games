@@ -1773,3 +1773,15 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 ；本階段找到的車都已打過；推估）	; all vehicles found this phase already engaged; estimate)	
  輛	 launchers	
 、找到 	, found 	
+共軍抽象護航艦（「護航」棋子）有了防空：每個代表一組 052D＋054A（推估），攔截彈 80 枚、涵蓋 10 格、每波接戰 6 枚；護航涵蓋內的船團遭飛彈攻擊時，以齊射模型攔截（原本只有 055、052D 等棋子有防空，船團幾乎不會攔截）	PLA abstract escorts (the 'Escort' pieces) now have air defense: each represents a 052D plus a 054A (estimate), with 80 interceptors, 10-hex coverage and 6 engagements per wave; convoys under escort cover are defended with the salvo model (previously only 055/052D pieces had air defense and convoys were almost never defended)	
+共軍每個攻方階段獵殺台灣艦隊：港內 90%、出港依制空 90%／65%／40% 定位（夜間 ×0.85、雲雨或颱風 ×0.8、開火後暴露 100%），找到後以 16／12／6 枚空射反艦飛彈攻擊，對上艦隊自身防空（皆為推估）；取代原本每回合 50% 打掉 1 艘的抽象規則	Each attacker phase the PLA hunts Taiwan's fleets: 90% located in port; at sea 90%/65%/40% by air control (×0.85 at night, ×0.8 in cloud, rain or typhoon, 100% if exposed after firing); once found, 16/12/6 air-launched anti-ship missiles are fired against the fleet's own air defense (all estimates). Replaces the old abstract 50% chance per turn to sink 1 ship	
+電腦攻方船團編隊：海上的運輸船與登陸艦不在防空涵蓋內時，派還沒行動的護航艦過去掩護	Computer attacker convoy formation: transports and landing ships at sea without air-defense cover get an escort that has not yet acted sent to cover them	
+共軍獵殺守方艦隊（制空	PLA hunting Taiwan's fleets (air control 	
+；定位與枚數為推估）：	; location and missile counts estimated): 	
+：沒有找到（定位 	: not found (location chance 	
+港內	in port	
+開火後暴露	exposed after firing	
+ 枚，艦隊攔截 	 missiles, fleet intercepted 	
+ 枚，命中 	, hits 	
+，沉 	, sunk 	
+共軍空射反艦飛彈	PLA air-launched anti-ship missiles	
