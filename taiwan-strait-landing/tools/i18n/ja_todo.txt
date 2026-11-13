@@ -1686,7 +1686,7 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 戰力 	strength 
 戰力剩 	strength left 
 攻方在本島的綜合戰力不少於守方，且至少	The attacker's combined combat power on the main island is at least the defender's and at least 
-（足以站穩）。綜合戰力依部隊種類加權：裝甲＞兩棲／陸戰＞聯兵步兵＞空降＞後備，飛彈與火箭發射車不計	 (enough to hold). Combat power is weighted by unit type: armor > amphibious/marines > combined-arms infantry > airborne > reserve; missile and rocket launchers do not count
+（足以站穩）。綜合戰力依部隊種類加權：裝甲＞兩棲／陸戰／聯兵旅＞空降＞後備，飛彈與火箭發射車不計	 (enough to hold). Combat power is weighted by unit type: armor > amphibious/marines/combined-arms brigades > airborne > reserve; missile and rocket launchers do not count
  對 守方 	 vs defender 
 攻方雖未達成兩項條件，但在島上站穩了	The attacker did not meet two conditions, but holds on the island with 
 並控制 	 and controls 
@@ -1707,9 +1707,9 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 <span>島上戰力 攻 <b>	<span>Island strength A <b>
 損失來源（每局平均	Loss sources (average per game, 
 落點若遭地面火力壓制，約一半機率損失一半戰力；否則運輸機群有約 1/6 機率遭防空攔截，同樣損失一半戰力	If the drop zone is under ground fire, about a 1-in-2 chance to lose half its strength; otherwise the transports have about a 1-in-6 chance of being intercepted, also losing half its strength
-攻防較低、編制戰力小（綜合戰力約裝甲旅的四分之一），但數量能補強守備	Lower attack and defense and a small establishment (about a quarter of an armored brigade's combat power), but their numbers shore up the defense
+攻防較低、編制戰力小（每步綜合戰力約裝甲旅的四分之一），但數量能補強守備	Lower attack and defense and a small establishment (about a quarter of an armored brigade's combat power per step), but their numbers shore up the defense
 兵力說法改為一般人看得懂的通俗文字（預設）：陸軍旅顯示「戰力 %」、艦隊顯示「艘」、飛彈顯示「發射車」、航艦顯示「輕傷／重創／擊沉」、島上合計換算成「相當於幾個旅」；設定可切回戰棋用語「步」，規則完全相同	Unit strength is now shown in plain words (default): brigades as 'strength %', fleets in ships, missiles in launchers, carriers as lightly damaged / badly damaged / sunk, and island totals as 'about N brigades'; a setting switches back to wargame 'steps'. The rules are the same
-勝利條件「島上戰力」改比綜合戰力，不再單純比步數：依部隊種類加權（每步：裝甲／重型合成旅 1.2～1.3、兩棲與陸戰 1.0、聯兵旅 0.8、空降 0.5、後備 0.3，推估；參考美軍教範範例的裝甲、機步、輕步兵相對比例），飛彈與火箭發射車不計。立即勝利、停火評估、盟國介入評估、快訊等使用島上兵力的地方一併改用綜合戰力	The 'Island strength' victory condition now compares combined combat power instead of raw steps, weighted by unit type (per step: armor/heavy combined-arms 1.2–1.3, amphibious and marines 1.0, combined-arms infantry 0.8, airborne 0.5, reserve 0.3, estimated from the armor/mechanized/light-infantry ratios in a US Army manual example); missile and rocket launchers do not count. Instant victory, ceasefire and ally-intervention assessments and the news also use combat power
+勝利條件「島上戰力」改比綜合戰力，不再單純比步數：依部隊種類加權（每步：裝甲／重型合成旅 1.2～1.3、兩棲、陸戰與聯兵旅 1.0、空降 0.6、後備 0.35，推估；依各旅實際裝備對照美軍教範範例的裝甲、機步、輕步兵相對比例），飛彈與火箭發射車不計。立即勝利、停火評估、盟國介入評估、快訊等使用島上兵力的地方一併改用綜合戰力	The 'Island strength' victory condition now compares combined combat power instead of raw steps, weighted by unit type (per step: armor/heavy combined-arms 1.2–1.3, amphibious, marines and combined-arms brigades 1.0, airborne 0.6, reserve 0.35, estimated by matching each brigade's actual equipment to the armor/mechanized/light-infantry ratios in a US Army manual example); missile and rocket launchers do not count. Instant victory, ceasefire and ally-intervention assessments and the news also use combat power
 部隊兵力的表示方式	How unit strength is shown
 通俗文字	Plain words
 （預設）陸軍旅顯示「戰力 %」、艦隊顯示「艘」、飛彈顯示「發射車」、航艦顯示「輕傷／重創／擊沉」，島上合計換算成「相當於幾個旅」。	(Default) Brigades show 'strength %', fleets show ships, missiles show launchers, carriers show lightly damaged / badly damaged / sunk, and island totals are converted to 'about N brigades'.
