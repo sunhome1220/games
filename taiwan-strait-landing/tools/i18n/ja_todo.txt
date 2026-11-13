@@ -1731,4 +1731,23 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 殺傷鏈補兩條（推估）：開戰頭 2 個回合仍在平時駐地或預構陣地、沒移動過的部隊，對岸多年情監偵早已掌握，每營定位 25%，一移動或第 3 回合起恢復隱蔽；相鄰海上有攻方登陸船團的灘頭守軍（灘頭火力準備）也算與敵軍接觸，定位 35%	Two kill-chain additions (estimated): units still in their peacetime garrisons or prepared positions during the first 2 turns, never having moved, are long known to enemy ISR, so each battalion is located 25%; moving, or turn 3 onward, restores concealment. Beach defenders next to an attacker landing convoy at sea (pre-landing beach bombardment) also count as in contact, 35%
 仍在開戰前已知的駐地或陣地，定位 	still in a garrison or position known before the war, located 
 修正：快訊、戰況卡與決策說明中的存量數字（例如火箭軍存量）出現 13.399999999999999 這類過長小數，改為最多顯示一位小數	Fix: stock figures in the news, status chips and decision notes (e.g. Rocket Force stock) showed long decimals like 13.399999999999999; they now show at most one decimal place
+長程對地飛彈（雄二E、ATACMS 等；1 點≈25 枚）	Long-range land-attack missiles (HF-2E, ATACMS etc.; 1 pt ≈ 25 missiles)
+攻方搶修大陸 	Attacker repairs mainland 
+台灣長程飛彈（雄二E、ATACMS 等）	Taiwan long-range missiles (HF-2E, ATACMS etc.)
+，共軍防空發射 	; PLA air defense fires 
+，共軍防空已失效	; PLA air defense is down
+駐地與預備陣地受損，火箭軍發射能量下降（飛彈與機動發射車多已疏散，不在駐地）	garrison and pre-surveyed positions damaged, Rocket Force launch capacity down (most missiles and mobile launchers had dispersed and were not at the garrison)
+跑道與機堡受損，出擊架次下降	runways and shelters damaged, sorties down
+港區設施受損	port facilities damaged
+，仍在港內的艦艇受創（攻方護航艦隊 −1，推估）	; ships still in port are hit (attacker escort fleet −1, estimated)
+額外發射約半個階段的長程對地飛彈（每包 4 枚，約 12～20 枚）打大陸基地，目標依價值挑選（火箭軍陣地、機場、海軍基地）；和「打擊大陸」同一套規則：先過共軍防空攔截，突破後命中率 33%，命中使基地受損一級。	Fire about half a phase's worth of extra land-attack missiles (4 per packet, about 12–20) at mainland bases, targets chosen by value (Rocket Force sites, airbases, naval bases); same rules as 'Strike the mainland': PLA air defense intercepts first, then a 33% hit chance, and a hit damages the base one level.
+額外發射一整個階段的長程對地飛彈（約 24～40 枚）縱深打擊（優先火箭軍陣地，同一套規則）；局勢升高、美日更謹慎。	Fire a full phase's worth of extra land-attack missiles (about 24–40) deep into the mainland (Rocket Force sites first, same rules); escalation makes the US and Japan more cautious.
+發射長程飛彈 	Fired long-range missiles: 
+ 包（每包 4 枚，共 	 packets (4 each, 
+ 枚），命中 	 missiles), hits 
+ 次（逐包結果見戰報）	 (per-packet results in the log)
+長程打擊模式：點選大陸基地（紅色圖形）。每次發射一包 4 枚，先過共軍防空攔截，突破後命中率 33%；命中使基地受損一級（削弱火箭軍發射能量、機場出擊或港區），攻方每 2 回合修復一級。	Long-range strike mode: click a mainland base (red marker). Each shot is a packet of 4 missiles; PLA air defense intercepts first, then a 33% hit chance. A hit damages the base one level (less Rocket Force launch capacity, fewer airbase sorties, or port damage); the attacker repairs one level every 2 turns.
+守方打擊大陸改用實際枚數，規則與攻方打擊台灣對稱：1 點長程飛彈約 25 枚（2026 年約 250 枚＝雄二E 約 190＋ATACMS 64 的量級，推估）；每次發射一包 4 枚，每個守方階段可發射 24／32／40 枚（依年代，受發射車限制，推估）	Defender strikes on the mainland now use real missile counts, with rules symmetric to the attacker striking Taiwan: 1 long-range missile point ≈ 25 missiles (2026 ≈ 250, on the order of ~190 HF-2E plus 64 ATACMS, estimated); each shot is a packet of 4, and each defender phase can launch 24 / 32 / 40 missiles by era (launcher-limited, estimated)
+每包先過共軍防空：每枚來襲以 2 枚攔截彈接戰、單枚攔截率 0.4（推估，依攻方防空存量縮放），突破後命中率 33%（同攻方打台灣機場）；命中使基地受損一級，攻方每 2 回合修復一級（同台灣機場）	Each packet first faces PLA air defense: 2 interceptors per incoming missile at 0.4 each (estimated, scaled by the attacker's air-defense stock); survivors hit 33% of the time (as attacker strikes on Taiwan's airbases); a hit damages the base one level and the attacker repairs one level every 2 turns (as Taiwan's airbases)
+命中效果改為有時效、較小：火箭軍駐地只削弱發射能量（飛彈與機動發射車戰時多已疏散，不再一次打掉約 84 枚飛彈）；機場受損降低出擊，受損嚴重時有一半機率打掉機堡外 4 架戰機；軍港要打到癱瘓才傷及港內艦艇；海馬士的陸軍戰術飛彈每發只用 1 枚存量	Hit effects are now smaller and temporary: a Rocket Force garrison hit only cuts launch capacity (missiles and mobile launchers are mostly dispersed in wartime, so a hit no longer wipes out about 84 missiles); airbase damage cuts sorties, with a 50% chance of destroying 4 aircraft outside shelters when badly damaged; naval bases must be knocked out before ships in port are hit; a HIMARS ATACMS shot now uses just 1 missile of stock
 動畫修正：從航艦（或機場）出發的轟炸機投彈後不再原地消失，改為調頭飛回出發點；艦載機反艦打擊返航時改在快到航艦才淡出（原本飛到一半就消失，看起來沒有回航艦）	Animation fix: bombers from a carrier (or airbase) no longer vanish after releasing; they turn and fly back to where they took off. Carrier aircraft returning from anti-ship strikes now fade out only as they reach the carrier (they used to vanish halfway, so they never seemed to get back)
