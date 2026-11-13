@@ -1844,3 +1844,6 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 （預設）不播放。	(Default) No sound.	
 第 1 回合攻方第一波火力打擊開始時，鳴放約 6 秒的空襲警報（瀏覽器合成的升降音，不是官方錄音）。觀戰與統計模式不響。	When the attacker's first wave of fire begins in turn 1, sound an air-raid siren for about 6 seconds (a rising-and-falling tone synthesized by the browser, not an official recording). Silent in spectator and statistics modes.	
  警報：	 Siren: 	
+發射車單位（反艦飛彈、海馬士、雷霆2000）的棋子改為直接顯示「可射車數／原有車數」，受損時變紅；原本步數條要少 4 輛才掉一格，火力受損與機動受損也不會顯示，看起來像毫髮無損	Launcher units (anti-ship missiles, HIMARS, Thunderbolt-2000) now show 'ready launchers / original launchers' on the counter, in red when damaged; previously the step bar only dropped after 4 launchers were lost and firepower or mobility kills never showed, so units looked untouched	
+修正電腦撥給澎湖的火力會打沒被找到的發射車陣地（全部落空）：改成只打找得到的目標	Fixed the computer's fire allotted to Penghu hitting launcher sites it had not found (all wasted): it now only strikes targets it can find	
+ 車	 launchers	
