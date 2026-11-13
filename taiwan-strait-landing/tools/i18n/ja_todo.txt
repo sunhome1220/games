@@ -42,6 +42,7 @@
 守方後備旅於 	Defender reserve brigade mobilized at 
 共軍	PLA 
 潛艦	Submarines
+台灣海峽	Taiwan Strait
 作戰結束	Operation ended
 步數	Steps
 關閉	Close
@@ -1533,3 +1534,24 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 損失報告的戰機損失，改為分來源列出：空戰、地面（機場遭飛彈或空襲、被占領）、出擊時被防空擊落，以及隨航艦沉沒等其他損失。只是把既有的損失分類記錄與顯示，沒有改任何數字	Aircraft losses in the loss report are now broken down by source: air combat, on the ground (airfields hit by missiles or air raids, or captured), shot down by air defenses on sorties, and other losses such as going down with a sunk carrier. This only records and shows the existing losses by category; no numbers changed.
 被防空擊落	Shot down by air defense
 艦隊沉沒等	Lost with sunk fleet, etc.
+天氣分區：台灣海峽、北部、東部、巴士海峽各有自己的浪高（海峽為基準，依季風季節乘上係數，推估），地圖上標示各海域浪高；海上移動、搶灘、卸載、風浪損耗與艦艇出港都改看所在海域的浪高	Weather zones: the Taiwan Strait, northern waters, eastern waters and the Bashi Channel each have their own wave height (the Strait is the baseline; other zones apply seasonal monsoon factors, estimated), shown on the map; sea movement, beach assaults, unloading, wave attrition and ship sorties now use the local wave height
+颱風改成會移動的實體並畫在地圖上：自菲律賓海生成、往西北移動後轉北轉東北（轉向緯度隨機），依氣象署分級（輕度／中度／強烈）與 7 級風暴風半徑，顯示中心、暴風圈、走過的路徑與下一回合預測位置；浪高依與中心的距離（暴風圈邊緣 4 公尺、往中心增加），穿越台灣本島後減弱一級、登陸大陸後消散	Typhoons are now moving systems drawn on the map: they form in the Philippine Sea, head northwest and then recurve north and northeast (at a random latitude), with CWA intensity classes (mild/moderate/strong) and gale-force radius; the map shows the center, storm circle, past track and next-turn forecast. Wave height depends on distance from the center (4 m at the storm edge, rising toward the center); crossing Taiwan weakens a typhoon by one class and landfall in mainland China dissipates it
+北部海域	Northern waters
+東部海域	Eastern waters
+巴士海峽	Bashi Channel
+輕度	Mild
+中度	Moderate
+強烈	Strong
+颱風・暴風半徑 	 typhoon · gale radius 
+【天候・台灣海峽】	[Weather · Taiwan Strait] 
+（各海域：	(by zone: 
+颱風，暴風半徑 	 typhoon, gale radius 
+ km，距海峽 	 km, distance from the Strait 
+風浪（最大浪高 	Waves (max height 
+開戰時颱風逼近台灣海峽（中心距海峽在 2 倍暴風半徑加一天移動距離內），攻方會延後 D 日，每次 12 小時、最多 5 天（選「颱風季強渡」的賭注時不延後）	If a typhoon threatens the Taiwan Strait at the start (its center within twice the gale radius plus one day of movement), the attacker postpones D-day in 12-hour steps, up to 5 days (no delay if the 'typhoon-season crossing' gamble was chosen)
+避風改看所在海域：只有預報下一回合所在海域浪高達 2.2 公尺以上（颱風看預測路徑）的船艇才進港避風，守方艦艇出港也一樣	Sheltering now depends on each vessel's sea area: only vessels whose area is forecast to reach 2.2 m or more next turn (for typhoons, along the forecast track) head to port; the same applies to defender ship sorties
+颱風逼近台灣海峽：攻方將 D 日延後 	Typhoon approaching the Taiwan Strait: the attacker postpones D-day by 
+ 小時，等颱風遠離後才發起	 hours until the typhoon moves away
+颱風逼近：D 日延後 	Typhoon approaching: D-day postponed 
+預報下回合所在海域浪高達 2.2 公尺以上	waves in their area forecast to reach 2.2 m or more next turn
+颱風的預測位置會影響所在海域	 typhoon's forecast position will affect their area
