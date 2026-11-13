@@ -1838,3 +1838,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 受創撤離	 damaged and withdrawing	
 遭重創、失去作戰能力，在護航艦掩護下撤離戰場。	 was badly damaged, lost its combat capability and is withdrawing under escort.	
 失去戰鬥能力（飛行甲板受損）：艦載機無法起降，撤離戰場中；攻擊方不會再優先打它	Out of action (flight deck damaged): aircraft cannot launch, withdrawing; attackers no longer prioritize it	
+飛機投彈特效改成有彈體的導引炸彈（原本是一顆圓球），無人機與巡飛彈也改成有機身的形狀；空對空、空對艦原本就是飛彈造型	Aircraft bomb effects now show a guided bomb with a body (previously a round ball), and drones and loitering munitions now have a body shape too; air-to-air and air-to-ship fire already used missile shapes	
