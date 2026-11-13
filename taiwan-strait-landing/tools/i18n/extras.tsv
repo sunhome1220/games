@@ -1833,3 +1833,9 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 鋪路爪長程預警雷達，對彈道飛彈約 6 分鐘預警。被摧毀後愛國者攔截率 ×0.8（推估；天弓尚未整合，不受影響）。	PAVE PAWS long-range early-warning radar, about 6 minutes of warning against ballistic missiles. When destroyed, Patriot interception ×0.8 (estimate; Tien Kung is not yet integrated and is unaffected).	
 空軍長程預警雷達，把防空預警往北延伸約 100 公里。被摧毀後守方空中有效戰力 ×0.9（推估）。	Air force long-range early-warning radar, extending air-defense warning about 100 km north. When destroyed, defender air effectiveness ×0.9 (estimate).	
 ：命中，雷達失效。	: hit, the radar is out of action. 	
+航艦新增「失去戰鬥能力」：剩 1 步（推估）時飛行甲板受損，艦載機無法起降（不參加空戰、不出擊），航艦撤離戰場修理（美航艦往東、共軍航艦往大陸）；仍可被追擊擊沉，但電腦不再優先打它（反艦彈道飛彈也不再打它），把火力留給其他目標。擊沉仍維持原本的重大後果，失去戰鬥能力只有較輕的新聞	Carriers can now be 'out of action': with 1 step left (estimate) the flight deck is damaged, the air wing cannot launch (no air combat, no strikes) and the carrier withdraws for repairs (US carriers east, PLA carriers toward the mainland); it can still be pursued and sunk, but the computer no longer prioritizes it (nor do anti-ship ballistic missiles) and saves its fire for other targets. Sinking keeps its major consequences; being put out of action only brings lighter news	
+受創失去戰鬥能力（飛行甲板受損，艦載機無法起降），撤離戰場修理	 is put out of action (flight deck damaged, aircraft cannot launch) and withdraws for repairs	
+受創撤離	 damaged and withdrawing	
+遭重創、失去作戰能力，在護航艦掩護下撤離戰場。	 was badly damaged, lost its combat capability and is withdrawing under escort.	
+失去戰鬥能力（飛行甲板受損）：艦載機無法起降，撤離戰場中；攻擊方不會再優先打它	Out of action (flight deck damaged): aircraft cannot launch, withdrawing; attackers no longer prioritize it	
+飛機投彈特效改成有彈體的導引炸彈（原本是一顆圓球），無人機與巡飛彈也改成有機身的形狀；空對空、空對艦原本就是飛彈造型	Aircraft bomb effects now show a guided bomb with a body (previously a round ball), and drones and loitering munitions now have a body shape too; air-to-air and air-to-ship fire already used missile shapes	
