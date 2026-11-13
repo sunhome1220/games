@@ -1955,3 +1955,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 島上部隊先奪基隆、台北港、台中港、高雄，才能卸載重型裝備、擴大補給。	Forces on the island first take Keelung, Taipei Port, Taichung and Kaohsiung so heavy equipment can be unloaded and supply expanded.	
 麥寮港	Mailiao Port	
 新增麥寮港（雲林，台塑六輕工業專用港）為次要港口：深水、年吞吐量約 7,000 萬噸以上，但碼頭多是石化、煤、油專用，占領後補給 +2、不計入勝負條件、重型旅不能從這裡上岸；是雲林泥灘海岸唯一能卸載的地方	Added Mailiao Port (Yunlin, Formosa Plastics' industrial port) as a minor port: deep water and over 70 million tonnes a year, but its berths are mostly petrochemical, coal and oil terminals; taking it adds +2 supply, it does not count toward victory, and heavy brigades cannot land there. It is the only place to unload on Yunlin's mudflat coast	
+地圖上的雷達站名稱縮小、不再擋住旁邊的棋子；失效時不再寫「（失效）」，看紅色斜線即可	Radar-site names on the map are smaller and no longer cover nearby pieces; a knocked-out site no longer says '(down)', the red slash shows it	
