@@ -1594,3 +1594,5 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
  枚，命中 	, hits 
 ，沉 	, sunk 
 共軍空射反艦飛彈	PLA air-launched anti-ship missiles
+修正火力特效的發射點：台灣空軍改從最近還能起降的機場發射、無人機從最近的守方地面單位、其他沒有棋子的反艦火力從最近的飛彈車或艦隊發射（原本是寫死的幾個點，常從空的海面或空地發出）	Fixed where fire effects start: Taiwan's air force now launches from the nearest usable airfield, drones from the nearest defender ground unit, and other anti-ship fire without a piece from the nearest missile launcher or fleet (it used to come from a few fixed points, often empty sea or ground)
+單位移動後再開火時，特效等單位滑到新位置才發射；守方飛彈車「打了就跑」改成齊射畫完才轉移陣地，不再看起來從空掉的陣地發射	When a unit moves and then fires, the effect now waits until the unit has slid into its new position; defender launchers' shoot-and-scoot now relocates after the volley is drawn, so fire no longer seems to come from an empty site
