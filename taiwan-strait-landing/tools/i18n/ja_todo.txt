@@ -1555,3 +1555,18 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 颱風逼近：D 日延後 	Typhoon approaching: D-day postponed 
 預報下回合所在海域浪高達 2.2 公尺以上	waves in their area forecast to reach 2.2 m or more next turn
 颱風的預測位置會影響所在海域	 typhoon's forecast position will affect their area
+舊戰機改裝無人機：共軍每個攻方階段在飛彈打擊前放出 40 架當誘餌，守方每架射 2 枚攔截彈，消耗攔截彈存量與接戰上限；2026～2027 年 200 架（Mitchell Institute 報告）、2028～2029 年 300 架、2030 年起 500 架（陸委會稱可改裝超過 500 架；後兩者與每波架數為推估）	Converted-fighter drones: each attacker phase, before the missile strikes, the PLA sends 40 as decoys; the defender fires 2 interceptors at each, using up interceptor stock and engagement capacity. 200 in 2026–2027 (Mitchell Institute report), 300 in 2028–2029 and 500 from 2030 (Taiwan's MAC says more than 500 could be converted; these and the wave size are estimates)
+海馬士與雷霆2000 也改為發射車輛數與分級毀傷：海馬士每組 2026 年約 4 輛、2027 年約 10 輛（已交 11 套、年底前 29 套），之後依規劃 111 套推估；雷霆2000 每組約 11 輛（Oryx 2023 年清點 43 輛）；可射的車變少時命中率按比例降低	HIMARS and Thunderbolt-2000 now also use launcher counts and graded damage: HIMARS about 4 per group in 2026 and about 10 in 2027 (11 delivered, 29 by year-end), later years estimated from the planned 111; Thunderbolt-2000 about 11 per group (Oryx counted 43 in 2023); fewer ready launchers lower the hit chance proportionally
+殺傷鏈：打擊機動發射車（反艦飛彈、海馬士、雷霆2000）前，要先定位、而且飛彈到時還在——隱蔽中的定位機率依制空（攻方優勢 75%、均勢 45%、守方優勢 30%），夜間 ×0.7、雲雨或颱風 ×0.6、誘餌 ×0.75；已暴露的發射車，彈道飛彈到時仍在原地 85%、巡弋飛彈與戰機 60%、機動受損 100%（皆為推估）；取代原本固定的誘餌機率與隱蔽 +1 門檻	Kill chain: before hitting a mobile launcher (anti-ship missiles, HIMARS, Thunderbolt-2000) it must be located and still be there when the weapon arrives. Hidden launchers are located depending on air control (attacker superiority 75%, contested 45%, defender superiority 30%), ×0.7 at night, ×0.6 in cloud, rain or typhoon, ×0.75 with decoys; exposed launchers are still in place 85% of the time for ballistic missiles, 60% for cruise missiles and aircraft, 100% if mobility-killed (all estimates). Replaces the old fixed decoy chance and +1 threshold for hidden units
+舊戰機改裝無人機 	Converted-fighter drones: 
+ 架當誘餌飛向台灣：守方防空發射 	 sent toward Taiwan as decoys; defender air defense fired 
+ 枚攔截彈、擊落約 	 interceptors and downed about 
+沒能定位真正的發射車，打中誘餌與空車	could not locate the real launcher; hit decoys and empty vehicles
+發射車已轉移，打到空的陣地	the launcher had moved; hit an empty site
+發射車已轉移	the launcher had moved
+舊戰機改裝無人機（誘餌，每個攻方階段放出 40 架消耗守方攔截彈）	Converted-fighter drones (decoys; 40 per attacker phase to drain defender interceptors)
+機動受損，無法轉移	Mobility kill, cannot relocate
+夜間 ×	night ×
+雲雨或颱風 ×	cloud, rain or typhoon ×
+誘餌 ×	decoys ×
+修正手機上點選要打擊的目標沒反應：點一下時會先觸發滑鼠移入、把資訊卡顯示在手指下方，這次點擊就落在卡片上而不是地圖。現在手機點擊不再觸發移入預覽	Fixed tapping a strike target on phones doing nothing: a tap first fired a mouse-over that showed the info card under the finger, so the tap landed on the card instead of the map. Taps on phones no longer trigger the hover preview.
