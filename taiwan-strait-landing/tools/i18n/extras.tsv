@@ -1958,3 +1958,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 地圖上的雷達站名稱縮小、不再擋住旁邊的棋子；失效時不再寫「（失效）」，看紅色斜線即可	Radar-site names on the map are smaller and no longer cover nearby pieces; a knocked-out site no longer says '(down)', the red slash shows it	
 地圖雙指縮放改成像 Google 地圖：以兩指中間為中心放大縮小（原本一律以畫面中央為準），兩指一起移動時地圖跟著平移，不會再觸發瀏覽器的整頁縮放；觸控板捏合與 Ctrl＋滾輪也改成以游標為中心連續縮放	Two-finger map zoom now works like Google Maps: it zooms around the point between your fingers (it used to always zoom around the screen center), moving both fingers pans the map, and the browser no longer zooms the whole page; trackpad pinch and Ctrl + wheel also zoom smoothly around the cursor	
 地圖最大放大倍數由 300% 提高到 500%	Maximum map zoom raised from 300% to 500%	
+地圖上的海域浪高文字會自動避開棋子：在原位置附近 4 格內的海面挑一個沒有船艦或部隊的地方顯示	Wave-height labels on the map now avoid pieces: each is placed on open sea within 4 hexes of its usual spot, where no ships or units are	
