@@ -1633,3 +1633,12 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 攻方本階段偵察找到 	Attacker reconnaissance found this phase: 
  輛，可打擊	 launchers, can be struck
 攻方本階段偵察沒有找到（或找到的都打過了），無法打擊	Attacker reconnaissance found none this phase (or all found were engaged); cannot be struck
+新增固定雷達站（固定目標，不需定位）：樂山雷達（鋪路爪，對彈道飛彈約 6 分鐘預警；被摧毀後愛國者攔截率 ×0.8，天弓尚未整合不受影響）、東引雷達（防空預警往北延伸約 100 公里；被摧毀後守方空中有效戰力 ×0.9）；效果數值為推估。地圖上有標示，打擊模式可點選，電腦攻方開局 3 回合會優先打	Added fixed radar stations (fixed targets, no locating needed): Leshan radar (PAVE PAWS, about 6 minutes of warning against ballistic missiles; when destroyed, Patriot interception ×0.8, Tien Kung not yet integrated so unaffected) and Dongyin radar (extends air-defense warning about 100 km north; when destroyed, defender air effectiveness ×0.9); effect values are estimates. Shown on the map, selectable in strike mode; the computer attacker prioritizes them in the first 3 turns
+樂山雷達	Leshan radar
+東引雷達	Dongyin radar
+（失效）	 (out of action)
+運作中。	operational. 
+已被摧毀。	destroyed. 
+鋪路爪長程預警雷達，對彈道飛彈約 6 分鐘預警。被摧毀後愛國者攔截率 ×0.8（推估；天弓尚未整合，不受影響）。	PAVE PAWS long-range early-warning radar, about 6 minutes of warning against ballistic missiles. When destroyed, Patriot interception ×0.8 (estimate; Tien Kung is not yet integrated and is unaffected).
+空軍長程預警雷達，把防空預警往北延伸約 100 公里。被摧毀後守方空中有效戰力 ×0.9（推估）。	Air force long-range early-warning radar, extending air-defense warning about 100 km north. When destroyed, defender air effectiveness ×0.9 (estimate).
+：命中，雷達失效。	: hit, the radar is out of action. 
