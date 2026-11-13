@@ -1577,3 +1577,8 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 ，沒有損失	, no losses
 （開戰前定位機率 	(pre-war location chance 
 %，依預警與誘餌；推估）	%, by warning and decoys; estimate)
+偵察是瓶頸：每個發射車單位每個階段只判斷一次「找到幾輛」（定位機率 × 車數，小數累計），之後的打擊只能打已找到的車；找到的都打過了，再多飛彈也只打到誘餌（不再每一包各自重新判斷定位，讓大量飛彈硬把定位灌成功）	Reconnaissance is the bottleneck: each launcher unit is checked once per phase for how many vehicles are found (location chance × vehicles, fractional accumulation); later strikes can only hit vehicles already found, and once those are all engaged, more missiles only hit decoys (no longer re-rolling location for every package, which let massed missiles force a location)
+沒有找到（或已打過所有找到的）真正發射車，打中誘餌與空車	no real launcher found (or all found ones already engaged); hit decoys and empty vehicles
+；本階段找到的車都已打過；推估）	; all vehicles found this phase already engaged; estimate)
+ 輛	 launchers
+、找到 	, found 
