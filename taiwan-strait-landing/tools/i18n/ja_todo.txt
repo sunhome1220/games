@@ -1569,3 +1569,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 夜間 ×	night ×
 雲雨或颱風 ×	cloud, rain or typhoon ×
 誘餌 ×	decoys ×
+修正手機上點選要打擊的目標沒反應：點一下時會先觸發滑鼠移入、把資訊卡顯示在手指下方，這次點擊就落在卡片上而不是地圖。現在手機點擊不再觸發移入預覽	Fixed tapping a strike target on phones doing nothing: a tap first fired a mouse-over that showed the info card under the finger, so the tap landed on the card instead of the map. Taps on phones no longer trigger the hover preview.
