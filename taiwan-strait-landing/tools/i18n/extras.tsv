@@ -1761,3 +1761,10 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 雲雨或颱風 ×	cloud, rain or typhoon ×	
 誘餌 ×	decoys ×	
 修正手機上點選要打擊的目標沒反應：點一下時會先觸發滑鼠移入、把資訊卡顯示在手指下方，這次點擊就落在卡片上而不是地圖。現在手機點擊不再觸發移入預覽	Fixed tapping a strike target on phones doing nothing: a tap first fired a mouse-over that showed the info card under the finger, so the tap landed on the card instead of the map. Taps on phones no longer trigger the hover preview.	
+機動發射車（反艦飛彈、海馬士、雷霆2000）被定位後，命中率改依武器數量計算：每枚彈道飛彈、巡弋飛彈或炸彈 40%、每枚長程火箭 20%（推估）——一個打擊包 4 枚彈道飛彈約 87%；難度集中在「找到它」，不再是找到了卻打不中	Once a mobile launcher (anti-ship missiles, HIMARS, Thunderbolt-2000) is located, the hit chance now depends on the number of weapons: 40% per ballistic missile, cruise missile or bomb and 20% per long-range rocket (estimates), so a package of 4 ballistic missiles hits about 87%. The difficulty is in finding it, not in hitting it once found.	
+開局「先制打擊反艦飛彈陣地」也走殺傷鏈：開戰前定位機率依預警（公開集結 30%、演習掩護 50%、戰略突襲 70%，誘餌 ×0.75；推估），每個單位挨 1／3／5 波打擊包，命中只影響 1 輛並分級；不再一次扣 1～2 步（4～8 輛）	The opening 'pre-emptive strike on anti-ship missile sites' now also goes through the kill chain: pre-war location chance depends on warning (open buildup 30%, exercise cover 50%, strategic surprise 70%, ×0.75 with decoys; estimates); each unit takes 1/3/5 strike packages, and each hit affects 1 launcher with graded damage, instead of removing 1–2 steps (4–8 launchers) at once.	
+ 反艦飛彈：挨 	 anti-ship missiles: took 	
+ 波、定位 	 waves, located 	
+，沒有損失	, no losses	
+（開戰前定位機率 	(pre-war location chance 	
+%，依預警與誘餌；推估）	%, by warning and decoys; estimate)	
