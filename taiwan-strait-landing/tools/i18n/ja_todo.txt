@@ -1648,3 +1648,8 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 遭重創、失去作戰能力，在護航艦掩護下撤離戰場。	 was badly damaged, lost its combat capability and is withdrawing under escort.
 失去戰鬥能力（飛行甲板受損）：艦載機無法起降，撤離戰場中；攻擊方不會再優先打它	Out of action (flight deck damaged): aircraft cannot launch, withdrawing; attackers no longer prioritize it
 飛機投彈特效改成有彈體的導引炸彈（原本是一顆圓球），無人機與巡飛彈也改成有機身的形狀；空對空、空對艦原本就是飛彈造型	Aircraft bomb effects now show a guided bomb with a body (previously a round ball), and drones and loitering munitions now have a body shape too; air-to-air and air-to-ship fire already used missile shapes
+新增空襲警報音效（預設關閉）：第 1 回合攻方第一波火力打擊開始時，鳴放約 6 秒的升降音警報（瀏覽器合成，不是官方錄音）；觀戰與統計模式不響。可在設定或地圖上方的「警報」按鈕開關	Added an air-raid siren sound (off by default): when the attacker's first wave of fire begins in turn 1, a rising-and-falling siren sounds for about 6 seconds (synthesized by the browser, not an official recording); silent in spectator and statistics modes. Toggle it in settings or with the 'Siren' button above the map
+空襲警報音效	Air-raid siren sound
+（預設）不播放。	(Default) No sound.
+第 1 回合攻方第一波火力打擊開始時，鳴放約 6 秒的空襲警報（瀏覽器合成的升降音，不是官方錄音）。觀戰與統計模式不響。	When the attacker's first wave of fire begins in turn 1, sound an air-raid siren for about 6 seconds (a rising-and-falling tone synthesized by the browser, not an official recording). Silent in spectator and statistics modes.
+ 警報：	 Siren: 
