@@ -5654,7 +5654,9 @@ function fxFlight(a,b,k,end){
     const ang=Math.atan2(b[1]-a[1],b[0]-a[0]),rel=[a[0]+(b[0]-a[0])*.72,a[1]+(b[1]-a[1])*.72-14];
     const pl=airGlyph('bm','#e9edf0',{glow:true});pl.querySelectorAll('path[stroke]').forEach(q=>q.setAttribute('stroke','#555'));pl.setAttribute('data-sc','1');
     tween(fxDur('plane',dd*.72),t=>{const x=a[0]+(rel[0]-a[0])*t,y=a[1]+(rel[1]-a[1])*t;pl.setAttribute('transform','translate('+x.toFixed(1)+' '+y.toFixed(1)+') rotate('+(ang*180/Math.PI).toFixed(0)+') scale(.85)');},()=>{
-      pl.remove();fxShot(rel,b,{arc:-4,dur:fxDur('bomb',Math.hypot(b[0]-rel[0],b[1]-rel[1])),color:'#4a4a4a',trail:'#9aa0a6',w:.8,r:2.4,style:'mis',shape:'bomb',end}); // 導引炸彈：有彈體、沿落下方向飛（不再是圓球）
+      fxShot(rel,b,{arc:-4,dur:fxDur('bomb',Math.hypot(b[0]-rel[0],b[1]-rel[1])),color:'#4a4a4a',trail:'#9aa0a6',w:.8,r:2.4,style:'mis',shape:'bomb',end});
+      // 投彈後調頭，飛回出發的航艦或機場，快到時才淡出（降落）
+      const bk=Math.atan2(a[1]-rel[1],a[0]-rel[0]);tween(fxDur('plane',Math.hypot(a[0]-rel[0],a[1]-rel[1])),t=>{const x=rel[0]+(a[0]-rel[0])*t,y=rel[1]+(a[1]-rel[1])*t;pl.setAttribute('transform','translate('+x.toFixed(1)+' '+y.toFixed(1)+') rotate('+(bk*180/Math.PI).toFixed(0)+') scale(.85)');pl.setAttribute('opacity',t<.85?1:Math.max(0,1-(t-.85)/.15));},()=>pl.remove()); // 導引炸彈：有彈體、沿落下方向飛（不再是圓球）
     });
   }
 }
@@ -5836,9 +5838,9 @@ function fxCarrierAir(o){
       if(o.ad&&!reduce())fxIntercept(src,G.b,'cm',last?o.ad:'int',last?o.hit:false,true,o.side);
       else fxFlight(src,G.b,'asm',()=>fxImpact(G.b,last&&o.hit,true,true)); // 艦載機的反艦飛彈
     },j*130*fxK());
-    // 調頭返航：朝自己的航艦飛回去並淡出
+    // 調頭返航：朝自己的航艦飛回去，快到航艦時才淡出（降落）
     const back=Math.atan2(G.a[1]-G.p[1],G.a[0]-G.p[0]);
-    setTimeout(()=>tween(Math.min(1800,350+G.dp*1.1),k=>place(lerp(G.p,G.a,k),back,k<.6?1:1-(k-.6)/.4),()=>g.remove()),(G.n*130+80)*fxK());
+    setTimeout(()=>tween(Math.min(1800,350+G.dp*1.1),k=>place(lerp(G.p,G.a,k),back,k<.85?1:Math.max(0,1-(k-.85)/.15)),()=>g.remove()),(G.n*130+80)*fxK());
   });
 }
 if(/[?&]debug=1/.test(location.search))window.__cva=o=>fxCarrierAir(o);
