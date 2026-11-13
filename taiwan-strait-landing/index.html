@@ -2113,7 +2113,7 @@ function applyEra(){
   previewEra();const e=ERA[S.era]||ERA['2026'];
   {const sp=HMR_SPOTS.slice(0,HMR_N[S.era]||3);if((+S.era||2026)>=2027)sp[sp.length-1]='penghu'; // 國防部 2026 年 5 月證實規劃把海馬士前推到澎湖、東引；★2027 年起從既有數量調 1 組到澎湖
    sp.forEach(k=>{k=SPOT[k];if(!k||!TER[k])return;const h=!unitAt(k)?TER[k]:placeNear(k,x=>x.isl===TER[k].isl&&isLand(x)&&x.t!=='mtn'&&!unitAt(x.k));if(h)S.units.push(mkUnit('def','hmr',h.k,{}));});}
-  MLRS_SPOTS.forEach(k=>{k=SPOT[k];if(!k||!TER[k])return;const h=placeNear(k,x=>x.isl===TER[k].isl&&x.t!=='sea'&&x.t!=='air'&&x.t!=='port');if(h)S.units.push(mkUnit('def','mlrs',h.k,{}));}); // 駐地格已有步兵時，放在最近的空格
+  MLRS_SPOTS.forEach(k=>{k=SPOT[k];if(!k||!TER[k])return;const h=placeNear(k,x=>x.isl===TER[k].isl&&x.t!=='sea'&&x.t!=='air'&&x.t!=='port'&&!unitAt(x.k))||placeNear(SPOT.tainan,x=>x.isl==='TW'&&x.t!=='sea'&&x.t!=='air'&&x.t!=='port'&&!unitAt(x.k));if(h)S.units.push(mkUnit('def','mlrs',h.k,{}));}); // 駐地格已有步兵時，放在最近的空格
   e.ssm.forEach(k=>{k=SPOT[k]||k;if(TER[k]&&!unitAt(k))S.units.push(mkUnit('def','ssm',k,{}));});
   log('兵力年代：'+e.n+'。');log(applyLift()+'。');
   // 共軍渡海能力隨年代成長：075 兩棲攻擊艦（2021～2024 服役 3 艘，之後續建）、076 型（2025 年下水海試）、滾裝客貨輪與「水橋」登陸駁船（2024～2025 年陸續曝光）；首波兩棲旅依運力估計約每 2 年 +1 個（推估，不確定性高）
