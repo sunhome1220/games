@@ -1668,3 +1668,53 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 動畫時間減半。	Animations take half as long.
 很快（4 倍）	Very fast (4×)
 動畫時間剩四分之一，適合快速推進。	Animations take a quarter as long, for moving quickly.
+ 個旅	 brigades
+個旅	brigades
+ 個旅的戰力	 brigades' worth of strength
+ 戰力點	 strength pts
+% 戰力	% strength
+ 個營級戰力	 battalions' worth of strength
+累計受創 	hit in total 
+傷亡累計 	casualties in total 
+重創、失去戰鬥能力	badly damaged, out of action
+輕傷、仍能作戰	lightly damaged, still fighting
+完好	intact
+發射車	launchers
+ 輛發射車	 launchers
+狀態	status
+戰力	strength
+戰力 	strength 
+戰力剩 	strength left 
+攻方在本島的綜合戰力不少於守方，且至少	The attacker's combined combat power on the main island is at least the defender's and at least 
+（足以站穩）。綜合戰力依部隊種類加權：裝甲＞兩棲／陸戰／聯兵旅＞空降＞後備，飛彈與火箭發射車不計	 (enough to hold). Combat power is weighted by unit type: armor > amphibious/marines/combined-arms brigades > airborne > reserve; missile and rocket launchers do not count
+ 對 守方 	 vs defender 
+攻方雖未達成兩項條件，但在島上站穩了	The attacker did not meet two conditions, but holds on the island with 
+並控制 	 and controls 
+守方防線全面崩潰：攻方已達成三項勝利條件，島上守軍僅剩	Defense collapses: the attacker has met all three victory conditions and the defenders on the island are down to 
+（攻方	 (attacker 
+攻方島上綜合戰力不如守方，或不到	The attacker's combined combat power on the island is below the defender's, or under 
+（站不穩）	 (cannot hold)
+美國：美軍	US: US forces 
+ 的共軍航艦群（	 PLA carrier group (
+攻方島上戰力	Attacker strength on island
+守方島上戰力	Defender strength on island
+受創次數	times hit
+守軍傷亡慘重，島上戰力降至	Heavy defender casualties: strength on the island falls to 
+攻方登陸部隊受挫，島上戰力剩	Attacker landing force checked: strength on the island down to 
+守軍只剩	Garrison down to 
+受傷（	Damaged (
+剩 1 步	1 step left
+<span>島上戰力 攻 <b>	<span>Island strength A <b>
+損失來源（每局平均	Loss sources (average per game, 
+落點若遭地面火力壓制，約一半機率損失一半戰力；否則運輸機群有約 1/6 機率遭防空攔截，同樣損失一半戰力	If the drop zone is under ground fire, about a 1-in-2 chance to lose half its strength; otherwise the transports have about a 1-in-6 chance of being intercepted, also losing half its strength
+攻防較低、編制戰力小（每步綜合戰力約裝甲旅的四分之一），但數量能補強守備	Lower attack and defense and a small establishment (about a quarter of an armored brigade's combat power per step), but their numbers shore up the defense
+兵力說法改為一般人看得懂的通俗文字（預設）：陸軍旅顯示「戰力 %」、艦隊顯示「艘」、飛彈顯示「發射車」、航艦顯示「輕傷／重創／擊沉」、島上合計換算成「相當於幾個旅」；設定可切回戰棋用語「步」，規則完全相同	Unit strength is now shown in plain words (default): brigades as 'strength %', fleets in ships, missiles in launchers, carriers as lightly damaged / badly damaged / sunk, and island totals as 'about N brigades'; a setting switches back to wargame 'steps'. The rules are the same
+勝利條件「島上戰力」改比綜合戰力，不再單純比步數：依部隊種類加權（每步：裝甲／重型合成旅 1.2～1.3、兩棲、陸戰與聯兵旅 1.0、空降 0.6、後備 0.35，推估；依各旅實際裝備對照美軍教範範例的裝甲、機步、輕步兵相對比例），飛彈與火箭發射車不計。立即勝利、停火評估、盟國介入評估、快訊等使用島上兵力的地方一併改用綜合戰力	The 'Island strength' victory condition now compares combined combat power instead of raw steps, weighted by unit type (per step: armor/heavy combined-arms 1.2–1.3, amphibious, marines and combined-arms brigades 1.0, airborne 0.6, reserve 0.35, estimated by matching each brigade's actual equipment to the armor/mechanized/light-infantry ratios in a US Army manual example); missile and rocket launchers do not count. Instant victory, ceasefire and ally-intervention assessments and the news also use combat power
+部隊兵力的表示方式	How unit strength is shown
+通俗文字	Plain words
+（預設）陸軍旅顯示「戰力 %」、艦隊顯示「艘」、飛彈顯示「發射車」、航艦顯示「輕傷／重創／擊沉」，島上合計換算成「相當於幾個旅」。	(Default) Brigades show 'strength %', fleets show ships, missiles show launchers, carriers show lightly damaged / badly damaged / sunk, and island totals are converted to 'about N brigades'.
+戰棋用語（步）	Wargame terms (steps)
+沿用兵棋的「步」：每個單位有幾步，受損一次少一步；合計顯示加權後的戰力點數。規則完全相同，只是說法不同。	Uses wargame 'steps': each unit has a number of steps and loses one per hit; totals show weighted combat-power points. The rules are the same; only the wording differs.
+戰爭持續到指定回合結束，才依三項條件判定勝負，攻方達成 2 項以上獲勝：① 台北由攻方控制 ② 基隆、台中港、高雄至少 2 個港口由攻方控制 ③ 攻方島上綜合戰力（依部隊種類加權）不少於守方。只拿下台北且連續控制 2 個回合以上，判「僵局」（首都陷落但攻方孤立）；到最後才占領則視為暫時占領，仍判守方勝。每回合約半天。	The war runs to the set judgment turn, then three conditions decide; the attacker wins with 2 or more: (1) the attacker controls Taipei (2) the attacker controls at least 2 of Keelung, Taichung and Kaohsiung (3) the attacker's combined combat power on the island (weighted by unit type) is at least the defender's. Holding only Taipei for 2+ consecutive turns is a 'stalemate' (capital fallen but the attacker isolated); taking it only at the end counts as a temporary occupation and the defender still wins. Each turn is about half a day.
+戰力點	strength pts
+ 個主要港口，島上戰力 攻方	 main ports; combat power on the island: attacker 
