@@ -1623,3 +1623,5 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 澎湖沒有空的駐地	No free position on Penghu
 放棄國土的政治代價：守方社會韌性判定 −1（推估）	Political cost of giving up territory: defender social resilience −1 (estimate)
 澎湖維持現有守軍	Penghu keeps its current garrison
+攻方選澎湖軸線時，電腦開局就撥出部分火力打澎湖守軍（同時進攻 25%、先取澎湖 60%，推估），直到拿下馬公（路透社報導：澎湖會在第一波遭打擊；原本電腦幾乎不打澎湖，8 局中守軍到第 8 回合幾乎毫髮無傷）	When the attacker includes the Penghu axis, the computer now devotes part of its fire to Penghu's garrison from the start (25% with simultaneous attack, 60% when taking Penghu first; estimates) until Magong falls (Reuters: Penghu would be hit in the first wave; previously the computer barely touched Penghu and in 8 games the garrison was almost untouched by turn 8)
+修正「攻方已無法登陸」的判定：攻方還有兩棲艦可以再發起一波，或正按計畫先取澎湖時，不會因為一時沒有部隊在海上或島上就判定守方獲勝	Fixed the 'attacker can no longer land' check: if the attacker still has amphibious ships for another wave, or is deliberately taking Penghu first, a moment with no troops at sea or ashore no longer gives the defender the win
