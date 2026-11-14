@@ -200,7 +200,7 @@ function setZoom(z,recenter,anc){ // anc＝{fx,fy,px,py}：縮放後讓內容上
   const w=document.querySelector('.mapwrap'),m=$('#map'),old=ZOOM,fs=document.body.classList.contains('mapfs');
   const fx=(w.scrollLeft+w.clientWidth/2)/Math.max(1,w.scrollWidth),fy=(w.scrollTop+w.clientHeight/2)/Math.max(1,w.scrollHeight);
   ZOOM=Math.max(ZMIN,Math.min(ZMAX,Math.round(z*1000)/1000));
-  m.classList.toggle('zlo',FG>2&&ZOOM<1.6);m.style.setProperty('--zk',String(ZOOM>5?5/ZOOM:1));{const nu=usForZoom(ZOOM);if(nu!==US){US=nu;if(S&&S.started)requestAnimationFrame(()=>render());}} // 縮小時棋子縮成一格、地名只留勝負要點
+  m.classList.toggle('zlo',FG>2&&ZOOM<1.6);textZoomFix();{const nu=usForZoom(ZOOM);if(nu!==US){US=nu;if(S&&S.started)requestAnimationFrame(()=>render());}} // 縮小時棋子縮成一格、地名只留勝負要點
   // 縮放 1 = 原本可見範圍（遊戲格）填滿寬度；外圍示意區只在縮小或拖曳時看到
   m.style.width=(ZOOM*EXT*100)+'%';m.style.minWidth=ZOOM*EXT<1?'0':'';
   w.style.maxHeight='';

@@ -638,7 +638,7 @@ function ucPlace(){
   addEventListener('pointerup',end);addEventListener('pointercancel',end);
   addEventListener('resize',()=>{wxWinSync();renderStatus();apply();});
 })();
-function render(){coachUpdate();if(S.rec)recordFrame();else{renderAll();if(FXQ.length)playFx(FXQ.splice(0));}const rb=$('#btnRestart');if(rb)rb.hidden=!(S.started&&!S.over&&!S.video);{const on=!!S.started;const nb=$('#btnNew');if(nb)nb.hidden=!on;const fb=$('#fsNew');if(fb)fb.hidden=!on;const mb=$('#mNew');if(mb)mb.hidden=!on;}const ab=$('#btnAI');if(ab)ab.hidden=!(S.started&&!S.over&&!S.video&&!S.sim&&(S.ctrl.atk==='human'||S.ctrl.def==='human'));}
+function render(){coachUpdate();if(S.rec)recordFrame();else{renderAll();textZoomFix();if(FXQ.length)playFx(FXQ.splice(0));}const rb=$('#btnRestart');if(rb)rb.hidden=!(S.started&&!S.over&&!S.video);{const on=!!S.started;const nb=$('#btnNew');if(nb)nb.hidden=!on;const fb=$('#fsNew');if(fb)fb.hidden=!on;const mb=$('#mNew');if(mb)mb.hidden=!on;}const ab=$('#btnAI');if(ab)ab.hidden=!(S.started&&!S.over&&!S.video&&!S.sim&&(S.ctrl.atk==='human'||S.ctrl.def==='human'));}
 $('#btnRestart').onclick=()=>restartGame();$('#btnNew').onclick=()=>restartGame();$('#mNew').onclick=()=>restartGame();$('#fsNew').onclick=()=>restartGame(); // 隨時都能放棄這一局（含電腦推演、影片播放、事件視窗開著時）
 $('#btnAI').onclick=()=>{
   if(!S.started||S.over||S.video||S.sim)return;
