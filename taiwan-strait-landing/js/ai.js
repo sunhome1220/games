@@ -288,6 +288,7 @@ function hkHomeStep(u){ // 往最近的守方港口前進：回傳 {k,eta,inPort
 function subDetect(){ // 攻方階段開始：附近的護航艦各有機會發現潛艦；發現者可以投射反潛武器
   for(const u of S.units.filter(x=>x.side==='def'&&(x.type==='hk'||x.type==='ssn')&&atSea(x))){
     const loud=u.loud;u.loud=false;
+    if(u.type==='hk'&&strait(hexOf(u))&&(S.pools.plaFAC||0)>0&&!u.revealed&&hitP(Math.min(.3,.02*S.pools.plaFAC)*hkU(u)[1]*(loud?2:1),'subFAC')){u.revealed=true;u.last={c:u.c,r:u.r,turn:S.turn};log('共軍 056 輕型護衛艦在 '+hname(hexOf(u))+' 一帶偵測到潛艦訊號（海峽淺水，★每點 2%，推估）');}
     const fs=S.units.filter(e=>e.side==='atk'&&LAM.asw[e.type]&&alive(e)&&rd(hexOf(e),hexOf(u))<=LAM.aswR[e.type]&&hitP(Math.min(.95,LAM.asw[e.type]*(u.type==='hk'?hkU(u):hkE())[1]*(loud?2:1)),'subDetect:'+e.type)); // 新護航艦有艦載直升機，搜索範圍較大
     if(!fs.length)continue;
     if(!u.revealed){u.revealed=true;u.last={c:u.c,r:u.r,turn:S.turn};log('攻方護航艦在 '+hname(hexOf(u))+' 附近發現潛艦訊號');}

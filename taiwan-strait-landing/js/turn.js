@@ -489,13 +489,18 @@ const PLA_DRONE={'2026':200,'2027':200,'2028':300,'2029':300,'2030':500,'2031':5
 // 艦艇雷達訊號大、比陸上發射車好找：★出港艦隊的定位機率依制空——攻方優勢 90%、均勢 65%、守方優勢 40%；夜間 ×0.85（以雷達為主的海上偵察受夜間影響小）、雲雨或颱風 ×0.8；
 // 上一階段開火暴露＝100%；在港內是固定目標＝★90%。找到後以 ★16／12／6 枚空射反艦飛彈攻擊（依制空：可用的打擊機數），以齊射模型對上艦隊自身防空，每命中 1 枚沉 1 艘
 const KSEA={ctl:{atk:.9,mid:.65,def:.4},port:.9,night:.85,wx:.8,n:{atk:16,mid:12,def:6}};
+// 海峽（台灣本島西岸以西、大陸沿岸以東的海域）：共軍 022 飛彈快艇與 056 輕型護衛艦在這裡活動
+const strait=h=>!!h&&h.t==='sea'&&rcToLL(h.c,h.r)[0]<120.9&&rcToLL(h.c,h.r)[1]>22.3&&rcToLL(h.c,h.r)[1]<25.6;
+const facSalvo=()=>Math.round(Math.min(10,(S.pools.plaFAC||0))*.8);
 function huntFleets(){
   const out=[],ac=S.airCtl||'mid';
   for(const u of S.units.filter(x=>x.fl&&x.side==='def'&&alive(x))){
     const h=hexOf(u),inPort=h.t==='port';let p;
     if(inPort)p=KSEA.port;else if(u.revealed)p=1;else{p=KSEA.ctl[ac];if(S.turn%2===0)p*=KSEA.night;if(S.weather&&(S.weather.id==='bad'||tyThreat(S.weather)))p*=KSEA.wx;}
     if(!hitP(p,'huntLoc:'+(inPort?'port':'sea'))){out.push(u.fl.n+'：沒有找到（定位 '+Math.round(p*100)+'%）');continue;}
-    const n=KSEA.n[ac],r=salvoCalc(u,n,false,'hunt>'+u.fl.id);
+    const st=strait(h),fac=st?facSalvo():0; // 海峽內：022 飛彈快艇也加入攻擊（★每點 0.8 枚鷹擊-83，推估）
+    if(st&&S.pools.plaFAC>0){const l=takeInt(.25,'facLoss');if(l){S.pools.plaFAC=Math.max(0,S.pools.plaFAC-l);out.push(u.fl.n+'與共軍飛彈快艇交火，擊沉約 '+l*6+' 艘（推估）');}}
+    const n=KSEA.n[ac]+fac,r=salvoCalc(u,n,false,'hunt>'+u.fl.id);
     fxq({t:'air',at:[u.c,u.r],hit:r.hits>0,tsea:true,org:orgPick('pla'),k:'cm',ad:r.I>0?(r.hits>0?'pass':'int'):undefined,adSide:'def'});
     out.push(u.fl.n+'（'+(inPort?'港內':u.revealed?'開火後暴露':'海上')+'）：'+n+' 枚，艦隊攔截 '+r.I+' 枚，命中 '+r.hits+(r.hits?'，沉 '+Math.min(r.hits,u.hp)+' 艘':''));
     if(r.hits)damage(u,r.hits,'共軍空射反艦飛彈');

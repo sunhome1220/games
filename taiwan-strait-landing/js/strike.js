@@ -95,7 +95,7 @@ let PEND_XY=null; // 確認面板拖曳後的位置（兩個面板共用；重�
 function pendDrag(el){ // 確認面板可拖曳：按住按鈕以外的地方移動，避免擋住目標
   const put=()=>{if(!PEND_XY)return;const w=el.offsetWidth,h=el.offsetHeight,de=document.documentElement,x=Math.max(4,Math.min(de.clientWidth-w-4,PEND_XY[0])),y=Math.max(4,Math.min(de.clientHeight-h-4,PEND_XY[1]));Object.assign(el.style,{left:x+'px',top:y+'px',bottom:'auto',transform:'none'});};
   let d=null;
-  el.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const r=el.getBoundingClientRect();d=[e.clientX-r.left,e.clientY-r.top,e.pointerId];el.setPointerCapture(e.pointerId);el.classList.add('drag');});
+  el.addEventListener('pointerdown',e=>{if(e.target.closest('button,input,label'))return;const r=el.getBoundingClientRect();d=[e.clientX-r.left,e.clientY-r.top,e.pointerId];el.setPointerCapture(e.pointerId);el.classList.add('drag');});
   el.addEventListener('pointermove',e=>{if(!d||e.pointerId!==d[2])return;PEND_XY=[e.clientX-d[0],e.clientY-d[1]];put();});
   const up=e=>{if(d&&e.pointerId===d[2]){d=null;el.classList.remove('drag');}};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
   new MutationObserver(()=>{if(!el.hidden)put();}).observe(el,{attributes:true,attributeFilter:['hidden']});put();
