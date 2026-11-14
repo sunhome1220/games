@@ -65,9 +65,15 @@ function placeShips(){
   // 潛艦：劍龍級 2 艘（海龍、海虎，左營）＋海鯤（依年份）。高雄、花蓮港出港（隱蔽、魚雷有限，回港才能補彈）
   const pref=[SPOT.hualien,SPOT.kaohsiung],hkp=Object.values(TER).filter(h=>h.isl==='TW'&&h.t==='port'&&S.owner[h.k]==='def').map(h=>h.k).sort((x,y)=>((pref.indexOf(x)+1)||9)-((pref.indexOf(y)+1)||9));
   const nSub=Math.min(4,P.rocSub),nHL=Math.min(HL_N,nSub),hl=[SPOT.kaohsiung].concat(hkp.filter(k=>k!==SPOT.kaohsiung));
-  const put=(list,n,f)=>{for(let i=0,j=0;i<n&&j<list.length;){const k=list[j];if(unitsAt(k).length<STACK_MAX+1){const u=mkUnit("def","hk",k,{hm:HK_HM});f(u,i);u.tp=hkTp(u);S.units.push(u);i++;}else j++;}};
+  const put=(list,n,f)=>{for(let i=0,j=0;i<n&&j<list.length;){const k=list[j];if(unitsAt(k).length<STACK_MAX+1){const u=mkUnit("def","hk",subSea(k)||k,{hm:HK_HM});f(u,i);u.tp=hkTp(u);S.units.push(u);i++;}else j++;}};
   put(hl,nHL,(u,i)=>{u.hl=1;u.nm=HL_NM[i]||'劍龍級';}); // 劍龍級母港左營（高雄），滿了才往下一個港
   put(hkp.filter(k=>k!==SPOT.kaohsiung).concat(hkp.includes(SPOT.kaohsiung)?[SPOT.kaohsiung]:[]),nSub-nHL,()=>{}); // 海鯤：花蓮優先，避免和劍龍級擠在同一港
+}
+function subSea(k){ // 潛艦開戰前就從母港出港，在港外約 30～50 km 的海上隱蔽待命（不會在港內被第一波打沉）
+  const h0=TER[k];if(!h0)return null;const seen=new Set([k]);let q=[h0];
+  for(let d=1;d<=kmH(50)&&q.length;d++){const nx=[];for(const h of q)for(const n of nbrs(h.c,h.r)){if(!n||seen.has(n.k)||n.t!=='sea')continue;seen.add(n.k);nx.push(n);
+      if(d>=kmH(30)&&!unitsAt(n.k).length&&!S.units.some(e=>e.side==='atk'&&hd(hexOf(e),n)<=kmH(20)))return n.k;}q=nx;}
+  return null;
 }
 function syncShips(){
   if(!S.pools)return;

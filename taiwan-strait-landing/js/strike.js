@@ -278,7 +278,7 @@ function applyWhatIf(){
     if(String(S.era)==='2026'){hmrSpread(S.units.filter(u=>u.side==='def'&&u.type==='hmr'&&alive(u)).reduce((a,u)=>a+u.veh0,0)+18);pAdd('rocAtc',20);S.p0.rocAtc+=20;hx='海馬士第二批 18 輛、陸軍戰術飛彈 20 枚提前到貨';} // 2026 年底前預定到貨的第二批
     else{pAdd('rocMsl',2);hx='長程飛彈 +2';} // 2027 年起海馬士已依交付期程計入，不另加
     tag.push('軍購準時到貨');out.push('守方反艦飛彈 +3、防空 +1、'+hx);}
-  if(v('#optWiLocal')){pAdd('rocSub',1);pAdd('rocMsl',3);const pref=[SPOT.hualien,SPOT.kaohsiung],ports=Object.values(TER).filter(h=>h.isl==='TW'&&h.t==='port'&&S.owner[h.k]==='def').map(h=>h.k).sort((x,y)=>((pref.indexOf(x)+1)||9)-((pref.indexOf(y)+1)||9));for(const k of ports){if(unitsAt(k).length<STACK_MAX+1){S.units.push(mkUnit('def','hk',k,{tp:hkTp(),hm:HK_HM}));break;}}tag.push('國造武器提前量產');out.push('海鯤潛艦 +1、長程飛彈 +3');}
+  if(v('#optWiLocal')){pAdd('rocSub',1);pAdd('rocMsl',3);const pref=[SPOT.hualien,SPOT.kaohsiung],ports=Object.values(TER).filter(h=>h.isl==='TW'&&h.t==='port'&&S.owner[h.k]==='def').map(h=>h.k).sort((x,y)=>((pref.indexOf(x)+1)||9)-((pref.indexOf(y)+1)||9));for(const k of ports){if(unitsAt(k).length<STACK_MAX+1){S.units.push(mkUnit('def','hk',subSea(k)||k,{tp:hkTp(),hm:HK_HM}));break;}}tag.push('國造武器提前量產');out.push('海鯤潛艦 +1、長程飛彈 +3');}
   if(v('#optWiAllies')){const cs=S.fx.units.find(f=>f.id==='csg');if(cs)cs.delay=0;tag.push('美日提前介入');out.push('美軍航艦打擊群提前到位');}
   S.sandbox=tag;if(tag.length)log('【假設情境】'+tag.join('、')+'：'+out.join('；')+'。');
   return out;
