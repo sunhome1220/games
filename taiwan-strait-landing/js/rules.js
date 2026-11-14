@@ -252,7 +252,7 @@ function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥
 // 占領：該格與周圍沒有敵軍的陸地格一併易主（細格版的「控制範圍」）
 function claim(side,h){
   S.owner[h.k]=side;
-  if(side==='atk'&&h.t==='air'&&h.isl==='TW'){S.afl=S.afl||{};if(!S.afl[h.k]){S.afl[h.k]=1;const lost=airLose('def',S.air?S.air.TW/Math.max(1,airfields().length)*.25:0,'ground');log('攻方占領 '+(h.name||'機場')+'，來不及撤離的守方戰機 −'+lost+' 架（推估：該基地約四分之一）');}}
+  if(side==='atk'&&h.t==='air'&&h.isl==='TW'){S.afl=S.afl||{};if(!S.afl[h.k]){S.afl[h.k]=1;const lost=afBaseLost(h.k);if(lost)log('攻方占領 '+(h.name||'機場')+'，來不及撤離的守方戰機 −'+lost+' 架（推估：該基地約四分之一，其餘轉場）');}}
   for(const n of nbrs(h.c,h.r)){if(!isLand(n)||n.t==='port'||n.k===TAIPEI)continue;if(n.isl!==h.isl)continue;if(unitsAt(n.k).some(e=>e.side!==side))continue;if(n.isl==='CN'&&side!=='atk')continue;S.owner[n.k]=side;}
 }
 // 復原與防呆：人類操作的普通移動／出航可以撤銷（在做任何其他動作前）；結束階段時若還有沒用的火力或可行動單位，需再按一次確認
@@ -281,7 +281,7 @@ function endPhaseGuard(){ // 回傳 true＝先擋下並提示
 }
 function doMove(u,k,kind){
   const from=hexOf(u);const h=TER[k];
-  if(u.type==='hk'&&kind==='sail'){u.loud=hd(from,h)>SPD.subQuiet;if(u.loud&&!subHidden(u))log('海鯤潛艦高速航行 '+hd(from,h)+' 格（超過 '+SPD.subQuiet+' 格），噪音大，下一次被反潛發現的機率加倍');}
+  if(u.type==='hk'&&kind==='sail'){u.loud=hd(from,h)>SPD.subQuiet;if(u.loud&&!subHidden(u))log('海鯤潛艦高速航行約 '+Math.round(hd(from,h)*KM_HEX)+' km（超過 '+Math.round(SPD.subQuiet*KM_HEX)+' km），噪音大，下一次被反潛發現的機率加倍');}
   if(kind==='sail'&&isBde(u)&&!u.ship&&isLand(from)&&from.isl==='CN')embark(u,from);
   u.c=h.c;u.r=h.r;u.moved=true;if(u.type==='cv'||u.type==='csg'||u.type==='ddh')escFollow(u); // 護航艦跟著航艦移動
   if(u.ship&&(kind==='sail'||kind==='move')){const sh=shipOf(u);if(sh){sh.c=u.c;sh.r=u.r;}}

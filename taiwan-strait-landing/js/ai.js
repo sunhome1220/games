@@ -114,9 +114,9 @@ function prepSector(){
   }
   S.prep={k:key,hs};return hs;
 }
-function pickAirfield(){ // 電腦攻方：開局壓制機場（守方空軍還在、機場還沒癱瘓者優先）
+function pickAirfield(){ // 電腦攻方：開局壓制機場（守方空軍還在、機場還沒癱瘓者優先；有戰機的基地每 10 架 +1，沒有戰鬥機的 −6）
   if(!S.pools.rocAir||afShare()<=0)return null;let best=null,bs=-9;
-  for(const h of airfields()){const lv=afLevel(h.k);if(lv>=3||S.owner[h.k]==='atk')continue;const sc=Math.random()*1.5+(S.turn<=2?16:8)+(S.airCtl==='atk'?-3:0)-lv*2.5;if(sc>bs){bs=sc;best=h.k;}}
+  for(const h of airfields()){const lv=afLevel(h.k);if(lv>=3||S.owner[h.k]==='atk')continue;const n=afBaseN(h.k),sc=Math.random()*1.5+(S.turn<=2?16:8)+(S.airCtl==='atk'?-3:0)-lv*2.5+(n>0?n/10:-6);if(sc>bs){bs=sc;best=h.k;}}
   return best?{k:best,sc:bs}:null;
 }
 function pickStrike(){

@@ -259,7 +259,9 @@ let AFL=null;
 const airfields=()=>AFL||(AFL=Object.values(TER).filter(h=>h.t==='air'&&h.isl==='TW'));
 const afLevel=k=>S.owner[k]==='atk'?3:((S.afDmg&&S.afDmg[k])||0);
 const AFCAP=[1,.5,.2,0];
-function afShare(){const L=airfields();return L.length?L.reduce((a,h)=>a+AFCAP[afLevel(h.k)],0)/L.length:1;}
+function afShare(){ // 守方戰機實際能起降的比例：依各基地戰機數加權（炸沒有戰鬥機的民用機場或訓練基地，不影響出擊）
+  if(S.air&&S.air.bw){const c=afBaseCounts();let t=0,a=0;for(const k in c){t+=c[k];a+=c[k]*AFCAP[afLevel(k)];}return t>0?a/t:0;}
+  const L=airfields();return L.length?L.reduce((a,h)=>a+AFCAP[afLevel(h.k)],0)/L.length:1;}
 const CAVE=200; // ★佳山、石子山山洞機堡可容納的戰機（公開說法不一，約 80～200 架以上）
 const caveF=()=>S.mods&&S.mods.cave&&S.turn<=S.mods.cave.until&&S.air?Math.min(1,CAVE/Math.max(1,S.air.TW)):0; // 躲進山洞機堡的戰機比例
 const gndMul=()=>(1-caveF())*(S.mods&&S.mods.disp?.5:1); // 機場被打時地面戰機損失的倍率：機堡內的不會被炸、★分散到疏散機場與公路跑道減半
@@ -284,7 +286,7 @@ function strikeFac(id){
 function facSVG(){
   if(!S.started)return '';const strikeOn=humanTurn()&&S.phase==='atk'&&S.mode==='strike';let o='';
   for(const id in FAC){const h=facHex(id);if(!h)continue;const [x,y]=center(h.c,h.r),up=facUp(id),col=up?'var(--def,#2b5a8f)':'#888';
-    o+='<g class="fac" data-fac="'+id+'" style="cursor:pointer"><circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="9" fill="var(--panel,#fff)" stroke="'+col+'" stroke-width="2"'+(strikeOn&&up?' class="ring strike"':'')+'/>'+
+    const fs=Math.max(.55,SC);o+='<g class="fac" data-fac="'+id+'" style="cursor:pointer" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+fs.toFixed(2)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')"><circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="9" fill="var(--panel,#fff)" stroke="'+col+'" stroke-width="2"'+(strikeOn&&up?' class="ring strike"':'')+'/>'+
       '<path d="M'+(x-5).toFixed(1)+' '+(y+4).toFixed(1)+'A7 7 0 0 1 '+(x+4).toFixed(1)+' '+(y-5).toFixed(1)+'M'+(x-2).toFixed(1)+' '+(y+1).toFixed(1)+'L'+(x+3).toFixed(1)+' '+(y-3).toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round"/>'+
       (up?'':'<path d="M'+(x-7)+' '+(y-7)+'L'+(x+7)+' '+(y+7)+'" stroke="#c0392b" stroke-width="2.5"/>')+
       '<text x="'+x.toFixed(1)+'" y="'+(y+16).toFixed(1)+'" text-anchor="middle" font-size="6.5" font-weight="600" fill="'+col+'" stroke="var(--panel,#fff)" stroke-width="2" paint-order="stroke" pointer-events="none">'+FAC[id].n+'</text></g>';} // 字小一點、不擋棋子；失效只看紅色斜線
@@ -295,7 +297,7 @@ function strikeAirfield(k){ // 火力打擊機場：命中則損傷 +1 級；到
   const pk=fireTake(h,false);if(!pk)return false;S.stats.fire++;S.afDmg=S.afDmg||{};
   const PM=pkgMod(pk,h,null),need=S.sead?4:5,ok=hitP(pNeed(need)*PM.m,'strikeAirfield:'+pk.k); // 跑道容易被打出彈坑；防空被壓制時更容易
   fxq({t:'air',at:[h.c,h.r],hit:ok,tsea:false,org:orgPick('pla'),k:pk.k!=='g'?'bm':'cm'});
-  if(ok){S.afDmg[k]=lv+1;const nl=lv+1;let more='';if(nl>=2&&S.pools.rocAir>0&&gndMul()>0&&hitP(.5,'strikeAirfield')){more='，地面戰機 −'+airLose('def',4*gndMul(),'ground')+' 架（推估：強化機堡外）';}
+  if(ok){S.afDmg[k]=lv+1;const nl=lv+1;let more='';if(nl>=2&&S.pools.rocAir>0&&gndMul()>0&&hitP(.5,'strikeAirfield')){more='，地面戰機 −'+airLoseAt(k,4*gndMul(),'ground')+' 架（推估：強化機堡外）';}
     log('火力打擊機場 '+(h.name||'機場')+'：'+['','受損（起降 50%）','嚴重受損（起降 20%）','跑道癱瘓（無法起降）'][nl]+more+'（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');}
   else log('火力打擊機場 '+(h.name||'機場')+' 未命中（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');
   checkInstant();return true;
@@ -392,7 +394,7 @@ m*=MSL.field;txt+='；野外分散部隊（×'+MSL.field+'）';}
 }
 function airInit(){
   S.air={TW:AIR.TW[S.era]||AIR.TW['2026'],PLA:AIR.PLA,cvF:AIR.CV.map(c=>c.f),usF:CSGS.map(()=>AIR.US.f)};
-  S.air.TW0=S.air.TW;S.air.PLA0=S.air.PLA;airPts();
+  S.air.TW0=S.air.TW;S.air.PLA0=S.air.PLA;afInitBases();airPts();
 }
 function airPts(){const P=S.pools;if(!S.air||!P)return;P.rocAir=Math.round(ptsOf(S.air.TW,AIR.TWrate,AIR.TWq)*100)/100;P.plaAir=Math.round(ptsOf(S.air.PLA,AIR.PLArate,AIR.PLAq)*100)/100;S.air._tw=P.rocAir;S.air._pla=P.plaAir;}
 // 其他程式若直接改了點數（舊的加減），換算回架數，避免整點加減造成數十架的誤差
@@ -469,7 +471,7 @@ function cvwLandHit(side,c,x){
     fxq({t:'air',at:[h.c,h.r],hit:ok,tsea:false,from,k:'bomb'});
     txt='空襲機場 '+(h.name||'機場');
     if(ok){S.afDmg=S.afDmg||{};S.afDmg[k]=lv+1;const nl=lv+1;let more='';
-      if(nl>=2&&S.pools.rocAir>0&&gndMul()>0&&hitP(.5,'cvwAF:'+side)){more='，地面戰機 −'+airLose('def',4*gndMul(),'ground')+' 架（推估）';}
+      if(nl>=2&&S.pools.rocAir>0&&gndMul()>0&&hitP(.5,'cvwAF:'+side)){more='，地面戰機 −'+airLoseAt(k,4*gndMul(),'ground')+' 架（推估）';}
       txt+='：'+['','受損（起降 50%）','嚴重受損（起降 20%）','跑道癱瘓（無法起降）'][nl]+more;}else txt+='：未命中';
   }else if(x.port){
     const k=x.port,h=TER[k];ok=hitP(pNeed(5),'cvwPort:'+side);

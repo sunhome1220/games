@@ -195,11 +195,12 @@ function thFold(open){const t=document.querySelector('.theater');t.classList.tog
 $('#btnThFold').onclick=()=>thFold(document.querySelector('.theater').classList.contains('collapsed'));
 $('#btnThWide').onclick=()=>{const t=document.querySelector('.theater');t.classList.toggle('wide');$('#btnThWide').textContent=t.classList.contains('wide')?'縮小戰區圖':'放大戰區圖';};
 /* ---------- map zoom and fullscreen ---------- */
-let ZOOM=1;const ZMIN=.4,ZMAX=5; // 最大 500%
+let ZOOM=3;const ZMIN=.4,ZMAX=10,ZDEF=3; // 最大 1000%、預設 300%（10 km 格子放大看得清楚）
 function setZoom(z,recenter,anc){ // anc＝{fx,fy,px,py}：縮放後讓內容上的 (fx,fy)（占全圖比例）留在視窗內的 (px,py)——以手指中點或游標為錨點，像 Google 地圖
   const w=document.querySelector('.mapwrap'),m=$('#map'),old=ZOOM,fs=document.body.classList.contains('mapfs');
   const fx=(w.scrollLeft+w.clientWidth/2)/Math.max(1,w.scrollWidth),fy=(w.scrollTop+w.clientHeight/2)/Math.max(1,w.scrollHeight);
   ZOOM=Math.max(ZMIN,Math.min(ZMAX,Math.round(z*1000)/1000));
+  m.classList.toggle('zlo',FG>2&&ZOOM<1.6);{const nu=usForZoom(ZOOM);if(nu!==US){US=nu;if(S&&S.started)requestAnimationFrame(()=>render());}} // 縮小時棋子縮成一格、地名只留勝負要點
   // 縮放 1 = 原本可見範圍（遊戲格）填滿寬度；外圍示意區只在縮小或拖曳時看到
   m.style.width=(ZOOM*EXT*100)+'%';m.style.minWidth=ZOOM*EXT<1?'0':'';
   w.style.maxHeight='';
@@ -209,15 +210,16 @@ function setZoom(z,recenter,anc){ // anc＝{fx,fy,px,py}：縮放後讓內容上
     if(ZOOM>=1)w.style.height=(ZOOM===1?h1:Math.min(h1*ZOOM,cap)).toFixed(0)+'px';
     else{const hd=Math.min(ww*ZOOM*EXT*EVBH/EVBW,cap),t=Math.min(1,(1-ZOOM)/.3);w.style.height=(h1+(hd-h1)*t).toFixed(0)+'px';}
   }
-  const ox=(MX0+VBW/2)/EVBW,oy=(MY0+VBH/2)/EVBH;
+  const tc=ZOOM>1.2&&typeof SPOT!=='undefined'&&TER[SPOT.tcport]?center(TER[SPOT.tcport].c,TER[SPOT.tcport].r):null; // 放大時「回到台灣」以台灣中西部（台中港一帶）為中心
+  const ox=tc?(MX0+tc[0]+HPX*4)/EVBW:(MX0+VBW/2)/EVBW,oy=tc?(MY0+tc[1])/EVBH:(MY0+VBH/2)/EVBH;
   if(anc){w.scrollLeft=anc.fx*w.scrollWidth-anc.px;w.scrollTop=anc.fy*w.scrollHeight-anc.py;}
   else{const cx=recenter?ox:fx,cy=recenter?oy:fy;w.scrollLeft=cx*w.scrollWidth-w.clientWidth/2;w.scrollTop=cy*w.scrollHeight-w.clientHeight/2;}
   const t=Math.round(ZOOM*100)+'%';$('#zLabel').textContent=t;$('#fsZ').textContent=t;
-  if(old!==ZOOM&&!fs)try{localStorage.setItem('tsl-zoom',String(ZOOM));}catch(e){}
+  if(old!==ZOOM&&!fs)try{localStorage.setItem('tsl-zoom2',String(ZOOM));}catch(e){}
 }
-document.querySelectorAll('.zb').forEach(b=>b.addEventListener('click',()=>setZoom(ZOOM+(+b.dataset.z)*.25)));
+document.querySelectorAll('.zb').forEach(b=>b.addEventListener('click',()=>setZoom(ZOOM*Math.pow(1.25,+b.dataset.z)))); // 每按一次 ×1.25（最大 1000% 不用按太多次）
 $('#btnLoc').onclick=()=>setZoom(ZOOM,true); // 回到台灣：維持目前縮放，把地圖捲回遊戲區中央
-$('#zLabel').onclick=()=>setZoom(1,true);$('#fsZ').onclick=()=>setZoom(1,true);
+$('#zLabel').onclick=()=>setZoom(ZDEF,true);$('#fsZ').onclick=()=>setZoom(ZDEF,true);
 (function(){
   const w=document.querySelector('.mapwrap');
   // 錨點：視窗內 (cx,cy)（client 座標）對應的內容位置
@@ -354,6 +356,6 @@ $('#btnAssist').onclick=assistPhase;$('#fsAssist').onclick=assistPhase;$('#mbAss
 $('#mbEnd').onclick=()=>$('#btnEnd').click();$('#mbStrike').onclick=()=>$('#btnStrike').click();
 function reset(){newState();readSetup();render();renderWizard();}
 loadSetup();
-try{const z=+localStorage.getItem('tsl-zoom');if(z)ZOOM=Math.max(ZMIN,Math.min(ZMAX,z));else if(innerWidth<700)ZOOM=1.6;}catch(e){if(innerWidth<700)ZOOM=1.6;}
+try{const z=+localStorage.getItem('tsl-zoom2');if(z)ZOOM=Math.max(ZMIN,Math.min(ZMAX,z));}catch(e){} // 改用新的儲存鍵：所有人先回到預設 300%
 reset();setZoom(ZOOM,true);
 addEventListener('resize',()=>{if(!document.body.classList.contains('mapfs'))setZoom(ZOOM);});
