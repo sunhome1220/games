@@ -257,11 +257,17 @@ function setLevel(c,v,why){
 // 機場：每座機場有損傷等級 0 完好／1 受損（起降 50%）／2 嚴重受損（20%）／3 癱瘓或被占領（0%）；守方空軍只能從還能用的機場起飛
 let AFL=null;
 const airfields=()=>AFL||(AFL=Object.values(TER).filter(h=>h.t==='air'&&h.isl==='TW'));
-const afLevel=k=>S.owner[k]==='atk'?3:((S.afDmg&&S.afDmg[k])||0);
-const AFCAP=[1,.5,.2,0];
+// 跑道：每座機場可起降的跑道數（含可起降的平行滑行道、戰備跑道）。依維基百科與新聞：桃園、台南、岡山各 2 條平行跑道；屏東北、南兩片場站；
+//  嘉義另有戰備跑道；志航另有可起降的滑行道；清泉崗、花蓮各 1 條；新竹各來源 1～2 條不一，★取 1。S.afDmg[k]＝被切斷（待搶修）的跑道數
+const AF_RWY={taoyuanap:2,tainanab:2,gangshan:2,pingtung:2,chiayiab:2,chihhang:2,ckk:1,hsinchuab:1,chiashan:1};
+const afRwy=k=>{const id=Object.keys(AF_RWY).find(x=>SPOT[x]===k);return id?AF_RWY[id]:1;};
+const afCut=k=>Math.min(afRwy(k),(S.afDmg&&S.afDmg[k])||0);
+const afCap=k=>S.owner[k]==='atk'?0:(afRwy(k)-afCut(k))/afRwy(k); // 起降能力＝可用跑道 ÷ 總跑道
+const afLevel=k=>S.owner[k]==='atk'||afCap(k)<=0?3:afCut(k)===0?0:afCap(k)>=.5?1:2; // 0 完好、1 部分跑道受損、3 全部癱瘓或被占領（供圖示與電腦判斷）
+const afTxt=k=>afCap(k)<=0?'跑道全部癱瘓（無法起降）':afCut(k)?'切斷 '+afCut(k)+' 條跑道（剩 '+(afRwy(k)-afCut(k))+'／'+afRwy(k)+' 條，起降 '+Math.round(afCap(k)*100)+'%）':'完好（'+afRwy(k)+' 條跑道）';
 function afShare(){ // 守方戰機實際能起降的比例：依各基地戰機數加權（炸沒有戰鬥機的民用機場或訓練基地，不影響出擊）
-  if(S.air&&S.air.bw){const c=afBaseCounts();let t=0,a=0;for(const k in c){t+=c[k];a+=c[k]*AFCAP[afLevel(k)];}return t>0?a/t:0;}
-  const L=airfields();return L.length?L.reduce((a,h)=>a+AFCAP[afLevel(h.k)],0)/L.length:1;}
+  if(S.air&&S.air.bw){const c=afBaseCounts();let t=0,a=0;for(const k in c){t+=c[k];a+=c[k]*afCap(k);}return t>0?a/t:0;}
+  const L=airfields();return L.length?L.reduce((a,h)=>a+afCap(h.k),0)/L.length:1;}
 const CAVE=200; // ★佳山、石子山山洞機堡可容納的戰機（公開說法不一，約 80～200 架以上）
 const caveF=()=>S.mods&&S.mods.cave&&S.turn<=S.mods.cave.until&&S.air?Math.min(1,CAVE/Math.max(1,S.air.TW)):0; // 躲進山洞機堡的戰機比例
 const gndMul=()=>(1-caveF())*(S.mods&&S.mods.disp?.5:1); // 機場被打時地面戰機損失的倍率：機堡內的不會被炸、★分散到疏散機場與公路跑道減半
@@ -292,19 +298,19 @@ function facSVG(){
       '<text x="'+x.toFixed(1)+'" y="'+(y+16).toFixed(1)+'" text-anchor="middle" font-size="6.5" font-weight="600" fill="'+col+'" stroke="var(--panel,#fff)" stroke-width="2" paint-order="stroke" pointer-events="none">'+FAC[id].n+'</text></g>';} // 字小一點、不擋棋子；失效只看紅色斜線
   return o;
 }
-function strikeAirfield(k){ // 火力打擊機場：命中則損傷 +1 級；到嚴重程度時地面上的戰機也會損失
-  const h=TER[k];if(!h||S.fire<=0)return false;const lv=afLevel(k);if(lv>=3)return false;
+function strikeAirfield(k){ // 火力打擊機場：命中則切斷 1 條跑道；可用跑道剩一半以下時地面上的戰機也會損失
+  const h=TER[k];if(!h||S.fire<=0)return false;if(afCap(k)<=0)return false;
   const pk=fireTake(h,false);if(!pk)return false;S.stats.fire++;S.afDmg=S.afDmg||{};
   const PM=pkgMod(pk,h,null),need=S.sead?4:5,ok=hitP(pNeed(need)*PM.m,'strikeAirfield:'+pk.k); // 跑道容易被打出彈坑；防空被壓制時更容易
   fxq({t:'air',at:[h.c,h.r],hit:ok,tsea:false,org:orgPick('pla'),k:pk.k!=='g'?'bm':'cm'});
-  if(ok){S.afDmg[k]=lv+1;const nl=lv+1;let more='';if(nl>=2&&S.pools.rocAir>0&&gndMul()>0&&hitP(.5,'strikeAirfield')){more='，地面戰機 −'+airLoseAt(k,4*gndMul(),'ground')+' 架（推估：強化機堡外）';}
-    log('火力打擊機場 '+(h.name||'機場')+'：'+['','受損（起降 50%）','嚴重受損（起降 20%）','跑道癱瘓（無法起降）'][nl]+more+'（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');}
+  if(ok){S.afDmg[k]=afCut(k)+1;let more='';if(afCap(k)<=.5&&S.pools.rocAir>0&&gndMul()>0&&hitP(.5,'strikeAirfield')){more='，地面戰機 −'+airLoseAt(k,4*gndMul(),'ground')+' 架（推估：強化機堡外）';}
+    log('火力打擊機場 '+(h.name||'機場')+'：'+afTxt(k)+more+'（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');}
   else log('火力打擊機場 '+(h.name||'機場')+' 未命中（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');
   checkInstant();return true;
 }
-function repairAirfields(){ // 守方每 2 回合修復一級（未被占領的機場）
-  if(!S.afDmg||S.turn%2)return;
-  for(const k of Object.keys(S.afDmg)){if(S.owner[k]==='atk')continue;S.afDmg[k]--;log('守方搶修機場：'+(TER[k].name||'機場')+(S.afDmg[k]>0?'，仍受損':'，恢復運作'));if(S.afDmg[k]<=0)delete S.afDmg[k];}
+function repairAirfields(){ // 守方每個守方階段開始時，每座未被占領的機場搶修好 1 條跑道（★快速跑道搶修：填彈坑、開出最低可用跑道約數小時，取每 12 小時 1 條）
+  if(!S.afDmg)return;
+  for(const k of Object.keys(S.afDmg)){if(S.owner[k]==='atk')continue;S.afDmg[k]--;if(S.afDmg[k]<=0)delete S.afDmg[k];log('守方搶修機場：'+(TER[k].name||'機場')+' 修好 1 條跑道（'+(afCut(k)?'仍有 '+afCut(k)+' 條待修，起降 '+Math.round(afCap(k)*100)+'%':'恢復運作')+'）');}
 }
 function allyAir(){const dh=S.units&&jmsLead(),f35=dh&&(+S.era||2026)>=2027?ptsOf(10*dh.hp/2,1.0,1.32):0; // ★出雲級 F-35B 約 10 架
   return f35+rocAirEff()+S.fx.units.filter(f=>f.kind==='air'&&fxActive(f)).reduce((a,f)=>a+(isCSG(f)?usAirPts(f):f.hp),0);} // 美航艦以艦載機實際架次計；其他盟軍空軍仍為點數
@@ -467,12 +473,12 @@ function cvwLandBudget(side,c,sp){
 function cvwLandHit(side,c,x){
   const from=[c.u.c,c.u.r],src=c.n+'艦載機';let ok=false,txt='';
   if(x.af){
-    const k=x.af,h=TER[k],lv=afLevel(k),pk=S.sead?4:5;ok=hitP(pNeed(pk),'cvwAF:'+side);
+    const k=x.af,h=TER[k],pk=S.sead?4:5;ok=hitP(pNeed(pk),'cvwAF:'+side);
     fxq({t:'air',at:[h.c,h.r],hit:ok,tsea:false,from,k:'bomb'});
     txt='空襲機場 '+(h.name||'機場');
-    if(ok){S.afDmg=S.afDmg||{};S.afDmg[k]=lv+1;const nl=lv+1;let more='';
-      if(nl>=2&&S.pools.rocAir>0&&gndMul()>0&&hitP(.5,'cvwAF:'+side)){more='，地面戰機 −'+airLoseAt(k,4*gndMul(),'ground')+' 架（推估）';}
-      txt+='：'+['','受損（起降 50%）','嚴重受損（起降 20%）','跑道癱瘓（無法起降）'][nl]+more;}else txt+='：未命中';
+    if(ok){S.afDmg=S.afDmg||{};S.afDmg[k]=afCut(k)+1;let more='';
+      if(afCap(k)<=.5&&S.pools.rocAir>0&&gndMul()>0&&hitP(.5,'cvwAF:'+side)){more='，地面戰機 −'+airLoseAt(k,4*gndMul(),'ground')+' 架（推估）';}
+      txt+='：'+afTxt(k)+more;}else txt+='：未命中';
   }else if(x.port){
     const k=x.port,h=TER[k];ok=hitP(pNeed(5),'cvwPort:'+side);
     fxq({t:'air',at:[h.c,h.r],hit:ok,tsea:false,from,k:'bomb'});
