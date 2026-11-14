@@ -5,7 +5,7 @@ function hexPts(x,y,rr){let p=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-
 const humanTurn=()=>S.started&&!S.over&&!S.busy&&S.ctrl[S.phase]==='human';
 /* ---------- 3D map: static terrain layer + dynamic layer + effects ---------- */
 const DEPTH={plain:3,city:4,port:2.5,air:2.5,mtn:7,main:2.5};
-const US=R/26*1.18; // 單位圖示縮放（細格較小）
+const US=Math.max(R,16*.72)/26*1.18; // 單位圖示縮放：跟著格子縮，但格子比 20 km 細時保留原尺寸的 72%（太小點不到；會略大於一格）
 const elev=h=>isLand(h)?(DEPTH[h.t]||4):0;
 function cen(c,r){const [x,y]=center(c,r);return [x,y-elev(TER[K(c,r)])];}
 // ---------- 第 3d 階段：射程圈與艦隊資訊面板（只顯示，不影響規則）----------

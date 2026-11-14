@@ -7,7 +7,7 @@ const OC0=-1, OC1=30, OC1V=16, OR0=-2, OR1=16, OR=26, OW=Math.sqrt(3)*OR, OPAD=6
 const OVBW=OW*(OC1V-OC0)+OW/2+OPAD*2, OVBH=1.5*OR*(OR1-OR0-1)+2*OR+OPAD*2+12;
 const KS=16/(OR/2); // 畫面縮放：細格像素＝舊座標系像素 × KS
 // 細格＝舊粗格（約 40 km）切成 FG×FG；FG 由每格公里數決定（20 km→2、10 km→4）
-const KM_HEX=20;
+const KM_HEX=10;
 const FG=Math.round(40/KM_HEX);
 const R=OR/FG*KS, W=Math.sqrt(3)*R, PAD=6, HPX=KS*OW/FG; // HPX：相鄰格中心的像素距離
 const OX0=1.5*OW+OPAD, OY0=4*OR+OPAD; // 細格中心在舊座標系中的原點
@@ -126,7 +126,7 @@ const MAINC={}; // 舊版大陸座標 → 新版（真實經緯度）大陸地�
 const FK=k=>{if(MAINC[k])return MAINC[k];const [c,r]=k.split(',').map(Number);return K(FG*c+(r&1)*FG/2,FG*r);};
 const FC=(c,r)=>[FG*c+(r&1)*FG/2,FG*r];
 const cc=(c,r)=>{const [a,b]=FC(c,r);return center(a,b);};
-const ADJ_KM=40; // 地面戰鬥的「相鄰」：40 km 內（20 km 一格時＝1～2 格，沿用舊版粗格的相鄰）
+const ADJ_KM=20; // 地面戰鬥的「相鄰」（攻擊距離、控制區）：20 km 內＝旅的直射武器加旅屬砲兵（155 mm 約 15～24 km）能交戰的距離（使用者 2026-11-14 選定；原本沿用舊粗格的 40 km）
 function ring2(h){ // 距離 ADJ_KM 內的格（相當於舊版的「相鄰」）
   if(h.n2)return h.n2;const seen=new Set([h.k]),out=[];let fr=[h];
   for(let d=0;d<Math.round(kmH(ADJ_KM));d++){const nx=[];for(const a of fr)for(const b of nbrs(a.c,a.r))if(!seen.has(b.k)){seen.add(b.k);out.push(b);nx.push(b);}fr=nx;}

@@ -37,12 +37,13 @@ const hexOf=u=>TER[K(u.c,u.r)];
 const isMsl=u=>u.type==='ssm'||u.type==='ff'||u.type==='hmr'||u.type==='mlrs';
 const isShip=u=>u.type==='dd'||u.type==='ff'||u.type==='hk'||u.type==='ssn'||u.type==='cv'||u.type==='csg'||!!SHIPW[u.type]||u.type==='cvy'||u.type==='fob'||u.type==='lst'||u.type==='ro'; // 補給船團與灘頭補給站不是作戰部隊，不計入兵力
 const isSup=u=>u.type==='cvy'||u.type==='fob';
-const unitAt=k=>S.units.find(u=>K(u.c,u.r)===k);
+const kCR=k=>{const h=TER[k];if(h)return h;const [c,r]=String(k).split(',').map(Number);return {c,r};}; // 格代碼→座標（比對數字比每個單位都組字串快）
+const unitAt=k=>{const h=kCR(k);return S.units.find(u=>u.c===h.c&&u.r===h.r);};
 // 堆疊：每格最多 2 個友軍單位，不能與敵軍同格
 const STACK_MAX=2;
-const unitsAt=k=>S.units.filter(u=>K(u.c,u.r)===k);
+const unitsAt=k=>{const h=kCR(k);return S.units.filter(u=>u.c===h.c&&u.r===h.r);};
 const canStack=(u,k)=>{const a=unitsAt(k).filter(x=>!x.boundTo);return a.length<STACK_MAX&&a.every(x=>x.side===u.side&&x!==u)&&(!a.length||!isLand(TER[k])||!inZOC(u.side,TER[k]));};
-const stackPos=u=>{const a=unitsAt(K(u.c,u.r));if(a.length<2)return [0,0];const i=a.indexOf(u);return i<0?[0,0]:[i?8:-8,i?4:-4];};
+const stackPos=u=>{const a=unitsAt(K(u.c,u.r));if(a.length<2)return [0,0];const i=a.indexOf(u),s=R/16;return i<0?[0,0]:[i?8*s:-8*s,i?4*s:-4*s];}; // 同格兩個單位錯開（隨格子大小縮放）
 const atSea=u=>hexOf(u).t==='sea';
 const onTW=u=>hexOf(u).isl==='TW'&&u.type!=='ff'&&u.type!=='hk'; // 港內艦艇不算島上地面部隊
 const alive=u=>S.units.includes(u);

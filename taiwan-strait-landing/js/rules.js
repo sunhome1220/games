@@ -126,8 +126,10 @@ function effAtk(u){return TYPES[u.type].atk+sideMod(u,'atk')-weak(u)-unready(u)-
 function effDef(u){return TYPES[u.type].def+sideMod(u,'def')-weak(u)-unready(u)-(u.side==='atk'&&onTW(u)&&supply().over?1:0)-(unitsAt(K(u.c,u.r)).filter(x=>!isShip(x)).length>1?1:0);}
 function terrDef(h){return h.t==='city'||h.t==='mtn'?2:h.t==='port'?1:0;}
 function seaPen(u){if(!atSea(u))return 0;const wh=wxWave(hexOf(u)),wp=wh>2?2:wh>1.25?1:0;return (u.type==='mar'?-1:-2)-wp;} // 搶灘突擊：浪高越大，登陸艇越難靠岸（>1.25 公尺 −1、>2.0 公尺 −2）
-function inZOC(side,h){
-  return ring2(h).some(n=>unitsAt(n.k).some(e=>e.side!==side&&isLand(n)&&!isMsl(e)&&!isShip(e)&&!(e.type==='abn'&&n.isl==='CN')));
+const ADJ_N=()=>Math.round(kmH(ADJ_KM)); // 「相鄰」的格數（ring2 的半徑）
+function inZOC(side,h){ // 等同 ring2(h) 裡有敵方地面部隊：直接掃單位比掃 ring2 每一格快（10 km 格時 ring2 有約 60 格）
+  const R=ADJ_N();
+  return S.units.some(e=>{if(e.side===side||isMsl(e)||isShip(e))return false;const n=hexOf(e);if(!n||!isLand(n)||(e.type==='abn'&&n.isl==='CN'))return false;const d=hd(h,n);return d>=1&&d<=R;});
 }
 function support(u,t){
   let n=0;
@@ -215,7 +217,7 @@ function targets(u){
   if(u.acted)return [];
   if(u.type==='hmr'){ // 海馬士：打陸上目標。火箭（GMLRS）射程約 80 km＝4 格；陸軍戰術飛彈（ATACMS）約 300 km＝14 格；各自有實際庫存（rocGml、rocAtc）
     if(u.shots<=0||ssmReady(u)-(u.lu||0)<=0)return [];const hu=hexOf(u),P=S.pools||{},atc=(P.rocAtc||0)>=1,gml=(P.rocGml||0)>=1;if(!atc&&!gml)return [];
-    return S.units.filter(e=>e.side!==u.side&&!atSea(e)&&!isMsl(e)&&hexOf(e).isl!=='CN'&&(()=>{const d=rd(hu,hexOf(e));return d<=(atc?kmH(280):kmH(80));})());} // 大陸沿岸集結中的部隊不在目標內（那由長程對地打擊處理）
+    return S.units.filter(e=>e.side!==u.side&&!atSea(e)&&!isMsl(e)&&hexOf(e).isl!=='CN'&&(()=>{const d=rd(hu,hexOf(e));return d<=(atc?kmH(300):kmH(80));})());} // 大陸沿岸集結中的部隊不在目標內（那由長程對地打擊處理）
   if(u.type==='mlrs'){ // 雷霆2000：面積性火力，射程依彈種 15／30／45 km（每格約 20 km）＝最遠 2 格；打海灘上的部隊與靠岸的船團（反登陸），需有彈藥庫存
     if(u.shots<=0||(S.pools&&S.pools.rocRkt||0)<1)return [];const hu=hexOf(u);
     return S.units.filter(e=>e.side!==u.side&&!isMsl(e)&&hexOf(e).isl!=='CN'&&rd(hu,hexOf(e))<=kmH(40));}
@@ -544,4 +546,5 @@ function strategicTag(v,lim){
   }else lines.push('雙方都沒有取得決定性結果，戰略評價取決於後續談判與雙方的持久力。');
   return {tag,text:lines.join('')};
 }
-const twControl=()=>{const hs=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h));return hs.length?hs.filter(h=>S.owner[h.k]==='atk').length/hs.length:0;}; // 攻方控制的本島領土比例
+let TWL=null; // 本島陸地格（開局後不變，快取）
+const twControl=()=>{const hs=TWL||(TWL=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h)));return hs.length?hs.filter(h=>S.owner[h.k]==='atk').length/hs.length:0;}; // 攻方控制的本島領土比例
