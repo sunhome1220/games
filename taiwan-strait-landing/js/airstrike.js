@@ -125,23 +125,21 @@ function afPendInfo(){
   if(P.x.cn||P.x.stg){
     const u=P.x.stg?S.units.find(x=>x.id===P.x.stg):null;if(P.x.stg&&(!u||!alive(u)))return null;const tg=P.x.cn||{u},H=cnHitP(tg),wp=afCNwpK(k,P.x.cn||u),found=!u||stgFound(u)>0;
     nm=P.x.cn?CNB[P.x.cn].n:hname(hexOf(u)).replace(/^大陸 /,'大陸沿岸 ')+' 集結中的 '+TYPES[u.type].n;
-    lines.push('距離約 '+H.km+' km'+(u?'・'+(found?'本階段找到 '+stgFound(u)+' 步':'本階段沒有找到，打不到'):'・目前狀態 '+S.cn[P.x.cn]+'／'+CNB[P.x.cn].hp+' 級'));
-    lines.push('武器：'+(wp?AFS[wp].n+' 每批 '+AFS.pk+' 枚（剩 '+Math.round(S.pools[AFS[wp].pool]||0)+' 枚）':'萬劍彈與 SLAM-ER 射程不到或已用完')+'；共軍防空'+(H.IC.I?'約發射 '+Math.round(H.IC.I)+' 枚攔截彈、約 '+fmt1(H.IC.surv)+' 枚突破':'已失效'));
-    lines.push('命中率 <b>'+(found?Math.round(H.p*100):0)+'%</b>；命中：'+(u?TYPES[u.type].n+' 損失 '+stpU(u,1):(CN_FX[CNB[P.x.cn].kind]||'基地受損一級')));
+    lines.push(u?(found?'本階段找到 '+stgFound(u)+' 步':'本階段沒有找到，打不到'):'狀態 '+S.cn[P.x.cn]+'／'+CNB[P.x.cn].hp+' 級');
+    lines.push((wp?AFS[wp].n+' '+AFS.pk+' 枚（剩 '+Math.round(S.pools[AFS[wp].pool]||0)+'）':'萬劍彈、SLAM-ER 射程不到或已用完')+'・'+(H.IC.I?'約 '+fmt1(H.IC.surv)+' 枚突破防空':'共軍防空已失效'));
+    lines.push('命中率 <b>'+(found?Math.round(H.p*100):0)+'%</b>：'+(u?TYPES[u.type].n+' 損失 '+stpU(u,1):(CN_FX[CNB[P.x.cn].kind]||'基地受損一級')));
     ok=ok&&!!wp&&found;risk=AFS.lossCN;
   }else{
     const t=S.units.find(x=>x.id===P.x.u);if(!t||!alive(t))return null;nm=uname(t)+'（'+hname(hexOf(t))+'）';
     if(atSea(t)){const cov=adCover(t).length,n=Math.min(AFS.pk,Math.floor(S.pools.rocAAsh||0));
-      lines.push('武器：空射反艦飛彈 '+n+' 枚（剩 '+Math.round(S.pools.rocAAsh||0)+' 枚）');
-      lines.push(cov?'在 '+cov+' 艘護航艦的防空範圍內：先被攔截，突破的才計算命中（齊射模型）':'沒有護航防空：每枚命中率 '+Math.round(SALVO.pSeek*100)+'%，預估命中約 '+fmt1(n*SALVO.pSeek)+' 枚');
+      lines.push('空射反艦 '+n+' 枚（剩 '+Math.round(S.pools.rocAAsh||0)+'）・'+(cov?cov+' 艘護航艦防空，先被攔截':'無護航防空，預估命中 '+fmt1(n*SALVO.pSeek)+' 枚'));
       ok=ok&&n>0;risk=cov?AFS.loss:0;}
-    else{const h=hexOf(t),p=pNeed((h.t==='city'||h.t==='mtn')?6:5);lines.push('武器：精準炸彈');lines.push('命中率 <b>'+Math.round(p*100)+'%</b>'+((h.t==='city'||h.t==='mtn')?'（城市或山地較難命中）':'')+'；命中：'+tname(t)+' 損失 '+stpU(t,1));risk=S.pools.plaAD>0?AFS.loss:0;}
+    else{const h=hexOf(t),p=pNeed((h.t==='city'||h.t==='mtn')?6:5);lines.push('精準炸彈・命中率 <b>'+Math.round(p*100)+'%</b>'+((h.t==='city'||h.t==='mtn')?'（城市／山地）':'')+'：'+tname(t)+' 損失 '+stpU(t,1));risk=S.pools.plaAD>0?AFS.loss:0;}
   }
-  const tx=P.x.cn?P.x.cn:S.units.find(y=>y.id===(P.x.u||P.x.stg));if(tx)lines.unshift('距離 '+(h0.name||'基地')+' 約 '+afDist(k,tx)+' km／可達 '+Math.round(afReach(k,tx))+' km'+(afWing(k)?'（'+afWing(k)[1]+' 作戰半徑約 '+afRad(k)+' km'+((P.x.cn||P.x.stg)?'，飛到海峽中線附近才發射':'')+'）':''));
+  const tx=P.x.cn?P.x.cn:S.units.find(y=>y.id===(P.x.u||P.x.stg));if(tx)lines.unshift((h0.name||'基地')+' → '+afDist(k,tx)+' km（'+(afWing(k)?afWing(k)[1]+' ':'')+'可達 '+Math.round(afReach(k,tx))+' km）');
   const xx=P.x.cn?{cn:P.x.cn}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{u:S.units.find(y=>y.id===P.x.u)};
   const all=afUsable().map(h=>[h,afBudget(h.k)]).filter(x=>x[1]>0&&afCanHit(x[0].k,xx));
-  lines.push('打得到的基地剩餘：'+(all.length?all.map(([h,n])=>(h.name||'基地').replace(/基地$/,'')+' '+n).join('、')+'（共 '+all.reduce((a,x)=>a+x[1],0)+' 批，只列打得到這個目標的基地；這座用完會自動改由下一座出擊）':'沒有基地打得到或都已用完'));
-  lines.push('出擊：'+(h0.name||'基地')+' 每批 4 架；本階段還能出擊 '+nb+' 批；'+(risk?'預估被擊落約 '+fmt1(AFS.pk*risk*lr)+' 架（推估）':'沒有防空威脅')+'；點其他目標可切換');
+  lines.push((all.length?'剩 '+all.reduce((a,x)=>a+x[1],0)+' 批（'+all.map(([h,n])=>(h.name||'基地').replace(/基地$/,'')+' '+n).join('、')+'）':'沒有基地打得到或都已出擊完')+'・每批 4 架'+(risk?'・預估損失 '+fmt1(AFS.pk*risk*lr)+' 架':''));
   ok=ok&&!!xx&&afCanHit(k,xx);
   return {html:'<b>'+nm+'</b>'+lines.map(l=>'<div class="cpm">'+l+'</div>').join(''),ok};
 }
@@ -149,7 +147,7 @@ function afPendSync(){
   let el=document.getElementById('afPend');
   const on=S.afPend&&humanTurn()&&S.phase==='def'&&(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&!S.over,I=on?afPendInfo():null;
   if(!I){if(el)el.hidden=true;if(S.afPend&&!on)S.afPend=null;return;}
-  if(!el){el=document.createElement('div');el.id='afPend';document.body.appendChild(el);}
+  if(!el){el=document.createElement('div');el.id='afPend';document.body.appendChild(el);pendDrag(el);}
   el.innerHTML=I.html+'<div class="cpb"><button class="ghost" id="afPendNo">取消</button><button id="afPendGo"'+(I.ok?'':' disabled')+'>確認出擊</button></div>';el.hidden=false;
   document.getElementById('afPendNo').onclick=()=>{S.afPend=null;render();};
   document.getElementById('afPendGo').onclick=()=>{const P=S.afPend;if(!P)return;

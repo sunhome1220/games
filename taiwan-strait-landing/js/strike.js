@@ -81,21 +81,30 @@ function humanCN(id){ // 守方玩家點大陸基地：能打就打；不能打�
 const CN_FX={rf:'火箭軍駐地與預備陣地受損一級，之後的飛彈發射能量下降（飛彈與發射車多已疏散）',air:'跑道與機堡受損一級，共軍出擊架次下降',navy:'港區設施受損一級；打到癱瘓才傷及港內艦艇',isr:'指揮與偵察受損一級，共軍定位台灣目標的能力下降'};
 function cnPendInfo(){ // 回傳 {html,ok} 或 null
   const P=S.cnPend;if(!P)return null;let tg,nm,fx,extra='';
-  if(P.id){if(!CNB[P.id])return null;tg=P.id;nm=CNB[P.id].n;fx=(CN_FX[CNB[P.id].kind]||'基地受損一級')+'；攻方每 2 回合搶修一級';extra='目前狀態 '+S.cn[P.id]+'／'+CNB[P.id].hp+' 級';}
+  if(P.id){if(!CNB[P.id])return null;tg=P.id;nm=CNB[P.id].n;fx=(CN_FX[CNB[P.id].kind]||'基地受損一級');extra='狀態 '+S.cn[P.id]+'／'+CNB[P.id].hp+' 級';}
   else{const u=S.units.find(x=>x.id===P.u);if(!u||!alive(u)||hexOf(u).isl!=='CN')return null;tg={u};const f=stgFound(u);nm=hname(hexOf(u)).replace(/^大陸 /,'大陸沿岸 ')+' 集結中的 '+TYPES[u.type].n;fx=TYPES[u.type].n+' 損失 '+stpU(u,1);extra=f>0?'本階段找到 '+f+' 步（'+(u.sgL||'')+'）':'本階段沒有找到，打不到';}
-  const H=cnHitP(tg),wp=lrWpn(H.km,tg),hm=wp==='atc'?hmrFor(tg):null,wn=wp==='atc'?'陸軍戰術飛彈（'+hname(hexOf(hm))+' 的海馬士，距離約 '+Math.round(kmLL(rcToLL(hm.c,hm.r),tgLL(tg)))+' km）':wp==='msl'?'雄二E':null,found=!(tg.u)||stgFound(tg.u)>0;
+  const H=cnHitP(tg),wp=lrWpn(H.km,tg),hm=wp==='atc'?hmrFor(tg):null,wn=wp==='atc'?'陸軍戰術飛彈（'+hname(hexOf(hm))+' 海馬士，'+Math.round(kmLL(rcToLL(hm.c,hm.r),tgLL(tg)))+' km）':wp==='msl'?'雄二E':null,found=!(tg.u)||stgFound(tg.u)>0;
   const ok=!!wn&&found&&S.dfire>0;
-  const html='<b>'+nm+'</b><div class="cpm">距離約 '+H.km+' km・'+extra+'</div>'+
-    '<div class="cpm">武器：'+(wn?wn+' 每波 '+ROCLR.pk+' 枚':'射程內沒有可用的飛彈')+'；共軍防空'+(H.IC.I?'約發射 '+Math.round(H.IC.I)+' 枚攔截彈、約 '+fmt1(H.IC.surv)+' 枚突破':'已失效')+'</div>'+
-    '<div class="cpm">命中率 <b>'+(found?Math.round(H.p*100):0)+'%</b>（突破後依目標硬度）；命中：'+fx+'</div>'+
-    '<div class="cpm">本階段還能發射 '+S.dfire+' 波；點其他目標可切換</div>';
+  const html='<b>'+nm+'</b><div class="cpm">'+H.km+' km・'+extra+'</div>'+
+    '<div class="cpm">'+(wn?wn+' '+ROCLR.pk+' 枚':'射程內沒有可用的飛彈')+'・'+(H.IC.I?'約 '+fmt1(H.IC.surv)+' 枚突破防空':'共軍防空已失效')+'</div>'+
+    '<div class="cpm">命中率 <b>'+(found?Math.round(H.p*100):0)+'%</b>：'+fx+'</div>'+
+    '<div class="cpm">本階段還能發射 '+S.dfire+' 波</div>';
   return {html,ok};
+}
+let PEND_XY=null; // 確認面板拖曳後的位置（兩個面板共用；重新整理後回到預設）
+function pendDrag(el){ // 確認面板可拖曳：按住按鈕以外的地方移動，避免擋住目標
+  const put=()=>{if(!PEND_XY)return;const w=el.offsetWidth,h=el.offsetHeight,de=document.documentElement,x=Math.max(4,Math.min(de.clientWidth-w-4,PEND_XY[0])),y=Math.max(4,Math.min(de.clientHeight-h-4,PEND_XY[1]));Object.assign(el.style,{left:x+'px',top:y+'px',bottom:'auto',transform:'none'});};
+  let d=null;
+  el.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const r=el.getBoundingClientRect();d=[e.clientX-r.left,e.clientY-r.top,e.pointerId];el.setPointerCapture(e.pointerId);el.classList.add('drag');});
+  el.addEventListener('pointermove',e=>{if(!d||e.pointerId!==d[2])return;PEND_XY=[e.clientX-d[0],e.clientY-d[1]];put();});
+  const up=e=>{if(d&&e.pointerId===d[2]){d=null;el.classList.remove('drag');}};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  new MutationObserver(()=>{if(!el.hidden)put();}).observe(el,{attributes:true,attributeFilter:['hidden']});put();
 }
 function cnPendSync(){ // 每次重繪時更新面板
   let el=document.getElementById('cnPend');
   const on=S.cnPend&&humanTurn()&&S.phase==='def'&&S.mode==='strike'&&!S.over,I=on?cnPendInfo():null;
   if(!I){if(el)el.hidden=true;if(S.cnPend&&!on)S.cnPend=null;return;}
-  if(!el){el=document.createElement('div');el.id='cnPend';document.body.appendChild(el);}
+  if(!el){el=document.createElement('div');el.id='cnPend';document.body.appendChild(el);pendDrag(el);}
   el.innerHTML=I.html+'<div class="cpb"><button class="ghost" id="cnPendNo">取消</button><button id="cnPendGo"'+(I.ok?'':' disabled')+'>確認發射</button></div>';el.hidden=false;
   document.getElementById('cnPendNo').onclick=()=>{S.cnPend=null;render();};
   document.getElementById('cnPendGo').onclick=()=>{const P=S.cnPend;if(!P||S.dfire<=0||!lrOK())return;
