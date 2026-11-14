@@ -32,11 +32,10 @@
 1. 先 `git fetch origin main`，再從**最新** `origin/main` 開新分支（`git checkout -B <branch> origin/main`）。
    - 本機的 `origin/main` 可能過期；過期會讓你在舊基準上改、推出衝突標記。
 2. 實作 → 用 Playwright 實測（見第四節）→ 語法檢查。
-3. 版本與資料（缺一不可）：
+3. 版本與資料：
    - `python3 tools/bump_version.py <版本>`，格式 `2026-11-10.NN`（NN 遞增）。
    - `CHANGELOG`：加在 `const CHANGELOG=[` 之後第一筆（最新在最上面）。
-   - 英文：把「中文<TAB>English<TAB>」附加到 `tools/i18n/extras.tsv`（修改過的中文字串要補新的英文）。
-   - `python3 tools/i18n/build_dict.py` 重建字典。
+   - **翻譯不用每次改**（使用者 2026-11-14 指示）：平常改動不補 `extras.tsv`、不重建字典；累積一陣子後，使用者要求時再一次補英文（`extras.tsv`）並執行 `python3 tools/i18n/build_dict.py`（需要 `pip install opencc-python-reimplemented`）。
 4. 提交、推送、用 GitHub MCP 開 PR。**不要擅自合併**。
    - 使用者說「合併」＝合併所有未合併的 PR（squash）；「合併N」＝只合併第 N 號。
    - 不要更新 Artifact。
