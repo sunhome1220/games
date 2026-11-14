@@ -49,7 +49,7 @@ function renderTheater(){
   const P=S.pools,bar=(k,side)=>'<div class="pool"><span>'+POOLN[k]+'</span><i><em class="'+side+'" style="width:'+Math.round(100*Math.max(0,P[k])/Math.max(S.p0[k],P[k]))+'%"></em></i><b>'+Math.round(P[k]*10)/10+'</b></div>';
   const dt=(key,def,head,body)=>'<details class="fside" data-f="'+key+'"'+((FOLD[key]===undefined?def:FOLD[key])?' open':'')+'><summary class="fh">'+head+'</summary>'+body+'</details>';
   const cnN=Object.keys(CNB).filter(id=>S.cn[id]>0).length;
-  let l=dt('atk',true,'<b>攻方</b>',['plaAir','plaCV','plaSub','plaAD','plaNavy','plaLst','plaLift','rf','plaCM','plaLR','plaHS','plaDrone'].map(k=>bar(k,'atk')).join(''))+
+  let l=dt('atk',true,'<b>攻方</b>',['plaAir','plaCV','plaSub','plaAD','plaNavy','plaFAC','plaLst','plaLift','rf','plaCM','plaLR','plaHS','plaDrone'].map(k=>bar(k,'atk')).join(''))+
     dt('cnb',false,'<b>中方基地</b><span class="dd">運作中 '+cnN+' / '+Object.keys(CNB).length+'　◆火箭軍 ▲空軍 ■海軍 ●集結港</span>',
       Object.entries(CNB).map(([id,B])=>'<div class="fu cnrow'+(S.cnSel===id?' hl':'')+(dStrikeOn&&cnTargets().includes(id)?' tgt':'')+'" data-cnrow="'+id+'"><div><b>'+KIND_S[B.kind]+' '+B.n+'</b> <span class="dd">'+KIND_N[B.kind]+'</span></div><div class="fst"><span class="pips">'+
         Array.from({length:B.hp},(_,i)=>'<i class="'+(i<cnShown(id)?'f':'')+'"></i>').join('')+'</span><span class="st'+(cnShown(id)>0?'':' off')+'">'+(cnShown(id)>0?'運作中':'已癱瘓')+'</span></div></div>').join(''))+

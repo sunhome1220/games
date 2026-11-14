@@ -17,16 +17,16 @@ function pickBest(arr,score){let b=null,bs=-Infinity;for(const x of arr){const v
 
 /* ---------- theater: pools, foreign forces ---------- */
 // baseline (2026) force pools, abstract points built from public reporting; see DATA.md
-const POOL0={plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:8,rf:32,plaCM:5,plaLR:6,plaHS:3,rocAir:4,rocNavy:4,rocSub:2,rocAD:4,rocMsl:10,rocDrone:1,rocMine:1,rocAS:10,rocRkt:8,plaLift:8};
+const POOL0={plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:16,rf:32,plaCM:5,plaLR:6,plaHS:3,rocAir:4,rocNavy:4,rocSub:2,rocAD:4,rocMsl:10,rocDrone:1,rocMine:1,rocAS:10,rocRkt:8,plaLift:8,plaFAC:10};
 const AMPH_ERA={'2026':0,'2027':0,'2028':1,'2029':1,'2030':2,'2031':2,'2032':3};
 const ERA={
   '2026':{n:'2026 現況',d:'依 2025～2026 公開報導：台灣剛收到首批 F-16V、HIMARS 陸續到貨、雲峰尚未大量生產、火山布雷車尚未交付；共軍有約 250 具東風-26 發射器、東風-17 與 PCH-191 長程火箭，福建艦剛服役。',short:'2026 現況',pools:{},ssm:[],dfire:2},
-  '2027':{n:'2027（推估）',d:'火山布雷車 14 套預計到位（交付多次延後，最新報導為 2027 年）；福建艦達完整戰力；F-16V 持續交付、雲峰開始量產。',short:'2027',pools:{plaLift:9,plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:8,rf:33,plaCM:5,plaLR:7,plaHS:3,rocAir:4,rocNavy:4,rocSub:2,rocAD:4,rocMsl:11,rocDrone:1,rocAS:12,rocMine:3},ssm:[],dfire:2},
-  '2028':{n:'2028（推估）',d:'假設預定交付到位：F-16V 66 架、HIMARS 與魚叉岸防增加、第一艘海鯤潛艦服役；共軍增加東風-26 旅與長程火箭。',short:'2028',pools:{plaLift:10,plaAir:8,plaSub:4,plaCV:3,plaAD:6,plaNavy:9,rf:35,plaCM:6,plaLR:8,plaHS:4,rocAir:5,rocNavy:5,rocSub:3,rocAD:5,rocMsl:12,rocDrone:1,rocAS:14,rocMine:3},ssm:[],dfire:3},
-  '2029':{n:'2029（推估）',d:'特別預算（立法院縮減版）逐步採購：更多長程精準火力與防空，無人機與巡飛彈開始補上；共軍持續擴編。',short:'2029',pools:{plaLift:11,plaAir:8,plaSub:4,plaCV:3,plaAD:7,plaNavy:9,rf:37,plaCM:6,plaLR:9,plaHS:4,rocAir:5,rocNavy:5,rocSub:3,rocAD:5,rocMsl:13,rocDrone:2,rocAS:16,rocMine:4},ssm:[],dfire:3},
-  '2030':{n:'2030（推估）',d:'假設特別預算與自製武器落實：多層防空、更多長程精準火力；共軍第四艘航艦在建、火箭軍擴編。',short:'2030',pools:{plaLift:12,plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:10,rf:40,plaCM:6,plaLR:10,plaHS:5,rocAir:6,rocNavy:6,rocSub:3,rocAD:6,rocMsl:15,rocDrone:2,rocAS:18,rocMine:5},ssm:['taitung'],dfire:4},
-  '2031':{n:'2031（推估）',d:'NASAMS 合約預計 2031 年交付，防空明顯增強；海鯤潛艦增為 2 艘（計畫共 8 艘，進度不確定）。',short:'2031',pools:{plaLift:13,plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:10,rf:43,plaCM:7,plaLR:11,plaHS:6,rocAir:6,rocNavy:6,rocSub:4,rocAD:7,rocMsl:16,rocDrone:3,rocAS:20,rocMine:5},ssm:['taitung'],dfire:4},
-  '2032':{n:'2032（推估）',d:'特別預算期程（2026～2033）接近尾聲，雙方都明顯成長；數值為推估，不確定性最高。',short:'2032',pools:{plaLift:14,plaAir:8,plaSub:6,plaCV:4,plaAD:8,plaNavy:11,rf:45,plaCM:7,plaLR:12,plaHS:7,rocAir:6,rocNavy:6,rocSub:4,rocAD:7,rocMsl:17,rocDrone:3,rocAS:22,rocMine:6},ssm:['taitung','yunlin'],dfire:4}
+  '2027':{n:'2027（推估）',d:'火山布雷車 14 套預計到位（交付多次延後，最新報導為 2027 年）；福建艦達完整戰力；F-16V 持續交付、雲峰開始量產。',short:'2027',pools:{plaLift:9,plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:16,rf:33,plaCM:5,plaLR:7,plaHS:3,rocAir:4,rocNavy:4,rocSub:2,rocAD:4,rocMsl:11,rocDrone:1,rocAS:12,rocMine:3},ssm:[],dfire:2},
+  '2028':{n:'2028（推估）',d:'假設預定交付到位：F-16V 66 架、HIMARS 與魚叉岸防增加、第一艘海鯤潛艦服役；共軍增加東風-26 旅與長程火箭。',short:'2028',pools:{plaLift:10,plaAir:8,plaSub:4,plaCV:3,plaAD:6,plaNavy:18,rf:35,plaCM:6,plaLR:8,plaHS:4,rocAir:5,rocNavy:5,rocSub:3,rocAD:5,rocMsl:12,rocDrone:1,rocAS:14,rocMine:3},ssm:[],dfire:3},
+  '2029':{n:'2029（推估）',d:'特別預算（立法院縮減版）逐步採購：更多長程精準火力與防空，無人機與巡飛彈開始補上；共軍持續擴編。',short:'2029',pools:{plaLift:11,plaAir:8,plaSub:4,plaCV:3,plaAD:7,plaNavy:18,rf:37,plaCM:6,plaLR:9,plaHS:4,rocAir:5,rocNavy:5,rocSub:3,rocAD:5,rocMsl:13,rocDrone:2,rocAS:16,rocMine:4},ssm:[],dfire:3},
+  '2030':{n:'2030（推估）',d:'假設特別預算與自製武器落實：多層防空、更多長程精準火力；共軍第四艘航艦在建、火箭軍擴編。',short:'2030',pools:{plaLift:12,plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:20,rf:40,plaCM:6,plaLR:10,plaHS:5,rocAir:6,rocNavy:6,rocSub:3,rocAD:6,rocMsl:15,rocDrone:2,rocAS:18,rocMine:5},ssm:['taitung'],dfire:4},
+  '2031':{n:'2031（推估）',d:'NASAMS 合約預計 2031 年交付，防空明顯增強；海鯤潛艦增為 2 艘（計畫共 8 艘，進度不確定）。',short:'2031',pools:{plaLift:13,plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:20,rf:43,plaCM:7,plaLR:11,plaHS:6,rocAir:6,rocNavy:6,rocSub:4,rocAD:7,rocMsl:16,rocDrone:3,rocAS:20,rocMine:5},ssm:['taitung'],dfire:4},
+  '2032':{n:'2032（推估）',d:'特別預算期程（2026～2033）接近尾聲，雙方都明顯成長；數值為推估，不確定性最高。',short:'2032',pools:{plaLift:14,plaAir:8,plaSub:6,plaCV:4,plaAD:8,plaNavy:22,rf:45,plaCM:7,plaLR:12,plaHS:7,rocAir:6,rocNavy:6,rocSub:4,rocAD:7,rocMsl:17,rocDrone:3,rocAS:22,rocMine:6},ssm:['taitung','yunlin'],dfire:4}
 };
 function previewEra(){const e=ERA[S.era]||ERA['2026'],H=HMR_ERA[S.era]||HMR_ERA['2026'];S.p0=Object.assign({},POOL0,e.pools,{plaDrone:PLA_DRONE[S.era]||200,rocAtc:H[2],rocGml:H[3]},AFS_POOL(S.era));
   S.p0.rocMsl=Math.round((S.p0.rocMsl-Math.min(H[2],84)/25)*100)/100; // 陸軍戰術飛彈改由 rocAtc 單獨計算：從長程飛彈點數扣掉原本估在裡面的 ATACMS（2026 年 64 枚、之後 84 枚，1 點≈25 枚）
@@ -54,10 +54,11 @@ function applyEra(){
 // 水面艦艇上地圖：共軍護航艦在港口外海，守方艦艇群停泊在港口；兩者都很脆弱，擊沉會連動減少海軍點數
 function placeShips(){
   const P=S.pools;
-  // 護航艦：一個棋子約代表一個點（艦隊規模成長時，海峽上的護航艦也跟著變多，上限 8 個）
-  const nd=Math.min(8,Math.max(0,P.plaNavy)),ports=['4,4','3,3','3,7','2,9'].map(k=>TER[FK(k)]);
+  // 護航艦：一個棋子約代表一個點（★一點≈052D＋054A 各 1 艘；2026 年 16 點≈32 艘，依公開估計共軍驅逐艦約 50、054A 約 40～46 艘，約一半投入台海；上限 16 個棋子）
+  const nd=Math.min(16,Math.max(0,P.plaNavy)),ports=['4,4','3,3','3,7','2,9'].map(k=>TER[FK(k)]);
   const seaC=[];ports.forEach(h=>nbrs(h.c,h.r).filter(x=>x.t==='sea'&&x.c>h.c-1).forEach(x=>{if(!seaC.includes(x))seaC.push(x);}));
-  ports.forEach(h=>nbrs(h.c,h.r).forEach(n=>nbrs(n.c,n.r).filter(x=>x.t==='sea'&&x.c>h.c&&!seaC.includes(x)).forEach(x=>seaC.push(x)))); // 第二圈外海格，讓 8 個棋子有位置
+  ports.forEach(h=>nbrs(h.c,h.r).forEach(n=>nbrs(n.c,n.r).filter(x=>x.t==='sea'&&x.c>h.c&&!seaC.includes(x)).forEach(x=>seaC.push(x)))); // 第二圈外海格
+  seaC.slice().forEach(h=>nbrs(h.c,h.r).filter(x=>x&&x.t==='sea'&&!seaC.includes(x)).forEach(x=>seaC.push(x))); // 第三圈：讓最多 16 個棋子有位置
   for(let i=0;i<nd&&i<seaC.length;i++){const h=seaC[i];if(unitsAt(h.k).length<STACK_MAX)S.units.push(mkUnit('atk','dd',h.k,{}));}
   // 共軍航艦群在台灣東側海域活動
   [[122.9,24.2],[122.9,23.3],[122.9,22.4]].slice(0,Math.min(3,P.plaCV)).forEach(([lo,la],ci)=>{const [c,r]=llToRC(lo,la),h=TER[K(c,r)];if(h&&h.t==='sea'&&canStack({side:'atk'},h.k)){const cvU=mkUnit('atk','cv',h.k,{});cvU.cvi=ci;cvU.wmag=CVW.PLA[ci].mag;S.units.push(cvU);spawnEscorts(cvU,ESC_PLA,'atk');}});
@@ -112,7 +113,7 @@ function sweepMines(){
   for(let i=0;i<sw;i++){const k=ks[i];delete S.mines[k];got.push(hname(TER[k]));if(hitP(1/6,'sweepMines')){P.plaNavy--;got.push('掃雷艦觸雷（攻方護航艦 −1）');}}
   syncMines();log('攻方掃雷：清除 '+got.join('、')+'。');
 }
-const POOLN={plaDrone:'舊戰機改裝無人機（誘餌，每個攻方階段放出 40 架消耗守方攔截彈）',rocRkt:'雷霆2000火箭彈庫存（每發 1 點）',plaLst:'兩棲艦群（運旅、可搶灘；往返制，沉了就永久損失）',plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程對地飛彈（雄二E 等；1 點≈25 枚）',rocAtc:'陸軍戰術飛彈（ATACMS，海馬士用；每點 1 枚）',rocAAsh:'空射反艦飛彈（AGM-84L 魚叉；每點 1 枚）',rocWC:'萬劍彈（經國號空射對地，射程約 200 km；每點 1 枚）',rocSlam:'SLAM-ER 空射對地飛彈（射程約 270 km；每點 1 枚）',rocGml:'GMLRS 精準火箭彈（海馬士用；每點 1 個莢艙＝6 發）',rocDrone:'無人機與巡飛彈'};
+const POOLN={plaFAC:'海峽輕型艦艇（022 飛彈快艇、056 輕型護衛艦；★1 點約 6 艘，推估）',plaDrone:'舊戰機改裝無人機（誘餌，每個攻方階段放出 40 架消耗守方攔截彈）',rocRkt:'雷霆2000火箭彈庫存（每發 1 點）',plaLst:'兩棲艦群（運旅、可搶灘；往返制，沉了就永久損失）',plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程對地飛彈（雄二E 等；1 點≈25 枚）',rocAtc:'陸軍戰術飛彈（ATACMS，海馬士用；每點 1 枚）',rocAAsh:'空射反艦飛彈（AGM-84L 魚叉；每點 1 枚）',rocWC:'萬劍彈（經國號空射對地，射程約 200 km；每點 1 枚）',rocSlam:'SLAM-ER 空射對地飛彈（射程約 270 km；每點 1 枚）',rocGml:'GMLRS 精準火箭彈（海馬士用；每點 1 個莢艙＝6 發）',rocDrone:'無人機與巡飛彈'};
 const CN={US:'美國',JP:'日本'};
 const LV={US:['不介入','情報支援','有限介入','全面參戰'],JP:['中立','後方支援','全面參戰']};
 
@@ -645,7 +646,7 @@ const tname=t=>t.fl?t.fl.n:t.hl?subNm(t):TYPES[t.type].n;
 // 共軍潛艦打美航艦：美方反潛屏障 A＝護航艦數＋MH-60R 架數÷4（★航艦反潛直升機中隊 11 架＋每艘護航艦 2 架）；★命中率 0.3÷(1＋0.25A)，★潛艦被擊沉機率 min(0.6, 0.05A)
 const LAM={per:4,asw:{f54:.35,d55:.3,d52:.25,dd:.25},aswR:{f54:kmH(120),d55:kmH(120),d52:kmH(120),dd:kmH(60)},hkCv:.05,hkMin:.1,mh60cv:11,mh60esc:2};
 function usAswScreen(g){const u=g||uscPiece();if(!u||!alive(u))return 0;const es=S.units.filter(e=>e.ally==='US'&&isEsc(e)&&e.type!=='tak'&&alive(e)&&e.grp===u.id).length;return es+(LAM.mh60cv+LAM.mh60esc*es)/4;}
-const ESC_PLA=['d55','d52','f54']; // ★共軍航艦典型護航：055、052D、054A 各 1 艘（日本防衛省多次通報 3 艘左右護航）
+const ESC_PLA=['d55','d52','d52','f54','f54']; // ★戰時航艦護航 5 艘：055×1、052D×2、054A×2。日本防衛省歷次通報平時編隊 3～5 艘＋901 補給艦（例：2022 遼寧 055×2、052D、054A；2025 山東 055、054A×2），戰時取上限
 // 美航艦打擊群（公開資料：航艦＋3～5 艘水面艦＋補給艦）：★2026～2027 年巡洋艦 1＋柏克級 3；之後柏克級 4（巡洋艦退役）；另有戰鬥支援艦 1
 const usEscorts=()=>((+S.era||2026)<=2027?['cg','ddg','ddg','ddg']:['ddg','ddg','ddg','ddg']).concat(['tak']);
 const SUPPLY_LOSS=.7;
