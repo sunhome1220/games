@@ -1,21 +1,23 @@
 'use strict';
 // coordinates may be negative: columns COL0..COL1-1, rows ROW0..ROW1-1 (original Taiwan coordinates are unchanged)
-// 格數加倍：遊戲格是舊版格子（粗格，R=26）的 2×2 細分；舊座標系（粗格）仍用於地形來源與外圍示意區
+// 遊戲格是舊版格子（粗格，R=26，約 40 km）的 FG×FG 細分（FG 見下方 KM_HEX）；舊座標系（粗格）仍用於地形來源與外圍示意區
 // 第 3b 階段：遊戲格往東延伸到約 128.5°E（粗格 OC1 16→30、細格 COL1 33→61），讓美航艦能在共軍艦射反艦飛彈射程外作戰；
 // 預設畫面（縮放 100%）仍以原本的台灣範圍（OC1V）為準，東側要捲動或縮小才看得到
 const OC0=-1, OC1=30, OC1V=16, OR0=-2, OR1=16, OR=26, OW=Math.sqrt(3)*OR, OPAD=6;
 const OVBW=OW*(OC1V-OC0)+OW/2+OPAD*2, OVBH=1.5*OR*(OR1-OR0-1)+2*OR+OPAD*2+12;
-const KS=16/(OR/2); // 細格相對舊座標系的放大倍率
-const R=OR/2*KS, W=Math.sqrt(3)*R, PAD=6;
+const KS=16/(OR/2); // 畫面縮放：細格像素＝舊座標系像素 × KS
+// 細格＝舊粗格（約 40 km）切成 FG×FG；FG 由每格公里數決定（20 km→2、10 km→4）
+const KM_HEX=10;
+const FG=Math.round(40/KM_HEX);
+const R=OR/FG*KS, W=Math.sqrt(3)*R, PAD=6, HPX=KS*OW/FG; // HPX：相鄰格中心的像素距離
 const OX0=1.5*OW+OPAD, OY0=4*OR+OPAD; // 細格中心在舊座標系中的原點
-const COL0=-3, COL1=61, ROW0=-4, ROW1=32; // 細格索引範圍
+const COL0=FG*OC0-1, COL1=FG*OC1+1, ROW0=FG*OR0, ROW1=FG*OR1; // 細格索引範圍（涵蓋整個粗格範圍）
 const VBW=OVBW*KS, VBH=OVBH*KS, GVBW=(OW*(OC1-OC0)+OW/2+OPAD*2)*KS; // GVBW＝整個遊戲格的寬度
 const oCenter=(c,r)=>[OW*(c-OC0+.5*(r&1))+OW/2+OPAD,(r-OR0)*1.5*OR+OR+OPAD];
 // 外圍示意區（僅縮小時可見，不參與遊戲）：左／右／上／下的延伸量（舊座標系 px）
 const oMX0=150, oMX1=760, oMY0=170, oMY1=400;
 const MX0=oMX0*KS, MX1=oMX1*KS, MY0=oMY0*KS, MY1=oMY1*KS, EVBW=VBW+MX0+MX1, EVBH=VBH+MY0+MY1, EXT=EVBW/VBW;
 // 地圖尺度：每格（相鄰格中心距離）約幾公里。射程、移動、距離一律用公里寫，再用 kmH() 換成格數；要改格子大小只改 KM_HEX（地形與地點座標另需重建）
-const KM_HEX=20;
 const kmH=km=>km/KM_HEX;
 const K=(c,r)=>c+','+r;
 const $=s=>document.querySelector(s);
@@ -40,36 +42,36 @@ const SIDE={atk:'攻方',def:'守方'};
 const TERN={sea:'海域',main:'大陸',plain:'平原',city:'城市',mtn:'山地',port:'港口',air:'機場'};
 
 const TYPES={
-  amph:{n:'兩棲合成旅',s:'兩棲',atk:3,def:3,mv:kmH(40),hp:3},
-  mar:{n:'陸戰旅',s:'陸戰',atk:3,def:3,mv:kmH(40),hp:3},
-  abn:{n:'空降旅',s:'空降',atk:3,def:2,mv:kmH(40),hp:2},
-  arm:{n:'重型合成旅',s:'裝甲',atk:5,def:3,mv:kmH(60),hp:3},
-  inf:{n:'聯兵旅',s:'步兵',atk:2,def:3,mv:kmH(40),hp:3},
-  tank:{n:'裝甲旅',s:'裝甲',atk:4,def:3,mv:kmH(60),hp:3},
-  res:{n:'後備旅',s:'後備',atk:2,def:2,mv:kmH(40),hp:2},
-  ssm:{n:'岸置反艦飛彈',s:'飛彈',atk:0,def:1,mv:kmH(40),hp:2},
-  hmr:{n:'海馬士火箭砲（HIMARS）',s:'海馬士',atk:0,def:1,mv:kmH(40),hp:2},
-  mlrs:{n:'雷霆2000多管火箭',s:'雷霆',atk:0,def:1,mv:kmH(40),hp:2},
-  dd:{n:'共軍護航艦',s:'護航',atk:2,def:1,mv:kmH(60),hp:2},
-  cv:{n:'共軍航艦群',s:'航艦',atk:0,def:2,mv:kmH(60),hp:3},
-  csg:{n:'美軍航艦打擊群',s:'美航艦',atk:0,def:3,mv:kmH(60),hp:3},
-  d55:{n:'055 型驅逐艦',s:'055',atk:0,def:2,mv:kmH(60),hp:2},
-  ssn:{n:'美軍 攻擊潛艦',s:'SSN',atk:0,def:1,mv:kmH(60),hp:2},
+  amph:{n:'兩棲合成旅',s:'兩棲',atk:3,def:3,mv:kmH(80),hp:3},
+  mar:{n:'陸戰旅',s:'陸戰',atk:3,def:3,mv:kmH(80),hp:3},
+  abn:{n:'空降旅',s:'空降',atk:3,def:2,mv:kmH(80),hp:2},
+  arm:{n:'重型合成旅',s:'裝甲',atk:5,def:3,mv:kmH(120),hp:3},
+  inf:{n:'聯兵旅',s:'步兵',atk:2,def:3,mv:kmH(80),hp:3},
+  tank:{n:'裝甲旅',s:'裝甲',atk:4,def:3,mv:kmH(120),hp:3},
+  res:{n:'後備旅',s:'後備',atk:2,def:2,mv:kmH(80),hp:2},
+  ssm:{n:'岸置反艦飛彈',s:'飛彈',atk:0,def:1,mv:kmH(80),hp:2},
+  hmr:{n:'海馬士火箭砲（HIMARS）',s:'海馬士',atk:0,def:1,mv:kmH(80),hp:2},
+  mlrs:{n:'雷霆2000多管火箭',s:'雷霆',atk:0,def:1,mv:kmH(80),hp:2},
+  dd:{n:'共軍護航艦',s:'護航',atk:2,def:1,mv:kmH(120),hp:2},
+  cv:{n:'共軍航艦群',s:'航艦',atk:0,def:2,mv:kmH(120),hp:3},
+  csg:{n:'美軍航艦打擊群',s:'美航艦',atk:0,def:3,mv:kmH(120),hp:3},
+  d55:{n:'055 型驅逐艦',s:'055',atk:0,def:2,mv:kmH(120),hp:2},
+  ssn:{n:'美軍 攻擊潛艦',s:'SSN',atk:0,def:1,mv:kmH(120),hp:2},
   nme:{n:'美陸戰隊 NMESIS 反艦飛彈',s:'NMESIS',atk:0,def:1,mv:0,hp:2},
   mdt:{n:'美陸軍 堤豐（多域特遣隊）',s:'堤豐',atk:0,def:1,mv:0,hp:2},
-  tak:{n:'美軍 戰鬥支援艦',s:'補給',atk:0,def:1,mv:kmH(60),hp:2},
-  ddh:{n:'海自 出雲級直升機護衛艦',s:'出雲',atk:0,def:2,mv:kmH(60),hp:2},
-  jdg:{n:'海自 神盾護衛艦（摩耶級／愛宕級）',s:'神盾',atk:0,def:2,mv:kmH(60),hp:2},
-  jdd:{n:'海自 通用護衛艦（代表其餘 5 艘）',s:'護衛艦',atk:0,def:1,mv:kmH(60),hp:2},
-  d52:{n:'052D 型驅逐艦',s:'052D',atk:0,def:2,mv:kmH(60),hp:2},
-  f54:{n:'054A 型護衛艦',s:'054A',atk:0,def:1,mv:kmH(60),hp:1},
-  cg:{n:'提康德羅加級巡洋艦',s:'巡洋艦',atk:0,def:2,mv:kmH(60),hp:2},
-  ddg:{n:'柏克級驅逐艦',s:'神盾艦',atk:0,def:2,mv:kmH(60),hp:2},
-  ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:kmH(60),hp:2},
-  hk:{n:'海鯤潛艦',s:'潛艦',atk:0,def:1,mv:kmH(60),hp:2},
-  lst:{n:'兩棲艦群',s:'兩棲艦',atk:0,def:1,mv:kmH(60),hp:2},
-  ro:{n:'滾裝船團',s:'滾裝',atk:0,def:1,mv:kmH(40),hp:2},
-  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:kmH(40),hp:2}, // 滾裝客貨輪比軍艦慢：每回合最多航行 2 個舊格
+  tak:{n:'美軍 戰鬥支援艦',s:'補給',atk:0,def:1,mv:kmH(120),hp:2},
+  ddh:{n:'海自 出雲級直升機護衛艦',s:'出雲',atk:0,def:2,mv:kmH(120),hp:2},
+  jdg:{n:'海自 神盾護衛艦（摩耶級／愛宕級）',s:'神盾',atk:0,def:2,mv:kmH(120),hp:2},
+  jdd:{n:'海自 通用護衛艦（代表其餘 5 艘）',s:'護衛艦',atk:0,def:1,mv:kmH(120),hp:2},
+  d52:{n:'052D 型驅逐艦',s:'052D',atk:0,def:2,mv:kmH(120),hp:2},
+  f54:{n:'054A 型護衛艦',s:'054A',atk:0,def:1,mv:kmH(120),hp:1},
+  cg:{n:'提康德羅加級巡洋艦',s:'巡洋艦',atk:0,def:2,mv:kmH(120),hp:2},
+  ddg:{n:'柏克級驅逐艦',s:'神盾艦',atk:0,def:2,mv:kmH(120),hp:2},
+  ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:kmH(120),hp:2},
+  hk:{n:'海鯤潛艦',s:'潛艦',atk:0,def:1,mv:kmH(120),hp:2},
+  lst:{n:'兩棲艦群',s:'兩棲艦',atk:0,def:1,mv:kmH(120),hp:2},
+  ro:{n:'滾裝船團',s:'滾裝',atk:0,def:1,mv:kmH(80),hp:2},
+  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:kmH(80),hp:2}, // 滾裝客貨輪比軍艦慢：每回合最多航行 2 個舊格
   fob:{n:'灘頭補給站',s:'補給站',atk:0,def:2,mv:0,hp:3}
 };
 const WEATHER={
@@ -78,7 +80,6 @@ const WEATHER={
   bad:{id:'bad',n:'惡劣',sea:kmH(40),air:false,fire:-2}
 };
 
-Object.values(TYPES).forEach(t=>{t.mv*=2;}); // 格數加倍：移動力加倍，實際行進距離不變
 
 /* ---------- map ---------- */
 const TERC={}; // 舊版粗格地形（作為細格與外圍示意區的來源）
@@ -112,9 +113,9 @@ for(let r=ROW0;r<ROW1;r++)for(let c=COL0;c<COL1;c++)TER[K(c,r)]={c,r,k:K(c,r),t:
 (function(){
   const cells=Object.values(TERC),cp=cells.map(h=>oCenter(h.c,h.r));
   for(const h of Object.values(TER)){
-    const x=OW/2*(h.c+.5*(h.r&1))+OX0,y=.75*OR*h.r+OY0;let bi=0,bd=1e18;
+    const x=OW/FG*(h.c+.5*(h.r&1))+OX0,y=1.5*OR/FG*h.r+OY0;let bi=0,bd=1e18;
     for(let i=0;i<cells.length;i++){const dx=cp[i][0]-x,dy=cp[i][1]-y,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i;}}
-    const q=cells[bi],ctr=(h.c===2*q.c+(q.r&1)&&h.r===2*q.r);
+    const q=cells[bi],ctr=(h.c===FG*q.c+(q.r&1)*FG/2&&h.r===FG*q.r);
     h.t=q.t;h.isl=q.isl;h.cliff=!!q.cliff;h.mud=!!q.mud;h.name=null;h.pc=q.c;h.pr=q.r;
     if(q.t==='port'||q.t==='air'){if(ctr)h.name=q.name||null;else{h.t='plain';}}
     else if(ctr)h.name=q.name||null;
@@ -122,10 +123,10 @@ for(let r=ROW0;r<ROW1;r++)for(let c=COL0;c<COL1;c++)TER[K(c,r)]={c,r,k:K(c,r),t:
 })();
 // 粗格座標 → 細格座標（中心細格）
 const MAINC={}; // 舊版大陸座標 → 新版（真實經緯度）大陸地點
-const FK=k=>{if(MAINC[k])return MAINC[k];const [c,r]=k.split(',').map(Number);return K(2*c+(r&1),2*r);};
-const FC=(c,r)=>[2*c+(r&1),2*r];
+const FK=k=>{if(MAINC[k])return MAINC[k];const [c,r]=k.split(',').map(Number);return K(FG*c+(r&1)*FG/2,FG*r);};
+const FC=(c,r)=>[FG*c+(r&1)*FG/2,FG*r];
 const cc=(c,r)=>{const [a,b]=FC(c,r);return center(a,b);};
-const ADJ_KM=40; // 地面戰鬥的「相鄰」：40 km 內（20 km 一格時＝1～2 格，沿用舊版粗格的相鄰）
+const ADJ_KM=20; // 地面戰鬥的「相鄰」（攻擊距離、控制區）：20 km 內＝旅的直射武器加旅屬砲兵（155 mm 約 15～24 km）能交戰的距離（使用者 2026-11-14 選定；原本沿用舊粗格的 40 km）
 function ring2(h){ // 距離 ADJ_KM 內的格（相當於舊版的「相鄰」）
   if(h.n2)return h.n2;const seen=new Set([h.k]),out=[];let fr=[h];
   for(let d=0;d<Math.round(kmH(ADJ_KM));d++){const nx=[];for(const a of fr)for(const b of nbrs(a.c,a.r))if(!seen.has(b.k)){seen.add(b.k);out.push(b);nx.push(b);}fr=nx;}
@@ -137,12 +138,12 @@ function nbrs(c,r){
 }
 function cube(c,r){const x=c-(r-(r&1))/2;return [x,-x-r,r];}
 // 射程用的直線距離（以「相鄰格中心距離＝1」為單位，1 單位約 20 km）：武器、雷達、防空的射程判定都用它，範圍是圓形；移動、相鄰、控制區仍用格數 hd
-function rd(a,b){const [ax,ay]=center(a.c,a.r),[bx,by]=center(b.c,b.r);return Math.hypot(ax-bx,ay-by)/(KS*OW/2)-1e-9;}
+function rd(a,b){const [ax,ay]=center(a.c,a.r),[bx,by]=center(b.c,b.r);return Math.hypot(ax-bx,ay-by)/HPX-1e-9;}
 function hd(a,b){const p=cube(a.c,a.r),q=cube(b.c,b.r);return Math.max(Math.abs(p[0]-q[0]),Math.abs(p[1]-q[1]),Math.abs(p[2]-q[2]));}
 const isLand=h=>h.t!=='sea';
 
 // ---- 台灣本島與澎湖：依真實海岸線、山脈與城市位置重畫（大陸沿岸仍沿用舊版格局）
-const GEO={r0:4,lat0:25.04,dlat:.1557*KM_HEX/20,c0:18,lon0:120.5,dlon:.1917*KM_HEX/20}; // 每列約 KM_HEX×√3/2 公里、每欄約 KM_HEX 公里（約北緯 24 度）
+const GEO={r0:2*FG,lat0:25.04,dlat:.1557*KM_HEX/20,c0:9*FG,lon0:120.5,dlon:.1917*KM_HEX/20}; // 每列約 KM_HEX×√3/2 公里、每欄約 KM_HEX 公里（約北緯 24 度）
 const llToRC=(lon,lat)=>{const r=Math.round(GEO.r0+(GEO.lat0-lat)/GEO.dlat);return [Math.round(GEO.c0+(lon-GEO.lon0)/GEO.dlon-.5*(r&1)),r];};
 const rcToLL=(c,r)=>[GEO.lon0+(c+.5*(r&1)-GEO.c0)*GEO.dlon,GEO.lat0-(r-GEO.r0)*GEO.dlat];
 const SPOT={};

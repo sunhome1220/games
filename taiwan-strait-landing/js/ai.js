@@ -22,7 +22,7 @@ async function aiTryAttack(u,thr,focus){
   if(braw>=thr){attack(u,best);render();await sleep(380);return true;}
   return false;
 }
-function enemyAdj(k,side){const h=TER[k];return ring2(h).reduce((a,n)=>a+unitsAt(n.k).filter(e=>e.side!==side&&canHitSub(e)).length,0);}
+function enemyAdj(k,side){const h=TER[k],R=ADJ_N();return S.units.reduce((a,e)=>{if(e.side===side||!canHitSub(e))return a;const d=hd(h,hexOf(e));return a+(d>=1&&d<=R?1:0);},0);} // 等同 ring2 內的敵軍數
 function minD(k,list){const h=TER[k];return Math.min.apply(null,list.map(x=>hd(h,TER[x])));}
 async function runAI(side){
   S.busy=true;render();await sleep(500);
