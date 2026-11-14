@@ -1862,3 +1862,26 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
  個主要港口永久破壞	 major ports permanently destroyed
 守方本回合與下回合攻擊 −1（特戰部隊折損）	Defender attack −1 this turn and next (special-forces losses)
 「持久戰策略」改寫：每個選項分「效果／代價」說明；全力反攻與固守要點除了攻防加減，電腦操作的守軍也會實際照著反攻或固守；「襲擾補給線」與攔截補給事件重複，改為「動員第二梯次後備部隊」（在最受威脅的要點附近再編成 2 個後備旅）；焦土選項修正為 4 個主要港口；特種部隊突襲拿掉不合理的「被視為先動手」（已開戰多時），代價改為特戰部隊折損	'Protracted-war strategy' rewritten: each option now states its effect and cost; besides the attack/defense changes, 'all-out counteroffensive' and 'hold key points' now make AI-controlled defenders actually counterattack or hold; 'harass supply lines' duplicated the supply-interdiction event and is replaced by 'mobilize second-wave reserves' (2 more reserve brigades near the most threatened objectives); scorched earth now covers the 4 major ports; the special-forces raid drops the illogical 'seen as striking first' (the war is long underway) and its cost is now special-forces losses
+陸軍戰術飛彈（ATACMS，海馬士用；每點 1 枚）	ATACMS tactical missiles (HIMARS; 1 point = 1 missile)
+GMLRS 精準火箭彈（海馬士用；每點 1 個莢艙＝6 發）	GMLRS precision rockets (HIMARS; 1 point = 1 pod of 6)
+長程對地飛彈（雄二E 等；1 點≈25 枚）	Long-range land-attack missiles (HF-2E etc.; 1 point ≈ 25 missiles)
+台灣長程飛彈（雄二E）	Taiwan long-range missiles (HF-2E)
+輛齊射	launchers fire
+枚陸軍戰術飛彈	ATACMS missiles
+個火箭莢艙（	rocket pods (
+發）（庫存剩	rockets) (stock left:
+（庫存剩	(stock left:
+枚飛彈）	missiles)
+個莢艙）	pods)
+枚飛彈	missiles
+次齊射（每次最多 4 輛）：火箭彈射程 4 格，庫存	salvos (up to 4 launchers each): rocket range 4 hexes, stock
+個莢艙；陸軍戰術飛彈射程 14 格，庫存	pods; ATACMS range 14 hexes, stock
+海馬士只能打陸上目標：4 格內用火箭彈，14 格內用陸軍戰術飛彈（各有庫存）；每次最多 4 輛齊射，每階段次數依可射車數，發射後可再移動。	HIMARS can only hit land targets: rockets within 4 hexes, ATACMS within 14 hexes (each with its own stock); up to 4 launchers fire per salvo, salvos per phase depend on ready launchers; it can still move after firing.
+火箭彈射程 4 格；陸軍戰術飛彈（ATACMS）射程 14 格；兩種彈藥各有實際庫存，打完就沒有	Rocket range 4 hexes; ATACMS range 14 hexes; both munitions have real stocks and run out
+每次最多 4 輛齊射，每階段次數依可射車數；打完就轉移，重新隱蔽	Up to 4 launchers per salvo; salvos per phase depend on ready launchers; relocates and hides after firing
+守方反艦飛彈 +3、防空 +1、	Defender anti-ship missiles +3, air defense +1, 
+海馬士第二批 18 輛、陸軍戰術飛彈 20 枚、火箭莢艙 144 個提前到貨	second HIMARS batch (18 launchers, 20 ATACMS, 144 rocket pods) arrives early
+長程飛彈 +2	long-range missiles +2
+美製武器如期交付：守方反艦飛彈 +3、防空 +1；2026 年海馬士第二批（18 輛、陸軍戰術飛彈 20 枚、火箭彈 864 發）開戰前到貨，其他年代長程飛彈 +2。	US arms delivered on schedule: defender anti-ship missiles +3, air defense +1; in 2026 the second HIMARS batch (18 launchers, 20 ATACMS, 864 rockets) arrives before the war, other eras get long-range missiles +2.
+海馬士火箭砲棋子：發射車 2026 年 11 輛、2027～2028 年 29 輛，2029 年起隨後續核准的 82 輛逐年增加到 2032 年 111 輛（後續交付時程為推估），平均分給 3～6 組棋子。彈藥是實際庫存：陸軍戰術飛彈 2026 年 64 枚、2027 年 84 枚，之後逐年增加到 504 枚；GMLRS 精準火箭彈 2026 年尚未到貨、2027 年 864 發，之後增加。屬機動發射車，隱蔽、開火後暴露、打了就跑的規則與岸置飛彈相同；每次最多 4 輛齊射（每輛 1 枚飛彈或 1 個 6 發莢艙），每階段次數依可射車數。只打陸上目標：火箭彈射程 4 格（約 80 km，擲 4 以上）、陸軍戰術飛彈射程 14 格（約 300 km，擲 5 以上），目標在城市或山地再 +1，不滿 4 輛時命中率依比例縮小，命中使對方損失 1 步。	HIMARS rocket artillery counters: 11 launchers in 2026, 29 in 2027–2028, then rising each year from 2029 with the 82 approved later to 111 in 2032 (follow-on delivery timing is an estimate), split evenly across 3–6 counters. Munitions are real stocks: ATACMS 64 in 2026, 84 in 2027, rising to 504; GMLRS precision rockets not yet delivered in 2026, 864 in 2027, rising afterwards. Mobile launchers using the same hide / exposed-after-firing / shoot-and-scoot rules as coastal missiles; up to 4 launchers fire per salvo (1 missile or one 6-rocket pod each), salvos per phase depend on ready launchers. Land targets only: rockets range 4 hexes (about 80 km, needs 4+), ATACMS range 14 hexes (about 300 km, needs 5+), +1 if the target is in a city or mountains, hit chance scales down with fewer than 4 launchers, a hit costs the target 1 step.
+海馬士依交付進度與實際彈藥：發射車 2026 年 11 輛、2027～2028 年 29 輛，2029 年起隨 2025 年 12 月核准的 82 輛逐年增加到 2032 年 111 輛（後續交付時程為推估）；陸軍戰術飛彈與 GMLRS 精準火箭彈改用實際庫存（2026 年 64 枚、火箭彈第二批年底才到；2027 年 84 枚、864 發；之後依 420 枚、1,203 個莢艙的追加案增加），不再動用長程飛彈點數，縱深打擊只用雄二E；每次最多 4 輛齊射，每階段次數依可射車數；假設情境「軍購準時到貨」在 2026 年改為第二批 18 輛與彈藥提前到貨	HIMARS by delivery schedule with real munitions: 11 launchers in 2026, 29 in 2027–2028, then rising each year from 2029 with the 82 approved in December 2025 to 111 in 2032 (follow-on timing is an estimate); ATACMS and GMLRS precision rockets now use real stocks (2026: 64 missiles, rockets arrive with the second batch at year end; 2027: 84 missiles, 864 rockets; then rising with the 420-missile, 1,203-pod follow-on) instead of the long-range missile pool, and deep strikes use HF-2E only; up to 4 launchers fire per salvo, salvos per phase depend on ready launchers; the 'arms delivered on time' scenario in 2026 now brings the second batch of 18 launchers and munitions early
