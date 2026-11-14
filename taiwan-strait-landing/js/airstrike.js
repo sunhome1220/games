@@ -106,9 +106,10 @@ function afPanelHTML(k){
   if(!ac)return '<div class="hint">'+(W?W[0]+'：目前沒有戰機（'+(S.owner[k]==='atk'?'基地已被占領':'戰機已損失或轉場')+'）':'沒有戰鬥機進駐，不能從這裡出擊')+'。</div>';
   let o='<div class="hint"><b>'+(TER[k].name||'基地')+'</b>（'+(W?W[0]+'・'+W[1]:'')+'）：戰機約 '+ac+' 架'+'，'+afTxt(k)+(caveF()>0?'（約 '+Math.round(caveF()*100)+'% 躲在山洞機堡）':'')+'；本階段可出擊 '+n+' 批（每批 4 架）；空射反艦飛彈 '+Math.round(P.rocAAsh||0)+' 枚、萬劍彈 '+Math.round(P.rocWC||0)+' 枚'+((P.rocSlam||0)>0?'、SLAM-ER '+Math.round(P.rocSlam)+' 枚':'')+'。全台各基地本階段還能出擊共 '+afUsable().reduce((a,h)=>a+afBudget(h.k),0)+' 批；沒用完的份額在階段結束時由電腦自動出擊。</div>';
   if(humanTurn()&&S.phase==='def'&&S.ctrl.def==='human'&&n>0)o+='<div class="cvord"><button class="ghost" id="btnAfS">攻擊船團<small class="pn">（空射反艦飛彈）</small></button><button class="ghost" id="btnAfL">空襲島上目標<small class="pn">（精準炸彈）</small></button><button class="ghost" id="btnAfC">打擊大陸沿岸<small class="pn">（萬劍彈、SLAM-ER）</small></button></div><div class="hint">按下後點地圖上的目標（大陸沿岸：集結中的部隊或大陸基地）。</div>';
-  setTimeout(()=>{[['btnAfS','afS'],['btnAfL','afL'],['btnAfC','afC']].forEach(([id,m])=>{const b=document.getElementById(id);if(b)b.onclick=()=>{S.afK=k;S.sel=null;S.mode=S.mode===m?null:m;render();};});},0);
+  setTimeout(()=>{[['btnAfS','afS'],['btnAfL','afL'],['btnAfC','afC']].forEach(([id,m])=>{const b=document.getElementById(id);if(!b)return;const on=S.mode===m&&S.afK===k;b.classList.toggle('on',on);if(on){const t=b.firstChild;if(t&&t.nodeType===3)t.nodeValue='✓ '+AF_MODE_N[m]+'（選擇中，再按取消）';}b.onclick=()=>{const was=S.mode===m&&S.afK===k;S.afK=k;S.sel=null;S.afPend=null;S.mode=was?null:m;if(!was&&typeof UC!=='undefined'){UC.closedKey=UC.key;}render();}; /* 選了出擊方式就收起基地資訊卡，讓出地圖與確認面板 */});},0);
   return o;
 }
+const AF_MODE_N={afS:'攻擊船團',afL:'空襲島上目標',afC:'打擊大陸沿岸'};
 const afRings=()=>!S.afK?[]:S.mode==='afS'?afShipT(S.afK):S.mode==='afL'?afLandT(S.afK):S.mode==='afC'?afStgT(S.afK):[];
 // 點地圖：在 afS／afL／afC 模式下點目標
 function afClick(u,cnId){
