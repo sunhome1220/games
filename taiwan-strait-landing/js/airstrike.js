@@ -80,7 +80,7 @@ function afStrike(k,x,auto){
     S._afWp=null;L=afLose(AFS.pk,AFS.lossCN);
   }
   S.afB[k].n--;
-  if(txt){const s='守方空軍（'+nm+'起飛）'+txt+(L?'（被擊落 '+L+' 架）':'');log(s+'（參數為推估）');if(!auto)toast(s,4000);}
+  if(txt){const s='守方空軍（'+nm+'起飛）'+txt+(L?'（被擊落 '+L+' 架）':'');log(s+'（參數為推估）');if(!auto)fxToast(s,4000);}
   else if(L)log('守方空軍（'+nm+'起飛）出擊大陸沿岸，被擊落 '+L+' 架（推估）');
   checkInstant();return true;
 }

@@ -4,6 +4,7 @@ const FXQ=[];
 const SVGNS='http://www.w3.org/2000/svg';
 let PREVIEW=false;
 const fxq=o=>{if(!PREVIEW)FXQ.push(o);};
+const fxToast=(s,ms)=>{if(PREVIEW)return;FXQ.push({t:'toast',s,ms});}; // 打擊結果的訊息：等飛彈或戰機飛到、爆炸後才跳出
 const reduce=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 let FXSPD=1;const fxK=()=>((S&&S.video&&V.sp)?Math.max(.2,1/V.sp):1)/FXSPD; // 動畫速度設定：0.5／1／2／4 倍
 function el(tag,at,parent){const e=document.createElementNS(SVGNS,tag);for(const k in at)e.setAttribute(k,at[k]);if(!parent)e.__t=performance.now();(parent||document.getElementById('gF')).appendChild(e);return e;}
@@ -334,6 +335,7 @@ const canHitSub=u=>u.type==='hk'?subInPort(u):!(u.type==='ssn'||u.type==='nme'||
 const subHidden=u=>(u.type==='hk'||u.type==='ssn')&&u.side==='def'&&!u.revealed&&!subInPort(u)&&!S.over&&S.ctrl.atk==='human'&&S.ctrl.def!=='human'&&!S.video&&!S.sim;
 const unitAtVis=k=>S.units.find(u=>K(u.c,u.r)===k&&!subHidden(u));
 function runFx(o){
+  if(o.t==='toast'){toast(o.s,o.ms);return;}
   const PO=h=>{const q=oCenter(h[0],h[1]);return [q[0]*KS,q[1]*KS];}; // 外圍／港口出發點（舊座標）
   const P=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);
   if(o.t==='atk'){
@@ -381,7 +383,7 @@ function fxArrive(o){
   return 400;
 }
 function playFx(list){
-  if(!list||!list.length||reduce())return;
+  if(!list||!list.length)return;if(reduce()){list.filter(o=>o.t==='toast').forEach(o=>toast(o.s,o.ms));return;}
   const g=document.getElementById('gF'),now=performance.now();
   if(g.childNodes.length>70){for(const n of [...g.childNodes]){if(!n.__t)n.__t=now;else if(now-n.__t>4000)n.remove();}} // 只清掉超過 4 秒的舊特效，正在播放的不刪
   while(g.childNodes.length>1200)g.removeChild(g.firstChild); // 安全網：避免異常時無限累積
@@ -390,7 +392,7 @@ function playFx(list){
   list.forEach(o=>{
     let start;
     if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='sub'||o.t==='air'||o.t==='tfa'||o.t==='cva'){start=t;last=t;hitAt=t+(o.t==='tfa'?tfaDur(o):fxArrive(o));t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
-    else if(o.t==='dmg'||o.t==='dead'||o.t==='txt')start=Math.max(last+360,hitAt+80); // 等這一發武器飛到、爆炸後才顯示結果
+    else if(o.t==='dmg'||o.t==='dead'||o.t==='txt'||o.t==='toast')start=Math.max(last+360,hitAt+80); // 等這一發武器飛到、爆炸後才顯示結果
     else start=0;
     if(start>0)setTimeout(()=>runFx(o),start*k);else runFx(o);
   });
