@@ -435,6 +435,10 @@ function baseMarkersSVG(){
   }
   return o;
 }
+function textZoomFix(){ // 放大到 500% 以上時，地名、浪高等文字以自己的座標為中心縮小（不用 CSS transform-box：iOS Safari 對 SVG 文字支援不完整，會跑位）
+  const k=typeof ZOOM!=='undefined'&&ZOOM>5?5/ZOOM:1;
+  document.querySelectorAll('#map .lbl,#map .wxl,#map .mport,#map .big,#map .fxt').forEach(e=>{if(k===1){if(e.__tz){e.removeAttribute('transform');e.__tz=0;}return;}const x=+e.getAttribute('x')||0,y=+e.getAttribute('y')||0;e.setAttribute('transform','translate('+x+' '+y+') scale('+k.toFixed(4)+') translate('+(-x)+' '+(-y)+')');e.__tz=1;});
+}
 function renderMap(){
   if(!STATIC.built)buildStatic();
   updateCsg();
