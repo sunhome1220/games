@@ -293,6 +293,7 @@ body.mapfs .mbar{display:none!important}
 .vfocus{fill:none;stroke:var(--accent);stroke-width:3;pointer-events:none;animation:vpulse 1.1s ease-in-out infinite}
 @keyframes vpulse{0%,100%{opacity:.95}50%{opacity:.35}}
 @media (prefers-reduced-motion:reduce){.wv,.u .wk,.vfocus{animation:none}}
+.u .wk.still{animation:none;stroke-opacity:.35} /* 手機精簡模式：航跡不做循環動畫（省電） */
 .vcap{margin-top:8px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 10px}
 .vcap[hidden]{display:none}
 .vctl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -802,33 +803,33 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-14.55' -->
-<script src="js/dict.js?v=2026-11-14.55"></script>
-<script src="js/i18n.js?v=2026-11-14.55"></script>
-<script src="js/btnfix.js?v=2026-11-14.55"></script>
-<script src="js/geo.js?v=2026-11-14.55"></script>
-<script src="js/dem.js?v=2026-11-14.55"></script>
-<script src="js/map.js?v=2026-11-14.55"></script>
-<script src="js/state.js?v=2026-11-14.55"></script>
-<script src="js/rules.js?v=2026-11-14.55"></script>
-<script src="js/supply.js?v=2026-11-14.55"></script>
-<script src="js/ending.js?v=2026-11-14.55"></script>
-<script src="js/theater.js?v=2026-11-14.55"></script>
-<script src="js/strike.js?v=2026-11-14.55"></script>
-<script src="js/airstrike.js?v=2026-11-14.55"></script>
-<script src="js/decisions.js?v=2026-11-14.55"></script>
-<script src="js/report.js?v=2026-11-14.55"></script>
-<script src="js/turn.js?v=2026-11-14.55"></script>
-<script src="js/ai.js?v=2026-11-14.55"></script>
-<script src="js/render.js?v=2026-11-14.55"></script>
-<script src="js/fx.js?v=2026-11-14.55"></script>
-<script src="js/video.js?v=2026-11-14.55"></script>
-<script src="js/stats.js?v=2026-11-14.55"></script>
-<script src="js/input.js?v=2026-11-14.55"></script>
-<script src="js/unitinfo.js?v=2026-11-14.55"></script>
-<script src="js/version.js?v=2026-11-14.55"></script>
-<script src="js/changelog.js?v=2026-11-14.55"></script>
-<script src="js/app.js?v=2026-11-14.55"></script>
-<script src="js/gamepad.js?v=2026-11-14.55"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-14.56' -->
+<script src="js/dict.js?v=2026-11-14.56"></script>
+<script src="js/i18n.js?v=2026-11-14.56"></script>
+<script src="js/btnfix.js?v=2026-11-14.56"></script>
+<script src="js/geo.js?v=2026-11-14.56"></script>
+<script src="js/dem.js?v=2026-11-14.56"></script>
+<script src="js/map.js?v=2026-11-14.56"></script>
+<script src="js/state.js?v=2026-11-14.56"></script>
+<script src="js/rules.js?v=2026-11-14.56"></script>
+<script src="js/supply.js?v=2026-11-14.56"></script>
+<script src="js/ending.js?v=2026-11-14.56"></script>
+<script src="js/theater.js?v=2026-11-14.56"></script>
+<script src="js/strike.js?v=2026-11-14.56"></script>
+<script src="js/airstrike.js?v=2026-11-14.56"></script>
+<script src="js/decisions.js?v=2026-11-14.56"></script>
+<script src="js/report.js?v=2026-11-14.56"></script>
+<script src="js/turn.js?v=2026-11-14.56"></script>
+<script src="js/ai.js?v=2026-11-14.56"></script>
+<script src="js/render.js?v=2026-11-14.56"></script>
+<script src="js/fx.js?v=2026-11-14.56"></script>
+<script src="js/video.js?v=2026-11-14.56"></script>
+<script src="js/stats.js?v=2026-11-14.56"></script>
+<script src="js/input.js?v=2026-11-14.56"></script>
+<script src="js/unitinfo.js?v=2026-11-14.56"></script>
+<script src="js/version.js?v=2026-11-14.56"></script>
+<script src="js/changelog.js?v=2026-11-14.56"></script>
+<script src="js/app.js?v=2026-11-14.56"></script>
+<script src="js/gamepad.js?v=2026-11-14.56"></script>
 </body>
 </html>
