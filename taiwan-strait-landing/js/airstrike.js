@@ -13,7 +13,8 @@ const AFS_POOL=era=>({rocAAsh:60,rocWC:100,rocSlam:(+era||2026)>=2027?135:0});
 // ---- 以基地為單位：依空軍聯隊的公開駐地分配戰機（同機種在兩個基地的分法未公開，★對半）----
 //  新竹 第 2 聯隊 幻象 2000 約 52；清泉崗 第 3 聯隊、台南 第 1 聯隊 經國號 約 129（各半）；嘉義 第 4 聯隊、花蓮（佳山）第 5 聯隊 F-16V 約 140（各半）；
 //  志航 第 7 聯隊：F-16 Block 70 66 架 2028 年起進駐（2026 年 10 月首批 2 架抵達）。桃園機場（民用）、岡山（官校、教練機）、屏東（預警機、運輸機）沒有戰鬥機
-const AF_WING={hsinchuab:['第 2 聯隊','幻象 2000',52],ckk:['第 3 聯隊','經國號',65],tainanab:['第 1 聯隊','經國號',64],chiayiab:['第 4 聯隊','F-16V',70],chiashan:['第 5 聯隊','F-16V',70],chihhang:['第 7 聯隊','F-16 Block 70',0]};
+// 第 4 欄：★作戰半徑（公里，掛載打擊彈藥、不含空中加油；公開資料多為概略值）
+const AF_WING={hsinchuab:['第 2 聯隊','幻象 2000',52,550],ckk:['第 3 聯隊','經國號',65,450],tainanab:['第 1 聯隊','經國號',64,450],chiayiab:['第 4 聯隊','F-16V',70,550],chiashan:['第 5 聯隊','F-16V',70,550],chihhang:['第 7 聯隊','F-16 Block 70',0,550]};
 function afInitBases(){ // 開局：各基地的戰機（權重＝架數，總和＝S.air.TW）
   const w={};for(const [id,[,,n]] of Object.entries(AF_WING)){const k=SPOT[id];if(k)w[k]=n;}
   const k7=SPOT.chihhang;if(k7)w[k7]=Math.max(0,(S.air.TW0||S.air.TW)-Object.values(w).reduce((a,x)=>a+x,0)); // 2028 年起多出的 F-16 Block 70
@@ -38,11 +39,22 @@ function afBudget(k){ // 本階段這座機場可出擊的打擊包數（每階�
     b=S.afB[k]={t:key,n};}
   return b.n;
 }
-const afShipT=()=>S.units.filter(e=>e.side==='atk'&&atSea(e)&&isShip(e)&&e.type!=='hk'&&e.type!=='fob'&&!e.ship);
-const afLandT=()=>S.units.filter(e=>e.side==='atk'&&!atSea(e)&&!e.ship&&(hexOf(e).isl==='TW'||hexOf(e).isl==='PH'));
-const afCNwp=km=>km<=AFS.wc.km&&(S.pools.rocWC||0)>=AFS.pk?'wc':km<=AFS.slam.km&&(S.pools.rocSlam||0)>=AFS.pk?'slam':null;
-const afCNT=()=>cnTargets().filter(id=>afCNwp(cnHitP(id).km));
-const afStgT=()=>stgTargets().filter(u=>afCNwp(cnHitP({u}).km));
+// ---- 射程：從出擊的基地算 ----
+//  打船團、島上目標：基地到目標 ≤ 作戰半徑（打船再加空射魚叉約 120 km）
+//  打大陸：戰機不飛進大陸防空網，★最遠飛到基地與大陸海岸距離的一半（海峽中線附近）才發射：基地到目標 ≤ 武器射程（萬劍約 200、SLAM-ER 約 270 km）＋ min(作戰半徑, 到海岸距離 ÷ 2)
+const AF_ASM_KM=120;
+const afLL=k=>rcToLL(TER[k].c,TER[k].r),afRad=k=>(afWing(k)||[])[3]||450;
+const tLL=x=>x&&x.c!=null?rcToLL(x.c,x.r):CNB[x]?[CNB[x].lon,CNB[x].lat]:null; // 單位或大陸基地 id → 經緯度
+const afDist=(k,x)=>Math.round(kmLL(afLL(k),tLL(x)));
+const AFCOAST={};const afCoast=k=>{if(AFCOAST[k]==null){if(!CNCOAST)CNCOAST=Object.values(TER).filter(x=>x.isl==='CN'&&x.coastal);const p=afLL(k);AFCOAST[k]=Math.min(...CNCOAST.map(h=>kmLL(p,rcToLL(h.c,h.r))));}return AFCOAST[k];};
+const afRel=k=>Math.min(afRad(k),afCoast(k)/2); // 打大陸時最遠飛到哪裡發射
+const afCNwpK=(k,x)=>{const d=afDist(k,x),r=afRel(k);return d<=AFS.wc.km+r&&(S.pools.rocWC||0)>=AFS.pk?'wc':d<=AFS.slam.km+r&&(S.pools.rocSlam||0)>=AFS.pk?'slam':null;};
+const afReach=(k,x)=>x&&x.c==null||(x&&hexOf(x).isl==='CN')?afRel(k)+AFS.slam.km:atSea(x)?afRad(k)+AF_ASM_KM:afRad(k); // 顯示用的可達距離
+const afShipT=k=>S.units.filter(e=>e.side==='atk'&&atSea(e)&&isShip(e)&&e.type!=='hk'&&e.type!=='fob'&&!e.ship&&afDist(k,e)<=afRad(k)+AF_ASM_KM);
+const afLandT=k=>S.units.filter(e=>e.side==='atk'&&!atSea(e)&&!e.ship&&(hexOf(e).isl==='TW'||hexOf(e).isl==='PH')&&afDist(k,e)<=afRad(k));
+const afCNT=k=>cnTargets().filter(id=>afCNwpK(k,id));
+const afStgT=k=>stgTargets().filter(u=>afCNwpK(k,u));
+const afCanHit=(k,x)=>!x?false:x.cn?afCNT(k).includes(x.cn):x.stg?!!afCNwpK(k,x.stg):!x.u?false:atSea(x.u)?afShipT(k).includes(x.u):afLandT(k).includes(x.u);
 function afLose(n,rate){const L=takeInt(n*rate*(S.airCtl==='atk'?1.5:1),'afLoss');return L?airLose('def',L,'ad'):0;}
 // 一次出擊：x＝{u}（海上或島上的攻方單位）｜{cn:基地 id}｜{stg:集結中的單位}；auto＝電腦自動（不跳訊息）
 function afStrike(k,x,auto){
@@ -62,7 +74,7 @@ function afStrike(k,x,auto){
     L=afLose(AFS.pk,S.pools.plaAD>0?AFS.loss:0);
     if(ok)damage(t,1,'守方空襲');
   }else{
-    const tg=x.cn?x.cn:{u:x.stg},wp=afCNwp(cnHitP(tg).km);if(!wp){if(!auto)toast('萬劍彈與 SLAM-ER 射程不到或已用完',3000);return false;}
+    const tg=x.cn?x.cn:{u:x.stg},wp=afCNwpK(k,x.cn||x.stg);if(!wp){if(!auto)toast('萬劍彈與 SLAM-ER 射程不到或已用完',3000);return false;}
     S.pools[AFS[wp].pool]-=AFS.pk;S._afWp={wp,k};
     if(x.cn)strikeCN(x.cn,'rocair');else strikeStage(x.stg,'rocair');
     S._afWp=null;L=afLose(AFS.pk,AFS.lossCN);
@@ -78,12 +90,12 @@ function afAuto(){
   const shipV=t=>tgtVal(t)+(AS==='tr'&&(t.type==='ro'||t.type==='lst'||t.type==='cvy')?3:AS==='esc'&&(isEsc(t)||t.type==='dd')?3:0);
   for(const h of afUsable()){let guard=20;
     while(afBudget(h.k)>0&&guard-->0&&!S.over){
-      const sh=(S.pools.rocAAsh||0)>=1?afShipT():[];
+      const sh=(S.pools.rocAAsh||0)>=1?afShipT(h.k):[];
       if(sh.length){afStrike(h.k,{u:pickBest(sh,shipV)},true);continue;}
-      const ld=afLandT().filter(t=>HV.includes(t.type)||t.type==='fob');
+      const ld=afLandT(h.k).filter(t=>HV.includes(t.type)||t.type==='fob');
       if(ld.length){afStrike(h.k,{u:pickBest(ld,t=>tgtVal(t)*10+t.hp)},true);continue;}
-      const st=afStgT();if(st.length){afStrike(h.k,{stg:pickBest(st,u=>cnValue({u}))},true);continue;}
-      const cn=afCNT();if(cn.length){afStrike(h.k,{cn:pickBest(cn,id=>cnHitP(id).p*cnValue(id))},true);continue;}
+      const st=afStgT(h.k);if(st.length){afStrike(h.k,{stg:pickBest(st,u=>cnValue({u}))},true);continue;}
+      const cn=afCNT(h.k);if(cn.length){afStrike(h.k,{cn:pickBest(cn,id=>cnHitP(id).p*cnValue(id))},true);continue;}
       break;}
   }
 }
@@ -97,11 +109,11 @@ function afPanelHTML(k){
   setTimeout(()=>{[['btnAfS','afS'],['btnAfL','afL'],['btnAfC','afC']].forEach(([id,m])=>{const b=document.getElementById(id);if(b)b.onclick=()=>{S.afK=k;S.sel=null;S.mode=S.mode===m?null:m;render();};});},0);
   return o;
 }
-const afRings=()=>S.mode==='afS'?afShipT():S.mode==='afL'?afLandT():S.mode==='afC'?afStgT():[];
+const afRings=()=>!S.afK?[]:S.mode==='afS'?afShipT(S.afK):S.mode==='afL'?afLandT(S.afK):S.mode==='afC'?afStgT(S.afK):[];
 // 點地圖：在 afS／afL／afC 模式下點目標
 function afClick(u,cnId){
   const k=S.afK;if(!k||!(S.mode==='afS'||S.mode==='afL'||S.mode==='afC'))return false;
-  if(S.mode==='afC'&&cnId){if(!afCNT().includes(cnId))toast(CNB[cnId]?CNB[cnId].n+(S.cn[cnId]<=0?' 已癱瘓':' 超出萬劍彈與 SLAM-ER 射程（或已用完）'):'打不到',3200);else S.afPend={k,x:{cn:cnId}};}
+  if(S.mode==='afC'&&cnId){if(!afCNT(k).includes(cnId))toast(CNB[cnId]?CNB[cnId].n+(S.cn[cnId]<=0?' 已癱瘓':' 超出萬劍彈與 SLAM-ER 射程（或已用完）'):'打不到',3200);else S.afPend={k,x:{cn:cnId}};}
   else if(u&&u.side==='atk'&&afRings().includes(u))S.afPend={k,x:S.mode==='afC'?{stg:u.id}:{u:u.id}}; // 先顯示目標資訊，按「確認出擊」才打
   else toast('這個目標不在這種攻擊的範圍內',2500);
   render();return true;
@@ -110,7 +122,7 @@ function afClick(u,cnId){
 function afPendInfo(){
   const P=S.afPend;if(!P)return null;const k=P.k,h0=TER[k],nb=afBudget(k),lr=S.airCtl==='atk'?1.5:1;let nm,lines=[],ok=nb>0,risk=0;
   if(P.x.cn||P.x.stg){
-    const u=P.x.stg?S.units.find(x=>x.id===P.x.stg):null;if(P.x.stg&&(!u||!alive(u)))return null;const tg=P.x.cn||{u},H=cnHitP(tg),wp=afCNwp(H.km),found=!u||stgFound(u)>0;
+    const u=P.x.stg?S.units.find(x=>x.id===P.x.stg):null;if(P.x.stg&&(!u||!alive(u)))return null;const tg=P.x.cn||{u},H=cnHitP(tg),wp=afCNwpK(k,P.x.cn||u),found=!u||stgFound(u)>0;
     nm=P.x.cn?CNB[P.x.cn].n:hname(hexOf(u)).replace(/^大陸 /,'大陸沿岸 ')+' 集結中的 '+TYPES[u.type].n;
     lines.push('距離約 '+H.km+' km'+(u?'・'+(found?'本階段找到 '+stgFound(u)+' 步':'本階段沒有找到，打不到'):'・目前狀態 '+S.cn[P.x.cn]+'／'+CNB[P.x.cn].hp+' 級'));
     lines.push('武器：'+(wp?AFS[wp].n+' 一包 '+AFS.pk+' 枚（剩 '+Math.round(S.pools[AFS[wp].pool]||0)+' 枚）':'萬劍彈與 SLAM-ER 射程不到或已用完')+'；共軍防空'+(H.IC.I?'約發射 '+Math.round(H.IC.I)+' 枚攔截彈、約 '+fmt1(H.IC.surv)+' 枚突破':'已失效'));
@@ -124,9 +136,12 @@ function afPendInfo(){
       ok=ok&&n>0;risk=cov?AFS.loss:0;}
     else{const h=hexOf(t),p=pNeed((h.t==='city'||h.t==='mtn')?6:5);lines.push('武器：精準炸彈');lines.push('命中率 <b>'+Math.round(p*100)+'%</b>'+((h.t==='city'||h.t==='mtn')?'（城市或山地較難命中）':'')+'；命中：'+tname(t)+' 損失 '+stpU(t,1));risk=S.pools.plaAD>0?AFS.loss:0;}
   }
-  const all=afUsable().map(h=>[h,afBudget(h.k)]).filter(x=>x[1]>0);
-  lines.push('全台各基地剩餘：'+(all.length?all.map(([h,n])=>(h.name||'基地').replace(/基地$/,'')+' '+n).join('、')+'（共 '+all.reduce((a,x)=>a+x[1],0)+' 包；這座用完會自動改由下一座出擊）':'都已用完'));
+  const tx=P.x.cn?P.x.cn:S.units.find(y=>y.id===(P.x.u||P.x.stg));if(tx)lines.unshift('距離 '+(h0.name||'基地')+' 約 '+afDist(k,tx)+' km／可達 '+Math.round(afReach(k,tx))+' km'+(afWing(k)?'（'+afWing(k)[1]+' 作戰半徑約 '+afRad(k)+' km'+((P.x.cn||P.x.stg)?'，飛到海峽中線附近才發射':'')+'）':''));
+  const xx=P.x.cn?{cn:P.x.cn}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{u:S.units.find(y=>y.id===P.x.u)};
+  const all=afUsable().map(h=>[h,afBudget(h.k)]).filter(x=>x[1]>0&&afCanHit(x[0].k,xx));
+  lines.push('打得到的基地剩餘：'+(all.length?all.map(([h,n])=>(h.name||'基地').replace(/基地$/,'')+' '+n).join('、')+'（共 '+all.reduce((a,x)=>a+x[1],0)+' 包，只列打得到這個目標的基地；這座用完會自動改由下一座出擊）':'沒有基地打得到或都已用完'));
   lines.push('出擊：'+(h0.name||'基地')+' 一包 4 架；本階段還能出擊 '+nb+' 包；'+(risk?'預估被擊落約 '+fmt1(AFS.pk*risk*lr)+' 架（推估）':'沒有防空威脅')+'；點其他目標可切換');
+  ok=ok&&!!xx&&afCanHit(k,xx);
   return {html:'<b>'+nm+'</b>'+lines.map(l=>'<div class="cpm">'+l+'</div>').join(''),ok};
 }
 function afPendSync(){
@@ -139,7 +154,7 @@ function afPendSync(){
   document.getElementById('afPendGo').onclick=()=>{const P=S.afPend;if(!P)return;
     const x=P.x.u?{u:S.units.find(y=>y.id===P.x.u)}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{cn:P.x.cn};if((x.u===undefined&&P.x.u)||(P.x.stg&&!x.stg))return;
     afStrike(P.k,x);const t=x.u||x.stg;if(t&&!alive(t))S.afPend=null;
-    if(afBudget(P.k)<=0){const nx=afUsable().find(h=>afBudget(h.k)>0); // 這座基地份額用完：自動改由下一座還有份額的基地出擊
+    if(afBudget(P.k)<=0){const nx=afUsable().find(h=>afBudget(h.k)>0&&(!S.afPend||afCanHit(h.k,P.x.cn?{cn:P.x.cn}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{u:S.units.find(y=>y.id===P.x.u)}))); // 這座基地份額用完：自動改由下一座還有份額的基地出擊
       const k0=P.k;if(nx){S.afK=nx.k;if(S.afPend)S.afPend.k=nx.k;toast((TER[k0].name||'基地')+' 本階段已出擊完，改由 '+(nx.name||'基地')+' 出擊',2600);}else{S.mode=null;S.afPend=null;toast('全台各基地本階段都已出擊完',2600);}}
     render();};
 }

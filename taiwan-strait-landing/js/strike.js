@@ -15,10 +15,13 @@ const ATC_KM=300;
 const hmrDeep=()=>S.units.find(u=>u.side==='def'&&u.type==='hmr'&&alive(u)&&u.shots>0&&ssmReady(u)-(u.lu||0)>=ROCLR.pk);
 const atcDeepOK=()=>(S.pools.rocAtc||0)>=ROCLR.pk&&!!hmrDeep();
 const lrOK=()=>(S.pools.rocMsl||0)>0||atcDeepOK();
-const lrWpn=km=>km<=ATC_KM&&atcDeepOK()?'atc':(S.pools.rocMsl||0)>0?'msl':null;
-function lrSpend(km){ // 台灣縱深打擊扣彈：回傳 {wp,src}；沒有可用的飛彈回傳 null
-  const wp=lrWpn(km),P=S.pools;if(!wp)return null;
-  if(wp==='atc'){const h=hmrDeep();P.rocAtc-=ROCLR.pk;h.shots--;h.lu=(h.lu||0)+ROCLR.pk;h.revealed=true;return {wp,src:h};}
+// 陸軍戰術飛彈：從實際發射的那組海馬士量 300 km（澎湖的打得比屏東的深），挑射程內、還能射的最近一組
+const tgLL=tg=>typeof tg==='string'?(CNB[tg]?[CNB[tg].lon,CNB[tg].lat]:null):tg&&tg.u?rcToLL(tg.u.c,tg.u.r):null;
+const hmrFor=tg=>{const ll=tgLL(tg);if(!ll||(S.pools.rocAtc||0)<ROCLR.pk)return null;let b=null,bd=1e9;for(const u of S.units){if(u.side!=='def'||u.type!=='hmr'||!alive(u)||u.shots<=0||ssmReady(u)-(u.lu||0)<ROCLR.pk)continue;const d=kmLL(rcToLL(u.c,u.r),ll);if(d<=ATC_KM&&d<bd){bd=d;b=u;}}return b;};
+const lrWpn=(km,tg)=>(tg!==undefined?!!hmrFor(tg):km<=ATC_KM&&atcDeepOK())?'atc':(S.pools.rocMsl||0)>0?'msl':null;
+function lrSpend(km,tg){ // 台灣縱深打擊扣彈：回傳 {wp,src}；沒有可用的飛彈回傳 null
+  const wp=lrWpn(km,tg),P=S.pools;if(!wp)return null;
+  if(wp==='atc'){const h=tg!==undefined?hmrFor(tg):hmrDeep();P.rocAtc-=ROCLR.pk;h.shots--;h.lu=(h.lu||0)+ROCLR.pk;h.revealed=true;return {wp,src:h};}
   P.rocMsl=Math.max(0,Math.round((P.rocMsl-ROCLR.pk/ROCLR.per)*100)/100);const k=S.turn+'def';if(!S.mslUse||S.mslUse.k!==k)S.mslUse={k,n:0};S.mslUse.n++;return {wp,src:null};
 }
 const lrWho=L=>L&&L.wp==='atc'?'台灣陸軍戰術飛彈（海馬士）':'台灣長程飛彈（雄二E）';
@@ -80,7 +83,7 @@ function cnPendInfo(){ // 回傳 {html,ok} 或 null
   const P=S.cnPend;if(!P)return null;let tg,nm,fx,extra='';
   if(P.id){if(!CNB[P.id])return null;tg=P.id;nm=CNB[P.id].n;fx=(CN_FX[CNB[P.id].kind]||'基地受損一級')+'；攻方每 2 回合搶修一級';extra='目前狀態 '+S.cn[P.id]+'／'+CNB[P.id].hp+' 級';}
   else{const u=S.units.find(x=>x.id===P.u);if(!u||!alive(u)||hexOf(u).isl!=='CN')return null;tg={u};const f=stgFound(u);nm=hname(hexOf(u)).replace(/^大陸 /,'大陸沿岸 ')+' 集結中的 '+TYPES[u.type].n;fx=TYPES[u.type].n+' 損失 '+stpU(u,1);extra=f>0?'本階段找到 '+f+' 步（'+(u.sgL||'')+'）':'本階段沒有找到，打不到';}
-  const H=cnHitP(tg),wp=lrWpn(H.km),wn=wp==='atc'?'陸軍戰術飛彈（海馬士）':wp==='msl'?'雄二E':null,found=!(tg.u)||stgFound(tg.u)>0;
+  const H=cnHitP(tg),wp=lrWpn(H.km,tg),hm=wp==='atc'?hmrFor(tg):null,wn=wp==='atc'?'陸軍戰術飛彈（'+hname(hexOf(hm))+' 的海馬士，距離約 '+Math.round(kmLL(rcToLL(hm.c,hm.r),tgLL(tg)))+' km）':wp==='msl'?'雄二E':null,found=!(tg.u)||stgFound(tg.u)>0;
   const ok=!!wn&&found&&S.dfire>0;
   const html='<b>'+nm+'</b><div class="cpm">距離約 '+H.km+' km・'+extra+'</div>'+
     '<div class="cpm">武器：'+(wn?wn+' 一包 '+ROCLR.pk+' 枚':'射程內沒有可用的飛彈')+'；共軍防空'+(H.IC.I?'約發射 '+Math.round(H.IC.I)+' 枚攔截彈、約 '+fmt1(H.IC.surv)+' 枚突破':'已失效')+'</div>'+
@@ -102,7 +105,7 @@ function cnPendSync(){ // 每次重繪時更新面板
 function strikeStage(u,by){ // 縱深打擊集結中的部隊或船隻：同一套規則（每包 4 枚、先過共軍防空、命中 33%），要先被找到
   const air=by==='rocair';if(air)by='roc'; // 守方空軍空射（萬劍彈、SLAM-ER）：同一套命中規則，彈藥已在 afStrike 扣
   const hn=x=>{const n=hname(x);return /^大陸 /.test(n)?'大陸沿岸':n;},P=S.pools,sc=by==='roc'?ROCLR.pk/ROCLR.per:1,proxy=by==='US'&&usIdx()<2;let who={roc:'台灣長程飛彈（雄二E）',US:proxy?'美軍（代理打擊）':'美軍',JP:'自衛隊'}[by],h=hexOf(u);
-  let L=null;if(air){who='台灣空軍（'+AFS[S._afWp.wp].n+'）';L={src:TER[S._afWp.k]};}else if(by==='roc'){L=lrSpend(cnHitP({u}).km);if(!L){const t='沒有射程到得了 '+hn(h)+' 的長程飛彈（雄二E 已用完，陸軍戰術飛彈只到 300 km）';log(t);if(cnMe(by))toast(t,3500);S.dfire++;return;}who=lrWho(L);}
+  let L=null;if(air){who='台灣空軍（'+AFS[S._afWp.wp].n+'）';L={src:TER[S._afWp.k]};}else if(by==='roc'){L=lrSpend(cnHitP({u}).km,{u});if(!L){const t='沒有射程到得了 '+hn(h)+' 的長程飛彈（雄二E 已用完，陸軍戰術飛彈只到 300 km）';log(t);if(cnMe(by))toast(t,3500);S.dfire++;return;}who=lrWho(L);}
   S.retal+=((by==='roc'||proxy)?.25:.5)*sc;S.cost.civ.CN+=Math.round(60*sc);S.cost.dmg.CN+=.3*sc;S.stats.cn.strikes++;
   const HP=cnHitP({u}),IC=HP.IC,hit=stgFound(u)>0&&hitP(HP.p,'strikeStage');
   const itx=ROCLR.pk+' 枚，距離約 '+HP.km+' km'+(IC.I?'，共軍防空發射 '+Math.round(IC.I)+' 枚攔截彈，約 '+(Math.round(IC.surv*10)/10)+' 枚突破':'，共軍防空已失效')+'，命中率 '+Math.round(HP.p*100)+'%';
@@ -119,7 +122,7 @@ function strikeCN(id,by){
   const air=by==='rocair';if(air)by='roc';
   const proxy=by==='US'&&usIdx()<2,B=CNB[id],P=S.pools,need=cnNeed(id);let who={roc:'台灣長程飛彈（雄二E）',US:proxy?'美軍（代理打擊）':'美軍',JP:'自衛隊'}[by];
   const sc=by==='roc'?ROCLR.pk/ROCLR.per:1; // 台灣：一包 4 枚＝0.16 點；美日仍是抽象點數
-  if(air)who='台灣空軍（'+AFS[S._afWp.wp].n+'）';else if(by==='roc'){const L=lrSpend(cnHitP(id).km);if(!L){const t='沒有射程到得了 '+B.n+' 的長程飛彈（雄二E 已用完，陸軍戰術飛彈只到 300 km）';log(t);if(cnMe(by))toast(t,3500);S.dfire++;return;}who=lrWho(L);}
+  if(air)who='台灣空軍（'+AFS[S._afWp.wp].n+'）';else if(by==='roc'){const L=lrSpend(cnHitP(id).km,id);if(!L){const t='沒有射程到得了 '+B.n+' 的長程飛彈（雄二E 已用完，陸軍戰術飛彈只到 300 km）';log(t);if(cnMe(by))toast(t,3500);S.dfire++;return;}who=lrWho(L);}
   S.retal+=((by==='roc'||proxy)?.25:.5)*sc;
   S.cost.civ.CN+=Math.round((B.kind==='stg'?120:B.kind==='navy'?90:B.kind==='air'?50:35)*sc);S.cost.dmg.CN+=(B.kind==='stg'?.5:.3)*sc;
   S.stats.cn.strikes++;
@@ -144,7 +147,7 @@ function aiPickCN(roc){ // 期望效果最高的目標（命中率 × 效果，�
   let best=null,bs=-1;
   const cand=cnTargets().map(id=>({k:id,tg:id})).concat(stgTargets().map(u=>({k:'u'+u.id,tg:{u}})));
   const DP=roc&&S.intent&&S.intent.deep,kd=tg=>tg.u?'stg':CNB[tg].kind,isP=tg=>DP==='stg'?(kd(tg)==='stg'||kd(tg)==='navy'):kd(tg)===DP;
-  let C=roc?cand.filter(c=>lrWpn(cnHitP(c.tg).km)):cand; // 守方：只挑射程到得了的目標
+  let C=roc?cand.filter(c=>lrWpn(cnHitP(c.tg).km,c.tg)):cand; // 守方：只挑射程到得了的目標
   if(DP&&C.some(c=>isP(c.tg)))C=C.filter(c=>isP(c.tg)); // 指揮官意圖「縱深打擊目標」：先打指定種類，打不到（沒有、射程外）才打其他
   for(const c of C){const H=cnHitP(c.tg);const v=H.p*cnValue(c.tg)*(.9+Math.random()*.2);if(v>bs){bs=v;best=c.k;}}
   return best;
