@@ -15,7 +15,7 @@ function rangePts(c,r,n){
   return D.map(([dx,dz])=>{const x=x0+dx*n,z=z0+dz*n,cc=x+(z-(z&1))/2,[px,py]=center(cc,z),f=(n+.5)/n;return (cx+(px-cx)*f).toFixed(1)+','+(cy+(py-cy)*f).toFixed(1);}).join(' ');
 }
 function rangeTop(c,r,n){const [cx,cy]=center(c,r);return [cx,cy-(n+.5)*KS*OW/2];}
-const kmOf=n=>(n*20).toLocaleString();
+const kmOf=n=>Math.round(n*KM_HEX).toLocaleString();
 function rangeRingsSVG(u,lite){ // u：航艦或護航艦；lite＝一鍵全開時只畫防空傘與對艦打擊距離
   if(!u||!alive(u))return '';const sd=u.side,o=[],lbl=[];
   const ring=(c,r,n,cls,txt)=>{if(n<=0)return;{const [cx,cy]=center(c,r);o.push('<circle class="rr '+cls+' '+sd+'" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+((n+.5)*KS*OW/2).toFixed(1)+'"/>');}if(txt){const [x,y]=rangeTop(c,r,n);lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+txt+'</text>');}};
@@ -25,7 +25,7 @@ function rangeRingsSVG(u,lite){ // u：航艦或護航艦；lite＝一鍵全開�
     S.units.filter(e=>e.grp===u.id&&isEsc(e)&&alive(e)&&e.mag&&e.mag.ad>0).forEach(e=>ring(e.c,e.r,SHIPW[e.type].adR,'ad',''));
     if(c){if(!lite)ring(u.c,u.r,c.w.r,'r','艦載機作戰半徑 '+c.w.r+' 格（'+kmOf(c.w.r)+' km）');
       if((u.wmag||0)>0)ring(u.c,u.r,c.w.r+c.w.asmR,'d','對艦打擊距離 '+(c.w.r+c.w.asmR)+' 格（'+c.nm+'）');}
-    if(lite){const [x,y]=rangeTop(u.c,u.r,Math.max(...S.units.filter(e=>e.grp===u.id&&isEsc(e)&&alive(e)).map(e=>SHIPW[e.type].adR),2));lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">防空傘</text>');}
+    if(lite){const [x,y]=rangeTop(u.c,u.r,Math.max(...S.units.filter(e=>e.grp===u.id&&isEsc(e)&&alive(e)).map(e=>SHIPW[e.type].adR),kmH(40)));lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">防空傘</text>');}
   }else if(isEsc(u)){
     const W=SHIPW[u.type];if(u.mag&&u.mag.ad>0)ring(u.c,u.r,W.adR,'ad','防空 '+W.adR+' 格（'+kmOf(W.adR)+' km）');
     if(u.mag&&u.mag.asm>0)ring(u.c,u.r,W.asmR,'r',W.asmN+' '+W.asmR+' 格（'+kmOf(W.asmR)+' km）');

@@ -14,6 +14,9 @@ const oCenter=(c,r)=>[OW*(c-OC0+.5*(r&1))+OW/2+OPAD,(r-OR0)*1.5*OR+OR+OPAD];
 // 外圍示意區（僅縮小時可見，不參與遊戲）：左／右／上／下的延伸量（舊座標系 px）
 const oMX0=150, oMX1=760, oMY0=170, oMY1=400;
 const MX0=oMX0*KS, MX1=oMX1*KS, MY0=oMY0*KS, MY1=oMY1*KS, EVBW=VBW+MX0+MX1, EVBH=VBH+MY0+MY1, EXT=EVBW/VBW;
+// 地圖尺度：每格（相鄰格中心距離）約幾公里。射程、移動、距離一律用公里寫，再用 kmH() 換成格數；要改格子大小只改 KM_HEX（地形與地點座標另需重建）
+const KM_HEX=20;
+const kmH=km=>km/KM_HEX;
 const K=(c,r)=>c+','+r;
 const $=s=>document.querySelector(s);
 let GEN=0; // 每次重新開局加一：舊的非同步流程（動畫等待中）不會再接續執行
@@ -37,42 +40,42 @@ const SIDE={atk:'攻方',def:'守方'};
 const TERN={sea:'海域',main:'大陸',plain:'平原',city:'城市',mtn:'山地',port:'港口',air:'機場'};
 
 const TYPES={
-  amph:{n:'兩棲合成旅',s:'兩棲',atk:3,def:3,mv:2,hp:3},
-  mar:{n:'陸戰旅',s:'陸戰',atk:3,def:3,mv:2,hp:3},
-  abn:{n:'空降旅',s:'空降',atk:3,def:2,mv:2,hp:2},
-  arm:{n:'重型合成旅',s:'裝甲',atk:5,def:3,mv:3,hp:3},
-  inf:{n:'聯兵旅',s:'步兵',atk:2,def:3,mv:2,hp:3},
-  tank:{n:'裝甲旅',s:'裝甲',atk:4,def:3,mv:3,hp:3},
-  res:{n:'後備旅',s:'後備',atk:2,def:2,mv:2,hp:2},
-  ssm:{n:'岸置反艦飛彈',s:'飛彈',atk:0,def:1,mv:2,hp:2},
-  hmr:{n:'海馬士火箭砲（HIMARS）',s:'海馬士',atk:0,def:1,mv:2,hp:2},
-  mlrs:{n:'雷霆2000多管火箭',s:'雷霆',atk:0,def:1,mv:2,hp:2},
-  dd:{n:'共軍護航艦',s:'護航',atk:2,def:1,mv:3,hp:2},
-  cv:{n:'共軍航艦群',s:'航艦',atk:0,def:2,mv:3,hp:3},
-  csg:{n:'美軍航艦打擊群',s:'美航艦',atk:0,def:3,mv:3,hp:3},
-  d55:{n:'055 型驅逐艦',s:'055',atk:0,def:2,mv:3,hp:2},
-  ssn:{n:'美軍 攻擊潛艦',s:'SSN',atk:0,def:1,mv:3,hp:2},
+  amph:{n:'兩棲合成旅',s:'兩棲',atk:3,def:3,mv:kmH(40),hp:3},
+  mar:{n:'陸戰旅',s:'陸戰',atk:3,def:3,mv:kmH(40),hp:3},
+  abn:{n:'空降旅',s:'空降',atk:3,def:2,mv:kmH(40),hp:2},
+  arm:{n:'重型合成旅',s:'裝甲',atk:5,def:3,mv:kmH(60),hp:3},
+  inf:{n:'聯兵旅',s:'步兵',atk:2,def:3,mv:kmH(40),hp:3},
+  tank:{n:'裝甲旅',s:'裝甲',atk:4,def:3,mv:kmH(60),hp:3},
+  res:{n:'後備旅',s:'後備',atk:2,def:2,mv:kmH(40),hp:2},
+  ssm:{n:'岸置反艦飛彈',s:'飛彈',atk:0,def:1,mv:kmH(40),hp:2},
+  hmr:{n:'海馬士火箭砲（HIMARS）',s:'海馬士',atk:0,def:1,mv:kmH(40),hp:2},
+  mlrs:{n:'雷霆2000多管火箭',s:'雷霆',atk:0,def:1,mv:kmH(40),hp:2},
+  dd:{n:'共軍護航艦',s:'護航',atk:2,def:1,mv:kmH(60),hp:2},
+  cv:{n:'共軍航艦群',s:'航艦',atk:0,def:2,mv:kmH(60),hp:3},
+  csg:{n:'美軍航艦打擊群',s:'美航艦',atk:0,def:3,mv:kmH(60),hp:3},
+  d55:{n:'055 型驅逐艦',s:'055',atk:0,def:2,mv:kmH(60),hp:2},
+  ssn:{n:'美軍 攻擊潛艦',s:'SSN',atk:0,def:1,mv:kmH(60),hp:2},
   nme:{n:'美陸戰隊 NMESIS 反艦飛彈',s:'NMESIS',atk:0,def:1,mv:0,hp:2},
   mdt:{n:'美陸軍 堤豐（多域特遣隊）',s:'堤豐',atk:0,def:1,mv:0,hp:2},
-  tak:{n:'美軍 戰鬥支援艦',s:'補給',atk:0,def:1,mv:3,hp:2},
-  ddh:{n:'海自 出雲級直升機護衛艦',s:'出雲',atk:0,def:2,mv:3,hp:2},
-  jdg:{n:'海自 神盾護衛艦（摩耶級／愛宕級）',s:'神盾',atk:0,def:2,mv:3,hp:2},
-  jdd:{n:'海自 通用護衛艦（代表其餘 5 艘）',s:'護衛艦',atk:0,def:1,mv:3,hp:2},
-  d52:{n:'052D 型驅逐艦',s:'052D',atk:0,def:2,mv:3,hp:2},
-  f54:{n:'054A 型護衛艦',s:'054A',atk:0,def:1,mv:3,hp:1},
-  cg:{n:'提康德羅加級巡洋艦',s:'巡洋艦',atk:0,def:2,mv:3,hp:2},
-  ddg:{n:'柏克級驅逐艦',s:'神盾艦',atk:0,def:2,mv:3,hp:2},
-  ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:3,hp:2},
-  hk:{n:'海鯤潛艦',s:'潛艦',atk:0,def:1,mv:3,hp:2},
-  lst:{n:'兩棲艦群',s:'兩棲艦',atk:0,def:1,mv:3,hp:2},
-  ro:{n:'滾裝船團',s:'滾裝',atk:0,def:1,mv:2,hp:2},
-  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:2,hp:2}, // 滾裝客貨輪比軍艦慢：每回合最多航行 2 個舊格
+  tak:{n:'美軍 戰鬥支援艦',s:'補給',atk:0,def:1,mv:kmH(60),hp:2},
+  ddh:{n:'海自 出雲級直升機護衛艦',s:'出雲',atk:0,def:2,mv:kmH(60),hp:2},
+  jdg:{n:'海自 神盾護衛艦（摩耶級／愛宕級）',s:'神盾',atk:0,def:2,mv:kmH(60),hp:2},
+  jdd:{n:'海自 通用護衛艦（代表其餘 5 艘）',s:'護衛艦',atk:0,def:1,mv:kmH(60),hp:2},
+  d52:{n:'052D 型驅逐艦',s:'052D',atk:0,def:2,mv:kmH(60),hp:2},
+  f54:{n:'054A 型護衛艦',s:'054A',atk:0,def:1,mv:kmH(60),hp:1},
+  cg:{n:'提康德羅加級巡洋艦',s:'巡洋艦',atk:0,def:2,mv:kmH(60),hp:2},
+  ddg:{n:'柏克級驅逐艦',s:'神盾艦',atk:0,def:2,mv:kmH(60),hp:2},
+  ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:kmH(60),hp:2},
+  hk:{n:'海鯤潛艦',s:'潛艦',atk:0,def:1,mv:kmH(60),hp:2},
+  lst:{n:'兩棲艦群',s:'兩棲艦',atk:0,def:1,mv:kmH(60),hp:2},
+  ro:{n:'滾裝船團',s:'滾裝',atk:0,def:1,mv:kmH(40),hp:2},
+  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:kmH(40),hp:2}, // 滾裝客貨輪比軍艦慢：每回合最多航行 2 個舊格
   fob:{n:'灘頭補給站',s:'補給站',atk:0,def:2,mv:0,hp:3}
 };
 const WEATHER={
-  good:{id:'good',n:'良好',sea:5,air:true,fire:0},
-  fair:{id:'fair',n:'普通',sea:4,air:true,fire:0},
-  bad:{id:'bad',n:'惡劣',sea:2,air:false,fire:-2}
+  good:{id:'good',n:'良好',sea:kmH(100),air:true,fire:0},
+  fair:{id:'fair',n:'普通',sea:kmH(80),air:true,fire:0},
+  bad:{id:'bad',n:'惡劣',sea:kmH(40),air:false,fire:-2}
 };
 
 Object.values(TYPES).forEach(t=>{t.mv*=2;}); // 格數加倍：移動力加倍，實際行進距離不變
@@ -122,9 +125,10 @@ const MAINC={}; // 舊版大陸座標 → 新版（真實經緯度）大陸地�
 const FK=k=>{if(MAINC[k])return MAINC[k];const [c,r]=k.split(',').map(Number);return K(2*c+(r&1),2*r);};
 const FC=(c,r)=>[2*c+(r&1),2*r];
 const cc=(c,r)=>{const [a,b]=FC(c,r);return center(a,b);};
-function ring2(h){ // 距離 1～2 格（相當於舊版的「相鄰」）
+const ADJ_KM=40; // 地面戰鬥的「相鄰」：40 km 內（20 km 一格時＝1～2 格，沿用舊版粗格的相鄰）
+function ring2(h){ // 距離 ADJ_KM 內的格（相當於舊版的「相鄰」）
   if(h.n2)return h.n2;const seen=new Set([h.k]),out=[];let fr=[h];
-  for(let d=0;d<2;d++){const nx=[];for(const a of fr)for(const b of nbrs(a.c,a.r))if(!seen.has(b.k)){seen.add(b.k);out.push(b);nx.push(b);}fr=nx;}
+  for(let d=0;d<Math.round(kmH(ADJ_KM));d++){const nx=[];for(const a of fr)for(const b of nbrs(a.c,a.r))if(!seen.has(b.k)){seen.add(b.k);out.push(b);nx.push(b);}fr=nx;}
   return h.n2=out;
 }
 function nbrs(c,r){
@@ -208,8 +212,8 @@ const SPOT={};
     const adj=new Set([ph.k,m2&&m2.k]);nbrs(ph.c,ph.r).forEach(h=>adj.add(h.k));if(m2)nbrs(m2.c,m2.r).forEach(h=>adj.add(h.k));
     let bsha=null;
     for(const h of Object.values(TER)){if(!sea(h)||adj.has(h.k)||Math.abs(h.c-ph.c)>3||Math.abs(h.r-ph.r)>3)continue;
-      if(h.r<=ph.r&&hd(h,ph)===2&&h.c>=ph.c){bsha=h;break;}}
-    if(!bsha)bsha=Object.values(TER).find(h=>sea(h)&&!adj.has(h.k)&&hd(h,ph)===2);
+      if(h.r<=ph.r&&hd(h,ph)===kmH(40)&&h.c>=ph.c){bsha=h;break;}}
+    if(!bsha)bsha=Object.values(TER).find(h=>sea(h)&&!adj.has(h.k)&&hd(h,ph)===kmH(40));
     if(bsha){bsha.t='plain';bsha.isl='PH';bsha.name='白沙';SPOT.penghu=bsha.k;}
   }
   tw.forEach(h=>{h.pc=h.c;h.pr=h.r;});

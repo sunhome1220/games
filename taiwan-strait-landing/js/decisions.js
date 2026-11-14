@@ -76,7 +76,7 @@ const DEFEV=[
   apply(c){const m=S.mods,t=S.turn;m.defPost=m.defPost||{};
    if(c=="counter"){addTurns(m.defAtk,t,t+1,1);addTurns(m.defDef,t,t+1,-1);m.defPost[t]=m.defPost[t+1]='counter';return ["守方本回合與下回合攻擊 +1、防禦 −1","電腦操作的守軍主動反攻失地"];}
    if(c=="hold"){addTurns(m.defDef,t,t+1,1);addTurns(m.defAtk,t,t+1,-1);m.defPost[t]=m.defPost[t+1]='hold';return ["守方本回合與下回合防禦 +1、攻擊 −1","電腦操作的守軍只在勝算很高時才進攻"];}
-   if(c=="mobilize"){const lost=OBJ.filter(k=>S.owner[k]==='atk'),thr=OBJ.filter(k=>S.owner[k]!=='atk'&&S.units.some(u=>u.side==='atk'&&!isShip(u)&&onTW(u)&&hd(hexOf(u),TER[k])<=3)),anchors=thr.length?thr:[TAIPEI];let n=0;
+   if(c=="mobilize"){const lost=OBJ.filter(k=>S.owner[k]==='atk'),thr=OBJ.filter(k=>S.owner[k]!=='atk'&&S.units.some(u=>u.side==='atk'&&!isShip(u)&&onTW(u)&&hd(hexOf(u),TER[k])<=kmH(60))),anchors=thr.length?thr:[TAIPEI];let n=0;
      for(let i=0;i<2;i++){const k=anchors[i%anchors.length];const hx=(S.owner[k]==='def'&&!unitAt(k))?TER[k]:placeNear(k,x=>x.isl==='TW'&&x.t!=='mtn'&&S.owner[x.k]==='def'&&!inZOC('def',x));if(hx){const nu=mkUnit('def','res',hx.k);nu.mobT=S.turn;S.units.push(nu);S.stats.reserves++;n++;}}
      hitMkt(1);return ["第二梯次後備旅 "+n+" 個完成編成（攻防各 −1，到下一個攻方階段結束）","全球股市 −1"];}
    if(c=="x_scorch2"){razeAllPorts();addTurns(m.supCut,t,t+1,2);m.civMul*=1.5;return [PORTS.length+" 個主要港口永久破壞", "攻方補給容量未來兩回合 −2、平民傷亡 +50%"];}

@@ -30,7 +30,7 @@ const kmLL=(a,b)=>{const dx=(a[0]-b[0])*111*Math.cos((a[1]+b[1])/2*Math.PI/180),
 function tyWaveLL(ty,ll){if(!ty)return 0;const d=kmLL([ty.lon,ty.lat],ll),R=ty.R,pk=TYC[ty.cls].peak;if(d<=R)return 4+(pk-4)*(1-d/R);if(d<2*R)return 4*(1-(d-R)/R);return 0;}
 function wxWaveLL(ll,W){W=W||S.weather;if(!W)return 0;if(W.base==null)return W.wave||0;return Math.round(Math.max(W.base*WXF[wxSeason()][wxZoneLL(ll[0],ll[1])],tyWaveLL(W.ty,ll))*10)/10;}
 function wxWave(h,W){return wxWaveLL(rcToLL(h.c,h.r),W);} // 某一格的浪高
-const seaOfH=h=>h<=1.25?5:Math.max(1,5-Math.ceil((h-1.25)/.75)); // 浪高→海上移動格數（與天候相同的規則）
+const seaOfH=h=>h<=1.25?kmH(100):Math.max(kmH(20),kmH(100)-kmH(20)*Math.ceil((h-1.25)/.75)); // 浪高→海上移動格數（與天候相同的規則）
 function tySpawn(){
   const r=Math.random(),cls=r<.45?0:r<.8?1:2,[r0,r1]=TYC[cls].R;
   return {lon:126.6+Math.random()*1.6,lat:19.8+Math.random()*1.6,hdg:300+Math.random()*15,spd:15+Math.random()*10,R:Math.round(r0+Math.random()*(r1-r0)),cls,recLat:22+Math.random()*5,age:0,tw:false,trail:[]};
@@ -307,7 +307,7 @@ function jmsSync(){
 async function jmsMove(){
   const u=jmsLead();if(!u||u.moved)return;u.prev=[u.c,u.r];
   const [hc,hr]=llToRC(JMS_HOME[0],JMS_HOME[1]),home=TER[K(hc,hr)]||hexOf(u),foe=S.units.filter(e=>e.side==='atk'&&atSea(e)&&isEsc(e)&&e.mag&&e.mag.asm>0);
-  const sc=k=>{const h=TER[k];return foe.reduce((a,e)=>a+Math.max(0,SHIPW[e.type].asmR+2-hd(h,hexOf(e))),0)*3+Math.max(0,hd(h,home)-3)*.15;}; // 與美航艦相同：先待在共軍艦射飛彈射程外，沒有威脅時才往先島群島靠攏掩護
+  const sc=k=>{const h=TER[k];return foe.reduce((a,e)=>a+Math.max(0,SHIPW[e.type].asmR+kmH(40)-hd(h,hexOf(e))),0)*3+Math.max(0,hd(h,home)-kmH(60))*.15;}; // 與美航艦相同：先待在共軍艦射飛彈射程外，沒有威脅時才往先島群島靠攏掩護
   let best=null,bs=sc(K(u.c,u.r))-.3;for(const [k,v] of reach(u)){if(v.kind!=='sail')continue;const t=sc(k);if(t<bs){bs=t;best=k;}}
   if(best){doMove(u,best,'sail');render();await sleep(200);}
 }
@@ -315,13 +315,13 @@ async function jmsMove(){
 // 攻擊潛艦（維吉尼亞級）：★魚雷 12 枚（每次 2 枚）、魚叉 4 枚、戰斧 12 枚；每支航艦打擊群隨行 1 艘（在航艦 ±3 格內）、另有 1 艘獨立在台灣東南外海
 // 陸戰隊濱海團：NMESIS 4 輛×2 枚＝★8 枚，射程 185 km＝9 格，每回合每輛最多發射 1 枚；陸軍多域特遣隊：堤豐 2 輛（戰斧 ★4、標準六型 ★6／12 格）
 // 2028 年起部署在先島群島的日本陸地格；之前仍是抽象單位
-const SSN_ARM={tp:12,hm:4,lam:12},SSN_PATROL=[124.6,22.6],NME={asm:8,R:9},MDT={lam:4,asm:6,R:12};
+const SSN_ARM={tp:12,hm:4,lam:12},SSN_PATROL=[124.6,22.6],NME={asm:8,R:kmH(180)},MDT={lam:4,asm:6,R:kmH(240)};
 const landPiecesOn=()=>(+S.era||2026)>=2028;
 const ssnIndep=()=>S.units.find(u=>u.type==='ssn'&&!u.grp&&alive(u));
 const nmePiece=()=>S.units.find(u=>u.type==='nme'&&alive(u)),mdtPiece=()=>S.units.find(u=>u.type==='mdt'&&alive(u));
 function seaNear(lon,lat,rad){const [c,r]=llToRC(lon,lat),k0=TER[K(c,r)]?K(c,r):null;return k0&&TER[k0].t==='sea'&&!unitAt(k0)?TER[k0]:placeNear(k0||Object.keys(TER).find(k=>TER[k].t==='sea'),x=>x.t==='sea'&&!unitAt(x.k));}
 function spawnSsn(grp,near){
-  const h=near?placeNear(K(near.c,near.r),x=>x.t==='sea'&&hd(x,hexOf(near))<=3&&!unitAt(x.k)):seaNear(SSN_PATROL[0],SSN_PATROL[1]);if(!h)return null;
+  const h=near?placeNear(K(near.c,near.r),x=>x.t==='sea'&&hd(x,hexOf(near))<=kmH(60)&&!unitAt(x.k)):seaNear(SSN_PATROL[0],SSN_PATROL[1]);if(!h)return null;
   const u=mkUnit('def','ssn',h.k,{});u.ally='US';u.hp=2;u.tp=SSN_ARM.tp;u.hm=SSN_ARM.hm;u.mag={ad:0,asm:0,lam:SSN_ARM.lam};if(grp)u.grp=grp;S.units.push(u);return u;
 }
 function ssnSync(){
@@ -354,14 +354,14 @@ function mdtFire(t0){const m=mdtPiece();if(!m||m.acted||m.mag.asm<=0)return;cons
 // 美軍攻擊潛艦：每回合移動後，射程內有艦艇就開火（3 格內優先魚雷；6 格內魚叉）
 function ssnFire(u,tgt){
   if(u.acted)return false;const ts=shipFoes(u,6);if(!ts.length)return false;
-  const t=tgt&&ts.includes(tgt)?tgt:pickBest(ts,escVal),d=rd(hexOf(u),hexOf(t)),w=(u.tp>0&&d<=3)?'tp':(u.hm>0?'hm':null);if(!w)return false;
+  const t=tgt&&ts.includes(tgt)?tgt:pickBest(ts,escVal),d=rd(hexOf(u),hexOf(t)),w=(u.tp>0&&d<=kmH(60))?'tp':(u.hm>0?'hm':null);if(!w)return false;
   if(w==='tp')u.tp=Math.max(0,u.tp-2);else u.hm--;u.revealed=true;u.acted=true;u.last={c:u.c,r:u.r,turn:S.turn};
   const nm=w==='hm'?'魚叉飛彈':'重型魚雷',sv=w==='hm'&&adCover(t).length?salvoCalc(t,1,false,'ssnSalvo>'+t.type):null;
   const hit=sv?sv.hits>0:hitP(w==='hm'?Math.max(.1,hkP(t)-.12):hkP(t),'ssn:'+w+'>'+t.type),big=t.type==='cv'||t.type==='csg',steps=!hit?0:sv&&big?takeInt(.5,'salvoBig'):1;
   log('美軍攻擊潛艦以'+nm+'攻擊 '+uname(t)+(sv?'：對方防空發射 '+sv.I+' 枚攔截彈，':'')+(hit?'命中'+(steps?'':'（航艦體積大，未造成重創）'):'未命中')+'（魚雷 '+u.tp+'、魚叉 '+u.hm+'、戰斧 '+u.mag.lam+' 枚；參數為推估）');
   fxq({t:'sub',from:[u.c,u.r],to:[t.c,t.r],hit,w});
   if(hit&&steps)damage(t,steps,'美軍攻擊潛艦'+nm);
-  const dd=S.units.filter(e=>e.side==='atk'&&(e.type==='dd'||isEsc(e))&&alive(e)&&rd(hexOf(u),hexOf(e))<=4).length,pa=Math.min(.65,(.1+.12*dd)*hkE()[1]*(w==='hm'?.5:1));
+  const dd=S.units.filter(e=>e.side==='atk'&&(e.type==='dd'||isEsc(e))&&alive(e)&&rd(hexOf(u),hexOf(e))<=kmH(80)).length,pa=Math.min(.65,(.1+.12*dd)*hkE()[1]*(w==='hm'?.5:1));
   if(hitP(pa,'ssn:'+w+'>'+t.type)){log('美軍攻擊潛艦被反潛兵力發現並攻擊');damage(u,1,'反潛攻擊');}
   return true;
 }
@@ -369,7 +369,7 @@ async function ssnMove(u){
   if(!alive(u))return;const car=u.grp?S.units.find(x=>x.id===u.grp&&alive(x)):null;
   const [pc,pr]=llToRC(SSN_PATROL[0],SSN_PATROL[1]),home=car?hexOf(car):(TER[K(pc,pr)]||hexOf(u));
   const thr=S.units.filter(e=>e.side==='atk'&&isEsc(e)&&e.mag&&e.mag.asm>0);
-  const sc=k=>{const h=TER[k];return Math.abs(hd(h,home)-(car?2:0))*1.0+thr.reduce((a,e)=>a+Math.max(0,3-hd(h,hexOf(e))),0)*2;}; // 跟著航艦（或在巡邏點）、避開護航艦的反潛範圍
+  const sc=k=>{const h=TER[k];return Math.abs(hd(h,home)-(car?kmH(40):0))*1.0+thr.reduce((a,e)=>a+Math.max(0,kmH(60)-hd(h,hexOf(e))),0)*2;}; // 跟著航艦（或在巡邏點）、避開護航艦的反潛範圍
   let best=null,bs=sc(K(u.c,u.r))-.3;for(const [k,v] of reach(u)){if(v.kind!=='sail')continue;const t=sc(k);if(t<bs){bs=t;best=k;}}
   if(best){doMove(u,best,'sail');}
 }
@@ -393,7 +393,7 @@ function wxMapSVG(){ // 地圖：各海域浪高標籤、颱風（中心、暴�
   // 浪高文字避開棋子：在原定位置附近 4 格內的海面格中，挑文字框內棋子最少、離原位置最近的地方
   const upx=S.units.filter(u=>alive(u)).map(u=>center(u.c,u.r)),uR=R*.9;
   const spot=(ll,txt)=>{const [c0,r0]=llToRC(ll[0],ll[1]),h0=TER[K(c0,r0)],[x0,y0]=center(c0,r0),hw=txt.length*5.6+4,hh=8;
-    const cand=h0?Object.values(TER).filter(q=>q.t==='sea'&&hd(q,h0)<=4):[];let best=[x0,y0],bs=1e9;
+    const cand=h0?Object.values(TER).filter(q=>q.t==='sea'&&hd(q,h0)<=kmH(80)):[];let best=[x0,y0],bs=1e9;
     for(const q of [{c:c0,r:r0}].concat(cand)){const [x,y]=center(q.c,q.r),hit=upx.filter(([ux,uy])=>Math.abs(ux-x)<hw+uR&&Math.abs(uy-(y-4))<hh+uR).length,sc=hit*100+Math.hypot(x-x0,y-y0)/(KS*OW/2);if(sc<bs){bs=sc;best=[x,y];}}
     return best;};
   for(const z in A){const v=wxWaveLL(z==='W'?WXREF:A[z]),txt=WXZ[z]+' '+v.toFixed(1)+' m',[x,y]=spot(A[z],txt),col=v>=2.5?'#c0392b':v>1.25?'#d68910':'#2e86c1';
@@ -471,8 +471,8 @@ async function uscMove(u){
   // 有共軍水面艦隊時：待在對方艦射反艦飛彈射程（＋2 格）外，但在自己艦載機的打擊距離內；沒有時：維持在台灣東岸外約 6 格
   const thr=foe.filter(e=>isEsc(e)&&e.mag&&e.mag.asm>0),reachR=CVW.US.r+CVW.US.asmR-2;
   const sc=k=>{const h=TER[k],ag=cvAggr(u,h);
-    if(thr.length){const dn=Math.min(...foe.filter(e=>isShip(e)).map(e=>hd(h,hexOf(e))));return thr.reduce((a,e)=>a+Math.max(0,SHIPW[e.type].asmR+2-hd(h,hexOf(e))),0)*3+Math.max(0,dn-reachR)+Math.min(...tw.map(t=>hd(h,t)))*.02+ag;}
-    const d=Math.min(...tw.map(t=>hd(h,t)));return Math.abs(d-6)+foe.reduce((a,e)=>a+Math.max(0,4-hd(h,hexOf(e))),0)*.8+ag;};
+    if(thr.length){const dn=Math.min(...foe.filter(e=>isShip(e)).map(e=>hd(h,hexOf(e))));return thr.reduce((a,e)=>a+Math.max(0,SHIPW[e.type].asmR+kmH(40)-hd(h,hexOf(e))),0)*3+Math.max(0,dn-reachR)+Math.min(...tw.map(t=>hd(h,t)))*.02+ag;}
+    const d=Math.min(...tw.map(t=>hd(h,t)));return Math.abs(d-kmH(120))+foe.reduce((a,e)=>a+Math.max(0,kmH(80)-hd(h,hexOf(e))),0)*.8+ag;};
   let best=null,bs=sc(K(u.c,u.r))-.3;
   for(const [k,v] of rc){if(v.kind!=='sail')continue;const t=sc(k);if(t<bs){bs=t;best=k;}}
   if(best){doMove(u,best,'sail');render();await sleep(200);}
@@ -509,8 +509,8 @@ function droneWave(){
   log('舊戰機改裝無人機 '+n+' 架當誘餌飛向台灣：守方防空發射 '+r.I+' 枚攔截彈、擊落約 '+kill+' 架（剩 '+fmt1(P.plaDrone)+' 架；攔截彈還剩 '+adTot()+' 枚；架數與用法為推估）');
 }
 function antiCarrier(){
-  const ps=uscPieces().filter(u=>!cvOOA(u));if(!ps.length||!S.pools||S.pools.plaLR<1)return;const mv=x=>x.prev?hd(TER[K(x.prev[0],x.prev[1])]||hexOf(x),hexOf(x)):3,u=ps.reduce((a,b)=>mv(b)<mv(a)?b:a); // 挑定位最準的那支
-  const moved=u.prev?hd(TER[K(u.prev[0],u.prev[1])]||hexOf(u),hexOf(u)):3;
+  const ps=uscPieces().filter(u=>!cvOOA(u));if(!ps.length||!S.pools||S.pools.plaLR<1)return;const mv=x=>x.prev?hd(TER[K(x.prev[0],x.prev[1])]||hexOf(x),hexOf(x)):kmH(60),u=ps.reduce((a,b)=>mv(b)<mv(a)?b:a); // 挑定位最準的那支
+  const moved=u.prev?hd(TER[K(u.prev[0],u.prev[1])]||hexOf(u),hexOf(u)):kmH(60);
   const pLoc=ASBM.loc[Math.min(3,moved)];
   const n=Math.min(ASBM.max,Math.floor(S.pools.plaLR));let h=0,I0=0,loc=0;
   for(let i=0;i<n&&alive(u);i++){

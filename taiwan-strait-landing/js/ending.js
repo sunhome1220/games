@@ -170,7 +170,7 @@ function settleControl(){
   const gnd=S.units.filter(u=>u.side==='atk'&&!isShip(u)&&!atSea(u)&&onTW(u));const back=[];
   for(const k of Object.keys(S.owner)){
     if(S.owner[k]!=='atk')continue;const h=TER[k];if(!h||h.isl!=='TW')continue;
-    if(gnd.some(u=>hd(hexOf(u),h)<=1))continue;
+    if(gnd.some(u=>hd(hexOf(u),h)<=kmH(20)))continue;
     S.owner[k]='def';if(h.name)back.push(h.name);
   }
   if(back.length)log('結算：攻方已無兵力控制的地區歸還守方（'+back.slice(0,8).join('、')+(back.length>8?' 等 '+back.length+' 處':'')+'）');

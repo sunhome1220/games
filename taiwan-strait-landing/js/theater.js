@@ -307,7 +307,7 @@ function repairAirfields(){ // 守方每 2 回合修復一級（未被占領的�
 function allyAir(){const dh=S.units&&jmsLead(),f35=dh&&(+S.era||2026)>=2027?ptsOf(10*dh.hp/2,1.0,1.32):0; // ★出雲級 F-35B 約 10 架
   return f35+rocAirEff()+S.fx.units.filter(f=>f.kind==='air'&&fxActive(f)).reduce((a,f)=>a+(isCSG(f)?usAirPts(f):f.hp),0);} // 美航艦以艦載機實際架次計；其他盟軍空軍仍為點數
 // 補給船團（慢速、無防空的商船）：比軍艦好打，只有附近的護航艦才能保護它——無護航 −1（命中門檻降低）、每有一艘護航艦在 2 格內 +1（最多 +2）
-function cvyMod(t){const near=S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&rd(hexOf(e),hexOf(t))<=2).length;return -1+Math.min(2,near);}
+function cvyMod(t){const near=S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&rd(hexOf(e),hexOf(t))<=kmH(40)).length;return -1+Math.min(2,near);}
 // 守方選目標的價值：航艦最高，其次是補給船團（打掉補給就是斷攻方的後路）、載著登陸部隊的船，護航艦最低
 const tgtVal=e=>(e.type==='cv'?(cvOOA(e)?.5:4):e.type==='cvy'?3:(e.type==='amph'||e.type==='mar'||e.type==='arm')?2.5:e.type==='dd'?1:1.5)+(e.boundTo&&S.units.some(x=>x.id===e.boundTo)?2.5:0); // 載著旅的運輸船：船＋旅的價值
 function pickW(arr,f){let t=arr.reduce((a,x)=>a+f(x),0),r=Math.random()*t;for(const x of arr){if((r-=f(x))<=0)return x;}return arr[0];}
@@ -336,7 +336,7 @@ const ptsOf=(n,rate,q)=>sortiesOf(n,rate)*q/AIR.K;
 // 守方攔截彈（公開推估）：愛國者三型 CRI 約 384＋MSE 102、愛國者二型 GEM 約 200、天弓三型 ★約 400（外界推估）
 // 每枚來襲射 2 枚攔截彈；★單枚攔截率：愛國者三型 0.7、天弓三型與愛國者二型 0.5；★每回合最多接戰 21 個連 × 8 枚＝168 枚；只保護機場、港口、城市
 // 彈道飛彈打野外分散、掩蔽的地面部隊：命中率 ★×0.3；打海上移動的船：★×0.1
-const MSL={srbmPer:4,rktPer:8,srbmLaunch:300,rktLaunch:480,rkt:1440,rktR:17,srbm2026:900,adPerPt:250,adCap:168,
+const MSL={srbmPer:4,rktPer:8,srbmLaunch:300,rktLaunch:480,rkt:1440,rktR:kmH(340),srbm2026:900,adPerPt:250,adCap:168,
   ad2026:{p3:486,p2:200,tk:400},pk:{p3:.7,p2:.5,tk:.5},field:.3,sea:.1,rfScale:900/32};
 function mslInit(){
   const P=S.pools,k=Math.max(.25,(P.rocAD||0)/4);
@@ -426,8 +426,8 @@ const plaAirOld=()=>S.air?8*S.air.PLA/Math.max(1,S.air.PLA0):S.pools.plaAir;
 // ★庫存：每艘美航艦 LRASM 40 枚、每艘共軍航艦鷹擊-83K 48 枚（用完就沒有）；★攻擊有艦隊防空的目標，每出擊架次損失 2%
 // ★任務分配（推估的固定公式）：有敵艦在打擊距離內＝制空 40%、對艦 40%、對地 20%；沒有＝對艦的份改去制空；攻方可用指揮官意圖調整
 // ★美軍對地空襲：每 2 架次（一個雙機分隊）攻擊一次，命中率沿用盟軍空襲；只打得到作戰半徑內的目標（沒有防區外對地武器的推估）
-const CVW={US:{r:36,asmN:'LRASM',asmR:18,mag:40},
-  PLA:[{r:30,asmR:11,mag:48},{r:30,asmR:11,mag:48},{r:40,asmR:11,mag:48},{r:40,asmR:11,mag:48}],plaN:'鷹擊-83K',
+const CVW={US:{r:kmH(720),asmN:'LRASM',asmR:kmH(360),mag:40},
+  PLA:[{r:kmH(600),asmR:kmH(220),mag:48},{r:kmH(600),asmR:kmH(220),mag:48},{r:kmH(800),asmR:kmH(220),mag:48},{r:kmH(800),asmR:kmH(220),mag:48}],plaN:'鷹擊-83K',
   per:2,loss:.02,landPer:2,
   split:{'':[.4,.4,.2],ship:[.3,.6,.1],air:[.7,.2,.1],land:[.4,.1,.5]}};
 function cvwCarriers(side){
@@ -509,7 +509,7 @@ function cvAggr(u,h){
     if(u.hp<=1)sc+=Math.max(0,er+2-d)*3;            // 剩 1 步：撤出對方的打擊距離
   }
   const fr=S.units.filter(e=>e.side===me&&e!==u&&(e.type==='cv'||e.type==='csg')&&alive(e));
-  if(fr.length){const dn=Math.min(...fr.map(e=>hd(h,hexOf(e))));sc+=Math.max(0,dn-10)*.5+Math.max(0,5-dn)*.5;}
+  if(fr.length){const dn=Math.min(...fr.map(e=>hd(h,hexOf(e))));sc+=Math.max(0,dn-kmH(200))*.5+Math.max(0,kmH(100)-dn)*.5;}
   return sc;
 }
 function cvwSplit(side,c){
@@ -582,15 +582,15 @@ function cvwStrike(side){
 // 垂直發射管數有公開資料（055 型 112、052D 型 64、054A 型 32、柏克級 96、提康德羅加級 122）；★各彈種的配置比例沒有公開，為推估
 // 射程以每格 20 km 換算：鷹擊-18 約 540 km＝27 格、鷹擊-83 約 230 km＝11 格、魚叉 約 130 km＝6 格；★防空涵蓋：海紅旗-9 約 200 km＝10 格、標準飛彈 ★8 格、海紅旗-16 ★2 格
 const SHIPW={
-  d55:{ad:80,adR:10,asm:16,asmN:'鷹擊-18',asmR:27,lam:16,salvo:4,chan:6},
+  d55:{ad:80,adR:kmH(200),asm:16,asmN:'鷹擊-18',asmR:kmH(540),lam:16,salvo:4,chan:6},
   tak:{ad:0,adR:0,asm:0,asmN:'',asmR:0,lam:0,salvo:0,chan:0}, // 補給艦：不作戰，跟著航艦；被擊沉時該艦艦載機架次 ★×0.7（燃油與彈藥補給受影響）
   ddh:{ad:22,adR:0,asm:0,asmN:'',asmR:0,lam:0,salvo:0,chan:2},   // ★出雲級：只有 SeaRAM 自身防禦；反潛直升機 ★7 架，2027 年起 F-35B ★10 架
-  jdg:{ad:80,adR:8,asm:8,asmN:'90 式反艦飛彈',asmR:10,lam:0,salvo:4,chan:4}, // ★摩耶級垂直發射管 96 管；標準飛彈涵蓋 8 格；90 式約 200 km（取保守值）
-  jdd:{ad:32,adR:2,asm:8,asmN:'90 式反艦飛彈',asmR:10,lam:0,salvo:4,chan:2}, // ★改良型海麻雀
-  d52:{ad:48,adR:10,asm:8,asmN:'鷹擊-18',asmR:27,lam:8,salvo:4,chan:4},
-  f54:{ad:32,adR:2,asm:8,asmN:'鷹擊-83',asmR:11,lam:0,salvo:4,chan:2},
-  cg:{ad:106,adR:8,asm:8,asmN:'魚叉',asmR:6,lam:16,salvo:4,chan:6},
-  ddg:{ad:80,adR:8,asm:8,asmN:'魚叉',asmR:6,lam:8,salvo:4,chan:4}};
+  jdg:{ad:80,adR:kmH(160),asm:8,asmN:'90 式反艦飛彈',asmR:kmH(200),lam:0,salvo:4,chan:4}, // ★摩耶級垂直發射管 96 管；標準飛彈涵蓋 8 格；90 式約 200 km（取保守值）
+  jdd:{ad:32,adR:kmH(40),asm:8,asmN:'90 式反艦飛彈',asmR:kmH(200),lam:0,salvo:4,chan:2}, // ★改良型海麻雀
+  d52:{ad:48,adR:kmH(200),asm:8,asmN:'鷹擊-18',asmR:kmH(540),lam:8,salvo:4,chan:4},
+  f54:{ad:32,adR:kmH(40),asm:8,asmN:'鷹擊-83',asmR:kmH(220),lam:0,salvo:4,chan:2},
+  cg:{ad:106,adR:kmH(160),asm:8,asmN:'魚叉',asmR:kmH(120),lam:16,salvo:4,chan:6},
+  ddg:{ad:80,adR:kmH(160),asm:8,asmN:'魚叉',asmR:kmH(120),lam:8,salvo:4,chan:4}};
 // ★chan＝每艘一波能同時接戰的來襲飛彈數（推估；柏克級有 3 具 SPG-62 照射雷達、提康德羅加級 4 具，可分時導引多枚）；航艦自身近迫防禦另可處理 2 枚（攔截率 50%）
 // ★休斯齊射模型參數（推估）：反艦飛彈尋標命中率 0.8；艦隊防空每枚來襲發射 2 枚攔截彈，單枚攔截率 0.7（彈道飛彈 0.5）
 const SALVO={pSeek:.8,pInt:.7,pIntBM:.5,perMsl:2};
@@ -601,7 +601,7 @@ const tname=t=>t.fl?t.fl.n:TYPES[t.type].n;
 // 反潛：★每回合發現潛艦機率 054A 35%、055 30%、052D 25%（舊護航艦 25%）；新護航艦有艦載直升機，搜索範圍 ★6 格（約 120 km，舊護航艦 3 格）
 // 海鯤魚雷打航艦：每有一艘新護航艦在 2 格內，命中率 −★5%（最低 10%）
 // 共軍潛艦打美航艦：美方反潛屏障 A＝護航艦數＋MH-60R 架數÷4（★航艦反潛直升機中隊 11 架＋每艘護航艦 2 架）；★命中率 0.3÷(1＋0.25A)，★潛艦被擊沉機率 min(0.6, 0.05A)
-const LAM={per:4,asw:{f54:.35,d55:.3,d52:.25,dd:.25},aswR:{f54:6,d55:6,d52:6,dd:3},hkCv:.05,hkMin:.1,mh60cv:11,mh60esc:2};
+const LAM={per:4,asw:{f54:.35,d55:.3,d52:.25,dd:.25},aswR:{f54:kmH(120),d55:kmH(120),d52:kmH(120),dd:kmH(60)},hkCv:.05,hkMin:.1,mh60cv:11,mh60esc:2};
 function usAswScreen(g){const u=g||uscPiece();if(!u||!alive(u))return 0;const es=S.units.filter(e=>e.ally==='US'&&isEsc(e)&&e.type!=='tak'&&alive(e)&&e.grp===u.id).length;return es+(LAM.mh60cv+LAM.mh60esc*es)/4;}
 const ESC_PLA=['d55','d52','f54']; // ★共軍航艦典型護航：055、052D、054A 各 1 艘（日本防衛省多次通報 3 艘左右護航）
 // 美航艦打擊群（公開資料：航艦＋3～5 艘水面艦＋補給艦）：★2026～2027 年巡洋艦 1＋柏克級 3；之後柏克級 4（巡洋艦退役）；另有戰鬥支援艦 1
@@ -741,7 +741,7 @@ function antiShip(who,shots,need,canLand,tag,ok0,fk){
   const P=S.pools;let hc=0,he=0,hl=0,cvh=0;
   for(let i=0;i<shots;i++){
     const fleet=S.units.filter(u=>u.side==='atk'&&atSea(u)&&(!isShip(u)||u.type==='cv'||u.type==='cvy'));
-    if(fleet.length&&(hitP(.67,'antiShipFleet')||P.plaNavy<=0)){const tg=pickBest(fleet,tgtVal),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&rd(hexOf(x),hexOf(tg))<=2)?1:0,sat=satHit(tg),gc=grpCovered(tg),ok=gc?salvoCalc(tg,1,false,'antiShip:grp').hits>0:(sat>=3||hitP(pNeed(need+(tg.type==='cvy'?cvyMod(tg):escortMod()+cov)-sat),'antiShip'));fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:base==='roc'&&rocOrigin(fk,tg)?undefined:orgPick(base),from:base==='roc'?rocOrigin(fk,tg)||undefined:undefined,k:fk||'cm',ad:P.plaAD>0&&fk!=='torp'?(ok?'pass':'int'):undefined,adSide:'atk'});if(ok){hc++;const st=gc?((tg.type==='cv'||tg.type==='csg')?takeInt(.5,'salvoBig'):1):sat>=2?2:1;if(st)damage(tg,st,gc?who:sat>=2?'飽和攻擊':who);}}
+    if(fleet.length&&(hitP(.67,'antiShipFleet')||P.plaNavy<=0)){const tg=pickBest(fleet,tgtVal),cov=S.units.some(x=>x.type==='dd'&&x!==tg&&rd(hexOf(x),hexOf(tg))<=kmH(40))?1:0,sat=satHit(tg),gc=grpCovered(tg),ok=gc?salvoCalc(tg,1,false,'antiShip:grp').hits>0:(sat>=3||hitP(pNeed(need+(tg.type==='cvy'?cvyMod(tg):escortMod()+cov)-sat),'antiShip'));fxq({t:'air',at:[tg.c,tg.r],hit:ok,tsea:true,org:base==='roc'&&rocOrigin(fk,tg)?undefined:orgPick(base),from:base==='roc'?rocOrigin(fk,tg)||undefined:undefined,k:fk||'cm',ad:P.plaAD>0&&fk!=='torp'?(ok?'pass':'int'):undefined,adSide:'atk'});if(ok){hc++;const st=gc?((tg.type==='cv'||tg.type==='csg')?takeInt(.5,'salvoBig'):1):sat>=2?2:1;if(st)damage(tg,st,gc?who:sat>=2?'飽和攻擊':who);}}
     else if(P.plaNavy>0){if(hitP(pNeed(need),'antiShip')){he++;P.plaNavy--;if(P.plaCV>0&&hitP(pNeed(5+(P.plaNavy>=5?1:0)),'antiShip')){const m=cvHitAbstract('asm',who);if(m){cvh++;log(m);}}}}
     else if(canLand){
       const land=S.units.filter(u=>u.side==='atk'&&onTW(u));if(!land.length)break;
