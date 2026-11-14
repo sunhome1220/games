@@ -535,7 +535,7 @@ function renderInfoSide(){
   if(FARSEL&&FARINFO[FARSEL]&&!S.sel){const f=FARINFO[FARSEL];
     el.innerHTML='<div class="eyebrow">外圍示意區 · '+FARWHO[f.w]+'</div><h2 style="color:var(--'+(f.w==='atk'?'atk':f.w==='us'?'us':'jp')+')">'+f.t+'</h2><div class="k">'+f.d+'<br>'+f.r+'</div><div class="k" style="margin-top:6px">這裡不是遊戲格，不能操作，只顯示各方火力的出發位置；距離為概略值，圖上位置為示意。</div>'+(matchMedia('(hover:none)').matches?'<button class="ghost" id="btnDetail" data-far="'+FARSEL+'">詳細資料</button>':'');return;}
   const hu=S.hoverId?S.units.find(x=>x.id===S.hoverId):null;
-  const u=S.sel&&alive(S.sel)?S.sel:(S.hover?(hu&&K(hu.c,hu.r)===S.hover?hu:unitAt(S.hover)):null);
+  const u=S.sel&&alive(S.sel)?S.sel:(S.hover&&S.baseSel!==S.hover?(hu&&K(hu.c,hu.r)===S.hover?hu:unitAt(S.hover)):null); // 點基地標籤：顯示機場本身
   const h=u?hexOf(u):(S.hover?TER[S.hover]:null);
   if(!h){el.innerHTML='<div class="k">點選地圖上的單位或地格查看資料。</div>';return;}
   let o='<div class="eyebrow">'+hname(h)+' · '+TERN[h.t]+(h.cliff?' · 斷崖':'')+(h.mud?' · 泥灘潮間帶':'')+(MINOR_PORTS[h.k]?' · 次要港口：'+MINOR_PORTS[h.k]+'（占領後補給 +2，不計入勝負條件）':'')+((S.bh&&S.bh[h.k]&&S.turn-S.bh[h.k]>=1&&S.owner[h.k]==='atk')?' · 灘頭堡（補給 +2）':'')+(isLand(h)?' · '+SIDE[S.owner[h.k]]+'控制':'')+'</div>';
@@ -600,7 +600,7 @@ function syncUCard(){
   const el=$('#info'),cd=$('#ucard');if(!cd)return;
   if(!ucFloat()){cd.hidden=true;return;}
   const fresh=el.innerHTML!=='',src=fresh?el:$('#ucBody'),has=!!(src.querySelector('h2')||src.querySelector('.stats'));
-  const key=(FARSEL&&!S.sel?'far:'+FARSEL:S.sel?'u'+S.sel.id:S.hoverId?'u'+S.hoverId:S.hover?'h'+S.hover:'')+'|'+S.turn;
+  const key=(FARSEL&&!S.sel?'far:'+FARSEL:S.sel?'u'+S.sel.id:S.hoverId?'u'+S.hoverId:S.hover?(S.baseSel===S.hover?'b':'h')+S.hover:'')+'|'+S.turn;
   if(key!==UC.key){UC.key=key;UC.closedKey=null;}
   const chip=$('#ucChip');
   if(!has||UC.closedKey===key){cd.hidden=true;chip.hidden=true;return;}

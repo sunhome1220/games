@@ -338,7 +338,7 @@ function buildStatic(){
     if(h.cliff)o+='<polygon class="cliff" points="'+hexPts(x,y,R-3)+'"/>';
     if(h.mud)o+='<polygon class="mud" points="'+hexPts(x,y,R-3)+'"/>';
     o+=tileDetail(h,x,y);
-    if(h.name&&(h.t!=='plain'||h.isl==='JP'||['宜蘭','恆春','澎湖'].includes(h.name))&&!(h.t==='air'&&nearCity(h))){const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':' minor')+'" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x+'" y="'+(FG>2?y-R*1.2:y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';} // 機場旁 25 km 內已有城市或港口名就不重複標（點機場仍看得到名稱）；縮小時只顯示勝負要點
+    if(h.name&&(h.t!=='plain'||h.isl==='JP'||['宜蘭','恆春','澎湖'].includes(h.name))&&!(h.t==='air'&&(nearCity(h)||h.isl==='TW'))){ /* 台澎機場的名稱改由可點的基地標籤（baseTagsSVG）顯示 */const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':' minor')+'" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x+'" y="'+(FG>2?y-R*1.2:y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';} // 機場旁 25 km 內已有城市或港口名就不重複標（點機場仍看得到名稱）；縮小時只顯示勝負要點
     o+='</g>';
   }
   o+='<text class="big" font-size="15" x="'+cc(6,3)[0]+'" y="'+cc(6,3)[1]+'" writing-mode="tb">台灣海峽</text>';
@@ -421,6 +421,22 @@ function basePx(){
   const [sx,sy]=oCenter(19,9);BPX.bsea=[sx*KS,sy*KS];
   return BPX;
 }
+// 基地標籤：機場上有部隊時點不到機場，所以每座台澎機場在附近的空格（優先海上）放一個可點的長方形標籤，用細線連回機場
+function baseTagsSVG(){
+  let o='';const used=new Set();
+  for(const h of airfields()){
+    const occ=k=>used.has(k)||S.units.some(u=>K(u.c,u.r)===k&&!subHidden(u)&&!(u.ship&&atSea(u)));
+    const r1=nbrs(h.c,h.r).filter(Boolean),r2=[];for(const n of r1)for(const m of nbrs(n.c,n.r))if(m&&m.k!==h.k&&!r1.includes(m)&&!r2.includes(m))r2.push(m);
+    const cand=[...r1.map(x=>[x,1]),...r2.map(x=>[x,2])].filter(([x])=>!occ(x.k)&&!(x.t==='air'));
+    cand.sort((a,b)=>(a[0].t==='sea'?0:2)+a[1]-((b[0].t==='sea'?0:2)+b[1])||a[0].r-b[0].r||a[0].c-b[0].c);
+    const t=cand.length?cand[0][0]:h;used.add(t.k);
+    const [x0,y0]=cen(h.c,h.r),[x,y]=cen(t.c,t.r),fs=8.5*Math.max(.72,SC),nm=(h.name||'機場').replace(/(基地|機場)$/,''),w=(nm.length+1.6)*fs+8,hh=fs+7,own=S.owner[h.k]==='atk';
+    if(t!==h)o+='<line class="btl'+(own?' lost':'')+'" x1="'+x0.toFixed(1)+'" y1="'+y0.toFixed(1)+'" x2="'+x.toFixed(1)+'" y2="'+y.toFixed(1)+'"/>';
+    o+='<g class="btag'+(own?' lost':'')+'" data-base="'+h.k+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+
+      '<rect x="'+(x-w/2).toFixed(1)+'" y="'+(y-hh/2).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="3"/><text x="'+x.toFixed(1)+'" y="'+(y+fs*.36).toFixed(1)+'" text-anchor="middle" font-size="'+fs.toFixed(1)+'">✈'+nm+'</text></g>';
+  }
+  return o;
+}
 function baseMarkersSVG(){
   const P=basePx(),strikeOn=humanTurn()&&S.phase==='atk'&&S.mode==='strike',dOn=(humanTurn()&&S.phase==='def'&&S.mode==='strike'&&S.dfire>0&&lrOK())||tomOn();
   let o='';
@@ -438,7 +454,7 @@ function baseMarkersSVG(){
 }
 function textZoomFix(){ // 放大到 500% 以上時，地名、浪高等文字以自己的座標為中心縮小（不用 CSS transform-box：iOS Safari 對 SVG 文字支援不完整，會跑位）
   const k=typeof ZOOM!=='undefined'&&ZOOM>5?5/ZOOM:1;
-  document.querySelectorAll('#map .lbl,#map .wxl,#map .mport,#map .big,#map .fxt').forEach(e=>{if(k===1){if(e.__tz){e.removeAttribute('transform');e.__tz=0;}return;}const x=+e.getAttribute('x')||0,y=+e.getAttribute('y')||0;e.setAttribute('transform','translate('+x+' '+y+') scale('+k.toFixed(4)+') translate('+(-x)+' '+(-y)+')');e.__tz=1;});
+  document.querySelectorAll('#map .lbl,#map .wxl,#map .mport,#map .big,#map .fxt,#map .btag').forEach(e=>{if(k===1){if(e.__tz){e.removeAttribute('transform');e.__tz=0;}return;}const x=+(e.getAttribute('x')||e.getAttribute('data-x'))||0,y=+(e.getAttribute('y')||e.getAttribute('data-y'))||0;e.setAttribute('transform','translate('+x+' '+y+') scale('+k.toFixed(4)+') translate('+(-x)+' '+(-y)+')');e.__tz=1;});
 }
 function renderMap(){
   if(!STATIC.built)buildStatic();
@@ -465,6 +481,7 @@ function renderMap(){
   o+=wxMapSVG();
   o+=ghostFleetsSVG();
   o+=baseMarkersSVG();
+  o+=baseTagsSVG();
   for(const k of Object.keys(MINOR_PORTS)){const h=TER[k];if(!h)continue;const [x,y]=cen(h.c,h.r);o+='<text class="mport" style="font-size:'+(14*Math.max(.55,SC)).toFixed(1)+'px" x="'+(x+R*.7).toFixed(1)+'" y="'+(y-R*.35).toFixed(1)+'">⚓</text>';} // 次要港口標記畫在單位之上
   Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<g class="mine" pointer-events="none"><circle cx="'+x.toFixed(1)+'" cy="'+(y+8).toFixed(1)+'" r="4.5" fill="#222" stroke="#ffd45a" stroke-width="1.2"/><path d="M'+(x-7).toFixed(1)+' '+(y+8).toFixed(1)+'h14M'+x.toFixed(1)+' '+(y+1).toFixed(1)+'v14" stroke="#ffd45a" stroke-width="1"/></g>';});
   airfields().forEach(h=>{const lv=afLevel(h.k);if(!lv)return;const [x,y]=cen(h.c,h.r);o+='<text class="fxt af'+lv+'" pointer-events="none" x="'+(x+R*.65).toFixed(1)+'" y="'+(y-R*.4).toFixed(1)+'" text-anchor="middle" style="font-size:'+((lv===3?15:12)*Math.max(.55,SC)).toFixed(1)+'px;stroke-width:'+(3*Math.max(.55,SC)).toFixed(1)+'px" fill="'+(lv===3?'#c0392b':lv===2?'#e67e22':'#e0a800')+'">'+(lv===3?'✕':'⚠')+'</text>';});
