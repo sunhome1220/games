@@ -1960,3 +1960,4 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 地圖最大放大倍數由 300% 提高到 500%	Maximum map zoom raised from 300% to 500%	
 射程判定改用直線距離：武器、雷達、防空、艦載機打擊、潛艦、空降等射程，改以格子中心之間的實際直線距離判斷（原本用「走幾格」的格數距離，範圍是六角形，在兩軸之間的方向會短約 13%）；移動、相鄰、控制區仍用格數	Range checks now use straight-line distance: weapon, radar, air-defense, carrier-strike, submarine and airdrop ranges are judged by the actual distance between hex centers (they used the step count between hexes, which makes a hexagonal area about 13% short between the axes); movement, adjacency and zones of control still count hexes	
 射程圈（防空傘、艦載機作戰半徑、對艦打擊距離等）改畫成圓形，與判定一致	Range rings (air-defense umbrella, carrier strike radius, anti-ship reach, etc.) are now drawn as circles, matching the rules	
+地圖上的海域浪高文字會自動避開棋子：在原位置附近 4 格內的海面挑一個沒有船艦或部隊的地方顯示	Wave-height labels on the map now avoid pieces: each is placed on open sea within 4 hexes of its usual spot, where no ships or units are	
