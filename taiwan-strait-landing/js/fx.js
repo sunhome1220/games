@@ -74,7 +74,7 @@ function fxShot(a,b,o){
 // 平均速度（m/s，概略）：東風-17 滑翔體 ~2500（約 7 馬赫）、短程彈道飛彈 ~2000（約 6 馬赫）、防空飛彈 ~1500、空對空飛彈 ~1300、陸軍戰術飛彈 ~1000、
 // 火箭 ~900、砲彈 ~800、次音速反艦飛彈 ~280、導引炸彈 ~280、戰機 ~250、巡弋飛彈 ~250、無人機與巡飛彈 ~60、重型魚雷 ~25（約 50 節）
 const FXV={hs:2500,bm:2000,sam:1500,aam:1300,atc:1000,rkt:900,arty:800,asm:280,bomb:280,plane:250,cm:250,drone:60,torp:25},FX_SEC=3;
-function fxDur(k,dPx){const km=dPx/(KS*OW/2/20);return Math.max(180,Math.min(3500,km*1000/(FXV[k]||300)*FX_SEC));}
+function fxDur(k,dPx){const km=dPx/(HPX/KM_HEX);return Math.max(180,Math.min(3500,km*1000/(FXV[k]||300)*FX_SEC));}
 function fxFlight(a,b,k,end){
   const dd=Math.hypot(b[0]-a[0],b[1]-a[1]);
   if(k==='hs'){ // 東風-17：推進段像彈道飛彈往上爬，分離後換成高超音速滑翔體，以較平的彈道、左右機動衝向目標（電漿層高溫：橘白色熱光）
@@ -145,7 +145,7 @@ if(/[?&]debug=1/.test(location.search))window.__targets=id=>{const u=S.units.fin
 if(/[?&]debug=1/.test(location.search))window.__dog=o=>fxDog(o);
 if(/[?&]debug=1/.test(location.search)){window.__fg=k=>failGuide(k);window.__ledger=()=>defLedger();window.__isig=()=>intentSig();}
 if(/[?&]debug=1/.test(location.search))window.__fxShot=(a,b,o)=>fxShot(a,b,o);
-if(/[?&]debug=1/.test(location.search))window.__fxFlight=(a,b,k)=>fxFlight(a,b,k);window.__fxDur=(k,hex)=>Math.round(fxDur(k,hex*KS*OW/2));
+if(/[?&]debug=1/.test(location.search))window.__fxFlight=(a,b,k)=>fxFlight(a,b,k);window.__fxDur=(k,hex)=>Math.round(fxDur(k,hex*HPX));
 function fxSmoke(a,b,arc,n,ms){for(let i=1;i<=n;i++)setTimeout(()=>{const p=bez(a,[(a[0]+b[0])/2,(a[1]+b[1])/2-arc],b,i/(n+1));fxFlash(p,2,7,'#e8e8e8',520);},ms*i/(n+1)*fxK());}
 function fxShake(id,hit){const e=document.querySelector('#gD .u[data-id="'+id+'"]');if(!e)return;
   e.animate([{transform:'translate(0,0)'},{transform:'translate(-3px,1px)'},{transform:'translate(3px,-1px)'},{transform:'translate(-2px,0)'},{transform:'translate(0,0)'}],{duration:280*fxK()});

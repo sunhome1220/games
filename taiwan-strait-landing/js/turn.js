@@ -387,14 +387,14 @@ async function ssnAll(){for(const u of S.units.filter(x=>x.type==='ssn'&&alive(x
 const USC_LAT=[23.6,22.3,24.9];
 function wxMapSVG(){ // 地圖：各海域浪高標籤、颱風（中心、暴風圈、走過的路徑、下一回合預測位置）
   const W=S.weather;if(!S.started||!W||W.base==null)return '';
-  const pxKm=KS*OW/2/20,P=ll=>{const [c,r]=llToRC(ll[0],ll[1]),[x,y]=center(c,r);return [x,y];};
+  const pxKm=HPX/KM_HEX,P=ll=>{const [c,r]=llToRC(ll[0],ll[1]),[x,y]=center(c,r);return [x,y];};
   let o='<g class="wxmap" pointer-events="none">';
   const A={W:[119.55,23.2],N:[121.7,25.75],E:[122.3,23.3],S:[120.9,21.35]};
   // 浪高文字避開棋子：在原定位置附近 4 格內的海面格中，挑文字框內棋子最少、離原位置最近的地方
   const upx=S.units.filter(u=>alive(u)).map(u=>center(u.c,u.r)),uR=R*.9;
   const spot=(ll,txt)=>{const [c0,r0]=llToRC(ll[0],ll[1]),h0=TER[K(c0,r0)],[x0,y0]=center(c0,r0),hw=txt.length*5.6+4,hh=8;
     const cand=h0?Object.values(TER).filter(q=>q.t==='sea'&&hd(q,h0)<=kmH(80)):[];let best=[x0,y0],bs=1e9;
-    for(const q of [{c:c0,r:r0}].concat(cand)){const [x,y]=center(q.c,q.r),hit=upx.filter(([ux,uy])=>Math.abs(ux-x)<hw+uR&&Math.abs(uy-(y-4))<hh+uR).length,sc=hit*100+Math.hypot(x-x0,y-y0)/(KS*OW/2);if(sc<bs){bs=sc;best=[x,y];}}
+    for(const q of [{c:c0,r:r0}].concat(cand)){const [x,y]=center(q.c,q.r),hit=upx.filter(([ux,uy])=>Math.abs(ux-x)<hw+uR&&Math.abs(uy-(y-4))<hh+uR).length,sc=hit*100+Math.hypot(x-x0,y-y0)/HPX;if(sc<bs){bs=sc;best=[x,y];}}
     return best;};
   for(const z in A){const v=wxWaveLL(z==='W'?WXREF:A[z]),txt=WXZ[z]+' '+v.toFixed(1)+' m',[x,y]=spot(A[z],txt),col=v>=2.5?'#c0392b':v>1.25?'#d68910':'#2e86c1';
     o+='<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="800" fill="'+col+'" stroke="var(--panel,#fff)" stroke-width="3" paint-order="stroke" opacity=".85">'+WXZ[z]+' '+v.toFixed(1)+' m</text>';}

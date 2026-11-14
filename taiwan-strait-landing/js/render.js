@@ -1,6 +1,6 @@
 'use strict';
 /* ---------- rendering ---------- */
-function center(c,r){return [KS*(OW/2*(c+.5*(r&1))+OX0),KS*(.75*OR*r+OY0)];}
+function center(c,r){return [KS*(OW/FG*(c+.5*(r&1))+OX0),KS*(1.5*OR/FG*r+OY0)];}
 function hexPts(x,y,rr){let p=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);p.push((x+rr*Math.cos(a)).toFixed(1)+','+(y+rr*Math.sin(a)).toFixed(1));}return p.join(' ');}
 const humanTurn=()=>S.started&&!S.over&&!S.busy&&S.ctrl[S.phase]==='human';
 /* ---------- 3D map: static terrain layer + dynamic layer + effects ---------- */
@@ -14,11 +14,11 @@ function rangePts(c,r,n){
   if(n<=0)return '';const x0=c-(r-(r&1))/2,z0=r,[cx,cy]=center(c,r),D=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]]; // 立方座標 (x,z) 方向
   return D.map(([dx,dz])=>{const x=x0+dx*n,z=z0+dz*n,cc=x+(z-(z&1))/2,[px,py]=center(cc,z),f=(n+.5)/n;return (cx+(px-cx)*f).toFixed(1)+','+(cy+(py-cy)*f).toFixed(1);}).join(' ');
 }
-function rangeTop(c,r,n){const [cx,cy]=center(c,r);return [cx,cy-(n+.5)*KS*OW/2];}
+function rangeTop(c,r,n){const [cx,cy]=center(c,r);return [cx,cy-(n+.5)*HPX];}
 const kmOf=n=>Math.round(n*KM_HEX).toLocaleString();
 function rangeRingsSVG(u,lite){ // u：航艦或護航艦；lite＝一鍵全開時只畫防空傘與對艦打擊距離
   if(!u||!alive(u))return '';const sd=u.side,o=[],lbl=[];
-  const ring=(c,r,n,cls,txt)=>{if(n<=0)return;{const [cx,cy]=center(c,r);o.push('<circle class="rr '+cls+' '+sd+'" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+((n+.5)*KS*OW/2).toFixed(1)+'"/>');}if(txt){const [x,y]=rangeTop(c,r,n);lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+txt+'</text>');}};
+  const ring=(c,r,n,cls,txt)=>{if(n<=0)return;{const [cx,cy]=center(c,r);o.push('<circle class="rr '+cls+' '+sd+'" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+((n+.5)*HPX).toFixed(1)+'"/>');}if(txt){const [x,y]=rangeTop(c,r,n);lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+txt+'</text>');}};
   const grp=u.type==='cv'||u.type==='csg'||u.type==='ddh'?u:(u.grp?S.units.find(x=>x.id===u.grp&&alive(x)):null);
   if(u.type==='cv'||u.type==='csg'||u.type==='ddh'){
     const c=cvwCarriers(sd==='atk'?'atk':'def').find(x=>x.u===u);
@@ -64,7 +64,7 @@ let RNG_ALL=false;try{RNG_ALL=localStorage.getItem('tsl-rng')==='1';}catch(e){}
 function hexV(x,y,rr){const o=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);o.push([x+rr*Math.cos(a),y+rr*Math.sin(a)]);}return o;}
 // 給手把程式用：遊戲格的中心（地圖座標）、由地圖座標找最近的格子、相鄰格
 window.TSL_HEX={R,c2p:(c,r)=>center(c,r),ok:(c,r)=>!!TER[K(c,r)],nb:(c,r)=>nbrs(c,r).map(h=>[h.c,h.r]),
-  p2c:(px,py)=>{const r0=Math.round((py/KS-OY0)/(.75*OR));let best=null,bd=1e18;for(let r=r0-1;r<=r0+1;r++){const c0=Math.round((px/KS-OX0)/(OW/2)-.5*(r&1));for(let c=c0-1;c<=c0+1;c++){const [x,y]=center(c,r),d=(x-px)*(x-px)+(y-py)*(y-py);if(d<bd){bd=d;best=[c,r];}}}return best;}};
+  p2c:(px,py)=>{const r0=Math.round((py/KS-OY0)/(1.5*OR/FG));let best=null,bd=1e18;for(let r=r0-1;r<=r0+1;r++){const c0=Math.round((px/KS-OX0)/(OW/FG)-.5*(r&1));for(let c=c0-1;c<=c0+1;c++){const [x,y]=center(c,r),d=(x-px)*(x-px)+(y-py)*(y-py);if(d<bd){bd=d;best=[c,r];}}}return best;}};
 const ptsStr=v=>v.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
 const STATIC={built:false};
 const ANIM={pos:new Map(),gid:null,ok:true};
