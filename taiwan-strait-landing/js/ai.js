@@ -173,6 +173,7 @@ async function aiAtkUnit(u){
   }
   if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
     if(!S.weather.air||S.turn>3)return;
+    if(dropAD()>=.3&&S.turn<3)return; // ★防空還強時先不空降，等防空被壓制（最晚第 3 回合仍要執行）
     const rc=reach(u);let best=null,bs=1e9;const g=TER[ABN_GOAL[aiPlan().zone][u.goal||0]];
     for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+Math.random()*.4;if(s<bs){bs=s;best=k;}}
     if(best){doMove(u,best,'drop');render();await sleep(380);}
@@ -350,6 +351,7 @@ async function aiDef(){
       if(m.type==='hmr'){const near=t=>rd(hexOf(m),hexOf(t))<=kmH(80)&&(S.pools.rocGml||0)>=1;ts=HM==='cn'?ts.filter(near):HM==='beach'||HM==='log'?ts:ts.filter(t=>hvT(t)||near(t));}
       if(!ts.length)break; // 電腦把陸軍戰術飛彈留給高價值目標（裝甲、兩棲、陸戰、空降旅），其他目標只在火箭彈射程內才打
       if(m.type==='hmr'||m.type==='mlrs'){const w={arm:4,tank:4,amph:4,mar:4,abn:3,inf:2,res:2};const far=x=>m.type==='hmr'&&rd(hexOf(m),hexOf(x))>kmH(80)?1:0;
+        if(m.type==='hmr'){const noG=((S.pools||{}).rocGml||0)<1;for(let i=ts.length-1;i>=0;i--){const x=ts[i];if((far(x)||noG)&&FOOT.includes(x.type))ts.splice(i,1);}if(!ts.length)break;} // 陸軍戰術飛彈打分散步兵效果差，不浪費
         const lg=x=>m.type==='hmr'&&HM==='log'?(x.type==='fob'?2:PORTS.includes(K(x.c,x.r))?1:0):0,bc=x=>m.type==='hmr'&&HM==='beach'&&hexOf(x).coastal&&['arm','tank','amph','mar','abn'].includes(x.type)?1:0;
         ts.sort((a,b)=>lg(b)-lg(a)||bc(b)-bc(a)||(w[b.type]||1)-(w[a.type]||1)||far(a)-far(b)||a.hp-b.hp);} // 同樣價值時先打近的（用火箭彈，省下陸軍戰術飛彈）
       else{const pr=t=>AS==='tr'?((t.type==='ro'||t.type==='lst'||t.type==='cvy')?2+(cargo(t)?1:0):0):AS==='esc'?((isEsc(t)||t.type==='dd')?2:0):0;ts.sort((a,b)=>pr(b)-pr(a)||tgtVal(b)-tgtVal(a)||a.hp-b.hp);} // 指揮官意圖：反艦打擊優先

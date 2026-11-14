@@ -292,15 +292,28 @@ function doMove(u,k,kind){
   else if(kind==='drop'){
     u.acted=true;u.dropped=true;
     let msg=uname(u)+' 空降 '+hname(h);
-    const hot=inZOC(u.side,h);
-    if(hitP(hot?.5:1/6,hot?'dropHot':'dropAD')){msg+='，'+(hot?'落點遭地面火力壓制':'運輸機群遭防空攔截')+'（'+lastTxt()+'）損失 '+stpU(u,1);log(msg);damage(u,1,'空降損失');return;}
-    log(msg);
+    const hot=inZOC(u.side,h),pA=dropAD(),org=u.org||[from.c,from.r];
+    const shot=hitP(pA,'dropAD'),hp0=u.hp; // 運輸機群先要飛過守方防空，被擊落的部分整批損失
+    const lz=hot&&hitP(.5,'dropHot');      // 落點旁有守方部隊：落地時遭地面火力壓制
+    const lose=(shot?1:0)+(lz?1:0),dead=lose>=hp0;
+    fxq({t:'drop',from:org,at:[h.c,h.r],lost:shot?1:0,fail:dead});
+    if(lose){msg+='，'+[shot?'運輸機群遭防空攔截（攔截率 '+Math.round(pA*100)+'%，推估）':'',lz?'落點遭地面火力壓制':''].filter(Boolean).join('、')+'，損失 '+stpU(u,Math.min(lose,hp0))+(dead?'，空降失敗':'，其餘部隊落地');log(msg);damage(u,lose,'空降損失');return;}
+    log(msg+'：運輸機群突破防空，部隊落地（攔截率 '+Math.round(pA*100)+'%，推估）');
   } else{if(kind==='sail'&&from.t!=='sea'&&!subHidden(u))log(uname(u)+' 自 '+hname(from)+' 出航');if(kind==='sail'||kind==='move')mineCheck(u,h);}
 }
+// 兵種相剋（★推估）：裝甲在平地壓制輕步兵；空降旅沒有重武器打不動裝甲；裝甲進城市或山地施展不開、易遭反裝甲伏擊
+const ARMOR=['arm','tank'],LIGHT=['abn','res'],FOOT=['inf','res','abn','mar','amph'];
+function matchMod(u,t,th){const rough=th.t==='city'||th.t==='mtn';
+  if(ARMOR.includes(u.type)&&LIGHT.includes(t.type)&&!rough)return {n:1,t:'裝甲在平地對輕步兵'};
+  if(ARMOR.includes(u.type)&&FOOT.includes(t.type)&&rough)return {n:-1,t:'裝甲攻擊'+(th.t==='city'?'城市':'山地')+'裡的步兵'};
+  if(u.type==='abn'&&ARMOR.includes(t.type))return {n:-1,t:'空降旅沒有重武器'};
+  return {n:0};}
+// 空降時運輸機群被防空擊落的機率（★推估）：依守方剩餘防空與制空；防空全失時仍有肩射與機槍 5%
+function dropAD(){const P=S.pools||{},p0=(S.p0&&S.p0.rocAD)||1,f=Math.max(0,Math.min(1,(P.rocAD||0)/p0)),c={atk:.5,mid:1,def:1.5}[S.airCtl||'mid']||1;return Math.min(.6,(.05+.25*f)*c);}
 function attack(u,t){
   const th=hexOf(t);if(th.isl==='TW'||th.isl==='PH')civHit('TW',th,'combat');
   const sup=support(u,t),pen=seaPen(u);
-  const A=effAtk(u)+sup+pen, D=effDef(t)+terrDef(th), x=A-D;
+  const mm=matchMod(u,t,th),A=effAtk(u)+sup+pen+mm.n, D=effDef(t)+terrDef(th), x=A-D;
   // 兵力對比 → 攻方壓制的機率 s0；骰子只讓它有限度起伏
   const s0=1/(1+Math.exp(-(x+.6)*.5)),s=Math.max(.02,Math.min(.98,s0)),gk=u.type+'>'+t.type;
   // 固定規則：期望損失依兵力對比算出，整數部分立即損失、零頭累積到之後的戰鬥（不再擲骰）
@@ -309,7 +322,7 @@ function attack(u,t){
   ld=Math.min(2,ld);la=Math.min(2,la);
   if(!ld&&!la){if(takeInt(s,'gnd.f:'+gk)>=1)ld=1;else la=1;}
   const res=ld&&la?'雙方各有損失（守方 −'+stpN(ld)+'、攻方 −'+stpN(la)+'）':ld?'守方失 '+stpN(ld):'攻擊方失 '+stpN(la);
-  log((pen?'搶灘突擊：':'')+uname(u)+' 攻擊 '+hname(th)+' 的 '+TYPES[t.type].n+'：'+A+' 對 '+D+'（壓制機率 '+Math.round(s0*100)+'%，固定規則）→ '+res);
+  log((pen?'搶灘突擊：':'')+uname(u)+' 攻擊 '+hname(th)+' 的 '+TYPES[t.type].n+'：'+A+' 對 '+D+(mm.n?'（兵種相剋 '+(mm.n>0?'+':'')+mm.n+'：'+mm.t+'）':'')+'（壓制機率 '+Math.round(s0*100)+'%，固定規則）→ '+res);
   fxq({t:'atk',from:[u.c,u.r],to:[t.c,t.r],hit:ld>0,sea:atSea(u),tsea:atSea(t)});if(!ld)fxq({t:'txt',at:[t.c,t.r],s:'擋住',col:'def'});
   u.acted=true;u.moved=true;
   const tDead=ld?damage(t,ld):false;
@@ -331,9 +344,9 @@ function fireHimars(m,t){
   const n=Math.max(0,Math.min(HMR_PKG,ssmReady(m)-(m.lu||0),Math.floor(P[key]||0))); // 這次齊射的車數：受可射車數與庫存限制
   m.shots--;m.lu=(m.lu||0)+n;m.revealed=true; // 開火後暴露，下個守方階段前都是顯眼目標
   if(S.pools)S.pools[key]=Math.max(0,(S.pools[key]||0)-n); // 每輛 1 枚 ATACMS 或 1 個火箭莢艙（6 發）
-  const need=Math.min(6,(atc?5:4)+((h.t==='city'||h.t==='mtn')?1:0)),fr=n/HMR_PKG,hit=hitP(pNeed(need)*fr,'fireHimars'); // 不滿 4 輛時命中率依比例縮小
+  const need=Math.min(6,(atc?5:4)+((h.t==='city'||h.t==='mtn')?1:0)),fr=n/HMR_PKG*(atc&&!atSea(t)&&FOOT.includes(t.type)?.5:1),hit=hitP(pNeed(need)*fr,'fireHimars'); // ★陸軍戰術飛彈是單點精準武器，打分散的步兵效果差（×0.5） // 不滿 4 輛時命中率依比例縮小
   fxq({t:'hmr',from:[m.c,m.r],to:[t.c,t.r],hit,atc});
-  log('海馬士 '+n+' 輛齊射 '+(atc?n+' 枚陸軍戰術飛彈':n+' 個火箭莢艙（'+n*6+' 發）')+'（庫存剩 '+Math.round(S.pools?S.pools[key]:0)+(atc?' 枚飛彈）':' 個莢艙）')+(hit?'，命中 ':'，未命中 ')+hname(h)+' 的 '+TYPES[t.type].n+'（'+lastTxt()+'）');
+  log('海馬士 '+n+' 輛齊射 '+(atc?n+' 枚陸軍戰術飛彈':n+' 個火箭莢艙（'+n*6+' 發）')+'（庫存剩 '+Math.round(S.pools?S.pools[key]:0)+(atc?' 枚飛彈）':' 個莢艙）')+(atc&&!atSea(t)&&FOOT.includes(t.type)?'（精準飛彈打分散步兵，命中率 ×0.5）':'')+(hit?'，命中 ':'，未命中 ')+hname(h)+' 的 '+TYPES[t.type].n+'（'+lastTxt()+'）');
   if(hit)damage(t,1,'海馬士火箭砲');
   checkInstant();
 }
