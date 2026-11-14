@@ -433,7 +433,7 @@ function renderStatus(){
         (wv!=null?'<b>'+wv.toFixed(1)+'m</b>'+(S.fcH!=null?'<i>→'+S.fcH.toFixed(1)+'</i>':''):'<b>'+W.n+'</b>')+(ty?'<em>颱風</em>':'')+'<span class="sep">·</span><span class="mv">移動 <b>'+W.sea+'</b></span>';
       wb.appendChild(pill);}
     wxWinSync();}
-  $('#fsStatus').textContent='第 '+S.turn+' / '+S.T+' 回合 · '+SIDE[S.phase]+'階段 · 天候'+S.weather.n+' · 火力 '+S.fire+' · 補給 '+sp.used+'/'+sp.cap;
+  $('#fsStatus').textContent='第 '+S.turn+'/'+S.T+' 回合 · '+SIDE[S.phase]+' · '+String(S.weather.n).replace(/（[^）]*）/g,'').replace(/\s*公尺/,' m')+' · 火力 '+S.fire+' · 補給 '+sp.used+'/'+sp.cap;
 }
 function renderCtrl(){
   document.body.classList.toggle('pre',!S.started);document.body.classList.toggle('playing',!!(S.started&&!S.video&&!S.over));
