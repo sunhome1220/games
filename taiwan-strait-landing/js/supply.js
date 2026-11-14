@@ -10,7 +10,7 @@ function supplyIntel(){
   const plBase=Math.min(.9,.15+(S.sead?0:.25)+(AC==='def'?.25:AC==='mid'?.1:0)+(fa>=2&&AC!=='atk'?.1:0));
   const prot=Math.max(.2,1-Math.min(.6,P.plaNavy/25)-((S.supOrd&&S.supOrd[S.turn]&&S.supOrd[S.turn].escort)?.25:0));
   const sp=supply(),sup=S.sup&&S.sup.t===S.turn?S.sup:null;
-  return {cv,cargo,sinks,fob,near,airN,plBase,plInt:Math.min(.9,plBase+.3),prot,ucap:unloadCap()+fob*2,sp,sup};
+  return {cv,cargo,sinks,fob,near,airN,plBase,plInt:Math.min(.9,plBase+.3*Math.min(1,afShare()*(1-caveF()))),prot,ucap:unloadCap()+fob*2,sp,sup};
 }
 function intdMineSpot(){ // 攻方主要卸載點（港口優先）外海、還沒有水雷的海格
   const sinks=unloadHexes();if(!sinks.length)return null;const main=sinks.find(h=>h.t==='port')||sinks[0];
@@ -21,7 +21,7 @@ function interdictOptions(){
   const pc=Math.min(.9,.45*I.prot),hitsE=Math.min(I.cargo,3*pc),gain={};
   if(I.cv.length>0){gain.convoy=hitsE;
     opts.push({id:'convoy',label:'全力打補給船團',desc:'海上有 '+I.cv.length+' 個補給船團（貨量共 '+I.cargo+' 點'+(I.near!=null?'，最近的離卸載點約 '+I.near+' 格':'')+'）。反艦飛彈、潛艦、戰機優先打船團：額外 3 次攻擊，每次命中約 '+Math.round(pc*100)+'%（已計入攻方護航）；代價是反艦飛彈存量 −2，也少打登陸船團。',est:'再擊中約 '+hitsE.toFixed(1)+' 次，攻方少約 '+hitsE.toFixed(1)+' 點貨量',rec:false});}
-  if(I.airN>0){gain.air=I.airN*(I.plInt-I.plBase);
+  if(I.airN>0&&I.plInt>I.plBase){gain.air=I.airN*(I.plInt-I.plBase); // 守方戰機飛不起來（機場全癱瘓）就沒有這個選項
     opts.push({id:'air',label:'全力攔截運輸機',desc:'攻方戰機 '+(S.air?S.air.PLA:'')+' 架，每回合可空投約 '+I.airN+' 點（要天候允許才能飛）。目前運輸機被擊落機率約 '+Math.round(I.plBase*100)+'%（防空'+(S.sead?'已被壓制':'尚可')+'、制空'+AIRCTL[S.airCtl||'mid']+'）；集中攔截後約 '+Math.round(I.plInt*100)+'%。代價是出擊的戰機可能折損（1/3 機率守方空軍 −1）。',est:'空投再少約 '+gain.air.toFixed(1)+' 點，被擊落的運輸機算攻方空軍損失',rec:false});}
   if(I.sinks.length>0&&I.ucap>=3){gain.sabotage=Math.min(2,I.ucap);
     opts.push({id:'sabotage',label:'特種部隊破壞港口後勤設施',desc:'攻方目前有 '+I.sinks.length+' 處可卸貨（港口、灘頭、補給站 '+I.fob+' 個），卸載能力 '+I.ucap+' 點。特種部隊襲擊卸載碼頭與油料庫：下回合卸載能力 −2；代價是破壞行動造成平民傷亡 +1,500。',est:'卸載能力 '+I.ucap+' → '+Math.max(0,I.ucap-2)+'；只有船團要卸貨時才有效',rec:false});}

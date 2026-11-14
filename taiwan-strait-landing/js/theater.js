@@ -708,7 +708,7 @@ function airBattle(){
   // 蘭徹斯特平方律：各方戰機損失＝基準 × 己方出擊架次 × 敵我有效戰力比（比值限制在 0.2～5）；整數部分立即損失，零頭累積
   const r=Math.max(.2,Math.min(5,E.def>0?E.pla/E.def:5)),plaS=sortiesOf(S.air.PLA,AIR.PLArate)+cvIdx().reduce((a,i)=>{const w=cvwA(i);return a+sortiesOf(S.air.cvF[i],AIR.CV[i].rate)*(w?w[0]:1);},0); // 艦載機只有分配到制空的架次參加空戰
   const twS=sortiesOf(S.air.TW,AIR.TWrate)*afShare()*(1-caveF()),air2=1; // 躲進山洞機堡的戰機不出擊
-  const lp=takeInt(AIR.loss*plaS/r,'airL:PLA'),lt=takeInt(AIR.loss*twS*r*air2,'airL:TW');
+  const lp=takeInt(AIR.loss*plaS*Math.min(5,E.pla>0?E.def/E.pla:0),'airL:PLA'),lt=takeInt(AIR.loss*twS*r*air2,'airL:TW'); // 攻方損失依守方（含盟軍）實際升空的戰力；守方機場全癱瘓又沒有盟軍時，攻方在空戰中沒有損失（不再套用 0.2 的下限）
   let lpC=0;if(lp){const cvS=plaS-sortiesOf(S.air.PLA,AIR.PLArate),fromCv=plaS>0?Math.round(lp*cvS/plaS):0;lpC=fromCv;
     {let left=fromCv;for(const i of cvIdx()){if(left<=0)break;const d=Math.min(left,S.air.cvF[i]);S.air.cvF[i]-=d;airLedger('atk','air',d);left-=d;}}airLose('atk',lp-fromCv);out.push('攻方戰機 −'+lp+' 架'+(fromCv?'（其中艦載機 '+fromCv+'）':''));}
   if(lt){airLose('def',lt);out.push('守方戰機 −'+lt+' 架');}
