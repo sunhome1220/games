@@ -101,8 +101,40 @@ const afRings=()=>S.mode==='afS'?afShipT():S.mode==='afL'?afLandT():S.mode==='af
 // 點地圖：在 afS／afL／afC 模式下點目標
 function afClick(u,cnId){
   const k=S.afK;if(!k||!(S.mode==='afS'||S.mode==='afL'||S.mode==='afC'))return false;
-  if(S.mode==='afC'&&cnId){if(!afCNT().includes(cnId))toast(CNB[cnId]?CNB[cnId].n+(S.cn[cnId]<=0?' 已癱瘓':' 超出萬劍彈與 SLAM-ER 射程（或已用完）'):'打不到',3200);else afStrike(k,{cn:cnId});}
-  else if(u&&u.side==='atk'&&afRings().includes(u))afStrike(k,S.mode==='afC'?{stg:u}:{u});
+  if(S.mode==='afC'&&cnId){if(!afCNT().includes(cnId))toast(CNB[cnId]?CNB[cnId].n+(S.cn[cnId]<=0?' 已癱瘓':' 超出萬劍彈與 SLAM-ER 射程（或已用完）'):'打不到',3200);else S.afPend={k,x:{cn:cnId}};}
+  else if(u&&u.side==='atk'&&afRings().includes(u))S.afPend={k,x:S.mode==='afC'?{stg:u.id}:{u:u.id}}; // 先顯示目標資訊，按「確認出擊」才打
   else toast('這個目標不在這種攻擊的範圍內',2500);
-  if(afBudget(k)<=0)S.mode=null;render();return true;
+  render();return true;
+}
+// ---- 空軍出擊確認面板（比照縱深打擊）----
+function afPendInfo(){
+  const P=S.afPend;if(!P)return null;const k=P.k,h0=TER[k],nb=afBudget(k),lr=S.airCtl==='atk'?1.5:1;let nm,lines=[],ok=nb>0,risk=0;
+  if(P.x.cn||P.x.stg){
+    const u=P.x.stg?S.units.find(x=>x.id===P.x.stg):null;if(P.x.stg&&(!u||!alive(u)))return null;const tg=P.x.cn||{u},H=cnHitP(tg),wp=afCNwp(H.km),found=!u||stgFound(u)>0;
+    nm=P.x.cn?CNB[P.x.cn].n:hname(hexOf(u)).replace(/^大陸 /,'大陸沿岸 ')+' 集結中的 '+TYPES[u.type].n;
+    lines.push('距離約 '+H.km+' km'+(u?'・'+(found?'本階段找到 '+stgFound(u)+' 步':'本階段沒有找到，打不到'):'・目前狀態 '+S.cn[P.x.cn]+'／'+CNB[P.x.cn].hp+' 級'));
+    lines.push('武器：'+(wp?AFS[wp].n+' 一包 '+AFS.pk+' 枚（剩 '+Math.round(S.pools[AFS[wp].pool]||0)+' 枚）':'萬劍彈與 SLAM-ER 射程不到或已用完')+'；共軍防空'+(H.IC.I?'約發射 '+Math.round(H.IC.I)+' 枚攔截彈、約 '+fmt1(H.IC.surv)+' 枚突破':'已失效'));
+    lines.push('命中率 <b>'+(found?Math.round(H.p*100):0)+'%</b>；命中：'+(u?TYPES[u.type].n+' 損失 '+stpU(u,1):(CN_FX[CNB[P.x.cn].kind]||'基地受損一級')));
+    ok=ok&&!!wp&&found;risk=AFS.lossCN;
+  }else{
+    const t=S.units.find(x=>x.id===P.x.u);if(!t||!alive(t))return null;nm=uname(t)+'（'+hname(hexOf(t))+'）';
+    if(atSea(t)){const cov=adCover(t).length,n=Math.min(AFS.pk,Math.floor(S.pools.rocAAsh||0));
+      lines.push('武器：空射反艦飛彈 '+n+' 枚（剩 '+Math.round(S.pools.rocAAsh||0)+' 枚）');
+      lines.push(cov?'在 '+cov+' 艘護航艦的防空範圍內：先被攔截，突破的才計算命中（齊射模型）':'沒有護航防空：每枚命中率 '+Math.round(SALVO.pSeek*100)+'%，預估命中約 '+fmt1(n*SALVO.pSeek)+' 枚');
+      ok=ok&&n>0;risk=cov?AFS.loss:0;}
+    else{const h=hexOf(t),p=pNeed((h.t==='city'||h.t==='mtn')?6:5);lines.push('武器：精準炸彈');lines.push('命中率 <b>'+Math.round(p*100)+'%</b>'+((h.t==='city'||h.t==='mtn')?'（城市或山地較難命中）':'')+'；命中：'+tname(t)+' 損失 '+stpU(t,1));risk=S.pools.plaAD>0?AFS.loss:0;}
+  }
+  lines.push('出擊：'+(h0.name||'基地')+' 一包 4 架；本階段還能出擊 '+nb+' 包；'+(risk?'預估被擊落約 '+fmt1(AFS.pk*risk*lr)+' 架（推估）':'沒有防空威脅')+'；點其他目標可切換');
+  return {html:'<b>'+nm+'</b>'+lines.map(l=>'<div class="cpm">'+l+'</div>').join(''),ok};
+}
+function afPendSync(){
+  let el=document.getElementById('afPend');
+  const on=S.afPend&&humanTurn()&&S.phase==='def'&&(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&!S.over,I=on?afPendInfo():null;
+  if(!I){if(el)el.hidden=true;if(S.afPend&&!on)S.afPend=null;return;}
+  if(!el){el=document.createElement('div');el.id='afPend';document.body.appendChild(el);}
+  el.innerHTML=I.html+'<div class="cpb"><button class="ghost" id="afPendNo">取消</button><button id="afPendGo"'+(I.ok?'':' disabled')+'>確認出擊</button></div>';el.hidden=false;
+  document.getElementById('afPendNo').onclick=()=>{S.afPend=null;render();};
+  document.getElementById('afPendGo').onclick=()=>{const P=S.afPend;if(!P)return;
+    const x=P.x.u?{u:S.units.find(y=>y.id===P.x.u)}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{cn:P.x.cn};if((x.u===undefined&&P.x.u)||(P.x.stg&&!x.stg))return;
+    afStrike(P.k,x);const t=x.u||x.stg;if(t&&!alive(t))S.afPend=null;if(afBudget(P.k)<=0){S.mode=null;S.afPend=null;}render();};
 }
