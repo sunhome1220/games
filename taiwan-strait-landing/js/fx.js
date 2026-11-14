@@ -9,9 +9,10 @@ let FXSPD=1;const fxK=()=>((S&&S.video&&V.sp)?Math.max(.2,1/V.sp):1)/FXSPD; // �
 function el(tag,at,parent){const e=document.createElementNS(SVGNS,tag);for(const k in at)e.setAttribute(k,at[k]);if(!parent)e.__t=performance.now();(parent||document.getElementById('gF')).appendChild(e);return e;}
 function tween(ms,fn,end){ms*=fxK();const t0=performance.now();(function f(t){const k=Math.min(1,Math.max(0,(t-t0)/ms));fn(k);if(k<1)requestAnimationFrame(f);else if(end)end();})(t0);}
 function bez(a,c,b,t){const u=1-t;return [u*u*a[0]+2*u*t*c[0]+t*t*b[0],u*u*a[1]+2*u*t*c[1]+t*t*b[1]];}
-function fxFlash(p,r1,r2,col,ms,par){const e=el('circle',{cx:p[0],cy:p[1],r:r1,fill:col,opacity:.9},par);tween(ms,k=>{e.setAttribute('r',r1+(r2-r1)*k);e.setAttribute('opacity',.9*(1-k));},()=>e.remove());}
-function fxRing(p,r1,r2,col,ms,w,par){const e=el('circle',{cx:p[0],cy:p[1],r:r1,fill:'none',stroke:col,'stroke-width':w||2},par);tween(ms,k=>{e.setAttribute('r',r1+(r2-r1)*k);e.setAttribute('opacity',1-k);},()=>e.remove());}
-function fxSparks(p,n,len,col,ms){const ls=[];for(let i=0;i<n;i++)ls.push([el('line',{stroke:col,'stroke-width':2,'stroke-linecap':'round'}),Math.PI*2*i/n+NR()*.6]);
+const FXS=()=>Math.max(.55,SC)*(typeof ZOOM!=='undefined'&&ZOOM>5?5/ZOOM:1); // 特效尺寸：跟著格子大小縮小，放大到 500% 以上時不再變大
+function fxFlash(p,r1,r2,col,ms,par){r1*=FXS();r2*=FXS();const e=el('circle',{cx:p[0],cy:p[1],r:r1,fill:col,opacity:.9},par);tween(ms,k=>{e.setAttribute('r',r1+(r2-r1)*k);e.setAttribute('opacity',.9*(1-k));},()=>e.remove());}
+function fxRing(p,r1,r2,col,ms,w,par){r1*=FXS();r2*=FXS();w=(w||2)*FXS();const e=el('circle',{cx:p[0],cy:p[1],r:r1,fill:'none',stroke:col,'stroke-width':w||2},par);tween(ms,k=>{e.setAttribute('r',r1+(r2-r1)*k);e.setAttribute('opacity',1-k);},()=>e.remove());}
+function fxSparks(p,n,len,col,ms){len*=FXS();const ls=[];for(let i=0;i<n;i++)ls.push([el('line',{stroke:col,'stroke-width':2,'stroke-linecap':'round'}),Math.PI*2*i/n+NR()*.6]);
   tween(ms,k=>{ls.forEach(([l,a])=>{const r0=4+len*k*.55,r1=4+len*k;l.setAttribute('x1',p[0]+Math.cos(a)*r0);l.setAttribute('y1',p[1]+Math.sin(a)*r0*.8);l.setAttribute('x2',p[0]+Math.cos(a)*r1);l.setAttribute('y2',p[1]+Math.sin(a)*r1*.8);l.setAttribute('opacity',1-k);});},()=>ls.forEach(([l])=>l.remove()));}
 function fxText(p,s,cls,ms){const f=Math.max(.6,SC),t=el('text',{x:p[0],y:p[1]-18*f,class:'fxt '+cls,'text-anchor':'middle',style:'font-size:'+(13*f).toFixed(1)+'px;stroke-width:'+(3*f).toFixed(1)+'px'});t.textContent=s; // 字級隨格子大小縮放
   tween(ms||950,k=>{t.setAttribute('y',p[1]-18*f-18*f*k);t.setAttribute('opacity',k<.65?1:1-(k-.65)/.35);},()=>t.remove());}
@@ -21,7 +22,7 @@ function fxImpact(p,hit,sea,big){
   else fxFlash(p,3,13,'#cfc7ae',440);
 }
 let PUFFN=0; // 同時存在的煙團數量上限，避免齊射時節點太多
-function fxPuff(p,r1,r2,col,op,ms){
+function fxPuff(p,r1,r2,col,op,ms){r1*=FXS();r2*=FXS();
   if(PUFFN>(LITE?40:150))return;PUFFN++;
   const e=el('circle',{cx:p[0],cy:p[1],r:r1,fill:col,stroke:'#8a8f96','stroke-width':.5,'stroke-opacity':.5,opacity:op});
   tween(ms,k=>{e.setAttribute('r',r1+(r2-r1)*Math.sqrt(k));e.setAttribute('cx',p[0]+k*3);e.setAttribute('cy',p[1]-k*5);e.setAttribute('opacity',op*(1-k)*(1-k));},()=>{e.remove();PUFFN--;});
@@ -43,7 +44,7 @@ function fxShot(a,b,o){
   const wb=(p,k)=>{if(o.wob){const w=Math.sin(k*Math.PI*(o.wf||5))*o.wob*Math.sin(k*Math.PI);p[0]+=nx*w;p[1]+=ny*w;}return p;};
   const at=k=>wb(bez(a,c,b,Math.min(1,Math.max(0,k))),Math.min(1,Math.max(0,k)));
   if(o.style==='mis'){ // 飛彈：彈體朝飛行方向、尾焰閃動、漸細的尾跡與持續擴散的煙團
-    const sh=FXSHAPE[o.shape]||FXSHAPE.asm,sz=(o.r||3)/2.8*.9*(sh.s||1),big=(o.arc||0)>60,g=el('g',{});
+    const sh=FXSHAPE[o.shape]||FXSHAPE.asm,fs0=FXS(),sz=(o.r||3)/2.8*.9*(sh.s||1)*fs0,big=(o.arc||0)>60,g=el('g',{});
     const SEG=sh.seg||7,segs=[];for(let i=0;i<SEG;i++)segs.push(el('line',{'stroke-linecap':'round'}));
     el('circle',{r:(sh.glow||5)*sz,fill:o.trail||'#ffb347',opacity:sh.glowO||.2},g);
     const flame=el('path',{fill:sh.flameC||'#ff8a1f'},g),core=el('path',{fill:'#fff6c0'},g);
@@ -59,14 +60,14 @@ function fxShot(a,b,o){
         const k1=k-i*.035,k2=k-(i+1)*.035;if(k2<-.05){segs[i].setAttribute('opacity',0);continue;}
         const u=at(k1),v=at(k2),f=i/SEG;
         segs[i].setAttribute('x1',u[0].toFixed(1));segs[i].setAttribute('y1',u[1].toFixed(1));segs[i].setAttribute('x2',v[0].toFixed(1));segs[i].setAttribute('y2',v[1].toFixed(1));
-        segs[i].setAttribute('stroke',f<.3?(o.trail||'#ffb347'):'#e6e6e6');segs[i].setAttribute('stroke-width',((o.w||2)*(1.15-f*.85)).toFixed(2));segs[i].setAttribute('opacity',(.8*(1-f)).toFixed(2));
+        segs[i].setAttribute('stroke',f<.3?(o.trail||'#ffb347'):'#e6e6e6');segs[i].setAttribute('stroke-width',((o.w||2)*fs0*(1.15-f*.85)).toFixed(2));segs[i].setAttribute('opacity',(.8*(1-f)).toFixed(2));
       }
       const now=performance.now();
-      if(sh.puff&&!reduce()&&now-lastPuff>gap&&k>.03&&k<.97){lastPuff=now;fxPuff(at(k-.025),1.5*sz+.5,(big?7:4.6)*sz+2,'#f0f0f0',big?.8:.65,(big?1200:820));}
+      if(sh.puff&&!reduce()&&now-lastPuff>gap&&k>.03&&k<.97){lastPuff=now;fxPuff(at(k-.025),(1.5*sz+.5)/fs0,((big?7:4.6)*sz+2)/fs0,'#f0f0f0',big?.8:.65,(big?1200:820));}
     },()=>{g.remove();segs.forEach(x=>x.remove());if(o.end)o.end();});
     return;
   }
-  const dot=el('circle',{r:o.r||3,fill:o.color||'#ffe08a'}),trail=el('path',{fill:'none',stroke:o.trail||'#ffb347','stroke-width':o.w||2,'stroke-linecap':'round',opacity:.85});
+  const dot=el('circle',{r:(o.r||3)*FXS(),fill:o.color||'#ffe08a'}),trail=el('path',{fill:'none',stroke:o.trail||'#ffb347','stroke-width':(o.w||2)*FXS(),'stroke-linecap':'round',opacity:.85});
   tween(o.dur||300,k=>{const p=at(k),q=at(k-.28);dot.setAttribute('cx',p[0]);dot.setAttribute('cy',p[1]);trail.setAttribute('d','M'+q[0].toFixed(1)+','+q[1].toFixed(1)+'L'+p[0].toFixed(1)+','+p[1].toFixed(1));},()=>{dot.remove();trail.remove();if(o.end)o.end();});
 }
 // 依軍種的彈道／航跡：弧形彈道飛彈、貼海面巡弋飛彈、轟炸機投彈、潛艦魚雷、無人機
@@ -171,7 +172,7 @@ const AIRG={
   bm:'M15,0 L5,-2.2 L2.5,-15 L-1,-15 L-1.5,-2.4 L-8,-3 L-9.5,-6 L-12,-6 L-10.5,0 L-12,6 L-9.5,6 L-8,3 L-1.5,2.4 L-1,15 L2.5,15 L5,2.2Z'};
 function airGlyph(kind,col,opt,parent){ // 回傳一個 <g>：三機楔形編隊（長機在前、僚機左右後方），單機縮小；opt:{stealth:半透明虛線, glow:尾焰, one:只畫單機}
   const g=el('g',{opacity:opt&&opt.stealth?.28:1},parent);
-  const SC=.5,off=opt&&opt.one?[[0,0]]:[[7,0],[-5,-9],[-5,9]];g._pl=[];
+  const f=FXS(),SC=.5*f,off=(opt&&opt.one?[[0,0]]:[[7,0],[-5,-9],[-5,9]]).map(([x,y])=>[x*f,y*f]);g._pl=[];
   off.forEach(([dx,dy])=>{
     const s1=el('g',{transform:'translate('+dx+' '+dy+') scale('+SC+')'},g);g._pl.unshift({el:s1,dx,dy});
     el('path',{d:AIRG[kind],fill:col,stroke:'#fff','stroke-width':1.3,'stroke-linejoin':'round','stroke-dasharray':opt&&opt.stealth?'2 1.5':'0'},s1);
@@ -204,7 +205,7 @@ function fxDog(o){
     const v=g._pl&&g._pl.length>1?g._pl.shift():null;
     fxText(p,txt,cls,1100);
     if(!v){tween(760,k=>{place(g,[p[0]+26*k,p[1]+44*k*k+10*k],ang+k*9,1-.35*k);g.setAttribute('opacity',1-k*k);},()=>g.remove());return;}
-    tween(760,k=>{v.el.setAttribute('transform','translate('+(v.dx+10*k)+' '+(v.dy+28*k*k+6*k)+') rotate('+(k*160).toFixed(0)+') scale('+(.5*(1-.4*k))+')');v.el.setAttribute('opacity',1-k*k);if(!LITE&&NR()<.4)fxPuff([p[0]+10*k+v.dx,p[1]+28*k*k+v.dy],2,5,'#4a4a4a',.7,560);},()=>{v.el.remove();
+    tween(760,k=>{v.el.setAttribute('transform','translate('+(v.dx+10*k)+' '+(v.dy+28*k*k+6*k)+') rotate('+(k*160).toFixed(0)+') scale('+(.5*FXS()*(1-.4*k))+')');v.el.setAttribute('opacity',1-k*k);if(!LITE&&NR()<.4)fxPuff([p[0]+10*k+v.dx,p[1]+28*k*k+v.dy],2,5,'#4a4a4a',.7,560);},()=>{v.el.remove();
       // 被擊落一架後，剩下的編隊朝自己的基地脫離（不用航向反轉：返航途中被擊中時，反轉會變成朝敵方飛）
       const q=g._p||p,bk=home?Math.atan2(home[1]-q[1],home[0]-q[0]):ang+Math.PI;tween(1200,k=>{place(g,[q[0]+Math.cos(bk)*120*k,q[1]+Math.sin(bk)*120*k],bk);g.setAttribute('opacity',k<.6?1:1-(k-.6)/.4);},()=>g.remove());});
   };
