@@ -95,6 +95,29 @@ function afStrike(k,x,auto){
   else if(L)log('守方空軍（'+nm+'起飛）出擊大陸沿岸，被擊落 '+L+' 架（推估）');
   checkInstant();return true;
 }
+// ---- 協同攻擊（海上目標）：空軍多批＋射程內的岸置雄風、艦隊，算好時間同一波到達，合成一次齊射 ----
+const coShooters=t=>S.units.filter(m=>m.side==='def'&&alive(m)&&(m.type==='ssm'||m.fl)&&targets(m).includes(t));
+const coN=m=>m.fl?Math.min(m.mag.asm,fleetAgg(m).sh*FLEET_PER):SSM_N;
+function coAirMax(k,t){const bs=afUsable().filter(h=>afBudget(h.k)>0&&afCanHit(h.k,{u:t}));return Math.min(bs.reduce((a,h)=>a+afBudget(h.k),0),Math.floor((S.pools.rocAAsh||0)/AFS.pk));}
+function coordStrike(k,t,nb,co){
+  const pc=afCapP(t),bases=[TER[k]].concat(afUsable().filter(h=>h.k!==k)).filter(h=>afBudget(h.k)>0&&afCanHit(h.k,{u:t}));
+  let tot=0,fl=0,cut=0,L=0,parts=[];
+  for(let i=0;i<nb;i++){const h=bases.find(b=>afBudget(b.k)>0);if(!h)break;const n=Math.min(AFS.pk,Math.floor(S.pools.rocAAsh||0));if(n<=0)break;S.afB[h.k].n--;
+    if(pc>0&&hitP(pc,'afCAP')){cut++;const l=takeInt(1.5,'afCAPloss');L+=l?airLose('def',l,'air'):0;fxq({t:'air',at:[t.c,t.r],hit:false,tsea:true,from:[h.c,h.r],k:'bomb'});continue;}
+    S.pools.rocAAsh-=n;tot+=n;fl++;L+=afLose(AFS.pk,adCover(t).length?AFS.loss:0);fxq({t:'air',at:[t.c,t.r],hit:true,tsea:true,from:[h.c,h.r],k:'bomb'});}
+  if(fl||cut)parts.push('空軍 '+(fl+cut)+' 批'+(cut?'（'+cut+' 批遭艦載機攔截、未發射）':''));
+  let sN=0,fN=[];
+  for(const id of co||[]){const m=S.units.find(x=>x.id===id);if(!m||!targets(m).includes(t))continue;const n=coN(m);if(n<=0)continue;
+    if(m.fl){m.mag.asm-=n;m.shots=0;m.acted=true;fN.push(m.fl.s);}else{if(S.pools.rocAS!==undefined)S.pools.rocAS=Math.max(0,Math.round((S.pools.rocAS-n/100)*100)/100);m.shots--;sN++;}
+    m.revealed=true;tot+=n;fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit:true});}
+  if(sN)parts.push('岸置雄風 '+sN+' 個單位');if(fN.length)parts.push('艦隊 '+fN.join('、'));
+  let txt;
+  if(tot>0){const r=salvoCalc(t,tot,false,'coord>'+t.type),big=t.type==='cv'||t.type==='csg',steps=big?takeInt(r.hits/2,'salvoBig'):r.hits;t.inc=(t.inc||0)+1;
+    txt='協同攻擊 '+uname(t)+'（'+parts.join('、')+'），同一波共 '+tot+' 枚：'+(r.I?'對方防空發射 '+r.I+' 枚攔截彈，約 '+fmt1(r.surv)+' 枚突破，':'')+'命中 '+r.hits+' 枚'+(steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):'')+(L?'（戰機被擊落 '+L+' 架）':'')+'（齊射模型，參數為推估）';
+    if(steps)damage(t,steps,'協同反艦打擊');}
+  else txt='協同攻擊 '+uname(t)+'：'+(parts.join('、')||'沒有可用的兵力')+'，沒有飛彈發射'+(L?'（戰機被擊落 '+L+' 架）':'');
+  log(txt);fxToast(txt,4500);checkInstant();return true;
+}
 // 電腦自動出擊（電腦守方、電腦代打、或玩家沒用完的份額）：船團 → 島上高價值目標 → 大陸沿岸集結區與基地
 function afAuto(){
   if(S.over||!S.pools)return;const AS=(S.intent||{}).asm,HV=['arm','tank','amph','mar','abn'];
@@ -157,7 +180,13 @@ function afPendInfo(){
   const all=afUsable().map(h=>[h,afBudget(h.k)]).filter(x=>x[1]>0&&afCanHit(x[0].k,xx));
   lines.push((all.length?'剩 '+all.reduce((a,x)=>a+x[1],0)+' 批（'+all.map(([h,n])=>(h.name||'基地').replace(/基地$/,'')+' '+n).join('、')+'）':'沒有基地打得到或都已出擊完')+'・每批 4 架'+(risk?'・預估損失 '+fmt1(AFS.pk*risk*lr)+' 架':''));
   ok=ok&&!!xx&&afCanHit(k,xx);
-  return {html:'<b>'+nm+'</b>'+lines.map(l=>'<div class="cpm">'+l+'</div>').join(''),ok};
+  let co='';
+  if(P.x.u){const t=S.units.find(y=>y.id===P.x.u);if(t&&atSea(t)){ // 協同攻擊：批數與其他軍種
+    const mx=Math.max(1,coAirMax(k,t)),nb=P.nb=Math.max(1,Math.min(P.nb||1,mx)),sel=P.co=P.co||[],sh=coShooters(t);
+    co='<div class="cpm co">協同：空軍 <button class="ghost cob" data-nb="-1">−</button> <b>'+nb+'</b> <button class="ghost cob" data-nb="1">＋</button> 批（最多 '+mx+'）</div>'+
+      sh.map(m=>'<label class="cpm co"><input type="checkbox" data-co="'+m.id+'"'+(sel.includes(m.id)?' checked':'')+'> '+(m.fl?m.fl.n:'岸置雄風（'+hname(hexOf(m))+'）')+' '+coN(m)+' 枚</label>').join('')+
+      '<div class="cpm">同一波共約 <b>'+(nb*AFS.pk+sh.filter(m=>sel.includes(m.id)).reduce((a,m)=>a+coN(m),0))+'</b> 枚</div>';}}
+  return {html:'<b>'+nm+'</b>'+lines.map(l=>'<div class="cpm">'+l+'</div>').join('')+co,ok};
 }
 function afPendSync(){
   let el=document.getElementById('afPend');
@@ -166,9 +195,11 @@ function afPendSync(){
   if(!el){el=document.createElement('div');el.id='afPend';document.body.appendChild(el);pendDrag(el);}
   el.innerHTML=I.html+'<div class="cpb"><button class="ghost" id="afPendNo">取消</button><button id="afPendGo"'+(I.ok?'':' disabled')+'>確認出擊</button></div>';el.hidden=false;
   document.getElementById('afPendNo').onclick=()=>{S.afPend=null;render();};
+  el.querySelectorAll('[data-nb]').forEach(b=>b.onclick=()=>{S.afPend.nb=(S.afPend.nb||1)+(+b.dataset.nb);afPendSync();});
+  el.querySelectorAll('[data-co]').forEach(c=>c.onchange=()=>{const id=+c.dataset.co,a=S.afPend.co=S.afPend.co||[];const i=a.indexOf(id);if(c.checked&&i<0)a.push(id);if(!c.checked&&i>=0)a.splice(i,1);afPendSync();});
   document.getElementById('afPendGo').onclick=()=>{const P=S.afPend;if(!P)return;
     const x=P.x.u?{u:S.units.find(y=>y.id===P.x.u)}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{cn:P.x.cn};if((x.u===undefined&&P.x.u)||(P.x.stg&&!x.stg))return;
-    afStrike(P.k,x);const t=x.u||x.stg;if(t&&!alive(t))S.afPend=null;
+    if(x.u&&atSea(x.u))coordStrike(P.k,x.u,P.nb||1,P.co||[]);else afStrike(P.k,x);const t=x.u||x.stg;if(t&&!alive(t))S.afPend=null;else if(S.afPend){S.afPend.nb=1;S.afPend.co=[];}
     if(afBudget(P.k)<=0){const nx=afUsable().find(h=>afBudget(h.k)>0&&(!S.afPend||afCanHit(h.k,P.x.cn?{cn:P.x.cn}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{u:S.units.find(y=>y.id===P.x.u)}))); // 這座基地份額用完：自動改由下一座還有份額的基地出擊
       const k0=P.k;if(nx){S.afK=nx.k;if(S.afPend)S.afPend.k=nx.k;toast((TER[k0].name||'基地')+' 本階段已出擊完，改由 '+(nx.name||'基地')+' 出擊',2600);}else{S.mode=null;S.afPend=null;toast('全台各基地本階段都已出擊完',2600);}}
     render();};
