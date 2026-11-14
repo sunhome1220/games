@@ -50,7 +50,8 @@
 - 設定精靈：`SETUP_PAGES`（欄位 `{sel,q,when,grp,opts:{值:[標籤,說明]}}`）。新增設定項要同步四處：隱藏的 `<select id=opt…>`、change 監聽清單、`CFG_IDS`、`DEFAULT_CFG`。
 - 確定性：`hitP(p,key)`、`takeInt`、`ACC`；天候 `nextWave/rollWeather`；戰局碼 `seedCode/parseSeedCode/initSeed`。
 - 補給與運輸：`unloadCap`、`resolveSupply`、`convoyTurn`、`liftTurn`、`supplyAttrition`；運輸船是真實棋子，可被攻擊。
-- 打擊大陸：`strikeCN`（人工與電腦共用同一個飛彈存量與命中公式）、`aiPickCN`。
+- 打擊大陸：`strikeCN`（人工與電腦共用同一個飛彈存量與命中公式）、`aiPickCN`。台灣方用 `lrSpend`：300 km 內優先用陸軍戰術飛彈（`rocAtc`，佔用海馬士一次齊射），其餘用雄二E（`rocMsl`）。
+- 海馬士：`HMR_ERA`（各年代發射車、棋子數、ATACMS 枚數、GMLRS 莢艙數）、`hmrSpread`（車數平均分配）、`HMR_PKG`（一次齊射最多 4 輛）。
 - 潛艦（海鯤）：`subTargets/fireSub/subHidden`；在海上隱蔽、回港時才看得到、可被打。
 - 地圖尺度（換算用）：每格約 20 km、約 300 多平方公里（海馬士 4 格約 80 km；台灣本島約 114 格）。
 - 除錯鉤子：網址加 `?debug=1`，提供 `window.__S`、`__dog`、`__fg`、`__ledger` 等。
@@ -68,7 +69,6 @@
 
 ## 五、已知的未完成事項（使用者擱置或待決定）
 
-- 海馬士依交付進度調整數量與部署（已核實：已交 11 套、2026 年底前再 18 套，共 29；規劃共 111）。
 - 剩餘的隨機改成固定公式（電腦決策、事件骰、`pick`／`wpick`／`Math.random` 殘留）。
 - 難度評分基準重建（等規則穩定後再一次調整；暫停中）。
 - 潮汐擱淺（古寧頭效應）、增援完全由運力驅動、守方優先打運輸船、「隱形戰機台軍看不到」空戰選項、雷霆2000 砲兵（尚未加入）。
