@@ -92,7 +92,7 @@ function afPanelHTML(k){
   const h=TER[k];if(!h||h.t!=='air'||h.isl!=='TW'||!S.started||S.over)return '';
   const P=S.pools||{},W=afWing(k),ac=afBaseN(k),lv=afLevel(k),n=afUsable().some(x=>x.k===k)?afBudget(k):0;
   if(!ac)return '<div class="hint">'+(W?W[0]+'：目前沒有戰機（'+(S.owner[k]==='atk'?'基地已被占領':'戰機已損失或轉場')+'）':'沒有戰鬥機進駐，不能從這裡出擊')+'。</div>';
-  let o='<div class="hint"><b>'+(TER[k].name||'基地')+'</b>（'+(W?W[0]+'・'+W[1]:'')+'）：戰機約 '+ac+' 架'+'，'+afTxt(k)+(caveF()>0?'（約 '+Math.round(caveF()*100)+'% 躲在山洞機堡）':'')+'；本階段可出擊 '+n+' 個打擊包（每包 4 架）；空射反艦飛彈 '+Math.round(P.rocAAsh||0)+' 枚、萬劍彈 '+Math.round(P.rocWC||0)+' 枚'+((P.rocSlam||0)>0?'、SLAM-ER '+Math.round(P.rocSlam)+' 枚':'')+'。沒用完的份額在階段結束時由電腦自動出擊。</div>';
+  let o='<div class="hint"><b>'+(TER[k].name||'基地')+'</b>（'+(W?W[0]+'・'+W[1]:'')+'）：戰機約 '+ac+' 架'+'，'+afTxt(k)+(caveF()>0?'（約 '+Math.round(caveF()*100)+'% 躲在山洞機堡）':'')+'；本階段可出擊 '+n+' 個打擊包（每包 4 架）；空射反艦飛彈 '+Math.round(P.rocAAsh||0)+' 枚、萬劍彈 '+Math.round(P.rocWC||0)+' 枚'+((P.rocSlam||0)>0?'、SLAM-ER '+Math.round(P.rocSlam)+' 枚':'')+'。全台各基地本階段還能出擊共 '+afUsable().reduce((a,h)=>a+afBudget(h.k),0)+' 包；沒用完的份額在階段結束時由電腦自動出擊。</div>';
   if(humanTurn()&&S.phase==='def'&&S.ctrl.def==='human'&&n>0)o+='<div class="cvord"><button class="ghost" id="btnAfS">攻擊船團<small class="pn">（空射反艦飛彈）</small></button><button class="ghost" id="btnAfL">空襲島上目標<small class="pn">（精準炸彈）</small></button><button class="ghost" id="btnAfC">打擊大陸沿岸<small class="pn">（萬劍彈、SLAM-ER）</small></button></div><div class="hint">按下後點地圖上的目標（大陸沿岸：集結中的部隊或大陸基地）。</div>';
   setTimeout(()=>{[['btnAfS','afS'],['btnAfL','afL'],['btnAfC','afC']].forEach(([id,m])=>{const b=document.getElementById(id);if(b)b.onclick=()=>{S.afK=k;S.sel=null;S.mode=S.mode===m?null:m;render();};});},0);
   return o;
@@ -124,6 +124,8 @@ function afPendInfo(){
       ok=ok&&n>0;risk=cov?AFS.loss:0;}
     else{const h=hexOf(t),p=pNeed((h.t==='city'||h.t==='mtn')?6:5);lines.push('武器：精準炸彈');lines.push('命中率 <b>'+Math.round(p*100)+'%</b>'+((h.t==='city'||h.t==='mtn')?'（城市或山地較難命中）':'')+'；命中：'+tname(t)+' 損失 '+stpU(t,1));risk=S.pools.plaAD>0?AFS.loss:0;}
   }
+  const all=afUsable().map(h=>[h,afBudget(h.k)]).filter(x=>x[1]>0);
+  lines.push('全台各基地剩餘：'+(all.length?all.map(([h,n])=>(h.name||'基地').replace(/基地$/,'')+' '+n).join('、')+'（共 '+all.reduce((a,x)=>a+x[1],0)+' 包；這座用完會自動改由下一座出擊）':'都已用完'));
   lines.push('出擊：'+(h0.name||'基地')+' 一包 4 架；本階段還能出擊 '+nb+' 包；'+(risk?'預估被擊落約 '+fmt1(AFS.pk*risk*lr)+' 架（推估）':'沒有防空威脅')+'；點其他目標可切換');
   return {html:'<b>'+nm+'</b>'+lines.map(l=>'<div class="cpm">'+l+'</div>').join(''),ok};
 }
@@ -136,5 +138,8 @@ function afPendSync(){
   document.getElementById('afPendNo').onclick=()=>{S.afPend=null;render();};
   document.getElementById('afPendGo').onclick=()=>{const P=S.afPend;if(!P)return;
     const x=P.x.u?{u:S.units.find(y=>y.id===P.x.u)}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{cn:P.x.cn};if((x.u===undefined&&P.x.u)||(P.x.stg&&!x.stg))return;
-    afStrike(P.k,x);const t=x.u||x.stg;if(t&&!alive(t))S.afPend=null;if(afBudget(P.k)<=0){S.mode=null;S.afPend=null;}render();};
+    afStrike(P.k,x);const t=x.u||x.stg;if(t&&!alive(t))S.afPend=null;
+    if(afBudget(P.k)<=0){const nx=afUsable().find(h=>afBudget(h.k)>0); // 這座基地份額用完：自動改由下一座還有份額的基地出擊
+      const k0=P.k;if(nx){S.afK=nx.k;if(S.afPend)S.afPend.k=nx.k;toast((TER[k0].name||'基地')+' 本階段已出擊完，改由 '+(nx.name||'基地')+' 出擊',2600);}else{S.mode=null;S.afPend=null;toast('全台各基地本階段都已出擊完',2600);}}
+    render();};
 }
