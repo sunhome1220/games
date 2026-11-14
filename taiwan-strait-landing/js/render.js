@@ -78,7 +78,7 @@ const RIVERS=[['淡水河',[[121.41,25.18],[121.46,25.12],[121.49,25.06],[121.46
   ['卑南溪',[[121.16,22.77],[121.13,22.83],[121.15,22.93],[121.20,23.03],[121.23,23.12]]]];
 function coastRiverSVG(land){
   let o='',d='';
-  for(const h of land){if(h.isl!=='TW'&&h.isl!=='PH')continue;const [x,y0]=center(h.c,h.r),y=y0-elev(h),v=hexV(x,y,R);
+  for(const h of land){if(h.isl!=='TW'&&h.isl!=='PH')continue;if(h.elev!=null&&h.elev>=150||h.t==='mtn'||h.cliff)continue; /* 只在低平的海岸畫線（西岸平地和淺海顏色接近）；東岸山地、斷崖本來就分得很清楚 */const [x,y0]=center(h.c,h.r),y=y0-elev(h),v=hexV(x,y,R);
     const nb=nbrs(h.c,h.r).filter(Boolean).map(n=>[n,center(n.c,n.r)]);
     for(let i=0;i<6;i++){const a=v[i],b=v[(i+1)%6],mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2+elev(h),px=x+2*(mx-x),py=y0+2*(my-y0);
       let best=null,bd=1e9;for(const [n,c] of nb){const dd=(c[0]-px)**2+(c[1]-py)**2;if(dd<bd){bd=dd;best=n;}}
