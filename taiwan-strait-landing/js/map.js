@@ -316,4 +316,6 @@ function portHold(){ // 攻方控制（未被破壞）的主要港口卸載容�
 const MINOR_PORTS=(()=>{const o={};[['麥寮港',120.19,23.79],['新竹港',120.92,24.85],['安平港',120.16,22.99],['烏石港',121.84,24.87],['富岡港',121.19,22.79]].forEach(([n,lon,lat])=>{let b=null,bd=1e9;for(const h of Object.values(TER)){if(h.isl!=='TW'||!h.coastal||h.t==='port'||h.t==='air'||o[h.k])continue;const [a,c]=rcToLL(h.c,h.r),d=Math.hypot((a-lon)/GEO.dlon,(c-lat)/GEO.dlat);if(d<bd){bd=d;b=h;}}if(b)o[b.k]=n;});return o;})(); // 依經緯度放在最近的海岸格 // 次要港口：占領後補給容量 +2（共 3），不計入勝負條件、重型旅仍需主要港口才能上岸
 const ZONES={north:[SPOT.linkou,SPOT.tamsui,SPOT.taoyuanap],central:[SPOT.miaoli,SPOT.hsinchu,SPOT.tcport],penghu:[SPOT.penghu,SPOT.magong]};
 
-const ABN_GOAL={north:[SPOT.taoyuanap,SPOT.taoyuan],central:[SPOT.miaoli,SPOT.changhua]};
+// 空降目標（★推估，依公開分析：奪取灘頭附近的機場、阻斷守方往灘頭增援的橋梁與要道）：第 1 個空降旅打機場，第 2 個打灘頭後方的橋梁
+const ABN_PTS={north:[['桃園機場',121.23,25.08],['大漢溪橋（鶯歌）',121.36,24.95],['頭前溪橋（新竹）',121.01,24.82]],central:[['清泉崗機場',120.61,24.26],['濁水溪橋（西螺）',120.46,23.81],['頭前溪橋（新竹）',121.01,24.82]]};
+const ABN_GOAL={};for(const z in ABN_PTS)ABN_GOAL[z]=ABN_PTS[z].map(([n,lo,la])=>{const [c,r]=llToRC(lo,la);let b=null,bd=1e9;for(const h of Object.values(TER)){if(h.isl!=='TW'||h.t==='mtn')continue;const d=hd(h,{c,r});if(d<bd){bd=d;b=h;}}return b?b.k:SPOT.taoyuan;});ABN_GOAL.north[0]=SPOT.taoyuanap;

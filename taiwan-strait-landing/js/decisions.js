@@ -126,6 +126,7 @@ function interestEval(c){
   if(c==='JP'&&S.fx.lv.US>=2){n++;why.push('美國已公開介入，同盟壓力 +1');}
   if(c==='JP'&&S.fx.lv.US<=1){n--;why.push('美國尚未公開介入，日本不願單獨涉險 −1');}
   if(st[c]>0){n++;why.push('本國基地遭攻方打擊 +1');}
+  if(c==='US'&&!facUp('leshan')){n++;why.push('樂山雷達（美國建造、與美方共享資料，可能有美籍技術人員）遭摧毀 +1');}
   if(S.mods.escal>0){const e=Math.min(2,S.mods.escal);n-=e;why.push('守方先動手或縱深打擊，盟友不願被拖下水 −'+e);}
   if(S.pools&&S.pools.plaSub>=4&&c==='JP'){n--;why.push('共軍潛艦威脅航道，日本趨於保守 −1');}
   return [Math.max(1,Math.min(6,n)),why.join('；')];

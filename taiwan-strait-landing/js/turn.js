@@ -534,12 +534,13 @@ async function beginPhase(side){
   if(side==='def'){await uscTurn();if(S.over)return;}
   if(side==='atk'){subDetect();updateBeachheads();await convoyEval();if(S.over)return;}
   if(side==='def')await interdictEval();if(S.over)return;
+  if(side==='def')intelStaging();
   if(side==='def')repairAirfields(); // 跑道搶修好就能在本守方階段起飛
-  if(side==='atk'){repairPorts();repairCN();resolveSupply();convoyTurn();liftTurn();supplyAttrition();if(S.over)return;}
+  if(side==='atk'){repairPorts();repairCN();resolveSupply();convoyTurn();liftTurn();supplyAttrition();abnIsolation();if(S.over)return;}
   if(side==='atk'){
     S.weather=rollWeather();if(S.weather.id==='bad')S.stats.badWx++;waveAttrition();if(S.over)return;
     if(S.turn===1&&!S.sirenDone&&!S.sim&&!S.video&&!REC.quiet){S.sirenDone=true;SFX.siren(6);} // 第一波：空襲警報
-    uscSync();jmsSync();cvwPlan();airBattle();S.fire=computeFire();droneWave();huntFleets();doRetaliation();sweepMines();uscSync();antiCarrier();if(S.over)return;
+    uscSync();jmsSync();cvwPlan();airBattle();S.fire=computeFire();warnNotice();droneWave();huntFleets();doRetaliation();sweepMines();uscSync();antiCarrier();if(S.over)return;
     if(S.ctrl.atk==='human'&&!S.sim&&!S.video)cvwPrepOnly('atk');else cvwStrike('atk');render();if(S.over)return; // 玩家操作攻方：艦載機對艦份額可先手動指定目標，階段結束時剩下的自動出擊
     if(S.turn>=3&&S.owner[MAGONG]!=='atk'&&S.units.some(u=>u.side==='def'&&hexOf(u).k===MAGONG)&&S.units.some(u=>u.side==='atk'&&atSea(u)&&!isShip(u))){antiShip('守方（澎湖前沿警戒）',1,4,false,'','roc','cm');render();}
     (ATK_REINF[S.turn]||[]).forEach(([t,z])=>{ // 第 8 回合後的持續增援：兩棲旅每回合 2 個，掌握港口時再加 1 個重型旅
