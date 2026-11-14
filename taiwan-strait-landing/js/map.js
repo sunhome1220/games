@@ -14,6 +14,9 @@ const oCenter=(c,r)=>[OW*(c-OC0+.5*(r&1))+OW/2+OPAD,(r-OR0)*1.5*OR+OR+OPAD];
 // 外圍示意區（僅縮小時可見，不參與遊戲）：左／右／上／下的延伸量（舊座標系 px）
 const oMX0=150, oMX1=760, oMY0=170, oMY1=400;
 const MX0=oMX0*KS, MX1=oMX1*KS, MY0=oMY0*KS, MY1=oMY1*KS, EVBW=VBW+MX0+MX1, EVBH=VBH+MY0+MY1, EXT=EVBW/VBW;
+// 地圖尺度：每格（相鄰格中心距離）約幾公里。射程、移動、距離一律用公里寫，再用 kmH() 換成格數；要改格子大小只改 KM_HEX（地形與地點座標另需重建）
+const KM_HEX=20;
+const kmH=km=>km/KM_HEX;
 const K=(c,r)=>c+','+r;
 const $=s=>document.querySelector(s);
 let GEN=0; // 每次重新開局加一：舊的非同步流程（動畫等待中）不會再接續執行
@@ -37,42 +40,42 @@ const SIDE={atk:'攻方',def:'守方'};
 const TERN={sea:'海域',main:'大陸',plain:'平原',city:'城市',mtn:'山地',port:'港口',air:'機場'};
 
 const TYPES={
-  amph:{n:'兩棲合成旅',s:'兩棲',atk:3,def:3,mv:2,hp:3},
-  mar:{n:'陸戰旅',s:'陸戰',atk:3,def:3,mv:2,hp:3},
-  abn:{n:'空降旅',s:'空降',atk:3,def:2,mv:2,hp:2},
-  arm:{n:'重型合成旅',s:'裝甲',atk:5,def:3,mv:3,hp:3},
-  inf:{n:'聯兵旅',s:'步兵',atk:2,def:3,mv:2,hp:3},
-  tank:{n:'裝甲旅',s:'裝甲',atk:4,def:3,mv:3,hp:3},
-  res:{n:'後備旅',s:'後備',atk:2,def:2,mv:2,hp:2},
-  ssm:{n:'岸置反艦飛彈',s:'飛彈',atk:0,def:1,mv:2,hp:2},
-  hmr:{n:'海馬士火箭砲（HIMARS）',s:'海馬士',atk:0,def:1,mv:2,hp:2},
-  mlrs:{n:'雷霆2000多管火箭',s:'雷霆',atk:0,def:1,mv:2,hp:2},
-  dd:{n:'共軍護航艦',s:'護航',atk:2,def:1,mv:3,hp:2},
-  cv:{n:'共軍航艦群',s:'航艦',atk:0,def:2,mv:3,hp:3},
-  csg:{n:'美軍航艦打擊群',s:'美航艦',atk:0,def:3,mv:3,hp:3},
-  d55:{n:'055 型驅逐艦',s:'055',atk:0,def:2,mv:3,hp:2},
-  ssn:{n:'美軍 攻擊潛艦',s:'SSN',atk:0,def:1,mv:3,hp:2},
+  amph:{n:'兩棲合成旅',s:'兩棲',atk:3,def:3,mv:kmH(40),hp:3},
+  mar:{n:'陸戰旅',s:'陸戰',atk:3,def:3,mv:kmH(40),hp:3},
+  abn:{n:'空降旅',s:'空降',atk:3,def:2,mv:kmH(40),hp:2},
+  arm:{n:'重型合成旅',s:'裝甲',atk:5,def:3,mv:kmH(60),hp:3},
+  inf:{n:'聯兵旅',s:'步兵',atk:2,def:3,mv:kmH(40),hp:3},
+  tank:{n:'裝甲旅',s:'裝甲',atk:4,def:3,mv:kmH(60),hp:3},
+  res:{n:'後備旅',s:'後備',atk:2,def:2,mv:kmH(40),hp:2},
+  ssm:{n:'岸置反艦飛彈',s:'飛彈',atk:0,def:1,mv:kmH(40),hp:2},
+  hmr:{n:'海馬士火箭砲（HIMARS）',s:'海馬士',atk:0,def:1,mv:kmH(40),hp:2},
+  mlrs:{n:'雷霆2000多管火箭',s:'雷霆',atk:0,def:1,mv:kmH(40),hp:2},
+  dd:{n:'共軍護航艦',s:'護航',atk:2,def:1,mv:kmH(60),hp:2},
+  cv:{n:'共軍航艦群',s:'航艦',atk:0,def:2,mv:kmH(60),hp:3},
+  csg:{n:'美軍航艦打擊群',s:'美航艦',atk:0,def:3,mv:kmH(60),hp:3},
+  d55:{n:'055 型驅逐艦',s:'055',atk:0,def:2,mv:kmH(60),hp:2},
+  ssn:{n:'美軍 攻擊潛艦',s:'SSN',atk:0,def:1,mv:kmH(60),hp:2},
   nme:{n:'美陸戰隊 NMESIS 反艦飛彈',s:'NMESIS',atk:0,def:1,mv:0,hp:2},
   mdt:{n:'美陸軍 堤豐（多域特遣隊）',s:'堤豐',atk:0,def:1,mv:0,hp:2},
-  tak:{n:'美軍 戰鬥支援艦',s:'補給',atk:0,def:1,mv:3,hp:2},
-  ddh:{n:'海自 出雲級直升機護衛艦',s:'出雲',atk:0,def:2,mv:3,hp:2},
-  jdg:{n:'海自 神盾護衛艦（摩耶級／愛宕級）',s:'神盾',atk:0,def:2,mv:3,hp:2},
-  jdd:{n:'海自 通用護衛艦（代表其餘 5 艘）',s:'護衛艦',atk:0,def:1,mv:3,hp:2},
-  d52:{n:'052D 型驅逐艦',s:'052D',atk:0,def:2,mv:3,hp:2},
-  f54:{n:'054A 型護衛艦',s:'054A',atk:0,def:1,mv:3,hp:1},
-  cg:{n:'提康德羅加級巡洋艦',s:'巡洋艦',atk:0,def:2,mv:3,hp:2},
-  ddg:{n:'柏克級驅逐艦',s:'神盾艦',atk:0,def:2,mv:3,hp:2},
-  ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:3,hp:2},
-  hk:{n:'海鯤潛艦',s:'潛艦',atk:0,def:1,mv:3,hp:2},
-  lst:{n:'兩棲艦群',s:'兩棲艦',atk:0,def:1,mv:3,hp:2},
-  ro:{n:'滾裝船團',s:'滾裝',atk:0,def:1,mv:2,hp:2},
-  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:2,hp:2}, // 滾裝客貨輪比軍艦慢：每回合最多航行 2 個舊格
+  tak:{n:'美軍 戰鬥支援艦',s:'補給',atk:0,def:1,mv:kmH(60),hp:2},
+  ddh:{n:'海自 出雲級直升機護衛艦',s:'出雲',atk:0,def:2,mv:kmH(60),hp:2},
+  jdg:{n:'海自 神盾護衛艦（摩耶級／愛宕級）',s:'神盾',atk:0,def:2,mv:kmH(60),hp:2},
+  jdd:{n:'海自 通用護衛艦（代表其餘 5 艘）',s:'護衛艦',atk:0,def:1,mv:kmH(60),hp:2},
+  d52:{n:'052D 型驅逐艦',s:'052D',atk:0,def:2,mv:kmH(60),hp:2},
+  f54:{n:'054A 型護衛艦',s:'054A',atk:0,def:1,mv:kmH(60),hp:1},
+  cg:{n:'提康德羅加級巡洋艦',s:'巡洋艦',atk:0,def:2,mv:kmH(60),hp:2},
+  ddg:{n:'柏克級驅逐艦',s:'神盾艦',atk:0,def:2,mv:kmH(60),hp:2},
+  ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:kmH(60),hp:2},
+  hk:{n:'海鯤潛艦',s:'潛艦',atk:0,def:1,mv:kmH(60),hp:2},
+  lst:{n:'兩棲艦群',s:'兩棲艦',atk:0,def:1,mv:kmH(60),hp:2},
+  ro:{n:'滾裝船團',s:'滾裝',atk:0,def:1,mv:kmH(40),hp:2},
+  cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:kmH(40),hp:2}, // 滾裝客貨輪比軍艦慢：每回合最多航行 2 個舊格
   fob:{n:'灘頭補給站',s:'補給站',atk:0,def:2,mv:0,hp:3}
 };
 const WEATHER={
-  good:{id:'good',n:'良好',sea:5,air:true,fire:0},
-  fair:{id:'fair',n:'普通',sea:4,air:true,fire:0},
-  bad:{id:'bad',n:'惡劣',sea:2,air:false,fire:-2}
+  good:{id:'good',n:'良好',sea:kmH(100),air:true,fire:0},
+  fair:{id:'fair',n:'普通',sea:kmH(80),air:true,fire:0},
+  bad:{id:'bad',n:'惡劣',sea:kmH(40),air:false,fire:-2}
 };
 
 Object.values(TYPES).forEach(t=>{t.mv*=2;}); // 格數加倍：移動力加倍，實際行進距離不變
@@ -122,9 +125,10 @@ const MAINC={}; // 舊版大陸座標 → 新版（真實經緯度）大陸地�
 const FK=k=>{if(MAINC[k])return MAINC[k];const [c,r]=k.split(',').map(Number);return K(2*c+(r&1),2*r);};
 const FC=(c,r)=>[2*c+(r&1),2*r];
 const cc=(c,r)=>{const [a,b]=FC(c,r);return center(a,b);};
-function ring2(h){ // 距離 1～2 格（相當於舊版的「相鄰」）
+const ADJ_KM=40; // 地面戰鬥的「相鄰」：40 km 內（20 km 一格時＝1～2 格，沿用舊版粗格的相鄰）
+function ring2(h){ // 距離 ADJ_KM 內的格（相當於舊版的「相鄰」）
   if(h.n2)return h.n2;const seen=new Set([h.k]),out=[];let fr=[h];
-  for(let d=0;d<2;d++){const nx=[];for(const a of fr)for(const b of nbrs(a.c,a.r))if(!seen.has(b.k)){seen.add(b.k);out.push(b);nx.push(b);}fr=nx;}
+  for(let d=0;d<Math.round(kmH(ADJ_KM));d++){const nx=[];for(const a of fr)for(const b of nbrs(a.c,a.r))if(!seen.has(b.k)){seen.add(b.k);out.push(b);nx.push(b);}fr=nx;}
   return h.n2=out;
 }
 function nbrs(c,r){
@@ -138,25 +142,28 @@ function hd(a,b){const p=cube(a.c,a.r),q=cube(b.c,b.r);return Math.max(Math.abs(
 const isLand=h=>h.t!=='sea';
 
 // ---- 台灣本島與澎湖：依真實海岸線、山脈與城市位置重畫（大陸沿岸仍沿用舊版格局）
-const GEO={r0:4,lat0:25.04,dlat:.1557,c0:18,lon0:120.5,dlon:.1917};
+const GEO={r0:4,lat0:25.04,dlat:.1557*KM_HEX/20,c0:18,lon0:120.5,dlon:.1917*KM_HEX/20}; // 每列約 KM_HEX×√3/2 公里、每欄約 KM_HEX 公里（約北緯 24 度）
 const llToRC=(lon,lat)=>{const r=Math.round(GEO.r0+(GEO.lat0-lat)/GEO.dlat);return [Math.round(GEO.c0+(lon-GEO.lon0)/GEO.dlon-.5*(r&1)),r];};
 const rcToLL=(c,r)=>[GEO.lon0+(c+.5*(r&1)-GEO.c0)*GEO.dlon,GEO.lat0-(r-GEO.r0)*GEO.dlat];
 const SPOT={};
 (function(){
-  const TWP=[[121.50,25.30],[121.68,25.28],[121.75,25.15],[121.93,25.05],[122.00,25.00],[121.90,24.83],[121.85,24.60],[121.78,24.35],[121.65,24.15],[121.62,24.00],[121.52,23.55],[121.40,23.10],[121.20,22.78],[120.95,22.40],[120.86,21.90],[120.72,22.00],[120.62,22.35],[120.42,22.50],[120.27,22.60],[120.15,22.95],[120.10,23.30],[120.12,23.38],[120.17,23.77],[120.30,24.10],[120.50,24.28],[120.68,24.48],[120.80,24.65],[120.92,24.85],[121.05,25.08],[121.30,25.13],[121.42,25.18]];
   const inPoly=(x,y,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;};
-  const RID=[[121.60,24.95],[121.35,24.50],[121.15,24.00],[120.98,23.50],[120.95,23.00],[120.85,22.50],[120.85,22.20]];
-  const ridge=lat=>{for(let i=0;i<RID.length-1;i++){const a=RID[i],b=RID[i+1];if(lat<=a[1]&&lat>=b[1]){const t=(a[1]-lat)/(a[1]-b[1]);return a[0]+(b[0]-a[0])*t;}}return lat>RID[0][1]?RID[0][0]:RID[RID.length-1][0];};
-  const hw=lat=>lat>24.9||lat<22.3?.11:lat>24.7||lat<22.6?.16:.2;
+  // 每格取 7 個取樣點（中心＋周圍 6 點，距中心約 0.35 格），用來估計這一格有多少比例落在多邊形內（與格子大小無關）
+  const SMP=[[0,0]].concat([0,1,2,3,4,5].map(i=>[.35*Math.cos(i*Math.PI/3),.35*Math.sin(i*Math.PI/3)]));
+  const cover=(h,polys)=>{const [lon,lat]=rcToLL(h.c,h.r);let n=0;for(const [dx,dy] of SMP){const x=lon+dx*GEO.dlon,y=lat+dy*GEO.dlat*1.15;if(polys.some(P=>inPoly(x,y,P)))n++;}return n/SMP.length;};
+  // 山地（約海拔 1,000 公尺以上，含雪山、中央、玉山、阿里山山脈與海岸山脈、大屯火山群）：★依地形圖手繪的近似輪廓（誤差約 5～10 km；沒有可下載的高程資料）
+  const MTN=[
+    [[121.62,24.97],[121.72,24.86],[121.68,24.68],[121.74,24.56],[121.70,24.30],[121.62,24.10],[121.50,23.90],[121.35,23.50],[121.25,23.20],[121.10,22.95],[121.00,22.75],[120.90,22.45],[120.85,22.15],[120.75,22.15],[120.66,22.45],[120.66,22.80],[120.70,23.10],[120.62,23.35],[120.68,23.60],[120.78,23.82],[120.88,24.05],[120.97,24.32],[121.08,24.58],[121.27,24.78],[121.45,24.90]],
+    [[121.62,23.90],[121.56,23.50],[121.46,23.20],[121.30,22.94],[121.20,22.82],[121.15,22.86],[121.27,23.06],[121.38,23.32],[121.46,23.58],[121.53,23.88]],
+    [[121.47,25.22],[121.62,25.24],[121.66,25.13],[121.52,25.11]]];
   for(const h of Object.values(TER))if(h.isl==='TW'||h.isl==='PH'){h.t='sea';h.isl=null;h.name=null;h.cliff=false;h.mud=false;}
   const tw=[];
   for(const h of Object.values(TER)){
     if(h.t!=='sea')continue;const [lon,lat]=rcToLL(h.c,h.r);
     if(lon<119.9||lon>122.2||lat<21.8||lat>25.4)continue;
-    if(inPoly(lon,lat,TWP)){h.t='plain';h.isl='TW';h.lon=lon;h.lat=lat;tw.push(h);}
+    if(cover(h,[GEO_TW])>=.5){h.t='plain';h.isl='TW';h.lon=lon;h.lat=lat;tw.push(h);} // 一半以上是陸地才算陸地格（Natural Earth 1:10m 海岸線）
   }
-  const plainE=(lon,lat)=>(lat>24.52&&lat<24.88&&lon>121.55)||(lat>23.6&&lat<24.15&&lon>121.38&&lon<121.8)||(lat>22.55&&lat<23.05&&lon>121.0&&lon<121.3)||lat<22.35;
-  for(const h of tw){const rl=ridge(h.lat);if(h.lon>=rl-hw(h.lat)*.9&&(h.lon<=rl+hw(h.lat)||!plainE(h.lon,h.lat)))h.t='mtn';}
+  for(const h of tw)if(cover(h,MTN)>=.5)h.t='mtn';
   // 海岸旗標：東岸斷崖、西岸泥灘
   const coastal=h=>nbrs(h.c,h.r).some(n=>n.t==='sea');
   for(const h of tw){
@@ -199,18 +206,16 @@ const SPOT={};
   put('taitung','台東','city',121.14,22.76);
   put('chihhang','志航基地','air',121.10,22.76);
   // 澎湖：馬公本島（2 格）與白沙（1 格，與本島隔海）；沒有駐軍的小島（望安、七美、西嶼等）不畫出
-  const pc=llToRC(119.57,23.57),ph=TER[K(pc[0],pc[1])];
-  if(ph){
-    const sea=x=>x&&x.t==='sea';
-    ph.t='port';ph.isl='PH';ph.name='馬公';SPOT.magong=ph.k;
-    const m2=nbrs(ph.c,ph.r).find(h=>sea(h)&&h.c<=ph.c)||nbrs(ph.c,ph.r).find(sea);
-    if(m2){m2.t='plain';m2.isl='PH';}
-    const adj=new Set([ph.k,m2&&m2.k]);nbrs(ph.c,ph.r).forEach(h=>adj.add(h.k));if(m2)nbrs(m2.c,m2.r).forEach(h=>adj.add(h.k));
-    let bsha=null;
-    for(const h of Object.values(TER)){if(!sea(h)||adj.has(h.k)||Math.abs(h.c-ph.c)>3||Math.abs(h.r-ph.r)>3)continue;
-      if(h.r<=ph.r&&hd(h,ph)===2&&h.c>=ph.c){bsha=h;break;}}
-    if(!bsha)bsha=Object.values(TER).find(h=>sea(h)&&!adj.has(h.k)&&hd(h,ph)===2);
-    if(bsha){bsha.t='plain';bsha.isl='PH';bsha.name='白沙';SPOT.penghu=bsha.k;}
+  // 澎湖：依真實島嶼輪廓（Natural Earth），碰到島嶼的格都算澎湖的陸地（群島總面積約 127 平方公里，比一格小，★取「有碰到」以免整個群島只剩一格）
+  const phs=Object.values(TER).filter(h=>{if(h.t!=='sea')return false;const [lon,lat]=rcToLL(h.c,h.r);return lon>119.1&&lon<120.0&&lat>23.0&&lat<24.0&&cover(h,GEO_PH)>0;});
+  phs.forEach(h=>{h.t='plain';h.isl='PH';});
+  if(phs.length){
+    const nearPH=(lon,lat,ex)=>phs.filter(h=>!ex||!ex.includes(h)).sort((a,b)=>{const p=rcToLL(a.c,a.r),q=rcToLL(b.c,b.r);return Math.hypot((p[0]-lon)/GEO.dlon,(p[1]-lat)/GEO.dlat)-Math.hypot((q[0]-lon)/GEO.dlon,(q[1]-lat)/GEO.dlat);})[0];
+    const mg=nearPH(119.57,23.57);mg.t='port';mg.name='馬公';SPOT.magong=mg.k;
+    const PHN=['澎湖本島','西嶼','白沙'],isl=h=>{const v=GEO_PH.map(P=>cover(h,[P]));const i=v.indexOf(Math.max(...v));return {i,c:v.reduce((a,x)=>a+x,0)};}; // GEO_PH 依序約為本島、西嶼、白沙（依質心判斷）
+    const rest=phs.filter(h=>h!==mg).sort((a,b)=>isl(b).c-isl(a).c);
+    rest.forEach(h=>{const I=isl(h);h.name=GEO_PH.length===3?PHN[I.i]:null;});
+    SPOT.penghu=rest.length?rest[0].k:mg.k; // 澎湖第二個重點格：除馬公外陸地最多的一格
   }
   tw.forEach(h=>{h.pc=h.c;h.pr=h.r;});
   // 同名的外島仍屬澎湖；補上需要的別名
@@ -291,7 +296,7 @@ function portHold(){ // 攻方控制（未被破壞）的主要港口卸載容�
   return {cap,need,ok:cap>=need};
 }
 // 麥寮港（雲林，台塑六輕工業專用港）：年吞吐量約 7,000 萬噸以上、可進出 30 萬噸級油輪的深水港，但碼頭多為石化、煤、油專用，不是貨櫃或滾裝碼頭——列為次要港口；也是雲林泥灘海岸唯一能靠岸卸載的地方
-const MINOR_PORTS={'17,12':'麥寮港','20,5':'新竹港','16,17':'安平港','25,6':'烏石港','21,18':'富岡港'}; // 次要港口：占領後補給容量 +2（共 3），不計入勝負條件、重型旅仍需主要港口才能上岸
+const MINOR_PORTS=(()=>{const o={};[['麥寮港',120.19,23.79],['新竹港',120.92,24.85],['安平港',120.16,22.99],['烏石港',121.84,24.87],['富岡港',121.19,22.79]].forEach(([n,lon,lat])=>{let b=null,bd=1e9;for(const h of Object.values(TER)){if(h.isl!=='TW'||!h.coastal||h.t==='port'||h.t==='air'||o[h.k])continue;const [a,c]=rcToLL(h.c,h.r),d=Math.hypot((a-lon)/GEO.dlon,(c-lat)/GEO.dlat);if(d<bd){bd=d;b=h;}}if(b)o[b.k]=n;});return o;})(); // 依經緯度放在最近的海岸格 // 次要港口：占領後補給容量 +2（共 3），不計入勝負條件、重型旅仍需主要港口才能上岸
 const ZONES={north:[SPOT.linkou,SPOT.tamsui,SPOT.taoyuanap],central:[SPOT.miaoli,SPOT.hsinchu,SPOT.tcport],penghu:[SPOT.penghu,SPOT.magong]};
 
 const ABN_GOAL={north:[SPOT.taoyuanap,SPOT.taoyuan],central:[SPOT.miaoli,SPOT.changhua]};

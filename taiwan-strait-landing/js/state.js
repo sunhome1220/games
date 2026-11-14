@@ -54,9 +54,9 @@ function hname(h){return h.name||(TERN[h.t]+' '+h.c+'-'+h.r);}
 function uname(u){return (u.fl?u.fl.n:TYPES[u.type].n)+'（'+SIDE[u.side]+'）';}
 // ---------- 台灣海軍：依真實艦隊編制，一個棋子＝一個艦隊（★艦隊歸屬與武器數字為推估）----------
 // 每艘：防空飛彈 ad、防空涵蓋 adR（格）、反艦飛彈 asm、反艦射程 asmR（格）、同時接戰數 ch
-const RFW={kl:{n:'基隆級',ad:60,adR:6,asm:8,asmR:6,ch:2},ck:{n:'成功級',ad:36,adR:2,asm:8,asmR:8,ch:2},pf:{n:'派里級',ad:36,adR:2,asm:4,asmR:6,ch:2},
-  kd:{n:'康定級',ad:24,adR:1,asm:8,asmR:8,ch:2},cy:{n:'濟陽級',ad:10,adR:2,asm:4,asmR:6,ch:2},lf:{n:'新輕型巡防艦',ad:32,adR:2,asm:8,asmR:10,ch:2},
-  tc:{n:'沱江級',ad:12,adR:1,asm:16,asmR:8,ch:1},kh:{n:'光六快艇',ad:0,adR:0,asm:4,asmR:8,ch:0}};
+const RFW={kl:{n:'基隆級',ad:60,adR:kmH(120),asm:8,asmR:kmH(120),ch:2},ck:{n:'成功級',ad:36,adR:kmH(40),asm:8,asmR:kmH(160),ch:2},pf:{n:'派里級',ad:36,adR:kmH(40),asm:4,asmR:kmH(120),ch:2},
+  kd:{n:'康定級',ad:24,adR:kmH(20),asm:8,asmR:kmH(160),ch:2},cy:{n:'濟陽級',ad:10,adR:kmH(40),asm:4,asmR:kmH(120),ch:2},lf:{n:'新輕型巡防艦',ad:32,adR:kmH(40),asm:8,asmR:kmH(200),ch:2},
+  tc:{n:'沱江級',ad:12,adR:kmH(20),asm:16,asmR:kmH(160),ch:1},kh:{n:'光六快艇',ad:0,adR:0,asm:4,asmR:kmH(160),ch:0}};
 // 依年份：濟陽級逐步除役、新輕型巡防艦 2028 年起陸續加入（2028～2040 年共 10～12 艘）
 const ROCF=[
   {id:'168',n:'168 艦隊（蘇澳）',s:'168',home:'suao',m:y=>[['kl',4],['cy',y<=2027?4:y<=2029?2:0],['lf',y<=2027?0:y<=2029?2:y<=2031?4:6]]},
@@ -69,7 +69,7 @@ const FLEET_PER=2; // ★每艘每次齊射 2 枚
 function fleetAgg(u){const A={hp:0,ad:0,asm:0,adR:0,asmR:0,chan:0,sh:0};for(const [k,n] of u.fl.m){if(n<=0)continue;const W=RFW[k];A.hp+=n;A.ad+=W.ad*n;A.asm+=W.asm*n;A.chan+=W.ch*n;if(W.ad>0)A.adR=Math.max(A.adR,W.adR);if(W.asm>0){A.asmR=Math.max(A.asmR,W.asmR);A.sh+=n;}}return A;}
 const fleetTxt=u=>u.fl.m.filter(([,n])=>n>0).map(([k,n])=>RFW[k].n+' '+n).join('、');
 // 共軍抽象護航艦「dd」：每個代表一組 052D＋054A（★），防空沿用兩艦的數字：攔截彈 48＋32＝80 枚、涵蓋 10 格（052D 海紅旗-9）、每波接戰 4＋2＝6 枚；剩 1 步時減半
-const DDW={ad:80,adR:10,chan:6};
+const DDW={ad:80,adR:kmH(200),chan:6};
 const adROf=e=>e.fl?fleetAgg(e).adR:e.type==='dd'?DDW.adR:SHIPW[e.type].adR,chanOf=e=>e.fl?fleetAgg(e).chan:e.type==='dd'?Math.ceil(DDW.chan*e.hp/TYPES.dd.hp):SHIPW[e.type].chan;
 function fleetLose(u,n){ // 損失 n 艘：從船數最多的艦型扣起；飛彈庫存不超過剩下的船能裝的量
   for(let i=0;i<n;i++){let b=null;for(const x of u.fl.m)if(x[1]>0&&(!b||x[1]>b[1]))b=x;if(!b)break;b[1]--;}
@@ -77,7 +77,7 @@ function fleetLose(u,n){ // 損失 n 艘：從船數最多的艦型扣起；飛�
 }
 function rocFleetsSpawn(){
   const y=+S.era||2026;let n=0,ships=0;
-  for(const F of ROCF){const k0=SPOT[F.home],h=k0&&TER[k0]&&unitsAt(k0).length<STACK_MAX?TER[k0]:placeNear(k0,x=>x.t==='sea'&&hd(x,TER[k0])<=2&&unitsAt(x.k).length<STACK_MAX)||placeNear(k0,x=>x.isl==='TW'&&x.t==='port'&&unitsAt(x.k).length<STACK_MAX);if(!h)continue; // 母港已滿：停在港外相鄰海域
+  for(const F of ROCF){const k0=SPOT[F.home],h=k0&&TER[k0]&&unitsAt(k0).length<STACK_MAX?TER[k0]:placeNear(k0,x=>x.t==='sea'&&hd(x,TER[k0])<=kmH(40)&&unitsAt(x.k).length<STACK_MAX)||placeNear(k0,x=>x.isl==='TW'&&x.t==='port'&&unitsAt(x.k).length<STACK_MAX);if(!h)continue; // 母港已滿：停在港外相鄰海域
     const u=mkUnit('def','ff',h.k,{});u.fl={id:F.id,n:F.n,s:F.s,m:F.m(y).filter(([,c])=>c>0).map(x=>x.slice())};const A=fleetAgg(u);u.hp=A.hp;u.mhp=A.hp;u.mag={ad:A.ad,asm:A.asm,lam:0};S.units.push(u);n++;ships+=A.hp;}
   S.pools.rocNavy=n;S.p0.rocNavy=n;S.rocShips0=ships;
 }
@@ -107,7 +107,7 @@ function navyDeploy(c){
   const eastSea=Object.values(TER).filter(x=>{if(x.t!=='sea')return false;const [lon,lat]=rcToLL(x.c,x.r);return lon>121.6&&lon<122.3&&lat>22.4&&lat<24.6;}).sort((a,b)=>a.r-b.r);
   for(const u of fs){let h=null;
     if(c==='east'){h=eastSea.find(free);}
-    else{const home=hexOf(u);h=Object.values(TER).filter(x=>free(x)&&hd(x,home)<=2).sort((a,b)=>hd(a,home)-hd(b,home))[0];}
+    else{const home=hexOf(u);h=Object.values(TER).filter(x=>free(x)&&hd(x,home)<=kmH(40)).sort((a,b)=>hd(a,home)-hd(b,home))[0];}
     if(!h)continue;used.add(h.k);u.c=h.c;u.r=h.r;moved.push(u.fl.s);}
   return [(c==='east'?'疏散到東部外海：':'分散到母港附近外海：')+(moved.join('、')||'無'),late?'戰略突襲：大型艦艇來不及出港，仍在母港':''].filter(Boolean);
 }

@@ -47,7 +47,7 @@ function shipOf(u){return u.ship?S.units.find(x=>x.id===u.ship):null;}
 function freeShipKind(u,h){ // 這個旅現在能不能裝船：回傳 'lst'／'ro'／null；已裝船回傳 'have'
   if(u.ship)return 'have';
   if(!isBde(u)||h.isl!=='CN'||!isLand(h))return 'na';
-  const P=S.pools,port=h.t==='port',nearPort=port||Object.values(TER).some(q=>q.t==='port'&&q.isl==='CN'&&hd(h,q)<=2); // 滾裝船要靠碼頭：港口或港口 2 格內
+  const P=S.pools,port=h.t==='port',nearPort=port||Object.values(TER).some(q=>q.t==='port'&&q.isl==='CN'&&hd(h,q)<=kmH(40)); // 滾裝船要靠碼頭：港口或港口 2 格內
   if(u.type==='arm')return nearPort&&P.plaLift>(S.roReserve||0)?'ro':nearPort&&P.plaLst>0?'lst':null; // 重型旅只能在港口附近裝船
   if(P.plaLst>0)return 'lst';
   if(nearPort&&P.plaLift>(S.roReserve||0))return 'ro';
@@ -80,7 +80,7 @@ function convoyTurn(){ // 攻方階段開始：運輸船返航入列、派出新
   for(const u of S.units.filter(x=>x.side==='atk'&&x.type==='cvy')){
     if(u.fresh===t){u.moved=true;continue;} // 剛裝載好的船團這回合留在港內集結，下回合才出航（港內時守方的長程飛彈可以打到）
     u.moved=false;const rc=reach(u),h=hexOf(u);let best=null,bs=Math.min.apply(null,sinks.map(s2=>hd(h,s2)))+ssmThreat(h.k)*.6;
-    for(const [k,v] of rc){if(v.kind!=='sail')continue;const hh=TER[k],sc=Math.min.apply(null,sinks.map(s2=>hd(hh,s2)))+ssmThreat(k)*.6+Math.random()*.3-(S.units.some(x=>x.side==='atk'&&x.type==='dd'&&hd(hexOf(x),hh)<=2)?.8:0);if(sc<bs-.2){bs=sc;best=k;}}
+    for(const [k,v] of rc){if(v.kind!=='sail')continue;const hh=TER[k],sc=Math.min.apply(null,sinks.map(s2=>hd(hh,s2)))+ssmThreat(k)*.6+Math.random()*.3-(S.units.some(x=>x.side==='atk'&&x.type==='dd'&&hd(hexOf(x),hh)<=kmH(40))?.8:0);if(sc<bs-.2){bs=sc;best=k;}}
     if(best)doMove(u,best,'sail');u.moved=true;u.acted=true;
   }
 }
@@ -98,7 +98,7 @@ function resolveSupply(){
   const sinks=unloadHexes();
   for(const u of S.units.filter(x=>x.side==='atk'&&x.type==='cvy')){
     if(!atSea(u))continue;
-    if(sinks.some(h=>hd(hexOf(u),h)<=1)){const c=u.hp;if(unl+c<=ucap){unl+=c;arrived.push(u);}}
+    if(sinks.some(h=>hd(hexOf(u),h)<=kmH(20))){const c=u.hp;if(unl+c<=ucap){unl+=c;arrived.push(u);}}
   }
   arrived.forEach(u=>{S.units.splice(S.units.indexOf(u),1);S.liftBack=S.liftBack||{};S.liftBack[t+2]=(S.liftBack[t+2]||0)+1;});
   R.convoy={n0:ucap,hit:0,ok:unl,by:{},ships:arrived.length,sunkTotal:(S.stats.cvySunk||0)};
@@ -174,7 +174,7 @@ function landReach(u,res){
 // 船團與運兵船要集結編隊、走掃雷航道、配合護航 → 依天候 5／4／2 格；
 // ★作戰艦（護航艦、航艦、守方艦艇）不必配合船團、但要警戒與走之字航線 → 天候格數 +2；
 // ★潛艦在水下幾乎不受浪高影響：3 格以內為安靜潛航，最多 5 格（高速或呼吸管航行，噪音大，下一次被反潛發現的機率加倍）
-const SPD={war:2,subQuiet:3,subMax:5};
+const SPD={war:kmH(40),subQuiet:kmH(60),subMax:kmH(100)}; // 公里換成格：軍艦比商船多 40 km、潛艦安靜航行 60 km、最快 100 km（每回合）
 const isWarship=u=>isEsc(u)||u.type==='cv'||u.type==='csg'||u.type==='dd'||u.type==='ff';
 const seaMove=u=>u.type==='hk'||u.type==='ssn'?SPD.subMax:(S.weather&&S.weather.base!=null?seaOfH(wxWave(hexOf(u))):S.weather.sea)+(isWarship(u)?SPD.war:0); // 依所在海域的浪高
 function seaReach(u,res){
@@ -202,7 +202,7 @@ function reach(u){
   if(u.esc)return res; // 護航艦跟著航艦移動，不單獨移動
   if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
     if(S.weather.air)for(const t of Object.values(TER)){
-      if((t.isl==='TW'||t.isl==='PH')&&t.t!=='mtn'&&canStack(u,t.k)&&rd(h,t)<=20)res.set(t.k,{kind:'drop'});
+      if((t.isl==='TW'||t.isl==='PH')&&t.t!=='mtn'&&canStack(u,t.k)&&rd(h,t)<=kmH(400))res.set(t.k,{kind:'drop'});
     }
     return res;
   }
@@ -215,15 +215,15 @@ function targets(u){
   if(u.acted)return [];
   if(u.type==='hmr'){ // 海馬士：打陸上目標。火箭（GMLRS）射程約 80 km＝4 格；陸軍戰術飛彈（ATACMS）約 300 km＝14 格；各自有實際庫存（rocGml、rocAtc）
     if(u.shots<=0||ssmReady(u)-(u.lu||0)<=0)return [];const hu=hexOf(u),P=S.pools||{},atc=(P.rocAtc||0)>=1,gml=(P.rocGml||0)>=1;if(!atc&&!gml)return [];
-    return S.units.filter(e=>e.side!==u.side&&!atSea(e)&&!isMsl(e)&&hexOf(e).isl!=='CN'&&(()=>{const d=rd(hu,hexOf(e));return d<=(atc?14:4);})());} // 大陸沿岸集結中的部隊不在目標內（那由長程對地打擊處理）
+    return S.units.filter(e=>e.side!==u.side&&!atSea(e)&&!isMsl(e)&&hexOf(e).isl!=='CN'&&(()=>{const d=rd(hu,hexOf(e));return d<=(atc?kmH(280):kmH(80));})());} // 大陸沿岸集結中的部隊不在目標內（那由長程對地打擊處理）
   if(u.type==='mlrs'){ // 雷霆2000：面積性火力，射程依彈種 15／30／45 km（每格約 20 km）＝最遠 2 格；打海灘上的部隊與靠岸的船團（反登陸），需有彈藥庫存
     if(u.shots<=0||(S.pools&&S.pools.rocRkt||0)<1)return [];const hu=hexOf(u);
-    return S.units.filter(e=>e.side!==u.side&&!isMsl(e)&&hexOf(e).isl!=='CN'&&rd(hu,hexOf(e))<=2);}
+    return S.units.filter(e=>e.side!==u.side&&!isMsl(e)&&hexOf(e).isl!=='CN'&&rd(hu,hexOf(e))<=kmH(40));}
   if(isEsc(u))return escTargets(u);
   if(u.type==='hk')return subTargets(u);
-  if(u.type==='ssn'){if(u.acted||!(u.tp>0||u.hm>0))return [];return shipFoes(u,6).filter(e=>(u.tp>0&&rd(hexOf(u),hexOf(e))<=3)||u.hm>0);}
+  if(u.type==='ssn'){if(u.acted||!(u.tp>0||u.hm>0))return [];return shipFoes(u,kmH(120)).filter(e=>(u.tp>0&&rd(hexOf(u),hexOf(e))<=kmH(60))||u.hm>0);}
   if(u.type==='nme'||u.type==='mdt'){if(u.acted||!u.mag||u.mag.asm<=0)return [];return shipFoes(u,u.type==='nme'?NME.R:MDT.R);}
-  if(isMsl(u)){if(u.shots<=0||(u.fl&&!(u.mag&&u.mag.asm>0)))return [];const R=u.fl?fleetAgg(u).asmR:8;return S.units.filter(e=>e.side!==u.side&&atSea(e)&&!e.ship&&rd(hexOf(u),hexOf(e))<=R);} // 船上的旅不單獨列為目標：打運輸船，船沉了旅一併損失
+  if(isMsl(u)){if(u.shots<=0||(u.fl&&!(u.mag&&u.mag.asm>0)))return [];const R=u.fl?fleetAgg(u).asmR:kmH(160);return S.units.filter(e=>e.side!==u.side&&atSea(e)&&!e.ship&&rd(hexOf(u),hexOf(e))<=R);} // 船上的旅不單獨列為目標：打運輸船，船沉了旅一併損失
   const h=hexOf(u);if(h.isl==='CN')return [];
   return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以
 }
@@ -321,11 +321,11 @@ function attack(u,t){
 // 航艦的點防禦：自身加附近護航艦；來襲飛彈超過防禦量就形成飽和攻擊（超出 3 枚必中）
 function satHit(t){
   t.inc=(t.inc||0)+1;if(t.type!=='cv')return 0;
-  const pd=1+S.units.filter(x=>x.type==='dd'&&x.side==='atk'&&rd(hexOf(x),hexOf(t))<=2).length;
+  const pd=1+S.units.filter(x=>x.type==='dd'&&x.side==='atk'&&rd(hexOf(x),hexOf(t))<=kmH(40)).length;
   return Math.max(0,Math.min(3,t.inc-pd));
 }
 function fireHimars(m,t){
-  const P=S.pools||{},d=rd(hexOf(m),hexOf(t)),atc=d>4||(P.rocGml||0)<1,h=hexOf(t),key=atc?'rocAtc':'rocGml'; // 沒有火箭彈時，近距離目標也只能用陸軍戰術飛彈
+  const P=S.pools||{},d=rd(hexOf(m),hexOf(t)),atc=d>kmH(80)||(P.rocGml||0)<1,h=hexOf(t),key=atc?'rocAtc':'rocGml'; // 沒有火箭彈時，近距離目標也只能用陸軍戰術飛彈
   const n=Math.max(0,Math.min(HMR_PKG,ssmReady(m)-(m.lu||0),Math.floor(P[key]||0))); // 這次齊射的車數：受可射車數與庫存限制
   m.shots--;m.lu=(m.lu||0)+n;m.revealed=true; // 開火後暴露，下個守方階段前都是顯眼目標
   if(S.pools)S.pools[key]=Math.max(0,(S.pools[key]||0)-n); // 每輛 1 枚 ATACMS 或 1 個火箭莢艙（6 發）
@@ -341,7 +341,7 @@ function fireMlrs(m,t){
   if(S.pools)S.pools.rocRkt=Math.max(0,S.pools.rocRkt-1);
   const need=Math.min(6,(sea?6:5)+((!sea&&(h.t==='city'||h.t==='mtn'))?1:0)),fr=lchFrac(m),hit=hitP(pNeed(need)*fr,'fireMlrs'); // 無導引面積火力：命中率比海馬士低；打機動中的船更難
   fxq({t:'hmr',from:[m.c,m.r],to:[t.c,t.r],hit,atc:false});
-  log('雷霆2000發射火箭彈（'+(d<=1?'15 km 級':'30～45 km 級')+'）'+(fr<1?'（可射 '+ssmReady(m)+'／'+lchV0(m)+' 輛）':'')+(hit?'，命中 ':'，未命中 ')+hname(h)+' 的 '+TYPES[t.type].n+'（'+lastTxt()+'）');
+  log('雷霆2000發射火箭彈（'+(d<=kmH(20)?'15 km 級':'30～45 km 級')+'）'+(fr<1?'（可射 '+ssmReady(m)+'／'+lchV0(m)+' 輛）':'')+(hit?'，命中 ':'，未命中 ')+hname(h)+' 的 '+TYPES[t.type].n+'（'+lastTxt()+'）');
   if(hit)damage(t,1,'雷霆2000火箭');
   checkInstant();
 }
