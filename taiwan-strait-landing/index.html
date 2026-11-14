@@ -589,6 +589,8 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 #toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 18px;border-radius:3px;font-weight:700;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30;white-space:nowrap}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
+#cnPend{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(440px,calc(100vw - 24px));background:var(--panel,#fff);color:var(--ink);border:2px solid var(--atk);border-radius:6px;padding:10px 12px;z-index:28;box-shadow:0 4px 16px rgba(0,0,0,.25);font-size:13px;line-height:1.45}
+#cnPend .cpm{margin-top:3px;color:var(--ink)} #cnPend .cpb{display:flex;gap:8px;justify-content:flex-end;margin-top:8px} #cnPend .cpb button{min-width:96px}
 .vres{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}.vres>div{background:var(--panel);color:var(--ink);border-radius:10px;max-width:420px;width:100%;max-height:92vh;overflow:auto;padding:14px}.vres video{display:block;width:100%;max-height:58vh;margin-top:8px;background:#000;border-radius:6px}.vres .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.vres .dd{margin-top:8px}
 .seedc{font-family:var(--f-mono,monospace);font-size:11px;word-break:break-all;user-select:all}.wz-seed{margin-top:14px}.wz-seed label{display:block;font-weight:600;font-size:13px}.wz-seed input{display:block;width:100%;box-sizing:border-box;margin:4px 0;padding:8px;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)}.erates.fg ul{margin:4px 0;padding-left:18px}.wxwin{position:fixed;left:8px;top:150px;z-index:16;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;transition:left .18s ease,top .18s ease,right .18s ease,bottom .18s ease}.wxwin.drag{transition:none;cursor:grabbing}.wxwin.drag .wxp{box-shadow:0 6px 18px rgba(0,0,0,.35);transform:scale(1.04)}
 .wxwin .wxp{display:inline-flex;align-items:center;gap:5px;height:28px;margin:0;padding:0 11px 0 8px;border-radius:999px;font-size:12px;line-height:1;white-space:nowrap;background:color-mix(in srgb,var(--panel) 88%,transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);box-shadow:0 2px 8px rgba(0,0,0,.22);transition:transform .12s,box-shadow .12s;--lv:#3aa76d}
@@ -803,33 +805,33 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-14.58' -->
-<script src="js/dict.js?v=2026-11-14.58"></script>
-<script src="js/i18n.js?v=2026-11-14.58"></script>
-<script src="js/btnfix.js?v=2026-11-14.58"></script>
-<script src="js/geo.js?v=2026-11-14.58"></script>
-<script src="js/dem.js?v=2026-11-14.58"></script>
-<script src="js/map.js?v=2026-11-14.58"></script>
-<script src="js/state.js?v=2026-11-14.58"></script>
-<script src="js/rules.js?v=2026-11-14.58"></script>
-<script src="js/supply.js?v=2026-11-14.58"></script>
-<script src="js/ending.js?v=2026-11-14.58"></script>
-<script src="js/theater.js?v=2026-11-14.58"></script>
-<script src="js/strike.js?v=2026-11-14.58"></script>
-<script src="js/airstrike.js?v=2026-11-14.58"></script>
-<script src="js/decisions.js?v=2026-11-14.58"></script>
-<script src="js/report.js?v=2026-11-14.58"></script>
-<script src="js/turn.js?v=2026-11-14.58"></script>
-<script src="js/ai.js?v=2026-11-14.58"></script>
-<script src="js/render.js?v=2026-11-14.58"></script>
-<script src="js/fx.js?v=2026-11-14.58"></script>
-<script src="js/video.js?v=2026-11-14.58"></script>
-<script src="js/stats.js?v=2026-11-14.58"></script>
-<script src="js/input.js?v=2026-11-14.58"></script>
-<script src="js/unitinfo.js?v=2026-11-14.58"></script>
-<script src="js/version.js?v=2026-11-14.58"></script>
-<script src="js/changelog.js?v=2026-11-14.58"></script>
-<script src="js/app.js?v=2026-11-14.58"></script>
-<script src="js/gamepad.js?v=2026-11-14.58"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-14.59' -->
+<script src="js/dict.js?v=2026-11-14.59"></script>
+<script src="js/i18n.js?v=2026-11-14.59"></script>
+<script src="js/btnfix.js?v=2026-11-14.59"></script>
+<script src="js/geo.js?v=2026-11-14.59"></script>
+<script src="js/dem.js?v=2026-11-14.59"></script>
+<script src="js/map.js?v=2026-11-14.59"></script>
+<script src="js/state.js?v=2026-11-14.59"></script>
+<script src="js/rules.js?v=2026-11-14.59"></script>
+<script src="js/supply.js?v=2026-11-14.59"></script>
+<script src="js/ending.js?v=2026-11-14.59"></script>
+<script src="js/theater.js?v=2026-11-14.59"></script>
+<script src="js/strike.js?v=2026-11-14.59"></script>
+<script src="js/airstrike.js?v=2026-11-14.59"></script>
+<script src="js/decisions.js?v=2026-11-14.59"></script>
+<script src="js/report.js?v=2026-11-14.59"></script>
+<script src="js/turn.js?v=2026-11-14.59"></script>
+<script src="js/ai.js?v=2026-11-14.59"></script>
+<script src="js/render.js?v=2026-11-14.59"></script>
+<script src="js/fx.js?v=2026-11-14.59"></script>
+<script src="js/video.js?v=2026-11-14.59"></script>
+<script src="js/stats.js?v=2026-11-14.59"></script>
+<script src="js/input.js?v=2026-11-14.59"></script>
+<script src="js/unitinfo.js?v=2026-11-14.59"></script>
+<script src="js/version.js?v=2026-11-14.59"></script>
+<script src="js/changelog.js?v=2026-11-14.59"></script>
+<script src="js/app.js?v=2026-11-14.59"></script>
+<script src="js/gamepad.js?v=2026-11-14.59"></script>
 </body>
 </html>
