@@ -772,7 +772,7 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
         <div class="card rules">
           <h2>規則摘要</h2>
           <details class="rg" open><summary>基本規則</summary><ul><li><b>步（戰力）：</b>每個單位的戰力分成幾「步」，就是棋子下方的圓點。旅級單位多為 3 步，空降旅、後備旅、反艦飛彈為 2 步。每損失 1 步約失去三分之一戰力（在海上就是部分船艦連同人員裝備被擊沉）；只剩 1 步時攻防各 −1，歸零即被殲滅。戰況與報告中的「兵力 X 步」是各單位剩餘步數的加總，約 3 步相當於一個旅。</li><li>每回合先攻方、後守方。每個單位每階段可移動一次，之後可攻擊一次。</li><li><b>渡海：</b>兩棲旅、陸戰旅可從大陸任一沿岸格出航；裝甲旅只能從港口出航，且只能在攻方已控制的港口上岸。海上移動力依天候：良好 3、普通 2、惡劣 1。登陸後該單位本階段結束。</li><li><b>搶灘突擊：</b>從海上直接攻擊岸上敵軍，攻擊 −2（陸戰旅 −1）。守方若被消滅，突擊單位可直接上岸。</li><li><b>戰鬥：</b>攻擊值＋骰 對 防禦值＋地形＋骰。差 ≥4 守方失 2 步；1～3 失 1 步；0 雙方各失 1；−1～−3 攻方失 1；≤−4 攻方失 2。每多一支友軍與目標相鄰 +1（最多 +2）。只剩 1 步的單位攻防各 −1。</li><li><b>控制區：</b>移動進入與敵軍相鄰的陸地格必須停下。</li><li><b>空降：</b>空降旅可從大陸空投到 10 格內的島上非山地空格；每次空投擲骰，擲 1 因防空攔截損失 1 步；落在敵軍旁時擲 1～3 就損失 1 步。惡劣天候不能空降。</li><li><b>補給：</b>攻方在台灣本島的單位數不可超過補給容量（每個已控制的灘岸格 1、主要與東岸港口 4、次要港口 3、連續控制 2 個回合的灘頭堡再 +2、控制澎湖馬公 +2），超過時島上攻方單位攻防各 −1，且從第 3 回合起每回合損耗。次要港口（淡水、新竹、安平、烏石、富岡）標有 ⚓，不計入勝負條件。</li><li><b>增援：</b>攻方第 2～5 回合於大陸沿岸到達；守方後備旅第 2～4 回合在城市動員。</li></ul></details>
-          <details class="rg"><summary>火力與戰區</summary><ul><li><b>地圖尺度：</b>每格約 20 km（相鄰格中心距離，面積約 300 多平方公里）。海馬士火箭彈 4 格約 80 km、雷霆2000 最遠 2 格約 45 km、陸軍戰術飛彈 14 格約 300 km。</li><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>兵力年代：</b>開局可選 2026 現況、2028 近期、2030 中期。2026 依公開報導概略設定（台灣：雲峰與雄風IIE 長程飛彈、HIMARS／ATACMS、魚叉岸防、F-16V、天弓與愛國者；共軍：東風-15／16 與 PCH-191 長程火箭、東風-17 高超音速、東風-26／21D）；2028、2030 是依已規劃的採購與特別預算所做的推估，雙方都會成長。東風-17 的火力不受守方防空削減；東風-26／21D 讓打擊美日基地與艦艇的門檻 −1；無人機與巡飛彈每階段增加反艦攻擊。數字為遊戲的抽象點數，實際數量並不公開，各來源也有出入，詳見 DATA.md。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>海馬士（HIMARS）：</b>守方有海馬士火箭砲棋子：2026 年 3 組、2028 年 4 組、2030 年 5 組、2032 年 6 組（依 2024 年起交付 11 套、2026 年底前再 18 套的報導與特別預算推估，1 組約代表一個營）。屬機動發射車，隱蔽、開火後暴露、打了就跑的規則與岸置飛彈相同；每階段 1 發，只打陸上目標：火箭彈射程 4 格（約 80 km，擲 4 以上）、陸軍戰術飛彈射程 14 格（約 300 km，擲 5 以上，動用 0.5 點長程飛彈存量），目標在城市或山地再 +1，命中使對方損失 1 步。大陸沿岸集結中的部隊不在射程內（那由長程對地打擊處理）。</li><li><b>守方決策節點：</b>守方在不同階段有 7 個決策：開戰前的四項（平時外交與盟友、戰備整備重點、預警後的反應、預先部署重點）在「作戰設定」的「守方戰前準備」頁先決定，開戰後的三項（反制先制打擊、外交與外援、持久戰策略）在戰中彈窗。你當守方（或「雙方都操作」）時戰中會停下來選擇，電腦推演模式由你替守方選，電腦守方、影片與統計模式則隨機抽一項。每個選項都有好處也有代價（例如公開深化美日合作會讓美日更願意參戰，但攻方也提前戒備），效果多為小幅修正。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段可發射 24／32／40 枚長程對地飛彈（依年代；每包 4 枚，2026 年存量約 250 枚，推估）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自評估要不要對大陸出手，出手時自動對大陸基地縱深打擊。每包先過共軍防空攔截（越遠的目標要穿過越多層），突破後命中率依目標硬度 20～45%；大陸沿岸集結中的部隊與船隻也可直接打（集結中每步定位約 60%）。命中使基地受損一級，攻方每 2 回合修復一級：火箭軍基地受損削弱發射能量、機場降低出擊（嚴重受損時可能打掉機堡外的戰機）、海軍基地癱瘓時傷及港內艦艇、集結港打擊停靠的船團。</li><li><b>中方報復：</b>每次縱深打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li><li><b>制空與防空壓制：</b>每回合先比較攻方陸基空軍＋艦載機與守方、盟國空軍：差 3 以上算「優勢」。攻方優勢時美日空軍的反艦命中門檻 +1，守方優勢時 −1；守方防空降到 2 以下算「遭壓制」，攻方火力 +1，攻方防空降到 2 以下則大陸基地更容易被打。</li><li><b>海上交戰：</b>每回合守方階段，攻方護航艦隊與航艦會與守方海軍、美日水面艦及潛艦交戰；潛艦（美日，以及台灣自製的海鯤，2028 年起 1 艘、2030 年 1 艘以上）可能擊沉護航艦或重創航艦，也可能遭反潛。共軍航艦（遼寧、山東、福建）提供艦載機制空，被反艦攻擊命中護航艦時，可能連帶被重創。</li><li><b>台灣地形與機場：</b>台灣本島依真實海岸線、中央山脈與城市位置重畫；東岸多為斷崖不可登陸，宜蘭、花蓮、台東有小塊平原；西岸彰化、雲林一帶為泥灘。守方機場 11 座（桃園、新竹、清泉崗、嘉義、台南、岡山、屏東、花蓮佳山、台東志航等），共軍沿海機場 11 座；攻方占領守方機場時，守方空軍 −1。東岸另有岸置反艦飛彈（花蓮佳山一帶），可射擊台灣東側海域的共軍航艦群（地圖上的 2～4 艘，沉沒會減少航艦點數）。</li><li><b>雄二／雄三：</b>守方反艦飛彈存量約 1,000 枚（2026），以每年約 200 枚的產能增加（約 2031 年達 2,000 枚上下，官方沒有公布此目標，為推估）；每點約 100 枚，岸置飛彈單位每次射擊消耗約 0.2 點，存量用完就無法射擊。</li><li><b>語音播報：</b>設定最後一頁（或地圖上方的「語音」按鈕）可開啟自動播放：每回合結束時，用瀏覽器內建的語音簡短唸出「海峽快訊」的重點（不逐條唸戰報，也跳過生硬的數字），語言隨介面語言；影片模式會等唸完再進下一步，隨時可關閉。預設關閉，因為瀏覽器內建語音多半較機械；是否有語音與音質取決於瀏覽器與裝置。</li>
+          <details class="rg"><summary>火力與戰區</summary><ul><li><b>地圖尺度：</b>每格約 20 km（相鄰格中心距離，面積約 300 多平方公里）。海馬士火箭彈 4 格約 80 km、雷霆2000 最遠 2 格約 45 km、陸軍戰術飛彈 14 格約 300 km。</li><li><b>火力打擊（攻方）：</b>每點擲一次骰，5 以上命中（目標在城市或山地需 6）。點數＝火箭軍（第 1～2 回合 5、第 3～4 回合 3、之後 2，存量 36 用完為止）＋空軍（依制空，0～4）－守方防空（強度的一半）；惡劣天候 −2。</li><li><b>兵力年代：</b>開局可選 2026 現況、2028 近期、2030 中期。2026 依公開報導概略設定（台灣：雲峰與雄風IIE 長程飛彈、HIMARS／ATACMS、魚叉岸防、F-16V、天弓與愛國者；共軍：東風-15／16 與 PCH-191 長程火箭、東風-17 高超音速、東風-26／21D）；2028、2030 是依已規劃的採購與特別預算所做的推估，雙方都會成長。東風-17 的火力不受守方防空削減；東風-26／21D 讓打擊美日基地與艦艇的門檻 −1；無人機與巡飛彈每階段增加反艦攻擊。數字為遊戲的抽象點數，實際數量並不公開，各來源也有出入，詳見 DATA.md。</li><li><b>戰區與各方海空力量：</b>每個攻方階段先進行空優爭奪，雙方空軍、防空、潛艦會有損耗。每個守方階段，守方海軍與已參戰的美日部隊攻擊海上船團或攻方護航艦隊；護航艦隊強度 5 以上時，打船團的命中門檻 +1。美日空軍遇到攻方防空強度 4 以上時，命中門檻也 +1。</li><li><b>岸置反艦飛彈（守方）：</b>每階段 2 發，射程 4 格，擲 4 以上命中海上單位。</li><li><b>海馬士（HIMARS）：</b>守方有海馬士火箭砲棋子：發射車 2026 年 11 輛、2027～2028 年 29 輛，2029 年起隨後續核准的 82 輛逐年增加到 2032 年 111 輛（後續交付時程為推估），平均分給 3～6 組棋子。彈藥是實際庫存：陸軍戰術飛彈 2026 年 64 枚、2027 年 84 枚，之後逐年增加到 504 枚；GMLRS 精準火箭彈 2026 年尚未到貨、2027 年 864 發，之後增加。屬機動發射車，隱蔽、開火後暴露、打了就跑的規則與岸置飛彈相同；每次最多 4 輛齊射（每輛 1 枚飛彈或 1 個 6 發莢艙），每階段次數依可射車數。只打陸上目標：火箭彈射程 4 格（約 80 km，擲 4 以上）、陸軍戰術飛彈射程 14 格（約 300 km，擲 5 以上），目標在城市或山地再 +1，不滿 4 輛時命中率依比例縮小，命中使對方損失 1 步。大陸沿岸集結中的部隊不在射程內（那由長程對地打擊處理）。</li><li><b>守方決策節點：</b>守方在不同階段有 7 個決策：開戰前的四項（平時外交與盟友、戰備整備重點、預警後的反應、預先部署重點）在「作戰設定」的「守方戰前準備」頁先決定，開戰後的三項（反制先制打擊、外交與外援、持久戰策略）在戰中彈窗。你當守方（或「雙方都操作」）時戰中會停下來選擇，電腦推演模式由你替守方選，電腦守方、影片與統計模式則隨機抽一項。每個選項都有好處也有代價（例如公開深化美日合作會讓美日更願意參戰，但攻方也提前戒備），效果多為小幅修正。</li><li><b>中方基地與對陸打擊：</b>戰區圖上標出中方的火箭軍飛彈旅（◆）、東部戰區機場（▲）、海軍基地（■）與登陸船團集結港（●），位置依公開報導概略標示，數字是完整度。守方每個階段可發射 24／32／40 枚長程對地飛彈（依年代；每包 4 枚，2026 年存量約 250 枚，推估）；美軍（全面參戰後）與自衛隊（日美都參戰後）的轟炸機、航艦、潛艦、飛彈部隊每個階段各自評估要不要對大陸出手，出手時自動對大陸基地縱深打擊。每包先過共軍防空攔截（越遠的目標要穿過越多層），突破後命中率依目標硬度 20～45%；大陸沿岸集結中的部隊與船隻也可直接打（集結中每步定位約 60%）。命中使基地受損一級，攻方每 2 回合修復一級：火箭軍基地受損削弱發射能量、機場降低出擊（嚴重受損時可能打掉機堡外的戰機）、海軍基地癱瘓時傷及港內艦艇、集結港打擊停靠的船團。</li><li><b>中方報復：</b>每次縱深打擊都會累積報復點數（美日 0.5、守方 0.25），下個攻方階段每滿 1 點，中方就對一個已出擊的美日部隊所在基地發動打擊；被打的國家即使原本中立也會升級參戰，並累計當地平民傷亡。沒有盟軍可打時，改為本回合火力 +1。</li><li><b>制空與防空壓制：</b>每回合先比較攻方陸基空軍＋艦載機與守方、盟國空軍：差 3 以上算「優勢」。攻方優勢時美日空軍的反艦命中門檻 +1，守方優勢時 −1；守方防空降到 2 以下算「遭壓制」，攻方火力 +1，攻方防空降到 2 以下則大陸基地更容易被打。</li><li><b>海上交戰：</b>每回合守方階段，攻方護航艦隊與航艦會與守方海軍、美日水面艦及潛艦交戰；潛艦（美日，以及台灣自製的海鯤，2028 年起 1 艘、2030 年 1 艘以上）可能擊沉護航艦或重創航艦，也可能遭反潛。共軍航艦（遼寧、山東、福建）提供艦載機制空，被反艦攻擊命中護航艦時，可能連帶被重創。</li><li><b>台灣地形與機場：</b>台灣本島依真實海岸線、中央山脈與城市位置重畫；東岸多為斷崖不可登陸，宜蘭、花蓮、台東有小塊平原；西岸彰化、雲林一帶為泥灘。守方機場 11 座（桃園、新竹、清泉崗、嘉義、台南、岡山、屏東、花蓮佳山、台東志航等），共軍沿海機場 11 座；攻方占領守方機場時，守方空軍 −1。東岸另有岸置反艦飛彈（花蓮佳山一帶），可射擊台灣東側海域的共軍航艦群（地圖上的 2～4 艘，沉沒會減少航艦點數）。</li><li><b>雄二／雄三：</b>守方反艦飛彈存量約 1,000 枚（2026），以每年約 200 枚的產能增加（約 2031 年達 2,000 枚上下，官方沒有公布此目標，為推估）；每點約 100 枚，岸置飛彈單位每次射擊消耗約 0.2 點，存量用完就無法射擊。</li><li><b>語音播報：</b>設定最後一頁（或地圖上方的「語音」按鈕）可開啟自動播放：每回合結束時，用瀏覽器內建的語音簡短唸出「海峽快訊」的重點（不逐條唸戰報，也跳過生硬的數字），語言隨介面語言；影片模式會等唸完再進下一步，隨時可關閉。預設關閉，因為瀏覽器內建語音多半較機械；是否有語音與音質取決於瀏覽器與裝置。</li>
       <li><b>語言：</b>設定第 1 頁可選繁體中文（預設）、English、日本語、简体中文，可隨時更改（更改後頁面會重新載入，進行中的對局會結束）；介面、規則、戰報、事件與報告都會隨之轉換（英、日文為翻譯字典，簡體中文為字形與用語轉換）。</li>
       <li><b>細格地圖：</b>地圖格數加倍（每個舊格細分為 2×2，約 36×36 格），海岸線、山地、港口與機場位置更細；移動力、海上移動、飛彈射程、空降距離、相鄰（控制區、支援、攻擊距離）都隨之加倍，實際行進與作戰距離不變。攻占一格時，周圍沒有敵軍的陸地格一併易主（港口與台北需親自踏入）。單位圖示縮小，同格可疊 2 個。</li><li><b>港口破壞：</b>守方港口即將失守（守軍只剩 1 步以下、攻方地面部隊在 2 格內）時，守方階段開始前可選擇破壞港口：攻方即使占領也無法從該港卸載重型旅、補給容量只剩 +1，且不計入「控制港口」，攻方占領並整修 2 個回合後恢復；每個港口只問一次，電腦守方約八成會破壞。地圖上以紅色 ✕ 標示。</li><li><b>勝負判定（調整後）：</b>達成條件需「站穩」：島上戰力要不少於守方且至少 4 步；連續兩個回合同時達成三項條件會提前判定攻方取勝。攻方只在最後一回合才達成兩項條件為「險勝」，只有 1 項但控制首都（連續 2 回合）或在島上站穩 6 步以上並控制至少 1 個港口為「僵局／灘頭堡僵持」；三項全落空且島上無部隊為守方決定性勝利。結果另依代價標註「慘勝」：守方平民傷亡達 3 萬人以上或自行破壞 2 個以上港口；攻方軍人傷亡 12 萬人以上或全球股市 −20% 以下。</li><li><b>攻擊計畫（可多選軸線）：</b>開局可勾選攻擊軸線：北部、中部、澎湖。只有單一本島軸線（澎湖算 0.5 條）時有「集中突擊」：第 1～3 回合攻方攻擊 +1；北、中並進沒有加成；軸線太多（合計 3.5 以上）兵力分散：第 1～3 回合攻擊 −1。北、中都不勾時由電腦選一個主攻區並集中。</li><li><b>澎湖前進基地：</b>攻方控制馬公後，每回合火力 +1（岸基火力與空襲可前推到西南部），補給容量 +2。反過來，守方守住馬公到第 3 回合以後，每回合攻方開始時有 1 次前沿警戒反艦攻擊打擊海峽中的船團（只在海上有登陸部隊時）。</li><li><b>金門、馬祖：</b>地圖上金門與馬祖是緊鄰大陸沿岸的小島，沒有駐軍，也沒有占領規則，雙方都無視它們。</li><li><b>命中率與運氣：</b>每次射擊、攔截與接戰都先算出「基礎命中率」（由武器、目標、護航與防空、情報、空優等條件決定，見 DATA.md），骰子只帶來有限的運氣：最終命中率 = 基礎 ×（1 ＋ 0.22 × 運氣），運氣由 d6 換算（擲 1＝−1、擲 6＝＋1），上限 100%。例：基礎 90% 擲 1 → 70%、擲 6 → 100%；基礎 10% 擲 1 → 7.8%、擲 6 → 12.2%。戰報會顯示「基礎 X%・運氣 ±Y%（擲 N）→ Z%」。地面戰鬥改為由雙方兵力對比算出「壓制機率」，再套用同樣的運氣。美日參戰、天候等外部事件仍用原本的 d6 表。</li><li><b>停戰／放棄評估：</b>當攻方陷入困境（第 4 回合起，沒有港口與台北、島上兵力遠遜守方）或守方瀕臨崩潰（傷亡慘重且外援退縮或民意低落）時，該方階段開始前彈出評估，同一局各最多 2 次、間隔 2 回合。攻方可選：接受現況停戰、有限撤退、增兵再搏、提高賭注（升級）；守方可選：停火談判、投降、繼續抵抗、尋求外援（擲骰）。★為系統建議。停戰依達成條件數判定（2 項以上攻方勝、1 項僵局、0 項守方勝）。人類操作的一方自己選，電腦方依評估自動選；推演模式由你替雙方選。</li><li><b>機動發射車：</b>岸置飛彈單位是機動的，未暴露時共軍火力打擊多半打到誘餌與空車（掌握空優時機率較低），命中門檻也 +1；開火後暴露，到守方下個階段開始前都是顯眼目標。開火後可以機動轉移，電腦會讓它們打了就跑，轉移到山區或離敵軍較遠的陣地並重新隱蔽。</li><li><b>台灣反艦火力（依發射平台）：</b>岸置與車載（雄二、雄三、魚叉岸防，地圖上 7 組，每階段 3→2 輪）、艦載（艦艇群與守方海軍）、空射（F-16V 掛魚叉、雄三空射型，守方空軍每階段出擊、空優被攻方掌握時不出擊）、潛艦（海鯤）、無人機與巡飛彈，各自獨立結算。戰報與統計會列出攻方海上損失的來源：台灣岸置與艦載反艦飛彈、台灣海空軍與無人機、美軍、日本。</li><li><b>艦艇移動與飽和攻擊：</b>守方艦艇群可出港航行，電腦會讓它們保持在反艦飛彈射程邊緣、避開共軍護航艦；出港後會被共軍海空兵力攻擊。共軍三艘航艦分散在東岸海域（各帶一艘護航艦、彼此保持距離），電腦會讓它們避開岸置飛彈威脅。航艦有點防禦（自身＋附近護航艦各抵擋一枚來襲飛彈），超出的飛彈使命中門檻逐枚 −1，多出 3 枚以上必中，且 2 枚以上超出時一次損失 2 步（飽和攻擊）。</li><li><b>水面艦艇：</b>共軍護航艦（紅色，最多 4 艘）在港口外海，可航行、貼近己方船團掩護（目標旁有護航艦時，守方反艦攻擊命中門檻 +1），也能砲擊海岸；守方艦艇群（藍色，停泊港口，最多 4 組）每階段有 1 發反艦飛彈，不能移動。兩者都只有 2 步、很容易被反艦飛彈或空襲擊沉；擊沉會連動減少海軍點數，海軍點數被海戰扣減時也會沉掉對應的艦艇。</li><li><b>堆疊：</b>每格最多 2 個友軍單位（飛彈單位也計入），不能與敵軍同格；同格時單位並排縮小顯示、被攻擊時防禦 −1（擁擠），空位的友軍格也會亮綠色（敵軍相鄰的陸地格不能再疊）。點選已選單位取消選取後，才能改選同一格的另一個單位；移入有友軍的格子，直接點那一格的友軍即可。攻擊後只有目標格已無敵軍才會推進占領。</li><li><b>布雷：</b>守方開戰前依年代預先在西岸灘頭（火山布雷車，14 套最新報導預計 2027 年交付）與近海（水雷）布雷，地圖上以黑色圓點標示；攻方部隊進入布雷格要擲骰，3 以下觸雷損失 1 步並清除該處布雷。攻方護航艦隊每回合開始掃雷（最多 1～2 處），掃雷艦有 1/6 觸雷損失。</li><li><b>共軍潛艦：</b>每回合守方階段，最多 3 艘共軍潛艦攻擊美日艦艇（航艦要擲 6）或守方海軍。美日、台灣的反潛兵力（護衛隊群、美軍潛艦、航艦、台灣海軍與潛艦）越多，潛艦越容易被擊沉；完全沒有反潛兵力時（例如台灣孤軍）命中門檻 −1，也不會被擊沉。</li><li><b>巡弋飛彈：</b>長劍、鷹擊等巡弋飛彈每回合最多 1～2 點，守方防空強（≥5）時少 1 點；東風-17 仍不受防空影響。</li></ul></details>
           <details class="rg"><summary>國際與集結</summary><ul><li><b>美軍立場：</b>美國有三種立場：<b>隱蔽支援</b>（傷亡過高後的退縮立場：提供情報、補給，反艦飛彈命中門檻 −1，第 2 回合起有不具名的潛艦行動）、<b>代理打擊</b>（開戰起的基本立場；轟炸機、潛艦以台灣、日本名義發射遠程飛彈，火力約四成半到六成，載人戰機與航艦撤出，中方不報復美軍）、<b>公開參戰</b>（全數投入）。非台灣孤軍、也不是「只提供情報」的情境下，開戰起美軍至少是代理打擊（台灣與美軍共用不少飛彈與魚雷，外觀、編號相同，很難分辨是誰發射），參戰程度決定會不會公開參戰。美軍累計傷亡達 6 步與 11 步時（美軍兵力共 14 步），每個守方階段擲骰（1d6≥4）決定是否降一級；美國本土（關島）遭攻擊會民意凝聚，擲骰 −2 並恢復一級。</li><li><b>美日參戰：</b>開局可選參戰情境：擲骰決定（預設）、只提供情報（美國只給情報與目標資料，不補給、不出兵、不公開參戰，日本中立，基地不能被打擊）、不介入（台灣孤軍，基地也不能被打擊）、開戰即全面介入（三國第 1 回合就參戰，航艦仍要 2 回合才抵達）。擲骰情境下，第 3 回合各國擲骰決定態度，第 5 回合未全面參戰的國家再擲一次，參戰程度只升不降。日本決定美軍能否從日本基地出擊。攻方可以用火力打擊戰區圖上的基地，但被打的國家會立即升級參戰。參戰部隊由電腦操作。</li><li><b>戰前集結：</b>公開全面集結兵力最多，但守方與盟國提早準備；戰略突襲兵力較少，但對方反應慢一拍。</li></ul></details>
@@ -1509,9 +1509,9 @@ function reach(u){
 }
 function targets(u){
   if(u.acted)return [];
-  if(u.type==='hmr'){ // 海馬士：打陸上目標。火箭（GMLRS）射程約 80 km＝4 格；陸軍戰術飛彈（ATACMS）約 300 km＝14 格，要動用長程飛彈存量
-    if(u.shots<=0)return [];const hu=hexOf(u),atc=(S.pools&&S.pools.rocMsl||0)>=1/ROCLR.per;
-    return S.units.filter(e=>e.side!==u.side&&!atSea(e)&&!isMsl(e)&&hexOf(e).isl!=='CN'&&(()=>{const d=rd(hu,hexOf(e));return d<=4||(atc&&d<=14);})());} // 大陸沿岸集結中的部隊不在目標內（那由長程對地打擊處理）
+  if(u.type==='hmr'){ // 海馬士：打陸上目標。火箭（GMLRS）射程約 80 km＝4 格；陸軍戰術飛彈（ATACMS）約 300 km＝14 格；各自有實際庫存（rocGml、rocAtc）
+    if(u.shots<=0||ssmReady(u)-(u.lu||0)<=0)return [];const hu=hexOf(u),P=S.pools||{},atc=(P.rocAtc||0)>=1,gml=(P.rocGml||0)>=1;if(!atc&&!gml)return [];
+    return S.units.filter(e=>e.side!==u.side&&!atSea(e)&&!isMsl(e)&&hexOf(e).isl!=='CN'&&(()=>{const d=rd(hu,hexOf(e));return d<=(atc?14:4);})());} // 大陸沿岸集結中的部隊不在目標內（那由長程對地打擊處理）
   if(u.type==='mlrs'){ // 雷霆2000：面積性火力，射程依彈種 15／30／45 km（每格約 20 km）＝最遠 2 格；打海灘上的部隊與靠岸的船團（反登陸），需有彈藥庫存
     if(u.shots<=0||(S.pools&&S.pools.rocRkt||0)<1)return [];const hu=hexOf(u);
     return S.units.filter(e=>e.side!==u.side&&!isMsl(e)&&hexOf(e).isl!=='CN'&&rd(hu,hexOf(e))<=2);}
@@ -1621,12 +1621,13 @@ function satHit(t){
   return Math.max(0,Math.min(3,t.inc-pd));
 }
 function fireHimars(m,t){
-  const d=rd(hexOf(m),hexOf(t)),atc=d>4,h=hexOf(t);
-  m.shots--;m.revealed=true; // 開火後暴露，下個守方階段前都是顯眼目標
-  if(atc&&S.pools)S.pools.rocMsl=Math.max(0,Math.round((S.pools.rocMsl-1/ROCLR.per)*100)/100); // ATACMS 1 發＝1 枚
-  const need=Math.min(6,(atc?5:4)+((h.t==='city'||h.t==='mtn')?1:0)),fr=lchFrac(m),hit=hitP(pNeed(need)*fr,'fireHimars');
+  const P=S.pools||{},d=rd(hexOf(m),hexOf(t)),atc=d>4||(P.rocGml||0)<1,h=hexOf(t),key=atc?'rocAtc':'rocGml'; // 沒有火箭彈時，近距離目標也只能用陸軍戰術飛彈
+  const n=Math.max(0,Math.min(HMR_PKG,ssmReady(m)-(m.lu||0),Math.floor(P[key]||0))); // 這次齊射的車數：受可射車數與庫存限制
+  m.shots--;m.lu=(m.lu||0)+n;m.revealed=true; // 開火後暴露，下個守方階段前都是顯眼目標
+  if(S.pools)S.pools[key]=Math.max(0,(S.pools[key]||0)-n); // 每輛 1 枚 ATACMS 或 1 個火箭莢艙（6 發）
+  const need=Math.min(6,(atc?5:4)+((h.t==='city'||h.t==='mtn')?1:0)),fr=n/HMR_PKG,hit=hitP(pNeed(need)*fr,'fireHimars'); // 不滿 4 輛時命中率依比例縮小
   fxq({t:'hmr',from:[m.c,m.r],to:[t.c,t.r],hit,atc});
-  log('海馬士'+(atc?'發射陸軍戰術飛彈':'發射火箭彈')+(fr<1?'（可射 '+ssmReady(m)+'／'+lchV0(m)+' 輛）':'')+(hit?'，命中 ':'，未命中 ')+hname(h)+' 的 '+TYPES[t.type].n+'（'+lastTxt()+'）');
+  log('海馬士 '+n+' 輛齊射 '+(atc?n+' 枚陸軍戰術飛彈':n+' 個火箭莢艙（'+n*6+' 發）')+'（庫存剩 '+Math.round(S.pools?S.pools[key]:0)+(atc?' 枚飛彈）':' 個莢艙）')+(hit?'，命中 ':'，未命中 ')+hname(h)+' 的 '+TYPES[t.type].n+'（'+lastTxt()+'）');
   if(hit)damage(t,1,'海馬士火箭砲');
   checkInstant();
 }
@@ -1646,12 +1647,18 @@ const SSM_N=2; // ★岸置發射車與艦艇每次發射 2 枚（雄風二、�
 //  ★完全摧毀 50%：永久損失；★火力殺傷 30%：2 回合（24 小時）不能射，之後修復；★機動殺傷 20%：沒法打完就跑，整個單位到下一個攻方階段結束都維持暴露
 // 分級用小數累計（不是擲骰）；地面戰鬥或先制打擊造成的「步」損失，每步＝4 輛完全摧毀
 // 海馬士與雷霆2000 也是機動發射車，套用同樣的分級毀傷：
-//  海馬士每單位車數＝該年代總數 ÷ 單位數：2026 年已交 11 套（3 組約 4 輛）、2027 年 29 套（約 10 輛）；★2028～2029 約 7 輛、2030～2031 約 14 輛、2032 年約 18 輛（規劃共 111 套）
+//  海馬士：[發射車, 棋子數, 陸軍戰術飛彈（枚）, GMLRS 火箭莢艙（個，每個 6 發）]，車數平均分給各棋子
+//   2026：首批 11 輛（2024 年 9 月到貨）、ATACMS 64 枚；第二批 18 輛＋ATACMS 20 枚＋GMLRS 864 發（144 莢艙）依 2026 年 11 月報導年底前才到貨（★有報導說 GMLRS 隨首批到貨，採最新報導）
+//   2027：共 29 輛、ATACMS 84 枚、144 莢艙（2022 年追加案）
+//   2025 年 12 月美國核准再售 82 輛、ATACMS 420 枚、GMLRS 1,203 莢艙（756 M31A2＋447 M30A2）；交付時程未公開，合約預計 2032 年完成：★假設 2029 年起每年平均交付 1／4
 //  雷霆2000：Oryx 2023 年清點陸軍有 43 輛，遊戲 4 組＝每組約 11 輛
 const SSM={veh:8,K:.5,F:.3,fix:2};
-const HMR_VEH={'2026':4,'2027':10,'2028':7,'2029':7,'2030':14,'2031':14,'2032':18},MLRS_VEH=11;
+const HMR_ERA={'2026':[11,3,64,0],'2027':[29,3,84,144],'2028':[29,3,84,144],'2029':[50,4,189,445],'2030':[70,5,294,746],'2031':[91,6,399,1046],'2032':[111,6,504,1347]},MLRS_VEH=11;
+const HMR_PKG=4; // ★一次射擊任務＝最多 4 輛（約一個排）齊射，每輛 1 個火箭莢艙（6 發）或 1 枚陸軍戰術飛彈；每階段的射擊次數＝可射車數 ÷ 4（無條件進位）
+const hmrEra=()=>HMR_ERA[S.era]||HMR_ERA['2026'];
+const splitN=(tot,n)=>Array.from({length:n},(_,i)=>Math.floor(tot/n)+(i<tot%n?1:0)); // 車數平均分配（餘數給前面的棋子）
 const isLch=u=>!!u&&(u.type==='ssm'||u.type==='hmr'||u.type==='mlrs');
-const lchVeh0=type=>type==='ssm'?SSM.veh:type==='hmr'?(HMR_VEH[S.era]||4):MLRS_VEH;
+const lchVeh0=type=>type==='ssm'?SSM.veh:type==='hmr'?Math.round(hmrEra()[0]/hmrEra()[1]):MLRS_VEH;
 const lchV0=u=>u.veh0||lchVeh0(u.type);
 const ssmVPS=u=>lchV0(u)/TYPES[u.type].hp;
 const ssmBroken=u=>(u.fk||[]).filter(t=>t>S.turn).length;
@@ -2202,13 +2209,20 @@ const ERA={
   '2031':{n:'2031（推估）',d:'NASAMS 合約預計 2031 年交付，防空明顯增強；海鯤潛艦增為 2 艘（計畫共 8 艘，進度不確定）。',short:'2031',pools:{plaLift:13,plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:10,rf:43,plaCM:7,plaLR:11,plaHS:6,rocAir:6,rocNavy:6,rocSub:2,rocAD:7,rocMsl:16,rocDrone:3,rocAS:20,rocMine:5},ssm:['taitung'],dfire:4},
   '2032':{n:'2032（推估）',d:'特別預算期程（2026～2033）接近尾聲，雙方都明顯成長；數值為推估，不確定性最高。',short:'2032',pools:{plaLift:14,plaAir:8,plaSub:6,plaCV:4,plaAD:8,plaNavy:11,rf:45,plaCM:7,plaLR:12,plaHS:7,rocAir:6,rocNavy:6,rocSub:2,rocAD:7,rocMsl:17,rocDrone:3,rocAS:22,rocMine:6},ssm:['taitung','yunlin'],dfire:4}
 };
-function previewEra(){const e=ERA[S.era]||ERA['2026'];S.p0=Object.assign({},POOL0,e.pools,{plaDrone:PLA_DRONE[S.era]||200});S.pools=Object.assign({},S.p0);S.dfireMax=e.dfire;}
+function previewEra(){const e=ERA[S.era]||ERA['2026'],H=HMR_ERA[S.era]||HMR_ERA['2026'];S.p0=Object.assign({},POOL0,e.pools,{plaDrone:PLA_DRONE[S.era]||200,rocAtc:H[2],rocGml:H[3]});
+  S.p0.rocMsl=Math.round((S.p0.rocMsl-Math.min(H[2],84)/25)*100)/100; // 陸軍戰術飛彈改由 rocAtc 單獨計算：從長程飛彈點數扣掉原本估在裡面的 ATACMS（2026 年 64 枚、之後 84 枚，1 點≈25 枚）
+  S.pools=Object.assign({},S.p0);S.dfireMax=e.dfire;}
 const MLRS_SPOTS=['miaoli','changhua','magong','taoyuan']; // 其中 1 組在澎湖（依漢聲電台等報導，澎防部有雷霆2000） // 雷霆2000：公開資料只說陸軍有裝備、沒有確切數量；4 組、彈藥庫存 8 點為遊戲推估（各年代相同）
-const HMR_SPOTS=['ckk','gangshan','hsinchuab','yunlin','pingtungc','chihhang'],HMR_N={'2026':3,'2027':3,'2028':4,'2029':4,'2030':5,'2031':5,'2032':6}; // 台灣 HIMARS：2024 起交付 11 套、2026 年底前再 18 套；之後依特別預算增加（推估）
+const HMR_SPOTS=['ckk','gangshan','hsinchuab','yunlin','pingtungc','chihhang'],HMR_N=Object.fromEntries(Object.entries(HMR_ERA).map(([k,v])=>[k,v[1]])); // 棋子數見 HMR_ERA（★1 組約一個營，2029 年起隨後續 82 輛增加）
+function hmrSpread(tot){ // 把 tot 輛發射車平均分給現有海馬士棋子
+  const us=S.units.filter(u=>u.side==='def'&&u.type==='hmr'&&alive(u));if(!us.length)return;
+  splitN(Math.max(us.length,tot),us.length).forEach((v,i)=>{us[i].veh0=v;us[i].veh=v;});
+}
 function applyEra(){
   previewEra();const e=ERA[S.era]||ERA['2026'];
   {const sp=HMR_SPOTS.slice(0,HMR_N[S.era]||3);if((+S.era||2026)>=2027)sp[sp.length-1]='penghu'; // 國防部 2026 年 5 月證實規劃把海馬士前推到澎湖、東引；★2027 年起從既有數量調 1 組到澎湖
-   sp.forEach(k=>{k=SPOT[k];if(!k||!TER[k])return;const h=!unitAt(k)?TER[k]:placeNear(k,x=>x.isl===TER[k].isl&&isLand(x)&&x.t!=='mtn'&&!unitAt(x.k));if(h)S.units.push(mkUnit('def','hmr',h.k,{}));});}
+   sp.forEach(k=>{k=SPOT[k];if(!k||!TER[k])return;const h=!unitAt(k)?TER[k]:placeNear(k,x=>x.isl===TER[k].isl&&isLand(x)&&x.t!=='mtn'&&!unitAt(x.k));if(h)S.units.push(mkUnit('def','hmr',h.k,{}));});
+   hmrSpread(hmrEra()[0]);}
   MLRS_SPOTS.forEach(k=>{k=SPOT[k];if(!k||!TER[k])return;const h=placeNear(k,x=>x.isl===TER[k].isl&&x.t!=='sea'&&x.t!=='air'&&x.t!=='port'&&!unitAt(x.k))||placeNear(SPOT.tainan,x=>x.isl==='TW'&&x.t!=='sea'&&x.t!=='air'&&x.t!=='port'&&!unitAt(x.k));if(h)S.units.push(mkUnit('def','mlrs',h.k,{}));}); // 駐地格已有步兵時，放在最近的空格
   e.ssm.forEach(k=>{k=SPOT[k]||k;if(TER[k]&&!unitAt(k))S.units.push(mkUnit('def','ssm',k,{}));});
   log('兵力年代：'+e.n+'。');log(applyLift()+'。');
@@ -2270,7 +2284,7 @@ function sweepMines(){
   for(let i=0;i<sw;i++){const k=ks[i];delete S.mines[k];got.push(hname(TER[k]));if(hitP(1/6,'sweepMines')){P.plaNavy--;got.push('掃雷艦觸雷（攻方護航艦 −1）');}}
   syncMines();log('攻方掃雷：清除 '+got.join('、')+'。');
 }
-const POOLN={plaDrone:'舊戰機改裝無人機（誘餌，每個攻方階段放出 40 架消耗守方攔截彈）',rocRkt:'雷霆2000火箭彈庫存（每發 1 點）',plaLst:'兩棲艦群（運旅、可搶灘；往返制，沉了就永久損失）',plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程對地飛彈（雄二E、ATACMS 等；1 點≈25 枚）',rocDrone:'無人機與巡飛彈'};
+const POOLN={plaDrone:'舊戰機改裝無人機（誘餌，每個攻方階段放出 40 架消耗守方攔截彈）',rocRkt:'雷霆2000火箭彈庫存（每發 1 點）',plaLst:'兩棲艦群（運旅、可搶灘；往返制，沉了就永久損失）',plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程對地飛彈（雄二E 等；1 點≈25 枚）',rocAtc:'陸軍戰術飛彈（ATACMS，海馬士用；每點 1 枚）',rocGml:'GMLRS 精準火箭彈（海馬士用；每點 1 個莢艙＝6 發）',rocDrone:'無人機與巡飛彈'};
 const CN={US:'美國',JP:'日本'};
 const LV={US:['不介入','情報支援','有限介入','全面參戰'],JP:['中立','後方支援','全面參戰']};
 
@@ -3020,7 +3034,7 @@ function aiBaseStrikes(){
 
 /* ---------- strikes on mainland bases, retaliation ---------- */
 // ── 縱深打擊：改用實際枚數，規則與攻方火力打擊台灣對稱 ──
-// ★推估（台灣未公開庫存）：1 點長程飛彈≈25 枚（2026 年 10 點≈250 枚＝雄二E 約 190＋ATACMS 64 的量級）；
+// ★推估（台灣未公開庫存）：1 點長程飛彈≈25 枚（2026 年 10 點≈250 枚＝雄二E 約 190＋ATACMS 64 的量級；ATACMS 現在另計在 rocAtc，previewEra 會從這裡扣掉）；
 //  每包 4 枚（同攻方短程彈道飛彈包）；每個守方階段可發射量受發射車限制：24／32／40 枚（依年代 dfire 2／3／4）；
 //  共軍防空（紅旗-9、紅旗-16 等）：每枚來襲以 2 枚攔截，★單枚攔截率 0.4（低空次音速巡弋飛彈利用雷達地平線），依攻方防空存量縮放；
 //  通過攔截後命中率依目標硬度（見 CNHARD；機場 33% 同攻方打台灣機場）；命中＝基地受損一級，攻方每 2 回合修復一級（同台灣機場）。
@@ -3029,7 +3043,7 @@ const ROCLR={per:25,pk:4,launch:{2:24,3:32,4:40},ipk:.4,ipn:2};
 const lrPackets=()=>Math.min(Math.floor((ROCLR.launch[S.dfireMax||2]||24)/ROCLR.pk),Math.floor((S.pools.rocMsl||0)*ROCLR.per/ROCLR.pk+1e-9));
 function cnIntercept(n,eng){const k=Math.min(1,(S.pools.plaAD||0)/6),pk=ROCLR.ipk*k,kill=1-Math.pow(1-pk,ROCLR.ipn),e=eng||1,surv=n*Math.pow(1-kill,e);return {surv,I:pk>0?Math.round(n*ROCLR.ipn*Math.min(e,1.5)):0};}
 // ── 命中率依目標而不同（★推估）──
-// 距離：從台灣發射，300 km 內只過沿岸一層防空；更深的目標要多穿過防空網，每多 300 km 再多半層接戰（江西、安徽的火箭軍駐地約 500～900 km）；ATACMS 只到 300 km，更遠只有雄二E 打得到（存量共用，不另計）
+// 距離：從台灣發射，300 km 內只過沿岸一層防空；更深的目標要多穿過防空網，每多 300 km 再多半層接戰（江西、安徽的火箭軍駐地約 500～900 km）；ATACMS 改由海馬士單獨計算庫存、只打島上戰場，縱深打擊只用雄二E
 // 硬度（突破後命中並造成損傷的機率）：火箭軍駐地有加固掩體與坑道 25%；機場、軍港 33%（同攻方打台灣機場）；指揮中心（地下化）20%；雷達與電子偵察站 40%；碼頭邊的船與集結中的車輛（軟目標、密集）45%
 const CNHARD={rf:.25,air:.33,navy:.33,stg:.45,isrHQ:.2,isrRad:.4};
 const TWLL=[120.7,24.3];
@@ -3072,7 +3086,7 @@ function stgFound(u){const key=S.turn+S.phase;if(u.sgT!==key){u.sgT=key;let p=ST
   u.sgL=f.join('、');u.sgN=takeInt(p*Math.max(0,u.hp),'sgloc');}return u.sgN;}
 const stgTargets=()=>stgUnits().filter(u=>stgFound(u)>0);
 function strikeStage(u,by){ // 縱深打擊集結中的部隊或船隻：同一套規則（每包 4 枚、先過共軍防空、命中 33%），要先被找到
-  const hn=x=>{const n=hname(x);return /^大陸 /.test(n)?'大陸沿岸':n;},P=S.pools,sc=by==='roc'?ROCLR.pk/ROCLR.per:1,proxy=by==='US'&&usIdx()<2,who={roc:'台灣長程飛彈（雄二E、ATACMS 等）',US:proxy?'美軍（代理打擊）':'美軍',JP:'自衛隊'}[by],h=hexOf(u);
+  const hn=x=>{const n=hname(x);return /^大陸 /.test(n)?'大陸沿岸':n;},P=S.pools,sc=by==='roc'?ROCLR.pk/ROCLR.per:1,proxy=by==='US'&&usIdx()<2,who={roc:'台灣長程飛彈（雄二E）',US:proxy?'美軍（代理打擊）':'美軍',JP:'自衛隊'}[by],h=hexOf(u);
   if(by==='roc')P.rocMsl=Math.max(0,Math.round((P.rocMsl-sc)*100)/100);
   S.retal+=((by==='roc'||proxy)?.25:.5)*sc;S.cost.civ.CN+=Math.round(60*sc);S.cost.dmg.CN+=.3*sc;S.stats.cn.strikes++;
   const HP=cnHitP({u}),IC=HP.IC,hit=stgFound(u)>0&&hitP(HP.p,'strikeStage');
@@ -3086,7 +3100,7 @@ function strikeStage(u,by){ // 縱深打擊集結中的部隊或船隻：同一�
 }
 function strikeCN(id,by){
   if(typeof id==='string'&&id[0]==='u'){const u=S.units.find(x=>'u'+x.id===id);if(u)strikeStage(u,by);return;}
-  const proxy=by==='US'&&usIdx()<2,B=CNB[id],P=S.pools,need=cnNeed(id),who={roc:'台灣長程飛彈（雄二E、ATACMS 等）',US:proxy?'美軍（代理打擊）':'美軍',JP:'自衛隊'}[by];
+  const proxy=by==='US'&&usIdx()<2,B=CNB[id],P=S.pools,need=cnNeed(id),who={roc:'台灣長程飛彈（雄二E）',US:proxy?'美軍（代理打擊）':'美軍',JP:'自衛隊'}[by];
   const sc=by==='roc'?ROCLR.pk/ROCLR.per:1; // 台灣：一包 4 枚＝0.16 點；美日仍是抽象點數
   if(by==='roc')P.rocMsl=Math.max(0,Math.round((P.rocMsl-sc)*100)/100);
   S.retal+=((by==='roc'||proxy)?.25:.5)*sc;
@@ -3224,11 +3238,13 @@ function applyMonth(){
 function applyWhatIf(){
   const v=id=>$(id)&&$(id).value==='1',m=S.mods,P=S.pools,out=[],tag=[];
   const addDD=n=>{const cs=[[119.9,24.6],[120.1,24.0],[119.9,23.3],[120.2,25.0],[120.0,22.7]].map(([lo,la])=>{const [c,r]=llToRC(lo,la);return TER[K(c,r)];}).filter(h=>h&&h.t==='sea');let k=0;for(const h of cs){if(k>=n||S.units.filter(u=>u.type==='dd').length>=10)break;if(unitsAt(h.k).length<STACK_MAX){S.units.push(mkUnit('atk','dd',h.k,{}));k++;}}};
-  const addHmr=()=>{const k=SPOT[HMR_SPOTS[HMR_N[S.era]||3]];if(k&&TER[k]&&!unitAt(k))S.units.push(mkUnit('def','hmr',k,{}));};
   if(v('#optWiShip')){P.plaNavy+=2;P.plaCV=Math.min(4,P.plaCV+1);P.plaLst+=2;P.plaLift+=2;S.p0.plaLst=P.plaLst;S.p0.plaLift=P.plaLift;addDD(2);tag.push('砸鍋賣鐵加速造艦');out.push('護航艦隊 +2、航艦 +1、兩棲艦群 +2、滾裝船團 +2');}
   if(v('#optWiLift')){P.plaLst=99;P.plaLift=99;S.roReserve=0;S.p0.plaLst=99;S.p0.plaLift=99;tag.push('海運運力無限');out.push('登陸艦與運輸船不再限制增援（舊版假設）');}
   if(v('#optWiWx')){m.wx=[1,0,0];m.wxT1='good';tag.push('海象永遠適合登陸');out.push('天候固定良好');}
-  if(v('#optWiDArms')){pAdd('rocAS',3);pAdd('rocMsl',2);pAdd('rocAD',1);addHmr();tag.push('軍購準時到貨');out.push('守方反艦飛彈 +3、長程飛彈 +2、防空 +1、海馬士 +1');}
+  if(v('#optWiDArms')){pAdd('rocAS',3);pAdd('rocAD',1);let hx;
+    if(String(S.era)==='2026'){hmrSpread(S.units.filter(u=>u.side==='def'&&u.type==='hmr'&&alive(u)).reduce((a,u)=>a+u.veh0,0)+18);pAdd('rocAtc',20);pAdd('rocGml',144);S.p0.rocAtc+=20;S.p0.rocGml+=144;hx='海馬士第二批 18 輛、陸軍戰術飛彈 20 枚、火箭莢艙 144 個提前到貨';} // 2026 年底前預定到貨的第二批
+    else{pAdd('rocMsl',2);hx='長程飛彈 +2';} // 2027 年起海馬士已依交付期程計入，不另加
+    tag.push('軍購準時到貨');out.push('守方反艦飛彈 +3、防空 +1、'+hx);}
   if(v('#optWiLocal')){pAdd('rocSub',1);pAdd('rocMsl',3);const pref=[SPOT.hualien,SPOT.kaohsiung],ports=Object.values(TER).filter(h=>h.isl==='TW'&&h.t==='port'&&S.owner[h.k]==='def').map(h=>h.k).sort((x,y)=>((pref.indexOf(x)+1)||9)-((pref.indexOf(y)+1)||9));for(const k of ports){if(unitsAt(k).length<STACK_MAX+1){S.units.push(mkUnit('def','hk',k,{tp:hkTp(),hm:HK_HM}));break;}}tag.push('國造武器提前量產');out.push('海鯤潛艦 +1、長程飛彈 +3');}
   if(v('#optWiAllies')){const cs=S.fx.units.find(f=>f.id==='csg');if(cs)cs.delay=0;tag.push('美日提前介入');out.push('美軍航艦打擊群提前到位');}
   S.sandbox=tag;if(tag.length)log('【假設情境】'+tag.join('、')+'：'+out.join('；')+'。');
@@ -3767,7 +3783,7 @@ function renderTheater(){
       Object.entries(CNB).map(([id,B])=>'<div class="fu cnrow'+(S.cnSel===id?' hl':'')+(dStrikeOn&&cnTargets().includes(id)?' tgt':'')+'" data-cnrow="'+id+'"><div><b>'+KIND_S[B.kind]+' '+B.n+'</b> <span class="dd">'+KIND_N[B.kind]+'</span></div><div class="fst"><span class="pips">'+
         Array.from({length:B.hp},(_,i)=>'<i class="'+(i<cnShown(id)?'f':'')+'"></i>').join('')+'</span><span class="st'+(cnShown(id)>0?'':' off')+'">'+(cnShown(id)>0?'運作中':'已癱瘓')+'</span></div></div>').join(''))+
     (S.air?'<div class="dd" style="margin:4px 0">戰機實際架數：共軍東部戰區 '+S.air.PLA+' 架（推估）、共軍航艦艦載機 '+cvFighters()+' 架、台灣 '+S.air.TW+' 架、美航艦艦載機 '+S.air.usF.map((n,i)=>(i?'第 '+(i+1)+' 支 ':'')+n).join('、')+' 架（各支航艦到場後才參戰）。空軍點數＝有效架次 ÷ '+AIR.K+'。</div>':'')+
-    dt('def',true,'<b>守方</b>',['rocAir','rocNavy','rocSub','rocAD','rocAS','rocMsl','rocRkt','rocDrone','rocMine'].filter(k=>S.p0[k]>0||S.pools[k]>0).map(k=>bar(k,'def')).join(''));
+    dt('def',true,'<b>守方</b>',['rocAir','rocNavy','rocSub','rocAD','rocAS','rocMsl','rocAtc','rocGml','rocRkt','rocDrone','rocMine'].filter(k=>S.p0[k]>0||S.pools[k]>0).map(k=>bar(k,'def')).join(''));
   ['US','JP'].forEach(c=>{
     const lv=S.fx.lv[c],pst=c==='US'&&usIdx()>=0;
     let inner=pst?'<div class="fu dd">'+pd(usIdx())+'。美軍'+casN(usCas())+(S.us.drop?'（已因傷亡退縮）':'')+'</div>':'';
@@ -4679,7 +4695,7 @@ function antiCarrier(){
 async function beginPhase(side){
   S.phase=side;S.sel=null;S.mode=null;
   GHOSTS.clear();S.units.forEach(u=>{u.inc=0;if(side==='def')u.revealed=!!(u.mT&&S.turn<u.mT);});
-  for(const u of S.units)if(u.side===side){u.moved=false;u.acted=false;if(u.type==='hk'){if(hexOf(u).t==='port'){u.tp=hkTp();u.hm=HK_HM;}u.shots=hkSpent(u)?0:1;}if(isEsc(u))u.shots=1;if(u.type==='mlrs'&&u.rl>0)u.rl--;if(isMsl(u))u.shots=(u.type==='ssm'&&S.pools&&S.pools.rocAS<=0)?0:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):u.type==='mlrs'?(u.rl>0?0:1):(u.type==='ff'||u.type==='hmr')?1:2;}
+  for(const u of S.units)if(u.side===side){u.moved=false;u.acted=false;if(u.type==='hk'){if(hexOf(u).t==='port'){u.tp=hkTp();u.hm=HK_HM;}u.shots=hkSpent(u)?0:1;}if(isEsc(u))u.shots=1;if(u.type==='mlrs'&&u.rl>0)u.rl--;if(isMsl(u))u.shots=(u.type==='ssm'&&S.pools&&S.pools.rocAS<=0)?0:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):u.type==='mlrs'?(u.rl>0?0:1):u.type==='hmr'?(u.lu=0,Math.ceil(ssmReady(u)/HMR_PKG)):u.type==='ff'?1:2;}
   for(const u of S.units)if(u.side===side&&(u.type==='hmr'||u.type==='mlrs')&&u.veh!=null&&ssmReady(u)<=0)u.shots=0; // 車都不能射了
   if(side==='atk')S.turnStart={snap:snap(),lv:Object.assign({},S.fx.lv),owner:Object.assign({},S.owner)};
   if(window.TSL_RUMBLE&&humanTurn())TSL_RUMBLE('turn'); // 輪到自己操作時短震一下
@@ -5093,7 +5109,7 @@ async function aiDef(){
     }
     while(alive(m)&&m.shots>0&&!S.over){
       let ts=targets(m);if(MS==='save')ts=ts.filter(t=>HV.includes(t.type));if(!ts.length)break;
-      if(m.type==='hmr'||m.type==='mlrs'){const w={arm:4,tank:4,amph:4,mar:4,abn:3,inf:2,res:2};ts.sort((a,b)=>(w[b.type]||1)-(w[a.type]||1)||a.hp-b.hp);}
+      if(m.type==='hmr'||m.type==='mlrs'){const w={arm:4,tank:4,amph:4,mar:4,abn:3,inf:2,res:2};const far=x=>m.type==='hmr'&&rd(hexOf(m),hexOf(x))>4?1:0;ts.sort((a,b)=>(w[b.type]||1)-(w[a.type]||1)||far(a)-far(b)||a.hp-b.hp);} // 同樣價值時先打近的（用火箭彈，省下陸軍戰術飛彈）
       else ts.sort((a,b)=>tgtVal(b)-tgtVal(a)||a.hp-b.hp);
       if(MS==='salvo'){if(!(salvoT&&alive(salvoT)&&ts.includes(salvoT)))salvoT=ts[0];else ts=[salvoT];}
       fireMissile(m,ts[0]);vol++;
@@ -6114,7 +6130,7 @@ function renderCtrl(){
   else if(S.sim)hint=S.busy?'電腦推演中：'+SIDE[S.phase]+'正在行動…':'推演暫停，等待事件節點的決定。';
   else if(!h)hint=SIDE[S.phase]+'（電腦）正在行動…';
   else if(S.mode==='strike')hint=S.phase==='atk'?'點選任一守方單位、台灣的機場，或地圖上的美日基地進行火力打擊，每次消耗 1 點。':'點選地圖上的大陸基地（紅色圖形），或直接點右側「中方基地」清單的一列，進行長程打擊，每次消耗 1 發長程飛彈。';
-  else if(S.sel&&S.sel.type==='hmr'&&S.phase==='def'){const n=targets(S.sel).length;hint='海馬士只能打陸上目標：4 格內用火箭彈，14 格內動用長程飛彈存量（陸軍戰術飛彈）；每階段發射 1 次，發射後可再移動。'+(n?'橘圈＝目前射程內可打擊的 '+n+' 個目標，點選目標發射。':'目前射程內沒有陸上目標（海上船團要靠反艦飛彈）。');}
+  else if(S.sel&&S.sel.type==='hmr'&&S.phase==='def'){const n=targets(S.sel).length;hint='海馬士只能打陸上目標：4 格內用火箭彈，14 格內用陸軍戰術飛彈（各有庫存）；每次最多 4 輛齊射，每階段次數依可射車數，發射後可再移動。'+(n?'橘圈＝目前射程內可打擊的 '+n+' 個目標，點選目標發射。':'目前射程內沒有陸上目標（海上船團要靠反艦飛彈）。');}
   else if(S.sel)hint='綠色＝可移動，橘色＝可登陸，紫色＝可空降；橘圈＝可攻擊目標。再點一次單位可取消選取。';
   else hint=S.phase==='atk'?'點選紅色單位下令。先把兩棲部隊從沿岸出航，下一回合搶灘。':'點選藍色單位下令。飛彈單位可射擊 4 格內海上的攻方船團。'+defLedger();
   $('#hint').textContent=hint;$('#fsHint').textContent=hint;
@@ -6141,7 +6157,7 @@ function unitStatusList(u,h){ // 單位狀態說明（資訊卡與滑鼠提示�
   if(u.fl){const A=fleetAgg(u);st.push('組成：'+fleetTxt(u)+'；防空飛彈 '+u.mag.ad+' 枚（涵蓋 '+A.adR+' 格）、反艦飛彈 '+u.mag.asm+' 枚（射程 '+A.asmR+' 格，每艘每次齊射 '+FLEET_PER+' 枚）');}
   if(isEsc(u)&&u.mag){const W=SHIPW[u.type];st.push('防空飛彈 '+u.mag.ad+' 枚（涵蓋 '+W.adR+' 格）、'+W.asmN+' '+u.mag.asm+' 枚（射程 '+W.asmR+' 格）'+(W.lam?'、對地飛彈 '+u.mag.lam+' 枚':'')+'；海上不能補充垂直發射管；跟著航艦移動');}
   if(u.type==='mlrs')st.push('雷霆2000：射程最遠 2 格（約 45 km），面積火力、命中比海馬士低；彈藥庫存剩 '+(S.pools?S.pools.rocRkt:0)+' 點；開火後下一階段要再裝填'+(u.rl>0?'（再裝填中，本階段不能開火）':'')+'，本階段剩 '+(u.side===S.phase?u.shots:1)+' 發');
-  if(u.type==='hmr')st.push('本階段剩 '+(u.side===S.phase?u.shots:1)+' 發：火箭彈射程 4 格，陸軍戰術飛彈射程 14 格（動用長程飛彈存量）');
+  if(u.type==='hmr')st.push('本階段剩 '+(u.side===S.phase?u.shots:Math.ceil(ssmReady(u)/HMR_PKG))+' 次齊射（每次最多 4 輛）：火箭彈射程 4 格，庫存 '+Math.round(S.pools?S.pools.rocGml||0:0)+' 個莢艙；陸軍戰術飛彈射程 14 格，庫存 '+Math.round(S.pools?S.pools.rocAtc||0:0)+' 枚飛彈');
   else if(u.type==='ssn')st.push('隱蔽：開火暴露、被護航艦發現才現身，無法被火力打擊；魚雷 '+u.tp+'、魚叉 '+u.hm+'、戰斧 '+u.mag.lam+' 枚（★推估），每回合移動最多 '+SPD.subMax+' 格'+(u.grp?'，跟著航艦行動':''));
   else if(u.type==='nme'||u.type==='mdt')st.push('部署在日本領土，只能被基地打擊；'+(u.type==='nme'?'海軍打擊飛彈 '+u.mag.asm+' 枚（射程 '+NME.R+' 格）':'戰斧 '+u.mag.lam+' 枚、標準六型 '+u.mag.asm+' 枚（射程 '+MDT.R+' 格）')+'（★推估）');
   else if(u.type==='hk')st.push((subInPort(u)?'停在母港補給中：位置固定，可被飛彈與空襲打擊。':'在海上：一般看不見也打不到。')+'重型魚雷 '+(u.tp||0)+' / '+hkTp()+' 齊射（射程 3 格）、魚叉飛彈 '+(u.hm||0)+' / '+HK_HM+' 枚（射程 6 格）；射擊後暴露，可能遭反潛攻擊；回母港才能補彈');
@@ -6870,7 +6886,7 @@ const UDOC={
   res:{real:'動員後備旅（後備軍人動員編成）',role:'戰爭爆發後依動員節奏逐梯次補入的預備部隊。',rules:['攻防較低、編制戰力小（每步綜合戰力約裝甲旅的四分之一），但數量能補強守備','動員被延遲或減半時，後備旅會晚到或變少']},
   ssm:{real:'雄風二／雄風三型、魚叉岸防飛彈機動發射車',role:'守方打擊船團的主力，是攻方火力打擊的首要目標。',rules:['機動隱蔽：未暴露時，火力打擊多半只打到誘餌與空車','開火後暴露；打完會轉移陣地重新隱蔽','每單位約 8 輛發射車（推估），每階段最多 2 發、每發 2 枚，可射的車少了發數跟著減少；射程約 8 格（約 160 km），耗用「反艦飛彈」存量','被精準打擊命中時只影響 1 輛，分成完全摧毀、火力受損（2 回合後修復）、機動受損（維持暴露）']},
   mlrs:{real:'雷霆2000（RT-2000）多管火箭系統（陸軍）',role:'守方陸軍遠程火力：反登陸與區域火力打擊，面積性火力。',rules:['射程依彈種 15／30／45 km（每格約 20 km，遊戲取最遠 2 格）；防護低、機動高','無導引面積火力，命中比海馬士低、打船更難；打海灘上的部隊與靠岸船團','彈藥有限（庫存點數）；開火後暴露，下一階段要再裝填，所以隔一個階段才能再打']},
-  hmr:{real:'M142 海馬士（HIMARS）高機動火箭砲系統',role:'守方長程精準火力：火箭彈打近處，陸軍戰術飛彈打遠處。',rules:['火箭彈射程 4 格；陸軍戰術飛彈（ATACMS）射程 14 格，會動用長程飛彈存量','每階段發數有限；打完就轉移，重新隱蔽']},
+  hmr:{real:'M142 海馬士（HIMARS）高機動火箭砲系統',role:'守方長程精準火力：火箭彈打近處，陸軍戰術飛彈打遠處。',rules:['火箭彈射程 4 格；陸軍戰術飛彈（ATACMS）射程 14 格；兩種彈藥各有實際庫存，打完就沒有','每次最多 4 輛齊射，每階段次數依可射車數；打完就轉移，重新隱蔽']},
   dd:{real:'解放軍海軍 052D／055 型等驅逐艦、護衛艦',role:'為登陸船團護航，提供防空與反潛。',rules:['護航艦在附近時，守方反艦飛彈較難命中船團','被擊沉會減少「護航艦隊」點數','AI 會貼近己方船團，或朝登陸區靠攏']},
   cv:{real:'解放軍海軍遼寧、山東、福建艦航艦戰鬥群',role:'提供艦載機制空與打擊。',rules:['被反艦攻擊重創會減少「航艦」點數','AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海']},
   ff:{real:'中華民國海軍巡防艦、沱江級飛彈快艇等',role:'守方水面艦艇，牽制攻方船團。',rules:['平時停在港口（只有港口能停靠）','出港後保持在飛彈射程外圍牽制，避開護航艦','每階段 1 發，射程 4 格；被擊沉會減少「守方海軍」點數']}
@@ -7400,7 +7416,7 @@ const SETUP_PAGES=[
   {sel:'optWiLift',grp:'atk',q:'海運運力無限（舊版外掛）',opts:{'0':['關閉',''],'1':['開啟','登陸艦與運輸船多到不必往返，增援旅不用等船。這是舊版的假設，並不符合實際運力；結算頁會標明本局用了這個假設。']}},
   {sel:'optWiShip',grp:'atk',q:'加速造艦',opts:{'0':['關閉',''],'1':['開啟','護航艦隊 +2、航艦 +1（上限 4）、兩棲艦群 +2、滾裝船團 +2。代價：軍費壓力大。屬推估。']}},
   {sel:'optWiWx',grp:'atk',q:'海象永遠適合登陸（純假設）',opts:{'0':['關閉',''],'1':['開啟','開戰後天候固定良好。不符實際氣候，只供體驗。']}},
-  {sel:'optWiDArms',grp:'def',q:'軍購準時到貨',opts:{'0':['關閉',''],'1':['開啟','美製武器如期交付：守方反艦飛彈 +3、長程飛彈 +2、防空 +1、海馬士 +1。']}},
+  {sel:'optWiDArms',grp:'def',q:'軍購準時到貨',opts:{'0':['關閉',''],'1':['開啟','美製武器如期交付：守方反艦飛彈 +3、防空 +1；2026 年海馬士第二批（18 輛、陸軍戰術飛彈 20 枚、火箭彈 864 發）開戰前到貨，其他年代長程飛彈 +2。']}},
   {sel:'optWiLocal',grp:'def',q:'國造武器提前量產',opts:{'0':['關閉',''],'1':['開啟','海鯤潛艦 +1、長程飛彈 +3。依官方量產計畫的樂觀假設，屬推估。']}},
   {sel:'optWiAllies',grp:'def',q:'美日提前介入',opts:{'0':['關閉',''],'1':['開啟','美軍航艦打擊群提前到位。']}}]},
  {t:'守方戰前準備',s:'守備',d:'開戰前守方的備戰、預警反應與兵力部署，都在這裡先決定，開戰後不再彈窗。選「電腦決定」就由電腦隨機挑一項（不含🔥）。每項都標明好處與代價。',fields:EVENTS.filter(e=>e.setup).map(e=>({sel:e.setup,q:e.title,when:()=>$('#optMode').value!=='play'||$('#optSide').value!=='atk',opts:Object.fromEntries([['auto',['電腦決定','由電腦隨機挑一項。']]].concat(e.choice.options.map(o=>[o.id,[o.label,o.desc]])))}))},
