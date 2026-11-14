@@ -453,10 +453,17 @@ function basePx(){
 function baseTagsSVG(){
   let o='';const used=new Set();
   for(const h of airfields()){
-    const occ=k=>used.has(k)||S.units.some(u=>K(u.c,u.r)===k&&!subHidden(u)&&!(u.ship&&atSea(u)));
-    const r1=nbrs(h.c,h.r).filter(Boolean),r2=[];for(const n of r1)for(const m of nbrs(n.c,n.r))if(m&&m.k!==h.k&&!r1.includes(m)&&!r2.includes(m))r2.push(m);
-    const cand=[...r1.map(x=>[x,1]),...r2.map(x=>[x,2])].filter(([x])=>!occ(x.k)&&!(x.t==='air'));
-    cand.sort((a,b)=>(a[0].t==='sea'?0:2)+a[1]-((b[0].t==='sea'?0:2)+b[1])||a[0].r-b[0].r||a[0].c-b[0].c);
+    const fs0=8.5*Math.max(.72,SC),tw=((h.name||'機場').replace(/(基地|機場)$/,'').length+1.6)*fs0+8,th=fs0+7;
+    const unitOn=k=>S.units.some(u=>K(u.c,u.r)===k&&!subHidden(u)&&!(u.ship&&atSea(u)));
+    const seen=new Set([h.k]);let q=[h],cand=[];
+    for(let d=1;d<=6&&q.length;d++){const nx=[];for(const a of q)for(const n of nbrs(a.c,a.r)){if(!n||seen.has(n.k))continue;seen.add(n.k);nx.push(n);
+        if(n.t!=='sea'||used.has(n.k)||unitOn(n.k))continue; // 只放海上、不和單位或其他標籤重疊（海上有單位時自動換位）
+        const nb=nbrs(n.c,n.r).filter(Boolean),landN=nb.filter(m=>isLand(m)).length,busy=nb.filter(m=>unitOn(m.k)||used.has(m.k)).length;
+        const [cx,cy]=cen(n.c,n.r),near=[...nb];for(const m of nb)for(const z of nbrs(m.c,m.r))if(z&&!near.includes(z))near.push(z);
+        const side=near.filter(m=>{if(!isLand(m))return false;const [mx,my]=cen(m.c,m.r);return Math.abs(mx-cx)<tw/2+R*.75&&Math.abs(my-cy)<th/2+R*.75;}).length; // 標籤比一格寬：用實際的長方形範圍檢查會不會壓到陸地
+        cand.push([n,d+landN*.5+side*3+busy*.8]);} // 標籤比一格寬：旁邊是陸地或有單位的格子扣分，盡量放在開闊海面
+      q=nx;}
+    cand.sort((a,b)=>a[1]-b[1]||a[0].r-b[0].r||a[0].c-b[0].c);
     const t=cand.length?cand[0][0]:h;used.add(t.k);
     const [x0,y0]=cen(h.c,h.r),[x,y]=cen(t.c,t.r),fs=8.5*Math.max(.72,SC),nm=(h.name||'機場').replace(/(基地|機場)$/,''),w=(nm.length+1.6)*fs+8,hh=fs+7,own=S.owner[h.k]==='atk';
     if(t!==h)o+='<line class="btl'+(own?' lost':'')+'" x1="'+x0.toFixed(1)+'" y1="'+y0.toFixed(1)+'" x2="'+x.toFixed(1)+'" y2="'+y.toFixed(1)+'"/>';
