@@ -10,11 +10,31 @@
 const AFS={pk:4,share:{def:.6,mid:.4,atk:.2},loss:.02,lossCN:.04,
   wc:{n:'萬劍彈',km:300,pool:'rocWC'},slam:{n:'SLAM-ER',km:370,pool:'rocSlam'}};
 const AFS_POOL=era=>({rocAAsh:60,rocWC:100,rocSlam:(+era||2026)>=2027?135:0});
-const afUsable=()=>airfields().filter(h=>S.owner[h.k]!=='atk'&&afLevel(h.k)<3);
+// ---- 以基地為單位：依空軍聯隊的公開駐地分配戰機（同機種在兩個基地的分法未公開，★對半）----
+//  新竹 第 2 聯隊 幻象 2000 約 52；清泉崗 第 3 聯隊、台南 第 1 聯隊 經國號 約 129（各半）；嘉義 第 4 聯隊、花蓮（佳山）第 5 聯隊 F-16V 約 140（各半）；
+//  志航 第 7 聯隊：F-16 Block 70 66 架 2028 年起進駐（2026 年 10 月首批 2 架抵達）。桃園機場（民用）、岡山（官校、教練機）、屏東（預警機、運輸機）沒有戰鬥機
+const AF_WING={hsinchuab:['第 2 聯隊','幻象 2000',52],ckk:['第 3 聯隊','經國號',65],tainanab:['第 1 聯隊','經國號',64],chiayiab:['第 4 聯隊','F-16V',70],chiashan:['第 5 聯隊','F-16V',70],chihhang:['第 7 聯隊','F-16 Block 70',0]};
+function afInitBases(){ // 開局：各基地的戰機（權重＝架數，總和＝S.air.TW）
+  const w={};for(const [id,[,,n]] of Object.entries(AF_WING)){const k=SPOT[id];if(k)w[k]=n;}
+  const k7=SPOT.chihhang;if(k7)w[k7]=Math.max(0,(S.air.TW0||S.air.TW)-Object.values(w).reduce((a,x)=>a+x,0)); // 2028 年起多出的 F-16 Block 70
+  S.air.bw=w;
+}
+const afWing=k=>{const id=Object.keys(AF_WING).find(x=>SPOT[x]===k);return id?AF_WING[id]:null;};
+function afBaseCounts(){ // 各基地現有戰機（依權重分配目前總數；空戰損失按比例，地面與占領損失只扣該基地）
+  const w=(S.air&&S.air.bw)||{},s=Object.values(w).reduce((a,x)=>a+x,0)||1,o={};for(const k in w)o[k]=S.air.TW*w[k]/s;return o;}
+const afBaseN=k=>Math.floor((afBaseCounts()[k]||0)+1e-9);
+function airLoseAt(k,n,src){ // 指定基地的損失（地面被炸、基地被占領）
+  if(!S.air||!S.air.bw)return airLose('def',n,src);airSync();const c=afBaseCounts(),d=Math.min(Math.round(n),Math.floor((c[k]||0)+1e-9));if(d<=0)return 0;
+  c[k]-=d;const r=airLose('def',d,src);S.air.bw=c;return r;}
+function afBaseLost(k){ // 基地被占領：★約四分之一來不及撤離，其餘轉場到其他還能用的基地
+  if(!S.air||!S.air.bw)return 0;const c=afBaseCounts(),n=c[k]||0;if(n<=0)return 0;const lost=airLoseAt(k,n*.25,'ground'),c2=afBaseCounts(),rest=c2[k]||0;
+  const to=Object.keys(c2).filter(x=>x!==k&&S.owner[x]!=='atk'&&afLevel(x)<3),tot=to.reduce((a,x)=>a+c2[x],0);
+  if(to.length){to.forEach(x=>{c2[x]+=rest*(tot>0?c2[x]/tot:1/to.length);});c2[k]=0;S.air.bw=c2;}return lost;}
+const afUsable=()=>airfields().filter(h=>S.owner[h.k]!=='atk'&&afLevel(h.k)<3&&afBaseN(h.k)>0);
 function afBudget(k){ // 本階段這座機場可出擊的打擊包數（每階段只算一次）
   S.afB=S.afB||{};const key=S.turn+S.phase;let b=S.afB[k];
   if(!b||b.t!==key){const L=afUsable();let n=0;
-    if(S.air&&S.pools&&S.pools.rocAir>0&&L.some(x=>x.k===k)){const ac=S.air.TW*(1-caveF())/L.length;n=takeInt(sortiesOf(ac*AFCAP[afLevel(k)],AIR.TWrate)*(AFS.share[S.airCtl||'mid']||.4)/AFS.pk,'afB:'+k);}
+    if(S.air&&S.pools&&S.pools.rocAir>0&&L.some(x=>x.k===k)){const ac=afBaseN(k)*(1-caveF());n=takeInt(sortiesOf(ac*AFCAP[afLevel(k)],AIR.TWrate)*(AFS.share[S.airCtl||'mid']||.4)/AFS.pk,'afB:'+k);}
     b=S.afB[k]={t:key,n};}
   return b.n;
 }
@@ -70,8 +90,9 @@ function afAuto(){
 // 機場資訊面板：守方玩家可在守方階段指定目標
 function afPanelHTML(k){
   const h=TER[k];if(!h||h.t!=='air'||h.isl!=='TW'||!S.started||S.over)return '';
-  const P=S.pools||{},n=afUsable().some(x=>x.k===k)?afBudget(k):0;
-  let o='<div class="hint">守方空軍（這座機場）：本階段可出擊 '+n+' 個打擊包（每包 4 架）；空射反艦飛彈 '+Math.round(P.rocAAsh||0)+' 枚、萬劍彈 '+Math.round(P.rocWC||0)+' 枚'+((P.rocSlam||0)>0?'、SLAM-ER '+Math.round(P.rocSlam)+' 枚':'')+'。沒用完的份額在階段結束時由電腦自動出擊。</div>';
+  const P=S.pools||{},W=afWing(k),ac=afBaseN(k),lv=afLevel(k),n=afUsable().some(x=>x.k===k)?afBudget(k):0;
+  if(!ac)return '<div class="hint">'+(W?W[0]+'：目前沒有戰機（'+(S.owner[k]==='atk'?'基地已被占領':'戰機已損失或轉場')+'）':'沒有戰鬥機進駐，不能從這裡出擊')+'。</div>';
+  let o='<div class="hint"><b>'+(TER[k].name||'基地')+'</b>（'+(W?W[0]+'・'+W[1]:'')+'）：戰機約 '+ac+' 架'+(lv>=3?'，跑道癱瘓，無法起飛':lv?'，跑道受損（起降 '+Math.round(AFCAP[lv]*100)+'%）':'')+(caveF()>0?'（約 '+Math.round(caveF()*100)+'% 躲在山洞機堡）':'')+'；本階段可出擊 '+n+' 個打擊包（每包 4 架）；空射反艦飛彈 '+Math.round(P.rocAAsh||0)+' 枚、萬劍彈 '+Math.round(P.rocWC||0)+' 枚'+((P.rocSlam||0)>0?'、SLAM-ER '+Math.round(P.rocSlam)+' 枚':'')+'。沒用完的份額在階段結束時由電腦自動出擊。</div>';
   if(humanTurn()&&S.phase==='def'&&S.ctrl.def==='human'&&n>0)o+='<div class="cvord"><button class="ghost" id="btnAfS">攻擊船團<small class="pn">（空射反艦飛彈）</small></button><button class="ghost" id="btnAfL">空襲島上目標<small class="pn">（精準炸彈）</small></button><button class="ghost" id="btnAfC">打擊大陸沿岸<small class="pn">（萬劍彈、SLAM-ER）</small></button></div><div class="hint">按下後點地圖上的目標（大陸沿岸：集結中的部隊或大陸基地）。</div>';
   setTimeout(()=>{[['btnAfS','afS'],['btnAfL','afL'],['btnAfC','afC']].forEach(([id,m])=>{const b=document.getElementById(id);if(b)b.onclick=()=>{S.afK=k;S.sel=null;S.mode=S.mode===m?null:m;render();};});},0);
   return o;
