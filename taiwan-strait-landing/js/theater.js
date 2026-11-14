@@ -284,7 +284,7 @@ function strikeFac(id){
 function facSVG(){
   if(!S.started)return '';const strikeOn=humanTurn()&&S.phase==='atk'&&S.mode==='strike';let o='';
   for(const id in FAC){const h=facHex(id);if(!h)continue;const [x,y]=center(h.c,h.r),up=facUp(id),col=up?'var(--def,#2b5a8f)':'#888';
-    o+='<g class="fac" data-fac="'+id+'" style="cursor:pointer"><circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="9" fill="var(--panel,#fff)" stroke="'+col+'" stroke-width="2"'+(strikeOn&&up?' class="ring strike"':'')+'/>'+
+    const fs=Math.max(.55,SC);o+='<g class="fac" data-fac="'+id+'" style="cursor:pointer" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+fs.toFixed(2)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')"><circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="9" fill="var(--panel,#fff)" stroke="'+col+'" stroke-width="2"'+(strikeOn&&up?' class="ring strike"':'')+'/>'+
       '<path d="M'+(x-5).toFixed(1)+' '+(y+4).toFixed(1)+'A7 7 0 0 1 '+(x+4).toFixed(1)+' '+(y-5).toFixed(1)+'M'+(x-2).toFixed(1)+' '+(y+1).toFixed(1)+'L'+(x+3).toFixed(1)+' '+(y-3).toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round"/>'+
       (up?'':'<path d="M'+(x-7)+' '+(y-7)+'L'+(x+7)+' '+(y+7)+'" stroke="#c0392b" stroke-width="2.5"/>')+
       '<text x="'+x.toFixed(1)+'" y="'+(y+16).toFixed(1)+'" text-anchor="middle" font-size="6.5" font-weight="600" fill="'+col+'" stroke="var(--panel,#fff)" stroke-width="2" paint-order="stroke" pointer-events="none">'+FAC[id].n+'</text></g>';} // 字小一點、不擋棋子；失效只看紅色斜線

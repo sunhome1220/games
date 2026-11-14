@@ -5,8 +5,11 @@ function hexPts(x,y,rr){let p=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-
 const humanTurn=()=>S.started&&!S.over&&!S.busy&&S.ctrl[S.phase]==='human';
 /* ---------- 3D map: static terrain layer + dynamic layer + effects ---------- */
 const DEPTH={plain:3,city:4,port:2.5,air:2.5,mtn:7,main:2.5};
-const US=Math.max(R,16*.72)/26*1.18; // 單位圖示縮放：跟著格子縮，但格子比 20 km 細時保留原尺寸的 72%（太小點不到；會略大於一格）
-const elev=h=>isLand(h)?(DEPTH[h.t]||4):0;
+const SC=R/16; // 格子相對 20 km 格的大小（10 km＝0.5）：地形細節、圖示、字級跟著縮
+const US_BIG=Math.max(R,16*.72)/26*1.18,US_SMALL=R/26*1.18; // 棋子：放大時保留原尺寸 72%（好點選）；縮小（地圖縮放 <160%）時縮到一格大、只留兵種符號
+const usForZoom=z=>FG>2&&z<1.6?US_SMALL:US_BIG;
+let US=usForZoom(1); // 開局縮放 100%
+const elev=h=>isLand(h)?(DEPTH[h.t]||4)*SC:0;
 function cen(c,r){const [x,y]=center(c,r);return [x,y-elev(TER[K(c,r)])];}
 // ---------- 第 3d 階段：射程圈與艦隊資訊面板（只顯示，不影響規則）----------
 // 射程圈依直線距離畫成圓形（與「打不打得到」的 rd 判定一致：格子中心在圓內就打得到；圓多畫半格，涵蓋整個格子）
@@ -80,11 +83,13 @@ function peak(px,py,w,h){
     '<polygon class="pkR" points="'+[px,py-h,px+w*.12,py+w*.16,px+w/2,py].join(',')+'"/>'+
     '<polygon class="pkS" points="'+[px,py-h,px-w*.14,py-h+h*.28,px+w*.02,py-h+h*.2,px+w*.13,py-h+h*.3].join(',')+'"/>';
 }
-function tileDetail(h,x,y){const o=tileDetail0(h,x,y);return o?'<g transform="translate('+x+' '+y+') scale(.6) translate('+(-x)+' '+(-y)+')">'+o+'</g>':'';}
+function tileDetail(h,x,y){const o=tileDetail0(h,x,y);return o?'<g transform="translate('+x+' '+y+') scale('+(.6*SC).toFixed(3)+') translate('+(-x)+' '+(-y)+')">'+o+'</g>':'';}
 function tileDetail0(h,x,y){
   const tt=h.t==='main'&&h.vt?h.vt:h.t;
+  if(FG>2&&h.vt&&(tt==='mtn'||tt==='hill')&&((h.c+h.r)&1))return ''; // 細格時大陸山地與丘陵隔格才畫，避免過密
   if(tt==='hill')return peak(x-3,y+9,20,12)+peak(x+9,y+10,13,8);
   if(tt==='city')return bldg(x-9,y+7,8,11)+bldg(x+2,y+8,9,16)+bldg(x+11,y+5,7,9);
+  if(tt==='mtn'&&h.elev!=null)return h.elev>=2000&&((h.c+h.r)&1)===0?peak(x,y+9,20,17):''; // 台澎：顏色表示高度，只在 2,000 公尺以上隔格畫一座小山
   if(tt==='mtn')return peak(x-6,y+8,24,22)+peak(x+9,y+10,17,14);
   if(h.t==='port')return '<rect class="pier" x="'+(x-3)+'" y="'+(y+3)+'" width="6" height="14" rx="1"/><rect class="cont c1" x="'+(x-12)+'" y="'+(y+2)+'" width="8" height="5"/><rect class="cont c2" x="'+(x+5)+'" y="'+(y+6)+'" width="8" height="5"/><path class="crane" d="M'+(x+9)+' '+(y+4)+'V'+(y-10)+'H'+(x-2)+'"/>';
   if(h.t==='air')return '<polygon class="rwy" points="'+[x-15,y+2,x+13,y-4,x+15,y,x-13,y+6].join(',')+'"/><path class="rwl" d="M'+(x-11)+' '+(y+3)+'L'+(x+11)+' '+(y-2)+'"/>';
@@ -258,7 +263,7 @@ function buildFar(){
     if(h.t==='sea'){const [slon,slat]=rcToLL(h.c,h.r),dd=dist.get(K(h.c,h.r)),sc=seaClass(slon,slat,dd);(seaD[sc]=seaD[sc]||[]).push('M'+hexPts(h.x,h.y,RF).replace(/ /g,'L')+'Z');
       if(!LITE&&sc!=='d1'&&(h.c+h.r)%2===0)fineSvg+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0"/>';}
     else{const nm=clickOf[K(h.c,h.r)];fineSvg+='<polygon class="tl-far'+(nm?' fclick':'')+'" fill="url(#gt-'+VTKEY(h.vt,h.t==='main')+')" stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'"'+(nm?' data-far="'+nm+'"':'')+'/>';
-      if(h.vt==='mtn'||h.vt==='city'||(!LITE&&h.vt==='hill'&&((h.c*7+h.r*13)&3)!==0))fineSvg+='<g pointer-events="none" opacity=".9">'+tileDetail({t:h.vt},h.x,h.y)+'</g>';}
+      if(h.vt==='mtn'||h.vt==='city'||(!LITE&&h.vt==='hill'&&((h.c*7+h.r*13)&3)!==0))fineSvg+='<g pointer-events="none" opacity=".9">'+tileDetail({t:h.vt,vt:h.vt,c:h.c,r:h.r},h.x,h.y)+'</g>';}
   }
   fineSvg=Object.entries(seaD).map(([c,d])=>'<path class="tl-sea '+c+'" d="'+d.join('')+'"/>').join('')+fineSvg;
   const bg='<rect x="'+(-oMX0*KS-10)+'" y="'+(-oMY0*KS-10)+'" width="'+((OVBW+oMX0+oMX1)*KS+20).toFixed(0)+'" height="'+((OVBH+oMY0+oMY1)*KS+20).toFixed(0)+'" fill="url(#gSea)"/>';
@@ -302,8 +307,9 @@ function buildFar(){
   $('#gX').innerHTML=bg+fineSvg+'<g transform="scale('+KS+')">'+o+'</g>';
   $('#gE').innerHTML='<g transform="scale('+KS+')">'+oS+'</g>';
 }
+const nearCity=h=>Object.values(TER).some(x=>x!==h&&x.name&&(x.t==='city'||x.t==='port')&&hd(x,h)<=Math.round(kmH(25)));
 function buildStatic(){
-  const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+tileGrad('gt-plain2','land2','#d3d0a8')+tileGrad('gt-plain3','land3','#dfd5b3')+tileGrad('gt-hill','hill','#c9bd92')+tileGrad('gt-main2','main2','#c3c6b6')+tileGrad('gt-main3','main3','#cec8b8')+tileGrad('gt-mainhill','mainhill','#b9b3a1')+tileGrad('gt-mainmtn','mainmtn','#a39d8c')+tileGrad('gt-maincity','maincity','#d4cfc2')+
+  const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+tileGrad('gt-plain2','land2','#d3d0a8')+tileGrad('gt-plain3','land3','#dfd5b3')+tileGrad('gt-hill','hill','#c9bd92')+tileGrad('gt-main2','main2','#c3c6b6')+tileGrad('gt-main3','main3','#cec8b8')+tileGrad('gt-mainhill','mainhill','#b9b3a1')+tileGrad('gt-mainmtn','mainmtn','#a39d8c')+tileGrad('gt-maincity','maincity','#d4cfc2')+['#a9c98b','#c3cc8f','#c9bd86','#b3a374','#998b62','#7f7552','#686344'].map((c,i)=>tileGrad('gt-e'+i,'e'+i,c)).join('')+tileGrad('gt-tcity','tcity','#b8b6ae')+
     '<linearGradient id="gu-atk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d4574d" style="stop-color:color-mix(in srgb,var(--atk) 72%,#fff)"/><stop offset="1" stop-color="#a02a24" style="stop-color:color-mix(in srgb,var(--atk) 90%,#000)"/></linearGradient>'+
     '<linearGradient id="gu-def" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a82c8" style="stop-color:color-mix(in srgb,var(--def) 72%,#fff)"/><stop offset="1" stop-color="#18457d" style="stop-color:color-mix(in srgb,var(--def) 90%,#000)"/></linearGradient>'+
 '<linearGradient id="gu-atk-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--atk) 84%,#000)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--atk) 52%,#000)"/></linearGradient>'+'<linearGradient id="gu-def-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--def) 84%,#000)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--def) 52%,#000)"/></linearGradient>'+'<linearGradient id="gu-atk-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--atk) 38%,#fff)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--atk) 62%,#fff)"/></linearGradient>'+'<linearGradient id="gu-def-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--def) 38%,#fff)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--def) 62%,#fff)"/></linearGradient>'+
@@ -324,7 +330,7 @@ function buildStatic(){
   for(const h of land){const [x,y]=center(h.c,h.r),d=elev(h);o+='<polygon class="tl-sh" points="'+ptsStr(hexV(x+3,y+d+4,R))+'"/>';}
   for(const h of land){
     const [x,y0]=center(h.c,h.r),d=elev(h),y=y0-d,v=hexV(x,y,R),b=v.map(p=>[p[0],p[1]+d]);
-    const key=h.isl==='CN'||h.t==='main'?VTKEY(h.vt,true):(h.t==='city'?'city':h.t==='mtn'?'mtn':'plain');
+    const key=h.isl==='CN'||h.t==='main'?VTKEY(h.vt,true):h.elev!=null?(h.t==='city'?'tcity':'e'+Math.min(6,Math.floor(h.elev/500))):(h.t==='city'?'city':h.t==='mtn'?'mtn':'plain'); // 台澎：依海拔每 500 公尺分色（地形圖配色），城市灰色
     o+='<g class="tile t-'+key+'">';
     [[3,4,'l'],[2,3,'l'],[1,2,'r'],[0,1,'r']].forEach(([i,j,s])=>{o+='<polygon class="sd '+s+'" points="'+ptsStr([v[i],v[j],b[j],b[i]])+'"/>';});
     o+='<polygon class="tt" fill="url(#gt-'+key+')" points="'+ptsStr(v)+'" data-k="'+h.k+'"/>';
@@ -332,13 +338,14 @@ function buildStatic(){
     if(h.cliff)o+='<polygon class="cliff" points="'+hexPts(x,y,R-3)+'"/>';
     if(h.mud)o+='<polygon class="mud" points="'+hexPts(x,y,R-3)+'"/>';
     o+=tileDetail(h,x,y);
-    if(h.name&&(h.t!=='plain'||h.isl==='JP'||['宜蘭','恆春','澎湖'].includes(h.name))){const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':'')+'" x="'+x+'" y="'+(y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';}
+    if(h.name&&(h.t!=='plain'||h.isl==='JP'||['宜蘭','恆春','澎湖'].includes(h.name))&&!(h.t==='air'&&nearCity(h))){const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':' minor')+'" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x+'" y="'+(FG>2?y-R*1.2:y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';} // 機場旁 25 km 內已有城市或港口名就不重複標（點機場仍看得到名稱）；縮小時只顯示勝負要點
     o+='</g>';
   }
   o+='<text class="big" font-size="15" x="'+cc(6,3)[0]+'" y="'+cc(6,3)[1]+'" writing-mode="tb">台灣海峽</text>';
   o+='<text class="big" font-size="13" x="'+cc(15,7)[0]+'" y="'+cc(15,7)[1]+'" writing-mode="tb">太平洋</text>';
   o+='<text class="big" font-size="12" x="'+cc(1,1)[0]+'" y="'+cc(1,1)[1]+'" writing-mode="tb">大陸沿海</text>';
   $('#gS').innerHTML=o;
+  $('#map').classList.toggle('zlo',FG>2&&(typeof ZOOM==='undefined'?1:ZOOM)<1.6);
   const svg=$('#map');svg.setAttribute('viewBox',(-MX0)+' '+(-MY0)+' '+EVBW.toFixed(1)+' '+EVBH.toFixed(1));
   STATIC.fleets=FLEETS.map(F=>{const a=center(F.from[0],F.from[1]),b=center(F.to[0],F.to[1]);return [b[0]-a[0],b[1]-a[1]];});
   STATIC.built=true;
@@ -374,9 +381,9 @@ function unitSVG(u){
   else if(u.type==='abn')sym=box+X+'<path class="sym" d="M'+(x-5)+' '+(by+bh)+'Q'+x+' '+(by+4)+' '+(x+5)+' '+(by+bh)+'"/>';
   else if(u.type==='amph'||u.type==='mar')sym=box+X+'<path class="sym" d="M'+(bx+1)+' '+(by+bh-1.5)+'q2.5 -2 5 0t5 0t5 0"/>';
   else sym=box+X;
-  let pips='';const lv=isLch(u)&&u.veh!=null&&!u.ghostFleet,n=u.mhp>6||lv?0:(u.mhp||T.hp);if(lv)pips='<text x="'+x+'" y="'+(y+20.5)+'" text-anchor="middle" font-size="7" font-weight="800" fill="'+(ssmReady(u)<lchV0(u)?'#c0392b':'var(--ink)')+'">'+ssmReady(u)+'/'+lchV0(u)+' 車</text>';else if(u.mhp>6)pips='<text x="'+x+'" y="'+(y+20.5)+'" text-anchor="middle" font-size="7" font-weight="800" fill="var(--ink)">'+u.hp+'/'+u.mhp+' 艘</text>';for(let i=0;i<n;i++){const px=x-(n-1)*3.5+i*7;pips+='<circle class="pip '+(i<u.hp?'full':'lost')+'" cx="'+px+'" cy="'+(y+17.5)+'" r="2"/>';}
+  let pips='';const lv=isLch(u)&&u.veh!=null&&!u.ghostFleet,n=u.mhp>6||lv?0:(u.mhp||T.hp);if(lv&&(ssmReady(u)<lchV0(u)||sel))pips='<text x="'+x+'" y="'+(y+20.5)+'" text-anchor="middle" font-size="7" font-weight="800" fill="'+(ssmReady(u)<lchV0(u)?'#c0392b':'var(--ink)')+'">'+ssmReady(u)+'/'+lchV0(u)+' 車</text>';else if(u.mhp>6)pips='<text x="'+x+'" y="'+(y+20.5)+'" text-anchor="middle" font-size="7" font-weight="800" fill="var(--ink)">'+u.hp+'/'+u.mhp+' 艘</text>';for(let i=0;i<n;i++){const px=x-(n-1)*3.5+i*7;pips+='<circle class="pip '+(i<u.hp?'full':'lost')+'" cx="'+px+'" cy="'+(y+17.5)+'" r="2"/>';}
   const sea=atSea(u);
-  const wake=sea?'<ellipse class="wk" cx="'+x+'" cy="'+(y+12)+'" rx="14" ry="4"/><ellipse class="wk w2" cx="'+x+'" cy="'+(y+12)+'" rx="14" ry="4"/>':'';
+  const wf=US/(16/26*1.18),wake=sea?'<ellipse class="wk" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/><ellipse class="wk w2" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':'';
   return '<g class="u'+(sel?' sel':'')+(done?' done':'')+'" data-k="'+K(u.c,u.r)+'" data-id="'+u.id+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+wake+
     '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')">'+'<ellipse class="ush" cx="'+x+'" cy="'+(y+11)+'" rx="16" ry="5"/>'+
     '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
@@ -453,9 +460,9 @@ function renderMap(){
   o+=wxMapSVG();
   o+=ghostFleetsSVG();
   o+=baseMarkersSVG();
-  for(const k of Object.keys(MINOR_PORTS)){const h=TER[k];if(!h)continue;const [x,y]=cen(h.c,h.r);o+='<text class="mport" x="'+(x+R*.7).toFixed(1)+'" y="'+(y-R*.35).toFixed(1)+'">⚓</text>';} // 次要港口標記畫在單位之上
+  for(const k of Object.keys(MINOR_PORTS)){const h=TER[k];if(!h)continue;const [x,y]=cen(h.c,h.r);o+='<text class="mport" style="font-size:'+(14*Math.max(.55,SC)).toFixed(1)+'px" x="'+(x+R*.7).toFixed(1)+'" y="'+(y-R*.35).toFixed(1)+'">⚓</text>';} // 次要港口標記畫在單位之上
   Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<g class="mine" pointer-events="none"><circle cx="'+x.toFixed(1)+'" cy="'+(y+8).toFixed(1)+'" r="4.5" fill="#222" stroke="#ffd45a" stroke-width="1.2"/><path d="M'+(x-7).toFixed(1)+' '+(y+8).toFixed(1)+'h14M'+x.toFixed(1)+' '+(y+1).toFixed(1)+'v14" stroke="#ffd45a" stroke-width="1"/></g>';});
-  airfields().forEach(h=>{const lv=afLevel(h.k);if(!lv)return;const [x,y]=cen(h.c,h.r);o+='<text class="fxt af'+lv+'" pointer-events="none" x="'+(x+10).toFixed(1)+'" y="'+(y-6).toFixed(1)+'" text-anchor="middle" font-size="'+(lv===3?15:12)+'" fill="'+(lv===3?'#c0392b':lv===2?'#e67e22':'#e0a800')+'">'+(lv===3?'✕':'⚠')+'</text>';});
+  airfields().forEach(h=>{const lv=afLevel(h.k);if(!lv)return;const [x,y]=cen(h.c,h.r);o+='<text class="fxt af'+lv+'" pointer-events="none" x="'+(x+R*.65).toFixed(1)+'" y="'+(y-R*.4).toFixed(1)+'" text-anchor="middle" style="font-size:'+((lv===3?15:12)*Math.max(.55,SC)).toFixed(1)+'px;stroke-width:'+(3*Math.max(.55,SC)).toFixed(1)+'px" fill="'+(lv===3?'#c0392b':lv===2?'#e67e22':'#e0a800')+'">'+(lv===3?'✕':'⚠')+'</text>';});
   Object.keys(S.portDown||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<text class="fxt dead" pointer-events="none" x="'+x.toFixed(1)+'" y="'+(y+4).toFixed(1)+'" text-anchor="middle" font-size="18" fill="#c0392b">✕</text>';});
   (S.focus||[]).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<ellipse class="vfocus" cx="'+x.toFixed(1)+'" cy="'+(y+4).toFixed(1)+'" rx="17" ry="12"/>';});
   if(humanTurn()){

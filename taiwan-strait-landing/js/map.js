@@ -164,7 +164,11 @@ const SPOT={};
     if(lon<119.9||lon>122.2||lat<21.8||lat>25.4)continue;
     if(cover(h,[GEO_TW])>=.5){h.t='plain';h.isl='TW';h.lon=lon;h.lat=lat;tw.push(h);} // 一半以上是陸地才算陸地格（Natural Earth 1:10m 海岸線）
   }
-  for(const h of tw)if(cover(h,MTN)>=.5)h.t='mtn';
+  // 海拔：SRTM 高程網格（js/dem.js）在 7 個取樣點的平均；山地＝平均海拔 1,000 公尺以上（★門檻），沒有高程資料時退回手繪輪廓
+  const DEMA=typeof DEM!=='undefined'?Uint8Array.from(atob(DEM.b),ch=>ch.charCodeAt(0)):null;
+  const demAt=(lon,lat)=>{const i=Math.floor((lon-DEM.lon0)/DEM.d),j=Math.floor((DEM.lat1-lat)/DEM.d);return i<0||j<0||i>=DEM.w||j>=DEM.h?0:DEMA[j*DEM.w+i]*20;};
+  const hexElev=h=>{const [lon,lat]=rcToLL(h.c,h.r);let s=0;for(const [dx,dy] of SMP)s+=demAt(lon+dx*GEO.dlon,lat+dy*GEO.dlat*1.15);return Math.round(s/SMP.length);};
+  for(const h of tw){if(DEMA){h.elev=hexElev(h);if(h.elev>=1000)h.t='mtn';}else if(cover(h,MTN)>=.5)h.t='mtn';}
   // 海岸旗標：東岸斷崖、西岸泥灘
   const coastal=h=>nbrs(h.c,h.r).some(n=>n.t==='sea');
   for(const h of tw){
@@ -209,7 +213,7 @@ const SPOT={};
   // 澎湖：馬公本島（2 格）與白沙（1 格，與本島隔海）；沒有駐軍的小島（望安、七美、西嶼等）不畫出
   // 澎湖：依真實島嶼輪廓（Natural Earth），碰到島嶼的格都算澎湖的陸地（群島總面積約 127 平方公里，比一格小，★取「有碰到」以免整個群島只剩一格）
   const phs=Object.values(TER).filter(h=>{if(h.t!=='sea')return false;const [lon,lat]=rcToLL(h.c,h.r);return lon>119.1&&lon<120.0&&lat>23.0&&lat<24.0&&cover(h,GEO_PH)>0;});
-  phs.forEach(h=>{h.t='plain';h.isl='PH';});
+  phs.forEach(h=>{h.t='plain';h.isl='PH';if(DEMA)h.elev=hexElev(h);});
   if(phs.length){
     const nearPH=(lon,lat,ex)=>phs.filter(h=>!ex||!ex.includes(h)).sort((a,b)=>{const p=rcToLL(a.c,a.r),q=rcToLL(b.c,b.r);return Math.hypot((p[0]-lon)/GEO.dlon,(p[1]-lat)/GEO.dlat)-Math.hypot((q[0]-lon)/GEO.dlon,(q[1]-lat)/GEO.dlat);})[0];
     const mg=nearPH(119.57,23.57);mg.t='port';mg.name='馬公';SPOT.magong=mg.k;
