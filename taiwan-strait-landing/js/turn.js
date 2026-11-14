@@ -522,6 +522,7 @@ function antiCarrier(){
   log('反航母打擊：發射 '+n+' 枚反艦彈道飛彈，定位成功 '+loc+' 枚、護航艦發射 '+I0+' 枚攔截彈，命中 '+h+' 枚（定位 '+Math.round(pLoc*100)+'%：上一回合移動 '+moved+' 格；攔截以齊射模型計算；皆為推估）');
 }
 async function beginPhase(side){
+  if(typeof MISSION!=='undefined'&&MISSION&&MISSION.phase(side))return; // 關卡挑戰：限時到了就結束
   S.phase=side;S.sel=null;S.mode=null;
   GHOSTS.clear();S.units.forEach(u=>{u.inc=0;u.dropHide=0;if(side==='def')u.revealed=!!(u.mT&&S.turn<u.mT);});
   for(const u of S.units)if(u.side===side){u.moved=false;u.acted=false;if(u.type==='hk'){if(hexOf(u).t==='port'){u.tp=hkTp(u);u.hm=HK_HM;}u.shots=hkSpent(u)?0:1;}if(isEsc(u))u.shots=1;if(u.type==='mlrs'&&u.rl>0)u.rl--;if(isMsl(u))u.shots=(u.type==='ssm'&&S.pools&&S.pools.rocAS<=0)?0:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):u.type==='mlrs'?(u.rl>0?0:1):u.type==='hmr'?(u.lu=0,Math.ceil(ssmReady(u)/HMR_PKG)):u.type==='ff'?1:2;}

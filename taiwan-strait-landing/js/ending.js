@@ -176,6 +176,7 @@ function settleControl(){
   if(back.length)log('結算：攻方已無兵力控制的地區歸還守方（'+back.slice(0,8).join('、')+(back.length>8?' 等 '+back.length+' 處':'')+'）');
 }
 function endGame(early,side,label){
+  if(typeof MISSION!=='undefined'&&MISSION){if(MISSION.done)return;S.over=true;S.sel=null;S.mode=null;MISSION.onEnd(early,side,label);return;} // 關卡挑戰：用關卡自己的結算
   if(window.TSL_RUMBLE)TSL_RUMBLE('end');
   S.over=true;S.sel=null;S.mode=null;
   settleControl();
