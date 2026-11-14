@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the i18n dictionary embedded in index.html (<script id="tsl-dict">).
+"""Build the i18n dictionary js/dict.js (loaded by index.html before the other scripts).
 Inputs: segs.json (source Chinese segments, indexed), c*.tsv (idx<TAB>en<TAB>ja), extras.tsv (key<TAB>en<TAB>ja).
 (Write ∅ in the ja column for a deliberately empty Japanese text.)
 The ja column may be left empty (or omitted): the Japanese UI then shows the English text instead of Chinese, and the key is listed in ja_todo.txt for a later batch translation.
@@ -8,7 +8,10 @@ Usage: python3 build_dict.py   (needs: pip install opencc-python-reimplemented)"
 import json, glob, os, re, sys
 import opencc
 here = os.path.dirname(os.path.abspath(__file__))
-page = os.path.join(here, '..', '..', 'index.html')
+root = os.path.join(here, '..', '..')
+out = os.path.join(root, 'js', 'dict.js')
+# 簡體字表要涵蓋頁面與所有程式檔裡出現的字（含現有的 dict.js，與單檔時期掃整份 index.html 的範圍相同）
+pages = [os.path.join(root, 'index.html')] + sorted(glob.glob(os.path.join(root, 'js', '*.js')))
 segs = json.load(open(os.path.join(here, 'segs.json'), encoding='utf-8'))
 OVR = {811: (' ×10k', ' 万'), 812: ('', '人'), 813: ('', '人')}
 def clean(k):
@@ -44,7 +47,7 @@ open(os.path.join(here, 'ja_todo.txt'), 'w', encoding='utf-8').write(''.join(k +
 print('ja fallback to English:', len(todo), '(see ja_todo.txt)')
 cc = opencc.OpenCC('t2s'); cp = opencc.OpenCC('tw2sp')
 allc = set()
-for sg in list(en.keys()) + [open(page, encoding='utf-8').read()]:
+for sg in list(en.keys()) + [open(p, encoding='utf-8').read() for p in pages]:
     allc.update(c for c in sg if '㐀' <= c <= '鿿')
 frm, to = [], []
 for c in sorted(allc):
@@ -59,9 +62,5 @@ d = {'en': en, 'ja': ja}
 body = ('window.TSL_DICT=' + json.dumps(d, ensure_ascii=False, separators=(',', ':')) +
         ';window.TSL_CN=' + json.dumps(''.join(frm), ensure_ascii=False) + ';window.TSL_CNS=' + json.dumps(''.join(to), ensure_ascii=False) +
         ';window.TSL_CNP=' + json.dumps(phr, ensure_ascii=False, separators=(',', ':')) + ';').replace('</', '<\\/')
-blob = '<script id="tsl-dict">' + body + '</script>'
-s = open(page, encoding='utf-8').read()
-s2, n = re.subn(r'<script id="tsl-dict">.*?</script>', lambda m: blob, s, count=1, flags=re.S)
-assert n == 1
-open(page, 'w', encoding='utf-8').write(s2)
-print('keys', len(en), 'cn chars', len(frm), 'phrases', len(phr), 'bytes', len(blob))
+open(out, 'w', encoding='utf-8').write(body + '\n')
+print('keys', len(en), 'cn chars', len(frm), 'phrases', len(phr), 'bytes', len(body))
