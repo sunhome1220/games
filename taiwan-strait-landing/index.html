@@ -142,7 +142,8 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .mtn-g{stroke:var(--mtn-ink);fill:none;stroke-width:1.2;pointer-events:none}
 .lbl{font-size:8.5px;fill:var(--ink);text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:500}
 .lbl.obj{fill:var(--accent);font-weight:700}
-#map.zlo .lbl.minor,#map.zlo .u .tx,#map.zlo .u .pip{display:none} /* 縮小時：只留勝負要點地名；棋子只留兵種符號 */
+#map.zlo .lbl.minor,#map.zlo .u .tx,#map.zlo .u .pip{display:none}
+#map .lbl,#map .wxl,#map .mport,#map .big,#map .fxt{transform-box:fill-box;transform-origin:center;transform:scale(var(--zk,1))} /* 放大到 500% 以上時文字不再變大 */ /* 縮小時：只留勝負要點地名；棋子只留兵種符號 */
 .mine{opacity:.95} .far{opacity:.8} .fclick{cursor:pointer;pointer-events:all} .tl-far.fclick:hover{filter:brightness(1.08)} .far-lbl{font-size:8.5px;text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:600;fill:var(--ink)}
 .far-tag{font-size:7px;text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:700}
 .rr{fill:none;stroke-width:2.2;pointer-events:none;stroke-linejoin:round}.rr.atk{stroke:var(--atk)}.rr.def{stroke:var(--def)}.rr.ad.atk{fill:var(--atk);fill-opacity:.07;stroke-opacity:.55;stroke-width:1.4}.rr.ad.def{fill:var(--def);fill-opacity:.07;stroke-opacity:.55;stroke-width:1.4}.rr.r{stroke-dasharray:10 7}.rr.d{stroke-dasharray:2 6;stroke-linecap:round}.rrl{font-size:12px;font-weight:800;pointer-events:none;paint-order:stroke;stroke:var(--panel);stroke-width:3.5px}.rrl.atk{fill:var(--atk)}.rrl.def{fill:var(--def)}#btnRng[aria-pressed=true]{background:var(--ink);color:var(--panel)}
