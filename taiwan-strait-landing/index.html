@@ -1519,7 +1519,7 @@ function targets(u){
   if(u.type==='hk')return subTargets(u);
   if(u.type==='ssn'){if(u.acted||!(u.tp>0||u.hm>0))return [];return shipFoes(u,6).filter(e=>(u.tp>0&&rd(hexOf(u),hexOf(e))<=3)||u.hm>0);}
   if(u.type==='nme'||u.type==='mdt'){if(u.acted||!u.mag||u.mag.asm<=0)return [];return shipFoes(u,u.type==='nme'?NME.R:MDT.R);}
-  if(isMsl(u)){if(u.shots<=0||(u.fl&&!(u.mag&&u.mag.asm>0)))return [];const R=u.fl?fleetAgg(u).asmR:8;return S.units.filter(e=>e.side!==u.side&&atSea(e)&&rd(hexOf(u),hexOf(e))<=R);}
+  if(isMsl(u)){if(u.shots<=0||(u.fl&&!(u.mag&&u.mag.asm>0)))return [];const R=u.fl?fleetAgg(u).asmR:8;return S.units.filter(e=>e.side!==u.side&&atSea(e)&&!e.ship&&rd(hexOf(u),hexOf(e))<=R);} // 船上的旅不單獨列為目標：打運輸船，船沉了旅一併損失
   const h=hexOf(u);if(h.isl==='CN')return [];
   return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以
 }
@@ -1538,7 +1538,7 @@ function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥
     if(u.type==='cvy'){S.stats.cvySunk=(S.stats.cvySunk||0)+1;if(S.pools)S.pools.plaLift=Math.max(0,S.pools.plaLift)+0;}
     if(u.type==='fob')log('攻方灘頭補給站被摧毀：卸載能力與庫存空間下降');
     fxq({t:'dead',at:[u.c,u.r],type:u.type,side:u.side,id:u.id});ghostAdd(u);S.units=S.units.filter(x=>x!==u);
-    if(u.boundTo){const b=S.units.find(x=>x.id===u.boundTo);if(b){S.units=S.units.filter(x=>x!==b);S.stats.lstSunk=(S.stats.lstSunk||0)+1;log('運輸船被擊沉，船上的 '+TYPES[b.type].n+' 一併損失');}}
+    if(u.boundTo){const b=S.units.find(x=>x.id===u.boundTo);if(b){S.hits.push({c:b.c,r:b.r,t:S.turn,side:b.side,type:b.type,n:b.hp,sea:true,why:'運輸船被擊沉',dead:true});S.stats.bdeLost=S.stats.bdeLost||{atk:0,def:0};S.stats.bdeLost[b.side]++;S.units=S.units.filter(x=>x!==b);S.stats.lstSunk=(S.stats.lstSunk||0)+1;log('運輸船被擊沉，船上的 '+TYPES[b.type].n+' 一併殲滅');}}
     if(u.ship){const sh=shipOf(u);if(sh)S.units=S.units.filter(x=>x!==sh);}if(u.type==='dd'&&S.pools)S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(u.type==='ff'&&S.pools)S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);if(u.type==='hk'&&S.pools)S.pools.rocSub=Math.max(0,S.pools.rocSub-1);if(u.type==='cv'&&S.pools){S.pools.plaCV=Math.max(0,S.pools.plaCV-1);if(u.cvi!=null){S.cvGone=S.cvGone||[];S.cvGone.push(u.cvi);if(S.air)S.air.cvF[u.cvi]=0;}plaCarrierLost(why,'守方');}
     if(!isShip(u)){const rest=unitsAt(K(u.c,u.r));if(rest.length&&rest.every(isShip)){rest.forEach(x=>{fxq({t:'dead',at:[x.c,x.r],type:x.type,side:x.side});S.units=S.units.filter(y=>y!==x);if(x.type==='ff')S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);if(x.type==='dd')S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(x.type==='cv')S.pools.plaCV=Math.max(0,S.pools.plaCV-1);log(uname(x)+' 隨港口失守而損失');});}}log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));return true;}
   return false;
@@ -1741,7 +1741,14 @@ function fireMissile(m,t){
     if(steps)damage(t,steps,'雄風反艦飛彈');
     checkInstant();return;
   }
-  const sat=satHit(t),need=(m.type==='ff'?4:S.mods.ssmNeed)+(t.type==='cvy'?cvyMod(t):escortMod())-sat,hit=sat>=3||hitP(pNeed(need),'ms:'+m.type+'>'+t.type);
+  if(t.type==='ro'||t.type==='cvy'){ // 滾裝船與補給船：商船改裝、體積大、航速慢、沒有自身防空；不在護航艦防空涵蓋內時，飛彈只受尋標命中率限制（同齊射模型的 pSeek）
+    const hits=takeInt(SSM_N*SALVO.pSeek,'ssmMerch>'+t.type);t.inc=(t.inc||0)+1;
+    fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit:hits>0});
+    log((m.type==='ff'?'守方艦艇':'岸置反艦飛彈')+'以 '+SSM_N+' 枚雄風飛彈攻擊沒有護航防空的 '+uname(t)+'：命中 '+hits+' 枚（尋標命中率 '+Math.round(SALVO.pSeek*100)+'%，推估）'+(hits?'，'+tname(t)+' −'+stpU(t,hits):''));
+    if(hits)damage(t,hits,'雄風反艦飛彈');
+    checkInstant();return;
+  }
+  const sat=satHit(t),need=(m.type==='ff'?4:S.mods.ssmNeed)+escortMod()-sat,hit=sat>=3||hitP(pNeed(need),'ms:'+m.type+'>'+t.type);
   fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit});
   if(hit){log('反艦飛彈命中海上的 '+TYPES[t.type].n+(sat>=2?'（飽和攻擊）':'（'+lastTxt()+'）'));damage(t,sat>=2?2:1,sat>=2?'飽和攻擊':'反艦飛彈');}
   else log('反艦飛彈未命中（'+lastTxt()+'）');
@@ -2490,7 +2497,7 @@ function allyAir(){const dh=S.units&&jmsLead(),f35=dh&&(+S.era||2026)>=2027?ptsO
 // 補給船團（慢速、無防空的商船）：比軍艦好打，只有附近的護航艦才能保護它——無護航 −1（命中門檻降低）、每有一艘護航艦在 2 格內 +1（最多 +2）
 function cvyMod(t){const near=S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&rd(hexOf(e),hexOf(t))<=2).length;return -1+Math.min(2,near);}
 // 守方選目標的價值：航艦最高，其次是補給船團（打掉補給就是斷攻方的後路）、載著登陸部隊的船，護航艦最低
-const tgtVal=e=>e.type==='cv'?(cvOOA(e)?.5:4):e.type==='cvy'?3:(e.type==='amph'||e.type==='mar'||e.type==='arm')?2.5:e.type==='dd'?1:1.5;
+const tgtVal=e=>(e.type==='cv'?(cvOOA(e)?.5:4):e.type==='cvy'?3:(e.type==='amph'||e.type==='mar'||e.type==='arm')?2.5:e.type==='dd'?1:1.5)+(e.boundTo&&S.units.some(x=>x.id===e.boundTo)?2.5:0); // 載著旅的運輸船：船＋旅的價值
 function pickW(arr,f){let t=arr.reduce((a,x)=>a+f(x),0),r=Math.random()*t;for(const x of arr){if((r-=f(x))<=0)return x;}return arr[0];}
 function escortMod(){return S.pools.plaNavy>=5?1:0;}
 // 大陸基地損傷：火箭軍旅駐地、空軍機場被打掉的比例，就是對應發射與出擊能量的損失（發射架、跑道損毀就發射不出去）
@@ -5681,6 +5688,7 @@ function renderMap(){
     else if(S.mode==='cvw'&&S.sel&&cvOwn(S.sel)){const I=cvwManualInfo(S.sel);rings=I&&I.n>0?I.foes.map(u=>[u,'strike']):[];}
     else if(S.mode==='cvwL'&&S.sel&&cvOwn(S.sel)){const I=cvwManualLandInfo(S.sel);rings=I&&I.n>0?I.tg.filter(x=>x.u).map(x=>[x.u,'strike']):[];}
     else if(S.sel&&alive(S.sel)&&S.sel.side===S.phase)rings=targets(S.sel).map(u=>[u,'']);
+    rings=rings.filter(([u])=>!subHidden(u)&&!(u.ship&&atSea(u))); // 地圖上沒畫出來的單位（船上的旅、隱蔽的潛艦）不畫圈
     rings.forEach(([u,c])=>{const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy;o+='<circle class="ring '+c+'" cx="'+x+'" cy="'+y+'" r="15"/>';});
   }
   $('#gD').innerHTML=o;
@@ -7107,10 +7115,11 @@ $('#tmap').addEventListener('click',async e=>{
 $('#resume').onclick=()=>{$('#resume').hidden=true;$('#modal').hidden=false;};
 /* ---------- 版本與更新提示 ---------- */
 // 每次更新遊戲都要改 VERSION（可執行 python3 taiwan-strait-landing/tools/bump_version.py 2026-xx-xx.nn），並在下方 CHANGELOG 最前面補一筆更新內容（再補 tools/i18n/extras.tsv 的英日譯文）；頁面會定期抓自己比對，有新版就提示
-const VERSION='2026-11-14.03';
+const VERSION='2026-11-14.04';
 $('#ver').textContent='版本 '+VERSION;
 /* ---------- 更新內容（CHANGELOG）：更版後第一次開啟時自動顯示，也可從頁尾「更新內容」重看 ---------- */
 const CHANGELOG=[
+ {v:'2026-11-14.04',items:['反艦飛彈只打運輸船：船上的旅不再單獨列為目標（地圖上也不再出現沒有棋子的圈圈），運輸船被擊沉時船上的旅一併殲滅並計入損失；滾裝船與補給船（商船改裝、體積大、航速慢、沒有自身防空）不在護航艦防空涵蓋內時，2 枚雄風只受尋標命中率 80% 限制（同齊射模型），不再用原本的擲骰門檻；電腦選目標時把船上的旅算進運輸船的價值']},
  {v:'2026-11-14.03',items:['「反制先制打擊」依物理重做：①「戰機升空避敵」改為「戰機進山洞機堡」（佳山、石子山約 200 架，推估）：躲藏的戰機不會在地面被炸，代價是出擊架次與空中戰力依比例下降，拿掉戰機在空中待 24 小時、多一輪空戰的設定；開戰前的「疏散戰機與裝備」用同一套機制；②「分散疏散並搶修機場」補上戰機分散（之後地面損失減半，推估），飛彈車代價從整個階段不能開火改為少一次射擊；③「立即反擊／全面長程反擊」不再額外多射，改為先用掉本階段縱深打擊發射量的一半或全部；修正海馬士不能射時仍把它的包數算進發射量、讓雄二E 超量發射的錯誤；④「目前守方」加上陸軍戰術飛彈與火箭彈庫存']},
  {v:'2026-11-14.02',items:['海馬士後續調整：2026 年 GMLRS 精準火箭彈改為 864 發（依隨首批接裝的報導）；陸軍戰術飛彈也能縱深打擊 300 km 內的大陸目標（與海馬士共用庫存，300 km 內優先使用，發射佔用海馬士一次齊射並暴露），更遠才用雄二E；電腦把陸軍戰術飛彈留給高價值目標（裝甲、兩棲、陸戰、空降旅），其他目標只在火箭彈射程內才打；假設情境「軍購準時到貨」2026 年改為第二批 18 輛與陸軍戰術飛彈 20 枚']},
  {v:'2026-11-14.01',items:['海馬士依交付進度與實際彈藥：發射車 2026 年 11 輛、2027～2028 年 29 輛，2029 年起隨 2025 年 12 月核准的 82 輛逐年增加到 2032 年 111 輛（後續交付時程為推估）；陸軍戰術飛彈與 GMLRS 精準火箭彈改用實際庫存（2026 年 64 枚、火箭彈第二批年底才到；2027 年 84 枚、864 發；之後依 420 枚、1,203 個莢艙的追加案增加），不再動用長程飛彈點數，縱深打擊只用雄二E；每次最多 4 輛齊射，每階段次數依可射車數；假設情境「軍購準時到貨」在 2026 年改為第二批 18 輛與彈藥提前到貨']},
