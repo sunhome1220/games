@@ -567,6 +567,7 @@ async function endPhase(){
   if(S.over||!S.started)return;
   if(S.phase==='atk'&&S.ctrl.atk==='human'&&!S.sim&&!S.video&&S.units.some(u=>cvOwn(u)&&(u.cvwT===S.turn&&u.cvwB>0||u.cvwLT===S.turn&&u.cvwLB>0))){cvwStrike('atk');S.mode=null;render();if(S.over)return;} // 沒用完的艦載機對艦份額自動出擊
   if(S.phase==='atk')return beginPhase('def');
+  if(S.phase==='def'){afAuto();S.mode=null;render();if(S.over)return;} // 守方空軍沒用完的出擊份額由電腦自動出擊
   if(allyHuman()){S.busy=true;try{await allyEndAuto();}finally{S.busy=false;}if(S.over)return;}
   S.stats.tpHold=S.owner[TAIPEI]==='atk'?(S.stats.tpHold||0)+1:0;
   {const nn=conditions().filter(c=>c.atk).length;S.stats.winHold=nn>=2?(S.stats.winHold||0)+1:0;S.stats.fullHold=nn>=3?(S.stats.fullHold||0)+1:0;}

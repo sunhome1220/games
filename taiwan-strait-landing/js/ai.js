@@ -325,6 +325,7 @@ async function ffSortie(m){ // 艦艇出港，保持在飛彈射程（約 6 格�
 }
 async function aiDef(){
   await aiCnStrikes();
+  afAuto();render(); // 守方空軍各機場出擊
   if(shelterNeeded('def')&&!(S.shelterDone&&S.shelterDone.def===S.turn)){S.shelterDone=S.shelterDone||{};S.shelterDone.def=S.turn;shelterOrder('def');}
   for(const sb of S.units.filter(u=>u.side==='def'&&u.type==='hk')){if(S.over)return;await subTurn(sb);}
   let vol=0;const MS=(S.intent||{}).msl;let salvoT=null;const scoot=[];

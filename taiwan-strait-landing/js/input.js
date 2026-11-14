@@ -22,6 +22,7 @@ $('#map').addEventListener('click',async e=>{
   let u=hitU||unitAtVis(k);
   if(u&&u.boundTo&&u.side===S.phase&&!(S.sel&&S.sel.side!==u.side)){const b=S.units.find(y=>y.id===u.boundTo);if(b&&alive(b))u=b;} // 點自己的運輸船＝選取船上的旅（旅不畫在海上）
   if(S.mode==='tom')S.mode=null;
+  if((S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&afClick(u))return; // 守方空軍：點目標
   if(S.mode==='volley'||S.mode==='cvw'||S.mode==='cvwL'){ // 航艦命令：點選射程內的目標
     const cv=S.sel&&cvOwn(S.sel)?S.sel:null;
     if(cv&&S.mode==='cvwL'){cvwManualLand(cv,{u:u&&u.side!==cv.side?u:null,af:k,port:k});}

@@ -54,7 +54,7 @@ function renderTheater(){
       Object.entries(CNB).map(([id,B])=>'<div class="fu cnrow'+(S.cnSel===id?' hl':'')+(dStrikeOn&&cnTargets().includes(id)?' tgt':'')+'" data-cnrow="'+id+'"><div><b>'+KIND_S[B.kind]+' '+B.n+'</b> <span class="dd">'+KIND_N[B.kind]+'</span></div><div class="fst"><span class="pips">'+
         Array.from({length:B.hp},(_,i)=>'<i class="'+(i<cnShown(id)?'f':'')+'"></i>').join('')+'</span><span class="st'+(cnShown(id)>0?'':' off')+'">'+(cnShown(id)>0?'運作中':'已癱瘓')+'</span></div></div>').join(''))+
     (S.air?'<div class="dd" style="margin:4px 0">戰機實際架數：共軍東部戰區 '+S.air.PLA+' 架（推估）、共軍航艦艦載機 '+cvFighters()+' 架、台灣 '+S.air.TW+' 架、美航艦艦載機 '+S.air.usF.map((n,i)=>(i?'第 '+(i+1)+' 支 ':'')+n).join('、')+' 架（各支航艦到場後才參戰）。空軍點數＝有效架次 ÷ '+AIR.K+'。</div>':'')+
-    dt('def',true,'<b>守方</b>',['rocAir','rocNavy','rocSub','rocAD','rocAS','rocMsl','rocAtc','rocGml','rocRkt','rocDrone','rocMine'].filter(k=>S.p0[k]>0||S.pools[k]>0).map(k=>bar(k,'def')).join(''));
+    dt('def',true,'<b>守方</b>',['rocAir','rocNavy','rocSub','rocAD','rocAS','rocMsl','rocAtc','rocGml','rocAAsh','rocWC','rocSlam','rocRkt','rocDrone','rocMine'].filter(k=>S.p0[k]>0||S.pools[k]>0).map(k=>bar(k,'def')).join(''));
   ['US','JP'].forEach(c=>{
     const lv=S.fx.lv[c],pst=c==='US'&&usIdx()>=0;
     let inner=pst?'<div class="fu dd">'+pd(usIdx())+'。美軍'+casN(usCas())+(S.us.drop?'（已因傷亡退縮）':'')+'</div>':'';
