@@ -7,7 +7,7 @@ const humanTurn=()=>S.started&&!S.over&&!S.busy&&S.ctrl[S.phase]==='human';
 const DEPTH={plain:3,city:4,port:2.5,air:2.5,mtn:7,main:2.5};
 const SC=R/16; // 格子相對 20 km 格的大小（10 km＝0.5）：地形細節、圖示、字級跟著縮
 const US_BIG=Math.max(R,16*.72)/26*1.18,US_SMALL=R/26*1.18; // 棋子：放大時保留原尺寸 72%（好點選）；縮小（地圖縮放 <160%）時縮到一格大、只留兵種符號
-const usForZoom=z=>FG>2&&z<1.6?US_SMALL:US_BIG;
+const usForZoom=z=>(FG>2&&z<1.6?US_SMALL:US_BIG)*(z>5?5/z:1); // 放大到 500% 以上時棋子在畫面上不再變大（只放大地圖）
 let US=usForZoom(1); // 開局縮放 100%
 const elev=h=>isLand(h)?(DEPTH[h.t]||4)*SC:0;
 function cen(c,r){const [x,y]=center(c,r);return [x,y-elev(TER[K(c,r)])];}

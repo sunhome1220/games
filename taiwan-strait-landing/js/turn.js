@@ -397,7 +397,7 @@ function wxMapSVG(){ // 地圖：各海域浪高標籤、颱風（中心、暴�
     for(const q of [{c:c0,r:r0}].concat(cand)){const [x,y]=center(q.c,q.r),hit=upx.filter(([ux,uy])=>Math.abs(ux-x)<hw+uR&&Math.abs(uy-(y-4))<hh+uR).length,sc=hit*100+Math.hypot(x-x0,y-y0)/HPX;if(sc<bs){bs=sc;best=[x,y];}}
     return best;};
   for(const z in A){const v=wxWaveLL(z==='W'?WXREF:A[z]),txt=WXZ[z]+' '+v.toFixed(1)+' m',[x,y]=spot(A[z],txt),col=v>=2.5?'#c0392b':v>1.25?'#d68910':'#2e86c1';
-    o+='<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="800" fill="'+col+'" stroke="var(--panel,#fff)" stroke-width="3" paint-order="stroke" opacity=".85">'+WXZ[z]+' '+v.toFixed(1)+' m</text>';}
+    o+='<text class="wxl" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="middle" font-size="'+(11*Math.max(.7,SC)).toFixed(1)+'" font-weight="800" fill="'+col+'" stroke="var(--panel,#fff)" stroke-width="3" paint-order="stroke" opacity=".85">'+WXZ[z]+' '+v.toFixed(1)+' m</text>';}
   const t=W.ty;
   if(t){const [x,y]=P([t.lon,t.lat]),R=t.R*pxKm,nx=S.nextW&&S.nextW.ty;
     if(t.trail&&t.trail.length)o+='<polyline points="'+t.trail.concat([[t.lon,t.lat]]).map(p=>P(p).map(v=>v.toFixed(1)).join(',')).join(' ')+'" fill="none" stroke="#8e44ad" stroke-width="2" stroke-dasharray="2 4" opacity=".7"/>';
