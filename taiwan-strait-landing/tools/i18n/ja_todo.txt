@@ -1769,3 +1769,6 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 放棄這一局，回到作戰設定	Abandon this game and return to setup
 隨時都能放棄這一局重新開始：頁首（設定旁）、全螢幕地圖工具列、以及事件與快訊等彈窗的左上角都有「↺ 重新開始」，電腦推演、影片播放與遊戲結束畫面也適用（會先確認）	You can abandon the game and start over at any time: '↺ Restart' is in the header (next to settings), the full-screen map toolbar, and the top-left corner of event, news and other pop-ups; it also works in AI simulation, video playback and on the end screen (asks first)
 正在停止模擬，馬上回到作戰設定	Stopping the simulation; returning to setup shortly
+射程判定改用直線距離：武器、雷達、防空、艦載機打擊、潛艦、空降等射程，改以格子中心之間的實際直線距離判斷（原本用「走幾格」的格數距離，範圍是六角形，在兩軸之間的方向會短約 13%）；移動、相鄰、控制區仍用格數	Range checks now use straight-line distance: weapon, radar, air-defense, carrier-strike, submarine and airdrop ranges are judged by the actual distance between hex centers (they used the step count between hexes, which makes a hexagonal area about 13% short between the axes); movement, adjacency and zones of control still count hexes
+射程圈（防空傘、艦載機作戰半徑、對艦打擊距離等）改畫成圓形，與判定一致	Range rings (air-defense umbrella, carrier strike radius, anti-ship reach, etc.) are now drawn as circles, matching the rules
+地圖上的海域浪高文字會自動避開棋子：在原位置附近 4 格內的海面挑一個沒有船艦或部隊的地方顯示	Wave-height labels on the map now avoid pieces: each is placed on open sea within 4 hexes of its usual spot, where no ships or units are
