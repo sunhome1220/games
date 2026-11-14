@@ -60,7 +60,7 @@
 - 潛艦（海鯤）：`subTargets/fireSub/subHidden`；在海上隱蔽、回港時才看得到、可被打。
 - 地圖尺度：**每格約 10 km**（2026-11-14.46 起；`js/map.js` 開頭的 `KM_HEX`，`FG＝40÷KM_HEX` 是舊粗格的細分倍數）。**射程、移動、距離一律用公里寫，再用 `kmH(km)` 換成格數**（例如 `rd(a,b)<=kmH(80)`、`mv:kmH(80)`），不要寫裸的格數；像素距離用 `HPX`。地面「相鄰」＝`ADJ_KM`（20 km，`ring2`／`inZOC`／`enemyAdj`）。
   - 台灣與澎湖地形：Natural Earth 海岸線（`js/geo.js`）＋SRTM 海拔網格（`js/dem.js`，每格 `h.elev`；平均 ≥1,000 m 為山地）；兩個檔都由 `tools/geo/` 的腳本產生，不要手改、不要整檔讀。畫面配色依 `h.elev` 每 500 m 一層。
-  - 畫面：圖示、字級用 `SC`（＝R/16）縮放；地圖縮放 <160% 時 `#map.zlo`（只留勝負要點地名、棋子縮成一格 `US_SMALL`）。大陸沿岸、金馬、琉球仍是手繪多邊形／線段。
+  - 畫面：圖示、字級用 `SC`（＝R/16）縮放；地圖縮放 <160% 時 `#map.zlo`（只留勝負要點地名、棋子縮成一格 `US_SMALL`）。大陸沿岸、金門、琉球也用 Natural Earth（`GEO_CN`／`GEO_KM`／`GEO_JP`，共用 `gCover`）；馬祖沒有資料，依座標放小島格。
   - 仍以「一格」為單位、改尺度時要再檢查的：`nbrs` 一格內的鄰接（佔領擴張 `claim`、接觸判定 `gContact`、登陸）、`landDist` 步數成本、`ZONES` 等地點清單（目前都由經緯度換算，會自動跟著格子）。
   - 效能：10 km 約 9,000 格，一整場電腦推演桌機約 5 秒。熱點已改寫（`unitsAt`／`unitAt` 比對數字座標、`inZOC`／`enemyAdj` 直接掃單位、`twControl` 快取）；新程式不要在迴圈裡掃整個 `TER` 或每格呼叫 `unitsAt`。
 - 除錯鉤子：網址加 `?debug=1`，提供 `window.__S`、`__dog`、`__fg`、`__ledger` 等。

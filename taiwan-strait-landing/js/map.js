@@ -226,7 +226,11 @@ const SPOT={};
   // 同名的外島仍屬澎湖；補上需要的別名
   SPOT.tcity=SPOT.taichung;
 })();
-// ---- 大陸沿岸（福建、廣東）：依真實海岸線與地點經緯度重畫
+// ---- 共用：多邊形覆蓋比例（每格 7 個取樣點；與格子大小無關）
+const gInPoly=(x,y,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;};
+const GSMP=[[0,0]].concat([0,1,2,3,4,5].map(i=>[.35*Math.cos(i*Math.PI/3),.35*Math.sin(i*Math.PI/3)]));
+const gCover=(h,polys)=>{const [lon,lat]=rcToLL(h.c,h.r);let n=0;for(const [dx,dy] of GSMP){const x=lon+dx*GEO.dlon,y=lat+dy*GEO.dlat*1.15;if(polys.some(P=>gInPoly(x,y,P)))n++;}return n/GSMP.length;};
+// ---- 大陸沿岸（福建、廣東，含沿岸島嶼）：Natural Earth 1:10m 海岸線（GEO_CN）；沒有資料時退回手繪多邊形
 const SPOTC={};
 (function(){
   const COASTL=[[120.35,26.8],[119.9,26.5],[119.62,26.25],[119.68,25.95],[119.8,25.62],[119.6,25.35],[119.15,25.25],[118.95,24.98],[118.65,24.62],[118.2,24.45],[117.95,24.3],[117.5,23.7],[117.0,23.4],[116.7,23.2],[116.0,22.85],[115.4,22.7],[114.9,22.3],[114.6,22.1]];
@@ -236,7 +240,7 @@ const SPOTC={};
   const cn=[];
   for(const h of Object.values(TER)){
     if(h.t!=='sea')continue;const [lon,lat]=rcToLL(h.c,h.r);
-    if(inPoly(lon,lat,poly)){h.t='main';h.isl='CN';h.lon=lon;h.lat=lat;cn.push(h);}
+    if(typeof GEO_CN!=='undefined'?gCover(h,GEO_CN)>=.5:inPoly(lon,lat,poly)){h.t='main';h.isl='CN';h.lon=lon;h.lat=lat;cn.push(h);}
   }
   const coastalC=h=>nbrs(h.c,h.r).some(n=>n.t==='sea');
   const dist=(h,lon,lat)=>Math.hypot((rcToLL(h.c,h.r)[0]-lon)/GEO.dlon,(rcToLL(h.c,h.r)[1]-lat)/GEO.dlat);
@@ -260,8 +264,12 @@ const SPOTC={};
     base.t='port';base.isl='KM';base.name=name;base.kmId=id;SPOT[id]=base.k;
     nbrs(base.c,base.r).filter(h=>h.t==='sea').slice(0,n).forEach((h,i)=>{h.t='plain';h.isl='KM';h.kmId=id;if(i===0)SPOT[id+'2']=h.k;});
   };
-  mk('kinmen','金門',seaNear(118.37,24.45),2);
-  mk('matsu','馬祖',seaNear(119.97,26.18),1);
+  if(typeof GEO_KM!=='undefined'&&GEO_KM.length){ // 金門：Natural Earth 真實輪廓，★四分之一以上是陸地的格才算，與大陸重疊的格看哪邊陸地多
+    const hs=Object.values(TER).filter(h=>{const [lon,lat]=rcToLL(h.c,h.r);if(lon<118.0||lon>118.7||lat<24.2||lat>24.7)return false;const v=gCover(h,GEO_KM);return v>=.25&&v>=(h.isl==='CN'?gCover(h,GEO_CN):0);}); // 至少四分之一是陸地（金門約 150 平方公里，不到 2 格）
+    const d=h=>{const [a,b]=rcToLL(h.c,h.r);return Math.hypot((a-118.32)/GEO.dlon,(b-24.43)/GEO.dlat);};hs.sort((a,b)=>d(a)-d(b));
+    hs.forEach((h,i)=>{h.t=i?'plain':'port';h.isl='KM';h.kmId='kinmen';h.name=i?null:'金門';h.named=false;if(!i)SPOT.kinmen=h.k;if(i===1)SPOT.kinmen2=h.k;});
+  }else mk('kinmen','金門',seaNear(118.37,24.45),2);
+  mk('matsu','馬祖',seaNear(119.93,26.15),1); // 南竿；Natural Earth 1:10m 沒有收錄馬祖，依真實座標放小島格
 })();
 
 // 外圍與遊戲格內的島鏈：「線段＋半徑」(度)；與那國依真實位置（約 123.0°E）
@@ -277,7 +285,11 @@ const ISL_CAP=[ // [lon1,lat1,lon2,lat2,半徑]
 // 遊戲格內的琉球島嶼（與那國、西表、石垣、宮古、沖繩南部）：畫成日本的陸地格；太小的島至少占最近的一格
 (function(){
   const sea=Object.values(TER).filter(h=>h.t==='sea'&&rcToLL(h.c,h.r)[0]>122.6);
-  for(const [x1,y1,x2,y2,r] of ISL_CAP){
+  if(typeof GEO_JP!=='undefined'&&GEO_JP.length){ // Natural Earth 真實輪廓：一半以上是陸地才算；太小的島至少占覆蓋最多的一格
+    for(const P of GEO_JP){let n=0,best=null,bv=0;const xs=P.map(q=>q[0]),ys=P.map(q=>q[1]),b=[Math.min(...xs)-.15,Math.min(...ys)-.15,Math.max(...xs)+.15,Math.max(...ys)+.15];
+      for(const h of sea){if(h.t!=='sea')continue;const [lon,lat]=rcToLL(h.c,h.r);if(lon<b[0]||lon>b[2]||lat<b[1]||lat>b[3])continue;const v=gCover(h,[P]);if(v>=.5){h.t='plain';h.isl='JP';n++;}else if(v>bv){bv=v;best=h;}}
+      if(!n&&best){best.t='plain';best.isl='JP';}}
+  }else for(const [x1,y1,x2,y2,r] of ISL_CAP){
     if(Math.max(x1,x2)<122.6||Math.min(x1,x2)>128.7||Math.min(y1,y2)>26.4||Math.max(y1,y2)<20.8)continue;let n=0,best=null,bd=1e9;
     for(const h of sea){if(h.t!=='sea')continue;const [lon,lat]=rcToLL(h.c,h.r),k=Math.cos(lat*Math.PI/180),dx=(x2-x1)*k,dy=y2-y1,px=(lon-x1)*k,py=lat-y1,L=dx*dx+dy*dy,t=L?Math.max(0,Math.min(1,(px*dx+py*dy)/L)):0,d=Math.hypot(px-t*dx,py-t*dy);
       if(d<=r){h.t='plain';h.isl='JP';n++;}else if(d<bd){bd=d;best=h;}}
