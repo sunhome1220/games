@@ -55,6 +55,12 @@ const afLandT=k=>S.units.filter(e=>e.side==='atk'&&!atSea(e)&&!e.ship&&(hexOf(e)
 const afCNT=k=>cnTargets().filter(id=>afCNwpK(k,id));
 const afStgT=k=>stgTargets().filter(u=>afCNwpK(k,u));
 const afCanHit=(k,x)=>!x?false:x.cn?afCNT(k).includes(x.cn):x.stg?!!afCNwpK(k,x.stg):!x.u?false:atSea(x.u)?afShipT(k).includes(x.u):afLandT(k).includes(x.u);
+// 航艦艦載機攔截（★推估）：打航艦群（航艦本身或 300 km 內有航艦的護航艦、船團）時，打擊機群在發射前可能被殲-15 戰鬥空中巡邏攔截。
+// 攔截機率依制空（攻方優勢 50%、均勢 25%、守方優勢 10%）× 附近航艦剩餘艦載機比例；被攔截的批次不發射飛彈（飛彈帶回），損失約 1.5 架
+const AF_CAP={atk:.5,mid:.25,def:.1};
+function afCapP(t){if(!t||!atSea(t)||!S.air)return 0;let f=0;
+  for(const u of S.units)if(u.type==='cv'&&u.side==='atk'&&u.cvi!=null&&alive(u)&&u.hp>1&&rd(hexOf(u),hexOf(t))<=kmH(300)){const full=AIR.CV[u.cvi]?AIR.CV[u.cvi].f:1;f=Math.max(f,Math.min(1,(S.air.cvF[u.cvi]||0)/Math.max(1,full)));}
+  return f>0?(AF_CAP[S.airCtl||'mid']||.25)*f:0;}
 function afLose(n,rate){const L=takeInt(n*rate*(S.airCtl==='atk'?1.5:1),'afLoss');return L?airLose('def',L,'ad'):0;}
 // 一次出擊：x＝{u}（海上或島上的攻方單位）｜{cn:基地 id}｜{stg:集結中的單位}；auto＝電腦自動（不跳訊息）
 function afStrike(k,x,auto){
@@ -62,6 +68,11 @@ function afStrike(k,x,auto){
   const h0=TER[k],from=[h0.c,h0.r],nm=(h0.name||'機場');let txt=null,L=0;
   if(x.u&&atSea(x.u)){
     const t=x.u,n=Math.min(AFS.pk,Math.floor(S.pools.rocAAsh||0));if(n<=0){if(!auto)toast('空射反艦飛彈已用完',3000);return false;}
+    const pc=afCapP(t);
+    if(pc>0&&hitP(pc,'afCAP')){ // 被航艦艦載機攔截：沒發射就被迫返航
+      L=takeInt(1.5,'afCAPloss');L=L?airLose('def',L,'air'):0;fxq({t:'air',at:[t.c,t.r],hit:false,tsea:true,from,k:'bomb'});
+      S.afB[k].n--;const s='守方空軍（'+nm+'起飛）攻擊 '+uname(t)+'：飛到半途遭共軍艦載機攔截，未能發射飛彈'+(L?'（被擊落 '+L+' 架）':'')+'（攔截率 '+Math.round(pc*100)+'%，推估）';
+      log(s);if(!auto)fxToast(s,4000);checkInstant();return true;}
     S.pools.rocAAsh-=n;const r=salvoCalc(t,n,false,'afShip>'+t.type),big=t.type==='cv'||t.type==='csg',steps=big?takeInt(r.hits/2,'afBig'):r.hits;
     fxq({t:'air',at:[t.c,t.r],hit:r.hits>0,tsea:true,from,k:'bomb'});
     txt='以 '+n+' 枚空射反艦飛彈攻擊 '+uname(t)+'：'+(r.I?'對方防空發射 '+r.I+' 枚攔截彈，約 '+fmt1(r.surv)+' 枚突破，':'')+'命中 '+r.hits+' 枚'+(steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):'');
@@ -137,6 +148,7 @@ function afPendInfo(){
     const t=S.units.find(x=>x.id===P.x.u);if(!t||!alive(t))return null;nm=uname(t)+'（'+hname(hexOf(t))+'）';
     if(atSea(t)){const cov=adCover(t).length,n=Math.min(AFS.pk,Math.floor(S.pools.rocAAsh||0));
       lines.push('空射反艦 '+n+' 枚（剩 '+Math.round(S.pools.rocAAsh||0)+'）・'+(cov?cov+' 艘護航艦防空，先被攔截':'無護航防空，預估命中 '+fmt1(n*SALVO.pSeek)+' 枚'));
+      {const pc=afCapP(t);if(pc>0)lines.push('航艦艦載機在附近：約 <b>'+Math.round(pc*100)+'%</b> 會在發射前被攔截（推估）');}
       ok=ok&&n>0;risk=cov?AFS.loss:0;}
     else{const h=hexOf(t),p=pNeed((h.t==='city'||h.t==='mtn')?6:5);lines.push('精準炸彈・'+stepOdds(t,p)+((h.t==='city'||h.t==='mtn')?'（城市／山地較難）':''));risk=S.pools.plaAD>0?AFS.loss:0;}
   }
