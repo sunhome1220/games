@@ -104,7 +104,7 @@ function afPanelHTML(k){
   const h=TER[k];if(!h||h.t!=='air'||h.isl!=='TW'||!S.started||S.over)return '';
   const P=S.pools||{},W=afWing(k),ac=afBaseN(k),lv=afLevel(k),n=afUsable().some(x=>x.k===k)?afBudget(k):0;
   if(!ac)return '<div class="hint">'+(W?W[0]+'：目前沒有戰機（'+(S.owner[k]==='atk'?'基地已被占領':'戰機已損失或轉場')+'）':'沒有戰鬥機進駐，不能從這裡出擊')+'。</div>';
-  let o='<div class="hint"><b>'+(TER[k].name||'基地')+'</b>（'+(W?W[0]+'・'+W[1]:'')+'）：戰機約 '+ac+' 架'+'，'+afTxt(k)+(caveF()>0?'（約 '+Math.round(caveF()*100)+'% 躲在山洞機堡）':'')+'；本階段可出擊 '+n+' 個打擊包（每包 4 架）；空射反艦飛彈 '+Math.round(P.rocAAsh||0)+' 枚、萬劍彈 '+Math.round(P.rocWC||0)+' 枚'+((P.rocSlam||0)>0?'、SLAM-ER '+Math.round(P.rocSlam)+' 枚':'')+'。全台各基地本階段還能出擊共 '+afUsable().reduce((a,h)=>a+afBudget(h.k),0)+' 包；沒用完的份額在階段結束時由電腦自動出擊。</div>';
+  let o='<div class="hint"><b>'+(TER[k].name||'基地')+'</b>（'+(W?W[0]+'・'+W[1]:'')+'）：戰機約 '+ac+' 架'+'，'+afTxt(k)+(caveF()>0?'（約 '+Math.round(caveF()*100)+'% 躲在山洞機堡）':'')+'；本階段可出擊 '+n+' 批（每批 4 架）；空射反艦飛彈 '+Math.round(P.rocAAsh||0)+' 枚、萬劍彈 '+Math.round(P.rocWC||0)+' 枚'+((P.rocSlam||0)>0?'、SLAM-ER '+Math.round(P.rocSlam)+' 枚':'')+'。全台各基地本階段還能出擊共 '+afUsable().reduce((a,h)=>a+afBudget(h.k),0)+' 批；沒用完的份額在階段結束時由電腦自動出擊。</div>';
   if(humanTurn()&&S.phase==='def'&&S.ctrl.def==='human'&&n>0)o+='<div class="cvord"><button class="ghost" id="btnAfS">攻擊船團<small class="pn">（空射反艦飛彈）</small></button><button class="ghost" id="btnAfL">空襲島上目標<small class="pn">（精準炸彈）</small></button><button class="ghost" id="btnAfC">打擊大陸沿岸<small class="pn">（萬劍彈、SLAM-ER）</small></button></div><div class="hint">按下後點地圖上的目標（大陸沿岸：集結中的部隊或大陸基地）。</div>';
   setTimeout(()=>{[['btnAfS','afS'],['btnAfL','afL'],['btnAfC','afC']].forEach(([id,m])=>{const b=document.getElementById(id);if(b)b.onclick=()=>{S.afK=k;S.sel=null;S.mode=S.mode===m?null:m;render();};});},0);
   return o;
@@ -125,7 +125,7 @@ function afPendInfo(){
     const u=P.x.stg?S.units.find(x=>x.id===P.x.stg):null;if(P.x.stg&&(!u||!alive(u)))return null;const tg=P.x.cn||{u},H=cnHitP(tg),wp=afCNwpK(k,P.x.cn||u),found=!u||stgFound(u)>0;
     nm=P.x.cn?CNB[P.x.cn].n:hname(hexOf(u)).replace(/^大陸 /,'大陸沿岸 ')+' 集結中的 '+TYPES[u.type].n;
     lines.push('距離約 '+H.km+' km'+(u?'・'+(found?'本階段找到 '+stgFound(u)+' 步':'本階段沒有找到，打不到'):'・目前狀態 '+S.cn[P.x.cn]+'／'+CNB[P.x.cn].hp+' 級'));
-    lines.push('武器：'+(wp?AFS[wp].n+' 一包 '+AFS.pk+' 枚（剩 '+Math.round(S.pools[AFS[wp].pool]||0)+' 枚）':'萬劍彈與 SLAM-ER 射程不到或已用完')+'；共軍防空'+(H.IC.I?'約發射 '+Math.round(H.IC.I)+' 枚攔截彈、約 '+fmt1(H.IC.surv)+' 枚突破':'已失效'));
+    lines.push('武器：'+(wp?AFS[wp].n+' 每批 '+AFS.pk+' 枚（剩 '+Math.round(S.pools[AFS[wp].pool]||0)+' 枚）':'萬劍彈與 SLAM-ER 射程不到或已用完')+'；共軍防空'+(H.IC.I?'約發射 '+Math.round(H.IC.I)+' 枚攔截彈、約 '+fmt1(H.IC.surv)+' 枚突破':'已失效'));
     lines.push('命中率 <b>'+(found?Math.round(H.p*100):0)+'%</b>；命中：'+(u?TYPES[u.type].n+' 損失 '+stpU(u,1):(CN_FX[CNB[P.x.cn].kind]||'基地受損一級')));
     ok=ok&&!!wp&&found;risk=AFS.lossCN;
   }else{
@@ -139,8 +139,8 @@ function afPendInfo(){
   const tx=P.x.cn?P.x.cn:S.units.find(y=>y.id===(P.x.u||P.x.stg));if(tx)lines.unshift('距離 '+(h0.name||'基地')+' 約 '+afDist(k,tx)+' km／可達 '+Math.round(afReach(k,tx))+' km'+(afWing(k)?'（'+afWing(k)[1]+' 作戰半徑約 '+afRad(k)+' km'+((P.x.cn||P.x.stg)?'，飛到海峽中線附近才發射':'')+'）':''));
   const xx=P.x.cn?{cn:P.x.cn}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{u:S.units.find(y=>y.id===P.x.u)};
   const all=afUsable().map(h=>[h,afBudget(h.k)]).filter(x=>x[1]>0&&afCanHit(x[0].k,xx));
-  lines.push('打得到的基地剩餘：'+(all.length?all.map(([h,n])=>(h.name||'基地').replace(/基地$/,'')+' '+n).join('、')+'（共 '+all.reduce((a,x)=>a+x[1],0)+' 包，只列打得到這個目標的基地；這座用完會自動改由下一座出擊）':'沒有基地打得到或都已用完'));
-  lines.push('出擊：'+(h0.name||'基地')+' 一包 4 架；本階段還能出擊 '+nb+' 包；'+(risk?'預估被擊落約 '+fmt1(AFS.pk*risk*lr)+' 架（推估）':'沒有防空威脅')+'；點其他目標可切換');
+  lines.push('打得到的基地剩餘：'+(all.length?all.map(([h,n])=>(h.name||'基地').replace(/基地$/,'')+' '+n).join('、')+'（共 '+all.reduce((a,x)=>a+x[1],0)+' 批，只列打得到這個目標的基地；這座用完會自動改由下一座出擊）':'沒有基地打得到或都已用完'));
+  lines.push('出擊：'+(h0.name||'基地')+' 每批 4 架；本階段還能出擊 '+nb+' 批；'+(risk?'預估被擊落約 '+fmt1(AFS.pk*risk*lr)+' 架（推估）':'沒有防空威脅')+'；點其他目標可切換');
   ok=ok&&!!xx&&afCanHit(k,xx);
   return {html:'<b>'+nm+'</b>'+lines.map(l=>'<div class="cpm">'+l+'</div>').join(''),ok};
 }

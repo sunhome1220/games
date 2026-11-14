@@ -86,9 +86,9 @@ function cnPendInfo(){ // 回傳 {html,ok} 或 null
   const H=cnHitP(tg),wp=lrWpn(H.km,tg),hm=wp==='atc'?hmrFor(tg):null,wn=wp==='atc'?'陸軍戰術飛彈（'+hname(hexOf(hm))+' 的海馬士，距離約 '+Math.round(kmLL(rcToLL(hm.c,hm.r),tgLL(tg)))+' km）':wp==='msl'?'雄二E':null,found=!(tg.u)||stgFound(tg.u)>0;
   const ok=!!wn&&found&&S.dfire>0;
   const html='<b>'+nm+'</b><div class="cpm">距離約 '+H.km+' km・'+extra+'</div>'+
-    '<div class="cpm">武器：'+(wn?wn+' 一包 '+ROCLR.pk+' 枚':'射程內沒有可用的飛彈')+'；共軍防空'+(H.IC.I?'約發射 '+Math.round(H.IC.I)+' 枚攔截彈、約 '+fmt1(H.IC.surv)+' 枚突破':'已失效')+'</div>'+
+    '<div class="cpm">武器：'+(wn?wn+' 每波 '+ROCLR.pk+' 枚':'射程內沒有可用的飛彈')+'；共軍防空'+(H.IC.I?'約發射 '+Math.round(H.IC.I)+' 枚攔截彈、約 '+fmt1(H.IC.surv)+' 枚突破':'已失效')+'</div>'+
     '<div class="cpm">命中率 <b>'+(found?Math.round(H.p*100):0)+'%</b>（突破後依目標硬度）；命中：'+fx+'</div>'+
-    '<div class="cpm">本階段還能發射 '+S.dfire+' 包；點其他目標可切換</div>';
+    '<div class="cpm">本階段還能發射 '+S.dfire+' 波；點其他目標可切換</div>';
   return {html,ok};
 }
 function cnPendSync(){ // 每次重繪時更新面板

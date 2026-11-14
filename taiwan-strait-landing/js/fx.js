@@ -443,7 +443,7 @@ function renderCtrl(){
   const h=humanTurn();
   $('#phaseTitle').textContent=S.over?'作戰結束':'第 '+S.turn+' 回合 · '+SIDE[S.phase]+'指揮';
   const bs=$('#btnStrike'),atkP=S.phase==='atk',pts=atkP?S.fire:(S.dfire||0);bs.hidden=false;bs.disabled=!h||pts<=0;bs.classList.toggle('on',S.mode==='strike');
-  bs.textContent=S.mode==='strike'?'取消打擊（剩 '+pts+'）':(atkP?'火力打擊（'+pts+' 點）':'縱深打擊（'+pts+' 發）');
+  bs.textContent=S.mode==='strike'?'取消打擊（剩 '+pts+'）':(atkP?'火力打擊（'+pts+' 點）':'縱深打擊（'+pts+' 波）');
   $('#btnEnd').disabled=!h;$('#btnEnd').hidden=S.sim;if(S.sim)bs.hidden=true;
   const ba=$('#btnAssist');ba.disabled=!h;ba.hidden=S.sim||S.video;
   {const ir=$('#btnIntentReset');if(ir)ir.hidden=!(h&&S.intentSkip&&S.intentSkip[S.phase]);}
