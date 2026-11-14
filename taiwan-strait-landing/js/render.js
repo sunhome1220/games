@@ -88,7 +88,8 @@ function coastRiverSVG(land){
   for(const [n,P] of RIVERS){const pts=P.map(([lo,la])=>{const [x,y]=llPx(lo,la);return [x,y-lift(lo,la)];});
     o+='<path class="river" d="M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L')+'"/>';
     const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
-  {const [x,y]=llPx(120.957,23.470),yy=y-lift(120.957,23.470);o+='<text class="lbl peak" font-size="'+(8*Math.max(.72,SC)).toFixed(1)+'" x="'+x.toFixed(1)+'" y="'+(yy-2).toFixed(1)+'" text-anchor="middle">▲玉山 3,952 m</text>';}
+  {const [c,r]=llToRC(120.957,23.470),h=TER[K(c,r)];if(h){const [x,y0]=center(h.c,h.r),y=y0-elev(h); // 玉山：和其他地名一樣放在所在格的中心上方（不用小數座標，放大到 500% 以上時才不會跑位）
+    o+='<text class="lbl peak" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x.toFixed(1)+'" y="'+(FG>2?y-R*1.2:y-11).toFixed(1)+'">▲玉山</text>';}}
   return o;
 }
 function hexV(x,y,rr){const o=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);o.push([x+rr*Math.cos(a),y+rr*Math.sin(a)]);}return o;}
