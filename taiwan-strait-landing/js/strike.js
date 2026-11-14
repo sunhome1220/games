@@ -106,7 +106,8 @@ function strikeCN(id,by){
 function aiPickCN(roc){ // 期望效果最高的目標（命中率 × 效果，±10% 雜訊）
   let best=null,bs=-1;
   const cand=cnTargets().map(id=>({k:id,tg:id})).concat(stgTargets().map(u=>({k:'u'+u.id,tg:{u}})));
-  for(const c of cand){const H=cnHitP(c.tg);if(roc&&!lrWpn(H.km))continue;const v=H.p*cnValue(c.tg)*(.9+Math.random()*.2);if(v>bs){bs=v;best=c.k;}} // 守方：只挑射程到得了的目標
+  const DP=roc&&S.intent&&S.intent.deep,kd=tg=>tg.u?'stg':CNB[tg].kind,pref=tg=>!DP?1:DP==='stg'?(kd(tg)==='stg'||kd(tg)==='navy'?3:1):kd(tg)===DP?3:1; // 指揮官意圖「縱深打擊目標」：指定的種類優先（權重 ×3，只影響挑選順序）
+  for(const c of cand){const H=cnHitP(c.tg);if(roc&&!lrWpn(H.km))continue;const v=H.p*cnValue(c.tg)*pref(c.tg)*(.9+Math.random()*.2);if(v>bs){bs=v;best=c.k;}} // 守方：只挑射程到得了的目標
   return best;
 }
 const allyCanStrike=f=>f.land&&fxActive(f)&&(f.c==='US'?S.fx.lv.US>=3&&usIdx()>=1:S.fx.lv.JP>=2&&S.fx.lv.US>=2);
