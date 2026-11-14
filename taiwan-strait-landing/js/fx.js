@@ -374,7 +374,7 @@ function fxDrop(o){ // 空降：運輸機群從大陸飛到落點；被擊落的
     if(o.fail){const p=[a[0]+(b[0]-a[0])*.6,a[1]+(b[1]-a[1])*.6-10];pl.remove();fxFlash(p,4,30,'#ff9a3c',520);fxSparks(p,10,30,'#ffd45a',520);fxText(p,'運輸機群被擊落','dead',1200);return;}
     for(let i=0;i<5;i++){const q=[b[0]+(i-2)*7*FXS(),b[1]-26*FXS()],c=el('path',{d:'',fill:'#fff',stroke:'#7a8a96','stroke-width':.8,opacity:.95},document.getElementById('gF'));
       tween(900,k=>{const y=q[1]+26*FXS()*k,r=4*FXS();c.setAttribute('d','M'+(q[0]-r).toFixed(1)+' '+y.toFixed(1)+'a'+r.toFixed(1)+' '+r.toFixed(1)+' 0 0 1 '+(2*r).toFixed(1)+' 0z');c.setAttribute('opacity',(k<.8?.95:.95*(1-(k-.8)/.2)).toFixed(2));},()=>c.remove());}
-    fxText(b,'空降','def',1000);
+    fxText(b,'空降','def',1000);{const u=S.units.find(x=>x.id===o.id);if(u&&u.dropHide){u.dropHide=0;render();}} // 傘花落下時，空降旅才出現在地圖上
     tween(600,t=>{pl.setAttribute('transform','translate('+(b[0]+Math.cos(ang)*40*t).toFixed(1)+' '+(b[1]-10+Math.sin(ang)*40*t).toFixed(1)+') rotate('+(ang*180/Math.PI).toFixed(0)+') scale(.9)');pl.setAttribute('opacity',(1-t).toFixed(2));},()=>pl.remove());});
   if(o.lost&&!o.fail)setTimeout(()=>{const p=[a[0]+(b[0]-a[0])*.55,a[1]+(b[1]-a[1])*.55-10];fxFlash(p,3,22,'#ff9a3c',460);fxSparks(p,8,24,'#ffd45a',460);fxText(p,'部分被擊落','dead',1000);},T*.55*fxK());
 }
