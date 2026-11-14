@@ -28,7 +28,7 @@ const ERA={
   '2031':{n:'2031（推估）',d:'NASAMS 合約預計 2031 年交付，防空明顯增強；海鯤潛艦增為 2 艘（計畫共 8 艘，進度不確定）。',short:'2031',pools:{plaLift:13,plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:10,rf:43,plaCM:7,plaLR:11,plaHS:6,rocAir:6,rocNavy:6,rocSub:2,rocAD:7,rocMsl:16,rocDrone:3,rocAS:20,rocMine:5},ssm:['taitung'],dfire:4},
   '2032':{n:'2032（推估）',d:'特別預算期程（2026～2033）接近尾聲，雙方都明顯成長；數值為推估，不確定性最高。',short:'2032',pools:{plaLift:14,plaAir:8,plaSub:6,plaCV:4,plaAD:8,plaNavy:11,rf:45,plaCM:7,plaLR:12,plaHS:7,rocAir:6,rocNavy:6,rocSub:2,rocAD:7,rocMsl:17,rocDrone:3,rocAS:22,rocMine:6},ssm:['taitung','yunlin'],dfire:4}
 };
-function previewEra(){const e=ERA[S.era]||ERA['2026'],H=HMR_ERA[S.era]||HMR_ERA['2026'];S.p0=Object.assign({},POOL0,e.pools,{plaDrone:PLA_DRONE[S.era]||200,rocAtc:H[2],rocGml:H[3]});
+function previewEra(){const e=ERA[S.era]||ERA['2026'],H=HMR_ERA[S.era]||HMR_ERA['2026'];S.p0=Object.assign({},POOL0,e.pools,{plaDrone:PLA_DRONE[S.era]||200,rocAtc:H[2],rocGml:H[3]},AFS_POOL(S.era));
   S.p0.rocMsl=Math.round((S.p0.rocMsl-Math.min(H[2],84)/25)*100)/100; // 陸軍戰術飛彈改由 rocAtc 單獨計算：從長程飛彈點數扣掉原本估在裡面的 ATACMS（2026 年 64 枚、之後 84 枚，1 點≈25 枚）
   S.pools=Object.assign({},S.p0);S.dfireMax=e.dfire;}
 const MLRS_SPOTS=['miaoli','changhua','magong','taoyuan']; // 其中 1 組在澎湖（依漢聲電台等報導，澎防部有雷霆2000） // 雷霆2000：公開資料只說陸軍有裝備、沒有確切數量；4 組、彈藥庫存 8 點為遊戲推估（各年代相同）
@@ -103,7 +103,7 @@ function sweepMines(){
   for(let i=0;i<sw;i++){const k=ks[i];delete S.mines[k];got.push(hname(TER[k]));if(hitP(1/6,'sweepMines')){P.plaNavy--;got.push('掃雷艦觸雷（攻方護航艦 −1）');}}
   syncMines();log('攻方掃雷：清除 '+got.join('、')+'。');
 }
-const POOLN={plaDrone:'舊戰機改裝無人機（誘餌，每個攻方階段放出 40 架消耗守方攔截彈）',rocRkt:'雷霆2000火箭彈庫存（每發 1 點）',plaLst:'兩棲艦群（運旅、可搶灘；往返制，沉了就永久損失）',plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程對地飛彈（雄二E 等；1 點≈25 枚）',rocAtc:'陸軍戰術飛彈（ATACMS，海馬士用；每點 1 枚）',rocGml:'GMLRS 精準火箭彈（海馬士用；每點 1 個莢艙＝6 發）',rocDrone:'無人機與巡飛彈'};
+const POOLN={plaDrone:'舊戰機改裝無人機（誘餌，每個攻方階段放出 40 架消耗守方攔截彈）',rocRkt:'雷霆2000火箭彈庫存（每發 1 點）',plaLst:'兩棲艦群（運旅、可搶灘；往返制，沉了就永久損失）',plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程對地飛彈（雄二E 等；1 點≈25 枚）',rocAtc:'陸軍戰術飛彈（ATACMS，海馬士用；每點 1 枚）',rocAAsh:'空射反艦飛彈（AGM-84L 魚叉；每點 1 枚）',rocWC:'萬劍彈（經國號空射對地，射程約 200 km；每點 1 枚）',rocSlam:'SLAM-ER 空射對地飛彈（射程約 270 km；每點 1 枚）',rocGml:'GMLRS 精準火箭彈（海馬士用；每點 1 個莢艙＝6 發）',rocDrone:'無人機與巡飛彈'};
 const CN={US:'美國',JP:'日本'};
 const LV={US:['不介入','情報支援','有限介入','全面參戰'],JP:['中立','後方支援','全面參戰']};
 
@@ -754,10 +754,7 @@ function antiShip(who,shots,need,canLand,tag,ok0,fk){
 async function navalPhase(){
   const P=S.pools;
   if(P.rocNavy>0){antiShip('守方海軍',Math.ceil(Math.max(0,P.rocNavy-S.units.filter(u=>u.type==='ff').length)/2),4,false,'','roc','cm');} // 艦隊被攻方海空兵力打擊：改由攻方階段的 huntFleets 依定位與齊射模型計算
-  if(P.rocAir>0&&rocAirEff()>=.5&&S.airCtl!=='atk'){ // 空軍掛載魚叉、雄三空射型攻擊船團（只能從還能用的機場起飛）
-    antiShip('守方空軍（魚叉、雄三空射型）',Math.ceil(rocAirEff()/2)+(S.airCtl==='def'?1:0),5,false,'','roc','bomb');
-    if(P.plaAD>=3&&hitP(1/6,'navalPhase')){log('守方空軍出擊遭防空擊落 −'+airLose('def',2,'ad')+' 架（推估）');}
-  }
+  // 守方空軍改由各機場出擊（airstrike.js：afStrike／afAuto），彈藥有實際庫存、損失依架次
   if(P.rocDrone>0){antiShip('無人機與巡飛彈',Math.min(P.rocDrone,3),5,false,'','roc','drone');if(hitP(1/3,'navalPhase')){P.rocDrone--;log('無人機群遭干擾與攔截 −1');}}
   jmsSync();const act=S.fx.units.filter(fxActive);S._cvwDone=false;
   if(act.length)toast('美日部隊出擊');

@@ -462,6 +462,7 @@ function renderMap(){
     let rings=[];
     if(S.mode==='strike'){if(S.phase==='atk')rings=S.units.filter(u=>u.side==='def'&&strikeable(u)).map(u=>[u,'strike']);else if(S.phase==='def'&&S.dfire>0&&lrOK())rings=stgTargets().map(u=>[u,'strike']);}
     else if(S.mode==='volley'&&S.sel&&cvOwn(S.sel))rings=volleyTargets(S.sel).map(u=>[u,'strike']);
+    else if(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')rings=afRings().map(u=>[u,'strike']);
     else if(S.mode==='cvw'&&S.sel&&cvOwn(S.sel)){const I=cvwManualInfo(S.sel);rings=I&&I.n>0?I.foes.map(u=>[u,'strike']):[];}
     else if(S.mode==='cvwL'&&S.sel&&cvOwn(S.sel)){const I=cvwManualLandInfo(S.sel);rings=I&&I.n>0?I.tg.filter(x=>x.u).map(x=>[x.u,'strike']):[];}
     else if(S.sel&&alive(S.sel)&&S.sel.side===S.phase)rings=targets(S.sel).map(u=>[u,'']);

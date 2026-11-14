@@ -325,6 +325,7 @@ async function ffSortie(m){ // 艦艇出港，保持在飛彈射程（約 6 格�
 }
 async function aiDef(){
   await aiCnStrikes();
+  afAuto();render(); // 守方空軍各機場出擊
   if(shelterNeeded('def')&&!(S.shelterDone&&S.shelterDone.def===S.turn)){S.shelterDone=S.shelterDone||{};S.shelterDone.def=S.turn;shelterOrder('def');}
   for(const sb of S.units.filter(u=>u.side==='def'&&u.type==='hk')){if(S.over)return;await subTurn(sb);}
   let vol=0;const MS=(S.intent||{}).msl;let salvoT=null;const scoot=[];
@@ -339,9 +340,14 @@ async function aiDef(){
       if(best){doMove(m,best,'move');}
     }
     while(alive(m)&&m.shots>0&&!S.over){
-      let ts=targets(m);if(MS==='save')ts=ts.filter(t=>HV.includes(t.type));if(m.type==='hmr')ts=ts.filter(t=>HV.includes(t.type)||(rd(hexOf(m),hexOf(t))<=4&&(S.pools.rocGml||0)>=1));if(!ts.length)break; // 電腦把陸軍戰術飛彈留給高價值目標（裝甲、兩棲、陸戰、空降旅），其他目標只在火箭彈射程內才打
-      if(m.type==='hmr'||m.type==='mlrs'){const w={arm:4,tank:4,amph:4,mar:4,abn:3,inf:2,res:2};const far=x=>m.type==='hmr'&&rd(hexOf(m),hexOf(x))>4?1:0;ts.sort((a,b)=>(w[b.type]||1)-(w[a.type]||1)||far(a)-far(b)||a.hp-b.hp);} // 同樣價值時先打近的（用火箭彈，省下陸軍戰術飛彈）
-      else ts.sort((a,b)=>tgtVal(b)-tgtVal(a)||a.hp-b.hp);
+      const IT2=S.intent||{},HM=IT2.hmr,AS=IT2.asm,cargo=t=>{const b=t.boundTo&&S.units.find(x=>x.id===t.boundTo);return b?b.type:null;},hvT=t=>HV.includes(t.type)||HV.includes(cargo(t)); // 載著裝甲、兩棲、陸戰旅的運輸船也算高價值
+      let ts=targets(m);if(MS==='save')ts=ts.filter(hvT);
+      if(m.type==='hmr'){const near=t=>rd(hexOf(m),hexOf(t))<=4&&(S.pools.rocGml||0)>=1;ts=HM==='cn'?ts.filter(near):HM==='beach'||HM==='log'?ts:ts.filter(t=>hvT(t)||near(t));}
+      if(!ts.length)break; // 電腦把陸軍戰術飛彈留給高價值目標（裝甲、兩棲、陸戰、空降旅），其他目標只在火箭彈射程內才打
+      if(m.type==='hmr'||m.type==='mlrs'){const w={arm:4,tank:4,amph:4,mar:4,abn:3,inf:2,res:2};const far=x=>m.type==='hmr'&&rd(hexOf(m),hexOf(x))>4?1:0;
+        const lg=x=>m.type==='hmr'&&HM==='log'?(x.type==='fob'?2:PORTS.includes(K(x.c,x.r))?1:0):0,bc=x=>m.type==='hmr'&&HM==='beach'&&hexOf(x).coastal&&['arm','tank','amph','mar','abn'].includes(x.type)?1:0;
+        ts.sort((a,b)=>lg(b)-lg(a)||bc(b)-bc(a)||(w[b.type]||1)-(w[a.type]||1)||far(a)-far(b)||a.hp-b.hp);} // 同樣價值時先打近的（用火箭彈，省下陸軍戰術飛彈）
+      else{const pr=t=>AS==='tr'?((t.type==='ro'||t.type==='lst'||t.type==='cvy')?2+(cargo(t)?1:0):0):AS==='esc'?((isEsc(t)||t.type==='dd')?2:0):0;ts.sort((a,b)=>pr(b)-pr(a)||tgtVal(b)-tgtVal(a)||a.hp-b.hp);} // 指揮官意圖：反艦打擊優先
       if(MS==='salvo'){if(!(salvoT&&alive(salvoT)&&ts.includes(salvoT)))salvoT=ts[0];else ts=[salvoT];}
       fireMissile(m,ts[0]);vol++;
       if(MS==='scoot'&&alive(m))m.revealed=!!(m.mT&&S.turn<m.mT);
@@ -383,6 +389,7 @@ async function aiDefUnit(u){
   const lost=OBJ.filter(k=>S.owner[k]==='atk');let thr=u.type==='tank'?0:1;
   const line=(S.intent||{}).line;
   if(hold==='preserve')thr=3;
+  if(line==='mobile'&&u.type==='tank'&&S.units.some(e=>e.side==='atk'&&onTW(e)))thr=0; // 機動預備：敵人上岸後裝甲旅集中反擊
   const post=S.mods.defPost&&S.mods.defPost[S.turn];if(post==='counter')thr=Math.min(thr,0);else if(post==='hold')thr=3; // 持久戰策略：反攻或固守
   const fk=hold==='capital'?lost.concat([TAIPEI]):hold==='ports'?lost.concat(PORTS):lost;
   if(await aiTryAttack(u,thr,fk))return;
@@ -394,8 +401,13 @@ async function aiDefUnit(u){
     if(b0>2){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<b0){b0=sc;pk=k;}}
       if(pk){doMove(u,pk,'move');render();await sleep(280);await aiTryAttack(u,thr,fk);}return;}
   }
-  if(line==='beach'&&!lost.length&&!u.garrison){ // 指揮官令：灘岸前推
-    const od=landDist(ZONES.north.concat(ZONES.central));let b0=od[h.k]===undefined?1e9:od[h.k],better=null;
+  if(line==='mobile'&&u.type==='tank'&&!S.units.some(e=>e.side==='atk'&&onTW(e)))return; // 指揮官令：機動預備——敵人上岸前裝甲旅原地隱蔽待命
+  if(line==='depth'&&!lost.length&&!u.garrison&&!S.units.some(e=>e.side==='atk'&&onTW(e))){ // 指揮官令：縱深防禦——敵人上岸前不進海岸格，移到附近的城市或山地
+    if(!h.coastal&&(h.t==='city'||h.t==='mtn'))return;let pk=null,b0=h.coastal?-1:0;
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const t=TER[k];if(t.coastal||t.isl!=='TW')continue;const sc=(t.t==='city'||t.t==='mtn')?2:1;if(sc>b0){b0=sc;pk=k;}}
+    if(pk){doMove(u,pk,'move');render();await sleep(280);}return;}
+  if(line==='beach'&&!lost.length&&!u.garrison){ // 指揮官令：灘岸前推（朝敵船團實際接近的灘頭）
+    const od=defZoneDist(defPickZone(h)||'north');let b0=od[h.k]===undefined?1e9:od[h.k],better=null;
     if(b0>2){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<b0){b0=sc;better=k;}}
       if(better){doMove(u,better,'move');render();await sleep(280);await aiTryAttack(u,thr,fk);}return;}
   }
