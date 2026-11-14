@@ -1909,3 +1909,4 @@ GMLRS 精準火箭彈（海馬士用；每點 1 個莢艙＝6 發）	GMLRS preci
 ・陸軍戰術飛彈 	・ATACMS 
  枚・火箭彈 	 missiles・rockets 
  莢艙	 pods
+程式整理：原本的單一檔案拆成多個檔案，規則與數字都沒有改變。	Code cleanup: the single file is now split into several files; no rules or numbers changed.
