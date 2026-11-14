@@ -2035,7 +2035,7 @@ function failGuide(k){ // 攻方失敗時：這局輸在哪裡，以及對應的
 document.addEventListener('click',e=>{const b=e.target.closest('[data-failgo]');if(!b)return;
   b.getAttribute('data-failgo').split(',').forEach(id=>{const el=$('#'+id);if(el){el.value='1';el.dispatchEvent(new Event('change'));}});
   try{saveSetup();}catch(x){}location.reload();});
-function seedHTML(){if(!S.seedCode)return '';return '<div class="erates"><div class="enote dd">戰局碼：<code class="seedc">'+S.seedCode+'</code> <button class="ghost sm" data-copyseed="1">複製</button><br>在設定最後一頁貼上這個碼，就能用同樣的設定與天候、擲骰結果重玩；你的決策不同，結果仍會不同。</div></div>';}
+function seedHTML(){if(!S.seedCode)return '';return '<div class="erates"><div class="enote dd">戰局碼：<code class="seedc" hidden>'+S.seedCode+'</code> <button class="ghost sm" data-copyseed="1">複製</button><br>在設定最後一頁貼上這個碼，就能用同樣的設定與天候、擲骰結果重玩；你的決策不同，結果仍會不同。</div></div>';}
 function ratingHTML(m){
   if(S.sandbox&&S.sandbox.length)return '<div class="erates"><div class="enote dd">本局使用了假設情境：'+S.sandbox.join('、')+'。結果不代表真實預測。</div></div>';
   const human=sd=>!S.sim&&!S.video&&S.ctrl&&S.ctrl[sd]==='human';
