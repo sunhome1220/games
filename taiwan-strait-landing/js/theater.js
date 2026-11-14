@@ -688,7 +688,7 @@ function computeFire(){
   airSync();const fr=AIR.strike[S.airCtl||'mid']||.4,plaSor=sortiesOf(S.air?S.air.PLA:0,AIR.PLArate)*as*fr+cvIdx().reduce((a,i)=>{const s=sortiesOf(S.air?S.air.cvF[i]:0,AIR.CV[i].rate),w=cvwA(i);return a+s*(w?0:fr);},0); // 有棋子的航艦：對地份額改由艦載機實際空襲（cvwStrike），不再換算成火力點數
   const air=Math.max(0,Math.round(plaSor/AIR.perFire)); // ★陸基機出擊架次依制空狀況分配給對地打擊；航艦艦載機依任務分配的對地比例；每 10 架次＝1 點 // ★出擊架次依制空狀況分配給對地打擊，每 10 架次＝1 點
   const add=S.mods.fireAdd[t]||0,sd=S.sead?1:0; // 守方防空不再直接扣火力點數：改在每個打擊包實際攔截
-  S.fireNote=(rs<1||as<1?'大陸基地受損：火箭軍旅可用 '+Math.round(rs*100)+'%、機場可用 '+Math.round(as*100)+'%。':'')+'短程彈道飛彈 '+sP+' 包（每包 4 枚，存量 '+S.msl.srbm+' 枚）＋長程火箭 '+rP+' 包（每包 8 枚，只打得到台灣西半部，存量 '+S.msl.rkt+' 枚）'+(hs?'＋東風-17 '+hs:'')+(cm?'＋巡弋飛彈 '+cm:'')+'＋空軍 '+air+(sd?'＋防空壓制 1':'')+'（守方攔截彈 '+adTot()+' 枚，每回合最多接戰 '+MSL.adCap+' 枚）'+(S.weather.fire?'－天候 '+(-S.weather.fire):'')+(add?(add>0?'＋':'－')+'事件 '+Math.abs(add):'');
+  S.fireNote=(rs<1||as<1?'大陸基地受損：火箭軍旅可用 '+Math.round(rs*100)+'%、機場可用 '+Math.round(as*100)+'%。':'')+'短程彈道飛彈 '+sP+' 波（每波 4 枚，存量 '+S.msl.srbm+' 枚）＋長程火箭 '+rP+' 波（每波 8 枚，只打得到台灣西半部，存量 '+S.msl.rkt+' 枚）'+(hs?'＋東風-17 '+hs:'')+(cm?'＋巡弋飛彈 '+cm:'')+'＋空軍 '+air+(sd?'＋防空壓制 1':'')+'（守方攔截彈 '+adTot()+' 枚，每回合最多接戰 '+MSL.adCap+' 枚）'+(S.weather.fire?'－天候 '+(-S.weather.fire):'')+(add?(add>0?'＋':'－')+'事件 '+Math.abs(add):'');
   let lam=0;for(const e of S.units.filter(e=>e.side==='atk'&&isEsc(e)&&alive(e)&&e.mag&&e.mag.lam>=LAM.per)){e.mag.lam-=LAM.per;lam++;} // ★每艘 055／052D 每回合發射 4 枚對地巡弋飛彈＝1 點火力
   if(lam)S.fireNote+='＋艦射對地巡弋飛彈 '+lam;
   const pb=S.owner[MAGONG]==='atk'?1:0; // 澎湖前進基地

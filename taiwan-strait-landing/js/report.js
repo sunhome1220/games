@@ -66,7 +66,7 @@ function renderTheater(){
   });
   $('#flist').innerHTML=l;
   const sel=S.thSel&&BASES[S.thSel],csel=S.cnSel&&CNB[S.cnSel];
-  $('#thHint').textContent=dStrikeOn?'縱深打擊模式：點選大陸基地（紅色圖形），或主地圖上大陸沿岸集結中的攻方部隊與船隻（有圈的已被找到）。每次發射一包 4 枚，先過共軍防空攔截（越遠越多層），突破後命中率依目標硬度 20～45%；命中使基地受損一級（削弱火箭軍發射能量、機場出擊或港區），攻方每 2 回合修復一級。':csel?csel.n+'（'+KIND_N[csel.kind]+'）：'+csel.d+'，完整度 '+S.cn[S.cnSel]+'/'+csel.hp+(S.cn[S.cnSel]>0?'，被打擊需擲 '+cnNeed(S.cnSel)+' 以上':'，已癱瘓'):strikeOn?'火力打擊模式：點選基地打擊（需擲 '+'4～6）。打擊中立國家的基地會讓它參戰。':
+  $('#thHint').textContent=dStrikeOn?'縱深打擊模式：點選大陸基地（紅色圖形），或主地圖上大陸沿岸集結中的攻方部隊與船隻（有圈的已被找到）。每次發射一波 4 枚，先過共軍防空攔截（越遠越多層），突破後命中率依目標硬度 20～45%；命中使基地受損一級（削弱火箭軍發射能量、機場出擊或港區），攻方每 2 回合修復一級。':csel?csel.n+'（'+KIND_N[csel.kind]+'）：'+csel.d+'，完整度 '+S.cn[S.cnSel]+'/'+csel.hp+(S.cn[S.cnSel]>0?'，被打擊需擲 '+cnNeed(S.cnSel)+' 以上':'，已癱瘓'):strikeOn?'火力打擊模式：點選基地打擊（需擲 '+'4～6）。打擊中立國家的基地會讓它參戰。':
     sel?sel.n+'：'+sel.d+(baseTargets(S.thSel).length?'，打擊需擲 '+baseNeed(S.thSel)+' 以上':''):'點選基地查看駐軍。美日部隊參戰後由電腦在守方階段自動出擊。';
 }
 
