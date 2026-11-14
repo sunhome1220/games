@@ -154,7 +154,7 @@ $('#info').addEventListener('click',e=>{
 document.addEventListener('click',e=>{ // 守方縱深打擊：也可直接點右側「中方基地」清單的列（手機上比點地圖小圖示容易）
   const r=e.target.closest('[data-cnrow]');if(!r)return;const id=r.getAttribute('data-cnrow');
   if(tomClick(id))return;
-    if(humanTurn()&&S.phase==='def'&&S.mode==='strike'&&S.dfire>0&&lrOK()&&cnTargets().includes(id)){S.dfire--;strikeCN(id,'roc');if(S.dfire<=0||!lrOK())S.mode=null;render();return;}
+    if(humanCN(id))return;
   S.cnSel=S.cnSel===id?null:id;S.thSel=null;render();
 });
 $('#btnStrike').onclick=()=>{if(!humanTurn())return;S.mode=S.mode==='strike'?null:'strike';S.sel=null;render();};
@@ -199,9 +199,7 @@ $('#tmap').addEventListener('click',async e=>{
   if(cn){
     const id=cn.getAttribute('data-cn');
     if(tomClick(id))return;
-    if(humanTurn()&&S.phase==='def'&&S.mode==='strike'&&S.dfire>0&&lrOK()&&cnTargets().includes(id)){
-      S.dfire--;strikeCN(id,'roc');if(S.dfire<=0||!lrOK())S.mode=null;render();return;
-    }
+    if(humanCN(id))return;
     S.cnSel=S.cnSel===id?null:id;S.thSel=null;render();return;
   }
   const el=e.target.closest('[data-b]');if(!el)return;const b=el.getAttribute('data-b');

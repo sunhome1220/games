@@ -4,7 +4,7 @@ $('#map').addEventListener('click',async e=>{
   const cnE=e.target.closest('[data-cn]');
   if(cnE){const id=cnE.getAttribute('data-cn');
     if(tomClick(id))return;
-    if(humanTurn()&&S.phase==='def'&&S.mode==='strike'&&S.dfire>0&&lrOK()&&cnTargets().includes(id)){S.dfire--;strikeCN(id,'roc');if(S.dfire<=0||!lrOK())S.mode=null;render();return;}
+    if(humanCN(id))return;
     const fn=CNB[id]&&CNB[id].n;if(fn&&FARINFO[fn]){FARSEL=fn;S.sel=null;S.hover=null;renderInfo();}return;}
   const fcE=e.target.closest('[data-fac]');
   if(fcE){const id=fcE.getAttribute('data-fac');
@@ -34,6 +34,7 @@ $('#map').addEventListener('click',async e=>{
   if(S.mode==='strike'){
     if(S.phase==='atk'&&u&&u.side==='def'&&strikeable(u)&&S.fire>0){strike(u);if(S.fire<=0)S.mode=null;}
     else if(S.phase==='def'&&u&&u.side==='atk'&&hexOf(u).isl==='CN'&&S.dfire>0&&lrOK()){if(stgFound(u)>0){S.dfire--;strikeStage(u,'roc');if(S.dfire<=0||!lrOK())S.mode=null;}else toast('這個集結中的單位本階段沒有被找到（或找到的部分都打過了），打不到',3200);}
+    else if(S.phase==='def'&&u&&u.side==='atk'&&hexOf(u).isl==='CN')toast('本階段已沒有可發射的長程飛彈（發射車或存量用完）',3200);
     else if(S.phase==='atk'&&u&&u.side==='def'&&isLch(u)&&canHitSub(u))toast('這個發射車陣地本階段偵察沒有找到真正的車（或找到的都打過了），打不到',3200);
     else if(S.phase==='atk'&&!u&&S.fire>0&&TER[k]&&TER[k].t==='air'&&TER[k].isl==='TW'&&strikeAirfield(k)){if(S.fire<=0)S.mode=null;}
     render();return;

@@ -66,24 +66,32 @@ function stgFound(u){const key=S.turn+S.phase;if(u.sgT!==key){u.sgT=key;let p=ST
   if(S.weather&&(S.weather.id==='bad'||tyThreat(S.weather))){p*=STGLOC.wx;f.push('雲雨或颱風 ×'+STGLOC.wx);}
   u.sgL=f.join('、');u.sgN=takeInt(p*Math.max(0,u.hp),'sgloc');}return u.sgN;}
 const stgTargets=()=>stgUnits().filter(u=>stgFound(u)>0);
+const cnMe=by=>by==='roc'&&S.ctrl&&S.ctrl.def==='human'&&!S.sim&&!S.video&&!S.busy; // 守方玩家自己按的縱深打擊：結果要跳出訊息（電腦代打時只寫戰報）
+function humanCN(id){ // 守方玩家點大陸基地：能打就打；不能打也要說明原因（不再毫無反應）
+  if(!(humanTurn()&&S.phase==='def'&&S.mode==='strike'))return false;
+  if(S.dfire<=0||!lrOK()){toast('本階段已沒有可發射的長程飛彈（發射車或存量用完）',3200);S.mode=null;render();return true;}
+  if(!cnTargets().includes(id)){if(CNB[id]&&S.cn[id]<=0){toast(CNB[id].n+' 已癱瘓，打了也沒有效果',3200);return true;}return false;}
+  S.dfire--;strikeCN(id,'roc');if(S.dfire<=0||!lrOK())S.mode=null;render();return true;
+}
 function strikeStage(u,by){ // 縱深打擊集結中的部隊或船隻：同一套規則（每包 4 枚、先過共軍防空、命中 33%），要先被找到
   const hn=x=>{const n=hname(x);return /^大陸 /.test(n)?'大陸沿岸':n;},P=S.pools,sc=by==='roc'?ROCLR.pk/ROCLR.per:1,proxy=by==='US'&&usIdx()<2;let who={roc:'台灣長程飛彈（雄二E）',US:proxy?'美軍（代理打擊）':'美軍',JP:'自衛隊'}[by],h=hexOf(u);
-  let L=null;if(by==='roc'){L=lrSpend(cnHitP({u}).km);if(!L){log('沒有射程到得了 '+hn(h)+' 的長程飛彈');S.dfire++;return;}who=lrWho(L);}
+  let L=null;if(by==='roc'){L=lrSpend(cnHitP({u}).km);if(!L){const t='沒有射程到得了 '+hn(h)+' 的長程飛彈（雄二E 已用完，陸軍戰術飛彈只到 300 km）';log(t);if(cnMe(by))toast(t,3500);S.dfire++;return;}who=lrWho(L);}
   S.retal+=((by==='roc'||proxy)?.25:.5)*sc;S.cost.civ.CN+=Math.round(60*sc);S.cost.dmg.CN+=.3*sc;S.stats.cn.strikes++;
   const HP=cnHitP({u}),IC=HP.IC,hit=stgFound(u)>0&&hitP(HP.p,'strikeStage');
   const itx=ROCLR.pk+' 枚，距離約 '+HP.km+' km'+(IC.I?'，共軍防空發射 '+Math.round(IC.I)+' 枚攔截彈，約 '+(Math.round(IC.surv*10)/10)+' 枚突破':'，共軍防空已失效')+'，命中率 '+Math.round(HP.p*100)+'%';
   const src=(L&&L.src)||S.units.find(x=>x.side==='def'&&(x.type==='hmr'||x.type==='ssm')&&alive(x))||TER[TAIPEI];
   fxq(by==='roc'?{t:'air',from:[src.c,src.r],at:[u.c,u.r],hit,tsea:false,k:'cm'}:{t:'air',src:'e',at:[u.c,u.r],hit,tsea:false});
   if(hit){u.sgN=Math.max(0,(u.sgN||0)-1);S.stats.cn.hits++;const nm=TYPES[u.type].n;damage(u,1,'縱深打擊（集結區）');
-    log(who+'縱深打擊 '+hn(h)+' 集結中的 '+nm+'（'+itx+'；'+(u.sgL||'')+'）：命中，'+nm+' 損失 '+stpU(u,1));}
-  else log(who+'縱深打擊 '+hn(h)+' 集結中的 '+TYPES[u.type].n+'（'+itx+'）：未命中（'+lastTxt()+'）');
+    log(who+'縱深打擊 '+hn(h)+' 集結中的 '+nm+'（'+itx+'；'+(u.sgL||'')+'）：命中，'+nm+' 損失 '+stpU(u,1));if(cnMe(by))toast('縱深打擊 '+hn(h)+'：命中，'+nm+' 損失 '+stpU(u,1),3500);}
+  else{log(who+'縱深打擊 '+hn(h)+' 集結中的 '+TYPES[u.type].n+'（'+itx+'）：未命中（'+lastTxt()+'）');if(cnMe(by))toast('縱深打擊 '+hn(h)+'：未命中（命中率 '+Math.round(HP.p*100)+'%）',3500);}
+  if(cnMe(by))fxq({t:'txt',at:[u.c,u.r],s:hit?'命中':'未命中',col:'def'});
   S.cnLog.push({t:S.turn,id:'stage',by,hit});checkInstant();
 }
 function strikeCN(id,by){
   if(typeof id==='string'&&id[0]==='u'){const u=S.units.find(x=>'u'+x.id===id);if(u)strikeStage(u,by);return;}
   const proxy=by==='US'&&usIdx()<2,B=CNB[id],P=S.pools,need=cnNeed(id);let who={roc:'台灣長程飛彈（雄二E）',US:proxy?'美軍（代理打擊）':'美軍',JP:'自衛隊'}[by];
   const sc=by==='roc'?ROCLR.pk/ROCLR.per:1; // 台灣：一包 4 枚＝0.16 點；美日仍是抽象點數
-  if(by==='roc'){const L=lrSpend(cnHitP(id).km);if(!L){log('沒有射程到得了 '+B.n+' 的長程飛彈');S.dfire++;return;}who=lrWho(L);}
+  if(by==='roc'){const L=lrSpend(cnHitP(id).km);if(!L){const t='沒有射程到得了 '+B.n+' 的長程飛彈（雄二E 已用完，陸軍戰術飛彈只到 300 km）';log(t);if(cnMe(by))toast(t,3500);S.dfire++;return;}who=lrWho(L);}
   S.retal+=((by==='roc'||proxy)?.25:.5)*sc;
   S.cost.civ.CN+=Math.round((B.kind==='stg'?120:B.kind==='navy'?90:B.kind==='air'?50:35)*sc);S.cost.dmg.CN+=(B.kind==='stg'?.5:.3)*sc;
   S.stats.cn.strikes++;
@@ -101,13 +109,16 @@ function strikeCN(id,by){
   }
   S.cnLog.push({t:S.turn,id,by,hit});
   log(who+'縱深打擊 '+B.n+'（'+itx+'）'+(hit?'：命中'+(fx?'，'+fx:''):'：未命中（'+lastTxt()+'）'));
+  if(cnMe(by))toast('縱深打擊 '+B.n+'：'+(hit?'命中'+(fx?'，'+fx:''):'未命中（命中率 '+Math.round(HP.p*100)+'%）'),4000);
   checkInstant();
 }
 function aiPickCN(roc){ // 期望效果最高的目標（命中率 × 效果，±10% 雜訊）
   let best=null,bs=-1;
   const cand=cnTargets().map(id=>({k:id,tg:id})).concat(stgTargets().map(u=>({k:'u'+u.id,tg:{u}})));
-  const DP=roc&&S.intent&&S.intent.deep,kd=tg=>tg.u?'stg':CNB[tg].kind,pref=tg=>!DP?1:DP==='stg'?(kd(tg)==='stg'||kd(tg)==='navy'?3:1):kd(tg)===DP?3:1; // 指揮官意圖「縱深打擊目標」：指定的種類優先（權重 ×3，只影響挑選順序）
-  for(const c of cand){const H=cnHitP(c.tg);if(roc&&!lrWpn(H.km))continue;const v=H.p*cnValue(c.tg)*pref(c.tg)*(.9+Math.random()*.2);if(v>bs){bs=v;best=c.k;}} // 守方：只挑射程到得了的目標
+  const DP=roc&&S.intent&&S.intent.deep,kd=tg=>tg.u?'stg':CNB[tg].kind,isP=tg=>DP==='stg'?(kd(tg)==='stg'||kd(tg)==='navy'):kd(tg)===DP;
+  let C=roc?cand.filter(c=>lrWpn(cnHitP(c.tg).km)):cand; // 守方：只挑射程到得了的目標
+  if(DP&&C.some(c=>isP(c.tg)))C=C.filter(c=>isP(c.tg)); // 指揮官意圖「縱深打擊目標」：先打指定種類，打不到（沒有、射程外）才打其他
+  for(const c of C){const H=cnHitP(c.tg);const v=H.p*cnValue(c.tg)*(.9+Math.random()*.2);if(v>bs){bs=v;best=c.k;}}
   return best;
 }
 const allyCanStrike=f=>f.land&&fxActive(f)&&(f.c==='US'?S.fx.lv.US>=3&&usIdx()>=1:S.fx.lv.JP>=2&&S.fx.lv.US>=2);
