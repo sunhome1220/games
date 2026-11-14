@@ -281,7 +281,7 @@ function endPhaseGuard(){ // 回傳 true＝先擋下並提示
 }
 function doMove(u,k,kind){
   const from=hexOf(u);const h=TER[k];
-  if(u.type==='hk'&&kind==='sail'){u.loud=hd(from,h)>SPD.subQuiet;if(u.loud&&!subHidden(u))log('海鯤潛艦高速航行約 '+Math.round(hd(from,h)*KM_HEX)+' km（超過 '+Math.round(SPD.subQuiet*KM_HEX)+' km），噪音大，下一次被反潛發現的機率加倍');}
+  if(u.type==='hk'&&kind==='sail'){u.loud=hd(from,h)>SPD.subQuiet;if(u.loud&&!subHidden(u))log(subNm(u)+'高速航行約 '+Math.round(hd(from,h)*KM_HEX)+' km（超過 '+Math.round(SPD.subQuiet*KM_HEX)+' km），噪音大，下一次被反潛發現的機率加倍');}
   if(kind==='sail'&&isBde(u)&&!u.ship&&isLand(from)&&from.isl==='CN')embark(u,from);
   u.c=h.c;u.r=h.r;u.moved=true;if(u.type==='cv'||u.type==='csg'||u.type==='ddh')escFollow(u); // 護航艦跟著航艦移動
   if(u.ship&&(kind==='sail'||kind==='move')){const sh=shipOf(u);if(sh){sh.c=u.c;sh.r=u.r;}}
@@ -470,10 +470,10 @@ function strike(t){
     log('火力打擊 '+hname(h)+'：'+(t.revealed?'發射車已轉移，打到空的陣地':'沒有找到（或已打過所有找到的）真正發射車，打中誘餌與空車')+'（'+t.locL.txt+'；本階段找到的車都已打過；推估）');checkInstant();return;}
   if(isGnd(t)&&gFound(t)<=0){
     fxq({t:'air',at:[t.c,t.r],hit:false,tsea:false,org:orgPick('pla'),k:pk.hs?'hs':pk.k==='g'?'cm':'bm'});
-    log('火力打擊 '+hname(h)+'：沒有找到可打擊的'+TYPES[t.type].n+'營級部隊，打到空的陣地（'+(t.glL?t.glL.txt:'')+'；推估）');checkInstant();return;}
+    log('火力打擊 '+hname(h)+'：沒有找到可打擊的'+tname(t)+'營級部隊，打到空的陣地（'+(t.glL?t.glL.txt:'')+'；推估）');checkInstant();return;}
   const PM=pkgMod(pk,h,t),ok=hitP((mob?lchKillP(pk):pNeed(need))*PM.m,'st:'+t.type+':'+pk.k); // 機動發射車：已定位後依武器數量計算
   fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:atSea(t),org:orgPick(S.pools&&S.pools.plaCV>0&&Math.random()<.3?'plaCV':'pla'),k:pk.hs?'hs':pk.k!=='g'?'bm':Math.random()<.5&&S.pools.plaCM>0?'cm':'bomb',ad:!pk.hs&&S.pools.rocAD>0&&!S.sead&&!atSea(t)?(ok?'pass':'int'):undefined});
-  if(ok){if(isLch(t)&&t.veh!=null){t.locN=Math.max(0,(t.locN||0)-1);const x=ssmHit(t,'火力打擊');log('火力打擊命中 '+hname(h)+' 的 '+TYPES[t.type].n+'：'+x+'（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');}else{if(isGnd(t))t.glN=Math.max(0,(t.glN||0)-1);log('火力打擊命中 '+hname(h)+' 的 '+TYPES[t.type].n+'（'+(isGnd(t)&&t.glL?t.glL.txt+'；':'')+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');damage(t,1,'火力打擊');}}
+  if(ok){if(isLch(t)&&t.veh!=null){t.locN=Math.max(0,(t.locN||0)-1);const x=ssmHit(t,'火力打擊');log('火力打擊命中 '+hname(h)+' 的 '+tname(t)+'：'+x+'（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');}else{if(isGnd(t))t.glN=Math.max(0,(t.glN||0)-1);log('火力打擊命中 '+hname(h)+' 的 '+tname(t)+'（'+(isGnd(t)&&t.glL?t.glL.txt+'；':'')+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');damage(t,1,'火力打擊');}}
   else log('火力打擊 '+hname(h)+' 未命中（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');
   checkInstant();return true;
 }
