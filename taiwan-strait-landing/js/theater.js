@@ -272,6 +272,15 @@ const AF_RWY={taoyuanap:2,tainanab:2,gangshan:2,pingtung:2,chiayiab:2,chihhang:2
 const afRwy=k=>{const id=Object.keys(AF_RWY).find(x=>SPOT[x]===k);return id?AF_RWY[id]:1;};
 const afCut=k=>Math.min(afRwy(k),(S.afDmg&&S.afDmg[k])||0);
 const afCap=k=>S.owner[k]==='atk'?0:(afRwy(k)-afCut(k))/afRwy(k); // 起降能力＝可用跑道 ÷ 總跑道
+// 攻方占領的機場：跑道還有一半以上能用、制空不在守方、天候可飛時，可以空運（★每座每回合補給 1 個旅、最多 2 座；未空降的空降旅可直接機降）
+const afRoom=(u,k)=>{const a=unitsAt(k).filter(x=>!x.boundTo);return a.length<STACK_MAX&&a.every(x=>x.side===u.side&&x!==u);}; // 機降到自己守住的機場：不受敵方接觸區限制
+function atkAF(){ // 機場上要有攻方地面部隊、而且從上一回合就守住（剛奪下的跑道要先清理、確保安全）
+  const H=S.afHeld||(S.afHeld={}),L=[];
+  for(const h of airfields()){const on=S.owner[h.k]==='atk'&&unitsAt(h.k).some(u=>u.side==='atk'&&!isShip(u)&&u.hp>0);
+    if(!on){delete H[h.k];continue;}if(H[h.k]==null)H[h.k]=S.turn;
+    if(H[h.k]<S.turn&&(afRwy(h.k)-afCut(h.k))/afRwy(h.k)>=.5)L.push(h);}
+  return (!S.weather||S.weather.air)&&S.airCtl!=='def'?L:[];
+}
 const afLevel=k=>S.owner[k]==='atk'||afCap(k)<=0?3:afCut(k)===0?0:afCap(k)>=.5?1:2; // 0 完好、1 部分跑道受損、3 全部癱瘓或被占領（供圖示與電腦判斷）
 const afTxt=k=>afCap(k)<=0?'跑道全部癱瘓（無法起降）':afCut(k)?'切斷 '+afCut(k)+' 條跑道（剩 '+(afRwy(k)-afCut(k))+'／'+afRwy(k)+' 條，起降 '+Math.round(afCap(k)*100)+'%）':'完好（'+afRwy(k)+' 條跑道）';
 function afShare(){ // 守方戰機實際能起降的比例：依各基地戰機數加權（炸沒有戰鬥機的民用機場或訓練基地，不影響出擊）

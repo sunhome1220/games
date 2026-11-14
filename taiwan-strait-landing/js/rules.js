@@ -13,7 +13,8 @@ function unloadCap(){ // 船團的卸載上限：攻方掌握的港口、灘岸�
     }
   }
   if(S.owner[MAGONG]==='atk')capB+=2*fb(wxWave(TER[MAGONG]));
-  const cap=Math.round(capP+capB);
+  const capA=typeof atkAF==='function'?Math.min(2,atkAF().length):0; // 空運：占領的機場（★每座 1、最多 2）
+  const cap=Math.round(capP+capB)+capA;
   return Math.max(0,cap-((S.mods.supCut&&S.mods.supCut[S.turn])||0)); // 守方破壞港口後勤／特種部隊突襲等造成的卸載能力下降
 }
 function supply(){
@@ -206,6 +207,7 @@ function reach(u){
     if(S.weather.air)for(const t of Object.values(TER)){
       if((t.isl==='TW'||t.isl==='PH')&&t.t!=='mtn'&&canStack(u,t.k)&&rd(h,t)<=kmH(400))res.set(t.k,{kind:'drop'});
     }
+    for(const t of atkAF())if(afRoom(u,t.k))res.set(t.k,{kind:'drop'}); // 占領的機場：可直接機降（天候不佳時也要能起降才行）
     return res;
   }
   if(isLand(h)&&u.type!=='ff'&&u.type!=='hk')landReach(u,res);
@@ -292,7 +294,8 @@ function doMove(u,k,kind){
   else if(kind==='drop'){
     u.acted=true;u.dropped=true;
     let msg=uname(u)+' 空降 '+hname(h);
-    const hot=inZOC(u.side,h),pA=dropAD(),org=u.org||[from.c,from.r];
+    const al=atkAF().includes(h),hot=!al&&inZOC(u.side,h),pA=dropAD()*(al?.5:1),org=[from.c,from.r]; // 機降到已占領的機場：★攔截機率減半、不會遭落點地面壓制
+    if(al)msg=uname(u)+' 以運輸機機降已占領的 '+hname(h);
     const shot=hitP(pA,'dropAD'),hp0=u.hp; // 運輸機群先要飛過守方防空，被擊落的部分整批損失
     const lz=hot&&hitP(.5,'dropHot');      // 落點旁有守方部隊：落地時遭地面火力壓制
     const lose=(shot?1:0)+(lz?1:0),dead=lose>=hp0;

@@ -172,9 +172,12 @@ async function aiAtkUnit(u){
     return;
   }
   if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
+    const AF=atkAF();
+    if(AF.length){const t=AF.find(x=>afRoom(u,x.k));if(t){doMove(u,t.k,'drop');render();await sleep(380);return;}} // 已占領可用的機場：直接機降
     if(!S.weather.air||S.turn>3)return;
     if(dropAD()>=.3&&S.turn<3)return; // ★防空還強時先不空降，等防空被壓制（最晚第 3 回合仍要執行）
-    const rc=reach(u);let best=null,bs=1e9;const g=TER[ABN_GOAL[aiPlan().zone][u.goal||0]];
+    const IX=(S.intent||{}).axis,zn=IX==='north'||IX==='central'?IX:aiPlan().zone;
+    const rc=reach(u);let best=null,bs=1e9;const g=TER[ABN_GOAL[zn][u.goal||0]];
     for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+Math.random()*.4;if(s<bs){bs=s;best=k;}}
     if(best){doMove(u,best,'drop');render();await sleep(380);}
     return;
