@@ -14,9 +14,13 @@ $('#map').addEventListener('click',async e=>{
   if(bE){const b=bE.getAttribute('data-b');
     if(humanTurn()&&S.phase==='atk'&&S.mode==='strike'&&S.fire>0&&baseTargets(b).length){const w=escalationText(b);if(w&&!(await confirmBox(w)))return;strikeBase(b);if(S.fire<=0)S.mode=null;render();return;}
     return;}
+  const btE=e.target.closest('[data-base]'); // 基地標籤：直接選機場（就算機場上有部隊）
+  if(btE){const k=btE.getAttribute('data-base');FARSEL=null;
+    if(humanTurn()&&S.phase==='atk'&&S.mode==='strike'&&S.fire>0&&strikeAirfield(k)){if(S.fire<=0)S.mode=null;render();return;}
+    S.sel=null;S.hover=k;S.hoverId=null;S.baseSel=k;UC.closedKey=null;render();return;}
   const fe=e.target.closest('[data-far]');
   if(fe){FARSEL=fe.getAttribute('data-far');S.sel=null;S.hover=null;renderInfo();return;}
-  const el=e.target.closest('[data-k]');if(!el)return;const k=el.getAttribute('data-k');FARSEL=null;
+  const el=e.target.closest('[data-k]');if(!el)return;const k=el.getAttribute('data-k');FARSEL=null;S.baseSel=null;
   S.hover=k;const idEl=e.target.closest('[data-id]'),hitU=idEl?S.units.find(x=>x.id===+idEl.dataset.id):null;S.hoverId=hitU?hitU.id:null;
   if(!humanTurn()){S.sel=hitU||unitAtVis(k)||null;render();return;}
   let u=hitU||unitAtVis(k);
