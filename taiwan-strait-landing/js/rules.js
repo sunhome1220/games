@@ -306,7 +306,8 @@ function doMove(u,k,kind){
     const shot=hitP(pA,'dropAD'),hp0=u.hp; // 運輸機群先要飛過守方防空，被擊落的部分整批損失
     const lz=hot&&hitP(.5,'dropHot');      // 落點旁有守方部隊：落地時遭地面火力壓制
     const lose=(shot?1:0)+(lz?1:0),dead=lose>=hp0;
-    fxq({t:'drop',from:org,at:[h.c,h.r],lost:shot?1:0,fail:dead});
+    fxq({t:'drop',from:org,at:[h.c,h.r],lost:shot?1:0,fail:dead,id:u.id});
+    if(!S.sim&&!S.video&&!REC.quiet&&!S.rec&&!reduce()){u.dropHide=1;setTimeout(()=>{if(u.dropHide){u.dropHide=0;render();}},8000);} // 動畫中的運輸機還沒飛到前，地圖上先不畫這個空降旅（保險：最多 8 秒）
     if(lose){msg+='，'+[shot?'運輸機群遭防空攔截（攔截率 '+Math.round(pA*100)+'%，推估）':'',lz?'落點遭地面火力壓制':''].filter(Boolean).join('、')+'，損失 '+stpU(u,Math.min(lose,hp0))+(dead?'，空降失敗':'，其餘部隊落地');log(msg);damage(u,lose,'空降損失');return;}
     log(msg+'：運輸機群突破防空，部隊落地（攔截率 '+Math.round(pA*100)+'%，推估）');
   } else{if(kind==='sail'&&from.t!=='sea'&&!subHidden(u))log(uname(u)+' 自 '+hname(from)+' 出航');if(kind==='sail'||kind==='move')mineCheck(u,h);}

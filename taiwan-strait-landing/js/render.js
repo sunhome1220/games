@@ -88,7 +88,8 @@ function coastRiverSVG(land){
   for(const [n,P] of RIVERS){const pts=P.map(([lo,la])=>{const [x,y]=llPx(lo,la);return [x,y-lift(lo,la)];});
     o+='<path class="river" d="M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L')+'"/>';
     const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
-  {const [x,y]=llPx(120.957,23.470),yy=y-lift(120.957,23.470);o+='<text class="lbl peak" font-size="'+(8*Math.max(.72,SC)).toFixed(1)+'" x="'+x.toFixed(1)+'" y="'+(yy-2).toFixed(1)+'" text-anchor="middle">▲玉山 3,952 m</text>';}
+  {const [c,r]=llToRC(120.957,23.470),h=TER[K(c,r)];if(h){const [x,y0]=center(h.c,h.r),y=y0-elev(h); // 玉山：和其他地名一樣放在所在格的中心上方（不用小數座標，放大到 500% 以上時才不會跑位）
+    o+='<text class="lbl peak" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x.toFixed(1)+'" y="'+(FG>2?y-R*1.2:y-11).toFixed(1)+'">▲玉山</text>';}}
   return o;
 }
 function hexV(x,y,rr){const o=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);o.push([x+rr*Math.cos(a),y+rr*Math.sin(a)]);}return o;}
@@ -509,7 +510,7 @@ function renderMap(){
   {const iu=S.sel&&alive(S.sel)?S.sel:(S.hoverId?S.units.find(x=>x.id===S.hoverId):null); // 射程圈：一鍵全開時畫雙方所有航艦艦隊；點選（或游標停在）艦艇時畫該艦
    if(S.started&&RNG_ALL)S.units.filter(x=>(x.type==='cv'||x.type==='csg'||x.type==='ddh')&&alive(x)&&x!==iu).forEach(x=>{o+=rangeRingsSVG(x,true);});
    if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)))o+=rangeRingsSVG(iu,false);}
-  S.units.filter(u=>!subHidden(u)&&!(u.ship&&atSea(u))).concat([...GHOSTS.values()]).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
+  S.units.filter(u=>!subHidden(u)&&!(u.ship&&atSea(u))&&!u.dropHide).concat([...GHOSTS.values()]).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
   // 潛艦「上次發現點」：目前沒被發現的潛艦，只在地圖上留下最後被發現的位置（淡虛線圈與回合數）
   S.units.filter(u=>subHidden(u)&&u.last&&S.turn-u.last.turn<=6).forEach(u=>{const p=cen(u.last.c,u.last.r);o+='<g class="lastseen" opacity=".8"><circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(R*.55).toFixed(1)+'" fill="none" stroke="#3f7fd0" stroke-width="1.6" stroke-dasharray="4 3"/><text x="'+p[0].toFixed(1)+'" y="'+(p[1]+4).toFixed(1)+'" text-anchor="middle" font-size="11" fill="#3f7fd0" font-weight="700">?</text><text x="'+p[0].toFixed(1)+'" y="'+(p[1]+R*.55+10).toFixed(1)+'" text-anchor="middle" font-size="9" fill="#3f7fd0">'+TX('潛艦 上次發現點')+' T'+u.last.turn+'</text></g>';});
   o+=facSVG();
