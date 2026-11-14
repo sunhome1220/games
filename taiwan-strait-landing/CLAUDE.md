@@ -32,11 +32,10 @@
 1. 先 `git fetch origin main`，再從**最新** `origin/main` 開新分支（`git checkout -B <branch> origin/main`）。
    - 本機的 `origin/main` 可能過期；過期會讓你在舊基準上改、推出衝突標記。
 2. 實作 → 用 Playwright 實測（見第四節）→ 語法檢查。
-3. 版本與資料（缺一不可）：
+3. 版本與資料：
    - `python3 tools/bump_version.py <版本>`，格式 `2026-11-10.NN`（NN 遞增）。
    - `CHANGELOG`：加在 `const CHANGELOG=[` 之後第一筆（最新在最上面）。
-   - 英文：把「中文<TAB>English<TAB>」附加到 `tools/i18n/extras.tsv`（修改過的中文字串要補新的英文）。
-   - `python3 tools/i18n/build_dict.py` 重建字典。
+   - **翻譯不用每次改**（使用者 2026-11-14 指示）：平常改動不補 `extras.tsv`、不重建字典；累積一陣子後，使用者要求時再一次補英文（`extras.tsv`）並執行 `python3 tools/i18n/build_dict.py`（需要 `pip install opencc-python-reimplemented`）。
 4. 提交、推送、用 GitHub MCP 開 PR。**不要擅自合併**。
    - 使用者說「合併」＝合併所有未合併的 PR（squash）；「合併N」＝只合併第 N 號。
    - 不要更新 Artifact。
@@ -50,7 +49,8 @@
 - 設定精靈：`SETUP_PAGES`（欄位 `{sel,q,when,grp,opts:{值:[標籤,說明]}}`）。新增設定項要同步四處：隱藏的 `<select id=opt…>`、change 監聽清單、`CFG_IDS`、`DEFAULT_CFG`。
 - 確定性：`hitP(p,key)`、`takeInt`、`ACC`；天候 `nextWave/rollWeather`；戰局碼 `seedCode/parseSeedCode/initSeed`。
 - 補給與運輸：`unloadCap`、`resolveSupply`、`convoyTurn`、`liftTurn`、`supplyAttrition`；運輸船是真實棋子，可被攻擊。
-- 打擊大陸：`strikeCN`（人工與電腦共用同一個飛彈存量與命中公式）、`aiPickCN`。
+- 打擊大陸：`strikeCN`（人工與電腦共用同一個飛彈存量與命中公式）、`aiPickCN`。台灣方用 `lrSpend`：300 km 內優先用陸軍戰術飛彈（`rocAtc`，佔用海馬士一次齊射），其餘用雄二E（`rocMsl`）。
+- 海馬士：`HMR_ERA`（各年代發射車、棋子數、ATACMS 枚數、GMLRS 莢艙數）、`hmrSpread`（車數平均分配）、`HMR_PKG`（一次齊射最多 4 輛）。
 - 潛艦（海鯤）：`subTargets/fireSub/subHidden`；在海上隱蔽、回港時才看得到、可被打。
 - 地圖尺度（換算用）：每格約 20 km、約 300 多平方公里（海馬士 4 格約 80 km；台灣本島約 114 格）。
 - 除錯鉤子：網址加 `?debug=1`，提供 `window.__S`、`__dog`、`__fg`、`__ledger` 等。
@@ -68,7 +68,6 @@
 
 ## 五、已知的未完成事項（使用者擱置或待決定）
 
-- 海馬士依交付進度調整數量與部署（已核實：已交 11 套、2026 年底前再 18 套，共 29；規劃共 111）。
 - 剩餘的隨機改成固定公式（電腦決策、事件骰、`pick`／`wpick`／`Math.random` 殘留）。
 - 難度評分基準重建（等規則穩定後再一次調整；暫停中）。
 - 潮汐擱淺（古寧頭效應）、增援完全由運力驅動、守方優先打運輸船、「隱形戰機台軍看不到」空戰選項、雷霆2000 砲兵（尚未加入）。
