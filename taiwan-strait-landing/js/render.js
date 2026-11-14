@@ -427,7 +427,8 @@ function baseMarkersSVG(){
   for(const [id,B] of Object.entries(CNB)){
     const pt=P['c'+id];if(!pt)continue;const [x,y]=pt,hp=cnShown(id),tg=dOn&&cnTargets().includes(id);
     const shape=B.kind==='rf'?'<polygon class="mcb" points="0,-10 10,0 0,10 -10,0"/>':B.kind==='air'?'<polygon class="mcb" points="0,-9 9,7 -9,7"/>':B.kind==='navy'?'<rect class="mcb" x="-8" y="-8" width="16" height="16"/>':B.kind==='isr'?'<polygon class="mcb" points="0,-10 3,-3 10,0 3,3 0,10 -3,3 -10,0 -3,-3"/>':'<circle class="mcb" r="8"/>';
-    o+='<g class="mcg'+(hp>0?'':' off')+'" data-cn="'+id+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+US.toFixed(3)+')"><circle r="24" fill="transparent" class="hit"/>'+shape+'<text class="mnum" y="4">'+hp+'</text>'+(tg?'<circle class="ttg d" r="16"/>':'')+'<text class="mlb" x="'+(B.side==='l'?-13:13)+'" y="3"'+(B.side==='l'?' text-anchor="end"':'')+'>'+B.n+'</text></g>';
+    const pd=(S.cnPend&&S.cnPend.id===id)||(S.afPend&&S.afPend.x.cn===id);
+    o+='<g class="mcg'+(hp>0?'':' off')+(pd?' pend':'')+'" data-cn="'+id+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+US.toFixed(3)+')"><circle r="24" fill="transparent" class="hit"/>'+shape+'<text class="mnum" y="4">'+hp+'</text>'+(tg?'<circle class="ttg d" r="16"/>':'')+'<text class="mlb" x="'+(B.side==='l'?-13:13)+'" y="3"'+(B.side==='l'?' text-anchor="end"':'')+'>'+B.n+'</text></g>';
   }
   for(const [b,B] of Object.entries(BASES)){
     const pt=P['b'+b];if(!pt)continue;const [x,y]=pt,us=S.fx.units.filter(f=>f.base===b),live=us.filter(f=>f.hp>0).length,act=us.some(fxActive),tg=strikeOn&&baseTargets(b).length;
@@ -480,6 +481,10 @@ function renderMap(){
     rings=rings.filter(([u])=>!subHidden(u)&&!(u.ship&&atSea(u))); // 地圖上沒畫出來的單位（船上的旅、隱蔽的潛艦）不畫圈
     const rf=US/(16/26*1.18); // 目標圈跟著棋子大小縮放
     rings.forEach(([u,c])=>{const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy;o+='<circle class="ring '+c+'" cx="'+x+'" cy="'+y+'" r="'+(15*rf).toFixed(1)+'" style="stroke-width:'+(2.5*Math.max(.6,rf)).toFixed(1)+'px"/>';});
+    // 已選定的目標：粗的實線圈＋十字；空軍出擊中的基地：藍色實線圈
+    const pu=S.cnPend&&S.cnPend.u?S.units.find(x=>x.id===S.cnPend.u):S.afPend&&(S.afPend.x.u||S.afPend.x.stg)?S.units.find(x=>x.id===(S.afPend.x.u||S.afPend.x.stg)):null;
+    if(pu&&alive(pu)){const [x0,y0]=cen(pu.c,pu.r),[sx,sy]=stackPos(pu),x=x0+sx,y=y0+sy,r=19*rf,w=Math.max(1.5,3.5*rf);o+='<g class="pendmk" pointer-events="none"><circle cx="'+x+'" cy="'+y+'" r="'+r.toFixed(1)+'" fill="none" stroke="#e8b400" stroke-width="'+w.toFixed(1)+'"/><path d="M'+(x-r*1.35)+' '+y+'h'+(r*.55)+'M'+(x+r*.8)+' '+y+'h'+(r*.55)+'M'+x+' '+(y-r*1.35)+'v'+(r*.55)+'M'+x+' '+(y+r*.8)+'v'+(r*.55)+'" stroke="#e8b400" stroke-width="'+w.toFixed(1)+'"/></g>';}
+    if((S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK&&TER[S.afK]){const [x,y]=cen(TER[S.afK].c,TER[S.afK].r);o+='<circle pointer-events="none" cx="'+x+'" cy="'+y+'" r="'+(R*1.05).toFixed(1)+'" fill="none" stroke="var(--def)" stroke-width="'+Math.max(1.5,3*rf).toFixed(1)+'"/>';}
   }
   $('#gD').innerHTML=o;
   // slide units that moved since the previous render, pop in new ones
