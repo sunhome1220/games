@@ -281,7 +281,7 @@ function endPhaseGuard(){ // 回傳 true＝先擋下並提示
 }
 function doMove(u,k,kind){
   const from=hexOf(u);const h=TER[k];
-  if(u.type==='hk'&&kind==='sail'){u.loud=hd(from,h)>SPD.subQuiet;if(u.loud&&!subHidden(u))log('海鯤潛艦高速航行 '+hd(from,h)+' 格（超過 '+SPD.subQuiet+' 格），噪音大，下一次被反潛發現的機率加倍');}
+  if(u.type==='hk'&&kind==='sail'){u.loud=hd(from,h)>SPD.subQuiet;if(u.loud&&!subHidden(u))log('海鯤潛艦高速航行約 '+Math.round(hd(from,h)*KM_HEX)+' km（超過 '+Math.round(SPD.subQuiet*KM_HEX)+' km），噪音大，下一次被反潛發現的機率加倍');}
   if(kind==='sail'&&isBde(u)&&!u.ship&&isLand(from)&&from.isl==='CN')embark(u,from);
   u.c=h.c;u.r=h.r;u.moved=true;if(u.type==='cv'||u.type==='csg'||u.type==='ddh')escFollow(u); // 護航艦跟著航艦移動
   if(u.ship&&(kind==='sail'||kind==='move')){const sh=shipOf(u);if(sh){sh.c=u.c;sh.r=u.r;}}
