@@ -1845,3 +1845,20 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 平民傷亡 +500	Civilian casualties +500
 「攔截補給（守方）」說明文字精簡，拿掉「下面只列出…」等贅字	'Interdict supply (defender)' text tightened, removing filler such as 'only the channels listed below…'
 守方攔截補給新增三個選項（只在可行時出現，選了就有實際效果）：火力打擊灘頭補給站（雷霆2000／海馬士 2 次攻擊、各約 50%，命中扣補給站 1 步；代價雷霆火箭彈 −1、發射車暴露）、近海補布水雷（在攻方卸載點外海補回被掃掉的雷區，船艦經過 50% 觸雷；布雷艇 1/4 機率被擊沉，每 2 回合一次）、阻絕就地徵用（下回合攻方就地補給 −1；平民傷亡 +500）。數字為推估	Three new defender supply-interdiction options (shown only when possible, each with real effects): strike the beachhead supply depots (Thunderbolt-2000 / HIMARS, 2 attacks at about 50% each, a hit takes 1 step off a depot; costs 1 Thunderbolt rocket and exposes the launchers), re-lay a minefield offshore (replaces a swept minefield off the attacker's unloading point; ships passing have a 50% chance of hitting a mine; the minelayer has a 1-in-4 chance of being sunk; once every 2 turns), and deny local requisition (attacker local supply −1 next turn; civilian casualties +500). Figures are estimates
+距離判定只剩兩個回合。決定守方最後階段的作戰重點（影響本回合與下回合）。	Two turns until judgment. Choose the defender's focus for the final stage (affects this turn and the next).
+效果：砲兵與空中支援集中到反攻方向，守方攻擊 +1；電腦操作的守軍會主動進攻、朝失地集中。代價：預備隊全部投入，其他防線空虛，防禦 −1。	Effect: artillery and air support concentrate on the counteroffensive axis, defender attack +1; AI-controlled defenders attack actively and converge on lost ground. Cost: all reserves are committed and other lines are thin, defense −1.
+效果：構工與預置陣地，守方防禦 +1；電腦操作的守軍只在勝算很高時才進攻。代價：放棄反擊，攻擊 −1，攻方可以從容鞏固灘頭。	Effect: fortifications and prepared positions, defender defense +1; AI-controlled defenders attack only with very good odds. Cost: no counterattacks, attack −1, and the attacker can consolidate its beachhead undisturbed.
+動員第二梯次後備部隊	Mobilize second-wave reserves
+效果：再編成 2 個後備旅，部署在最受威脅的要點（台北或被攻方逼近的港口）附近。代價：編成中攻防各 −1（到下一個攻方階段結束）；動員影響經濟，全球股市 −1。	Effect: form 2 more reserve brigades near the most threatened objectives (Taipei or ports the attacker is closing on). Cost: −1 attack and defense while forming (until the end of the next attacker phase); mobilization hits the economy, global markets −1.
+效果：4 個主要港口（基隆、台北港、台中港、高雄）永久破壞，攻方無法用港口卸載，補給容量未來兩回合再 −2。代價：港口永久無法使用，平民傷亡 +50%。	Effect: the 4 major ports (Keelung, Taipei Port, Taichung, Kaohsiung) are permanently destroyed, so the attacker cannot unload at ports, and supply capacity is a further −2 for two turns. Cost: the ports are unusable for good, civilian casualties +50%.
+效果：特戰部隊滲透攻擊攻方島上的油料、彈藥集積點，攻方補給容量未來兩回合 −2。代價：特戰部隊折損，不再支援前線偵察與火力引導，守方攻擊 −1。	Effect: special forces infiltrate and hit the attacker's fuel and ammunition dumps on the island, attacker supply capacity −2 for two turns. Cost: special-forces losses mean no more front-line reconnaissance and fire guidance, defender attack −1.
+守方本回合與下回合攻擊 +1、防禦 −1	Defender attack +1, defense −1 this turn and next
+電腦操作的守軍主動反攻失地	AI-controlled defenders counterattack lost ground
+守方本回合與下回合防禦 +1、攻擊 −1	Defender defense +1, attack −1 this turn and next
+電腦操作的守軍只在勝算很高時才進攻	AI-controlled defenders attack only with very good odds
+第二梯次後備旅 	Second-wave reserve brigades: 
+ 個完成編成（攻防各 −1，到下一個攻方階段結束）	 formed (−1 attack and defense until the end of the next attacker phase)
+全球股市 −1	Global markets −1
+ 個主要港口永久破壞	 major ports permanently destroyed
+守方本回合與下回合攻擊 −1（特戰部隊折損）	Defender attack −1 this turn and next (special-forces losses)
+「持久戰策略」改寫：每個選項分「效果／代價」說明；全力反攻與固守要點除了攻防加減，電腦操作的守軍也會實際照著反攻或固守；「襲擾補給線」與攔截補給事件重複，改為「動員第二梯次後備部隊」（在最受威脅的要點附近再編成 2 個後備旅）；焦土選項修正為 4 個主要港口；特種部隊突襲拿掉不合理的「被視為先動手」（已開戰多時），代價改為特戰部隊折損	'Protracted-war strategy' rewritten: each option now states its effect and cost; besides the attack/defense changes, 'all-out counteroffensive' and 'hold key points' now make AI-controlled defenders actually counterattack or hold; 'harass supply lines' duplicated the supply-interdiction event and is replaced by 'mobilize second-wave reserves' (2 more reserve brigades near the most threatened objectives); scorched earth now covers the 4 major ports; the special-forces raid drops the illogical 'seen as striking first' (the war is long underway) and its cost is now special-forces losses
