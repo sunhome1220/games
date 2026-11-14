@@ -100,7 +100,7 @@ function civHit(where,h,kind){
   // civilian casualties and damage from fighting at a hex; cities are far deadlier than open ground
   const C=S.cost,c=h.t==='city'?1:h.t==='port'?.5:h.t==='mtn'?.02:.12;
   const base={strike:180,combat:900}[kind];
-  C.civ[where]+=Math.round(base*c*(where==='TW'?(S.mods.civMul||1):1));C.dmg[where]+=(kind==='combat'?2:.5)*c+.05;
+  C.civ[where]+=Math.round(base*c*(where==='TW'?(S.mods.civMul||1)*(kind==='strike'?warnCiv():1):1));C.dmg[where]+=(kind==='combat'?2:.5)*c+.05;
 }
 function econTick(){
   const C=S.cost,lv=S.fx.lv,ports=PORTS.filter(k=>S.owner[k]==='atk'&&!S.portDown[k]).length;

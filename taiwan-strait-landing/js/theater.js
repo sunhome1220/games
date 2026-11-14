@@ -286,9 +286,25 @@ const rocAirEff=()=>S.pools.rocAir*afShare()*(1-caveF());
 //  被摧毀：愛國者攔截率 ×0.8（★推估：失去預警與目標指示；天弓本來就沒整合，不受影響）
 // 東引：空軍長程預警雷達，把防空預警往北延伸約 100 公里；被摧毀：守方空中有效戰力 ×0.9（★推估：失去北面早期預警）
 // 打擊：固定目標不需定位；彈道飛彈先過守方攔截，命中依武器數量（每枚 40%；★雷達陣面是軟目標）；命中即失效，不會修復
-const FAC={leshan:{n:'樂山雷達',ll:[121.12,24.55],d:'鋪路爪長程預警雷達，對彈道飛彈約 6 分鐘預警。被摧毀後愛國者攔截率 ×0.8（推估；天弓尚未整合，不受影響）。'},
+const FAC={leshan:{n:'樂山雷達',ll:[121.12,24.55],d:'鋪路爪長程預警雷達，對彈道飛彈約 6 分鐘預警；美國建造、與美方共享資料。被摧毀後改由美國衛星預警轉傳（較慢）：愛國者攔截率 ×0.9，沒有美國情報時 ×0.8（推估；天弓尚未整合，不受影響）；美國介入評估 +1。'},
   dongyin:{n:'東引雷達',ll:[120.49,26.37],d:'空軍長程預警雷達，把防空預警往北延伸約 100 公里。被摧毀後守方空中有效戰力 ×0.9（推估）。'}};
 const facUp=id=>!(S.facDown&&S.facDown[id]);
+// 美國情報：除了「不介入（台灣孤軍）」，美國至少提供衛星與偵察情報。飛彈預警來源：樂山雷達（約 6 分鐘）→ 樂山被毀時改由美國衛星預警轉傳（★約 4 分鐘，較慢）→ 都沒有就沒有預警
+const intelOK=()=>S.fxScen!=='none';
+const warnSrc=()=>facUp('leshan')?'leshan':intelOK()?'sat':null;
+const WARN={leshan:{n:'樂山雷達',min:6,civ:.6,pk:1},sat:{n:'美國衛星預警（轉傳）',min:4,civ:.75,pk:.9}}; // ★有預警時民眾進入掩體，飛彈造成的平民傷亡倍率；愛國者攔截率倍率（推估）
+const warnCiv=()=>{const w=WARN[warnSrc()];return w?w.civ:1;};
+function warnNotice(){ // 攻方階段開始：預警飛彈來襲
+  if(!S.fire)return;const w=WARN[warnSrc()];S.mslWave=(S.mslWave||0)+1;
+  const t=w?'🛰 '+w.n+'：偵測到共軍準備第 '+S.mslWave+' 波飛彈攻擊，發射後約 '+w.min+' 分鐘抵達，民眾請進入掩體':'⚠ 第 '+S.mslWave+' 波飛彈來襲：樂山雷達已毀、也沒有美國情報，無法提前預警';
+  log(t+(w?'（預警讓平民傷亡約 ×'+w.civ+'，推估）':''));if(S.ctrl.def==='human'&&!S.sim&&!S.video)toast(t,4200);
+}
+function intelStaging(){ // 守方階段開始：美國情報通報大陸沿岸的集結
+  if(!intelOK())return;const g={};for(const u of stgUnits()){const n=hname(hexOf(u)).replace(/^大陸 /,'');g[n]=(g[n]||0)+1;}
+  const L=Object.entries(g).sort((a,b)=>b[1]-a[1]);if(!L.length)return;
+  const t='🛰 美國情報：共軍兩棲部隊在 '+L.slice(0,3).map(([n,c])=>n+'（'+c+' 個單位）').join('、')+(L.reduce((a,x)=>a+x[1],0)>=4?' 大量集結':' 集結')+'，建議縱深打擊源頭（登船前最脆弱）';
+  log(t);if(S.ctrl.def==='human'&&!S.sim&&!S.video)toast(t,4500);
+}
 function facHex(id){let [c,r]=llToRC(FAC[id].ll[0],FAC[id].ll[1]);c=Math.max(COL0,Math.min(COL1-1,c));r=Math.max(ROW0,Math.min(ROW1-1,r));return TER[K(c,r)];}
 function strikeFac(id){
   if(!facUp(id))return false;const h=facHex(id),pk=fireTake(h,false);if(!pk)return false;S.stats.fire++;
@@ -392,7 +408,7 @@ function fireTake(h,soft,noRkt){
 // 攔截：n 枚來襲，每枚 2 枚攔截彈，先用愛國者三型；回傳突破的枚數（小數）與發射的攔截彈
 function adIntercept(n){
   adSync();if(!S.adI)return {surv:n,I:0};let e=Math.min(n,Math.max(0,S.adLeft||0),Math.floor(adTot()/2)),kill=0,I=0;
-  for(let i=0;i<e;i++){const k=S.adI.p3>=2?'p3':S.adI.tk>=2?'tk':S.adI.p2>=2?'p2':null;if(!k)break;S.adI[k]-=2;I+=2;kill+=1-Math.pow(1-MSL.pk[k]*((k==='p3'||k==='p2')&&!facUp('leshan')?.8:1),2);} // 樂山雷達被摧毀：愛國者少了預警與目標指示
+  for(let i=0;i<e;i++){const k=S.adI.p3>=2?'p3':S.adI.tk>=2?'tk':S.adI.p2>=2?'p2':null;if(!k)break;S.adI[k]-=2;I+=2;kill+=1-Math.pow(1-MSL.pk[k]*((k==='p3'||k==='p2')&&!facUp('leshan')?(intelOK()?WARN.sat.pk:.8):1),2);} // 樂山雷達被摧毀：愛國者少了預警與目標指示
   S.adLeft=Math.max(0,(S.adLeft||0)-I/2);P_adFix();return {surv:Math.max(0,n-kill),I};
 }
 function P_adFix(){if(!S.pools||!S.adI)return;S.pools.rocAD=Math.round(adTot()/MSL.adPerPt);S._ad=S.pools.rocAD;}
