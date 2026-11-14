@@ -11,7 +11,7 @@ function landDist(sources){
 }
 const OBJ=[TAIPEI].concat(PORTS);
 const OBJD={};OBJ.forEach(k=>OBJD[k]=landDist([k]));
-function est(u,t){return effAtk(u)+support(u,t)+seaPen(u)-(effDef(t)+terrDef(hexOf(t)))+(TYPES[t.type].hp-t.hp)*.5;}
+function est(u,t){return effAtk(u)+support(u,t)+seaPen(u)+matchMod(u,t,hexOf(t)).n-(effDef(t)+terrDef(hexOf(t))+(!atSea(u)&&riverX(hexOf(u),hexOf(t))?1:0))+(TYPES[t.type].hp-t.hp)*.5;} // 電腦估算也算進兵種相剋與隔河
 async function aiTryAttack(u,thr,focus){
   if(!alive(u)||S.over)return false;
   let ts=targets(u);

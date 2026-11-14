@@ -155,6 +155,13 @@ function validLanding(u,h){
 }
 function moveCost(u,h){return h.t==='mtn'?(u.type==='arm'||u.type==='tank'?3:2):1;}
 
+// 過河（★推估）：兩格中心連線跨過主要河流（RIVERS，手繪近似線）。守方戰時會炸橋，隔河攻擊防禦 +1；在敵軍 40 km 內過河要停下（強渡、架橋需要時間）
+const RIVX=new Map();
+function riverX(a,b){if(!a||!b||a===b)return null;const key=a.k<b.k?a.k+'|'+b.k:b.k+'|'+a.k;if(RIVX.has(key))return RIVX.get(key);
+  const p=rcToLL(a.c,a.r),q=rcToLL(b.c,b.r),cr=(o,s,t)=>(s[0]-o[0])*(t[1]-o[1])-(s[1]-o[1])*(t[0]-o[0]);let hit=null;
+  if(typeof RIVERS!=='undefined')for(const [n,P] of RIVERS){for(let i=0;i+1<P.length;i++){const c=P[i],d=P[i+1];if(cr(p,q,c)*cr(p,q,d)<0&&cr(c,d,p)*cr(c,d,q)<0){hit=n;break;}}if(hit)break;}
+  RIVX.set(key,hit);return hit;}
+const foeNear=(side,h,km)=>S.units.some(e=>e.side!==side&&alive(e)&&!isShip(e)&&isLand(hexOf(e))&&hexOf(e).isl===h.isl&&hd(hexOf(e),h)<=kmH(km));
 function landReach(u,res){
   const start=hexOf(u);const best=new Map([[start.k,TYPES[u.type].mv]]);const q=[[start,TYPES[u.type].mv]];
   while(q.length){
@@ -165,7 +172,7 @@ function landReach(u,res){
       const cost=moveCost(u,n);
       if(cost>mp&&!(h===start))continue;
       const occs=unitsAt(n.k),occ=occs[0];if(occ&&occ.side!==u.side)continue;
-      const left=Math.max(0,mp-cost);
+      const left=riverX(h,n)&&foeNear(u.side,n,40)?0:Math.max(0,mp-cost); // 敵前過河：過了就停下
       if((best.has(n.k)?best.get(n.k):-1)>=left)continue;
       best.set(n.k,left);
       if(n!==start&&canStack(u,n.k))res.set(n.k,{kind:'move'});
@@ -316,7 +323,7 @@ function dropAD(){const P=S.pools||{},p0=(S.p0&&S.p0.rocAD)||1,f=Math.max(0,Math
 function attack(u,t){
   const th=hexOf(t);if(th.isl==='TW'||th.isl==='PH')civHit('TW',th,'combat');
   const sup=support(u,t),pen=seaPen(u);
-  const mm=matchMod(u,t,th),A=effAtk(u)+sup+pen+mm.n, D=effDef(t)+terrDef(th), x=A-D;
+  const rv=!atSea(u)?riverX(hexOf(u),th):null,mm=matchMod(u,t,th),A=effAtk(u)+sup+pen+mm.n, D=effDef(t)+terrDef(th)+(rv?1:0), x=A-D; // 隔河攻擊：守方防禦 +1
   // 兵力對比 → 攻方壓制的機率 s0；骰子只讓它有限度起伏
   const s0=1/(1+Math.exp(-(x+.6)*.5)),s=Math.max(.02,Math.min(.98,s0)),gk=u.type+'>'+t.type;
   // 固定規則：期望損失依兵力對比算出，整數部分立即損失、零頭累積到之後的戰鬥（不再擲骰）
@@ -325,7 +332,7 @@ function attack(u,t){
   ld=Math.min(2,ld);la=Math.min(2,la);
   if(!ld&&!la){if(takeInt(s,'gnd.f:'+gk)>=1)ld=1;else la=1;}
   const res=ld&&la?'雙方各有損失（守方 −'+stpN(ld)+'、攻方 −'+stpN(la)+'）':ld?'守方失 '+stpN(ld):'攻擊方失 '+stpN(la);
-  log((pen?'搶灘突擊：':'')+uname(u)+' 攻擊 '+hname(th)+' 的 '+TYPES[t.type].n+'：'+A+' 對 '+D+(mm.n?'（兵種相剋 '+(mm.n>0?'+':'')+mm.n+'：'+mm.t+'）':'')+'（壓制機率 '+Math.round(s0*100)+'%，固定規則）→ '+res);
+  log((pen?'搶灘突擊：':'')+uname(u)+' 攻擊 '+hname(th)+' 的 '+TYPES[t.type].n+'：'+A+' 對 '+D+(rv?'（隔著'+rv+'，守方防禦 +1）':'')+(mm.n?'（兵種相剋 '+(mm.n>0?'+':'')+mm.n+'：'+mm.t+'）':'')+'（壓制機率 '+Math.round(s0*100)+'%，固定規則）→ '+res);
   fxq({t:'atk',from:[u.c,u.r],to:[t.c,t.r],hit:ld>0,sea:atSea(u),tsea:atSea(t)});if(!ld)fxq({t:'txt',at:[t.c,t.r],s:'擋住',col:'def'});
   u.acted=true;u.moved=true;
   const tDead=ld?damage(t,ld):false;
