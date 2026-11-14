@@ -115,8 +115,12 @@ const afRings=()=>!S.afK?[]:S.mode==='afS'?afShipT(S.afK):S.mode==='afL'?afLandT
 function afClick(u,cnId){
   const k=S.afK;if(!k||!(S.mode==='afS'||S.mode==='afL'||S.mode==='afC'))return false;
   if(S.mode==='afC'&&cnId){if(!afCNT(k).includes(cnId))toast(CNB[cnId]?CNB[cnId].n+(S.cn[cnId]<=0?' 已癱瘓':' 超出萬劍彈與 SLAM-ER 射程（或已用完）'):'打不到',3200);else S.afPend={k,x:{cn:cnId}};}
-  else if(u&&u.side==='atk'&&afRings().includes(u))S.afPend={k,x:S.mode==='afC'?{stg:u.id}:{u:u.id}}; // 先顯示目標資訊，按「確認出擊」才打
-  else toast('這個目標不在這種攻擊的範圍內',2500);
+  else{
+    const R=afRings();if(u&&!R.includes(u)){const alt=R.find(x=>x.c===u.c&&x.r===u.r);if(alt)u=alt;} // 同一格疊了好幾個單位：點到的不是目標時，改選同格裡的目標
+    if(u&&u.side==='atk'&&R.includes(u))S.afPend={k,x:S.mode==='afC'?{stg:u.id}:{u:u.id}}; // 先顯示目標資訊，按「確認出擊」才打
+    else if(u&&u.side==='atk')toast('這個目標不在這種攻擊的範圍內（按下方「取消出擊」可離開出擊模式）',3000);
+    else{S.mode=null;S.afPend=null;return false;} // 點空地或自己的單位：離開出擊模式，照一般點選處理（不再卡在出擊模式）
+  }
   render();return true;
 }
 // ---- 空軍出擊確認面板（比照縱深打擊）----

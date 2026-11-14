@@ -157,7 +157,7 @@ document.addEventListener('click',e=>{ // 守方縱深打擊：也可直接點�
     if(humanCN(id))return;
   S.cnSel=S.cnSel===id?null:id;S.thSel=null;render();
 });
-$('#btnStrike').onclick=()=>{if(!humanTurn())return;S.mode=S.mode==='strike'?null:'strike';S.sel=null;render();};
+$('#btnStrike').onclick=()=>{if(!humanTurn())return;if(S.mode==='afS'||S.mode==='afL'||S.mode==='afC'){S.mode=null;S.afPend=null;render();return;}S.mode=S.mode==='strike'?null:'strike';S.sel=null;render();}; // 空軍出擊模式中：這顆按鈕變成「取消出擊」
 $('#btnEnd').onclick=()=>{if(!humanTurn())return;if(endPhaseGuard())return;endPhase();};
 $('#btnUndo').onclick=undoMove;$('#btnHkHome').onclick=hkGoHome;$('#btnHkWpn').onclick=hkCycleWpn;$('#mbUndo').onclick=undoMove;
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'&&S&&S.started&&undoAvail()){e.preventDefault();undoMove();}});
