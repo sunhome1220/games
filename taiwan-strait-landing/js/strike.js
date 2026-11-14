@@ -87,7 +87,7 @@ function cnPendInfo(){ // 回傳 {html,ok} 或 null
   const ok=!!wn&&found&&S.dfire>0;
   const html='<b>'+nm+'</b><div class="cpm">'+H.km+' km・'+extra+'</div>'+
     '<div class="cpm">'+(wn?wn+' '+ROCLR.pk+' 枚':'射程內沒有可用的飛彈')+'・'+(H.IC.I?'約 '+fmt1(H.IC.surv)+' 枚突破防空':'共軍防空已失效')+'</div>'+
-    '<div class="cpm">命中率 <b>'+(found?Math.round(H.p*100):0)+'%</b>：'+fx+'</div>'+
+    '<div class="cpm">'+(tg.u?stepOdds(tg.u,found?H.p:0):'打掉一級的機率 <b>'+Math.round(H.p*100)+'%</b>：'+fx)+'</div>'+
     '<div class="cpm">本階段還能發射 '+S.dfire+' 波</div>';
   return {html,ok};
 }
@@ -122,7 +122,7 @@ function strikeStage(u,by){ // 縱深打擊集結中的部隊或船隻：同一�
   fxq(by==='roc'?{t:'air',from:[src.c,src.r],at:[u.c,u.r],hit,tsea:false,k:'cm'}:{t:'air',src:'e',at:[u.c,u.r],hit,tsea:false});
   if(hit){u.sgN=Math.max(0,(u.sgN||0)-1);S.stats.cn.hits++;const nm=TYPES[u.type].n;damage(u,1,'縱深打擊（集結區）');
     log(who+'縱深打擊 '+hn(h)+' 集結中的 '+nm+'（'+itx+'；'+(u.sgL||'')+'）：命中，'+nm+' 損失 '+stpU(u,1));if(cnMe(by))fxToast('縱深打擊 '+hn(h)+'：命中，'+nm+' 損失 '+stpU(u,1),3500);}
-  else{log(who+'縱深打擊 '+hn(h)+' 集結中的 '+TYPES[u.type].n+'（'+itx+'）：未命中（'+lastTxt()+'）');if(cnMe(by))fxToast('縱深打擊 '+hn(h)+'：未命中（命中率 '+Math.round(HP.p*100)+'%）',3500);}
+  else{log(who+'縱深打擊 '+hn(h)+' 集結中的 '+TYPES[u.type].n+'（'+itx+'）：未命中（'+lastTxt()+'）');if(cnMe(by))fxToast('縱深打擊 '+hn(h)+'：未命中（成功機率 '+Math.round(HP.p*100)+'%）',3500);}
   if(cnMe(by))fxq({t:'txt',at:[u.c,u.r],s:hit?'命中':'未命中',col:'def'});
   S.cnLog.push({t:S.turn,id:'stage',by,hit});checkInstant();
 }
@@ -149,7 +149,7 @@ function strikeCN(id,by){
   }
   S.cnLog.push({t:S.turn,id,by,hit});
   log(who+'縱深打擊 '+B.n+'（'+itx+'）'+(hit?'：命中'+(fx?'，'+fx:''):'：未命中（'+lastTxt()+'）'));
-  if(cnMe(by))fxToast('縱深打擊 '+B.n+'：'+(hit?'命中'+(fx?'，'+fx:''):'未命中（命中率 '+Math.round(HP.p*100)+'%）'),4000);
+  if(cnMe(by))fxToast('縱深打擊 '+B.n+'：'+(hit?'命中'+(fx?'，'+fx:''):'未命中（成功機率 '+Math.round(HP.p*100)+'%）'),4000);
   checkInstant();
 }
 function aiPickCN(roc){ // 期望效果最高的目標（命中率 × 效果，±10% 雜訊）

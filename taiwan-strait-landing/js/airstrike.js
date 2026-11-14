@@ -127,14 +127,14 @@ function afPendInfo(){
     nm=P.x.cn?CNB[P.x.cn].n:hname(hexOf(u)).replace(/^大陸 /,'大陸沿岸 ')+' 集結中的 '+TYPES[u.type].n;
     lines.push(u?(found?'本階段找到 '+stgFound(u)+' 步':'本階段沒有找到，打不到'):'狀態 '+S.cn[P.x.cn]+'／'+CNB[P.x.cn].hp+' 級');
     lines.push((wp?AFS[wp].n+' '+AFS.pk+' 枚（剩 '+Math.round(S.pools[AFS[wp].pool]||0)+'）':'萬劍彈、SLAM-ER 射程不到或已用完')+'・'+(H.IC.I?'約 '+fmt1(H.IC.surv)+' 枚突破防空':'共軍防空已失效'));
-    lines.push('命中率 <b>'+(found?Math.round(H.p*100):0)+'%</b>：'+(u?TYPES[u.type].n+' 損失 '+stpU(u,1):(CN_FX[CNB[P.x.cn].kind]||'基地受損一級')));
+    lines.push(u?stepOdds(u,found?H.p:0):'打掉一級的機率 <b>'+Math.round(H.p*100)+'%</b>：'+(CN_FX[CNB[P.x.cn].kind]||'基地受損一級'));
     ok=ok&&!!wp&&found;risk=AFS.lossCN;
   }else{
     const t=S.units.find(x=>x.id===P.x.u);if(!t||!alive(t))return null;nm=uname(t)+'（'+hname(hexOf(t))+'）';
     if(atSea(t)){const cov=adCover(t).length,n=Math.min(AFS.pk,Math.floor(S.pools.rocAAsh||0));
       lines.push('空射反艦 '+n+' 枚（剩 '+Math.round(S.pools.rocAAsh||0)+'）・'+(cov?cov+' 艘護航艦防空，先被攔截':'無護航防空，預估命中 '+fmt1(n*SALVO.pSeek)+' 枚'));
       ok=ok&&n>0;risk=cov?AFS.loss:0;}
-    else{const h=hexOf(t),p=pNeed((h.t==='city'||h.t==='mtn')?6:5);lines.push('精準炸彈・命中率 <b>'+Math.round(p*100)+'%</b>'+((h.t==='city'||h.t==='mtn')?'（城市／山地）':'')+'：'+tname(t)+' 損失 '+stpU(t,1));risk=S.pools.plaAD>0?AFS.loss:0;}
+    else{const h=hexOf(t),p=pNeed((h.t==='city'||h.t==='mtn')?6:5);lines.push('精準炸彈・'+stepOdds(t,p)+((h.t==='city'||h.t==='mtn')?'（城市／山地較難）':''));risk=S.pools.plaAD>0?AFS.loss:0;}
   }
   const tx=P.x.cn?P.x.cn:S.units.find(y=>y.id===(P.x.u||P.x.stg));if(tx)lines.unshift((h0.name||'基地')+' → '+afDist(k,tx)+' km（'+(afWing(k)?afWing(k)[1]+' ':'')+'可達 '+Math.round(afReach(k,tx))+' km）');
   const xx=P.x.cn?{cn:P.x.cn}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{u:S.units.find(y=>y.id===P.x.u)};

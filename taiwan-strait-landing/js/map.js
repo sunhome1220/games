@@ -37,7 +37,9 @@ function trial(p){const r=d6(),L=(r-3.5)/2.5,pe=Math.max(0,Math.min(1,p*(1+LUCK*
 const ACC={};
 function hitP(p,key){const k=key||'x';p=Math.max(0,Math.min(1,p));let a=(ACC[k]===undefined?.5:ACC[k])+p,h=false;if(a>=1){a-=1;h=true;}ACC[k]=a;LAST={p,r:'—',L:0,pe:p,hit:h,det:true};return h;}
 function takeInt(ev,key){const k=key||'x';const a=(ACC[k]===undefined?.5:ACC[k])+ev,n=Math.floor(a);ACC[k]=a-n;return n;}
-const lastTxt=()=>LAST.det?'命中率 '+Math.round(LAST.p*100)+'%（固定規則）':'基礎 '+Math.round(LAST.p*100)+'%・運氣 '+((LAST.pe-LAST.p)>=0?'+':'')+Math.round((LAST.pe-LAST.p)*100)+'%（擲 '+LAST.r+'）→ '+Math.round(LAST.pe*100)+'%';
+// 「成功機率」＝這次攻擊造成一次效果（扣 1 步、基地受損一級）的機率，已含武器命中與目標分散、掩蔽的折扣
+const stepOdds=(u,p)=>'打掉 1 步'+(['amph','mar','arm','abn','inf','tank','res'].includes(u.type)?'（約一個營）':'')+'的機率 <b>'+Math.round(p*100)+'%</b>；目標剩 '+u.hp+' 步';
+const lastTxt=()=>LAST.det?'成功機率 '+Math.round(LAST.p*100)+'%（固定規則）':'基礎 '+Math.round(LAST.p*100)+'%・運氣 '+((LAST.pe-LAST.p)>=0?'+':'')+Math.round((LAST.pe-LAST.p)*100)+'%（擲 '+LAST.r+'）→ '+Math.round(LAST.pe*100)+'%';
 const SIDE={atk:'攻方',def:'守方'};
 const TERN={sea:'海域',main:'大陸',plain:'平原',city:'城市',mtn:'山地',port:'港口',air:'機場'};
 
