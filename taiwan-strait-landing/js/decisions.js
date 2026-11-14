@@ -17,11 +17,11 @@ const DEFEV=[
   blurb:()=>{const b=S.mods.buildup;return '台灣海軍 6 個艦隊平時停在母港。開戰第一波飛彈會打固定目標（港口）；在海上移動的船，彈道飛彈很難命中。'+(b==='surprise'?'這次是戰略突襲，大型艦艇來不及出港，只有海蛟大隊能及時疏散。':'');},
   choice:{who:'def',options:[{id:"port",label:"留港備戰",desc:"艦隊留在母港，有港口防空保護、補給方便；但開戰第一波飛彈會直接打到港內的船。"},
     {id:"east",label:"出港疏散到東部外海",desc:"艦隊移到花蓮、台東外海（中央山脈屏障、遠離海峽），在海上移動時彈道飛彈很難命中（★×0.1）；但沒有港口防空、離海峽較遠，而且共軍航艦艦隊在東側活動。預警有限（戰略突襲）時只有海蛟大隊來得及出港。"},
-    {id:"disperse",label:"分散到母港附近外海",desc:"各艦隊分散到母港附近 2 格內的外海，彈道飛彈很難命中；離戰場近、出擊快，但同樣沒有港口防空。預警有限（戰略突襲）時只有海蛟大隊來得及出港。"}]},
+    {id:"disperse",label:"分散到母港附近外海",desc:"各艦隊分散到母港附近約 40 km 內的外海，彈道飛彈很難命中；離戰場近、出擊快，但同樣沒有港口防空。預警有限（戰略突襲）時只有海蛟大隊來得及出港。"}]},
   apply(c){return navyDeploy(c);}},
  {id:"prepos",setup:"optPrepos",defend:true,at:()=>[1,'atk'],title:"預先部署重點",blurb:"攻方船團可能從北、中部渡海。守方要決定兵力放在哪裡。",
-  choice:{who:'def',options:[{id:"coast",label:"前推到海岸線",desc:"守方第 1～3 回合防禦 +1（灘頭交戰）；但兵力暴露，攻方第 1 回合打擊更容易命中（命中門檻 −1）。"},{id:"depth",label:"縱深機動、保存實力",desc:"守方第 2～4 回合攻擊 +1（反擊）；但灘頭薄弱，第 1～2 回合防禦 −1。"},{id:"hide",label:"疏散戰機與裝備、隱蔽",desc:"開戰前戰機就躲進佳山、石子山的山洞機堡（約 200 架，推估），其餘分散到疏散機場與公路跑道：到第 2 回合結束，機堡內的戰機不會在地面被炸，其餘地面損失減半（推估）。代價：躲藏的戰機不出擊，這段期間空軍出擊架次與空中戰力依比例下降。"},{id:"x_water",x:1,label:"🔥 水際死守",desc:"第 1～3 回合守方防禦 +2；海岸部隊暴露，攻方第 1～2 回合打擊更容易命中（命中門檻 −1）；第 4～6 回合守方防禦 −1。",ref:"「殲敵於水際、決勝於灘頭」"},{id:"x_scorch",x:1,label:"🔥 焦土縱深",desc:"3 個主要港口自毀，攻方第 2～4 回合攻擊 −1；平民傷亡 +50%、經濟損失大增。",ref:"1938 年焦土抗戰"}]},
-  apply(c){const m=S.mods;if(c=="coast"){addTurns(m.defDef,1,3,1);addTurns(m.strikeEase,1,1,1); return ["守方第 1～3 回合防禦 +1","攻方第 1 回合打擊命中門檻 −1（暴露）"];}if(c=="depth"){addTurns(m.defAtk,2,4,1);addTurns(m.defDef,1,2,-1); return ["守方第 2～4 回合攻擊 +1","守方第 1～2 回合防禦 −1"];}if(c=="hide"){m.cave={until:2};m.disp=1;const f=caveF(); return ["約 "+Math.round(f*S.air.TW)+" 架戰機（約 "+Math.round(f*100)+"%）躲進山洞機堡，其餘分散：到第 2 回合結束，地面戰機損失依比例減少","代價：這段期間空軍出擊架次與空中戰力 ×"+fmt1(1-f)];}if(c=="x_water"){addTurns(m.defDef,1,3,2);addTurns(m.strikeEase,1,2,1);addTurns(m.defDef,4,6,-1);return ["守方第 1～3 回合防禦 +2、攻方第 1～2 回合打擊命中門檻 −1（暴露）", "守方第 4～6 回合防禦 −1"];}if(c=="x_scorch"){razeAllPorts();addTurns(m.atkAtk,2,4,-1);m.civMul*=1.5;S.cost.dmg.TW+=3;return ["3 個主要港口自毀（永久無法使用）", "攻方第 2～4 回合攻擊 −1", "平民傷亡 +50%、經濟損失大增"];}return [];}},
+  choice:{who:'def',options:[{id:"coast",label:"前推到海岸線",desc:"守方第 1～3 回合防禦 +1（灘頭交戰）；但兵力暴露，攻方第 1 回合打擊更容易命中（命中門檻 −1）。"},{id:"depth",label:"縱深機動、保存實力",desc:"守方第 2～4 回合攻擊 +1（反擊）；但灘頭薄弱，第 1～2 回合防禦 −1。"},{id:"hide",label:"疏散戰機與裝備、隱蔽",desc:"開戰前戰機就躲進佳山、石子山的山洞機堡（約 280 架，非官方估計；戰略突襲時預警短，只來得及躲進一半，推估），其餘分散到疏散機場與公路跑道：到第 2 回合結束，機堡內的戰機不會在地面被炸，其餘地面損失減半（推估）。代價：躲藏的戰機不出擊，這段期間空軍出擊架次與空中戰力依比例下降。"},{id:"x_water",x:1,label:"🔥 水際死守",desc:"第 1～3 回合守方防禦 +2；海岸部隊暴露，攻方第 1～2 回合打擊更容易命中（命中門檻 −1）；第 4～6 回合守方防禦 −1。",ref:"「殲敵於水際、決勝於灘頭」"},{id:"x_scorch",x:1,label:"🔥 焦土縱深",desc:"3 個主要港口自毀，攻方第 2～4 回合攻擊 −1；平民傷亡 +50%、經濟損失大增。",ref:"1938 年焦土抗戰"}]},
+  apply(c){const m=S.mods;if(c=="coast"){addTurns(m.defDef,1,3,1);addTurns(m.strikeEase,1,1,1); return ["守方第 1～3 回合防禦 +1","攻方第 1 回合打擊命中門檻 −1（暴露）"];}if(c=="depth"){addTurns(m.defAtk,2,4,1);addTurns(m.defDef,1,2,-1); return ["守方第 2～4 回合攻擊 +1","守方第 1～2 回合防禦 −1"];}if(c=="hide"){m.cave={until:2,w:m.buildup==='surprise'?.5:1};m.disp=1;const f=caveF(); return ["約 "+Math.round(f*S.air.TW)+" 架戰機（約 "+Math.round(f*100)+"%）躲進山洞機堡，其餘分散：到第 2 回合結束，地面戰機損失依比例減少","代價：這段期間空軍出擊架次與空中戰力 ×"+fmt1(1-f)];}if(c=="x_water"){addTurns(m.defDef,1,3,2);addTurns(m.strikeEase,1,2,1);addTurns(m.defDef,4,6,-1);return ["守方第 1～3 回合防禦 +2、攻方第 1～2 回合打擊命中門檻 −1（暴露）", "守方第 4～6 回合防禦 −1"];}if(c=="x_scorch"){razeAllPorts();addTurns(m.atkAtk,2,4,-1);m.civMul*=1.5;S.cost.dmg.TW+=3;return ["3 個主要港口自毀（永久無法使用）", "攻方第 2～4 回合攻擊 −1", "平民傷亡 +50%、經濟損失大增"];}return [];}},
  {id:"counter",defend:true,at:()=>[1,'def'],title:"反制先制打擊",blurb:()=>{ // 先讓守方看到「被打了什麼」，再決定怎麼反制
   const r=S.events.find(e=>e.id==='strike'),P=S.pools||{},base="攻方的第一波飛彈與空襲已經結束，守方要決定如何反制。";
   // 統計摘要：依類別歸納這回合攻方階段的戰報（火力打擊、海軍、部隊、空降、戰機），每類一行，沒發生的不列
@@ -40,7 +40,7 @@ const DEFEV=[
   return base+"<br><b>被打了什麼：</b>"+what+"<br><b>目前守方：</b>空軍 "+P.rocAir+"・防空 "+P.rocAD+"・反艦飛彈 "+P.rocAS+"・長程飛彈 "+fmt1(P.rocMsl)+((P.rocAtc||0)+(P.rocGml||0)>0?"・陸軍戰術飛彈 "+Math.round(P.rocAtc||0)+" 枚・火箭彈 "+Math.round(P.rocGml||0)+" 莢艙":"")+(S.mods.c2Strong?"；指揮通信受重創":"");},
   choice:{who:'def',options:[
    {id:"disperse",label:"分散疏散並搶修機場",desc:"工兵搶修跑道：受損機場最多 2 座各恢復 1 級；戰機分散到疏散機場與公路跑道，之後機場被打時地面戰機損失減半（推估）；飛彈車分散並加強誘餌，之後被定位的機率 ×0.75（推估）。代價：飛彈車換陣地，本階段岸置飛彈與海馬士各少一次射擊。"},
-   {id:"sortie",label:"戰機進山洞機堡",desc:"戰機轉場躲進佳山、石子山的山洞機堡（約 200 架，推估），到第 2 回合結束：躲進去的戰機不會在地面被炸，機場被打時地面戰機損失依躲藏比例減少。代價：躲藏的戰機不出擊，這段期間空軍出擊架次與空中戰力依比例下降。跑道受損嚴重（起降能量不足一半）就無法轉場，等於沒有效果。"},
+   {id:"sortie",label:"戰機進山洞機堡",desc:"戰機轉場躲進佳山、石子山的山洞機堡（約 280 架，非官方估計），到第 2 回合結束：躲進去的戰機不會在地面被炸，機場被打時地面戰機損失依躲藏比例減少。代價：躲藏的戰機不出擊，這段期間空軍出擊架次與空中戰力依比例下降。跑道受損嚴重（起降能量不足一半）就無法轉場，等於沒有效果。"},
    {id:"retaliate",label:"立即反擊大陸基地",desc:"趁共軍第二波前，先用掉本階段約一半的縱深打擊發射量（每波 4 枚；300 km 內優先用陸軍戰術飛彈，更遠用雄二E），目標依價值挑選（火箭軍陣地、機場、海軍基地、集結區）；和「縱深打擊」同一套規則：先過共軍防空攔截，突破後命中率依目標硬度 20～45%，命中使基地受損一級。發射車有限，本階段之後能發射的就相應減少。"},
    {id:"x_deep",x:1,label:"🔥 全面長程反擊對岸縱深",desc:"立刻用掉本階段全部的縱深打擊發射量（同一套規則，目標依價值挑選），本階段之後就不能再發射；局勢升高、美日更謹慎。",ref:"「重層嚇阻」"}]},
   apply(c){
@@ -86,8 +86,8 @@ const DEFEV=[
 (function(){
   const at=id=>EVENTS.findIndex(e=>e.id===id);
   EVENTS.splice(at('buildup'),0,DEFEV[0],DEFEV[1]);       // 開戰前（攻方集結之前）
-  EVENTS.splice(at('buildup')+1,0,DEFEV[2],DEFEV[3]);     // 攻方集結期間
-  EVENTS.splice(at('final'),0,...DEFEV.slice(4));          // 開戰初期、中段與後期
+  EVENTS.splice(at('buildup')+1,0,DEFEV[2],DEFEV[3],DEFEV[4]); // 攻方集結期間（含預先部署重點：要在攻方先制打擊之前，疏散戰機才躲得掉第一波）
+  EVENTS.splice(at('final'),0,...DEFEV.slice(5));          // 開戰初期、中段與後期
 })();
 function snap(){
   let as=0,ds=0;for(const u of S.units)if(onTW(u)&&!isSup(u)&&!isShip(u)){if(u.side==='atk')as+=cpOf(u);else ds+=cpOf(u);}

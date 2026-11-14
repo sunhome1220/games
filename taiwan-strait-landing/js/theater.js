@@ -268,8 +268,8 @@ const afTxt=k=>afCap(k)<=0?'跑道全部癱瘓（無法起降）':afCut(k)?'切�
 function afShare(){ // 守方戰機實際能起降的比例：依各基地戰機數加權（炸沒有戰鬥機的民用機場或訓練基地，不影響出擊）
   if(S.air&&S.air.bw){const c=afBaseCounts();let t=0,a=0;for(const k in c){t+=c[k];a+=c[k]*afCap(k);}return t>0?a/t:0;}
   const L=airfields();return L.length?L.reduce((a,h)=>a+afCap(h.k),0)/L.length:1;}
-const CAVE=200; // ★佳山、石子山山洞機堡可容納的戰機（公開說法不一，約 80～200 架以上）
-const caveF=()=>S.mods&&S.mods.cave&&S.turn<=S.mods.cave.until&&S.air?Math.min(1,CAVE/Math.max(1,S.air.TW)):0; // 躲進山洞機堡的戰機比例
+const CAVE=280; // ★山洞機堡可容納的戰機：佳山約 200、石子山（志航）約 80（維基百科等非官方估計）
+const caveF=()=>S.mods&&S.mods.cave&&S.turn<=S.mods.cave.until&&S.air?Math.min(1,CAVE/Math.max(1,S.air.TW))*(S.mods.cave.w||1):0; // w：來得及躲進去的比例（戰略突襲時 ★0.5） // 躲進山洞機堡的戰機比例
 const gndMul=()=>(1-caveF())*(S.mods&&S.mods.disp?.5:1); // 機場被打時地面戰機損失的倍率：機堡內的不會被炸、★分散到疏散機場與公路跑道減半
 const rocAirEff=()=>S.pools.rocAir*afShare()*(1-caveF());
 // ---------- 固定雷達站（固定目標：看得到、打得到）----------
