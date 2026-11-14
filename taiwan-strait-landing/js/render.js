@@ -64,6 +64,33 @@ function fleetPanelHTML(u){
   return h;
 }
 let RNG_ALL=false;try{RNG_ALL=localStorage.getItem('tsl-rng')==='1';}catch(e){}
+// 台澎海岸線（沿陸地格靠海的邊，和凸起的地塊對齊）、主要河流（★依河口與主要經過點手繪的近似線，誤差約 5～10 km，只是地圖標示、不影響規則）、玉山
+const RIVERS=[['淡水河',[[121.41,25.18],[121.46,25.12],[121.49,25.06],[121.46,25.01],[121.40,24.95],[121.33,24.88]]],
+  ['頭前溪',[[120.93,24.85],[121.00,24.82],[121.07,24.80],[121.13,24.77]]],
+  ['大安溪',[[120.60,24.41],[120.68,24.38],[120.77,24.36],[120.86,24.37]]],
+  ['大甲溪',[[120.56,24.29],[120.65,24.27],[120.73,24.25],[120.82,24.23]]],
+  ['大肚溪',[[120.48,24.13],[120.57,24.11],[120.65,24.07],[120.73,24.03],[120.80,24.02]]],
+  ['濁水溪',[[120.21,23.83],[120.33,23.83],[120.46,23.82],[120.58,23.81],[120.66,23.82],[120.75,23.83]]],
+  ['曾文溪',[[120.06,23.04],[120.17,23.10],[120.28,23.15],[120.38,23.18],[120.47,23.20]]],
+  ['高屏溪',[[120.42,22.48],[120.44,22.58],[120.46,22.68],[120.50,22.78],[120.55,22.88]]],
+  ['蘭陽溪',[[121.85,24.71],[121.78,24.70],[121.70,24.67],[121.62,24.62]]],
+  ['秀姑巒溪',[[121.51,23.47],[121.45,23.49],[121.40,23.43],[121.36,23.33],[121.30,23.20]]],
+  ['卑南溪',[[121.16,22.77],[121.13,22.83],[121.15,22.93],[121.20,23.03],[121.23,23.12]]]];
+function coastRiverSVG(land){
+  let o='',d='';
+  for(const h of land){if(h.isl!=='TW'&&h.isl!=='PH')continue;const [x,y0]=center(h.c,h.r),y=y0-elev(h),v=hexV(x,y,R);
+    const nb=nbrs(h.c,h.r).filter(Boolean).map(n=>[n,center(n.c,n.r)]);
+    for(let i=0;i<6;i++){const a=v[i],b=v[(i+1)%6],mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2+elev(h),px=x+2*(mx-x),py=y0+2*(my-y0);
+      let best=null,bd=1e9;for(const [n,c] of nb){const dd=(c[0]-px)**2+(c[1]-py)**2;if(dd<bd){bd=dd;best=n;}}
+      if(!best||bd>R*R||!isLand(best))d+='M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+'L'+b[0].toFixed(1)+' '+b[1].toFixed(1);}}
+  if(d)o+='<path class="coast" d="'+d+'"/>';
+  const lift=(lo,la)=>{const [c,r]=llToRC(lo,la),h=TER[K(c,r)];return h?elev(h):0;};
+  for(const [n,P] of RIVERS){const pts=P.map(([lo,la])=>{const [x,y]=llPx(lo,la);return [x,y-lift(lo,la)];});
+    o+='<path class="river" d="M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L')+'"/>';
+    const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
+  {const [x,y]=llPx(120.957,23.470),yy=y-lift(120.957,23.470);o+='<text class="lbl peak" font-size="'+(8*Math.max(.72,SC)).toFixed(1)+'" x="'+x.toFixed(1)+'" y="'+(yy-2).toFixed(1)+'" text-anchor="middle">▲玉山 3,952 m</text>';}
+  return o;
+}
 function hexV(x,y,rr){const o=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);o.push([x+rr*Math.cos(a),y+rr*Math.sin(a)]);}return o;}
 // 給手把程式用：遊戲格的中心（地圖座標）、由地圖座標找最近的格子、相鄰格
 window.TSL_HEX={R,c2p:(c,r)=>center(c,r),ok:(c,r)=>!!TER[K(c,r)],nb:(c,r)=>nbrs(c,r).map(h=>[h.c,h.r]),
@@ -341,6 +368,7 @@ function buildStatic(){
     if(h.name&&(h.t!=='plain'||h.isl==='JP'||['宜蘭','恆春','澎湖'].includes(h.name))&&!(h.t==='air'&&(nearCity(h)||h.isl==='TW'))){ /* 台澎機場的名稱改由可點的基地標籤（baseTagsSVG）顯示 */const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':' minor')+'" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x+'" y="'+(FG>2?y-R*1.2:y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';} // 機場旁 25 km 內已有城市或港口名就不重複標（點機場仍看得到名稱）；縮小時只顯示勝負要點
     o+='</g>';
   }
+  o+=coastRiverSVG(land);
   o+='<text class="big" font-size="15" x="'+cc(6,3)[0]+'" y="'+cc(6,3)[1]+'" writing-mode="tb">台灣海峽</text>';
   o+='<text class="big" font-size="13" x="'+cc(15,7)[0]+'" y="'+cc(15,7)[1]+'" writing-mode="tb">太平洋</text>';
   o+='<text class="big" font-size="12" x="'+cc(1,1)[0]+'" y="'+cc(1,1)[1]+'" writing-mode="tb">大陸沿海</text>';

@@ -116,7 +116,7 @@ details li{margin:4px 0}
 footer{color:var(--muted);font-size:12px;margin-top:18px}
 /* svg */
 .tl-sea{fill:var(--sea);stroke:var(--sea-edge);stroke-width:.5}
-.tl-sea.sh{fill:color-mix(in srgb,var(--sea) 89%,#fff)} .tl-sea.d4{fill:color-mix(in srgb,var(--sea) 91%,#000)} .tl-sea.d1{fill:color-mix(in srgb,var(--sea) 80%,#fff)} .tl-sea.d2{fill:color-mix(in srgb,var(--sea) 92%,#fff)} .tl-sea.d3{fill:color-mix(in srgb,var(--sea) 93%,#000)}
+.tl-sea.sh{fill:color-mix(in srgb,var(--sea) 89%,#fff)} .tl-sea.d4{fill:color-mix(in srgb,var(--sea) 91%,#000)} .tl-sea.d1{fill:color-mix(in srgb,var(--sea) 88%,#fff)} .tl-sea.d2{fill:color-mix(in srgb,var(--sea) 92%,#fff)} .tl-sea.d3{fill:color-mix(in srgb,var(--sea) 93%,#000)}
 .wv{fill:none;stroke:#fff;stroke-opacity:.3;stroke-width:1.1;stroke-linecap:round;animation:swell 5.5s ease-in-out infinite alternate;pointer-events:none}
 @keyframes swell{from{transform:translateX(-3px)}to{transform:translateX(3px)}}
 .tl-sh{fill:#000;opacity:.2;pointer-events:none}
@@ -601,6 +601,12 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 .cvord button.on{background:var(--def);color:#fff;border-color:var(--def)}
 #cnPend,#afPend{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(440px,calc(100vw - 24px));background:var(--panel,#fff);color:var(--ink);border:2px solid var(--atk);border-radius:6px;padding:10px 12px;z-index:28;box-shadow:0 4px 16px rgba(0,0,0,.25);font-size:13px;line-height:1.45}
 #cnPend,#afPend{touch-action:none;cursor:grab;padding-top:14px} #cnPend.drag,#afPend.drag{cursor:grabbing;opacity:.92} #cnPend::before,#afPend::before{content:'';position:absolute;top:5px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--line,#bbb)}
+#map .coast{fill:none;stroke:#5f5638;stroke-width:1.6;stroke-linecap:round;opacity:.85;pointer-events:none}
+#map .river{fill:none;stroke:#4f8fb8;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.9;pointer-events:none}
+#map .rvl{fill:#2f6f98;font-style:italic;pointer-events:none} #map .peak{fill:#5a4a2a;font-weight:700;pointer-events:none}
+#map.zlo .rvl,#map.zlo .peak{display:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #map .coast{stroke:#c9bb8a} :root:not([data-theme="light"]) #map .rvl{fill:#8cc4e6} :root:not([data-theme="light"]) #map .peak{fill:#e0cf9a}}
+:root[data-theme="dark"] #map .coast{stroke:#c9bb8a} :root[data-theme="dark"] #map .rvl{fill:#8cc4e6} :root[data-theme="dark"] #map .peak{fill:#e0cf9a}
 #map .btag{cursor:pointer} #map .btag rect{fill:#fff;stroke:var(--def);stroke-width:1.4;opacity:.94} #map .btag text{fill:var(--def);font-weight:700;pointer-events:none} #map .btl{stroke:var(--def);stroke-width:1;stroke-dasharray:2 2;opacity:.7;pointer-events:none} #map .btl.lost{stroke:var(--atk)} #map.zlo .btag,#map.zlo .btl{display:none}
 #map .btag.lost rect{stroke:var(--atk)} #map .btag.lost text{fill:var(--atk);text-decoration:line-through}
 #cnPend .cpm,#afPend .cpm{margin-top:3px;color:var(--ink)} #cnPend .cpb,#afPend .cpb{display:flex;gap:8px;justify-content:flex-end;margin-top:8px} #cnPend .cpb button,#afPend .cpb button{min-width:96px} #afPend{border-color:var(--def)}
@@ -818,33 +824,33 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-14.77' -->
-<script src="js/dict.js?v=2026-11-14.77"></script>
-<script src="js/i18n.js?v=2026-11-14.77"></script>
-<script src="js/btnfix.js?v=2026-11-14.77"></script>
-<script src="js/geo.js?v=2026-11-14.77"></script>
-<script src="js/dem.js?v=2026-11-14.77"></script>
-<script src="js/map.js?v=2026-11-14.77"></script>
-<script src="js/state.js?v=2026-11-14.77"></script>
-<script src="js/rules.js?v=2026-11-14.77"></script>
-<script src="js/supply.js?v=2026-11-14.77"></script>
-<script src="js/ending.js?v=2026-11-14.77"></script>
-<script src="js/theater.js?v=2026-11-14.77"></script>
-<script src="js/strike.js?v=2026-11-14.77"></script>
-<script src="js/airstrike.js?v=2026-11-14.77"></script>
-<script src="js/decisions.js?v=2026-11-14.77"></script>
-<script src="js/report.js?v=2026-11-14.77"></script>
-<script src="js/turn.js?v=2026-11-14.77"></script>
-<script src="js/ai.js?v=2026-11-14.77"></script>
-<script src="js/render.js?v=2026-11-14.77"></script>
-<script src="js/fx.js?v=2026-11-14.77"></script>
-<script src="js/video.js?v=2026-11-14.77"></script>
-<script src="js/stats.js?v=2026-11-14.77"></script>
-<script src="js/input.js?v=2026-11-14.77"></script>
-<script src="js/unitinfo.js?v=2026-11-14.77"></script>
-<script src="js/version.js?v=2026-11-14.77"></script>
-<script src="js/changelog.js?v=2026-11-14.77"></script>
-<script src="js/app.js?v=2026-11-14.77"></script>
-<script src="js/gamepad.js?v=2026-11-14.77"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-14.78' -->
+<script src="js/dict.js?v=2026-11-14.78"></script>
+<script src="js/i18n.js?v=2026-11-14.78"></script>
+<script src="js/btnfix.js?v=2026-11-14.78"></script>
+<script src="js/geo.js?v=2026-11-14.78"></script>
+<script src="js/dem.js?v=2026-11-14.78"></script>
+<script src="js/map.js?v=2026-11-14.78"></script>
+<script src="js/state.js?v=2026-11-14.78"></script>
+<script src="js/rules.js?v=2026-11-14.78"></script>
+<script src="js/supply.js?v=2026-11-14.78"></script>
+<script src="js/ending.js?v=2026-11-14.78"></script>
+<script src="js/theater.js?v=2026-11-14.78"></script>
+<script src="js/strike.js?v=2026-11-14.78"></script>
+<script src="js/airstrike.js?v=2026-11-14.78"></script>
+<script src="js/decisions.js?v=2026-11-14.78"></script>
+<script src="js/report.js?v=2026-11-14.78"></script>
+<script src="js/turn.js?v=2026-11-14.78"></script>
+<script src="js/ai.js?v=2026-11-14.78"></script>
+<script src="js/render.js?v=2026-11-14.78"></script>
+<script src="js/fx.js?v=2026-11-14.78"></script>
+<script src="js/video.js?v=2026-11-14.78"></script>
+<script src="js/stats.js?v=2026-11-14.78"></script>
+<script src="js/input.js?v=2026-11-14.78"></script>
+<script src="js/unitinfo.js?v=2026-11-14.78"></script>
+<script src="js/version.js?v=2026-11-14.78"></script>
+<script src="js/changelog.js?v=2026-11-14.78"></script>
+<script src="js/app.js?v=2026-11-14.78"></script>
+<script src="js/gamepad.js?v=2026-11-14.78"></script>
 </body>
 </html>
