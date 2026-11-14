@@ -52,7 +52,7 @@ let LOGN=0;
 function log(msg){S.log.unshift({t:S.turn,p:S.phase,msg,n:++LOGN});if(S.log.length>300)S.log.pop();}
 function toast(msg,ms){if(S&&S.rec)return;const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),ms||1500);}
 function hname(h){return h.name||(TERN[h.t]+' '+h.c+'-'+h.r);}
-function uname(u){return (u.fl?u.fl.n:TYPES[u.type].n)+'（'+SIDE[u.side]+'）';}
+function uname(u){return (u.fl?u.fl.n:u.hl?'劍龍級潛艦（'+u.nm+'）':TYPES[u.type].n)+'（'+SIDE[u.side]+'）';}
 // ---------- 台灣海軍：依真實艦隊編制，一個棋子＝一個艦隊（★艦隊歸屬與武器數字為推估）----------
 // 每艘：防空飛彈 ad、防空涵蓋 adR（格）、反艦飛彈 asm、反艦射程 asmR（格）、同時接戰數 ch
 const RFW={kl:{n:'基隆級',ad:60,adR:kmH(120),asm:8,asmR:kmH(120),ch:2},ck:{n:'成功級',ad:36,adR:kmH(40),asm:8,asmR:kmH(160),ch:2},pf:{n:'派里級',ad:36,adR:kmH(40),asm:4,asmR:kmH(120),ch:2},
@@ -64,8 +64,8 @@ const ROCF=[
   {id:'124',n:'124 艦隊（左營）',s:'124',home:'kaohsiung',m:y=>[['kd',6]]},
   {id:'131',n:'131 艦隊（基隆）',s:'131',home:'keelung',m:y=>[['ck',5]]},
   {id:'146',n:'146 艦隊（馬公）',s:'146',home:'magong',m:y=>[['ck',3],['pf',2]]},
-  {id:'hjN',n:'海蛟大隊（北）',s:'海蛟北',home:'suao',m:y=>[['tc',6],['kh',15]]},
-  {id:'hjS',n:'海蛟大隊（南）',s:'海蛟南',home:'kaohsiung',m:y=>[['tc',6],['kh',15]]}];
+  {id:'hjN',n:'海蛟大隊（北）',s:'海蛟北',home:'suao',m:y=>[['tc',4],['kh',15]]},
+  {id:'hjS',n:'海蛟大隊（南）',s:'海蛟南',home:'kaohsiung',m:y=>[['tc',3],['kh',15]]}];
 const FLEET_PER=2; // ★每艘每次齊射 2 枚
 function fleetAgg(u){const A={hp:0,ad:0,asm:0,adR:0,asmR:0,chan:0,sh:0};for(const [k,n] of u.fl.m){if(n<=0)continue;const W=RFW[k];A.hp+=n;A.ad+=W.ad*n;A.asm+=W.asm*n;A.chan+=W.ch*n;if(W.ad>0)A.adR=Math.max(A.adR,W.adR);if(W.asm>0){A.asmR=Math.max(A.asmR,W.asmR);A.sh+=n;}}return A;}
 const fleetTxt=u=>u.fl.m.filter(([,n])=>n>0).map(([k,n])=>RFW[k].n+' '+n).join('、');

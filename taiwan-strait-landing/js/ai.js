@@ -232,9 +232,14 @@ async function aiAtkUnit(u){
 // 後續批次的海鯤逐步改良（推估，不確定性高）：武器酬載增加、鋰電池與降噪使被發現機率下降、聲納與火控改良使命中率提高
 const HK_ERA={'2026':[4,1,0],'2027':[4,1,0],'2028':[4,1,0],'2029':[4,.95,.02],'2030':[5,.9,.04],'2031':[5,.8,.06],'2032':[6,.7,.08]}; // [魚雷齊射數, 被反潛發現的倍率, 命中率加成]
 const hkE=()=>HK_ERA[S.era]||HK_ERA['2026'];
-const hkTp=()=>hkE()[0];
+// 劍龍級（海龍、海虎，1987～88 年服役）：2018 年起戰鬥系統升級（聲納、火控、作戰管理），改用 Mk-48 Mod 6 AT 魚雷與 UGM-84L 潛射魚叉（兩艘共約 12 枚）；
+// 沒有絕氣推進（AIP），電量低時要用呼吸管浮航充電，比海鯤容易被發現。★被發現倍率 1.3、命中率 −5%（推估）
+const HL_N=2,HL_NM=['海龍','海虎'],HL_E=[4,1.3,-.05];
+const hkU=u=>u&&u.hl?HL_E:hkE();
+const subNm=u=>u&&u.hl?'劍龍級潛艦（'+u.nm+'）':'海鯤潛艦';
+const hkTp=u=>hkU(u)[0];
 const HK_P={cv:.3,dd:.35,amph:.5,mar:.5,arm:.5,cvy:.85}; // 補給船團是慢速商船、護航薄弱，最好打；附近每有一艘護航艦命中率 −10%（最低 40%）
-const hkP=t=>Math.min(.95,(t.type==='cvy'?Math.max(.4,HK_P.cvy-.1*S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&rd(hexOf(e),hexOf(t))<=kmH(60)).length):t.type==='cv'?Math.max(LAM.hkMin,HK_P.cv-LAM.hkCv*S.units.filter(e=>e.side==='atk'&&isEsc(e)&&alive(e)&&rd(hexOf(e),hexOf(t))<=kmH(40)).length):(HK_P[t.type]||.35))+hkE()[2]); // 航艦：每有一艘新護航艦在 2 格內 −5%（★） // 命中率：航艦有護航與反潛屏護最難打，運輸船與登陸艦最容易
+const hkP=(t,u)=>Math.min(.95,(t.type==='cvy'?Math.max(.4,HK_P.cvy-.1*S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&rd(hexOf(e),hexOf(t))<=kmH(60)).length):t.type==='cv'?Math.max(LAM.hkMin,HK_P.cv-LAM.hkCv*S.units.filter(e=>e.side==='atk'&&isEsc(e)&&alive(e)&&rd(hexOf(e),hexOf(t))<=kmH(40)).length):(HK_P[t.type]||.35))+hkU(u)[2]); // 航艦：每有一艘新護航艦在 2 格內 −5%（★） // 命中率：航艦有護航與反潛屏護最難打，運輸船與登陸艦最容易
 const HK_V={cv:3,amph:1.5,mar:1.5,arm:1.5,cvy:1.2,dd:.8};
 const HK_MISSION={cvy:['cvy'],lnd:['amph','mar','arm'],cv:['cv'],dd:['dd']};
 // 武器（依公開資料）：海鯤有 6 具 533 公厘魚雷管，主要武器為 Mk 48 Mod 6 重型魚雷（美國 2020 年核准出售 18 枚）與 UGM-84L 潛射魚叉反艦飛彈（官方未公布攜行數）。
@@ -259,12 +264,12 @@ function fireSub(u,t){
   const w=hkPick(u,t);if(!w)return false;
   if(w==='tp')u.tp--;else u.hm--;u.shots=0;u.acted=true;u.revealed=true;u.last={c:u.c,r:u.r,turn:S.turn};
   const nm=w==='hm'?'魚叉飛彈':'重型魚雷',sv=w==='hm'&&adCover(t).length?salvoCalc(t,1,false,'hkSalvo>'+t.type):null; // 魚叉在艦隊防空涵蓋內：以齊射模型計算
-  const hit=sv?sv.hits>0:hitP(w==='hm'?Math.max(.1,hkP(t)-.12):hkP(t),'sub:'+w+'>'+t.type),big=t.type==='cv'||t.type==='csg',steps=!hit?0:sv&&big?takeInt(.5,'salvoBig'):1;
-  log('海鯤潛艦以'+nm+'攻擊 '+uname(t)+(sv?'：對方防空發射 '+sv.I+' 枚攔截彈，':'')+(hit?'命中'+(steps?'':'（航艦體積大，未造成重創）'):'未命中')+'（魚雷 '+u.tp+' 齊射、魚叉 '+u.hm+' 枚'+(sv?'；齊射模型，參數為推估':'')+'）');
+  const hit=sv?sv.hits>0:hitP(w==='hm'?Math.max(.1,hkP(t,u)-.12):hkP(t,u),'sub:'+w+'>'+t.type),big=t.type==='cv'||t.type==='csg',steps=!hit?0:sv&&big?takeInt(.5,'salvoBig'):1;
+  log(subNm(u)+'以'+nm+'攻擊 '+uname(t)+(sv?'：對方防空發射 '+sv.I+' 枚攔截彈，':'')+(hit?'命中'+(steps?'':'（航艦體積大，未造成重創）'):'未命中')+'（魚雷 '+u.tp+' 齊射、魚叉 '+u.hm+' 枚'+(sv?'；齊射模型，參數為推估':'')+'）');
   fxq({t:'sub',from:[u.c,u.r],to:[t.c,t.r],hit,w});
-  if(hit){S.stats.subHits=(S.stats.subHits||0)+1;if(steps)damage(t,steps,'海鯤潛艦'+nm);}
-  const d=S.units.filter(e=>e.side==='atk'&&(e.type==='dd'||isEsc(e))&&alive(e)&&rd(hexOf(u),hexOf(e))<=kmH(80)).length,pa=Math.min(.65,(.1+.12*d)*hkE()[1]*(w==='hm'?.5:1));
-  if(hitP(pa,'sub:'+w+'>'+t.type)){log('海鯤潛艦被反潛兵力發現並攻擊');damage(u,1,'反潛攻擊');}
+  if(hit){S.stats.subHits=(S.stats.subHits||0)+1;if(steps)damage(t,steps,subNm(u)+nm);}
+  const d=S.units.filter(e=>e.side==='atk'&&(e.type==='dd'||isEsc(e))&&alive(e)&&rd(hexOf(u),hexOf(e))<=kmH(80)).length,pa=Math.min(.65,(.1+.12*d)*hkU(u)[1]*(w==='hm'?.5:1));
+  if(hitP(pa,'sub:'+w+'>'+t.type)){log(subNm(u)+'被反潛兵力發現並攻擊');damage(u,1,'反潛攻擊');}
   render();return true;
 }
 function hkHomeStep(u){ // 往最近的守方港口前進：回傳 {k,eta,inPort}；k 為這回合能到的最近格
@@ -279,7 +284,7 @@ function hkHomeStep(u){ // 往最近的守方港口前進：回傳 {k,eta,inPort
 function subDetect(){ // 攻方階段開始：附近的護航艦各有機會發現潛艦；發現者可以投射反潛武器
   for(const u of S.units.filter(x=>x.side==='def'&&(x.type==='hk'||x.type==='ssn')&&atSea(x))){
     const loud=u.loud;u.loud=false;
-    const fs=S.units.filter(e=>e.side==='atk'&&LAM.asw[e.type]&&alive(e)&&rd(hexOf(e),hexOf(u))<=LAM.aswR[e.type]&&hitP(Math.min(.95,LAM.asw[e.type]*hkE()[1]*(loud?2:1)),'subDetect:'+e.type)); // 新護航艦有艦載直升機，搜索範圍較大
+    const fs=S.units.filter(e=>e.side==='atk'&&LAM.asw[e.type]&&alive(e)&&rd(hexOf(e),hexOf(u))<=LAM.aswR[e.type]&&hitP(Math.min(.95,LAM.asw[e.type]*(u.type==='hk'?hkU(u):hkE())[1]*(loud?2:1)),'subDetect:'+e.type)); // 新護航艦有艦載直升機，搜索範圍較大
     if(!fs.length)continue;
     if(!u.revealed){u.revealed=true;u.last={c:u.c,r:u.r,turn:S.turn};log('攻方護航艦在 '+hname(hexOf(u))+' 附近發現潛艦訊號');}
     if(fs.some(()=>hitP(.3,'subDetect'))){log('攻方護航艦對'+TYPES[u.type].n+'投射反潛武器');damage(u,1,'反潛攻擊');}
@@ -289,9 +294,9 @@ async function subTurn(u){ // 電腦操作海鯤：依指揮官意圖選目標�
   if(!alive(u)||u.acted)return;
   const mis=(S.intent||{}).sub,types=mis&&HK_MISSION[mis]?HK_MISSION[mis]:null;
   const pool=S.units.filter(e=>e.side==='atk'&&atSea(e)&&HK_P[e.type]&&(!types||types.includes(e.type)));
-  const best=()=>{const ts=subTargets(u).filter(e=>!types||types.includes(e.type));ts.sort((a,b)=>HK_V[b.type]*hkP(b)-HK_V[a.type]*hkP(a));return ts[0];};
+  const best=()=>{const ts=subTargets(u).filter(e=>!types||types.includes(e.type));ts.sort((a,b)=>HK_V[b.type]*hkP(b,u)-HK_V[a.type]*hkP(a,u));return ts[0];};
   if(hkSpent(u)){ // 彈藥用盡：自動回母港補彈
-    const st=hkHomeStep(u);if(st&&st.k){doMove(u,st.k,'sail');if(!subHidden(u))log('海鯤潛艦彈藥用盡，返回母港補彈');render();await sleep(240);}return;}
+    const st=hkHomeStep(u);if(st&&st.k){doMove(u,st.k,'sail');if(!subHidden(u))log(subNm(u)+'彈藥用盡，返回母港補彈');render();await sleep(240);}return;}
   let t=best();
   if(!t&&pool.length){
     const rc=reach(u),want=hkRange(u)>kmH(60)?kmH(100):kmH(40);let bk=null,bs=Math.min.apply(null,pool.map(e=>hd(hexOf(u),hexOf(e))));
