@@ -52,7 +52,7 @@ const DEFEV=[
     return [out.length?'搶修機場：'+out.join('、'):'沒有受損的機場需要搶修','戰機分散到疏散機場與公路跑道：之後機場被打時地面戰機損失減半（推估）','飛彈車分散並加強誘餌：之後被定位的機率 ×'+KLOC.decoy+'（推估）','本階段 '+n+' 個飛彈單位換陣地，各少一次射擊'];
    }
    if(c=="sortie"){
-    const af=airfields().filter(h=>S.owner[h.k]!=='atk'),cap=af.length?af.reduce((a,h)=>a+[1,.5,.2,0][Math.min(3,afLevel(h.k))],0)/af.length:0;
+    const af=airfields().filter(h=>S.owner[h.k]!=='atk'),cap=af.length?af.reduce((a,h)=>a+afCap(h.k),0)/af.length:0;
     if(cap<.5)return ["機場跑道受損嚴重（起降能量約 "+Math.round(cap*100)+"%），戰機無法轉場到山洞機堡，沒有效果"];
     m.cave={until:2};const f=caveF();
     return ["約 "+Math.round(f*S.air.TW)+" 架戰機（約 "+Math.round(f*100)+"%）躲進山洞機堡，到第 2 回合結束：地面戰機損失依比例減少","代價：這段期間空軍出擊架次與空中戰力 ×"+fmt1(1-f)];

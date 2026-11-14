@@ -34,7 +34,7 @@ const afUsable=()=>airfields().filter(h=>S.owner[h.k]!=='atk'&&afLevel(h.k)<3&&a
 function afBudget(k){ // 本階段這座機場可出擊的打擊包數（每階段只算一次）
   S.afB=S.afB||{};const key=S.turn+S.phase;let b=S.afB[k];
   if(!b||b.t!==key){const L=afUsable();let n=0;
-    if(S.air&&S.pools&&S.pools.rocAir>0&&L.some(x=>x.k===k)){const ac=afBaseN(k)*(1-caveF());n=takeInt(sortiesOf(ac*AFCAP[afLevel(k)],AIR.TWrate)*(AFS.share[S.airCtl||'mid']||.4)/AFS.pk,'afB:'+k);}
+    if(S.air&&S.pools&&S.pools.rocAir>0&&L.some(x=>x.k===k)){const ac=afBaseN(k)*(1-caveF());n=takeInt(sortiesOf(ac*afCap(k),AIR.TWrate)*(AFS.share[S.airCtl||'mid']||.4)/AFS.pk,'afB:'+k);}
     b=S.afB[k]={t:key,n};}
   return b.n;
 }
@@ -92,7 +92,7 @@ function afPanelHTML(k){
   const h=TER[k];if(!h||h.t!=='air'||h.isl!=='TW'||!S.started||S.over)return '';
   const P=S.pools||{},W=afWing(k),ac=afBaseN(k),lv=afLevel(k),n=afUsable().some(x=>x.k===k)?afBudget(k):0;
   if(!ac)return '<div class="hint">'+(W?W[0]+'：目前沒有戰機（'+(S.owner[k]==='atk'?'基地已被占領':'戰機已損失或轉場')+'）':'沒有戰鬥機進駐，不能從這裡出擊')+'。</div>';
-  let o='<div class="hint"><b>'+(TER[k].name||'基地')+'</b>（'+(W?W[0]+'・'+W[1]:'')+'）：戰機約 '+ac+' 架'+(lv>=3?'，跑道癱瘓，無法起飛':lv?'，跑道受損（起降 '+Math.round(AFCAP[lv]*100)+'%）':'')+(caveF()>0?'（約 '+Math.round(caveF()*100)+'% 躲在山洞機堡）':'')+'；本階段可出擊 '+n+' 個打擊包（每包 4 架）；空射反艦飛彈 '+Math.round(P.rocAAsh||0)+' 枚、萬劍彈 '+Math.round(P.rocWC||0)+' 枚'+((P.rocSlam||0)>0?'、SLAM-ER '+Math.round(P.rocSlam)+' 枚':'')+'。沒用完的份額在階段結束時由電腦自動出擊。</div>';
+  let o='<div class="hint"><b>'+(TER[k].name||'基地')+'</b>（'+(W?W[0]+'・'+W[1]:'')+'）：戰機約 '+ac+' 架'+'，'+afTxt(k)+(caveF()>0?'（約 '+Math.round(caveF()*100)+'% 躲在山洞機堡）':'')+'；本階段可出擊 '+n+' 個打擊包（每包 4 架）；空射反艦飛彈 '+Math.round(P.rocAAsh||0)+' 枚、萬劍彈 '+Math.round(P.rocWC||0)+' 枚'+((P.rocSlam||0)>0?'、SLAM-ER '+Math.round(P.rocSlam)+' 枚':'')+'。沒用完的份額在階段結束時由電腦自動出擊。</div>';
   if(humanTurn()&&S.phase==='def'&&S.ctrl.def==='human'&&n>0)o+='<div class="cvord"><button class="ghost" id="btnAfS">攻擊船團<small class="pn">（空射反艦飛彈）</small></button><button class="ghost" id="btnAfL">空襲島上目標<small class="pn">（精準炸彈）</small></button><button class="ghost" id="btnAfC">打擊大陸沿岸<small class="pn">（萬劍彈、SLAM-ER）</small></button></div><div class="hint">按下後點地圖上的目標（大陸沿岸：集結中的部隊或大陸基地）。</div>';
   setTimeout(()=>{[['btnAfS','afS'],['btnAfL','afL'],['btnAfC','afC']].forEach(([id,m])=>{const b=document.getElementById(id);if(b)b.onclick=()=>{S.afK=k;S.sel=null;S.mode=S.mode===m?null:m;render();};});},0);
   return o;

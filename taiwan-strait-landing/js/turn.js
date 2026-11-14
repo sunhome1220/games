@@ -534,7 +534,8 @@ async function beginPhase(side){
   if(side==='def'){await uscTurn();if(S.over)return;}
   if(side==='atk'){subDetect();updateBeachheads();await convoyEval();if(S.over)return;}
   if(side==='def')await interdictEval();if(S.over)return;
-  if(side==='atk'){repairPorts();repairAirfields();repairCN();resolveSupply();convoyTurn();liftTurn();supplyAttrition();if(S.over)return;}
+  if(side==='def')repairAirfields(); // 跑道搶修好就能在本守方階段起飛
+  if(side==='atk'){repairPorts();repairCN();resolveSupply();convoyTurn();liftTurn();supplyAttrition();if(S.over)return;}
   if(side==='atk'){
     S.weather=rollWeather();if(S.weather.id==='bad')S.stats.badWx++;waveAttrition();if(S.over)return;
     if(S.turn===1&&!S.sirenDone&&!S.sim&&!S.video&&!REC.quiet){S.sirenDone=true;SFX.siren(6);} // 第一波：空襲警報
