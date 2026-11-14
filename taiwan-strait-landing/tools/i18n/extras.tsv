@@ -2005,3 +2005,37 @@ AI 在台灣東側海域游弋，遇岸置飛彈威脅就退向外海	The AI cru
 額外發射約半個階段的長程對地飛彈（每包 4 枚，約 12～20 枚）打大陸基地，目標依價值挑選（火箭軍陣地、機場、海軍基地）；和「縱深打擊」同一套規則：先過共軍防空攔截，突破後命中率依目標硬度 20～45%，命中使基地受損一級。	Fire about half a phase's worth of extra land-attack missiles (4 per packet, about 12–20) at mainland bases, targets chosen by value (Rocket Force sites, airbases, naval bases); same rules as 'Deep strike': PLA air defense intercepts first, then a hit chance of 20–45% depending on target hardness, and a hit damages the base one level.	
 頁首的「重新開始」改成和設定齒輪一樣的圓形圖示按鈕（↻），不再蓋住回合與階段標籤，也不會把標題擠成兩行；游標停留會顯示說明	The header 'Restart' is now a round icon button (↻) matching the settings gear: it no longer covers the turn and phase labels or pushes the title onto two lines; hovering shows a tooltip	
 重新開始：放棄這一局，回到作戰設定	Restart: abandon this game and return to setup	
+火力打擊灘頭補給站	Strike the beachhead supply depots	
+攻方有 	The attacker has 	
+ 個灘頭補給站（每個讓卸載能力 +2）。雷霆2000／海馬士集中射擊：2 次攻擊，每次約 50%（位置固定、物資集中，推估），命中扣補給站 1 步、打光就消失。代價：雷霆火箭彈存量 −1，參與的發射車開火後暴露到下個攻方階段。	 beachhead supply depots (each adds +2 unloading capacity). Thunderbolt-2000 / HIMARS concentrate fire: 2 attacks at about 50% each (fixed, concentrated stocks, estimated); a hit takes 1 step off a depot, which disappears when emptied. Cost: Thunderbolt rocket stock −1, and the launchers that fire stay exposed until the next attacker phase.	
+補給站預計損失約 	Expected depot losses about 	
+ 步；全毀時卸載能力 −2	 steps; −2 unloading capacity if destroyed	
+近海補布水雷	Re-lay a minefield offshore	
+攻方已掃除 	The attacker has swept 	
+ 處水雷。布雷艇趁夜在 	 minefields. Minelayers slip out at night to 	
+（攻方卸載點外海）補布一處：之後經過的船團、運輸船與護航艦有 50% 機率觸雷受損（沿用水雷規則），直到被掃除。代價：布雷艇出港有被發現的風險（1/4 機率守方海軍 −1），每 2 回合最多一次。	 (off the attacker's unloading point) and lay one: convoys, transports and escorts passing through then have a 50% chance of hitting a mine (existing mine rules) until it is swept. Cost: the minelayers may be spotted (1-in-4 chance of defender navy −1); at most once every 2 turns.	
+卸載點外海多一處雷區	One more minefield off the unloading point	
+阻絕就地徵用	Deny local requisition	
+攻方上回合從占領區就地徵用 	Last turn the attacker requisitioned 	
+ 點補給（燃料、糧食、彈藥庫存）。民防與後備部隊提前撤離或破壞占領區周邊的物資：下回合就地補給 −1。代價：民生損失與撤離造成平民傷亡 +500，民心（影響攻方日後就地徵用）不變。	 points of supply locally (fuel, food, ammunition stocks) in occupied areas. Civil defense and reservists evacuate or destroy stocks around the occupied areas: local supply −1 next turn. Cost: civilian hardship and evacuation casualties +500; public sentiment (which affects later requisitioning) is unchanged.	
+就地補給 	Local supply 	
+攻方補給現況：島上部隊 	Attacker supply: units on the island 	
+ 個、補給容量 	, supply capacity 	
+（船團 	 (convoys 	
+、空投 	, airdrop 	
+、就地 	, local 	
+、庫存 	, stock 	
+；海上補給船團 	; supply convoys at sea 	
+守方火力（灘頭補給站）	Defender fire (beachhead depot)	
+對灘頭補給站 2 次攻擊，命中 	2 attacks on beachhead depots, hits 	
+雷霆火箭彈存量 −1	Thunderbolt rocket stock −1	
+發射車開火後暴露	Launchers exposed after firing	
+在 	At 	
+ 補布一處水雷	: one minefield re-laid	
+守方布雷艇在 	Defender minelayers re-lay a minefield at 	
+ 補布水雷		
+布雷艇被發現擊沉（守方海軍 −1）	Minelayer spotted and sunk (defender navy −1)	
+下回合就地補給 −1	Local supply −1 next turn	
+平民傷亡 +500	Civilian casualties +500	
+「攔截補給（守方）」說明文字精簡，拿掉「下面只列出…」等贅字	'Interdict supply (defender)' text tightened, removing filler such as 'only the channels listed below…'	
+守方攔截補給新增三個選項（只在可行時出現，選了就有實際效果）：火力打擊灘頭補給站（雷霆2000／海馬士 2 次攻擊、各約 50%，命中扣補給站 1 步；代價雷霆火箭彈 −1、發射車暴露）、近海補布水雷（在攻方卸載點外海補回被掃掉的雷區，船艦經過 50% 觸雷；布雷艇 1/4 機率被擊沉，每 2 回合一次）、阻絕就地徵用（下回合攻方就地補給 −1；平民傷亡 +500）。數字為推估	Three new defender supply-interdiction options (shown only when possible, each with real effects): strike the beachhead supply depots (Thunderbolt-2000 / HIMARS, 2 attacks at about 50% each, a hit takes 1 step off a depot; costs 1 Thunderbolt rocket and exposes the launchers), re-lay a minefield offshore (replaces a swept minefield off the attacker's unloading point; ships passing have a 50% chance of hitting a mine; the minelayer has a 1-in-4 chance of being sunk; once every 2 turns), and deny local requisition (attacker local supply −1 next turn; civilian casualties +500). Figures are estimates	
