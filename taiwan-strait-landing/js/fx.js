@@ -445,7 +445,7 @@ function renderInfoSide(){
     const en=effNote(u);if(en.length)o+='<div class="hint effn">數值修正：'+en.join('、')+'</div>';
     const st=unitStatusList(u,h);
     o+='<div class="hint">'+st.join(' · ')+'</div>';
-    o+=fleetPanelHTML(u);if(h.t==='air'&&h.isl==='TW')o+=afPanelHTML(h.k);
+    o+=fleetPanelHTML(u);o+=hkPanelHTML(u);if(h.t==='air'&&h.isl==='TW')o+=afPanelHTML(h.k);
     if(humanTurn()&&allyHuman()&&S.phase==='def'&&u.ally&&u.side==='def'){const ts=tomShooters(u);
       if(ts.length||(u.type==='csg'&&S.units.some(e=>e.grp===u.id&&e.mag&&e.mag.lam>0)))o+='<div class="cvord"><button class="ghost" id="btnTom"'+(ts.length?'':' disabled')+
           '>戰斧巡弋飛彈縱深打擊<small class="pn">（可發射 '+ts.length+' 艘、每次 '+LAM.per+' 枚）</small></button></div><div class="hint">按下後點地圖上的大陸基地；會先警告升級後果。</div>';

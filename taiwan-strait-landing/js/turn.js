@@ -552,6 +552,7 @@ function phaseReset(side){
   GHOSTS.clear();S.units.forEach(u=>{u.inc=0;u.dropHide=0;if(side==='def')u.revealed=!!(u.mT&&S.turn<u.mT);});
   for(const u of S.units)if(u.side===side){u.moved=false;
     u.acted=false;
+    if(u.type==='hk'&&hkAtHome(u)&&u.hp<TYPES.hk.hp){u.rep=(u.rep||0)+1;if(u.rep>=2){u.rep=0;u.hp++;log(subNm(u)+' 在母港左營完成維修，恢復 1 步');}} // ★母港維修：每 2 回合 1 步
     if(u.type==='hk'){if(hexOf(u).t==='port'){u.tp=hkTp(u);
     u.hm=HK_HM;
     }u.shots=hkSpent(u)?0:1;
