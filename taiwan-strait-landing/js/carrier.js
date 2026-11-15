@@ -214,7 +214,10 @@ const grpCovered=t=>adCover(t).length>0; // 在任何防空艦涵蓋內（含護
 const chLeft=(x,cap)=>{const st=S.turn+S.phase;if(x.chT!==st){x.chT=st;x.chU=0;}return Math.max(0,cap-x.chU);};
 // 齊射的共用流程：先算攔截與命中（salvoCalc），再換算成扣幾步——航艦體積大，★每 2 枚命中扣 1 步；其他船每枚命中扣 1 步
 const isBigShip=t=>t.type==='cv'||t.type==='csg';
-function salvoHit(t,n,key,bigKey){const r=salvoCalc(t,n,false,key);r.steps=isBigShip(t)?takeInt(r.hits/2,bigKey||'salvoBig'):r.hits;return r;}
+// ★航艦：每 2 枚命中扣 1 步，打到剩最後 1 步就失去戰力（無法起降、撤離）；最後 1 步（沉沒）要再多 ★6 枚命中——一般評估擊沉大型航艦需要的命中數遠多於讓它失能
+const SINK_HITS=6;
+function bigSteps(t,hits,key){let s=0,rem=hits;while(t.hp-s>1&&rem>=2){s++;rem-=2;}if(t.hp-s>1)return s+takeInt(rem/2,key);return s+Math.min(t.hp-s,takeInt(rem/SINK_HITS,key+':sink'));}
+function salvoHit(t,n,key,bigKey){const r=salvoCalc(t,n,false,key);r.steps=isBigShip(t)?bigSteps(t,r.hits,bigKey||'salvoBig'):r.hits;return r;}
 const salvoStepTxt=(t,steps,none)=>steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):(none||''); // 戰報：扣了幾步（艦隊寫艘數）
 function salvoCalc(t,n,bm,key){
   const pk=1-Math.pow(1-(bm?SALVO.pIntBM:SALVO.pInt),SALVO.perMsl),cov=adCover(t).length>0||S.units.some(e=>e!==t&&e.side===t.side&&alive(e)&&(isEsc(e)||e.type==='dd')&&rd(hexOf(e),hexOf(t))<=kmH(30));let left=n,I=0,kill=0;
