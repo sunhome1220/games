@@ -510,14 +510,14 @@ function fireMissile(m,t){
     const n=SSM_N,r=salvoHit(t,n,'ssmSalvo>'+t.type),big=isBigShip(t),steps=r.steps;t.inc=(t.inc||0)+1;
     fxSalvo([m.c,m.r],t,r);
     log((m.type==='ff'?'守方艦艇':'岸置反艦飛彈')+'以 '+n+' 枚'+(m.type==='ssm'?ssmWn(m):'雄風')+'飛彈攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
-    if(steps)damage(t,steps,'雄風反艦飛彈');
+    if(steps)damage(t,steps,(m.type==='ssm'?(ssmHp(m)?'魚叉岸防系統 魚叉':'岸置 雄二／雄三'):'雄風')+'飛彈');
     checkInstant();return;
   }
   if(t.type==='ro'||t.type==='cvy'){ // 滾裝船與補給船：商船改裝、體積大、航速慢、沒有自身防空；不在護航艦防空涵蓋內時，飛彈只受尋標命中率限制（同齊射模型的 pSeek）
     const hits=takeInt(SSM_N*SALVO.pSeek,'ssmMerch>'+t.type);t.inc=(t.inc||0)+1;
     fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit:hits>0});
     log((m.type==='ff'?'守方艦艇':'岸置反艦飛彈')+'以 '+SSM_N+' 枚'+(m.type==='ssm'?ssmWn(m):'雄風')+'飛彈攻擊沒有護航防空的 '+uname(t)+'：命中 '+hits+' 枚（尋標命中率 '+Math.round(SALVO.pSeek*100)+'%，推估）'+(hits?'，'+tname(t)+' −'+stpU(t,hits):''));
-    if(hits)damage(t,hits,'雄風反艦飛彈');
+    if(hits)damage(t,hits,(m.type==='ssm'?(ssmHp(m)?'魚叉岸防系統 魚叉':'岸置 雄二／雄三'):'雄風')+'飛彈');
     checkInstant();return;
   }
   const sat=satHit(t),need=(m.type==='ff'?4:S.mods.ssmNeed)+escortMod()-sat,hit=sat>=3||hitP(pNeed(need),'ms:'+m.type+'>'+t.type);

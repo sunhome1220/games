@@ -79,7 +79,7 @@ function afStrike(k,x,auto){
     S.pools[A.pool]-=n;const r=salvoHit(t,n,'afShip>'+t.type,'afBig'),big=isBigShip(t),steps=r.steps;
     L=afLose(AFS.pk,adCover(t).length?AFS.loss:0);fxSalvo(from,t,r,{km:A.km,lost:L}); // 發射前後遭艦隊防空擊落的架數也畫出來
     txt='以 '+n+' 枚'+A.n+'攻擊 '+uname(t)+'：'+(r.I?'對方防空發射 '+r.I+' 枚攔截彈，約 '+fmt1(r.surv)+' 枚突破，':'')+'命中 '+r.hits+' 枚'+salvoStepTxt(t,steps);
-    if(steps)damage(t,steps,'空射反艦飛彈');
+    if(steps)damage(t,steps,(afWing(k)||[])[1]+' 空射'+A.n+'飛彈');
   }else if(x.u){
     const t=x.u,h=hexOf(t),ok=hitP(pNeed((h.t==='city'||h.t==='mtn')?6:5),'afLand:'+t.type);
     fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:false,from,k:'bomb'});
@@ -117,7 +117,7 @@ function coordStrike(k,t,nb,co){
   let txt;
   if(tot>0){const r=salvoHit(t,tot,'coord>'+t.type),steps=r.steps;fxSalvo([TER[k].c,TER[k].r],t,r,fl?{km:(afAsm(k)||{km:120}).km,lost:LA}:null);t.inc=(t.inc||0)+1;
     txt='協同攻擊 '+uname(t)+'（'+parts.join('、')+'），同一波共 '+tot+' 枚：'+(r.I?'對方防空發射 '+r.I+' 枚攔截彈，約 '+fmt1(r.surv)+' 枚突破，':'')+'命中 '+r.hits+' 枚'+salvoStepTxt(t,steps)+(L?'（戰機被擊落 '+L+' 架）':'')+'（齊射模型，參數為推估）';
-    if(steps)damage(t,steps,'協同反艦打擊');}
+    if(steps)damage(t,steps,'協同反艦打擊（'+parts.join('、')+'）');}
   else txt='協同攻擊 '+uname(t)+'：'+(parts.join('、')||'沒有可用的兵力')+'，沒有飛彈發射'+(L?'（戰機被擊落 '+L+' 架）':'');
   log(txt);fxToast(txt,4500);checkInstant();return true;
 }
