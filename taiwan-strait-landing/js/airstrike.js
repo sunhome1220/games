@@ -81,7 +81,7 @@ function afStrike(k,x,auto){
     txt='以 '+n+' 枚'+A.n+'攻擊 '+uname(t)+'：'+(r.I?'對方防空發射 '+r.I+' 枚攔截彈，約 '+fmt1(r.surv)+' 枚突破，':'')+'命中 '+r.hits+' 枚'+salvoStepTxt(t,steps);
     if(steps)damage(t,steps,(afWing(k)||[])[1]+' 空射'+A.n+'飛彈');
   }else if(x.u){
-    const t=x.u,h=hexOf(t),ok=hitP(pNeed((h.t==='city'||h.t==='mtn')?6:5),'afLand:'+t.type);
+    const t=x.u,h=hexOf(t),ok=hitP(pNeed(5+terrCover(h)),'afLand:'+t.type);
     fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:false,from,k:'bomb'});
     txt='空襲 '+hname(h)+' 的 '+tname(t)+(ok?'：命中':'：未命中（'+lastTxt()+'）');
     L=afLose(AFS.pk,S.pools.plaAD>0?AFS.loss:0);
@@ -182,7 +182,7 @@ function afPendInfo(){
       if(cvOOA(t))lines.push('⚠ 這艘航艦已失去戰力（艦載機無法起降、撤離中），再打只是為了擊沉；改打其他目標比較省飛彈');
       {const pc=afCapP(t);if(pc>0)lines.push('航艦艦載機在附近：約 <b>'+Math.round(pc*100)+'%</b> 會在發射前被攔截（推估）');}
       ok=ok&&n>0;risk=cov?AFS.loss:0;}
-    else{const h=hexOf(t),p=pNeed((h.t==='city'||h.t==='mtn')?6:5);lines.push('精準炸彈・'+stepOdds(t,p)+((h.t==='city'||h.t==='mtn')?'（城市／山地較難）':''));risk=S.pools.plaAD>0?AFS.loss:0;}
+    else{const h=hexOf(t),p=pNeed(5+terrCover(h));lines.push('精準炸彈・'+stepOdds(t,p)+coverTxt(h));risk=S.pools.plaAD>0?AFS.loss:0;}
   }
   const tx=P.x.cn?P.x.cn:S.units.find(y=>y.id===(P.x.u||P.x.stg));if(tx)lines.unshift((h0.name||'基地')+' → '+afDist(k,tx)+' km（'+(afWing(k)?afWing(k)[1]+' ':'')+'可達 '+Math.round(afReach(k,tx))+' km）');
   const xx=P.x.cn?{cn:P.x.cn}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{u:S.units.find(y=>y.id===P.x.u)};
