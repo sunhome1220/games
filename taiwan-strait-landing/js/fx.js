@@ -5,7 +5,8 @@ const SVGNS='http://www.w3.org/2000/svg';
 let PREVIEW=false;
 const fxq=o=>{if(!PREVIEW)FXQ.push(o);};
 // 齊射動畫：n 枚反艦飛彈飛向船艦；目標或護航艦有防空時，畫出攔截彈升空：攔下的空中爆炸、突破的命中或落海，最後顯示「攔截 X／命中 Y」
-const fxSalvo=(from,t,r)=>{if(!PREVIEW)FXQ.push({t:'salvo',from,to:[t.c,t.r],n:r.n,I:r.I,surv:r.surv,hits:r.hits,side:t.side});};
+const fxSalvo=(from,t,r,air)=>{if(!PREVIEW)FXQ.push({t:'salvo',from,to:[t.c,t.r],n:r.n,I:r.I,surv:r.surv,hits:r.hits,side:t.side,air:air||null});}; // air＝{km:飛彈射程, lost:被防空擊落架數}：戰機先飛到發射點再放飛彈
+const fxCapX=(from,t)=>{if(!PREVIEW)FXQ.push({t:'capx',from,to:[t.c,t.r]});}; // 打擊機群半途遭艦載機攔截
 const fxToast=(s,ms)=>{if(PREVIEW)return;FXQ.push({t:'toast',s,ms});}; // 打擊結果的訊息：等飛彈或戰機飛到、爆炸後才跳出
 const reduce=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 let FXSPD=1;const fxK=()=>((S&&S.video&&V.sp)?Math.max(.2,1/V.sp):1)/FXSPD; // 動畫速度設定：0.5／1／2／4 倍
@@ -338,7 +339,13 @@ const subHidden=u=>(u.type==='hk'||u.type==='ssn')&&u.side==='def'&&!u.revealed&
 const unitAtVis=k=>S.units.find(u=>K(u.c,u.r)===k&&!subHidden(u));
 function runFx(o){
   if(o.t==='toast'){toast(o.s,o.ms);return;}
-  if(o.t==='salvo'){const PP=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]),a=PP(o.from),b=PP(o.to),sh=Math.max(1,Math.min(6,o.n)),f=sh/o.n;
+  if(o.t==='capx'){const PP=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]),a=PP(o.from),b=PP(o.to),m=[a[0]+(b[0]-a[0])*.55,a[1]+(b[1]-a[1])*.55];
+    fxFlight(a,m,'plane',()=>{fxShot([b[0],b[1]-20],m,{arc:-20,dur:420,color:'#ffd9d0',trail:'#ff6a4a',w:1.2,r:2,style:'mis',shape:'sam',end:()=>{fxFlash(m,3,22,'#ff9a3c',420);fxSparks(m,8,24,'#ffd45a',420);fxText(m,'遭艦載機攔截','def',1100);}});});return;}
+  if(o.t==='salvo'&&o.air){const PP=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]),a=PP(o.from),b=PP(o.to),d=Math.hypot(b[0]-a[0],b[1]-a[1]),rp=o.air.km/KM_HEX*HPX,k=d>rp?(d-rp)/d:0,lp=[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k],T=k>0?fxDur('plane',d-rp):0;
+    if(k>0)fxFlight(a,lp,'plane',()=>{}); // 戰機飛到離目標約一個飛彈射程的發射點
+    if(o.air.lost)setTimeout(()=>{fxShot([b[0],b[1]-18],lp,{arc:-30,dur:600,color:'#d6f3ff',trail:'#6ec6ff',w:1.4,r:2.2,style:'mis',shape:'sam',end:()=>{fxFlash(lp,3,24,'#ff9a3c',460);fxSparks(lp,8,26,'#ffd45a',460);fxText(lp,'擊落 '+o.air.lost+' 架','def',1200);}});},T*.6*fxK());
+    setTimeout(()=>runFx(Object.assign({},o,{air:null,fromPx:lp})),T*fxK());return;}
+  if(o.t==='salvo'){const PP=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]),a=o.fromPx||PP(o.from),b=PP(o.to),sh=Math.max(1,Math.min(6,o.n)),f=sh/o.n;
     const ni=o.I>0?Math.min(sh,Math.round((o.n-o.surv)*f)):0,nh=o.hits>0?Math.max(1,Math.min(sh-ni,Math.round(o.hits*f))):0,cls=o.side==='def'?'def':'atk';
     for(let i=0;i<sh;i++){const a2=[a[0]+(NR()-.5)*10,a[1]+(NR()-.5)*10],md=i<ni?'int':'pass',hit=i>=ni&&i<ni+nh;
       setTimeout(()=>{if(o.I>0)fxIntercept(a2,b,'asm',md,hit,true,cls);else fxFlight(a2,b,'asm',()=>fxImpact(b,hit,true,true));},i*110*fxK());}
@@ -396,7 +403,8 @@ function fxArrive(o){
       if((o.org||o.from)&&o.k)return fl(o.ad&&o.k==='bomb'?'cm':o.k,dd);return (o.org||o.from)?Math.min(900,260+dd*.7):420;}
     if(o.t==='msl')return fl('asm',dist(P(o.from),P(o.to)));
     if(o.t==='cva')return cvaGeo(o).tot;
-    if(o.t==='salvo'){const q=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);return fl('asm',dist(q(o.from),q(o.to)))+Math.min(6,o.n)*110+300;}
+    if(o.t==='salvo'){const q=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]),d=dist(q(o.from),q(o.to)),rp=o.air?o.air.km/KM_HEX*HPX:d;return (o.air&&d>rp?fxDur('plane',d-rp):0)+fl('asm',Math.min(d,rp))+Math.min(6,o.n)*110+300;}
+    if(o.t==='capx'){const q=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);return fxDur('plane',dist(q(o.from),q(o.to))*.55)+420;}
     if(o.t==='drop'){const q=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);return fxDur('plane',dist(q(o.from),q(o.at)))+900;}
     if(o.t==='atk')return o.sea?340:260+2*95;
     if(o.t==='hmr'){const dd=dist(cen(o.from[0],o.from[1]),cen(o.to[0],o.to[1]));return fxDur(o.atc?'atc':'rkt',dd)+(o.atc?0:2*120);}
@@ -413,7 +421,7 @@ function playFx(list){
   const nShots=list.filter(x=>x.t==='air'||x.t==='msl').length,stepAir=nShots>=8?45:nShots>=4?85:170,stepMsl=nShots>=8?45:nShots>=4?70:110; // 齊射：發數多時間隔縮短，看起來是一起發射
   list.forEach(o=>{
     let start;
-    if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='sub'||o.t==='air'||o.t==='tfa'||o.t==='cva'||o.t==='drop'||o.t==='salvo'){start=t;last=t;hitAt=t+(o.t==='tfa'?tfaDur(o):fxArrive(o));t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
+    if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='sub'||o.t==='air'||o.t==='tfa'||o.t==='cva'||o.t==='drop'||o.t==='salvo'||o.t==='capx'){start=t;last=t;hitAt=t+(o.t==='tfa'?tfaDur(o):fxArrive(o));t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
     else if(o.t==='dmg'||o.t==='dead'||o.t==='txt'||o.t==='toast')start=Math.max(last+360,hitAt+80); // 等這一發武器飛到、爆炸後才顯示結果
     else start=0;
     if(start>0)setTimeout(()=>runFx(o),start*k);else runFx(o);
