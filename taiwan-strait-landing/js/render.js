@@ -88,17 +88,33 @@ const RIVERS=[['淡水河',[[121.41,25.18],[121.46,25.12],[121.49,25.06],[121.46
   ['秀姑巒溪',[[121.51,23.47],[121.45,23.49],[121.40,23.43],[121.36,23.33],[121.30,23.20]]],
   ['卑南溪',[[121.16,22.77],[121.13,22.83],[121.15,22.93],[121.20,23.03],[121.23,23.12]]]];
 // 河流：平滑曲線（Catmull-Rom 轉貝茲），上游細、河口粗；底下一層淺色河岸，和凸起的地塊風格一致
-function riverSVG(pts){
-  const n=pts.length;if(n<2)return '';let bank='',water='';
+function riverSVG(pts,w0,w1){ // w0＝河口（第 0 點）寬度、w1＝源頭寬度
+  w0=w0||2.8;w1=w1||.7;const n=pts.length;if(n<2)return '';let bank='',water='';
   const P=i=>pts[Math.max(0,Math.min(n-1,i))],f=v=>v.toFixed(1);
   for(let i=0;i<n-1;i++){ // 每段各自一條路徑，寬度從河口（第 0 點）往上游遞減
     const p0=P(i-1),p1=P(i),p2=P(i+1),p3=P(i+2);
     const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];
-    const d='M'+f(p1[0])+' '+f(p1[1])+'C'+f(c1[0])+' '+f(c1[1])+' '+f(c2[0])+' '+f(c2[1])+' '+f(p2[0])+' '+f(p2[1]),w=(.7+2.1*(1-(i+.5)/(n-1)))*Math.max(.8,SC);
+    const d='M'+f(p1[0])+' '+f(p1[1])+'C'+f(c1[0])+' '+f(c1[1])+' '+f(c2[0])+' '+f(c2[1])+' '+f(p2[0])+' '+f(p2[1]),w=(w1+(w0-w1)*(1-(i+.5)/(n-1)))*Math.max(.8,SC);
     bank+='<path class="rvb" d="'+d+'" stroke-width="'+(w+1.8).toFixed(2)+'"/>';water+='<path class="river" d="'+d+'" stroke-width="'+w.toFixed(2)+'"/>';
   }
   return bank+water;
 }
+// ★主要支流（每條河最多 2 條；依匯流點與主要經過點手繪的近似線，第 0 點是匯流點）
+const TRIBS=[['淡水河','基隆河',[[121.465,25.115],[121.52,25.085],[121.57,25.08],[121.62,25.06],[121.67,25.08],[121.73,25.05]]],
+  ['淡水河','新店溪',[[121.49,25.03],[121.52,25.00],[121.54,24.96],[121.55,24.90]]],
+  ['頭前溪','上坪溪',[[121.08,24.78],[121.09,24.72],[121.10,24.66]]],['頭前溪','油羅溪',[[121.08,24.78],[121.13,24.75],[121.18,24.72]]],
+  ['大肚溪','大里溪',[[120.62,24.10],[120.68,24.11],[120.72,24.14]]],['大肚溪','貓羅溪',[[120.60,24.09],[120.64,24.02],[120.68,23.94]]],
+  ['濁水溪','清水溪',[[120.60,23.81],[120.66,23.74],[120.70,23.66]]],['曾文溪','菜寮溪',[[120.38,23.17],[120.40,23.23],[120.43,23.28]]],
+  ['高屏溪','荖濃溪',[[120.55,22.88],[120.61,22.97],[120.67,23.07]]],['高屏溪','旗山溪',[[120.53,22.87],[120.48,22.95],[120.50,23.05]]],
+  ['蘭陽溪','宜蘭河',[[121.83,24.71],[121.77,24.74],[121.72,24.77]]],['卑南溪','鹿野溪',[[121.15,22.90],[121.10,22.94],[121.03,22.97]]]];
+// 陸地格靠海的邊（和海岸線同一套判定）：回傳凸起地塊頂面上的 [a,b] 端點
+function seaEdges(h){const out=[],[x,y0]=center(h.c,h.r),y=y0-elev(h),v=hexV(x,y,R),nb=nbrs(h.c,h.r).filter(Boolean).map(n=>[n,center(n.c,n.r)]);
+  for(let i=0;i<6;i++){const a=v[i],b=v[(i+1)%6],mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2+elev(h),px=x+2*(mx-x),py=y0+2*(my-y0);let best=null,bd=1e9;for(const [n,c] of nb){const dd=(c[0]-px)**2+(c[1]-py)**2;if(dd<bd){bd=dd;best=n;}}
+    if(!best||bd>R*R||!isLand(best))out.push([a,b]);}return out;}
+// 河口對齊：取河口附近的台灣海岸格，找它靠海、最接近河口的那條邊，河口點放在邊的中點（不超出、也不縮在陸地裡）
+let RVCOAST=null;
+function mouthPt(lo,la,raw){if(!RVCOAST)RVCOAST=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h)&&seaEdges(h).length);let best=null,bd=1e9;
+  for(const h of RVCOAST)for(const [a,b] of seaEdges(h)){const m=[(a[0]+b[0])/2,(a[1]+b[1])/2],d=(m[0]-raw[0])**2+(m[1]-raw[1])**2;if(d<bd){bd=d;best=m;}}return best||raw;}
 function coastRiverSVG(land){
   let o='',d='';
   for(const h of land){if(h.isl!=='TW'&&h.isl!=='PH')continue;if(h.elev!=null&&h.elev>=150||h.t==='mtn'||h.cliff)continue; /* 只在低平的海岸畫線（西岸平地和淺海顏色接近）；東岸山地、斷崖本來就分得很清楚 */const [x,y0]=center(h.c,h.r),y=y0-elev(h),v=hexV(x,y,R);
@@ -108,7 +124,9 @@ function coastRiverSVG(land){
       if(!best||bd>R*R||!isLand(best))d+='M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+'L'+b[0].toFixed(1)+' '+b[1].toFixed(1);}}
   if(d)o+='<path class="coast" d="'+d+'"/>';
   const lift=(lo,la)=>{const [c,r]=llToRC(lo,la),h=TER[K(c,r)];return h?elev(h):0;};
-  for(const [n,P] of RIVERS){const pts=P.map(([lo,la])=>{const [x,y]=llPx(lo,la);return [x,y-lift(lo,la)];});
+  const toPx=([lo,la])=>{const [x,y]=llPx(lo,la);return [x,y-lift(lo,la)];};
+  for(const [p,n,P] of TRIBS){const pts=P.map(toPx);o+=riverSVG(pts,1.5,.5);const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl rvt" font-size="'+(4.8*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-2).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
+  for(const [n,P] of RIVERS){const pts=P.map(toPx);pts[0]=mouthPt(P[0][0],P[0][1],pts[0]); // 河口對齊海岸格的邊
     o+=riverSVG(pts);
     const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
   {const [c,r]=llToRC(120.957,23.470),h=TER[K(c,r)];if(h){const [x,y0]=center(h.c,h.r),y=y0-elev(h); // 玉山：和其他地名一樣放在所在格的中心上方（不用小數座標，放大到 500% 以上時才不會跑位）

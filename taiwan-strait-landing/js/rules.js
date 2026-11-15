@@ -159,7 +159,8 @@ function moveCost(u,h){return h.t==='mtn'?(u.type==='arm'||u.type==='tank'?3:2):
 const RIVX=new Map();
 function riverX(a,b){if(!a||!b||a===b)return null;const key=a.k<b.k?a.k+'|'+b.k:b.k+'|'+a.k;if(RIVX.has(key))return RIVX.get(key);
   const p=rcToLL(a.c,a.r),q=rcToLL(b.c,b.r),cr=(o,s,t)=>(s[0]-o[0])*(t[1]-o[1])-(s[1]-o[1])*(t[0]-o[0]);let hit=null;
-  if(typeof RIVERS!=='undefined')for(const [n,P] of RIVERS){for(let i=0;i+1<P.length;i++){const c=P[i],d=P[i+1];if(cr(p,q,c)*cr(p,q,d)<0&&cr(c,d,p)*cr(c,d,q)<0){hit=n;break;}}if(hit)break;}
+  const ALL=typeof RIVERS!=='undefined'?RIVERS.concat(typeof TRIBS!=='undefined'?TRIBS.map(([,n,P])=>[n,P]):[]):[]; // 主流＋主要支流
+  for(const [n,P] of ALL){for(let i=0;i+1<P.length;i++){const c=P[i],d=P[i+1];if(cr(p,q,c)*cr(p,q,d)<0&&cr(c,d,p)*cr(c,d,q)<0){hit=n;break;}}if(hit)break;}
   RIVX.set(key,hit);return hit;}
 const foeNear=(side,h,km)=>S.units.some(e=>e.side!==side&&alive(e)&&!isShip(e)&&isLand(hexOf(e))&&hexOf(e).isl===h.isl&&hd(hexOf(e),h)<=kmH(km));
 function landReach(u,res){
