@@ -8,7 +8,9 @@ const LAND={
   tw:[[121.5,25.3],[122,25],[121.9,24.5],[121.6,23.5],[121.2,22.8],[120.85,21.9],[120.7,22.3],[120.3,22.6],[120.1,23.0],[120.15,23.6],[120.7,24.5],[121.0,25.0]],
   ky:[[129.8,33.3],[130.5,33.9],[131.0,33.9],[131.7,33.3],[131.6,32.5],[131.3,31.6],[130.8,31.0],[130.6,31.2],[130.2,31.3],[130.3,32.0],[129.8,32.6]],
   ok:[[127.65,26.08],[127.95,26.35],[128.3,26.85],[128.15,26.88],[127.7,26.5]],
-  ph:[[122.25,18.55],[122.40,17.90],[122.30,17.10],[122.05,16.30],[121.60,15.75],[121.55,15.00],[121.65,14.55],[121.95,14.05],[122.40,14.20],[122.90,14.15],[123.40,13.95],[124.05,12.70],[123.70,12.60],[123.20,13.00],[122.70,13.55],[122.20,13.50],[121.60,13.70],[121.00,13.70],[120.65,13.90],[120.60,14.40],[120.45,14.50],[120.55,14.90],[120.00,15.00],[119.95,15.80],[120.30,16.20],[120.35,16.75],[120.35,17.60],[120.55,18.20],[120.95,18.50],[121.40,18.65],[121.80,18.50]],
+  ph:[[122.25,18.55],[122.40,17.90],[122.30,17.10],[122.05,16.30],[121.60,15.75],[121.55,15.00],[121.65,14.55],[121.95,14.05],[122.40,14.20],[122.90,14.15],[123.40,
+      13.95],[124.05,12.70],[123.70,12.60],[123.20,13.00],[122.70,13.55],[122.20,13.50],[121.60,13.70],[121.00,13.70],[120.65,13.90],[120.60,14.40],[120.45,14.50],[120.55,
+      14.90],[120.00,15.00],[119.95,15.80],[120.30,16.20],[120.35,16.75],[120.35,17.60],[120.55,18.20],[120.95,18.50],[121.40,18.65],[121.80,18.50]],
 };
 const EDCA=[[120.55,18.18,'拉婁'],[121.66,18.36,'卡米洛‧奧西亞斯'],[120.49,15.17,'巴薩'],[121.07,15.43,'馬格賽賽堡'],[120.27,14.82,'蘇比克灣'],[121.97,20.45,'巴丹（巴斯科）']];
 const ISLES=[[129.4,28.3,3],[125.3,24.75,2.5],[124.15,24.4,2.5],[123.0,24.45,2],[119.6,23.55,2],[121.95,20.45,2],[121.9,19.4,2.2],[130.95,30.5,2.5]];
@@ -54,7 +56,7 @@ function renderTheater(){
       Object.entries(CNB).map(([id,B])=>'<div class="fu cnrow'+(S.cnSel===id?' hl':'')+(dStrikeOn&&cnTargets().includes(id)?' tgt':'')+'" data-cnrow="'+id+'"><div><b>'+KIND_S[B.kind]+' '+B.n+'</b> <span class="dd">'+KIND_N[B.kind]+'</span></div><div class="fst"><span class="pips">'+
         Array.from({length:B.hp},(_,i)=>'<i class="'+(i<cnShown(id)?'f':'')+'"></i>').join('')+'</span><span class="st'+(cnShown(id)>0?'':' off')+'">'+(cnShown(id)>0?'運作中':'已癱瘓')+'</span></div></div>').join(''))+
     (S.air?'<div class="dd" style="margin:4px 0">戰機實際架數：共軍東部戰區 '+S.air.PLA+' 架（推估）、共軍航艦艦載機 '+cvFighters()+' 架、台灣 '+S.air.TW+' 架、美航艦艦載機 '+S.air.usF.map((n,i)=>(i?'第 '+(i+1)+' 支 ':'')+n).join('、')+' 架（各支航艦到場後才參戰）。空軍點數＝有效架次 ÷ '+AIR.K+'。</div>':'')+
-    dt('def',true,'<b>守方</b>',['rocAir','rocNavy','rocSub','rocAD','rocAS','rocMsl','rocAtc','rocGml','rocAAsh','rocWC','rocSlam','rocRkt','rocDrone','rocMine'].filter(k=>S.p0[k]>0||S.pools[k]>0).map(k=>bar(k,'def')).join(''));
+    dt('def',true,'<b>守方</b>',['rocAir','rocNavy','rocSub','rocAD','rocAS','rocMsl','rocAtc','rocGml','rocAAsh','rocHf2A','rocHCD','rocWC','rocSlam','rocRkt','rocDrone','rocMine'].filter(k=>S.p0[k]>0||S.pools[k]>0).map(k=>bar(k,'def')).join(''));
   ['US','JP'].forEach(c=>{
     const lv=S.fx.lv[c],pst=c==='US'&&usIdx()>=0;
     let inner=pst?'<div class="fu dd">'+pd(usIdx())+'。美軍'+casN(usCas())+(S.us.drop?'（已因傷亡退縮）':'')+'</div>':'';
@@ -66,7 +68,8 @@ function renderTheater(){
   });
   $('#flist').innerHTML=l;
   const sel=S.thSel&&BASES[S.thSel],csel=S.cnSel&&CNB[S.cnSel];
-  $('#thHint').textContent=dStrikeOn?'縱深打擊模式：點選大陸基地（紅色圖形），或主地圖上大陸沿岸集結中的攻方部隊與船隻（有圈的已被找到）。每次發射一波 4 枚，先過共軍防空攔截（越遠越多層），突破後命中率依目標硬度 20～45%；命中使基地受損一級（削弱火箭軍發射能量、機場出擊或港區），攻方每 2 回合修復一級。':csel?csel.n+'（'+KIND_N[csel.kind]+'）：'+csel.d+'，完整度 '+S.cn[S.cnSel]+'/'+csel.hp+(S.cn[S.cnSel]>0?'，被打擊需擲 '+cnNeed(S.cnSel)+' 以上':'，已癱瘓'):strikeOn?'火力打擊模式：點選基地打擊（需擲 '+'4～6）。打擊中立國家的基地會讓它參戰。':
+  $('#thHint').textContent=dStrikeOn?'縱深打擊模式：點選大陸基地（紅色圖形），或主地圖上大陸沿岸集結中的攻方部隊與船隻（有圈的已被找到）。每次發射一波 4 枚，先過共軍防空攔截（越遠越多層），突破後命中率依目標硬度 20～45%；命中使基地受損一級（削弱火箭軍發射能量、機場出擊或港區），攻方每 2 回合修復一級。':csel?csel.n+
+      '（'+KIND_N[csel.kind]+'）：'+csel.d+'，完整度 '+S.cn[S.cnSel]+'/'+csel.hp+(S.cn[S.cnSel]>0?'，被打擊需擲 '+cnNeed(S.cnSel)+' 以上':'，已癱瘓'):strikeOn?'火力打擊模式：點選基地打擊（需擲 '+'4～6）。打擊中立國家的基地會讓它參戰。':
     sel?sel.n+'：'+sel.d+(baseTargets(S.thSel).length?'，打擊需擲 '+baseNeed(S.thSel)+' 以上':''):'點選基地查看駐軍。美日部隊參戰後由電腦在守方階段自動出擊。';
 }
 
@@ -209,7 +212,8 @@ function costReport(win){
     tr('台灣平民','約 '+ppl(cv.TW),'約 '+ppl(cv.TW*.3))+
     (cv.CN?tr('中國大陸平民（軍事設施周邊）','約 '+fmt(cv.CN)+' 人','約 '+fmt(cv.CN*.3)+' 人'):'')+(cv.JP?tr('日本平民（沖繩等）','約 '+ppl(cv.JP),'約 '+ppl(cv.JP*.3)):'')+(cv.US?tr('關島居民','約 '+ppl(cv.US),'約 '+ppl(cv.US*.3)):'')+
     '</tbody></table></div>'+
-    '<div class="dd">裝備：'+[c.plaP.what.length?'攻方 '+c.plaP.what.join('、'):'',c.rocP.what.length?'守方 '+c.rocP.what.join('、'):''].filter(Boolean).join('；')+(S.p0.rf-S.pools.rf?'；火箭軍發射約 '+fmt((S.p0.rf-S.pools.rf)*40)+' 枚飛彈':'')+(S.stats.cn.strikes?'。大陸平民傷亡只計入軍事設施周邊的波及':'。中國大陸本土未遭打擊，本遊戲不計大陸平民傷亡')+'。</div>'
+    '<div class="dd">裝備：'+[c.plaP.what.length?'攻方 '+c.plaP.what.join('、'):'',c.rocP.what.length?'守方 '+c.rocP.what.join('、'):''].filter(Boolean).join('；')+(S.p0.rf-S.pools.rf?'；火箭軍發射約 '+
+        fmt((S.p0.rf-S.pools.rf)*40)+' 枚飛彈':'')+(S.stats.cn.strikes?'。大陸平民傷亡只計入軍事設施周邊的波及':'。中國大陸本土未遭打擊，本遊戲不計大陸平民傷亡')+'。</div>'
     ,false)+acc('經濟代價',ecoSum,'<div class="tbl"><table class="ctable"><thead><tr><th></th><th>戰事期間直接損失</th><th>若戰事與制裁延續一年，GDP 衝擊</th></tr></thead><tbody>'+
     tr('台灣',money(c.econ.TW),'−'+g.o.TW.pct.toFixed(1)+'%（約 '+money(g.o.TW.usd*1000)+'）')+
     tr('中國',money(c.econ.CN),'−'+g.o.CN.pct.toFixed(1)+'%（約 '+money(g.o.CN.usd*1000)+'）')+
@@ -277,7 +281,8 @@ function afterAction(win){
   if(!st.cn.strikes&&S.pools.rocMsl>=8)defTips.push('長程對地飛彈全程沒有使用：中方火箭軍與機場是主要威脅，可以考慮在渡海前就打擊火箭軍與集結港。');
   if(!defTips.length)defTips.push('守方防線大致穩固：保持機動預備隊，並持續打擊海上增援。');
   const yours=S.sim?null:(S.ctrl.atk==='human'&&S.ctrl.def!=='human'?'atk':S.ctrl.def==='human'&&S.ctrl.atk!=='human'?'def':null);
-  const tipBlock=side=>'<div class="aar-col"><div class="eyebrow">'+SIDE[side]+(yours===side?'（你的陣營）':'')+(win===side?' · 勝方：可保持的做法':' · 改進措施')+'</div><ul>'+(side==='atk'?atkTips:defTips).map(x=>typeof x==='string'?'<li>'+x+'</li>':'<li>'+x.t+(x.a?' <button class="ghost sm tipapply" data-a=\''+JSON.stringify(x.a)+'\'>套用到下一局</button>':'')+'</li>').join('')+'</ul></div>';
+  const tipBlock=side=>'<div class="aar-col"><div class="eyebrow">'+SIDE[side]+(yours===side?'（你的陣營）':'')+(win===side?' · 勝方：可保持的做法':' · 改進措施')+'</div><ul>'+(side==='atk'?atkTips:defTips).map(x=>typeof x==='string'?'<li>'+
+      x+'</li>':'<li>'+x.t+(x.a?' <button class="ghost sm tipapply" data-a=\''+JSON.stringify(x.a)+'\'>套用到下一局</button>':'')+'</li>').join('')+'</ul></div>';
   const lossList=(side,label)=>{const l=lossBy(side).map(([k])=>[k,menLost(side,h=>lossCat(h)===k).n]).sort((a,b)=>b[1]-a[1]);return '<div><b>'+label+'</b>：'+(l.length?l.map(([k,v])=>k+' 約 '+ppl(v)).join('、'):'無')+'</div>';};
   const top=lossBy('atk')[0];
   return '<div class="aar"><div class="eyebrow fin-eb">戰後檢討報告 · 參戰情境：'+FXSCEN[S.fxScen]+'</div>'+

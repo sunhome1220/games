@@ -2,11 +2,18 @@
 /* ---------- 守方決策節點：開戰前、集結期間、開戰初期、中後段 ---------- */
 const DEFEV=[
  {id:"pre_deploy",setup:"optPreDeploy",defend:true,at:()=>[1,'atk'],title:"戰備整備重點",blurb:"在攻方行動之前，有限的預算與時間要用在哪一項？",
-  choice:{who:'def',options:[{id:"asm",label:"加強反艦飛彈備彈",desc:"反艦飛彈存量 +3；但防空建設延後，守方防空 −1。"},{id:"ad",label:"強化防空與機場加固",desc:"守方防空 +1；但備彈縮減，反艦飛彈存量 −2。"},{id:"reserve",label:"擴大後備與訓練",desc:"每一梯次後備旅 +1；但長程飛彈存量 −1。"},{id:"x_militia",x:1,label:"🔥 全民皆兵",desc:"每一梯次後備旅 +2；平民傷亡 +25%、守方空軍 −1。",ref:"全民防衛；烏克蘭全民抵抗"}]},
-  apply(c){const m=S.mods;if(c=="asm"){pAdd('rocAS',3);pAdd('rocAD',-1); return ["反艦飛彈存量 +3","守方防空 −1"];}if(c=="ad"){pAdd('rocAD',1);pAdd('rocAS',-2); return ["守方防空 +1","反艦飛彈存量 −2"];}if(c=="reserve"){m.defReinfExtra+=1;pAdd('rocMsl',-1); return ["每一梯次後備旅 +1","長程飛彈存量 −1"];}if(c=="x_militia"){m.defReinfExtra=Math.min(4,m.defReinfExtra+2);m.civMul*=1.25;pAdd('rocAir',-1);return ["每一梯次後備旅 +2（總加成上限 +4）", "平民傷亡 +25%", "守方空軍 −1"];}return [];}},
+  choice:{who:'def',options:[{id:"asm",label:"加強反艦飛彈備彈",desc:"反艦飛彈存量 +3；但防空建設延後，守方防空 −1。"},{id:"ad",label:"強化防空與機場加固",desc:"守方防空 +1；但備彈縮減，反艦飛彈存量 −2。"},{id:"reserve",
+      label:"擴大後備與訓練",desc:"每一梯次後備旅 +1；但長程飛彈存量 −1。"},{id:"x_militia",x:1,label:"🔥 全民皆兵",desc:"每一梯次後備旅 +2；平民傷亡 +25%、守方空軍 −1。",ref:"全民防衛；烏克蘭全民抵抗"}]},
+  apply(c){const m=S.mods;if(c=="asm"){pAdd('rocAS',3);pAdd('rocAD',-1); return ["反艦飛彈存量 +3","守方防空 −1"];}if(c=="ad"){pAdd('rocAD',1);pAdd('rocAS',-2); return ["守方防空 +1",
+      "反艦飛彈存量 −2"];}if(c=="reserve"){m.defReinfExtra+=1;pAdd('rocMsl',-1); return ["每一梯次後備旅 +1","長程飛彈存量 −1"];}if(c=="x_militia"){m.defReinfExtra=Math.min(4,m.defReinfExtra+
+      2);m.civMul*=1.25;pAdd('rocAir',-1);return ["每一梯次後備旅 +2（總加成上限 +4）", "平民傷亡 +25%", "守方空軍 −1"];}return [];}},
  {id:"react",setup:"optReact",defend:true,at:()=>[1,'atk'],title:"預警後的反應",blurb:()=>{const b=S.mods.buildup;return (b==='open'?'攻方公開大規模集結，預警充分。':b==='surprise'?'攻方採戰略突襲，預警有限。':'攻方以演習名義集結，只有部分預警。')+'守方要決定如何反應。';},
-  choice:{who:'def',options:[{id:"alert",label:"提高戰備等級",desc:"守方第 1～2 回合防禦 +1；但戰備消耗，反艦飛彈存量 −1。"},{id:"evac",label:"疏散民眾與重要設施",desc:"台灣平民傷亡 −30%；但交通管制使後備旅延後 1 回合到達。"},{id:"bait",label:"欺敵與分散機動發射車",desc:"發射車被火力打擊時更常打到誘餌；但分散部署使守方第 1 回合攻擊 −1。"},{id:"x_preempt",x:1,label:"🔥 預防性打擊集結港",desc:"重創集結中的 2 個攻方船團（各損失約三分之一）；被視為首先動武，美日更不願介入。",ref:"預防性自衛的爭論"},{id:"x_martial",x:1,label:"🔥 宣布戰爭狀態、封閉海空域",desc:"第 1～3 回合守方防禦 +1、後備提前 1 回合、平民傷亡 −15%；股市 −3。",ref:"「莊敬自強，處變不驚」"}]},
-  apply(c){const m=S.mods;if(c=="alert"){addTurns(m.defDef,1,2,1);pAdd('rocAS',-1); return ["守方第 1～2 回合防禦 +1","反艦飛彈存量 −1"];}if(c=="evac"){m.civMul*=.7;m.defReinfDelay+=1; return ["台灣平民傷亡 −30%","後備旅延後 1 回合到達"];}if(c=="bait"){m.decoy=1;addTurns(m.defAtk,1,1,-1); return ["火力打擊更常打到誘餌","守方第 1 回合攻擊 −1"];}if(c=="x_preempt"){const n=hitCNUnits(2,'預防性打擊');m.escal=(m.escal||0)+2;return ["重創集結中的攻方船團（最多 2 個單位各損失約三分之一）", "守方先動手：盟友更不願被拖下水（反映在參戰評估）"];}if(c=="x_martial"){addTurns(m.defDef,1,3,1);m.defReinfDelay-=1;m.civMul*=.85;hitMkt(3);return ["守方第 1～3 回合防禦 +1、後備提前 1 回合", "平民傷亡 −15%、全球股市 −3"];}return [];}},
+  choice:{who:'def',options:[{id:"alert",label:"提高戰備等級",desc:"守方第 1～2 回合防禦 +1；但戰備消耗，反艦飛彈存量 −1。"},{id:"evac",label:"疏散民眾與重要設施",desc:"台灣平民傷亡 −30%；但交通管制使後備旅延後 1 回合到達。"},
+      {id:"bait",label:"欺敵與分散機動發射車",desc:"發射車被火力打擊時更常打到誘餌；但分散部署使守方第 1 回合攻擊 −1。"},{id:"x_preempt",x:1,label:"🔥 預防性打擊集結港",desc:"重創集結中的 2 個攻方船團（各損失約三分之一）；被視為首先動武，美日更不願介入。",
+      ref:"預防性自衛的爭論"},{id:"x_martial",x:1,label:"🔥 宣布戰爭狀態、封閉海空域",desc:"第 1～3 回合守方防禦 +1、後備提前 1 回合、平民傷亡 −15%；股市 −3。",ref:"「莊敬自強，處變不驚」"}]},
+  apply(c){const m=S.mods;if(c=="alert"){addTurns(m.defDef,1,2,1);pAdd('rocAS',-1); return ["守方第 1～2 回合防禦 +1","反艦飛彈存量 −1"];}if(c=="evac"){m.civMul*=.7;m.defReinfDelay+=1; return ["台灣平民傷亡 −30%",
+      "後備旅延後 1 回合到達"];}if(c=="bait"){m.decoy=1;addTurns(m.defAtk,1,1,-1); return ["火力打擊更常打到誘餌","守方第 1 回合攻擊 −1"];}if(c=="x_preempt"){const n=hitCNUnits(2,'預防性打擊');m.escal=(m.escal||0)+
+      2;return ["重創集結中的攻方船團（最多 2 個單位各損失約三分之一）", "守方先動手：盟友更不願被拖下水（反映在參戰評估）"];}if(c=="x_martial"){addTurns(m.defDef,1,3,1);m.defReinfDelay-=1;m.civMul*=.85;hitMkt(3);return ["守方第 1～3 回合防禦 +1、後備提前 1 回合", "平民傷亡 −15%、全球股市 −3"];}return [];}},
  {id:"penghu",setup:"optPenghu",defend:true,at:()=>[1,'atk'],title:"澎湖守備方針",autoPick:()=>'hold',
   blurb:"澎湖地勢平坦、離本島約 45 公里，在共軍飛彈與戰機範圍內；公開討論多半認為澎湖是不能放棄的外島（失守等於失去海峽），但也有兵推顯示澎湖可能一天就失守。",
   choice:{who:'def',options:[{id:"hold",label:"堅守",desc:"維持現有守軍。"},
@@ -20,8 +27,15 @@ const DEFEV=[
     {id:"disperse",label:"分散到母港附近外海",desc:"各艦隊分散到母港附近約 40 km 內的外海，彈道飛彈很難命中；離戰場近、出擊快，但同樣沒有港口防空。預警有限（戰略突襲）時只有海蛟大隊來得及出港。"}]},
   apply(c){return navyDeploy(c);}},
  {id:"prepos",setup:"optPrepos",defend:true,at:()=>[1,'atk'],title:"預先部署重點",blurb:"攻方船團可能從北、中部渡海。守方要決定兵力放在哪裡。",
-  choice:{who:'def',options:[{id:"coast",label:"前推到海岸線",desc:"守方第 1～3 回合防禦 +1（灘頭交戰）；但兵力暴露，攻方第 1 回合打擊更容易命中（命中門檻 −1）。"},{id:"depth",label:"縱深機動、保存實力",desc:"守方第 2～4 回合攻擊 +1（反擊）；但灘頭薄弱，第 1～2 回合防禦 −1。"},{id:"hide",label:"疏散戰機與裝備、隱蔽",desc:"開戰前戰機就躲進佳山、石子山的山洞機堡（約 280 架，非官方估計；戰略突襲時預警短，只來得及躲進一半，推估），其餘分散到疏散機場與公路跑道：到第 2 回合結束，機堡內的戰機不會在地面被炸，其餘地面損失減半（推估）。代價：躲藏的戰機不出擊，這段期間空軍出擊架次與空中戰力依比例下降。"},{id:"x_water",x:1,label:"🔥 水際死守",desc:"第 1～3 回合守方防禦 +2；海岸部隊暴露，攻方第 1～2 回合打擊更容易命中（命中門檻 −1）；第 4～6 回合守方防禦 −1。",ref:"「殲敵於水際、決勝於灘頭」"},{id:"x_scorch",x:1,label:"🔥 焦土縱深",desc:"3 個主要港口自毀，攻方第 2～4 回合攻擊 −1；平民傷亡 +50%、經濟損失大增。",ref:"1938 年焦土抗戰"}]},
-  apply(c){const m=S.mods;if(c=="coast"){addTurns(m.defDef,1,3,1);addTurns(m.strikeEase,1,1,1); return ["守方第 1～3 回合防禦 +1","攻方第 1 回合打擊命中門檻 −1（暴露）"];}if(c=="depth"){addTurns(m.defAtk,2,4,1);addTurns(m.defDef,1,2,-1); return ["守方第 2～4 回合攻擊 +1","守方第 1～2 回合防禦 −1"];}if(c=="hide"){m.cave={until:2,w:m.buildup==='surprise'?.5:1};m.disp=1;const f=caveF(); return ["約 "+Math.round(f*S.air.TW)+" 架戰機（約 "+Math.round(f*100)+"%）躲進山洞機堡，其餘分散：到第 2 回合結束，地面戰機損失依比例減少","代價：這段期間空軍出擊架次與空中戰力 ×"+fmt1(1-f)];}if(c=="x_water"){addTurns(m.defDef,1,3,2);addTurns(m.strikeEase,1,2,1);addTurns(m.defDef,4,6,-1);return ["守方第 1～3 回合防禦 +2、攻方第 1～2 回合打擊命中門檻 −1（暴露）", "守方第 4～6 回合防禦 −1"];}if(c=="x_scorch"){razeAllPorts();addTurns(m.atkAtk,2,4,-1);m.civMul*=1.5;S.cost.dmg.TW+=3;return ["3 個主要港口自毀（永久無法使用）", "攻方第 2～4 回合攻擊 −1", "平民傷亡 +50%、經濟損失大增"];}return [];}},
+  choice:{who:'def',options:[{id:"coast",label:"前推到海岸線",desc:"守方第 1～3 回合防禦 +1（灘頭交戰）；但兵力暴露，攻方第 1 回合打擊更容易命中（命中門檻 −1）。"},{id:"depth",label:"縱深機動、保存實力",desc:"守方第 2～4 回合攻擊 +1（反擊）；但灘頭薄弱，第 1～2 回合防禦 −1。"},
+      {id:"hide",label:"疏散戰機與裝備、隱蔽",desc:"開戰前戰機就躲進佳山、石子山的山洞機堡（約 280 架，非官方估計；戰略突襲時預警短，只來得及躲進一半，推估），其餘分散到疏散機場與公路跑道：到第 2 回合結束，機堡內的戰機不會在地面被炸，其餘地面損失減半（推估）。代價：躲藏的戰機不出擊，這段期間空軍出擊架次與空中戰力依比例下降。"},
+      {id:"x_water",x:1,label:"🔥 水際死守",desc:"第 1～3 回合守方防禦 +2；海岸部隊暴露，攻方第 1～2 回合打擊更容易命中（命中門檻 −1）；第 4～6 回合守方防禦 −1。",ref:"「殲敵於水際、決勝於灘頭」"},{id:"x_scorch",x:1,label:"🔥 焦土縱深",
+      desc:"3 個主要港口自毀，攻方第 2～4 回合攻擊 −1；平民傷亡 +50%、經濟損失大增。",ref:"1938 年焦土抗戰"}]},
+  apply(c){const m=S.mods;if(c=="coast"){addTurns(m.defDef,1,3,1);addTurns(m.strikeEase,1,1,1); return ["守方第 1～3 回合防禦 +1","攻方第 1 回合打擊命中門檻 −1（暴露）"];}if(c=="depth"){addTurns(m.defAtk,
+      2,4,1);addTurns(m.defDef,1,2,-1); return ["守方第 2～4 回合攻擊 +1","守方第 1～2 回合防禦 −1"];}if(c=="hide"){m.cave={until:2,w:m.buildup==='surprise'?.5:1};m.disp=1;const f=caveF(); return ["約 "+
+      Math.round(f*S.air.TW)+" 架戰機（約 "+Math.round(f*100)+"%）躲進山洞機堡，其餘分散：到第 2 回合結束，地面戰機損失依比例減少","代價：這段期間空軍出擊架次與空中戰力 ×"+fmt1(1-f)];}if(c=="x_water"){addTurns(m.defDef,1,
+      3,2);addTurns(m.strikeEase,1,2,1);addTurns(m.defDef,4,6,-1);return ["守方第 1～3 回合防禦 +2、攻方第 1～2 回合打擊命中門檻 −1（暴露）", "守方第 4～6 回合防禦 −1"];}if(c=="x_scorch"){razeAllPorts();addTurns(m.atkAtk,
+      2,4,-1);m.civMul*=1.5;S.cost.dmg.TW+=3;return ["3 個主要港口自毀（永久無法使用）", "攻方第 2～4 回合攻擊 −1", "平民傷亡 +50%、經濟損失大增"];}return [];}},
  {id:"counter",defend:true,at:()=>[1,'def'],title:"反制先制打擊",blurb:()=>{ // 先讓守方看到「被打了什麼」，再決定怎麼反制
   const r=S.events.find(e=>e.id==='strike'),P=S.pools||{},base="攻方的第一波飛彈與空襲已經結束，守方要決定如何反制。";
   // 統計摘要：依類別歸納這回合攻方階段的戰報（火力打擊、海軍、部隊、空降、戰機），每類一行，沒發生的不列
@@ -37,7 +51,7 @@ const DEFEV=[
   const ab=[...new Set(T.map(m=>(m.match(/^空降旅（攻方） 空降 ([^，]+)/)||[])[1]).filter(Boolean))];if(ab.length)B.push('空降：'+ab.slice(0,3).join('、'));
   const ac=T.reduce((a,m)=>a+((m.match(/(?:守方戰機|地面戰機) −(\d+) 架/)||[])[1]|0),0);if(ac>0)B.push('守方地面戰機損失 '+ac+' 架');
   const what=B.length?B.map(x=>'<br>・'+x).join(''):'戰報上目前沒有明確的打擊損失紀錄';
-  return base+"<br><b>被打了什麼：</b>"+what+"<br><b>目前守方：</b>空軍 "+P.rocAir+"・防空 "+P.rocAD+"・反艦飛彈 "+P.rocAS+"・長程飛彈 "+fmt1(P.rocMsl)+((P.rocAtc||0)+(P.rocGml||0)>0?"・陸軍戰術飛彈 "+Math.round(P.rocAtc||0)+" 枚・火箭彈 "+Math.round(P.rocGml||0)+" 莢艙":"")+(S.mods.c2Strong?"；指揮通信受重創":"");},
+  return base+"<br><b>被打了什麼：</b>"+what+"<br><b>目前守方：</b>空軍 "+P.rocAir+"・防空 "+P.rocAD+"・反艦飛彈 雄風 "+P.rocAS+"／魚叉岸防 "+fmt1(P.rocHCD||0)+"・長程飛彈 "+fmt1(P.rocMsl)+((P.rocAtc||0)+(P.rocGml||0)>0?"・陸軍戰術飛彈 "+Math.round(P.rocAtc||0)+" 枚・火箭彈 "+Math.round(P.rocGml||0)+" 莢艙":"")+(S.mods.c2Strong?"；指揮通信受重創":"");},
   choice:{who:'def',options:[
    {id:"disperse",label:"分散疏散並搶修機場",desc:"工兵搶修跑道：受損機場最多 2 座各恢復 1 級；戰機分散到疏散機場與公路跑道，之後機場被打時地面戰機損失減半（推估）；飛彈車分散並加強誘餌，之後被定位的機率 ×0.75（推估）。代價：飛彈車換陣地，本階段岸置飛彈與海馬士各少一次射擊。"},
    {id:"sortie",hide:()=>!!(S.mods&&S.mods.cave),label:"戰機進山洞機堡（躲後續波次）",desc:"第一波的損失已經發生，但攻方之後每回合還會再打機場。戰機轉場躲進佳山、石子山的山洞機堡（約 280 架，非官方估計），到第 2 回合結束：躲進去的戰機不會在地面被炸，機場被打時地面戰機損失依躲藏比例減少。代價：躲藏的戰機不出擊，這段期間空軍出擊架次與空中戰力依比例下降。跑道受損嚴重（起降能量不足一半）就無法轉場，等於沒有效果。"},
@@ -100,7 +114,8 @@ function snap(){
     plaAir:Math.round(plaAirAll()*10)/10,ally:Math.round(allyAir()*10)/10,plaN:S.air?S.air.PLA+cvFighters():0,twN:S.air?S.air.TW:0,navy:S.pools.plaNavy,cv:S.pools.plaCV,fx:'美 '+LV.US[S.fx.lv.US]+'・日 '+LV.JP[S.fx.lv.JP]};
 }
 function snapDiffHTML(now,prev){ // 預覽用：只列出有變化的項目，畫面短、按鈕不會被擠到下面
-  const defs=[['攻方島上戰力','as',v=>cpNum(v)+' '+cpU(),'up'],['守方島上戰力','ds',v=>cpNum(v)+' '+cpU(),'down'],['攻方海上單位','sea'],['攻方控制港口','ports',v=>v+' / '+PORTS.length,'up'],['台北','taipei',v=>v?'攻方':'守方'],['守方岸置反艦飛彈',plainT()?'ssmV':'ssm',v=>v+(plainT()?' 輛發射車':' 步'),'down'],['攻方空軍','plaAir',null,'up'],['守方與盟國空軍','ally',null,'down'],['攻方護航艦隊','navy',null,'up']];
+  const defs=[['攻方島上戰力','as',v=>cpNum(v)+' '+cpU(),'up'],['守方島上戰力','ds',v=>cpNum(v)+' '+cpU(),'down'],['攻方海上單位','sea'],['攻方控制港口','ports',v=>v+' / '+PORTS.length,
+      'up'],['台北','taipei',v=>v?'攻方':'守方'],['守方岸置反艦飛彈',plainT()?'ssmV':'ssm',v=>v+(plainT()?' 輛發射車':' 步'),'down'],['攻方空軍','plaAir',null,'up'],['守方與盟國空軍','ally',null,'down'],['攻方護航艦隊','navy',null,'up']];
   const ch=defs.filter(d=>now[d[1]]!==prev[d[1]]).map(([label,key,fmt,good])=>{
     const v=now[key],p=prev[key];let d='';
     if(typeof v==='number'){const up=v>p;d='<i class="'+((up===(good==='up'))?'up':'down')+'">'+(up?'+':'')+(Math.round((v-p)*10)/10)+'</i>';}
@@ -206,7 +221,8 @@ function playEvent(ev,i){
       if(choice)h+='<p><span class="badge '+ev.choice.who+'">'+SIDE[ev.choice.who]+'決策</span>已選擇「'+choice.label+'」</p>';
       specs.forEach((d,j)=>{
         h+='<div class="dblk"><p><span class="badge dice">'+(S.fxScen==='interest'&&d.c?'依情勢判定':'不可控 · 擲骰')+'</span>'+d.label+' <span class="dd" id="dm'+j+'"></span></p>'+
-          '<table class="dtable" id="dt'+j+'">'+d.rows.map((r,k)=>'<tr data-k="'+k+'"><td>'+(r.min===r.max?r.min:r.min+'–'+r.max)+'</td><td><b>'+r.label+'</b> <span class="dd">'+r.desc+'</span><br>'+(S.fxScen==='interest'&&d.c?'':'<span class="dd">機率 '+Math.round((r.max-r.min+1)/6*100)+'%（未修正）</span>')+'</td></tr>').join('')+'</table>'+
+          '<table class="dtable" id="dt'+j+'">'+d.rows.map((r,k)=>'<tr data-k="'+k+'"><td>'+(r.min===r.max?r.min:r.min+'–'+r.max)+'</td><td><b>'+r.label+'</b> <span class="dd">'+
+              r.desc+'</span><br>'+(S.fxScen==='interest'&&d.c?'':'<span class="dd">機率 '+Math.round((r.max-r.min+1)/6*100)+'%（未修正）</span>')+'</td></tr>').join('')+'</table>'+
           '<div class="dierow"><div class="die" id="die'+j+'">?</div><span class="dd" id="dr'+j+'"></span></div></div>';
       });
       h+='<div class="btns" style="margin-top:12px"><button id="evRoll">'+(S.fxScen==='interest'?'判定':'擲骰')+(specs.length>1?'（依序 '+specs.length+' 顆）':'')+'</button></div>';

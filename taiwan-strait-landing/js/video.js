@@ -162,7 +162,9 @@ function hlCaption(o){const a=[];if(o.end)return '';a.push('第 '+o.turn+' 回�
   const t=[];if(c.sunk)t.push('攻方船艦損失 '+c.sunk);if(c.lost)t.push('守方損失 '+c.lost);if(c.land)t.push('登陸／空降行動 '+c.land);return a.concat([t.length?t.join('　'):'雙方調動兵力']).join('　·　');}
 function showVideoResult(blob,name,file){
   const url=URL.createObjectURL(blob),can=!!(navigator.canShare&&navigator.canShare({files:[file]})),ov=document.createElement('div');ov.className='vres';
-  ov.innerHTML='<div role="dialog" aria-label="'+TX('精華影片已完成')+'"><b>'+TX('精華影片已完成')+'</b><video src="'+url+'" controls playsinline muted loop autoplay></video><div class="btns">'+(can?'<button id="vrShare">'+TX('分享／儲存到相簿')+'</button>':'')+'<button class="ghost" id="vrDl">'+TX('下載檔案')+'</button><button class="ghost" id="vrX">'+TX('關閉')+'</button></div><div class="dd">'+TX(can?'點「分享／儲存到相簿」會開啟系統選單，可存到相簿或傳給朋友。':'點「下載檔案」存到這台裝置。')+'</div></div>';
+  ov.innerHTML='<div role="dialog" aria-label="'+TX('精華影片已完成')+'"><b>'+TX('精華影片已完成')+'</b><video src="'+url+'" controls playsinline muted loop autoplay></video><div class="btns">'+
+      (can?'<button id="vrShare">'+TX('分享／儲存到相簿')+'</button>':'')+'<button class="ghost" id="vrDl">'+TX('下載檔案')+'</button><button class="ghost" id="vrX">'+TX('關閉')+'</button></div><div class="dd">'+
+      TX(can?'點「分享／儲存到相簿」會開啟系統選單，可存到相簿或傳給朋友。':'點「下載檔案」存到這台裝置。')+'</div></div>';
   document.body.appendChild(ov);
   const close=()=>{ov.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);};
   const sh=ov.querySelector('#vrShare');if(sh)sh.onclick=()=>{navigator.share({files:[file],title:TX('台海兵棋推演 十秒精華')}).catch(e=>{if(e&&e.name!=='AbortError')toast(TX('無法開啟分享，請改用下載'),2500);});};
@@ -272,12 +274,41 @@ async function exportReportImage(withCard=true){ // 戰後報告圖：結果、�
     let y=pad;lines.forEach(l=>{c.font=l.f+' '+ff;c.fillStyle=l.c;c.fillText(l.t,pad,y+Math.round((l.lh-parseInt(l.f.split(' ')[1]))/2));y+=l.lh+(l.last?Math.round(l.gap*k):0);});
     if(kind){
       const y0=hh;
-      if(cardImg){c.save();const r=Math.round(10*k);c.beginPath();c.moveTo(gx+r,y0);c.arcTo(gx+sz,y0,gx+sz,y0+sz,r);c.arcTo(gx+sz,y0+sz,gx,y0+sz,r);c.arcTo(gx,y0+sz,gx,y0,r);c.arcTo(gx,y0,gx+sz,y0,r);c.closePath();c.clip();c.drawImage(cardImg,gx,y0,sz,sz);c.restore();c.strokeStyle=ink;c.lineWidth=Math.max(1,k);c.stroke();}
+      if(cardImg){c.save();
+        const r=Math.round(10*k);
+        c.beginPath();
+        c.moveTo(gx+r,y0);
+        c.arcTo(gx+sz,y0,gx+sz,y0+sz,r);
+        c.arcTo(gx+sz,y0+sz,gx,y0+sz,r);
+        c.arcTo(gx,y0+sz,gx,y0,r);
+        c.arcTo(gx,y0,gx+sz,y0,r);
+        c.closePath();
+        c.clip();
+        c.drawImage(cardImg,gx,y0,sz,sz);
+        c.restore();
+        c.strokeStyle=ink;
+        c.lineWidth=Math.max(1,k);
+        c.stroke();
+        }
       let ey=y0;
       for(const p of eparts){
         if(p.gap){ey+=p.gap*k;continue;}
         if(p.head){c.font=p.f;c.fillStyle=p.who==='atk'?'#a9362b':'#2b5a8f';const nm=TX(SIDE[p.who])+'  '+p.o.grade;c.fillText(nm,tx,ey+2*k);c.fillStyle=ink;const tot=p.o.total+' / 100';c.textAlign='right';c.fillText(tot,tx+tw,ey+2*k);c.textAlign='left';ey+=p.lh*k;continue;}
-        if(p.bar){c.font=fnt(500,14);c.fillStyle=ink;c.fillText(p.l,tx,ey+2*k);const bx=tx+Math.round(tw*.34),bw=Math.round(tw*.5);c.fillStyle='#c4cbc6';c.fillRect(bx,ey+5*k,bw,10*k);c.fillStyle='#55605a';c.fillRect(bx,ey+5*k,bw*p.v/p.max,10*k);c.fillStyle=ink;c.textAlign='right';c.fillText(p.v+' / '+p.max,tx+tw,ey+2*k);c.textAlign='left';ey+=p.lh*k;continue;}
+        if(p.bar){c.font=fnt(500,14);
+          c.fillStyle=ink;
+          c.fillText(p.l,tx,ey+2*k);
+          const bx=tx+Math.round(tw*.34),bw=Math.round(tw*.5);
+          c.fillStyle='#c4cbc6';
+          c.fillRect(bx,ey+5*k,bw,10*k);
+          c.fillStyle='#55605a';
+          c.fillRect(bx,ey+5*k,bw*p.v/p.max,10*k);
+          c.fillStyle=ink;
+          c.textAlign='right';
+          c.fillText(p.v+' / '+p.max,tx+tw,ey+2*k);
+          c.textAlign='left';
+          ey+=p.lh*k;
+          continue;
+          }
         const ls=p.wrapW?wrap(p.t,p.f,p.wrapW):[p.t];ls.forEach(t=>{c.font=p.f;c.fillStyle=p.c;c.fillText(t,tx,ey+2*k);ey+=p.lh*k;});
       }
     }

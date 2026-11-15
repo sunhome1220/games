@@ -243,7 +243,8 @@ const hkU=u=>u&&u.hl?HL_E:hkE();
 const subNm=u=>u&&u.hl?'劍龍級潛艦（'+u.nm+'）':'海鯤潛艦';
 const hkTp=u=>hkU(u)[0];
 const HK_P={cv:.3,dd:.35,amph:.5,mar:.5,arm:.5,cvy:.85}; // 補給船團是慢速商船、護航薄弱，最好打；附近每有一艘護航艦命中率 −10%（最低 40%）
-const hkP=(t,u)=>Math.min(.95,(t.type==='cvy'?Math.max(.4,HK_P.cvy-.1*S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&rd(hexOf(e),hexOf(t))<=kmH(60)).length):t.type==='cv'?Math.max(LAM.hkMin,HK_P.cv-LAM.hkCv*S.units.filter(e=>e.side==='atk'&&isEsc(e)&&alive(e)&&rd(hexOf(e),hexOf(t))<=kmH(40)).length):(HK_P[t.type]||.35))+hkU(u)[2]); // 航艦：每有一艘新護航艦在 2 格內 −5%（★） // 命中率：航艦有護航與反潛屏護最難打，運輸船與登陸艦最容易
+const hkP=(t,u)=>Math.min(.95,(t.type==='cvy'?Math.max(.4,HK_P.cvy-.1*S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&rd(hexOf(e),hexOf(t))<=kmH(60)).length):t.type==='cv'?Math.max(LAM.hkMin,
+    HK_P.cv-LAM.hkCv*S.units.filter(e=>e.side==='atk'&&isEsc(e)&&alive(e)&&rd(hexOf(e),hexOf(t))<=kmH(40)).length):(HK_P[t.type]||.35))+hkU(u)[2]); // 航艦：每有一艘新護航艦在 2 格內 −5%（★） // 命中率：航艦有護航與反潛屏護最難打，運輸船與登陸艦最容易
 const HK_V={cv:3,amph:1.5,mar:1.5,arm:1.5,cvy:1.2,dd:.8};
 const HK_MISSION={cvy:['cvy'],lnd:['amph','mar','arm'],cv:['cv'],dd:['dd']};
 // 武器（依公開資料）：海鯤有 6 具 533 公厘魚雷管，主要武器為 Mk 48 Mod 6 重型魚雷（美國 2020 年核准出售 18 枚）與 UGM-84L 潛射魚叉反艦飛彈（官方未公布攜行數）。

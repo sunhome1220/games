@@ -64,8 +64,10 @@ function silh(type,side){
   const sea='<path d="M0 100q20-6 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0" '+g+' opacity=".35"/>';
   const W={
    soldier:'<circle cx="150" cy="38" r="12" '+k+'/><path d="M132 60h36l8 40h-18l-8-22-8 22h-18z" '+k+'/><path d="M168 66l42-12" '+g+' stroke-width="4"/><path d="M118 100h64" '+g+' opacity=".4"/>',
-   tank:'<path d="M70 86h160l-12 16H82z" '+k+'/><path d="M96 86V70h92l14 16z" '+k+'/><path d="M138 70V54h40v16z" '+k+'/><path d="M178 60h72" '+g+' stroke-width="5"/><circle cx="92" cy="94" r="4" '+k+'/><circle cx="128" cy="94" r="4" '+k+'/><circle cx="164" cy="94" r="4" '+k+'/><circle cx="200" cy="94" r="4" '+k+'/>',
-   ifv:'<path d="M70 88h150l-10 14H82z" '+k+'/><path d="M84 88V66l30-12h80l22 20v14z" '+k+'/><path d="M150 54V44h30v10z" '+k+'/><path d="M180 48h42" '+g+' stroke-width="4"/><circle cx="96" cy="95" r="4" '+k+'/><circle cx="126" cy="95" r="4" '+k+'/><circle cx="156" cy="95" r="4" '+k+'/><circle cx="186" cy="95" r="4" '+k+'/>',
+   tank:'<path d="M70 86h160l-12 16H82z" '+k+'/><path d="M96 86V70h92l14 16z" '+k+'/><path d="M138 70V54h40v16z" '+k+'/><path d="M178 60h72" '+g+' stroke-width="5"/><circle cx="92" cy="94" r="4" '+
+       k+'/><circle cx="128" cy="94" r="4" '+k+'/><circle cx="164" cy="94" r="4" '+k+'/><circle cx="200" cy="94" r="4" '+k+'/>',
+   ifv:'<path d="M70 88h150l-10 14H82z" '+k+'/><path d="M84 88V66l30-12h80l22 20v14z" '+k+'/><path d="M150 54V44h30v10z" '+k+'/><path d="M180 48h42" '+g+' stroke-width="4"/><circle cx="96" cy="95" r="4" '+
+       k+'/><circle cx="126" cy="95" r="4" '+k+'/><circle cx="156" cy="95" r="4" '+k+'/><circle cx="186" cy="95" r="4" '+k+'/>',
    truck:'<path d="M60 90h80V62h-24l-10 14H60z" '+k+'/><path d="M144 90h110V70H144z" '+k+'/><path d="M156 66l86-22M156 74l86-22" '+g+' stroke-width="9" opacity=".85"/><circle cx="82" cy="98" r="9" '+k+'/><circle cx="170" cy="98" r="9" '+k+'/><circle cx="222" cy="98" r="9" '+k+'/>',
    ship:'<path d="M40 82h220l-24 22H66z" '+k+'/><path d="M90 82V66h40v16zM130 66V52h30v14z" '+k+'/><path d="M160 52V38M146 44h28" '+g+'/><path d="M196 82V70h22v12z" '+k+'/>'+sea,
    carrier:'<path d="M24 78h252l-14 24H56z" '+k+'/><path d="M24 78l28-6h224" '+g+'/><path d="M196 78V58h26v20zM208 58V46" '+k+'/><path d="M40 70l24-6M70 70l24-6" '+g+' opacity=".6"/>'+sea,
@@ -74,7 +76,8 @@ function silh(type,side){
    plane:'<path d="M30 70h200l40-6-4 12-36 6H30z" '+k+'/><path d="M120 66L84 30h22l50 36zM120 78L84 114h22l50-36z" '+k+'/><path d="M40 68L24 46h16l22 22z" '+k+'/>',
    para:'<path d="M110 40q40-36 80 0z" '+k+'/><path d="M114 40l36 44M186 40l-36 44" '+g+'/><circle cx="150" cy="90" r="8" '+k+'/><path d="M142 98h16l4 14h-24z" '+k+'/>'
   };
-  const m={amph:'ifv',arm:'tank',tank:'tank',inf:'ifv',res:'soldier',mar:'soldier',abn:'para',ssm:'truck',hmr:'truck',mlrs:'truck',csg:'carrier',dd:'ship',ff:'ship',cv:'carrier',ssn:'sub',jss:'sub',kadena:'jet',jasdf:'jet',bomber:'plane',csg:'carrier',jmsdf:'ship',jgsdf:'truck',usmc:'truck',mdtf:'truck'};
+  const m={amph:'ifv',arm:'tank',tank:'tank',inf:'ifv',res:'soldier',mar:'soldier',abn:'para',ssm:'truck',hmr:'truck',mlrs:'truck',csg:'carrier',dd:'ship',ff:'ship',
+      cv:'carrier',ssn:'sub',jss:'sub',kadena:'jet',jasdf:'jet',bomber:'plane',csg:'carrier',jmsdf:'ship',jgsdf:'truck',usmc:'truck',mdtf:'truck'};
   return '<svg viewBox="0 0 300 120" class="silh" role="img" aria-label="示意圖">'+(W[m[type]||'soldier'])+'</svg>';
 }
 function photoBlock(key,side,fallbackWhy){
@@ -168,9 +171,15 @@ function readSetup(){
   S.ctrl=S.sim||S.video?{atk:'ai',def:'ai'}:{atk:sd==='atk'||sd==='both'?'human':'ai',def:sd==='def'||sd==='both'?'human':'ai'};
   S.newsOn=$('#optNews').value!=='0';S.newsCompact=$('#optNews').value==='2';S.fxScen=$('#optFx').value==='dice'?'interest':$('#optFx').value;S.airGen=$('#optAirGen').value;S.airModel=$('#optAirModel').value;S.ewLv=$('#optEW').value;S.allyCtl=$('#optAlly').value==='player'?'player':'ai';
 }
-['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optExer','#optLift','#optMonth','#optFxBias','#optWiLift','#optWiShip','#optWiWx','#optWiDArms','#optWiLocal','#optWiAllies','#optPreDiplo','#optPreDeploy','#optReact','#optNavy','#optPenghu','#optPrepos','#optNews','#optVoice','#optSfx','#optFxSpd','#optTerm','#optFx','#optAlly','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
-const CFG_IDS=['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optExer','optLift','optMonth','optFxBias','optWiLift','optWiShip','optWiWx','optWiDArms','optWiLocal','optWiAllies','optPreDiplo','optPreDeploy','optReact','optNavy','optPenghu','optPrepos','optFx','optAlly','optAirGen','optAirModel','optEW','optNews','optVoice','optSfx','optFxSpd','optTerm','optAxN','optAxC','optAxP'];
-const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optExer:'small',optLift:'1',optMonth:'4',optFxBias:'0',optWiLift:'0',optWiShip:'0',optWiWx:'0',optWiDArms:'0',optWiLocal:'0',optWiAllies:'0',optPreDiplo:'auto',optPreDeploy:'auto',optReact:'auto',optNavy:'auto',optPenghu:'auto',optPrepos:'auto',optFx:'interest',optAlly:'ai',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optSfx:'0',optFxSpd:'1',optTerm:'plain',optAxN:'0',optAxC:'0',optAxP:'1'};
+['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optExer','#optLift','#optMonth','#optFxBias','#optWiLift','#optWiShip','#optWiWx',
+    '#optWiDArms','#optWiLocal','#optWiAllies','#optPreDiplo','#optPreDeploy','#optReact','#optNavy','#optPenghu','#optPrepos','#optNews','#optVoice','#optSfx','#optFxSpd',
+    '#optTerm','#optFx','#optAlly','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
+const CFG_IDS=['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optExer','optLift','optMonth','optFxBias','optWiLift','optWiShip','optWiWx',
+    'optWiDArms','optWiLocal','optWiAllies','optPreDiplo','optPreDeploy','optReact','optNavy','optPenghu','optPrepos','optFx','optAlly','optAirGen','optAirModel','optEW',
+    'optNews','optVoice','optSfx','optFxSpd','optTerm','optAxN','optAxC','optAxP'];
+const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optExer:'small',optLift:'1',optMonth:'4',optFxBias:'0',
+    optWiLift:'0',optWiShip:'0',optWiWx:'0',optWiDArms:'0',optWiLocal:'0',optWiAllies:'0',optPreDiplo:'auto',optPreDeploy:'auto',optReact:'auto',optNavy:'auto',optPenghu:'auto',
+    optPrepos:'auto',optFx:'interest',optAlly:'ai',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optSfx:'0',optFxSpd:'1',optTerm:'plain',optAxN:'0',optAxC:'0',optAxP:'1'};
 $('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
 // one-off start with the default settings; the saved setup choices are left as they were
 $('#btnDefault').onclick=()=>{

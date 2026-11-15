@@ -234,7 +234,11 @@ function targets(u){
   if(u.type==='hk')return subTargets(u);
   if(u.type==='ssn'){if(u.acted||!(u.tp>0||u.hm>0))return [];return shipFoes(u,kmH(120)).filter(e=>(u.tp>0&&rd(hexOf(u),hexOf(e))<=kmH(60))||u.hm>0);}
   if(u.type==='nme'||u.type==='mdt'){if(u.acted||!u.mag||u.mag.asm<=0)return [];return shipFoes(u,u.type==='nme'?NME.R:MDT.R);}
-  if(isMsl(u)){if(u.shots<=0||(u.fl&&!(u.mag&&u.mag.asm>0)))return [];const R=u.fl?fleetAgg(u).asmR:kmH(160);return S.units.filter(e=>e.side!==u.side&&atSea(e)&&!e.ship&&rd(hexOf(u),hexOf(e))<=R);} // 船上的旅不單獨列為目標：打運輸船，船沉了旅一併損失
+  if(isMsl(u)){if(u.shots<=0||(u.fl&&!(u.mag&&u.mag.asm>0)))return [];
+    if(u.type==='ssm'&&(S.pools[ssmPool(u)]||0)<=0)return [];
+    const R=u.fl?fleetAgg(u).asmR:ssmHp(u)?kmH(120):kmH(160);
+    return S.units.filter(e=>e.side!==u.side&&atSea(e)&&!e.ship&&rd(hexOf(u),hexOf(e))<=R);
+    } // 船上的旅不單獨列為目標：打運輸船，船沉了旅一併損失
   const h=hexOf(u);if(h.isl==='CN')return [];
   return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以
 }
@@ -245,7 +249,14 @@ function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥
   fxq({t:'dmg',id:u.id,at:[u.c,u.r],n:Math.min(n,u.hp),side:u.side});
   if(isLch(u)&&u.veh!=null&&!S._vehHit){u.veh=Math.max(0,Math.round(u.veh-n*ssmVPS(u)));u.fk=(u.fk||[]).slice(0,u.veh);} // 地面戰鬥、先制打擊：每步＝4 輛完全摧毀
   u.hp-=n;if(u.fl&&u.hp>0)fleetLose(u,n);
-  if((u.type==='cv'||u.type==='csg')&&u.hp===1&&!u.ooaN){u.ooaN=1;const nm=u.type==='csg'?(csgFx(u)?csgName(csgIdx(csgFx(u).id)):'美軍航艦'):(u.cvi!=null?AIR.CV[u.cvi].n:'共軍航艦');log(nm+'受創失去戰鬥能力（飛行甲板受損，艦載機無法起降），撤離戰場修理');bigNews(nm+'受創撤離',nm+'遭重創、失去作戰能力，在護航艦掩護下撤離戰場。');}if(u.type==='dd'&&u.mag&&u.hp>0)u.mag.ad=Math.min(u.mag.ad,Math.round(DDW.ad*u.hp/TYPES.dd.hp));if(u.type==='ssn'&&!u.grp){const f=S.fx.units.find(x=>x.id==='ssn');if(f)f.hp=Math.max(0,u.hp);}if(window.TSL_RUMBLE)TSL_RUMBLE('hit'); // 手把震動（無手把時無效）
+  if((u.type==='cv'||u.type==='csg')&&u.hp===1&&!u.ooaN){u.ooaN=1;
+    const nm=u.type==='csg'?(csgFx(u)?csgName(csgIdx(csgFx(u).id)):'美軍航艦'):(u.cvi!=null?AIR.CV[u.cvi].n:'共軍航艦');
+    log(nm+'受創失去戰鬥能力（飛行甲板受損，艦載機無法起降），撤離戰場修理');
+    bigNews(nm+'受創撤離',nm+'遭重創、失去作戰能力，在護航艦掩護下撤離戰場。');
+    }if(u.type==='dd'&&u.mag&&u.hp>0)u.mag.ad=Math.min(u.mag.ad,Math.round(DDW.ad*u.hp/TYPES.dd.hp));
+    if(u.type==='ssn'&&!u.grp){const f=S.fx.units.find(x=>x.id==='ssn');
+    if(f)f.hp=Math.max(0,u.hp);
+    }if(window.TSL_RUMBLE)TSL_RUMBLE('hit'); // 手把震動（無手把時無效）
   if(u.type==='csg'){const f=csgFx(u);if(f){f.hp=Math.max(0,u.hp);if(f.hp<=0)usCarrierSunk(why||'共軍攻擊');else log(csgName(csgIdx(f.id))+'在'+hname(hexOf(u))+'受創（'+(why||'未知攻擊')+'），'+cvSt(f.hp,f.max)+'，艦載機出擊能力下降');}}
   if(u.type==='cv'&&u.side==='atk'){const at=hname(hexOf(u))+'（'+(why||'未知攻擊')+'）';log(u.hp<=0?'共軍航艦群在'+at+'被擊沉，失去戰鬥能力':'共軍航艦群在'+at+'受創（'+cvSt(u.hp,mhpOf(u))+'），戰力下降');}
   if(u.hp<=0){if(isEsc(u)){S.stats.escLost=S.stats.escLost||{atk:0,def:0};S.stats.escLost[u.side]++;}if(u.type==='ssn')S.stats.ssnLost=(S.stats.ssnLost||0)+1;if(u.ally==='JP')S.stats.jpShip=(S.stats.jpShip||0)+1;
@@ -253,9 +264,31 @@ function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥
     if(u.type==='cvy'){S.stats.cvySunk=(S.stats.cvySunk||0)+1;if(S.pools)S.pools.plaLift=Math.max(0,S.pools.plaLift)+0;}
     if(u.type==='fob')log('攻方灘頭補給站被摧毀：卸載能力與庫存空間下降');
     fxq({t:'dead',at:[u.c,u.r],type:u.type,side:u.side,id:u.id});ghostAdd(u);S.units=S.units.filter(x=>x!==u);
-    if(u.boundTo){const b=S.units.find(x=>x.id===u.boundTo);if(b){S.hits.push({c:b.c,r:b.r,t:S.turn,side:b.side,type:b.type,n:b.hp,sea:true,why:'運輸船被擊沉',dead:true});S.stats.bdeLost=S.stats.bdeLost||{atk:0,def:0};S.stats.bdeLost[b.side]++;S.units=S.units.filter(x=>x!==b);S.stats.lstSunk=(S.stats.lstSunk||0)+1;log('運輸船被擊沉，船上的 '+TYPES[b.type].n+' 一併殲滅');}}
-    if(u.ship){const sh=shipOf(u);if(sh)S.units=S.units.filter(x=>x!==sh);}if(u.type==='dd'&&S.pools)S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(u.type==='ff'&&S.pools)S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);if(u.type==='hk'&&S.pools)S.pools.rocSub=Math.max(0,S.pools.rocSub-1);if(u.type==='cv'&&S.pools){S.pools.plaCV=Math.max(0,S.pools.plaCV-1);if(u.cvi!=null){S.cvGone=S.cvGone||[];S.cvGone.push(u.cvi);if(S.air)S.air.cvF[u.cvi]=0;}plaCarrierLost(why,'守方');}
-    if(!isShip(u)){const rest=unitsAt(K(u.c,u.r));if(rest.length&&rest.every(isShip)){rest.forEach(x=>{fxq({t:'dead',at:[x.c,x.r],type:x.type,side:x.side});S.units=S.units.filter(y=>y!==x);if(x.type==='ff')S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);if(x.type==='dd')S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(x.type==='cv')S.pools.plaCV=Math.max(0,S.pools.plaCV-1);log(uname(x)+' 隨港口失守而損失');});}}log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));return true;}
+    if(u.boundTo){const b=S.units.find(x=>x.id===u.boundTo);
+      if(b){S.hits.push({c:b.c,r:b.r,t:S.turn,side:b.side,type:b.type,n:b.hp,sea:true,why:'運輸船被擊沉',dead:true});
+      S.stats.bdeLost=S.stats.bdeLost||{atk:0,def:0};
+      S.stats.bdeLost[b.side]++;
+      S.units=S.units.filter(x=>x!==b);
+      S.stats.lstSunk=(S.stats.lstSunk||0)+1;
+      log('運輸船被擊沉，船上的 '+TYPES[b.type].n+' 一併殲滅');
+      }}
+    if(u.ship){const sh=shipOf(u);
+      if(sh)S.units=S.units.filter(x=>x!==sh);
+      }if(u.type==='dd'&&S.pools)S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);
+      if(u.type==='ff'&&S.pools)S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);
+      if(u.type==='hk'&&S.pools)S.pools.rocSub=Math.max(0,S.pools.rocSub-1);
+      if(u.type==='cv'&&S.pools){S.pools.plaCV=Math.max(0,S.pools.plaCV-1);
+      if(u.cvi!=null){S.cvGone=S.cvGone||[];
+      S.cvGone.push(u.cvi);
+      if(S.air)S.air.cvF[u.cvi]=0;
+      }plaCarrierLost(why,'守方');
+      }
+    if(!isShip(u)){const rest=unitsAt(K(u.c,u.r));
+      if(rest.length&&rest.every(isShip)){rest.forEach(x=>{fxq({t:'dead',at:[x.c,x.r],type:x.type,side:x.side});S.units=S.units.filter(y=>y!==x);if(x.type==='ff')S.pools.rocNavy=Math.max(0,
+          S.pools.rocNavy-1);if(x.type==='dd')S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(x.type==='cv')S.pools.plaCV=Math.max(0,S.pools.plaCV-1);log(uname(x)+' 隨港口失守而損失');});
+      }}log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));
+      return true;
+      }
   return false;
 }
 // 占領：該格與周圍沒有敵軍的陸地格一併易主（細格版的「控制範圍」）
@@ -371,6 +404,10 @@ function fireMlrs(m,t){
   if(hit)damage(t,1,'雷霆2000火箭');
   checkInstant();
 }
+// 岸置反艦飛彈分兩種：雄二／雄三（中科院，存量 rocAS，射程約 160 km）與魚叉岸防系統（RGM-84L-4，存量 rocHCD，射程約 120 km，2026～2028 年交付）
+const ssmHp=u=>u&&u.type==='ssm'&&u.wp==='hp';
+const ssmPool=u=>ssmHp(u)?'rocHCD':'rocAS';
+const ssmWn=u=>ssmHp(u)?'魚叉':'雄風';
 const SSM_N=2; // ★岸置發射車與艦艇每次發射 2 枚（雄風二、三型發射車每車 4 枚）
 // 岸置反艦飛彈單位＝一群分散的機動發射車（★每單位 8 輛；官方未公開實際數量）。2 步＝每步 4 輛。
 // 精準打擊命中只影響 1 輛（分散部署，一個打擊包只能鎖定一輛），依毀傷評估分級（美國陸軍 BRL 定義：機動／火力／完全摧毀）：
@@ -461,20 +498,20 @@ function fireMissile(m,t){
   if(m.type==='mlrs')return fireMlrs(m,t);
   if(isEsc(m))return fireSalvo(m,t);
   if(m.fl)return fleetSalvo(m,t);
-  if(m.type==='ssm'&&S.pools&&S.pools.rocAS!==undefined)S.pools.rocAS=Math.max(0,Math.round((S.pools.rocAS-SSM_N/100)*100)/100); // 存量每點約 100 枚：每發 2 枚＝0.02 點（原本扣 0.2 點＝20 枚，與實際發射數不符）
+  if(m.type==='ssm'&&S.pools){const pl=ssmPool(m);S.pools[pl]=Math.max(0,Math.round(((S.pools[pl]||0)-SSM_N/100)*100)/100);} // 存量每點約 100 枚：每發 2 枚＝0.02 點（原本扣 0.2 點＝20 枚，與實際發射數不符）
   m.shots--;if(m.shots<=0&&m.type!=='ssm')m.acted=true; // 岸置發射車打完仍可機動轉移
   if(m.type==='ssm')m.revealed=true; // 開火後暴露
   if(adCover(t).length){ // 目標在 055／052D／054A 防空涵蓋內：★每次 2 枚，以齊射模型對上艦隊防空（同階段共用接戰上限）
-    const n=SSM_N,r=salvoCalc(t,n,false,'ssmSalvo>'+t.type),big=t.type==='cv'||t.type==='csg',steps=big?takeInt(r.hits/2,'salvoBig'):r.hits;t.inc=(t.inc||0)+1;
+    const n=SSM_N,r=salvoHit(t,n,'ssmSalvo>'+t.type),big=isBigShip(t),steps=r.steps;t.inc=(t.inc||0)+1;
     fxSalvo([m.c,m.r],t,r);
-    log((m.type==='ff'?'守方艦艇':'岸置反艦飛彈')+'以 '+n+' 枚雄風飛彈攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+(steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):'，未造成重創')+'（齊射模型，參數為推估）');
+    log((m.type==='ff'?'守方艦艇':'岸置反艦飛彈')+'以 '+n+' 枚'+(m.type==='ssm'?ssmWn(m):'雄風')+'飛彈攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
     if(steps)damage(t,steps,'雄風反艦飛彈');
     checkInstant();return;
   }
   if(t.type==='ro'||t.type==='cvy'){ // 滾裝船與補給船：商船改裝、體積大、航速慢、沒有自身防空；不在護航艦防空涵蓋內時，飛彈只受尋標命中率限制（同齊射模型的 pSeek）
     const hits=takeInt(SSM_N*SALVO.pSeek,'ssmMerch>'+t.type);t.inc=(t.inc||0)+1;
     fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit:hits>0});
-    log((m.type==='ff'?'守方艦艇':'岸置反艦飛彈')+'以 '+SSM_N+' 枚雄風飛彈攻擊沒有護航防空的 '+uname(t)+'：命中 '+hits+' 枚（尋標命中率 '+Math.round(SALVO.pSeek*100)+'%，推估）'+(hits?'，'+tname(t)+' −'+stpU(t,hits):''));
+    log((m.type==='ff'?'守方艦艇':'岸置反艦飛彈')+'以 '+SSM_N+' 枚'+(m.type==='ssm'?ssmWn(m):'雄風')+'飛彈攻擊沒有護航防空的 '+uname(t)+'：命中 '+hits+' 枚（尋標命中率 '+Math.round(SALVO.pSeek*100)+'%，推估）'+(hits?'，'+tname(t)+' −'+stpU(t,hits):''));
     if(hits)damage(t,hits,'雄風反艦飛彈');
     checkInstant();return;
   }
@@ -497,7 +534,13 @@ function strike(t){
     log('火力打擊 '+hname(h)+'：沒有找到可打擊的'+tname(t)+'營級部隊，打到空的陣地（'+(t.glL?t.glL.txt:'')+'；推估）');checkInstant();return;}
   const PM=pkgMod(pk,h,t),ok=hitP((mob?lchKillP(pk):pNeed(need))*PM.m,'st:'+t.type+':'+pk.k); // 機動發射車：已定位後依武器數量計算
   fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:atSea(t),org:orgPick(S.pools&&S.pools.plaCV>0&&Math.random()<.3?'plaCV':'pla'),k:pk.hs?'hs':pk.k!=='g'?'bm':Math.random()<.5&&S.pools.plaCM>0?'cm':'bomb',ad:!pk.hs&&S.pools.rocAD>0&&!S.sead&&!atSea(t)?(ok?'pass':'int'):undefined});
-  if(ok){if(isLch(t)&&t.veh!=null){t.locN=Math.max(0,(t.locN||0)-1);const x=ssmHit(t,'火力打擊');log('火力打擊命中 '+hname(h)+' 的 '+tname(t)+'：'+x+'（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');}else{if(isGnd(t))t.glN=Math.max(0,(t.glN||0)-1);log('火力打擊命中 '+hname(h)+' 的 '+tname(t)+'（'+(isGnd(t)&&t.glL?t.glL.txt+'；':'')+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');damage(t,1,'火力打擊');}}
+  if(ok){if(isLch(t)&&t.veh!=null){t.locN=Math.max(0,(t.locN||0)-1);
+    const x=ssmHit(t,'火力打擊');
+    log('火力打擊命中 '+hname(h)+' 的 '+tname(t)+'：'+x+'（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');
+    }else{if(isGnd(t))t.glN=Math.max(0,(t.glN||0)-1);
+    log('火力打擊命中 '+hname(h)+' 的 '+tname(t)+'（'+(isGnd(t)&&t.glL?t.glL.txt+'；':'')+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');
+    damage(t,1,'火力打擊');
+    }}
   else log('火力打擊 '+hname(h)+' 未命中（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');
   checkInstant();return true;
 }

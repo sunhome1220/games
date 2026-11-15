@@ -15,7 +15,9 @@ function newState(){
   S={turn:1,phase:'atk',T:8,ctrl:{atk:'human',def:'ai'},weather:WEATHER.good,fire:0,units:[],owner:{},log:[],
      sel:null,mode:null,busy:false,over:false,started:false,nid:1,hover:null,zoneFlip:0,
      sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods(),
-     pools:null,mines:{},baseStruck:{US:0,JP:0},afl:{},bh:{},bhNote:false,portDown:{},portAsked:{},truce:{atk:{n:0,t:-9},def:{n:0,t:-9}},fx:null,simAuto:false,thSel:null,news:[],hits:[],newsOn:true,fxScen:'interest',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,tpHold:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
+     pools:null,mines:{},baseStruck:{US:0,JP:0},afl:{},bh:{},bhNote:false,portDown:{},portAsked:{},truce:{atk:{n:0,t:-9},def:{n:0,t:-9}},fx:null,simAuto:false,thSel:null,
+         news:[],hits:[],newsOn:true,fxScen:'interest',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,
+         esc:[],reserves:0,tpHold:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
   for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
   // 每個單位約一個旅（4,000～5,000 人）。共軍第一波約 40,000～55,000 人（兩棲艦隊首波運力估計 2～4 萬），後續波次由增援補上
   const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
@@ -52,12 +54,12 @@ let LOGN=0;
 function log(msg){S.log.unshift({t:S.turn,p:S.phase,msg,n:++LOGN});if(S.log.length>300)S.log.pop();}
 function toast(msg,ms){if(S&&S.rec)return;const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),ms||1500);}
 function hname(h){return h.name||(TERN[h.t]+' '+h.c+'-'+h.r);}
-function uname(u){return (u.fl?u.fl.n:u.hl?'劍龍級潛艦（'+u.nm+'）':TYPES[u.type].n)+'（'+SIDE[u.side]+'）';}
+function uname(u){return (u.fl?u.fl.n:u.wp==='hp'?'魚叉岸防系統':u.hl?'劍龍級潛艦（'+u.nm+'）':TYPES[u.type].n)+'（'+SIDE[u.side]+'）';}
 // ---------- 台灣海軍：依真實艦隊編制，一個棋子＝一個艦隊（★艦隊歸屬與武器數字為推估）----------
 // 每艘：防空飛彈 ad、防空涵蓋 adR（格）、反艦飛彈 asm、反艦射程 asmR（格）、同時接戰數 ch
-const RFW={kl:{n:'基隆級',ad:60,adR:kmH(120),asm:8,asmR:kmH(120),ch:2},ck:{n:'成功級',ad:36,adR:kmH(40),asm:8,asmR:kmH(160),ch:2},pf:{n:'派里級',ad:36,adR:kmH(40),asm:4,asmR:kmH(120),ch:2},
-  kd:{n:'康定級',ad:24,adR:kmH(20),asm:8,asmR:kmH(160),ch:2},cy:{n:'濟陽級',ad:10,adR:kmH(40),asm:4,asmR:kmH(120),ch:2},lf:{n:'新輕型巡防艦',ad:32,adR:kmH(40),asm:8,asmR:kmH(200),ch:2},
-  tc:{n:'沱江級',ad:12,adR:kmH(20),asm:16,asmR:kmH(160),ch:1},kh:{n:'光六快艇',ad:0,adR:0,asm:4,asmR:kmH(160),ch:0}};
+const RFW={kl:{n:'基隆級',w:'魚叉',ad:60,adR:kmH(120),asm:8,asmR:kmH(120),ch:2},ck:{n:'成功級',w:'雄二／雄三',ad:36,adR:kmH(40),asm:8,asmR:kmH(160),ch:2},pf:{n:'派里級',w:'雄二',ad:36,adR:kmH(40),asm:4,asmR:kmH(120),ch:2},
+  kd:{n:'康定級',w:'雄二',ad:24,adR:kmH(20),asm:8,asmR:kmH(160),ch:2},cy:{n:'濟陽級',w:'魚叉',ad:10,adR:kmH(40),asm:4,asmR:kmH(120),ch:2},lf:{n:'新輕型巡防艦',w:'雄二／雄三',ad:32,adR:kmH(40),asm:8,asmR:kmH(200),ch:2},
+  tc:{n:'沱江級',w:'雄二／雄三',ad:12,adR:kmH(20),asm:16,asmR:kmH(160),ch:1},kh:{n:'光六快艇',w:'雄二',ad:0,adR:0,asm:4,asmR:kmH(160),ch:0}};
 // 依年份：濟陽級逐步除役、新輕型巡防艦 2028 年起陸續加入（2028～2040 年共 10～12 艘）
 const ROCF=[
   {id:'168',n:'168 艦隊（蘇澳）',s:'168',home:'suao',m:y=>[['kl',4],['cy',y<=2027?4:y<=2029?2:0],['lf',y<=2027?0:y<=2029?2:y<=2031?4:6]]},
@@ -66,6 +68,7 @@ const ROCF=[
   {id:'146',n:'146 艦隊（馬公）',s:'146',home:'magong',m:y=>[['ck',3],['pf',2]]},
   {id:'hjN',n:'海蛟大隊（北）',s:'海蛟北',home:'suao',m:y=>[['tc',4],['kh',15]]},
   {id:'hjS',n:'海蛟大隊（南）',s:'海蛟南',home:'kaohsiung',m:y=>[['tc',3],['kh',15]]}];
+const fleetWn=u=>[...new Set(u.fl.m.filter(([k,n])=>n>0&&RFW[k].asm>0).map(([k])=>RFW[k].w))].join('、')||'反艦飛彈'; // ★各艦反艦飛彈種類（依公開資料：基隆級、濟陽級魚叉；成功級、沱江級雄二／雄三；康定級、光六雄二；派里級推估為雄二）
 const FLEET_PER=2; // ★每艘每次齊射 2 枚
 function fleetAgg(u){const A={hp:0,ad:0,asm:0,adR:0,asmR:0,chan:0,sh:0};for(const [k,n] of u.fl.m){if(n<=0)continue;const W=RFW[k];A.hp+=n;A.ad+=W.ad*n;A.asm+=W.asm*n;A.chan+=W.ch*n;if(W.ad>0)A.adR=Math.max(A.adR,W.adR);if(W.asm>0){A.asmR=Math.max(A.asmR,W.asmR);A.sh+=n;}}return A;}
 const fleetTxt=u=>u.fl.m.filter(([,n])=>n>0).map(([k,n])=>RFW[k].n+' '+n).join('、');
@@ -118,9 +121,9 @@ function rocFleetHit(why){ // 抽象的海空打擊命中守方海軍：船數�
 function fleetSalvo(m,t){
   const A=fleetAgg(m);const n=Math.min(m.mag.asm,A.sh*FLEET_PER);if(n<=0)return false;
   m.mag.asm-=n;m.shots=0;m.acted=true;m.revealed=true;
-  const r=salvoCalc(t,n,false,'fleet>'+t.type),big=t.type==='cv'||t.type==='csg',steps=big?takeInt(r.hits/2,'salvoBig'):r.hits;
+  const r=salvoHit(t,n,'fleet>'+t.type),big=isBigShip(t),steps=r.steps;
   fxSalvo([m.c,m.r],t,r);
-  log(m.fl.n+'齊射 '+n+' 枚反艦飛彈攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+(steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):'，未造成重創')+'（齊射模型，參數為推估）');
+  log(m.fl.n+'齊射 '+n+' 枚'+fleetWn(m)+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
   if(steps)damage(t,steps,m.fl.n+'反艦飛彈');
   checkInstant();return true;
 }

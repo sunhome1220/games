@@ -183,7 +183,14 @@ async function usTomahawk(f){
   return true;
 }
 async function alliedLandStrikes(mode){
-  const pcs=mode!=='start',abs=mode!=='end';S._tomDone=false;if(pcs){const f=S.fx.units.find(x=>isCSG(x)&&csgPieceOf(x)&&fxActive(x))||(mdtPiece()&&S.fx.units.find(x=>x.id==='mdtf'&&fxActive(x)))||(ssnIndep()&&S.fx.units.find(x=>x.id==='ssn'&&fxActive(x)));const T=tomahawkTargets();if(f&&(T.fob.length||T.ports.length)&&!allyCanStrike(f)){S._tomDone=true;await usTomahawk(f);if(S.over)return;}} // 打台灣島上的攻方目標不涉及攻擊大陸
+  const pcs=mode!=='start',abs=mode!=='end';
+    S._tomDone=false;
+    if(pcs){const f=S.fx.units.find(x=>isCSG(x)&&csgPieceOf(x)&&fxActive(x))||(mdtPiece()&&S.fx.units.find(x=>x.id==='mdtf'&&fxActive(x)))||(ssnIndep()&&S.fx.units.find(x=>x.id==='ssn'&&fxActive(x)));
+    const T=tomahawkTargets();
+    if(f&&(T.fob.length||T.ports.length)&&!allyCanStrike(f)){S._tomDone=true;
+    await usTomahawk(f);
+    if(S.over)return;
+    }} // 打台灣島上的攻方目標不涉及攻擊大陸
   for(const f of S.fx.units.filter(allyCanStrike)){
     const isPc=isCSG(f)&&csgPieceOf(f)||f.id==='mdtf'&&mdtPiece();if(isPc?(!pcs||allyHuman()):!abs)continue; // 玩家操作盟軍：棋子對大陸的戰斧由玩家決定，不自動打 // 玩家操作盟軍：棋子的打擊留到結束階段，其餘抽象部隊照舊
     const need=f.c==='US'?(usIdx()>=2?4:5):5,pa=pNeed(need);
@@ -242,7 +249,8 @@ function exercisePrelude(){
     const g=document.getElementById('gF'),els=[],tm=[];
     const Z=[['A',[121.9,25.7]],['B',[123.0,25.1]],['C',[123.3,23.7]],['D',[122.4,22.1]],['E',[120.7,21.6]],['F',[119.6,22.7]],['G',[119.4,24.4]]];
     const pxy=([lo,la])=>{const [c,r]=llToRC(lo,la);return TER[K(c,r)]?cen(c,r):center(c,r);};
-    Z.forEach(([nm,ll],i)=>{tm.push(setTimeout(()=>{const p=pxy(ll),e=document.createElementNS(SVGNS,'ellipse');e.setAttribute('cx',p[0]);e.setAttribute('cy',p[1]);e.setAttribute('rx',R*3.4);e.setAttribute('ry',R*2.4);e.setAttribute('fill','rgba(210,60,50,.16)');e.setAttribute('stroke','#d9534a');e.setAttribute('stroke-width','2');e.setAttribute('stroke-dasharray','7 5');g.appendChild(e);els.push(e);
+    Z.forEach(([nm,ll],i)=>{tm.push(setTimeout(()=>{const p=pxy(ll),e=document.createElementNS(SVGNS,'ellipse');e.setAttribute('cx',p[0]);e.setAttribute('cy',p[1]);e.setAttribute('rx',
+        R*3.4);e.setAttribute('ry',R*2.4);e.setAttribute('fill','rgba(210,60,50,.16)');e.setAttribute('stroke','#d9534a');e.setAttribute('stroke-width','2');e.setAttribute('stroke-dasharray','7 5');g.appendChild(e);els.push(e);
       const t=document.createElementNS(SVGNS,'text');t.setAttribute('x',p[0]);t.setAttribute('y',p[1]+4);t.setAttribute('text-anchor','middle');t.setAttribute('class','fxt atk');t.textContent=nm+' 區';g.appendChild(t);els.push(t);},i*520));});
     const box=document.createElement('div');box.className='coach exer';box.setAttribute('role','status');
     const det=S.exer.det;
@@ -270,7 +278,12 @@ function applyMonth(){
 // 假設情境：預設全部關閉，雙方對稱；每項標明依據與代價，開啟後結算頁標示使用了哪些假設、停用難度評級
 function applyWhatIf(){
   const v=id=>$(id)&&$(id).value==='1',m=S.mods,P=S.pools,out=[],tag=[];
-  const addDD=n=>{const cs=[[119.9,24.6],[120.1,24.0],[119.9,23.3],[120.2,25.0],[120.0,22.7]].map(([lo,la])=>{const [c,r]=llToRC(lo,la);return TER[K(c,r)];}).filter(h=>h&&h.t==='sea');let k=0;for(const h of cs){if(k>=n||S.units.filter(u=>u.type==='dd').length>=10)break;if(unitsAt(h.k).length<STACK_MAX){S.units.push(mkUnit('atk','dd',h.k,{}));k++;}}};
+  const addDD=n=>{const cs=[[119.9,24.6],[120.1,24.0],[119.9,23.3],[120.2,25.0],[120.0,22.7]].map(([lo,la])=>{const [c,r]=llToRC(lo,la);return TER[K(c,r)];}).filter(h=>h&&h.t==='sea');
+    let k=0;
+    for(const h of cs){if(k>=n||S.units.filter(u=>u.type==='dd').length>=10)break;
+    if(unitsAt(h.k).length<STACK_MAX){S.units.push(mkUnit('atk','dd',h.k,{}));
+    k++;
+    }}};
   if(v('#optWiShip')){P.plaNavy+=2;P.plaCV=Math.min(4,P.plaCV+1);P.plaLst+=2;P.plaLift+=2;S.p0.plaLst=P.plaLst;S.p0.plaLift=P.plaLift;addDD(2);tag.push('砸鍋賣鐵加速造艦');out.push('護航艦隊 +2、航艦 +1、兩棲艦群 +2、滾裝船團 +2');}
   if(v('#optWiLift')){P.plaLst=99;P.plaLift=99;S.roReserve=0;S.p0.plaLst=99;S.p0.plaLift=99;tag.push('海運運力無限');out.push('登陸艦與運輸船不再限制增援（舊版假設）');}
   if(v('#optWiWx')){m.wx=[1,0,0];m.wxT1='good';tag.push('海象永遠適合登陸');out.push('天候固定良好');}
@@ -278,7 +291,14 @@ function applyWhatIf(){
     if(String(S.era)==='2026'){hmrSpread(S.units.filter(u=>u.side==='def'&&u.type==='hmr'&&alive(u)).reduce((a,u)=>a+u.veh0,0)+18);pAdd('rocAtc',20);S.p0.rocAtc+=20;hx='海馬士第二批 18 輛、陸軍戰術飛彈 20 枚提前到貨';} // 2026 年底前預定到貨的第二批
     else{pAdd('rocMsl',2);hx='長程飛彈 +2';} // 2027 年起海馬士已依交付期程計入，不另加
     tag.push('軍購準時到貨');out.push('守方反艦飛彈 +3、防空 +1、'+hx);}
-  if(v('#optWiLocal')){pAdd('rocSub',1);pAdd('rocMsl',3);const pref=[SPOT.hualien,SPOT.kaohsiung],ports=Object.values(TER).filter(h=>h.isl==='TW'&&h.t==='port'&&S.owner[h.k]==='def').map(h=>h.k).sort((x,y)=>((pref.indexOf(x)+1)||9)-((pref.indexOf(y)+1)||9));for(const k of ports){if(unitsAt(k).length<STACK_MAX+1){S.units.push(mkUnit('def','hk',subSea(k)||k,{tp:hkTp(),hm:HK_HM}));break;}}tag.push('國造武器提前量產');out.push('海鯤潛艦 +1、長程飛彈 +3');}
+  if(v('#optWiLocal')){pAdd('rocSub',1);
+    pAdd('rocMsl',3);
+    const pref=[SPOT.hualien,SPOT.kaohsiung],ports=Object.values(TER).filter(h=>h.isl==='TW'&&h.t==='port'&&S.owner[h.k]==='def').map(h=>h.k).sort((x,y)=>((pref.indexOf(x)+1)||9)-((pref.indexOf(y)+1)||9));
+    for(const k of ports){if(unitsAt(k).length<STACK_MAX+1){S.units.push(mkUnit('def','hk',subSea(k)||k,{tp:hkTp(),hm:HK_HM}));
+    break;
+    }}tag.push('國造武器提前量產');
+    out.push('海鯤潛艦 +1、長程飛彈 +3');
+    }
   if(v('#optWiAllies')){const cs=S.fx.units.find(f=>f.id==='csg');if(cs)cs.delay=0;tag.push('美日提前介入');out.push('美軍航艦打擊群提前到位');}
   S.sandbox=tag;if(tag.length)log('【假設情境】'+tag.join('、')+'：'+out.join('；')+'。');
   return out;
@@ -315,7 +335,8 @@ const BUILDUP=[
 function fxDice(c,esc){
   const rows={
     JP:[{min:1,max:2,label:'中立',desc:'不同意美軍從日本基地出擊',lv:0},{min:3,max:5,label:'後方支援',desc:'重要影響事態：美軍可使用日本基地',lv:1},{min:6,max:6,label:'全面參戰',desc:'存立危機事態：自衛隊投入作戰',lv:2}],
-    US:[{min:1,max:1,label:'不介入',desc:'公開不介入，但台美共用的飛彈、魚雷難分誰發射：潛艦與轟炸機以代理打擊方式出手（火力約四成半）',lv:0},{min:2,max:3,label:'情報支援',desc:'擴大隱蔽支援與補給，守方反艦飛彈命中門檻 −1，代理打擊維持',lv:1},{min:4,max:5,label:'有限介入',desc:'「代理打擊」：以台灣、日本名義發射遠程飛彈，載人機艦不進入戰區，不承認參戰',lv:2},{min:6,max:6,label:'全面參戰',desc:'公開參戰：航艦、戰機、陸戰濱海團、多域特遣隊全數投入；傷亡過高時可能退縮',lv:3}]
+    US:[{min:1,max:1,label:'不介入',desc:'公開不介入，但台美共用的飛彈、魚雷難分誰發射：潛艦與轟炸機以代理打擊方式出手（火力約四成半）',lv:0},{min:2,max:3,label:'情報支援',desc:'擴大隱蔽支援與補給，守方反艦飛彈命中門檻 −1，代理打擊維持',lv:1},
+        {min:4,max:5,label:'有限介入',desc:'「代理打擊」：以台灣、日本名義發射遠程飛彈，載人機艦不進入戰區，不承認參戰',lv:2},{min:6,max:6,label:'全面參戰',desc:'公開參戰：航艦、戰機、陸戰濱海團、多域特遣隊全數投入；傷亡過高時可能退縮',lv:3}]
   }[c];
   return {c,label:CN[c]+'的反應',rows,skip:()=>S.fxLock||S.fx.lv[c]>=rows[rows.length-1].lv,
     mod:()=>{const m=S.mods,p=[];let n=0;
