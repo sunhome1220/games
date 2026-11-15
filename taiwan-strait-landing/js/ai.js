@@ -147,46 +147,60 @@ function pickStrike(){
   if(best)best._sc=bs;
   return best;
 }
-async function aiAtkUnit(u){
-  if(isEsc(u)){if(escTargets(u).length){escAutoFire('atk');render();await sleep(240);}return;} // 護航艦：移動跟著航艦，只負責開火（協同齊射）
-  if(isSup(u)||u.type==='lst'||u.type==='ro')return; // 補給船團、補給站與運輸船由補給與運力系統自動處理
-  const h=hexOf(u);
+// 電腦攻方：失去戰力的航艦遠離守方威脅、往大陸撤離
+async function aiAtkCvRetreat(u,C){const {h}=C;
   if(u.type==='cv'&&cvOOA(u)){ // 失去戰鬥能力：遠離守方威脅、往大陸撤離
     const th=S.units.filter(e=>e.side==='def'&&(e.fl||e.type==='ssm'||e.type==='csg'||isEsc(e))&&alive(e));let best=null,bs=-1e9;
     for(const [k,v] of reach(u)){if(v.kind!=='sail')continue;const t=TER[k],sc=(th.length?Math.min(...th.map(e=>hd(t,hexOf(e)))):0)-t.c*.5;if(sc>bs){bs=sc;best=k;}}
-    if(best){doMove(u,best,'sail');render();await sleep(240);}return;
+    if(best){doMove(u,best,'sail');render();await sleep(240);}return true;
   }
+  return false;
+}
+// 電腦攻方：航艦群在東岸海域游弋，遇到岸置飛彈威脅向外海退
+async function aiAtkCarrier(u,C){const {h}=C;
   if(u.type==='cv'){ // 航艦群：在東岸海域游弋，遇到岸置飛彈威脅就向外海退
     const rc=reach(u),others=S.units.filter(x=>x.type==='cv'&&x!==u);let best=null;
     const sc=(k)=>ssmThreat(k)*3+others.reduce((a,x)=>a+Math.max(0,kmH(140)-hd(TER[k],hexOf(x))),0)*.6+Math.abs(TER[k].c-31)*.15+cvAggr(u,TER[k]);
     let bs=sc(h.k)-.6;
     for(const [k,v] of rc){if(v.kind!=='sail')continue;const t=sc(k)+Math.random()*.8;if(t<bs){bs=t;best=k;}}
     if(best){doMove(u,best,'sail');render();await sleep(240);}
-    return;
+    return true;
   }
+  return false;
+}
+// 電腦攻方：護航棋子貼近己方船團，否則朝登陸區靠攏
+async function aiAtkEscort(u,C){const {h}=C;
   if(u.type==='dd'){ // 護航艦：貼近己方船團，否則朝登陸區靠攏
     const tr=S.units.filter(x=>x.side==='atk'&&x!==u&&!isShip(x)&&atSea(x)),goals=tr.length?tr.map(x=>K(x.c,x.r)):ZONES[aiPlan().zone];
     const rc=reach(u);let best=null,bs=minD(h.k,goals)+ssmThreat(h.k)*.6;
     for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+ssmThreat(k)*.6+Math.random()*.3-(tr.some(x=>hd(TER[k],hexOf(x))<=kmH(40))?.8:0);if(s<bs-.2){bs=s;best=k;}}
     if(best){doMove(u,best,'sail');render();await sleep(260);}
-    return;
+    return true;
   }
+  return false;
+}
+// 電腦攻方：空降旅（機降到占領的機場、或依防空與目標選落點）
+async function aiAtkAirborne(u,C){const {h}=C;
   if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
     const AF=atkAF();
-    if(AF.length){const t=AF.find(x=>afRoom(u,x.k));if(t){doMove(u,t.k,'drop');render();await sleep(380);return;}} // 已占領可用的機場：直接機降
-    if(!S.weather.air||S.turn>3)return;
-    if(dropAD()>=.3&&S.turn<3)return; // ★防空還強時先不空降，等防空被壓制（最晚第 3 回合仍要執行）
+    if(AF.length){const t=AF.find(x=>afRoom(u,x.k));if(t){doMove(u,t.k,'drop');render();await sleep(380);return true;}} // 已占領可用的機場：直接機降
+    if(!S.weather.air||S.turn>3)return true;
+    if(dropAD()>=.3&&S.turn<3)return true; // ★防空還強時先不空降，等防空被壓制（最晚第 3 回合仍要執行）
     const IX=(S.intent||{}).axis,zn=IX==='north'||IX==='central'?IX:aiPlan().zone;
     const rc=reach(u);let best=null,bs=1e9;const g=TER[ABN_GOAL[zn][u.goal||0]];
     for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+Math.random()*.4;if(s<bs){bs=s;best=k;}}
     if(best){doMove(u,best,'drop');render();await sleep(380);}
-    return;
+    return true;
   }
+  return false;
+}
+// 電腦攻方：已上岸的部隊攻擊或推進
+async function aiAtkAshore(u,C){const {h}=C;
   if(h.isl==='TW'||h.isl==='PH'){
     const AD=(S.intent||{}).adv;
-    if(await aiTryAttack(u,AD==='hold'?1:AD==='dash'?-1:0))return;
-    if(h.isl==='PH')return;
-    if(AD==='hold')return; // 指揮官令：先鞏固灘頭，不前進
+    if(await aiTryAttack(u,AD==='hold'?1:AD==='dash'?-1:0))return true;
+    if(h.isl==='PH')return true;
+    if(AD==='hold')return true; // 指揮官令：先鞏固灘頭，不前進
     const open=OBJ.filter(k=>S.owner[k]!=='atk');
     const pOpen=PORTS.filter(k=>S.owner[k]!=='atk');
     const goals=AD==='dash'?[TAIPEI]:AD==='port'&&pOpen.length?pOpen:(open.length?open:OBJ);
@@ -194,13 +208,16 @@ async function aiAtkUnit(u){
     const rc=reach(u);let best=null,bs=OBJD[g][h.k];
     for(const [k,v] of rc){if(v.kind!=='move')continue;const ea=enemyAdj(k,'atk'),fa=friendAdj(k,'atk');const s=OBJD[g][k]+ea*.3+(ea>=2&&fa<1?2:0)-Math.min(fa,2)*.2;if(s<bs){bs=s;best=k;}}
     if(best){doMove(u,best,'move');render();await sleep(300);}
-    await aiTryAttack(u,0);return;
+    await aiTryAttack(u,0);return true;
   }
-  // at sea or on the mainland
+  return false;
+}
+// 電腦攻方：在海上或大陸的部隊選登陸點、出航、渡海
+async function aiAtkAdvance(u,C){const {h}=C;
   let goals;
   if(u.type==='arm'){
     goals=PORTS.concat([SPOT.hualien]).filter(k=>S.owner[k]==='atk').concat(Object.values(TER).filter(floatPier).map(x=>x.k)); // 掌握的港口，或可架浮動碼頭的灘頭
-    if(!goals.length)return;
+    if(!goals.length)return true;
   } else {
     goals=ZONES[u.zone||aiPlan().zone];
   }
@@ -213,24 +230,37 @@ async function aiAtkUnit(u){
     const dS=defs.reduce((a,e)=>a+(hd(hexOf(e),TER[k])<=kmH(40)?e.hp:0),0);
     const s=md*.5+enemyAdj(k,'atk')*1.5+dS*.25-Math.min(friendAdj(k,'atk'),3)+Math.random()*.3;if(s<bs){bs=s;best=k;}
   }
-  if(best){doMove(u,best,'land');render();await sleep(340);return;}
-  if(h.t==='sea'&&await aiTryAttack(u,0))return;
+  if(best){doMove(u,best,'land');render();await sleep(340);return true;}
+  if(h.t==='sea'&&await aiTryAttack(u,0))return true;
   if(h.isl==='CN'&&!h.coastal&&u.type!=='arm'){ // 開局落在內陸格（例如澎湖軸線的陸戰旅）：先走到最靠近目標的沿岸格，下回合才能出航
     let b=null,bs0=minD(h.k,goals);
     for(const [k,v] of rc){if(v.kind!=='move')continue;const t=TER[k];if(t.isl!=='CN')continue;const sc=minD(k,goals)-(t.coastal?3:0);if(sc<bs0){bs0=sc;b=k;}}
-    if(b){doMove(u,b,'move');render();await sleep(300);return;}
+    if(b){doMove(u,b,'move');render();await sleep(300);return true;}
   }
-  if(h.isl==='CN'&&penghuFirst()&&u.zone!=='penghu')return; // 先取澎湖：本島主攻部隊留在大陸，等拿下馬公（最晚第 7 回合）
+  if(h.isl==='CN'&&penghuFirst()&&u.zone!=='penghu')return true; // 先取澎湖：本島主攻部隊留在大陸，等拿下馬公（最晚第 7 回合）
   if(h.isl==='CN'&&u.type!=='arm'&&S.turn>1&&S.turn<S.T-1){
     // hold reinforcements on the coast until at least two can cross together
     const ready=S.units.filter(x=>x.side==='atk'&&(x.type==='amph'||x.type==='mar')&&hexOf(x).isl==='CN'&&!x.moved).length;
     const afloat=S.units.some(x=>x.side==='atk'&&atSea(x)&&!isShip(x));
-    if(ready<2&&!afloat)return;
+    if(ready<2&&!afloat)return true;
   }
   const cur=minD(h.k,goals);bs=h.t==='sea'?cur+ssmThreat(h.k)*.6:1e9;best=null;
   for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+ssmThreat(k)*.6+Math.random()*.3;if(s<bs){bs=s;best=k;}}
   if(best){doMove(u,best,'sail');render();await sleep(300);}
   if(atSea(u))await aiTryAttack(u,1);
+  return false;
+}
+async function aiAtkUnit(u){
+  if(isEsc(u)){if(escTargets(u).length){escAutoFire('atk');render();await sleep(240);}return;} // 護航艦：移動跟著航艦，只負責開火（協同齊射）
+  if(isSup(u)||u.type==='lst'||u.type==='ro')return; // 補給船團、補給站與運輸船由補給與運力系統自動處理
+  const h=hexOf(u);
+  if(await aiAtkCvRetreat(u,{h}))return;
+  if(await aiAtkCarrier(u,{h}))return;
+  if(await aiAtkEscort(u,{h}))return;
+  if(await aiAtkAirborne(u,{h}))return;
+  if(await aiAtkAshore(u,{h}))return;
+  // at sea or on the mainland
+  if(await aiAtkAdvance(u,{h}))return;
 }
 // 海鯤潛艦（守方）：魚雷有限（回港補彈），射程短（約 3 格），射擊後暴露，可能遭攻方護航艦反潛反擊
 // 後續批次的海鯤逐步改良（推估，不確定性高）：武器酬載增加、鋰電池與降噪使被發現機率下降、聲納與火控改良使命中率提高
@@ -395,6 +425,60 @@ function defPickZone(h){
   if(Math.abs(dn-dc)<=3)return (h.c+h.r)%2?'north':'central';
   return dn<dc?'north':'central';
 }
+// 電腦守方：依指揮官令（收縮守台北或港口、機動預備、縱深、灘岸前推）調動
+async function aiDefOrders(u,C){const {hold,lost,line,thr,fk,h,rc}=C;
+  if((hold==='capital'||hold==='ports')&&!lost.length){ // 指揮官令：向台北／主要港口收縮防守
+    const od=landDist(hold==='capital'?[TAIPEI]:PORTS);let b0=od[h.k]===undefined?1e9:od[h.k],pk=null;
+    if(b0>kmH(40)){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<b0){b0=sc;pk=k;}}
+      if(pk){doMove(u,pk,'move');render();await sleep(280);await aiTryAttack(u,thr,fk);}return true;}
+  }
+  if(line==='mobile'&&u.type==='tank'&&!S.units.some(e=>e.side==='atk'&&onTW(e)))return true; // 指揮官令：機動預備——敵人上岸前裝甲旅原地隱蔽待命
+  if(line==='depth'&&!lost.length&&!u.garrison&&!S.units.some(e=>e.side==='atk'&&onTW(e))){ // 指揮官令：縱深防禦——敵人上岸前不進海岸格，移到附近的城市或山地
+    if(!h.coastal&&(h.t==='city'||h.t==='mtn'))return true;let pk=null,b0=h.coastal?-1:0;
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const t=TER[k];if(t.coastal||t.isl!=='TW')continue;const sc=(t.t==='city'||t.t==='mtn')?2:1;if(sc>b0){b0=sc;pk=k;}}
+    if(pk){doMove(u,pk,'move');render();await sleep(280);}return true;}
+  if(line==='beach'&&!lost.length&&!u.garrison){ // 指揮官令：灘岸前推（朝敵船團實際接近的灘頭）
+    const od=defZoneDist(defPickZone(h)||'north');let b0=od[h.k]===undefined?1e9:od[h.k],better=null;
+    if(b0>kmH(40)){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<b0){b0=sc;better=k;}}
+      if(better){doMove(u,better,'move');render();await sleep(280);await aiTryAttack(u,thr,fk);}return true;}
+  }
+  return false;
+}
+// 電腦守方：奪回空著的要點、向失守的台北或港口反攻
+async function aiDefRetake(u,C){const {hold,lost,line,thr,fk,h,rc}=C;
+  for(const k of OBJ){if(S.owner[k]==='atk'&&rc.has(k)&&rc.get(k).kind==='move'){doMove(u,k,'move');log(TYPES[u.type].n+' 收復 '+hname(TER[k]));render();await sleep(300);return true;}}
+  if(lost.length){
+    const od=landDist(lost);let bs0=od[h.k]===undefined?1e9:od[h.k],pick0=null;
+    if(bs0<=kmH(20))return true;
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<bs0){bs0=sc;pick0=k;}}
+    if(pick0){doMove(u,pick0,'move');render();await sleep(280);await aiTryAttack(u,thr,lost);}
+    return true;
+  }
+  return false;
+}
+// 電腦守方：朝上岸的敵軍或接近中的船團移動並攻擊
+async function aiDefPosition(u,C){const {hold,lost,line,thr,fk,h,rc}=C;
+  const foes=S.units.filter(e=>e.side==='atk'&&onTW(e));
+  let best=null;
+  if(foes.length){
+    const fd=landDist(foes.map(e=>K(e.c,e.r)));
+    let bs=fd[h.k]===undefined?1e9:fd[h.k];
+    if(bs<=kmH(20))return true;
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const s=(fd[k]===undefined?1e9:fd[k])+(OBJ.includes(k)?-.5:0);if(s<bs){bs=s;best=k;}}
+  } else if(u.type!=='tank'&&!lost.length){ // 敵人還沒上岸：步兵與後備旅依海上船團的位置向可能的登陸區預先調動（受移動力限制，要幾回合才到位）
+    const z=defPickZone(h);if(z){const od=defZoneDist(z);let b0=od[h.k]===undefined?1e9:od[h.k];
+      if(b0>kmH(60)){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=(od[k]===undefined?1e9:od[k])+enemyAdj(k,'def')*3;if(sc<b0){b0=sc;best=k;}}}if(best)S.stats.redep=(S.stats.redep||0)+1;}
+  } else if(u.type==='tank'){
+    const fleet=S.units.filter(e=>e.side==='atk'&&atSea(e));if(!fleet.length)return true;
+    let tgt=null,ts=1e9;
+    for(const c of Object.values(TER)){if(c.isl!=='TW'||!c.coastal||c.cliff)continue;const s=fleet.reduce((a,e)=>a+hd(c,hexOf(e)),0);if(s<ts){ts=s;tgt=c;}}
+    if(!tgt||hd(h,tgt)<=kmH(80))return true;
+    let bs=hd(h,tgt);
+    for(const [k,v] of rc){if(v.kind!=='move')continue;const s=hd(TER[k],tgt);if(s<bs){bs=s;best=k;}}
+  }
+  if(best){doMove(u,best,'move');render();await sleep(280);await aiTryAttack(u,thr);}
+  return false;
+}
 async function aiDefUnit(u){
   // when Taipei or a main port has fallen, defenders counterattack more readily and converge on it
   const hold=(S.intent||{}).hold;
@@ -408,47 +492,8 @@ async function aiDefUnit(u){
   if(u.garrison||S.mods.defFreeze[S.turn])return;
   const h=hexOf(u);if(h.isl!=='TW')return;
   const rc=reach(u);if(!rc.size)return;
-  if((hold==='capital'||hold==='ports')&&!lost.length){ // 指揮官令：向台北／主要港口收縮防守
-    const od=landDist(hold==='capital'?[TAIPEI]:PORTS);let b0=od[h.k]===undefined?1e9:od[h.k],pk=null;
-    if(b0>kmH(40)){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<b0){b0=sc;pk=k;}}
-      if(pk){doMove(u,pk,'move');render();await sleep(280);await aiTryAttack(u,thr,fk);}return;}
-  }
-  if(line==='mobile'&&u.type==='tank'&&!S.units.some(e=>e.side==='atk'&&onTW(e)))return; // 指揮官令：機動預備——敵人上岸前裝甲旅原地隱蔽待命
-  if(line==='depth'&&!lost.length&&!u.garrison&&!S.units.some(e=>e.side==='atk'&&onTW(e))){ // 指揮官令：縱深防禦——敵人上岸前不進海岸格，移到附近的城市或山地
-    if(!h.coastal&&(h.t==='city'||h.t==='mtn'))return;let pk=null,b0=h.coastal?-1:0;
-    for(const [k,v] of rc){if(v.kind!=='move')continue;const t=TER[k];if(t.coastal||t.isl!=='TW')continue;const sc=(t.t==='city'||t.t==='mtn')?2:1;if(sc>b0){b0=sc;pk=k;}}
-    if(pk){doMove(u,pk,'move');render();await sleep(280);}return;}
-  if(line==='beach'&&!lost.length&&!u.garrison){ // 指揮官令：灘岸前推（朝敵船團實際接近的灘頭）
-    const od=defZoneDist(defPickZone(h)||'north');let b0=od[h.k]===undefined?1e9:od[h.k],better=null;
-    if(b0>kmH(40)){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<b0){b0=sc;better=k;}}
-      if(better){doMove(u,better,'move');render();await sleep(280);await aiTryAttack(u,thr,fk);}return;}
-  }
+  if(await aiDefOrders(u,{hold,lost,line,thr,fk,h,rc}))return;
   // retake an empty objective in reach
-  for(const k of OBJ){if(S.owner[k]==='atk'&&rc.has(k)&&rc.get(k).kind==='move'){doMove(u,k,'move');log(TYPES[u.type].n+' 收復 '+hname(TER[k]));render();await sleep(300);return;}}
-  if(lost.length){
-    const od=landDist(lost);let bs0=od[h.k]===undefined?1e9:od[h.k],pick0=null;
-    if(bs0<=kmH(20))return;
-    for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=od[k]===undefined?1e9:od[k];if(sc<bs0){bs0=sc;pick0=k;}}
-    if(pick0){doMove(u,pick0,'move');render();await sleep(280);await aiTryAttack(u,thr,lost);}
-    return;
-  }
-  const foes=S.units.filter(e=>e.side==='atk'&&onTW(e));
-  let best=null;
-  if(foes.length){
-    const fd=landDist(foes.map(e=>K(e.c,e.r)));
-    let bs=fd[h.k]===undefined?1e9:fd[h.k];
-    if(bs<=kmH(20))return;
-    for(const [k,v] of rc){if(v.kind!=='move')continue;const s=(fd[k]===undefined?1e9:fd[k])+(OBJ.includes(k)?-.5:0);if(s<bs){bs=s;best=k;}}
-  } else if(u.type!=='tank'&&!lost.length){ // 敵人還沒上岸：步兵與後備旅依海上船團的位置向可能的登陸區預先調動（受移動力限制，要幾回合才到位）
-    const z=defPickZone(h);if(z){const od=defZoneDist(z);let b0=od[h.k]===undefined?1e9:od[h.k];
-      if(b0>kmH(60)){for(const [k,v] of rc){if(v.kind!=='move')continue;const sc=(od[k]===undefined?1e9:od[k])+enemyAdj(k,'def')*3;if(sc<b0){b0=sc;best=k;}}}if(best)S.stats.redep=(S.stats.redep||0)+1;}
-  } else if(u.type==='tank'){
-    const fleet=S.units.filter(e=>e.side==='atk'&&atSea(e));if(!fleet.length)return;
-    let tgt=null,ts=1e9;
-    for(const c of Object.values(TER)){if(c.isl!=='TW'||!c.coastal||c.cliff)continue;const s=fleet.reduce((a,e)=>a+hd(c,hexOf(e)),0);if(s<ts){ts=s;tgt=c;}}
-    if(!tgt||hd(h,tgt)<=kmH(80))return;
-    let bs=hd(h,tgt);
-    for(const [k,v] of rc){if(v.kind!=='move')continue;const s=hd(TER[k],tgt);if(s<bs){bs=s;best=k;}}
-  }
-  if(best){doMove(u,best,'move');render();await sleep(280);await aiTryAttack(u,thr);}
+  if(await aiDefRetake(u,{hold,lost,line,thr,fk,h,rc}))return;
+  if(await aiDefPosition(u,{hold,lost,line,thr,fk,h,rc}))return;
 }

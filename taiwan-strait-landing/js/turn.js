@@ -546,8 +546,8 @@ function antiCarrier(){
   }
   log('反航母打擊：發射 '+n+' 枚反艦彈道飛彈，定位成功 '+loc+' 枚、護航艦發射 '+I0+' 枚攔截彈，命中 '+h+' 枚（定位 '+Math.round(pLoc*100)+'%：上一回合移動 '+moved+' 格；攔截以齊射模型計算；皆為推估）');
 }
-async function beginPhase(side){
-  if(typeof MISSION!=='undefined'&&MISSION&&MISSION.phase(side))return; // 關卡挑戰：限時到了就結束
+// 階段開始：清除上一階段的狀態、重設本方單位的行動與射擊次數
+function phaseReset(side){
   S.phase=side;S.sel=null;S.mode=null;
   GHOSTS.clear();S.units.forEach(u=>{u.inc=0;u.dropHide=0;if(side==='def')u.revealed=!!(u.mT&&S.turn<u.mT);});
   for(const u of S.units)if(u.side===side){u.moved=false;
@@ -560,18 +560,9 @@ async function beginPhase(side){
     if(isMsl(u))u.shots=(u.type==='ssm'&&S.pools&&(S.pools[ssmPool(u)]||0)<=0)?0:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):u.type==='mlrs'?(u.rl>0?0:1):u.type==='hmr'?(u.lu=0,Math.ceil(ssmReady(u)/HMR_PKG)):u.type==='ff'?1:2;
     }
   for(const u of S.units)if(u.side===side&&(u.type==='hmr'||u.type==='mlrs')&&u.veh!=null&&ssmReady(u)<=0)u.shots=0; // 車都不能射了
-  if(side==='atk')S.turnStart={snap:snap(),lv:Object.assign({},S.fx.lv),owner:Object.assign({},S.owner)};
-  if(window.TSL_RUMBLE&&humanTurn())TSL_RUMBLE('turn'); // 輪到自己操作時短震一下
-  render();if(side==='atk'&&S.turn>1)captureHL('t'+(S.turn-1));await runEvents(side);if(S.over)return;
-  await truceEval(side);if(S.over)return;
-  if(side==='def')await portEval();if(S.over)return;
-  if(side==='def'){await uscTurn();if(S.over)return;}
-  if(side==='atk'){subDetect();updateBeachheads();await convoyEval();if(S.over)return;}
-  if(side==='def')await interdictEval();if(S.over)return;
-  if(side==='def')intelStaging();
-  if(side==='def')repairAirfields(); // 跑道搶修好就能在本守方階段起飛
-  if(side==='atk'){repairPorts();repairCN();resolveSupply();convoyTurn();liftTurn();supplyAttrition();abnIsolation();if(S.over)return;}
-  if(side==='atk'){
+}
+// 攻方階段開始：天候、空戰、火力點數、飛彈預警、無人機、獵殺艦隊、艦載機、增援
+async function atkPhaseStart(){
     S.weather=rollWeather();if(S.weather.id==='bad')S.stats.badWx++;waveAttrition();if(S.over)return;
     if(S.turn===1&&!S.sirenDone&&!S.sim&&!S.video&&!REC.quiet){S.sirenDone=true;SFX.siren(6);} // 第一波：空襲警報
     uscSync();jmsSync();cvwPlan();airBattle();S.fire=computeFire();warnNotice();droneWave();huntFleets();doRetaliation();sweepMines();uscSync();antiCarrier();if(S.over)return;
@@ -582,7 +573,9 @@ async function beginPhase(side){
       if(h){if(!z){const ax=(S.plan&&S.plan.axes)||['north','central'];z=ax[S.zoneFlip++%ax.length];}S.units.push(mkUnit('atk',t,h.k,{zone:z}));log('攻方增援 '+TYPES[t].n+' 抵達 '+hname(h));}
     });
     log('第 '+S.turn+' 回合開始，天候'+S.weather.n+'（海上移動 '+S.weather.sea+'，火力 '+S.fire+' 點'+(S.weather.air?'':'，無法空降')+'）');
-  } else {
+}
+// 守方階段開始：後備旅動員、縱深打擊份額、美國檢討、艦艇出港、海上交戰
+async function defPhaseStart(){
     if(supply().over)S.stats.over++;
     let wave=(DEF_REINF[S.turn-S.mods.defReinfDelay]||[]).slice(); // 守方後備旅動員受裝備庫存限制，4 回合後沒有新的後備旅
     if(S.mods.defReinfHalve)wave=wave.filter((k,i)=>i%2===0);
@@ -594,7 +587,23 @@ async function beginPhase(side){
     S.dfire=lrPackets();usReview();render(); // 本階段可發射的包數（每包 4 枚）：受發射車與存量限制
     if(S.ctrl.def!=='human')for(const m of S.units.filter(u=>u.side==='def'&&u.type==='ff'))await ffSortie(m); // 守方艦艇先出港，再進行海上交戰結算
     await navalPhase();if(S.over)return;
-  }
+  
+}
+async function beginPhase(side){
+  if(typeof MISSION!=='undefined'&&MISSION&&MISSION.phase(side))return; // 關卡挑戰：限時到了就結束
+  phaseReset(side);
+  if(side==='atk')S.turnStart={snap:snap(),lv:Object.assign({},S.fx.lv),owner:Object.assign({},S.owner)};
+  if(window.TSL_RUMBLE&&humanTurn())TSL_RUMBLE('turn'); // 輪到自己操作時短震一下
+  render();if(side==='atk'&&S.turn>1)captureHL('t'+(S.turn-1));await runEvents(side);if(S.over)return;
+  await truceEval(side);if(S.over)return;
+  if(side==='def')await portEval();if(S.over)return;
+  if(side==='def'){await uscTurn();if(S.over)return;}
+  if(side==='atk'){subDetect();updateBeachheads();await convoyEval();if(S.over)return;}
+  if(side==='def')await interdictEval();if(S.over)return;
+  if(side==='def')intelStaging();
+  if(side==='def')repairAirfields(); // 跑道搶修好就能在本守方階段起飛
+  if(side==='atk'){repairPorts();repairCN();resolveSupply();convoyTurn();liftTurn();supplyAttrition();abnIsolation();if(S.over)return;}
+  if(side==='atk')await atkPhaseStart();else await defPhaseStart();if(S.over)return;
   toast('第 '+S.turn+' 回合 · '+SIDE[side]+'階段');
   render();
   if(S.ctrl[side]==='ai')runAI(side);

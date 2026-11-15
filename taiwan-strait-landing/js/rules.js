@@ -249,6 +249,12 @@ function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥
   fxq({t:'dmg',id:u.id,at:[u.c,u.r],n:Math.min(n,u.hp),side:u.side});
   if(isLch(u)&&u.veh!=null&&!S._vehHit){u.veh=Math.max(0,Math.round(u.veh-n*ssmVPS(u)));u.fk=(u.fk||[]).slice(0,u.veh);} // 地面戰鬥、先制打擊：每步＝4 輛完全摧毀
   u.hp-=n;if(u.fl&&u.hp>0)fleetLose(u,n);
+  shipHitEffects(u,why);
+  if(u.hp<=0){unitDestroyed(u,why);return true;}
+  return false;
+}
+// 船艦受損的連帶效果：航艦剩 1 步撤離、護航艦防空彈減少、美軍航艦與潛艦同步、手把震動、航艦受創戰報
+function shipHitEffects(u,why){
   if((u.type==='cv'||u.type==='csg')&&u.hp===1&&!u.ooaN){u.ooaN=1;
     const nm=u.type==='csg'?(csgFx(u)?csgName(csgIdx(csgFx(u).id)):'美軍航艦'):(u.cvi!=null?AIR.CV[u.cvi].n:'共軍航艦');
     log(nm+'受創失去戰鬥能力（飛行甲板受損，艦載機無法起降），撤離戰場修理');
@@ -259,7 +265,9 @@ function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥
     }if(window.TSL_RUMBLE)TSL_RUMBLE('hit'); // 手把震動（無手把時無效）
   if(u.type==='csg'){const f=csgFx(u);if(f){f.hp=Math.max(0,u.hp);if(f.hp<=0)usCarrierSunk(why||'共軍攻擊');else log(csgName(csgIdx(f.id))+'在'+hname(hexOf(u))+'受創（'+(why||'未知攻擊')+'），'+cvSt(f.hp,f.max)+'，艦載機出擊能力下降');}}
   if(u.type==='cv'&&u.side==='atk'){const at=hname(hexOf(u))+'（'+(why||'未知攻擊')+'）';log(u.hp<=0?'共軍航艦群在'+at+'被擊沉，失去戰鬥能力':'共軍航艦群在'+at+'受創（'+cvSt(u.hp,mhpOf(u))+'），戰力下降');}
-  if(u.hp<=0){if(isEsc(u)){S.stats.escLost=S.stats.escLost||{atk:0,def:0};S.stats.escLost[u.side]++;}if(u.type==='ssn')S.stats.ssnLost=(S.stats.ssnLost||0)+1;if(u.ally==='JP')S.stats.jpShip=(S.stats.jpShip||0)+1;
+}
+// 單位被殲滅：統計、移除棋子、連帶效果（船上的旅、港內艦艇、海軍點數、航艦）
+function unitDestroyed(u,why){if(isEsc(u)){S.stats.escLost=S.stats.escLost||{atk:0,def:0};S.stats.escLost[u.side]++;}if(u.type==='ssn')S.stats.ssnLost=(S.stats.ssnLost||0)+1;if(u.ally==='JP')S.stats.jpShip=(S.stats.jpShip||0)+1;
     if(['amph','mar','abn','arm','inf','tank','res'].includes(u.type)){S.stats.bdeLost=S.stats.bdeLost||{atk:0,def:0};S.stats.bdeLost[u.side]++;}
     if(u.type==='cvy'){S.stats.cvySunk=(S.stats.cvySunk||0)+1;if(S.pools)S.pools.plaLift=Math.max(0,S.pools.plaLift)+0;}
     if(u.type==='fob')log('攻方灘頭補給站被摧毀：卸載能力與庫存空間下降');
@@ -287,9 +295,6 @@ function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥
       if(rest.length&&rest.every(isShip)){rest.forEach(x=>{fxq({t:'dead',at:[x.c,x.r],type:x.type,side:x.side});S.units=S.units.filter(y=>y!==x);if(x.type==='ff')S.pools.rocNavy=Math.max(0,
           S.pools.rocNavy-1);if(x.type==='dd')S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(x.type==='cv')S.pools.plaCV=Math.max(0,S.pools.plaCV-1);log(uname(x)+' 隨港口失守而損失');});
       }}log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));
-      return true;
-      }
-  return false;
 }
 // 占領：該格與周圍沒有敵軍的陸地格一併易主（細格版的「控制範圍」）
 function claim(side,h){

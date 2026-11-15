@@ -537,10 +537,8 @@ function textZoomFix(){ // 放大到 500% 以上時，地名、浪高等文字�
       (e.getAttribute('x')||e.getAttribute('data-x'))||0,y=+(e.getAttribute('y')||e.getAttribute('data-y'))||0;e.setAttribute('transform','translate('+x+' '+y+') scale('+
       k.toFixed(4)+') translate('+(-x)+' '+(-y)+')');e.__tz=1;});
 }
-function renderMap(){
-  if(!STATIC.built)buildStatic();
-  updateCsg();
-  let o='';
+// 地圖動態層：攻方占領區、灘頭堡、可移動範圍
+function mapOverlaySVG(){let o='';
   for(const h of Object.values(TER)){
     if(!isLand(h)||h.isl==='CN'||S.owner[h.k]!=='atk')continue;
     const [x,y]=cen(h.c,h.r);o+='<polygon class="ov-atk" points="'+hexPts(x,y,R-1)+'"/>';
@@ -552,6 +550,9 @@ function renderMap(){
   if(humanTurn()&&S.sel&&alive(S.sel)&&S.sel.side===S.phase){
     for(const [k,v] of reach(S.sel)){const [x,y]=cen(TER[k].c,TER[k].r);o+='<polygon class="hl '+v.kind+'" points="'+hexPts(x,y,R-2)+'"/>';}
   }
+  return o;}
+// 射程圈、棋子、潛艦上次發現點
+function mapUnitsSVG(){let o='';
   {const iu=S.sel&&alive(S.sel)?S.sel:(S.hoverId?S.units.find(x=>x.id===S.hoverId):null); // 射程圈：一鍵全開時畫雙方所有航艦艦隊；點選（或游標停在）艦艇時畫該艦
    if(S.started&&RNG_ALL)S.units.filter(x=>(x.type==='cv'||x.type==='csg'||x.type==='ddh')&&alive(x)&&x!==iu).forEach(x=>{o+=rangeRingsSVG(x,true);});
    if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)))o+=rangeRingsSVG(iu,false);}
@@ -561,11 +562,9 @@ function renderMap(){
       '" cy="'+p[1].toFixed(1)+'" r="'+(R*.55).toFixed(1)+'" fill="none" stroke="#3f7fd0" stroke-width="1.6" stroke-dasharray="4 3"/><text x="'+p[0].toFixed(1)+'" y="'+
       (p[1]+4).toFixed(1)+'" text-anchor="middle" font-size="11" fill="#3f7fd0" font-weight="700">?</text><text x="'+p[0].toFixed(1)+'" y="'+(p[1]+R*.55+10).toFixed(1)+
       '" text-anchor="middle" font-size="9" fill="#3f7fd0">'+TX('潛艦 上次發現點')+' T'+u.last.turn+'</text></g>';});
-  o+=facSVG();
-  o+=wxMapSVG();
-  o+=ghostFleetsSVG();
-  o+=baseMarkersSVG();
-  o+=baseTagsSVG();
+  return o;}
+// 次要港口、水雷、機場與港口損毀、影片焦點
+function mapMarksSVG(){let o='';
   for(const k of Object.keys(MINOR_PORTS)){const h=TER[k];if(!h)continue;const [x,y]=cen(h.c,h.r);o+='<text class="mport" style="font-size:'+(14*Math.max(.55,SC)).toFixed(1)+'px" x="'+(x+R*.7).toFixed(1)+'" y="'+(y-R*.35).toFixed(1)+'">⚓</text>';} // 次要港口標記畫在單位之上
   Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<g class="mine" pointer-events="none"><circle cx="'+x.toFixed(1)+
       '" cy="'+(y+8).toFixed(1)+'" r="4.5" fill="#222" stroke="#ffd45a" stroke-width="1.2"/><path d="M'+(x-7).toFixed(1)+' '+(y+8).toFixed(1)+'h14M'+x.toFixed(1)+' '+(y+
@@ -575,6 +574,9 @@ function renderMap(){
       'px" fill="'+(lv===3?'#c0392b':lv===2?'#e67e22':'#e0a800')+'">'+(lv===3?'✕':'⚠')+'</text>';});
   Object.keys(S.portDown||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<text class="fxt dead" pointer-events="none" x="'+x.toFixed(1)+'" y="'+(y+4).toFixed(1)+'" text-anchor="middle" font-size="18" fill="#c0392b">✕</text>';});
   (S.focus||[]).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<ellipse class="vfocus" cx="'+x.toFixed(1)+'" cy="'+(y+4).toFixed(1)+'" rx="17" ry="12"/>';});
+  return o;}
+// 可攻擊目標圈、已選定目標、出擊中的基地
+function mapTargetsSVG(){let o='';
   if(humanTurn()){
     let rings=[];
     if(S.mode==='strike'){if(S.phase==='atk')rings=S.units.filter(u=>u.side==='def'&&strikeable(u)).map(u=>[u,'strike']);else if(S.phase==='def'&&S.dfire>0&&lrOK())rings=stgTargets().map(u=>[u,'strike']);}
@@ -594,7 +596,9 @@ function renderMap(){
       }
     if((S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK&&TER[S.afK]){const [x,y]=cen(TER[S.afK].c,TER[S.afK].r);o+='<circle pointer-events="none" cx="'+x+'" cy="'+y+'" r="'+(R*1.05).toFixed(1)+'" fill="none" stroke="var(--def)" stroke-width="'+Math.max(1.5,3*rf).toFixed(1)+'"/>';}
   }
-  $('#gD').innerHTML=o;
+  return o;}
+// 棋子移動的滑動動畫、新棋子淡入
+function animateUnitSlides(){
   // slide units that moved since the previous render, pop in new ones
   const now=new Map(),k=fxK();ANIM.slid=false;
   document.querySelectorAll('#gD .u[data-id]').forEach(e=>{
@@ -605,4 +609,20 @@ function renderMap(){
     else if(ANIM.pos.size)e.animate([{opacity:0,transform:'translateY(-14px)'},{opacity:1,transform:'translateY(0)'}],{duration:360*k,easing:'ease-out'});
   });
   ANIM.pos=now;ANIM.gid=S.gid;
+}
+function renderMap(){
+  if(!STATIC.built)buildStatic();
+  updateCsg();
+  let o='';
+  o+=mapOverlaySVG();
+  o+=mapUnitsSVG();
+  o+=facSVG();
+  o+=wxMapSVG();
+  o+=ghostFleetsSVG();
+  o+=baseMarkersSVG();
+  o+=baseTagsSVG();
+  o+=mapMarksSVG();
+  o+=mapTargetsSVG();
+  $('#gD').innerHTML=o;
+  animateUnitSlides();
 }
