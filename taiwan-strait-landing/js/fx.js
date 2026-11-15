@@ -507,10 +507,11 @@ function unitStatusList(u,h){ // 單位狀態說明（資訊卡與滑鼠提示�
   if(cvOOA(u))st.push('失去戰鬥能力（飛行甲板受損）：艦載機無法起降，撤離戰場中；攻擊方不會再優先打它');
   if(isLch(u)&&u.veh!=null&&u.side==='def'&&S.phase==='atk'&&S.started&&!S.over){const n=lchFound(u,'bm');st.push(n>0?'攻方本階段偵察找到 '+n+' 輛，可打擊':'攻方本階段偵察沒有找到（或找到的都打過了），無法打擊');}
   if(isLch(u)&&u.veh!=null){const b=ssmBroken(u);st.push('發射車 '+u.veh+' 輛（可射 '+ssmReady(u)+(b?'、火力受損修復中 '+b:'')+'）');if(u.mT&&S.turn<u.mT)st.push('機動受損：維持暴露到下一個攻方階段結束');}
+  if(u.type==='ssm')st.push(ssmHp(u)?'魚叉岸防系統（RGM-84L-4，射程約 120 km）；存量 '+fmt1(S.pools.rocHCD||0)+' 點（每點約 100 枚）':'雄二／雄三（射程約 160 km）；存量 '+fmt1(S.pools.rocAS||0)+' 點（每點約 100 枚）');
   if(u.type==='ssm'||u.type==='hmr'||u.type==='mlrs')st.push(u.revealed?'已暴露（上階段開火）':'隱蔽中：火力打擊多半打到誘餌');
   if((u.type==='cv'||u.type==='csg')&&S.air){const c=cvwCarriers(u.side==='atk'?'atk':'def').find(x=>x.u===u);if(c){const sp=u.side==='atk'?cvwA(c.i):S.cvwA&&S.cvwA.def&&S.cvwA.def[c.ui];
     st.push('艦載機 '+Math.round(c.i<0?S.air.usF[c.ui]:S.air.cvF[c.i])+' 架（每回合約 '+Math.round(c.sor)+' 架次，作戰半徑約 '+kmOf(c.w.r)+' km）、'+c.nm+' '+Math.max(0,u.wmag||0)+' 枚（射程 '+kmOf(c.w.asmR)+' km，對艦打擊距離 '+kmOf(c.w.r+c.w.asmR)+' km）'+(sp?'；本回合任務：制空 '+Math.round(sp[0]*100)+'%、對艦 '+Math.round(sp[1]*100)+'%、對地 '+Math.round(sp[2]*100)+'%':''));}}
-  if(u.fl){const A=fleetAgg(u);st.push('組成：'+fleetTxt(u)+'；防空飛彈 '+u.mag.ad+' 枚（涵蓋 '+kmOf(A.adR)+' km）、反艦飛彈 '+u.mag.asm+' 枚（射程 '+kmOf(A.asmR)+' km，每艘每次齊射 '+FLEET_PER+' 枚）');}
+  if(u.fl){const A=fleetAgg(u);st.push('組成：'+fleetTxt(u)+'；防空飛彈 '+u.mag.ad+' 枚（涵蓋 '+kmOf(A.adR)+' km）、反艦飛彈（'+fleetWn(u)+'）'+u.mag.asm+' 枚（射程 '+kmOf(A.asmR)+' km，每艘每次齊射 '+FLEET_PER+' 枚）');}
   if(isEsc(u)&&u.mag){const W=SHIPW[u.type];st.push('防空飛彈 '+u.mag.ad+' 枚（涵蓋 '+kmOf(W.adR)+' km）、'+W.asmN+' '+u.mag.asm+' 枚（射程 '+kmOf(W.asmR)+' km）'+(W.lam?'、對地飛彈 '+u.mag.lam+' 枚':'')+'；海上不能補充垂直發射管；跟著航艦移動');}
   if(u.type==='mlrs')st.push('雷霆2000：射程最遠約 40 km，面積火力、命中比海馬士低；彈藥庫存剩 '+(S.pools?S.pools.rocRkt:0)+' 點；開火後下一階段要再裝填'+(u.rl>0?'（再裝填中，本階段不能開火）':'')+'，本階段剩 '+(u.side===S.phase?u.shots:1)+' 發');
   if(u.type==='hmr')st.push('本階段剩 '+(u.side===S.phase?u.shots:Math.ceil(ssmReady(u)/HMR_PKG))+' 次齊射（每次最多 4 輛）：火箭彈射程約 80 km，庫存 '+Math.round(S.pools?S.pools.rocGml||0:0)+' 個莢艙；陸軍戰術飛彈射程約 300 km，庫存 '+Math.round(S.pools?S.pools.rocAtc||0:0)+' 枚飛彈');

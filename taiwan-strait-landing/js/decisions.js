@@ -37,7 +37,7 @@ const DEFEV=[
   const ab=[...new Set(T.map(m=>(m.match(/^空降旅（攻方） 空降 ([^，]+)/)||[])[1]).filter(Boolean))];if(ab.length)B.push('空降：'+ab.slice(0,3).join('、'));
   const ac=T.reduce((a,m)=>a+((m.match(/(?:守方戰機|地面戰機) −(\d+) 架/)||[])[1]|0),0);if(ac>0)B.push('守方地面戰機損失 '+ac+' 架');
   const what=B.length?B.map(x=>'<br>・'+x).join(''):'戰報上目前沒有明確的打擊損失紀錄';
-  return base+"<br><b>被打了什麼：</b>"+what+"<br><b>目前守方：</b>空軍 "+P.rocAir+"・防空 "+P.rocAD+"・反艦飛彈 "+P.rocAS+"・長程飛彈 "+fmt1(P.rocMsl)+((P.rocAtc||0)+(P.rocGml||0)>0?"・陸軍戰術飛彈 "+Math.round(P.rocAtc||0)+" 枚・火箭彈 "+Math.round(P.rocGml||0)+" 莢艙":"")+(S.mods.c2Strong?"；指揮通信受重創":"");},
+  return base+"<br><b>被打了什麼：</b>"+what+"<br><b>目前守方：</b>空軍 "+P.rocAir+"・防空 "+P.rocAD+"・反艦飛彈 雄風 "+P.rocAS+"／魚叉岸防 "+fmt1(P.rocHCD||0)+"・長程飛彈 "+fmt1(P.rocMsl)+((P.rocAtc||0)+(P.rocGml||0)>0?"・陸軍戰術飛彈 "+Math.round(P.rocAtc||0)+" 枚・火箭彈 "+Math.round(P.rocGml||0)+" 莢艙":"")+(S.mods.c2Strong?"；指揮通信受重創":"");},
   choice:{who:'def',options:[
    {id:"disperse",label:"分散疏散並搶修機場",desc:"工兵搶修跑道：受損機場最多 2 座各恢復 1 級；戰機分散到疏散機場與公路跑道，之後機場被打時地面戰機損失減半（推估）；飛彈車分散並加強誘餌，之後被定位的機率 ×0.75（推估）。代價：飛彈車換陣地，本階段岸置飛彈與海馬士各少一次射擊。"},
    {id:"sortie",hide:()=>!!(S.mods&&S.mods.cave),label:"戰機進山洞機堡（躲後續波次）",desc:"第一波的損失已經發生，但攻方之後每回合還會再打機場。戰機轉場躲進佳山、石子山的山洞機堡（約 280 架，非官方估計），到第 2 回合結束：躲進去的戰機不會在地面被炸，機場被打時地面戰機損失依躲藏比例減少。代價：躲藏的戰機不出擊，這段期間空軍出擊架次與空中戰力依比例下降。跑道受損嚴重（起降能量不足一半）就無法轉場，等於沒有效果。"},

@@ -28,7 +28,10 @@ const ERA={
   '2031':{n:'2031（推估）',d:'NASAMS 合約預計 2031 年交付，防空明顯增強；海鯤潛艦增為 2 艘（計畫共 8 艘，進度不確定）。',short:'2031',pools:{plaLift:13,plaAir:8,plaSub:5,plaCV:4,plaAD:7,plaNavy:20,rf:43,plaCM:7,plaLR:11,plaHS:6,rocAir:6,rocNavy:6,rocSub:4,rocAD:7,rocMsl:16,rocDrone:3,rocAS:20,rocMine:5},ssm:['taitung'],dfire:4},
   '2032':{n:'2032（推估）',d:'特別預算期程（2026～2033）接近尾聲，雙方都明顯成長；數值為推估，不確定性最高。',short:'2032',pools:{plaLift:14,plaAir:8,plaSub:6,plaCV:4,plaAD:8,plaNavy:22,rf:45,plaCM:7,plaLR:12,plaHS:7,rocAir:6,rocNavy:6,rocSub:4,rocAD:7,rocMsl:17,rocDrone:3,rocAS:22,rocMine:6},ssm:['taitung','yunlin'],dfire:4}
 };
-function previewEra(){const e=ERA[S.era]||ERA['2026'],H=HMR_ERA[S.era]||HMR_ERA['2026'];S.p0=Object.assign({},POOL0,e.pools,{plaDrone:PLA_DRONE[S.era]||200,rocAtc:H[2],rocGml:H[3]},AFS_POOL(S.era));
+// 魚叉岸防系統（2020 年軍售：發射車 100 輛、RGM-84L-4 飛彈 400 枚；報導 2026～2028 年交付）：★逐年組數與存量（每點約 100 枚）依交付時程推估
+const HCD_N=era=>{const y=+era||2026;return y>=2028?3:y>=2027?2:1;};
+const HCD_PTS=era=>{const y=+era||2026;return y>=2028?4:y>=2027?2.5:1;};
+function previewEra(){const e=ERA[S.era]||ERA['2026'],H=HMR_ERA[S.era]||HMR_ERA['2026'];S.p0=Object.assign({},POOL0,e.pools,{rocHCD:HCD_PTS(S.era),plaDrone:PLA_DRONE[S.era]||200,rocAtc:H[2],rocGml:H[3]},AFS_POOL(S.era));
   S.p0.rocMsl=Math.round((S.p0.rocMsl-Math.min(H[2],84)/25)*100)/100; // 陸軍戰術飛彈改由 rocAtc 單獨計算：從長程飛彈點數扣掉原本估在裡面的 ATACMS（2026 年 64 枚、之後 84 枚，1 點≈25 枚）
   S.pools=Object.assign({},S.p0);S.dfireMax=e.dfire;}
 const MLRS_SPOTS=['miaoli','changhua','magong','taoyuan']; // 其中 1 組在澎湖（依漢聲電台等報導，澎防部有雷霆2000） // 雷霆2000：公開資料只說陸軍有裝備、沒有確切數量；4 組、彈藥庫存 8 點為遊戲推估（各年代相同）
@@ -44,6 +47,7 @@ function applyEra(){
    hmrSpread(hmrEra()[0]);}
   MLRS_SPOTS.forEach(k=>{k=SPOT[k];if(!k||!TER[k])return;const h=placeNear(k,x=>x.isl===TER[k].isl&&x.t!=='sea'&&x.t!=='air'&&x.t!=='port'&&!unitAt(x.k))||placeNear(SPOT.tainan,x=>x.isl==='TW'&&x.t!=='sea'&&x.t!=='air'&&x.t!=='port'&&!unitAt(x.k));if(h)S.units.push(mkUnit('def','mlrs',h.k,{}));}); // 駐地格已有步兵時，放在最近的空格
   e.ssm.forEach(k=>{k=SPOT[k]||k;if(TER[k]&&!unitAt(k))S.units.push(mkUnit('def','ssm',k,{}));});
+  ['taoyuan','kaohsiung','yilan'].slice(0,HCD_N(S.era)).forEach(id=>{const k=SPOT[id];if(!k||!TER[k])return;const h=!unitAt(k)?TER[k]:placeNear(k,x=>x.isl==='TW'&&isLand(x)&&x.t!=='mtn'&&!unitAt(x.k));if(h)S.units.push(mkUnit('def','ssm',h.k,{wp:'hp'}));}); // 魚叉岸防系統（★部署位置與逐年組數為推估）
   log('兵力年代：'+e.n+'。');log(applyLift()+'。');
   // 共軍渡海能力隨年代成長：075 兩棲攻擊艦（2021～2024 服役 3 艘，之後續建）、076 型（2025 年下水海試）、滾裝客貨輪與「水橋」登陸駁船（2024～2025 年陸續曝光）；首波兩棲旅依運力估計約每 2 年 +1 個（推估，不確定性高）
   const ex=AMPH_ERA[S.era]||0;for(let i=0;i<ex;i++){const h=placeNear(FK(i%2?'3,5':'3,2'),q=>q.isl==='CN'&&q.coastal);if(h)S.units.push(mkUnit('atk','amph',h.k,{zone:i%2?'central':'north'}));}
@@ -113,7 +117,7 @@ function sweepMines(){
   for(let i=0;i<sw;i++){const k=ks[i];delete S.mines[k];got.push(hname(TER[k]));if(hitP(1/6,'sweepMines')){P.plaNavy--;got.push('掃雷艦觸雷（攻方護航艦 −1）');}}
   syncMines();log('攻方掃雷：清除 '+got.join('、')+'。');
 }
-const POOLN={plaFAC:'海峽輕型艦艇（022 飛彈快艇、056 輕型護衛艦；★1 點約 6 艘，推估）',plaDrone:'舊戰機改裝無人機（誘餌，每個攻方階段放出 40 架消耗守方攔截彈）',rocRkt:'雷霆2000火箭彈庫存（每發 1 點）',plaLst:'兩棲艦群（運旅、可搶灘；往返制，沉了就永久損失）',plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程對地飛彈（雄二E 等；1 點≈25 枚）',rocAtc:'陸軍戰術飛彈（ATACMS，海馬士用；每點 1 枚）',rocAAsh:'空射反艦飛彈（AGM-84L 魚叉；每點 1 枚）',rocWC:'萬劍彈（經國號空射對地，射程約 200 km；每點 1 枚）',rocSlam:'SLAM-ER 空射對地飛彈（射程約 270 km；每點 1 枚）',rocGml:'GMLRS 精準火箭彈（海馬士用；每點 1 個莢艙＝6 發）',rocDrone:'無人機與巡飛彈'};
+const POOLN={rocHf2A:'雄二空射型（經國號；★數量未公開，推估 40 枚）',rocHCD:'魚叉岸防系統飛彈（每點約 100 枚；依交付時程）',plaFAC:'海峽輕型艦艇（022 飛彈快艇、056 輕型護衛艦；★1 點約 6 艘，推估）',plaDrone:'舊戰機改裝無人機（誘餌，每個攻方階段放出 40 架消耗守方攔截彈）',rocRkt:'雷霆2000火箭彈庫存（每發 1 點）',plaLst:'兩棲艦群（運旅、可搶灘；往返制，沉了就永久損失）',plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程對地飛彈（雄二E 等；1 點≈25 枚）',rocAtc:'陸軍戰術飛彈（ATACMS，海馬士用；每點 1 枚）',rocAAsh:'空射反艦飛彈（AGM-84L 魚叉；每點 1 枚）',rocWC:'萬劍彈（經國號空射對地，射程約 200 km；每點 1 枚）',rocSlam:'SLAM-ER 空射對地飛彈（射程約 270 km；每點 1 枚）',rocGml:'GMLRS 精準火箭彈（海馬士用；每點 1 個莢艙＝6 發）',rocDrone:'無人機與巡飛彈'};
 const CN={US:'美國',JP:'日本'};
 const LV={US:['不介入','情報支援','有限介入','全面參戰'],JP:['中立','後方支援','全面參戰']};
 
@@ -638,7 +642,7 @@ const SHIPW={
 // ★休斯齊射模型參數（推估）：反艦飛彈尋標命中率 0.8；艦隊防空每枚來襲發射 2 枚攔截彈，單枚攔截率 0.7（彈道飛彈 0.5）
 const SALVO={pSeek:.8,pInt:.7,pIntBM:.5,perMsl:2};
 const isEsc=u=>!!SHIPW[u.type];
-const tname=t=>t.fl?t.fl.n:t.hl?subNm(t):TYPES[t.type].n;
+const tname=t=>t.fl?t.fl.n:t.wp==='hp'?'魚叉岸防系統':t.hl?subNm(t):TYPES[t.type].n;
 // ---------- 第 3c 階段：對地巡弋飛彈與反潛（★皆為推估）----------
 // 對地：戰斧（美）／長劍系列（共軍 055、052D）射程都在 1,500 km 以上，整個戰場都在射程內；★每次打擊 4 枚，命中率沿用既有的縱深打擊公式
 // 反潛：★每回合發現潛艦機率 054A 35%、055 30%、052D 25%（舊護航艦 25%）；新護航艦有艦載直升機，搜索範圍 ★6 格（約 120 km，舊護航艦 3 格）

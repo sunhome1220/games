@@ -53,7 +53,7 @@ function fleetPanelHTML(u){
   types.forEach(t=>near(S.units.filter(e=>e.side===en&&e.type===t&&alive(e)&&e.mag&&e.mag.asm>0),SHIPW[t].asmR,TYPES[t].s+' '+SHIPW[t].asmN));
   cvwCarriers(en==='atk'?'atk':'def').forEach(k=>{if((k.u.wmag||0)>0)near([k.u],k.w.r+k.w.asmR,(k.i>=0?AIR.CV[k.i].n:'美航艦')+'艦載機（'+k.nm+'）');});
   if(sd==='atk'){const ssm=S.units.filter(e=>e.side==='def'&&e.type==='ssm'&&alive(e)&&!subHidden(e));if(ssm.length)near(ssm,kmH(160),'守方岸置反艦飛彈');}
-  if(sd==='atk'&&atSea(u)&&typeof afUsable==='function'&&S.pools&&(S.pools.rocAAsh||0)>0){ // 台灣空軍空射反艦飛彈：打得到這艘船的基地與預估
+  if(sd==='atk'&&atSea(u)&&typeof afUsable==='function'&&S.pools&&((S.pools.rocAAsh||0)>0||(S.pools.rocHf2A||0)>0)){ // 台灣空軍空射反艦飛彈：打得到這艘船的基地與預估
     const bs=afUsable().filter(h=>afCanHit(h.k,{u}));
     if(bs.length){const nb=bs.reduce((a,h)=>a+afBudget(h.k),0),nr=bs.slice().sort((a,b)=>afDist(a.k,u)-afDist(b.k,u))[0],pc=afCapP(u);
       th.push('<li class="in">在台灣空軍空射反艦飛彈範圍內：'+bs.length+' 座基地打得到（最近 '+(nr.name||'基地')+' 約 '+afDist(nr.k,u)+' km）'+(S.phase==='def'?'，本階段還能出擊約 '+nb+' 批（每批 4 枚）':'')+(pc?'；共軍艦載機攔截約 '+Math.round(pc*100)+'%':'')+'（推估）</li>');}
