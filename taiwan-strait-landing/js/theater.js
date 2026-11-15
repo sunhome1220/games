@@ -240,7 +240,8 @@ function bigNews(title,msg){log('【重大消息】'+title+'：'+msg);if(!(S.rec
 // 抽象攻擊（潛艦海戰、抽象反艦打擊）打到共軍航艦時：地圖上有航艦棋子就打在棋子上（固定挑步數最多的那艘），沒有棋子的航艦（例如第 4 艘）才直接減數量
 // 魚雷：命中扣 1 步（與海鯤魚雷一致）；反艦飛彈：先過艦隊防空（齊射模型），航艦每 2 枚命中扣 1 步
 function cvHitAbstract(kind,who){
-  const P=S.pools,pcs=S.units.filter(u=>u.type==='cv'&&u.side==='atk'&&alive(u));
+  const P=S.pools,all=S.units.filter(u=>u.type==='cv'&&u.side==='atk'&&alive(u)),pcs=all.filter(u=>!cvOOA(u)); // 已失去戰力的航艦不再是目標
+  if(!pcs.length&&all.length)return '';
   if(pcs.length){const t=pickBest(pcs,x=>x.hp),at=hname(hexOf(t));
     if(kind==='torp'){damage(t,1,who+'魚雷');return who+'魚雷命中 '+at+' 的共軍航艦群（'+cvSt(t.hp,mhpOf(t))+'）';}
     const r=salvoCalc(t,1,false,'abs>cv'),st=r.hits?takeInt(.5,'salvoBig'):0;if(st)damage(t,st,who);

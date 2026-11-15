@@ -389,7 +389,7 @@ async function aiDef(){
         if(m.type==='hmr'){const noG=((S.pools||{}).rocGml||0)<1;for(let i=ts.length-1;i>=0;i--){const x=ts[i];if((far(x)||noG)&&FOOT.includes(x.type))ts.splice(i,1);}if(!ts.length)break;} // 陸軍戰術飛彈打分散步兵效果差，不浪費
         const lg=x=>m.type==='hmr'&&HM==='log'?(x.type==='fob'?2:PORTS.includes(K(x.c,x.r))?1:0):0,bc=x=>m.type==='hmr'&&HM==='beach'&&hexOf(x).coastal&&['arm','tank','amph','mar','abn'].includes(x.type)?1:0;
         ts.sort((a,b)=>lg(b)-lg(a)||bc(b)-bc(a)||(w[b.type]||1)-(w[a.type]||1)||far(a)-far(b)||a.hp-b.hp);} // 同樣價值時先打近的（用火箭彈，省下陸軍戰術飛彈）
-      else{const pr=t=>AS==='tr'?((t.type==='ro'||t.type==='lst'||t.type==='cvy')?2+(cargo(t)?1:0):0):AS==='esc'?((isEsc(t)||t.type==='dd')?2:0):0;ts.sort((a,b)=>pr(b)-pr(a)||tgtVal(b)-tgtVal(a)||a.hp-b.hp);} // 指揮官意圖：反艦打擊優先
+      else{const pr=t=>AS==='tr'?((t.type==='ro'||t.type==='lst'||t.type==='cvy')?2+(cargo(t)?1:0):0):AS==='esc'?((isEsc(t)||t.type==='dd')?2:0):0;{const k=ts.filter(t=>!cvOOA(t));if(k.length)ts=k;else break;}ts.sort((a,b)=>pr(b)-pr(a)||tgtVal(b)-tgtVal(a)||a.hp-b.hp);} // 指揮官意圖：反艦打擊優先
       if(MS==='salvo'){if(!(salvoT&&alive(salvoT)&&ts.includes(salvoT)))salvoT=ts[0];else ts=[salvoT];}
       fireMissile(m,ts[0]);vol++;
       if(MS==='scoot'&&alive(m))m.revealed=!!(m.mT&&S.turn<m.mT);
