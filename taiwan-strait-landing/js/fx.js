@@ -442,7 +442,7 @@ function renderInfoSide(){
   const u=S.sel&&alive(S.sel)?S.sel:(S.hover&&S.baseSel!==S.hover?(hu&&K(hu.c,hu.r)===S.hover?hu:unitAt(S.hover)):null); // 點基地標籤：顯示機場本身
   const h=u?hexOf(u):(S.hover?TER[S.hover]:null);
   if(!h){el.innerHTML='<div class="k">點選地圖上的單位或地格查看資料。</div>';return;}
-  let o='<div class="eyebrow">'+hname(h)+' · '+TERN[h.t]+(h.cliff?' · 斷崖':'')+(h.mud?' · 泥灘潮間帶':'')+(MINOR_PORTS[h.k]?' · 次要港口：'+MINOR_PORTS[h.k]+'（占領後補給 +2，不計入勝負條件）':'')+
+  let o='<div class="eyebrow">'+hname(h)+' · '+TERN[h.t]+(h.town?'（城鎮，規則同平原）':'')+(h.cliff?' · 斷崖':'')+(h.mud?' · 泥灘潮間帶':'')+(MINOR_PORTS[h.k]?' · 次要港口：'+MINOR_PORTS[h.k]+'（占領後補給 +2，不計入勝負條件）':'')+
       ((S.bh&&S.bh[h.k]&&S.turn-S.bh[h.k]>=1&&S.owner[h.k]==='atk')?' · 灘頭堡（補給 +2）':'')+(isLand(h)?' · '+SIDE[S.owner[h.k]]+'控制':'')+'</div>';
   if(u){
     const T=TYPES[u.type];
