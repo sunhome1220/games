@@ -57,6 +57,10 @@ function applyEra(){
   layMines();
 }
 // 水面艦艇上地圖：共軍護航艦在港口外海，守方艦艇群停泊在港口；兩者都很脆弱，擊沉會連動減少海軍點數
+// ★共軍航艦群在台灣東方約 300 km 外活動（岸置雄二／雄三約 160 km、艦射飛彈射程之外），靠艦載機（作戰半徑約 600 km）出擊；位置為推估
+const CV_START=[[124.6,23.6],[124.6,22.8],[124.4,22.0]],CV_STANDOFF=300;
+let TWCOAST=null;
+function cvTwKm(h){if(!TWCOAST)TWCOAST=Object.values(TER).filter(x=>x.isl==='TW'&&x.coastal);let m=1e9;for(const x of TWCOAST){const d=hd(h,x);if(d<m)m=d;}return m*KM_HEX;} // 到台灣海岸的距離（公里）
 function placeShips(){
   const P=S.pools;
   // 護航艦：一個棋子約代表一個點（★一點≈052D＋054A 各 1 艘；2026 年 16 點≈32 艘，依公開估計共軍驅逐艦約 50、054A 約 40～46 艘，約一半投入台海；上限 16 個棋子）
@@ -66,7 +70,7 @@ function placeShips(){
   seaC.slice().forEach(h=>nbrs(h.c,h.r).filter(x=>x&&x.t==='sea'&&!seaC.includes(x)).forEach(x=>seaC.push(x))); // 第三圈：讓最多 16 個棋子有位置
   for(let i=0;i<nd&&i<seaC.length;i++){const h=seaC[i];if(unitsAt(h.k).length<STACK_MAX)S.units.push(mkUnit('atk','dd',h.k,{}));}
   // 共軍航艦群在台灣東側海域活動
-  [[122.9,24.2],[122.9,23.3],[122.9,22.4]].slice(0,Math.min(3,P.plaCV)).forEach(([lo,la],ci)=>{const [c,r]=llToRC(lo,la),h=TER[K(c,r)];if(h&&h.t==='sea'&&canStack({side:'atk'},
+  CV_START.slice(0,Math.min(3,P.plaCV)).forEach(([lo,la],ci)=>{const [c,r]=llToRC(lo,la),h=TER[K(c,r)];if(h&&h.t==='sea'&&canStack({side:'atk'},
       h.k)){const cvU=mkUnit('atk','cv',h.k,{});cvU.cvi=ci;cvU.wmag=CVW.PLA[ci].mag;S.units.push(cvU);spawnEscorts(cvU,ESC_PLA,'atk');}});
   rocFleetsSpawn(); // 台灣海軍：6 個艦隊在母港（組成依年份）
   // 潛艦：劍龍級 2 艘（海龍、海虎，左營）＋海鯤（依年份）。高雄、花蓮港出港（隱蔽、魚雷有限，回港才能補彈）
@@ -240,7 +244,8 @@ function bigNews(title,msg){log('【重大消息】'+title+'：'+msg);if(!(S.rec
 // 抽象攻擊（潛艦海戰、抽象反艦打擊）打到共軍航艦時：地圖上有航艦棋子就打在棋子上（固定挑步數最多的那艘），沒有棋子的航艦（例如第 4 艘）才直接減數量
 // 魚雷：命中扣 1 步（與海鯤魚雷一致）；反艦飛彈：先過艦隊防空（齊射模型），航艦每 2 枚命中扣 1 步
 function cvHitAbstract(kind,who){
-  const P=S.pools,pcs=S.units.filter(u=>u.type==='cv'&&u.side==='atk'&&alive(u));
+  const P=S.pools,all=S.units.filter(u=>u.type==='cv'&&u.side==='atk'&&alive(u)),pcs=all.filter(u=>!cvOOA(u)); // 已失去戰力的航艦不再是目標
+  if(!pcs.length&&all.length)return '';
   if(pcs.length){const t=pickBest(pcs,x=>x.hp),at=hname(hexOf(t));
     if(kind==='torp'){damage(t,1,who+'魚雷');return who+'魚雷命中 '+at+' 的共軍航艦群（'+cvSt(t.hp,mhpOf(t))+'）';}
     const r=salvoCalc(t,1,false,'abs>cv'),st=r.hits?takeInt(.5,'salvoBig'):0;if(st)damage(t,st,who);

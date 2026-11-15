@@ -68,16 +68,16 @@ function afLose(n,rate){const L=takeInt(n*rate*(S.airCtl==='atk'?1.5:1),'afLoss'
 // 一次出擊：x＝{u}（海上或島上的攻方單位）｜{cn:基地 id}｜{stg:集結中的單位}；auto＝電腦自動（不跳訊息）
 function afStrike(k,x,auto){
   if(afBudget(k)<=0){if(!auto)toast('這座機場本階段已沒有可出擊的打擊機',3000);return false;}
-  const h0=TER[k],from=[h0.c,h0.r],nm=(h0.name||'機場');let txt=null,L=0;useRec('空軍出擊（批，每批 4 架）',1);
+  const h0=TER[k],from=[h0.c,h0.r],nm=(h0.name||'機場');let txt=null,L=0;useRec('空軍出擊（批，每批 4 架）',1,null,0,nm,x&&x.u);
   if(x.u&&atSea(x.u)){
     const t=x.u,A=afAsm(k);if(!A){if(!auto)toast((afWing(k)||[])[1]+' 沒有反艦飛彈',3000);return false;}const n=Math.min(AFS.pk,Math.floor(S.pools[A.pool]||0));if(n<=0){if(!auto)toast(A.n+' 已用完',3000);return false;}
     const pc=afCapP(t);
     if(pc>0&&hitP(pc,'afCAP')){ // 被航艦艦載機攔截：沒發射就被迫返航
       L=takeInt(1.5,'afCAPloss');L=L?airLose('def',L,'air'):0;fxCapX(from,t);
       S.afB[k].n--;const s='守方空軍（'+nm+'起飛）攻擊 '+uname(t)+'：飛到半途遭共軍艦載機攔截，未能發射飛彈'+(L?'（被擊落 '+L+' 架）':'')+'（攔截率 '+Math.round(pc*100)+'%，推估）';
-      log(s);if(!auto)fxToast(s,4000);checkInstant();return true;}
-    S.pools[A.pool]-=n;useRec(null,0,A.n+'（空射）',n);const r=salvoHit(t,n,'afShip>'+t.type,'afBig'),big=isBigShip(t),steps=r.steps;
-    L=afLose(AFS.pk,adCover(t).length?AFS.loss:0);fxSalvo(from,t,r,{km:A.km,lost:L}); // 發射前後遭艦隊防空擊落的架數也畫出來
+      cvAirLost(t,L);log(s);if(!auto)fxToast(s,4000);checkInstant();return true;}
+    S.pools[A.pool]-=n;useRec(null,0,A.n+'（空射）',n,null,t);const r=salvoHit(t,n,'afShip>'+t.type,'afBig'),big=isBigShip(t),steps=r.steps;
+    L=afLose(AFS.pk,adCover(t).length?AFS.loss:0);cvAirLost(t,L);fxSalvo(from,t,r,{km:A.km,lost:L}); // 發射前後遭艦隊防空擊落的架數也畫出來
     txt='以 '+n+' 枚'+A.n+'攻擊 '+uname(t)+'：'+(r.I?'對方防空發射 '+r.I+' 枚攔截彈，約 '+fmt1(r.surv)+' 枚突破，':'')+'命中 '+r.hits+' 枚'+salvoStepTxt(t,steps);
     if(steps)damage(t,steps,(afWing(k)||[])[1]+' 空射'+A.n+'飛彈');
   }else if(x.u){
@@ -105,16 +105,16 @@ function coordStrike(k,t,nb,co){
   const pc=afCapP(t),bases=[TER[k]].concat(afUsable().filter(h=>h.k!==k)).filter(h=>afBudget(h.k)>0&&afCanHit(h.k,{u:t}));
   let tot=0,fl=0,cut=0,L=0,LA=0,parts=[];
   const used={};
-  for(let i=0;i<nb;i++){const h=bases.find(b=>afBudget(b.k)>0&&(S.pools[afAsm(b.k).pool]||0)>=1);if(!h)break;const A=afAsm(h.k),n=Math.min(AFS.pk,Math.floor(S.pools[A.pool]||0));if(n<=0)break;S.afB[h.k].n--;useRec('空軍出擊（批，每批 4 架）',1);
+  for(let i=0;i<nb;i++){const h=bases.find(b=>afBudget(b.k)>0&&(S.pools[afAsm(b.k).pool]||0)>=1);if(!h)break;const A=afAsm(h.k),n=Math.min(AFS.pk,Math.floor(S.pools[A.pool]||0));if(n<=0)break;S.afB[h.k].n--;useRec('空軍出擊（批，每批 4 架）',1,null,0,h.name||'基地',t);
     if(pc>0&&hitP(pc,'afCAP')){cut++;const l=takeInt(1.5,'afCAPloss');L+=l?airLose('def',l,'air'):0;fxCapX([h.c,h.r],t);continue;}
-    S.pools[A.pool]-=n;used[A.n]=(used[A.n]||0)+n;useRec(null,0,A.n+'（空射）',n);tot+=n;fl++;const la=afLose(AFS.pk,adCover(t).length?AFS.loss:0);L+=la;LA+=la;}
+    S.pools[A.pool]-=n;used[A.n]=(used[A.n]||0)+n;useRec(null,0,A.n+'（空射）',n,null,t);tot+=n;fl++;const la=afLose(AFS.pk,adCover(t).length?AFS.loss:0);L+=la;LA+=la;}
   if(fl||cut)parts.push('空軍 '+(fl+cut)+' 批'+(Object.keys(used).length?'：'+Object.entries(used).map(([a,b])=>a+' '+b+' 枚').join('、'):'')+(cut?'（'+cut+' 批遭艦載機攔截、未發射）':''));
   let sN=0,sH=0,fN=[];
   for(const id of co||[]){const m=S.units.find(x=>x.id===id);if(!m||!targets(m).includes(t))continue;const n=coN(m);if(n<=0)continue;
-    if(m.fl){m.mag.asm-=n;m.shots=0;m.acted=true;fN.push(m.fl.s);useRec('艦隊齊射',1,fleetWn(m)+'（艦射）',n);}else{const pl=ssmPool(m);S.pools[pl]=Math.max(0,Math.round(((S.pools[pl]||0)-n/100)*100)/100);m.shots--;sN++;if(ssmHp(m))sH++;useRec('岸置反艦飛彈射擊',1,ssmHp(m)?'魚叉（岸防）':'雄二／雄三（岸置）',n);}
+    if(m.fl){m.mag.asm-=n;m.shots=0;m.acted=true;fN.push(m.fl.s);useRec('艦隊齊射',1,fleetWn(m)+'（艦射）',n,m.fl.n,t);}else{const pl=ssmPool(m);S.pools[pl]=Math.max(0,Math.round(((S.pools[pl]||0)-n/100)*100)/100);m.shots--;sN++;if(ssmHp(m))sH++;useRec('岸置反艦飛彈射擊',1,ssmHp(m)?'魚叉（岸防）':'雄二／雄三（岸置）',n,(ssmHp(m)?'魚叉岸防 ':'雄風 ')+hname(hexOf(m)),t);}
     m.revealed=true;tot+=n;}
   if(sN-sH)parts.push('岸置雄風 '+(sN-sH)+' 個單位');if(sH)parts.push('魚叉岸防 '+sH+' 個單位');if(fN.length)parts.push('艦隊 '+fN.join('、'));
-  let txt;
+  cvAirLost(t,L);let txt;
   if(tot>0){const r=salvoHit(t,tot,'coord>'+t.type),steps=r.steps;fxSalvo([TER[k].c,TER[k].r],t,r,fl?{km:(afAsm(k)||{km:120}).km,lost:LA}:null);t.inc=(t.inc||0)+1;
     txt='協同攻擊 '+uname(t)+'（'+parts.join('、')+'），同一波共 '+tot+' 枚：'+(r.I?'對方防空發射 '+r.I+' 枚攔截彈，約 '+fmt1(r.surv)+' 枚突破，':'')+'命中 '+r.hits+' 枚'+salvoStepTxt(t,steps)+(L?'（戰機被擊落 '+L+' 架）':'')+'（齊射模型，參數為推估）';
     if(steps)damage(t,steps,'協同反艦打擊（'+parts.join('、')+'）');}
@@ -127,7 +127,7 @@ function afAuto(){
   const shipV=t=>tgtVal(t)+(AS==='tr'&&(t.type==='ro'||t.type==='lst'||t.type==='cvy')?3:AS==='esc'&&(isEsc(t)||t.type==='dd')?3:0);
   for(const h of afUsable()){let guard=20;
     while(afBudget(h.k)>0&&guard-->0&&!S.over){
-      const sh=afShipT(h.k); // 已依機種檢查有沒有反艦飛彈
+      const sh=afShipT(h.k).filter(t=>!cvOOA(t)); // 已依機種檢查有沒有反艦飛彈；已失去戰力的航艦不再浪費飛彈
       if(sh.length){afStrike(h.k,{u:pickBest(sh,shipV)},true);continue;}
       const ld=afLandT(h.k).filter(t=>HV.includes(t.type)||t.type==='fob');
       if(ld.length){afStrike(h.k,{u:pickBest(ld,t=>tgtVal(t)*10+t.hp)},true);continue;}
@@ -144,7 +144,9 @@ function afPanelHTML(k){
   let o='<div class="hint"><b>'+(TER[k].name||'基地')+'</b>（'+(W?W[0]+'・'+W[1]:'')+'）：戰機約 '+ac+' 架'+'，'+afTxt(k)+(caveF()>0?'（約 '+Math.round(caveF()*100)+'% 躲在山洞機堡）':'')+
       '；本階段可出擊 '+n+' 批（每批 4 架）；'+(afAsm(k)?afAsm(k).n+' '+Math.round(P[afAsm(k).pool]||0)+' 枚（全軍共用）':'這個機種沒有反艦飛彈，不能打船')+'；萬劍彈 '+Math.round(P.rocWC||0)+' 枚'+((P.rocSlam||0)>0?'、SLAM-ER '+
       Math.round(P.rocSlam)+' 枚':'')+'。全台各基地本階段還能出擊共 '+afUsable().reduce((a,h)=>a+afBudget(h.k),0)+' 批；沒用完的份額在階段結束時由電腦自動出擊。</div>';
-  if(humanTurn()&&S.phase==='def'&&S.ctrl.def==='human'&&n>0)o+='<div class="cvord"><button class="ghost" id="btnAfS">攻擊船團<small class="pn">（空射反艦飛彈）</small></button><button class="ghost" id="btnAfL">空襲島上目標<small class="pn">（精準炸彈）</small></button><button class="ghost" id="btnAfC">打擊大陸沿岸<small class="pn">（萬劍彈、SLAM-ER）</small></button></div><div class="hint">按下後點地圖上的目標（大陸沿岸：集結中的部隊或大陸基地）。</div>';
+  if(humanTurn()&&S.phase==='def'&&S.ctrl.def==='human'&&n>0){const A=afAsm(k),nS=afShipT(k).length,nL=afLandT(k).length,nC=afCNT(k).length+afStgT(k).length; // 打不到或沒有武器的出擊方式：按鈕停用並寫出原因
+    const why=(n,no)=>n>0?'':' disabled title="'+no+'"',sub=(n,ok,no)=>'<small class="pn">（'+(n>0?ok+'，可打 '+n+' 個':no)+'）</small>';
+    o+='<div class="cvord"><button class="ghost" id="btnAfS"'+why(nS,'')+'>攻擊船團'+sub(nS,A?A.n:'空射反艦飛彈',!A?(W?W[1]+' ':'這個機種')+'沒有反艦飛彈':(S.pools[A.pool]||0)<1?A.n+'已用完':'範圍內沒有船')+'</button><button class="ghost" id="btnAfL"'+why(nL,'')+'>空襲島上目標'+sub(nL,'精準炸彈','島上沒有可打的目標')+'</button><button class="ghost" id="btnAfC"'+why(nC,'')+'>打擊大陸沿岸'+sub(nC,'萬劍彈、SLAM-ER','射程內沒有目標或飛彈已用完')+'</button></div><div class="hint">按下後點地圖上的目標（大陸沿岸：集結中的部隊或大陸基地）。灰色的按鈕表示這座基地目前打不到。</div>';}
   setTimeout(()=>{[['btnAfS','afS'],['btnAfL','afL'],['btnAfC','afC']].forEach(([id,m])=>{const b=document.getElementById(id);if(!b)return;const on=S.mode===m&&S.afK===k;b.classList.toggle('on',
       on);if(on){const t=b.firstChild;if(t&&t.nodeType===3)t.nodeValue='✓ '+AF_MODE_N[m]+'（選擇中，再按取消）';}b.onclick=()=>{const was=S.mode===m&&S.afK===k;S.afK=k;S.sel=null;S.afPend=null;S.mode=was?null:m;if(!was&&typeof UC!=='undefined'){UC.closedKey=UC.key;}render();}; /* 選了出擊方式就收起基地資訊卡，讓出地圖與確認面板 */});},0);
   return o;
@@ -177,6 +179,7 @@ function afPendInfo(){
     const t=S.units.find(x=>x.id===P.x.u);if(!t||!alive(t))return null;nm=uname(t)+'（'+hname(hexOf(t))+'）';
     if(atSea(t)){const cov=adCover(t).length,A=afAsm(k)||{pool:'rocAAsh',n:'空射反艦'},n=Math.min(AFS.pk,Math.floor(S.pools[A.pool]||0));
       lines.push(A.n+' '+n+' 枚（剩 '+Math.round(S.pools[A.pool]||0)+'）・'+(cov?cov+' 艘護航艦防空，先被攔截':'無護航防空，預估命中 '+fmt1(n*SALVO.pSeek)+' 枚'));
+      if(cvOOA(t))lines.push('⚠ 這艘航艦已失去戰力（艦載機無法起降、撤離中），再打只是為了擊沉；改打其他目標比較省飛彈');
       {const pc=afCapP(t);if(pc>0)lines.push('航艦艦載機在附近：約 <b>'+Math.round(pc*100)+'%</b> 會在發射前被攔截（推估）');}
       ok=ok&&n>0;risk=cov?AFS.loss:0;}
     else{const h=hexOf(t),p=pNeed((h.t==='city'||h.t==='mtn')?6:5);lines.push('精準炸彈・'+stepOdds(t,p)+((h.t==='city'||h.t==='mtn')?'（城市／山地較難）':''));risk=S.pools.plaAD>0?AFS.loss:0;}

@@ -389,13 +389,27 @@ function satHit(t){
   return Math.max(0,Math.min(3,t.inc-pd));
 }
 // 出動紀錄（只記台灣方）：kind＝出動種類（次數），wpn＝武器型號（實際發射枚數）。結算與戰後報告用
-function useRec(kind,cnt,wpn,n){if(!S.stats)return;const U=S.stats.use=S.stats.use||{},F=S.stats.fired=S.stats.fired||{};if(kind&&cnt)U[kind]=(U[kind]||0)+cnt;if(wpn&&n)F[wpn]=(F[wpn]||0)+n;}
+// 目標屬於哪個共軍航艦群（航艦本身或它的護航艦）：回傳艦名，不是就回傳 null
+function cvGrpName(t){if(!t||t.side!=='atk')return null;const cv=t.type==='cv'?t:t.grp?S.units.find(x=>x.id===t.grp&&x.type==='cv'):null;return cv?(cv.cvi!=null&&AIR.CV[cv.cvi]?AIR.CV[cv.cvi].n:'共軍航艦'):null;}
+const cvRec=g=>{const C=S.stats.cvUse=S.stats.cvUse||{};return C[g]=C[g]||{use:{},by:{},fired:{},air:0};};
+function cvAirLost(t,L){const g=cvGrpName(t);if(g&&L>0&&S.stats)cvRec(g).air+=L;} // 攻擊航艦群時被擊落的戰機
+function useRec(kind,cnt,wpn,n,who,tgt){ // who＝哪個艦隊、基地、單位；tgt＝目標（打航艦群時另外記一份）
+  if(!S.stats)return;
+  const g=cvGrpName(tgt);
+  if(g){const c=cvRec(g);if(kind&&cnt){c.use[kind]=(c.use[kind]||0)+cnt;if(who){const b=c.by[kind]=c.by[kind]||{};b[who]=(b[who]||0)+cnt;}}if(wpn&&n)c.fired[wpn]=(c.fired[wpn]||0)+n;}
+  const U=S.stats.use=S.stats.use||{},F=S.stats.fired=S.stats.fired||{};
+  if(kind&&cnt){
+    U[kind]=(U[kind]||0)+cnt;
+    if(who){const B=S.stats.useBy=S.stats.useBy||{},b=B[kind]=B[kind]||{};b[who]=(b[who]||0)+cnt;}
+  }
+  if(wpn&&n)F[wpn]=(F[wpn]||0)+n;
+}
 function fireHimars(m,t){
   const P=S.pools||{},d=rd(hexOf(m),hexOf(t)),atc=d>kmH(80)||(P.rocGml||0)<1,h=hexOf(t),key=atc?'rocAtc':'rocGml'; // 沒有火箭彈時，近距離目標也只能用陸軍戰術飛彈
   const n=Math.max(0,Math.min(HMR_PKG,ssmReady(m)-(m.lu||0),Math.floor(P[key]||0))); // 這次齊射的車數：受可射車數與庫存限制
   m.shots--;m.lu=(m.lu||0)+n;m.revealed=true; // 開火後暴露，下個守方階段前都是顯眼目標
   if(S.pools)S.pools[key]=Math.max(0,(S.pools[key]||0)-n); // 每輛 1 枚 ATACMS 或 1 個火箭莢艙（6 發）
-  if(m.side==='def')useRec('海馬士齊射',1,atc?'陸軍戰術飛彈':'海馬士火箭彈（莢艙）',n);
+  if(m.side==='def')useRec('海馬士齊射',1,atc?'陸軍戰術飛彈':'海馬士火箭彈（莢艙）',n,hname(hexOf(m)));
   const need=Math.min(6,(atc?5:4)+((h.t==='city'||h.t==='mtn')?1:0)),fr=n/HMR_PKG*(atc&&!atSea(t)&&FOOT.includes(t.type)?.5:1),hit=hitP(pNeed(need)*fr,'fireHimars'); // ★陸軍戰術飛彈是單點精準武器，打分散的步兵效果差（×0.5） // 不滿 4 輛時命中率依比例縮小
   fxq({t:'hmr',from:[m.c,m.r],to:[t.c,t.r],hit,atc});
   log('海馬士 '+n+' 輛齊射 '+(atc?n+' 枚陸軍戰術飛彈':n+' 個火箭莢艙（'+n*6+' 發）')+'（庫存剩 '+Math.round(S.pools?S.pools[key]:0)+(atc?' 枚飛彈）':' 個莢艙）')+(atc&&!atSea(t)&&FOOT.includes(t.type)?'（精準飛彈打分散步兵，命中率 ×0.5）':'')+(hit?'，命中 ':'，未命中 ')+hname(h)+' 的 '+TYPES[t.type].n+'（'+lastTxt()+'）');
@@ -508,7 +522,7 @@ function fireMissile(m,t){
   if(m.fl)return fleetSalvo(m,t);
   if(m.type==='ssm'&&S.pools){const pl=ssmPool(m);S.pools[pl]=Math.max(0,Math.round(((S.pools[pl]||0)-SSM_N/100)*100)/100);} // 存量每點約 100 枚：每發 2 枚＝0.02 點（原本扣 0.2 點＝20 枚，與實際發射數不符）
   m.shots--;if(m.shots<=0&&m.type!=='ssm')m.acted=true; // 岸置發射車打完仍可機動轉移
-  if(m.type==='ssm'&&m.side==='def')useRec('岸置反艦飛彈射擊',1,ssmHp(m)?'魚叉（岸防）':'雄二／雄三（岸置）',SSM_N);
+  if(m.type==='ssm'&&m.side==='def')useRec('岸置反艦飛彈射擊',1,ssmHp(m)?'魚叉（岸防）':'雄二／雄三（岸置）',SSM_N,(ssmHp(m)?'魚叉岸防 ':'雄風 ')+hname(hexOf(m)),t);
   if(m.type==='ssm')m.revealed=true; // 開火後暴露
   if(adCover(t).length){ // 目標在 055／052D／054A 防空涵蓋內：★每次 2 枚，以齊射模型對上艦隊防空（同階段共用接戰上限）
     const n=SSM_N,r=salvoHit(t,n,'ssmSalvo>'+t.type),big=isBigShip(t),steps=r.steps;t.inc=(t.inc||0)+1;

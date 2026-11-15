@@ -160,7 +160,7 @@ async function aiAtkCvRetreat(u,C){const {h}=C;
 async function aiAtkCarrier(u,C){const {h}=C;
   if(u.type==='cv'){ // 航艦群：在東岸海域游弋，遇到岸置飛彈威脅就向外海退
     const rc=reach(u),others=S.units.filter(x=>x.type==='cv'&&x!==u);let best=null;
-    const sc=(k)=>ssmThreat(k)*3+others.reduce((a,x)=>a+Math.max(0,kmH(140)-hd(TER[k],hexOf(x))),0)*.6+Math.abs(TER[k].c-31)*.15+cvAggr(u,TER[k]);
+    const sc=(k)=>{const d=cvTwKm(TER[k]);return ssmThreat(k)*3+others.reduce((a,x)=>a+Math.max(0,kmH(140)-hd(TER[k],hexOf(x))),0)*.6+(d<CV_STANDOFF?(CV_STANDOFF-d)/10:(d-CV_STANDOFF)/60)+cvAggr(u,TER[k]);}; // 保持在台灣岸置與艦射飛彈射程外（約 300 km）
     let bs=sc(h.k)-.6;
     for(const [k,v] of rc){if(v.kind!=='sail')continue;const t=sc(k)+Math.random()*.8;if(t<bs){bs=t;best=k;}}
     if(best){doMove(u,best,'sail');render();await sleep(240);}
@@ -297,7 +297,7 @@ function hkPick(u,t){ // 選用武器：近距離優先魚雷（命中較高）�
 function fireSub(u,t){
   if(!subTargets(u).includes(t))return false;
   const w=hkPick(u,t);if(!w)return false;
-  if(w==='tp')u.tp--;else u.hm--;u.shots=0;u.acted=true;u.revealed=true;u.last={c:u.c,r:u.r,turn:S.turn};useRec('潛艦攻擊',1,w==='hm'?'潛射魚叉':'重型魚雷（齊射）',1);
+  if(w==='tp')u.tp--;else u.hm--;u.shots=0;u.acted=true;u.revealed=true;u.last={c:u.c,r:u.r,turn:S.turn};useRec('潛艦攻擊',1,w==='hm'?'潛射魚叉':'重型魚雷（齊射）',1,subNm(u),t);
   const nm=w==='hm'?'魚叉飛彈':'重型魚雷',sv=w==='hm'&&adCover(t).length?salvoCalc(t,1,false,'hkSalvo>'+t.type):null; // 魚叉在艦隊防空涵蓋內：以齊射模型計算
   const hit=sv?sv.hits>0:hitP(w==='hm'?Math.max(.1,hkP(t,u)-.12):hkP(t,u),'sub:'+w+'>'+t.type),big=t.type==='cv'||t.type==='csg',steps=!hit?0:sv&&big?takeInt(.5,'salvoBig'):1;
   log(subNm(u)+'以'+nm+'攻擊 '+uname(t)+(sv?'：對方防空發射 '+sv.I+' 枚攔截彈，':'')+(hit?'命中'+(steps?'':'（航艦體積大，未造成重創）'):'未命中')+'（魚雷 '+u.tp+' 齊射、魚叉 '+u.hm+' 枚'+(sv?'；齊射模型，參數為推估':'')+'）');
@@ -389,7 +389,7 @@ async function aiDef(){
         if(m.type==='hmr'){const noG=((S.pools||{}).rocGml||0)<1;for(let i=ts.length-1;i>=0;i--){const x=ts[i];if((far(x)||noG)&&FOOT.includes(x.type))ts.splice(i,1);}if(!ts.length)break;} // 陸軍戰術飛彈打分散步兵效果差，不浪費
         const lg=x=>m.type==='hmr'&&HM==='log'?(x.type==='fob'?2:PORTS.includes(K(x.c,x.r))?1:0):0,bc=x=>m.type==='hmr'&&HM==='beach'&&hexOf(x).coastal&&['arm','tank','amph','mar','abn'].includes(x.type)?1:0;
         ts.sort((a,b)=>lg(b)-lg(a)||bc(b)-bc(a)||(w[b.type]||1)-(w[a.type]||1)||far(a)-far(b)||a.hp-b.hp);} // 同樣價值時先打近的（用火箭彈，省下陸軍戰術飛彈）
-      else{const pr=t=>AS==='tr'?((t.type==='ro'||t.type==='lst'||t.type==='cvy')?2+(cargo(t)?1:0):0):AS==='esc'?((isEsc(t)||t.type==='dd')?2:0):0;ts.sort((a,b)=>pr(b)-pr(a)||tgtVal(b)-tgtVal(a)||a.hp-b.hp);} // 指揮官意圖：反艦打擊優先
+      else{const pr=t=>AS==='tr'?((t.type==='ro'||t.type==='lst'||t.type==='cvy')?2+(cargo(t)?1:0):0):AS==='esc'?((isEsc(t)||t.type==='dd')?2:0):0;{const k=ts.filter(t=>!cvOOA(t));if(k.length)ts=k;else break;}ts.sort((a,b)=>pr(b)-pr(a)||tgtVal(b)-tgtVal(a)||a.hp-b.hp);} // 指揮官意圖：反艦打擊優先
       if(MS==='salvo'){if(!(salvoT&&alive(salvoT)&&ts.includes(salvoT)))salvoT=ts[0];else ts=[salvoT];}
       fireMissile(m,ts[0]);vol++;
       if(MS==='scoot'&&alive(m))m.revealed=!!(m.mT&&S.turn<m.mT);

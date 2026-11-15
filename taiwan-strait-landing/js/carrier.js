@@ -143,7 +143,7 @@ function cvwStrike(side){
     // 對艦（手動已用掉的份額不再出擊）
     let n=cvwBudget(side,c,sp);
     for(let g=0;g<6&&n>0&&!S.over;g++){
-      const fo=cvwFoes(side,c);if(!fo.length)break;const t=pickBest(fo,escVal),cov=adCover(t).length>0,k=cov?n:Math.min(n,Math.max(2,2*t.hp));
+      const fo=cvwFoes(side,c).filter(e=>!cvOOA(e));if(!fo.length)break;const t=pickBest(fo,escVal),cov=adCover(t).length>0,k=cov?n:Math.min(n,Math.max(2,2*t.hp));
       n-=k;c.u.cvwB=n;const R=cvwHit(side,c,t,k);lost+=R.L;out.push(R.txt);
     }
     c.u.cvwB=0;
@@ -256,7 +256,7 @@ function fireVolley(shooters,t){
 function escAutoFire(side){ // 電腦自動開火：挑射程內最有價值的目標，能打到的護航艦一起齊射，直到沒有可射的艦艇
   for(let guard=0;guard<10&&!S.over;guard++){
     const ready=S.units.filter(e=>e.side===side&&isEsc(e)&&alive(e)&&escTargets(e).length);if(!ready.length)return;
-    const all=[...new Set(ready.flatMap(escTargets))],t=pickBest(all,escVal);if(!t)return;
+    const all=[...new Set(ready.flatMap(escTargets))].filter(e=>!cvOOA(e)),t=pickBest(all,escVal);if(!t)return; // 已失去戰力的航艦不再浪費飛彈
     const sh=ready.filter(m=>escTargets(m).includes(t));if(!fireVolley(sh,t))return;
   }
 }
