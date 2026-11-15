@@ -125,7 +125,7 @@ function weak(u){return u.hp===1&&TYPES[u.type].hp>1?1:0;}
 const unready=u=>u.type==='res'&&u.mobT!=null&&(S.turn===u.mobT||(S.turn===u.mobT+1&&S.phase==='atk'))?1:0;
 function effAtk(u){return TYPES[u.type].atk+sideMod(u,'atk')-weak(u)-unready(u)-(u.side==='atk'&&onTW(u)&&supply().over?1:0);}
 function effDef(u){return TYPES[u.type].def+sideMod(u,'def')-weak(u)-unready(u)-(u.side==='atk'&&onTW(u)&&supply().over?1:0)-(unitsAt(K(u.c,u.r)).filter(x=>!isShip(x)).length>1?1:0);}
-function terrDef(h){return h.t==='city'||h.t==='mtn'?2:h.t==='port'?1:0;}
+function terrDef(h){return h.t==='city'||h.t==='mtn'?2:h.t==='port'||h.town?1:0;} // 城鎮（h.town）：城市的一半（使用者 2026-11-15 指定）
 function seaPen(u){if(!atSea(u))return 0;const wh=wxWave(hexOf(u)),wp=wh>2?2:wh>1.25?1:0;return (u.type==='mar'?-1:-2)-wp;} // 搶灘突擊：浪高越大，登陸艇越難靠岸（>1.25 公尺 −1、>2.0 公尺 −2）
 const ADJ_N=()=>Math.round(kmH(ADJ_KM)); // 「相鄰」的格數（ring2 的半徑）
 function inZOC(side,h){ // 等同 ring2(h) 裡有敵方地面部隊：直接掃單位比掃 ring2 每一格快（10 km 格時 ring2 有約 60 格）

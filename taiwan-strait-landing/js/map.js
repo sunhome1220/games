@@ -222,7 +222,7 @@ const SPOT={};
       for(const [dx,dy] of SMU)if(inUrb(h.lon+dx*GEO.dlon,h.lat+dy*GEO.dlat*1.15))n++;
       h.urb=n/SMU.length;
     }
-    // 城鎮（h.town）：都市區占一半以上的平原格。只影響畫面與說明，規則仍是平原（★門檻 50%）
+    // 城鎮（h.town）：都市區占一半以上的平原格。防禦 +1（城市的一半，見 terrDef），其他規則同平原（★門檻 50%）
     for(const h of tw)if(h.t==='plain'&&!h.named&&h.urb>=.5)h.town=true;
     // 城市（規則上的城市格）：六都與新竹的市區不只一格。格數＝人口 ÷ 每格可容納人口，四捨五入、至少 1 格（含原本有地名的那一格）；
     // ★每格可容納 URB_POP 萬人＝一格 87 平方公里 × 建成區約 1 萬人／平方公里（推估）。人口為 2024 年底戶籍人口（內政部戶政司，萬人）：

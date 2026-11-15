@@ -160,7 +160,7 @@ function tileDetail0(h,x,y){
   if(FG>2&&h.vt&&(tt==='mtn'||tt==='hill')&&((h.c+h.r)&1))return ''; // 細格時大陸山地與丘陵隔格才畫，避免過密
   if(tt==='hill')return peak(x-3,y+9,20,12)+peak(x+9,y+10,13,8);
   if(tt==='city')return bldg(x-9,y+7,8,11)+bldg(x+2,y+8,9,16)+bldg(x+11,y+5,7,9);
-  if(h.town)return bldg(x-8,y+6,7,5)+bldg(x+5,y+9,8,7); // 城鎮：兩棟低矮房屋（規則同平原）
+  if(h.town)return bldg(x-8,y+6,7,5)+bldg(x+5,y+9,8,7); // 城鎮：兩棟低矮房屋
   if(tt==='mtn'&&h.elev!=null)return h.elev>=2000&&((h.c+h.r)&1)===0?peak(x,y+9,20,17):''; // 台澎：顏色表示高度，只在 2,000 公尺以上隔格畫一座小山
   if(tt==='mtn')return peak(x-6,y+8,24,22)+peak(x+9,y+10,17,14);
   if(h.t==='port')return '<rect class="pier" x="'+(x-3)+'" y="'+(y+3)+'" width="6" height="14" rx="1"/><rect class="cont c1" x="'+(x-12)+'" y="'+(y+2)+'" width="8" height="5"/><rect class="cont c2" x="'+
