@@ -466,7 +466,7 @@ function fireMissile(m,t){
   if(m.type==='ssm')m.revealed=true; // 開火後暴露
   if(adCover(t).length){ // 目標在 055／052D／054A 防空涵蓋內：★每次 2 枚，以齊射模型對上艦隊防空（同階段共用接戰上限）
     const n=SSM_N,r=salvoCalc(t,n,false,'ssmSalvo>'+t.type),big=t.type==='cv'||t.type==='csg',steps=big?takeInt(r.hits/2,'salvoBig'):r.hits;t.inc=(t.inc||0)+1;
-    fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit:r.hits>0});
+    fxSalvo([m.c,m.r],t,r);
     log((m.type==='ff'?'守方艦艇':'岸置反艦飛彈')+'以 '+n+' 枚雄風飛彈攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+(steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):'，未造成重創')+'（齊射模型，參數為推估）');
     if(steps)damage(t,steps,'雄風反艦飛彈');
     checkInstant();return;
