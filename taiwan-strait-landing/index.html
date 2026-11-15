@@ -59,6 +59,7 @@ header{position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;justif
 h1{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,4vw,38px);letter-spacing:.06em;margin:0;line-height:1.1;text-wrap:balance}
 .sub{color:var(--muted);font-size:13px;margin-top:4px}
 .stop{display:none}.htitle{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1 1 320px;min-width:0}.htitle h1{min-width:0}.hbtns{display:flex;align-items:center;gap:8px;flex:none}
+@media (min-width:961px){.htitle{flex:1 0 auto}.htitle h1{white-space:nowrap;flex:none}.statusbar{flex:0 1 auto;min-width:0;justify-content:flex-end}}
 #btnNew{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;min-width:0;min-height:0;padding:0;border-radius:50%;color:var(--ink);border:1px solid var(--line);background:transparent}#btnNew[hidden]{display:none}#btnNew svg{flex:none}#btnNew .bl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)} /* 與設定齒輪同樣的圓形圖示按鈕；文字只給螢幕閱讀器 */
 #btnSettings{width:40px;height:40px;min-width:0;min-height:0;padding:0;border-radius:50%;background:transparent;color:var(--ink);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center}#btnSettings:hover{border-color:var(--ink);background:var(--panel)}
 .statusbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -265,7 +266,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
   body.playing .stop{display:flex;gap:5px;margin-left:auto;min-width:0}
   body.playing .stop .chip{font-size:11.5px;padding:2px 6px;white-space:nowrap}
   body.playing .statusbar{order:3;flex:1 0 100%;flex-wrap:wrap;gap:6px 6px;min-height:28px}
-  body.playing .statusbar>*{flex:none;font-size:12.5px;padding:3px 8px;white-space:nowrap}
+  body.playing .statusbar>*{flex:0 1 auto;max-width:100%;font-size:12.5px;padding:3px 8px;white-space:normal;flex-wrap:wrap;row-gap:0}
   body.playing .statusbar>.chip:nth-child(-n+2){display:none} /* 回合與階段已移到標題列 */
   body.playing .statusbar>.chip.wxmoved{display:none}
   body.playing .mapbar{flex-wrap:nowrap;overflow-x:auto;gap:6px;scrollbar-width:none}
@@ -404,8 +405,8 @@ body:has(#modal.fin-on:not([hidden])) .mbar,body:has(#modal.fin-on:not([hidden])
 details.wz-more{margin-top:12px;border-top:1px dashed var(--line);padding-top:8px;font-size:13px}
 details.wz-more>summary{cursor:pointer;color:var(--muted)}
 .wz-foot{position:sticky;bottom:0;z-index:2;background:var(--panel);margin:14px -14px -14px;padding:10px 14px 12px;border-top:1px solid var(--line)}
-.wz-sub{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px}
-.wz-sub .hint{margin:0;flex:1}
+.wz-sub{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:4px 12px;margin-top:6px}
+.wz-sub .hint{margin:0;flex:1 1 100%}
 .opt .dd{display:block;font-weight:400}
 .opt small.ref,.dd small.ref{display:block;margin-top:2px;font-size:11px;font-weight:400;color:var(--muted);opacity:.85}
 .wz-nav{display:flex;gap:6px;margin-top:0} .wz-nav #btnStart{flex:1 1 auto;width:auto;white-space:nowrap} .wz-nav .ghost{white-space:nowrap}
@@ -826,39 +827,39 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-15.03' -->
-<script src="js/dict.js?v=2026-11-15.03"></script>
-<script src="js/i18n.js?v=2026-11-15.03"></script>
-<script src="js/btnfix.js?v=2026-11-15.03"></script>
-<script src="js/geo.js?v=2026-11-15.03"></script>
-<script src="js/dem.js?v=2026-11-15.03"></script>
-<script src="js/map.js?v=2026-11-15.03"></script>
-<script src="js/state.js?v=2026-11-15.03"></script>
-<script src="js/rules.js?v=2026-11-15.03"></script>
-<script src="js/supply.js?v=2026-11-15.03"></script>
-<script src="js/ending.js?v=2026-11-15.03"></script>
-<script src="js/theater.js?v=2026-11-15.03"></script>
-<script src="js/airwar.js?v=2026-11-15.03"></script>
-<script src="js/carrier.js?v=2026-11-15.03"></script>
-<script src="js/strike.js?v=2026-11-15.03"></script>
-<script src="js/airstrike.js?v=2026-11-15.03"></script>
-<script src="js/decisions.js?v=2026-11-15.03"></script>
-<script src="js/report.js?v=2026-11-15.03"></script>
-<script src="js/turn.js?v=2026-11-15.03"></script>
-<script src="js/ai.js?v=2026-11-15.03"></script>
-<script src="js/render.js?v=2026-11-15.03"></script>
-<script src="js/fxanim.js?v=2026-11-15.03"></script>
-<script src="js/fx.js?v=2026-11-15.03"></script>
-<script src="js/video.js?v=2026-11-15.03"></script>
-<script src="js/stats.js?v=2026-11-15.03"></script>
-<script src="js/input.js?v=2026-11-15.03"></script>
-<script src="js/unitinfo.js?v=2026-11-15.03"></script>
-<script src="js/version.js?v=2026-11-15.03"></script>
-<script src="js/changelog.js?v=2026-11-15.03"></script>
-<script src="js/app.js?v=2026-11-15.03"></script>
-<script src="js/missions.js?v=2026-11-15.03"></script>
-<script src="js/mission_carrier.js?v=2026-11-15.03"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-15.04' -->
+<script src="js/dict.js?v=2026-11-15.04"></script>
+<script src="js/i18n.js?v=2026-11-15.04"></script>
+<script src="js/btnfix.js?v=2026-11-15.04"></script>
+<script src="js/geo.js?v=2026-11-15.04"></script>
+<script src="js/dem.js?v=2026-11-15.04"></script>
+<script src="js/map.js?v=2026-11-15.04"></script>
+<script src="js/state.js?v=2026-11-15.04"></script>
+<script src="js/rules.js?v=2026-11-15.04"></script>
+<script src="js/supply.js?v=2026-11-15.04"></script>
+<script src="js/ending.js?v=2026-11-15.04"></script>
+<script src="js/theater.js?v=2026-11-15.04"></script>
+<script src="js/airwar.js?v=2026-11-15.04"></script>
+<script src="js/carrier.js?v=2026-11-15.04"></script>
+<script src="js/strike.js?v=2026-11-15.04"></script>
+<script src="js/airstrike.js?v=2026-11-15.04"></script>
+<script src="js/decisions.js?v=2026-11-15.04"></script>
+<script src="js/report.js?v=2026-11-15.04"></script>
+<script src="js/turn.js?v=2026-11-15.04"></script>
+<script src="js/ai.js?v=2026-11-15.04"></script>
+<script src="js/render.js?v=2026-11-15.04"></script>
+<script src="js/fxanim.js?v=2026-11-15.04"></script>
+<script src="js/fx.js?v=2026-11-15.04"></script>
+<script src="js/video.js?v=2026-11-15.04"></script>
+<script src="js/stats.js?v=2026-11-15.04"></script>
+<script src="js/input.js?v=2026-11-15.04"></script>
+<script src="js/unitinfo.js?v=2026-11-15.04"></script>
+<script src="js/version.js?v=2026-11-15.04"></script>
+<script src="js/changelog.js?v=2026-11-15.04"></script>
+<script src="js/app.js?v=2026-11-15.04"></script>
+<script src="js/missions.js?v=2026-11-15.04"></script>
+<script src="js/mission_carrier.js?v=2026-11-15.04"></script>
 <script>if(missionId())setTimeout(()=>missionStart(missionId()),0);</script>
-<script src="js/gamepad.js?v=2026-11-15.03"></script>
+<script src="js/gamepad.js?v=2026-11-15.04"></script>
 </body>
 </html>
