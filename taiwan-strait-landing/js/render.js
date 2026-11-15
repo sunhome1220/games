@@ -25,13 +25,14 @@ function rangeRingsSVG(u,lite){ // u：航艦或護航艦；lite＝一鍵全開�
   const grp=u.type==='cv'||u.type==='csg'||u.type==='ddh'?u:(u.grp?S.units.find(x=>x.id===u.grp&&alive(x)):null);
   if(u.type==='cv'||u.type==='csg'||u.type==='ddh'){
     const c=cvwCarriers(sd==='atk'?'atk':'def').find(x=>x.u===u);
-    S.units.filter(e=>e.grp===u.id&&isEsc(e)&&alive(e)&&e.mag&&e.mag.ad>0).forEach(e=>ring(e.c,e.r,SHIPW[e.type].adR,'ad',''));
-    if(c){if(!lite)ring(u.c,u.r,c.w.r,'r','艦載機作戰半徑 '+c.w.r+' 格（'+kmOf(c.w.r)+' km）');
-      if((u.wmag||0)>0)ring(u.c,u.r,c.w.r+c.w.asmR,'d','對艦打擊距離 '+(c.w.r+c.w.asmR)+' 格（'+c.nm+'）');}
+    {const es=S.units.filter(e=>e.grp===u.id&&isEsc(e)&&alive(e)&&e.mag&&e.mag.ad>0),R=es.length?Math.max(...es.map(e=>SHIPW[e.type].adR)):0; // 防空傘：整個艦隊合成一圈（以航艦為中心、取護航艦最遠的防空射程），不再每艘各畫一圈
+      if(R)ring(u.c,u.r,R,'ad',lite?'':'艦隊防空傘 '+kmOf(R)+' km');}
+    if(c){if(!lite)ring(u.c,u.r,c.w.r,'r','艦載機作戰半徑 '+kmOf(c.w.r)+' km');
+      if((u.wmag||0)>0)ring(u.c,u.r,c.w.r+c.w.asmR,'d','對艦打擊距離 '+kmOf(c.w.r+c.w.asmR)+' km（'+c.nm+'）');}
     if(lite){const [x,y]=rangeTop(u.c,u.r,Math.max(...S.units.filter(e=>e.grp===u.id&&isEsc(e)&&alive(e)).map(e=>SHIPW[e.type].adR),kmH(40)));lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">防空傘</text>');}
   }else if(isEsc(u)){
-    const W=SHIPW[u.type];if(u.mag&&u.mag.ad>0)ring(u.c,u.r,W.adR,'ad','防空 '+W.adR+' 格（'+kmOf(W.adR)+' km）');
-    if(u.mag&&u.mag.asm>0)ring(u.c,u.r,W.asmR,'r',W.asmN+' '+W.asmR+' 格（'+kmOf(W.asmR)+' km）');
+    const W=SHIPW[u.type];if(u.mag&&u.mag.ad>0)ring(u.c,u.r,W.adR,'ad','防空 '+kmOf(W.adR)+' km');
+    if(u.mag&&u.mag.asm>0)ring(u.c,u.r,W.asmR,'r',W.asmN+' '+kmOf(W.asmR)+' km');
   }
   return o.join('')+lbl.join('');
 }
@@ -47,11 +48,11 @@ function fleetPanelHTML(u){
   if(c&&S.air){const nAir=c.i<0?S.air.usF[c.ui]:S.air.cvF[c.i];h+='<div class="hint">艦載機 '+Math.round(nAir)+' 架、每回合約 '+Math.round(c.sor)+' 架次'+(sp?'；任務：制空 '+Math.round(sp[0]*100)+'%、對艦 '+Math.round(sp[1]*100)+'%、對地 '+Math.round(sp[2]*100)+'%':'')+'</div>';}
   // 威脅：對方艦射反艦飛彈、艦載機、岸置飛彈、反艦彈道飛彈
   const me=hexOf(u),th=[];
-  const near=(arr,R,nm)=>{if(!arr.length)return;const d=Math.min(...arr.map(e=>rd(hexOf(e),me)));th.push(d<=R?'<li class="in">在'+nm+'射程內（距離 '+d+' 格／射程 '+R+' 格）</li>':'<li class="out">'+nm+'：射程外 '+(d-R)+' 格</li>');};
+  const near=(arr,R,nm)=>{if(!arr.length)return;const d=Math.min(...arr.map(e=>rd(hexOf(e),me)));th.push(d<=R?'<li class="in">在'+nm+'射程內（距離約 '+kmOf(d)+' km／射程 '+kmOf(R)+' km）</li>':'<li class="out">'+nm+'：還差約 '+kmOf(d-R)+' km 才進入射程</li>');};
   const types=[...new Set(S.units.filter(e=>e.side===en&&isEsc(e)&&alive(e)&&e.mag&&e.mag.asm>0).map(e=>e.type))];
   types.forEach(t=>near(S.units.filter(e=>e.side===en&&e.type===t&&alive(e)&&e.mag&&e.mag.asm>0),SHIPW[t].asmR,TYPES[t].s+' '+SHIPW[t].asmN));
   cvwCarriers(en==='atk'?'atk':'def').forEach(k=>{if((k.u.wmag||0)>0)near([k.u],k.w.r+k.w.asmR,(k.i>=0?AIR.CV[k.i].n:'美航艦')+'艦載機（'+k.nm+'）');});
-  if(sd==='atk'){const ssm=S.units.filter(e=>e.side==='def'&&e.type==='ssm'&&alive(e)&&!subHidden(e));if(ssm.length)near(ssm,8,'守方岸置反艦飛彈');}
+  if(sd==='atk'){const ssm=S.units.filter(e=>e.side==='def'&&e.type==='ssm'&&alive(e)&&!subHidden(e));if(ssm.length)near(ssm,kmH(160),'守方岸置反艦飛彈');}
   if(u.type==='csg'&&S.pools&&S.pools.plaLR>0)th.push('<li class="in">在東風-21D／26 反艦彈道飛彈範圍內（存量 '+fmt1(S.pools.plaLR)+'）</li>');
   h+=th.length?'<div class="hint"><b>威脅</b></div><ul class="flthr">'+th.join('')+'</ul>':'<div class="hint">目前沒有已知的對方反艦武器在附近。</div>';
   if(humanTurn()&&cvOwn(u)&&u.side===S.phase&&S.units.includes(u)){ // 玩家操作該方：航艦命令
