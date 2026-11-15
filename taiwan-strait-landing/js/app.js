@@ -65,7 +65,7 @@ function renderSettings(){
   h+='<div class="wz-q" style="margin-top:16px">進階：用目前設定跑統計</div><div class="wz-note">想知道這組設定誰比較有利？讓電腦自動模擬多局，統計勝率、代價與決策的影響。</div>'+
     '<div style="margin-top:8px">'+seg('data-statn',[['50',['50 局']],['100',['100 局']],['300',['300 局']]],SETTINGS_STATN,3)+'</div>'+
     '<div class="btns" style="margin-top:10px"><button class="ghost" id="stRun"'+(STAT.running?' disabled':'')+'>開始統計</button></div>';
-  h+='<div class="wz-q" style="margin-top:16px">支持作者</div><a id="stTip" class="btnlink" href="https://service.jkopay.com/r/transfer?j=Transfer:900386051&amp;amount=50" target="_blank" rel="noopener noreferrer">☕ 請作者喝杯咖啡<br><small>純屬好玩！不給也能玩到爆。金額預設 50 元（約一杯超商咖啡），付款時可以自己改。</small></a>';
+  h+='<div class="wz-q" style="margin-top:16px">支持作者</div><a id="stTip" class="btnlink" href="https://service.jkopay.com/r/transfer?j=Transfer:900386051&amp;amount=50" target="_blank" rel="noopener noreferrer">☕ 請作者喝杯咖啡<br><small>純屬自願，不贊助也能完整遊玩。預設金額 50 元，付款時可自行修改。</small></a>';
   h+='<div class="btns" style="margin-top:16px"><button id="stClose">關閉</button></div>';
   box.innerHTML=h;
   box.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{
@@ -133,7 +133,7 @@ const SETUP_PAGES=[
   {sel:'optAirGen',q:'空軍裝備世代（隱形機占比）',opts:{legacy:['非隱形為主','雙方戰機以第四代為主，隱形機很少。'],mixed:['混合（基準）','共軍殲-20／殲-35 約兩成、盟軍 F-35／F-22 約四成；台灣沒有隱形機。隱形占比隨年代每年略增。'],stealthy:['隱形佔多數','共軍約四成五、盟軍約六成五為隱形機；台灣仍沒有。']}},
   {sel:'optAirModel',q:'空戰模型',opts:{bvr:['視距外（基準）','隱形占比、反隱形感測與電子戰會影響制空與防空突破。盟軍要參戰後隱形機才會出現。'],simple:['簡化','不計隱形與電戰，沿用舊的制空判定。']}},
   {sel:'optEW',q:'電子戰強度',opts:{low:['低','干擾弱：空戰與飛彈較容易命中，損失較大。'],mid:['中（基準）',''],high:['高','干擾強：空戰飛彈較易被干擾落空，損失較小；對岸防空壓制也較容易。']}},
-  {sel:'optFx',q:'參戰情境',opts:{interest:['依自身利益決定','美日不擲骰，依戰況與自身利益評估是否參戰：半導體與第一島鏈、攻方是否已拿下港口或台北、守軍撐不撐得住、美軍傷亡、日本與美國彼此的態度、本國基地是否被打。事件節點會列出評估理由。','依利益'],intel:['只提供情報（不公開參戰）',
+  {sel:'optFx',q:'參戰情境',opts:{interest:['依自身利益決定','美日不擲骰，依戰況與自身利益評估是否參戰：半導體與第一島鏈、攻方是否已拿下港口或台北、守軍能否持續抵抗、美軍傷亡、日本與美國彼此的態度、本國基地是否被打。事件節點會列出評估理由。','依利益'],intel:['只提供情報（不公開參戰）',
       '美國只提供情報與目標資料（守方反艦飛彈命中門檻 −1），不補給、不出兵、不公開參戰；日本中立，戰區基地也不能被打擊。','只提供情報'],none:['不介入（台灣孤軍）','美日全程不參戰，戰區基地也不能被打擊。'],full:['開戰即全面介入','美日第 1 回合就參戰，航艦仍要 2 回合才抵達。']}},{sel:'optAlly',
       q:'美日盟軍由誰操作',when:()=>$('#optMode').value==='play'&&$('#optSide').value!=='atk',opts:{ai:['電腦操作','美日艦隊與潛艦由電腦依戰況行動。'],player:['你操作','美日參戰後，你可以移動美航艦、護航艦、海自艦艇與攻擊潛艦，下達艦隊齊射、艦載機打擊與戰斧巡弋飛彈；沒下令的單位在結束階段由電腦代為行動。美日是否參戰仍由戰況決定。']}}],summary:true},
 ];
@@ -185,7 +185,7 @@ function renderWizard(){
     h+='<table class="wz-sum">'+rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('')+'</table>';
   }
   if(pg.summary)h+='<div class="wz-seed"><label>戰局碼（選填）<input id="wzSeed" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="貼上別人的戰局碼，可重現同樣的設定與天候" value="'+
-      (WZ.seedTxt||'').replace(/"/g,'&quot;')+'"></label><div class="dd">戰局碼包含設定與亂數種子（天候、擲骰結果）；空白就自動產生，結局頁會顯示本局的碼。你的決策不同，局勢仍會不同。</div></div>';
+      (WZ.seedTxt||'').replace(/"/g,'&quot;')+'"></label><div class="dd">戰局碼包含設定與亂數種子（天候、擲骰結果）；空白就自動產生，結局頁會顯示本局的碼。決策不同，局勢仍會不同。</div></div>';
   $('#wzBody').innerHTML=h;
   $('#wzPrev').disabled=pos===0;$('#wzNext').disabled=pos===N-1;
   const left=vis.map((i,n)=>WZ.done[i]?null:n+1).filter(Boolean),b=$('#btnStart');
