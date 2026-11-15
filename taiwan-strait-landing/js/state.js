@@ -121,7 +121,7 @@ function rocFleetHit(why){ // 抽象的海空打擊命中守方海軍：船數�
 }
 function fleetSalvo(m,t){
   const A=fleetAgg(m);const n=Math.min(m.mag.asm,A.sh*FLEET_PER);if(n<=0)return false;
-  m.mag.asm-=n;m.shots=0;m.acted=true;m.revealed=true;useRec('艦隊齊射',1,fleetWn(m)+'（艦射）',n);
+  m.mag.asm-=n;m.shots=0;m.acted=true;m.revealed=true;useRec('艦隊齊射',1,fleetWn(m)+'（艦射）',n,m.fl.n,t);
   const r=salvoHit(t,n,'fleet>'+t.type),big=isBigShip(t),steps=r.steps;
   fxSalvo([m.c,m.r],t,r);
   log(m.fl.n+'齊射 '+n+' 枚'+fleetWn(m)+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
