@@ -16,7 +16,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 function pickBest(arr,score){let b=null,bs=-Infinity;for(const x of arr){const v=score(x);if(v>bs){bs=v;b=x;}}return b;}
 
 /* ---------- theater: pools, foreign forces ---------- */
-// baseline (2026) force pools, abstract points built from public reporting; see DATA.md
+// baseline (2026) force pools, abstract points built from public reporting; see DATA.md (index) and docs/data/*.md
 const POOL0={plaAir:8,plaSub:3,plaCV:2,plaAD:6,plaNavy:16,rf:32,plaCM:5,plaLR:6,plaHS:3,rocAir:4,rocNavy:4,rocSub:2,rocAD:4,rocMsl:10,rocDrone:1,rocMine:1,rocAS:10,rocRkt:8,plaLift:8,plaFAC:10};
 const AMPH_ERA={'2026':0,'2027':0,'2028':1,'2029':1,'2030':2,'2031':2,'2032':3};
 const ERA={

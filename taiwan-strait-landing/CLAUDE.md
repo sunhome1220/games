@@ -1,7 +1,7 @@
 # 台海兵棋推演（taiwan-strait-landing）— 開發規則
 
 瀏覽器兵棋遊戲：`index.html`（HTML＋CSS）＋ `js/*.js`（程式，依 `index.html` 內的順序載入；沒有建置步驟）。使用者以繁體中文溝通。
-任何模型接手前請先讀完這份文件；數據來源與推估說明在 `DATA.md`。
+任何模型接手前請先讀完這份文件；數據來源與推估說明：`DATA.md` 是索引，內容依主題分在 `docs/data/`（`eras`、`taiwan`、`pla`、`missiles`、`air`、`ground`、`map`、`misc`）。查證或改某類數字時只讀對應的檔案；新增說明寫進對應主題，不要再堆在同一處。
 
 ## 一、設計原則（使用者明確要求，不可違反）
 
