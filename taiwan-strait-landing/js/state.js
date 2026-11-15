@@ -68,7 +68,8 @@ const ROCF=[
   {id:'146',n:'146 艦隊（馬公）',s:'146',home:'magong',m:y=>[['ck',3],['pf',2]]},
   {id:'hjN',n:'海蛟大隊（北）',s:'海蛟北',home:'suao',m:y=>[['tc',4],['kh',15]]},
   {id:'hjS',n:'海蛟大隊（南）',s:'海蛟南',home:'kaohsiung',m:y=>[['tc',3],['kh',15]]}];
-const fleetWn=u=>[...new Set(u.fl.m.filter(([k,n])=>n>0&&RFW[k].asm>0).map(([k])=>RFW[k].w))].join('、')||'反艦飛彈'; // ★各艦反艦飛彈種類（依公開資料：基隆級、濟陽級魚叉；成功級、沱江級雄二／雄三；康定級、光六雄二；派里級推估為雄二）
+const fleetWn=u=>{const order=['雄二','雄三','魚叉'],w=new Set();u.fl.m.forEach(([k,n])=>{if(n>0&&RFW[k].asm>0)RFW[k].w.split('／').forEach(x=>w.add(x));});return order.filter(x=>w.has(x)).join('／')||'反艦飛彈';};
+const fleetCls=u=>u.fl.m.filter(([k,n])=>n>0&&RFW[k].asm>0).map(([k])=>RFW[k].n).join('、'); // 有反艦飛彈的艦型 // ★各艦反艦飛彈種類（依公開資料：基隆級、濟陽級魚叉；成功級、沱江級雄二／雄三；康定級、光六雄二；派里級推估為雄二）
 const FLEET_PER=2; // ★每艘每次齊射 2 枚
 function fleetAgg(u){const A={hp:0,ad:0,asm:0,adR:0,asmR:0,chan:0,sh:0};for(const [k,n] of u.fl.m){if(n<=0)continue;const W=RFW[k];A.hp+=n;A.ad+=W.ad*n;A.asm+=W.asm*n;A.chan+=W.ch*n;if(W.ad>0)A.adR=Math.max(A.adR,W.adR);if(W.asm>0){A.asmR=Math.max(A.asmR,W.asmR);A.sh+=n;}}return A;}
 const fleetTxt=u=>u.fl.m.filter(([,n])=>n>0).map(([k,n])=>RFW[k].n+' '+n).join('、');
@@ -120,10 +121,10 @@ function rocFleetHit(why){ // 抽象的海空打擊命中守方海軍：船數�
 }
 function fleetSalvo(m,t){
   const A=fleetAgg(m);const n=Math.min(m.mag.asm,A.sh*FLEET_PER);if(n<=0)return false;
-  m.mag.asm-=n;m.shots=0;m.acted=true;m.revealed=true;
+  m.mag.asm-=n;m.shots=0;m.acted=true;m.revealed=true;useRec('艦隊齊射',1,fleetWn(m)+'（艦射）',n);
   const r=salvoHit(t,n,'fleet>'+t.type),big=isBigShip(t),steps=r.steps;
   fxSalvo([m.c,m.r],t,r);
   log(m.fl.n+'齊射 '+n+' 枚'+fleetWn(m)+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
-  if(steps)damage(t,steps,m.fl.n+'反艦飛彈');
+  if(steps)damage(t,steps,m.fl.n+'（'+fleetCls(m)+'）'+fleetWn(m)+'飛彈');
   checkInstant();return true;
 }
