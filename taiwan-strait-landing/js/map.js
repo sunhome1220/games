@@ -182,9 +182,8 @@ const SPOT={};
   }
   // 地點
   const near=(lon,lat,filter)=>{let best=null,bd=1e9;for(const h of tw){if(filter&&!filter(h))continue;const d=Math.hypot((h.lon-lon)/GEO.dlon,(h.lat-lat)/GEO.dlat);if(d<bd){bd=d;best=h;}}return best;};
-  const put=(id,name,type,lon,lat,opt)=>{opt=opt||{};const h=near(lon,lat,opt.coast?(x=>coastal(x)&&x.t!=='sea'&&!x.named):(x=>!x.named));if(!h)return;h.t=type;h.name=name;h.named=true;h.cliff=!!opt.cliff;h.mud=false;SPOT[id]=h.k;
-    if(opt.ring)nbrs(h.c,h.r).filter(n=>n.isl==='TW'&&!n.named&&n.t!=='sea').slice(0,opt.ring).forEach(n=>{n.t='city';n.cliff=false;n.mud=false;});};
-  put('taipei','台北','city',121.52,25.04,{ring:2});
+  const put=(id,name,type,lon,lat,opt)=>{opt=opt||{};const h=near(lon,lat,opt.coast?(x=>coastal(x)&&x.t!=='sea'&&!x.named):(x=>!x.named));if(!h)return;h.t=type;h.name=name;h.named=true;h.cliff=!!opt.cliff;h.mud=false;SPOT[id]=h.k;};
+  put('taipei','台北','city',121.52,25.04);
   put('keelung','基隆','port',121.74,25.13,{coast:1});
   put('tamsui','台北港','port',121.44,25.17,{coast:1}); // 淡水河口：南岸八里的台北港（深水商港，貨櫃與汽車滾裝碼頭）與淡水同一格
   put('linkou','林口','plain',121.35,25.08);
@@ -196,7 +195,7 @@ const SPOT={};
   put('miaoli','苗栗','plain',120.82,24.56);
   put('tcport','台中港','port',120.52,24.28,{coast:1});
   put('ckk','清泉崗','air',120.62,24.26);
-  put('taichung','台中','city',120.67,24.15,{ring:1});
+  put('taichung','台中','city',120.67,24.15);
   put('changhua','彰化','plain',120.54,24.07);
   put('yunlin','雲林','plain',120.40,23.72);
   put('chiayi','嘉義','city',120.45,23.48);
@@ -214,6 +213,28 @@ const SPOT={};
   put('chiashan','佳山基地','air',121.58,24.00);
   put('taitung','台東','city',121.14,22.76);
   put('chihhang','志航基地','air',121.10,22.76);
+  // 都市範圍：Natural Earth 都市區圖層（js/urban.js，依衛星影像判讀的建成區）。每格取 19 個取樣點，算出都市區占這一格的比例（h.urb）
+  if(typeof GEO_URB!=='undefined'){
+    const SMU=SMP.concat([0,1,2,3,4,5].map(i=>[.2*Math.cos((i+.5)*Math.PI/3),.2*Math.sin((i+.5)*Math.PI/3)]),[0,1,2,3,4,5].map(i=>[.45*Math.cos((i+.5)*Math.PI/3),.45*Math.sin((i+.5)*Math.PI/3)]));
+    const inUrb=(x,y)=>GEO_URB.some(P=>inPoly(x,y,P[0])&&!P.slice(1).some(H=>inPoly(x,y,H)));
+    for(const h of tw){
+      let n=0;
+      for(const [dx,dy] of SMU)if(inUrb(h.lon+dx*GEO.dlon,h.lat+dy*GEO.dlat*1.15))n++;
+      h.urb=n/SMU.length;
+    }
+    // 城鎮（h.town）：都市區占一半以上的平原格。防禦 +1（城市的一半，見 terrDef），其他規則同平原（★門檻 50%）
+    for(const h of tw)if(h.t==='plain'&&!h.named&&h.urb>=.5)h.town=true;
+    // 城市（規則上的城市格）：六都與新竹的市區不只一格。格數＝人口 ÷ 每格可容納人口，四捨五入、至少 1 格（含原本有地名的那一格）；
+    // ★每格可容納 URB_POP 萬人＝一格 87 平方公里 × 建成區約 1 萬人／平方公里（推估）。人口為 2024 年底戶籍人口（內政部戶政司，萬人）：
+    // 台北市＋新北市 652、桃園市 234、新竹市＋新竹縣 105、台中市 286、台南市 186、高雄市 273
+    const URB_POP=87;
+    const METRO=[['taipei',121.52,25.04,652],['taoyuan',121.30,24.99,234],['hsinchu',120.97,24.80,105],['taichung',120.67,24.15,286],['tainan',120.20,23.00,186],['kaohsiung',120.31,22.63,273]];
+    for(const [id,lon,lat,pop] of METRO){
+      const has=TER[SPOT[id]]&&TER[SPOT[id]].t==='city'?1:0,need=Math.max(1,Math.round(pop/URB_POP))-has;
+      const dist=h=>Math.hypot((h.lon-lon)/GEO.dlon,(h.lat-lat)/GEO.dlat);
+      tw.filter(h=>h.town).sort((a,b)=>dist(a)-dist(b)).slice(0,need).forEach(h=>{h.t='city';h.town=false;h.cliff=false;h.mud=false;});
+    }
+  }
   // 澎湖：馬公本島（2 格）與白沙（1 格，與本島隔海）；沒有駐軍的小島（望安、七美、西嶼等）不畫出
   // 澎湖：依真實島嶼輪廓（Natural Earth），碰到島嶼的格都算澎湖的陸地（群島總面積約 127 平方公里，比一格小，★取「有碰到」以免整個群島只剩一格）
   const phs=Object.values(TER).filter(h=>{if(h.t!=='sea')return false;const [lon,lat]=rcToLL(h.c,h.r);return lon>119.1&&lon<120.0&&lat>23.0&&lat<24.0&&cover(h,GEO_PH)>0;});

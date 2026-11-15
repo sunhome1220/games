@@ -125,7 +125,10 @@ function weak(u){return u.hp===1&&TYPES[u.type].hp>1?1:0;}
 const unready=u=>u.type==='res'&&u.mobT!=null&&(S.turn===u.mobT||(S.turn===u.mobT+1&&S.phase==='atk'))?1:0;
 function effAtk(u){return TYPES[u.type].atk+sideMod(u,'atk')-weak(u)-unready(u)-(u.side==='atk'&&onTW(u)&&supply().over?1:0);}
 function effDef(u){return TYPES[u.type].def+sideMod(u,'def')-weak(u)-unready(u)-(u.side==='atk'&&onTW(u)&&supply().over?1:0)-(unitsAt(K(u.c,u.r)).filter(x=>!isShip(x)).length>1?1:0);}
-function terrDef(h){return h.t==='city'||h.t==='mtn'?2:h.t==='port'?1:0;}
+function terrDef(h){return h.t==='city'||h.t==='mtn'?2:h.t==='port'||h.town?1:0;} // 城鎮（h.town）：城市的一半（使用者 2026-11-15 指定）
+// 掩蔽程度：城市、山地 1；城鎮 0.5（★建物與聚落提供的掩蔽取城市的一半，和防禦加成一致）；其他 0。火力打擊的命中門檻加上這個值（門檻 5.5＝命中率 25%）
+function terrCover(h){return h.t==='city'||h.t==='mtn'?1:h.town?.5:0;}
+const coverTxt=h=>terrCover(h)>=1?'（城市／山地較難）':terrCover(h)>0?'（城鎮稍難）':'';
 function seaPen(u){if(!atSea(u))return 0;const wh=wxWave(hexOf(u)),wp=wh>2?2:wh>1.25?1:0;return (u.type==='mar'?-1:-2)-wp;} // 搶灘突擊：浪高越大，登陸艇越難靠岸（>1.25 公尺 −1、>2.0 公尺 −2）
 const ADJ_N=()=>Math.round(kmH(ADJ_KM)); // 「相鄰」的格數（ring2 的半徑）
 function inZOC(side,h){ // 等同 ring2(h) 裡有敵方地面部隊：直接掃單位比掃 ring2 每一格快（10 km 格時 ring2 有約 60 格）
@@ -354,7 +357,7 @@ function doMove(u,k,kind){
 // 兵種相剋（★推估）：裝甲在平地壓制輕步兵；空降旅沒有重武器打不動裝甲；裝甲進城市或山地施展不開、易遭反裝甲伏擊
 const ARMOR=['arm','tank'],LIGHT=['abn','res'],FOOT=['inf','res','abn','mar','amph'];
 function matchMod(u,t,th){const rough=th.t==='city'||th.t==='mtn';
-  if(ARMOR.includes(u.type)&&LIGHT.includes(t.type)&&!rough)return {n:1,t:'裝甲在平地對輕步兵'};
+  if(ARMOR.includes(u.type)&&LIGHT.includes(t.type)&&!rough&&!th.town)return {n:1,t:'裝甲在平地對輕步兵'}; // 城鎮：聚落、水田與溝渠讓裝甲展不開，沒有平地優勢，但也不到城市巷戰的劣勢（★推估）
   if(ARMOR.includes(u.type)&&FOOT.includes(t.type)&&rough)return {n:-1,t:'裝甲攻擊'+(th.t==='city'?'城市':'山地')+'裡的步兵'};
   if(u.type==='abn'&&ARMOR.includes(t.type))return {n:-1,t:'空降旅沒有重武器'};
   return {n:0};}
@@ -411,7 +414,7 @@ function fireHimars(m,t){
   m.shots--;m.lu=(m.lu||0)+n;m.revealed=true; // 開火後暴露，下個守方階段前都是顯眼目標
   if(S.pools)S.pools[key]=Math.max(0,(S.pools[key]||0)-n); // 每輛 1 枚 ATACMS 或 1 個火箭莢艙（6 發）
   if(m.side==='def')useRec('海馬士齊射',1,atc?'陸軍戰術飛彈':'海馬士火箭彈（莢艙）',n,hname(hexOf(m)));
-  const need=Math.min(6,(atc?5:4)+((h.t==='city'||h.t==='mtn')?1:0)),fr=n/HMR_PKG*(atc&&!atSea(t)&&FOOT.includes(t.type)?.5:1),hit=hitP(pNeed(need)*fr,'fireHimars'); // ★陸軍戰術飛彈是單點精準武器，打分散的步兵效果差（×0.5） // 不滿 4 輛時命中率依比例縮小
+  const need=Math.min(6,(atc?5:4)+terrCover(h)),fr=n/HMR_PKG*(atc&&!atSea(t)&&FOOT.includes(t.type)?.5:1),hit=hitP(pNeed(need)*fr,'fireHimars'); // ★陸軍戰術飛彈是單點精準武器，打分散的步兵效果差（×0.5） // 不滿 4 輛時命中率依比例縮小
   fxq({t:'hmr',from:[m.c,m.r],to:[t.c,t.r],hit,atc});
   log('海馬士 '+n+' 輛齊射 '+(atc?n+' 枚陸軍戰術飛彈':n+' 個火箭莢艙（'+n*6+' 發）')+'（庫存剩 '+Math.round(S.pools?S.pools[key]:0)+(atc?' 枚飛彈）':' 個莢艙）')+(atc&&!atSea(t)&&FOOT.includes(t.type)?'（精準飛彈打分散步兵，命中率 ×0.5）':'')+(hit?'，命中 ':'，未命中 ')+hname(h)+' 的 '+TYPES[t.type].n+'（'+lastTxt()+'）');
   if(hit)damage(t,1,'海馬士火箭砲');
@@ -421,7 +424,7 @@ function fireMlrs(m,t){
   const h=hexOf(t),sea=atSea(t),d=rd(hexOf(m),h);
   m.shots--;m.rl=1;m.revealed=true; // 開火後暴露；再裝填要補給與時間，下個階段不能開火
   if(S.pools)S.pools.rocRkt=Math.max(0,S.pools.rocRkt-1);
-  const need=Math.min(6,(sea?6:5)+((!sea&&(h.t==='city'||h.t==='mtn'))?1:0)),fr=lchFrac(m),hit=hitP(pNeed(need)*fr,'fireMlrs'); // 無導引面積火力：命中率比海馬士低；打機動中的船更難
+  const need=Math.min(6,(sea?6:5)+(sea?0:terrCover(h))),fr=lchFrac(m),hit=hitP(pNeed(need)*fr,'fireMlrs'); // 無導引面積火力：命中率比海馬士低；打機動中的船更難
   fxq({t:'hmr',from:[m.c,m.r],to:[t.c,t.r],hit,atc:false});
   log('雷霆2000發射火箭彈（'+(d<=kmH(20)?'15 km 級':'30～45 km 級')+'）'+(fr<1?'（可射 '+ssmReady(m)+'／'+lchV0(m)+' 輛）':'')+(hit?'，命中 ':'，未命中 ')+hname(h)+' 的 '+TYPES[t.type].n+'（'+lastTxt()+'）');
   if(hit)damage(t,1,'雷霆2000火箭');
@@ -480,10 +483,10 @@ function locateP(t,kind){
 // 依據：1991 沙漠風暴在開闊沙漠、完全制空下，約 38 天、3.5 萬～4.3 萬架次才讓伊軍戰車減少約 39%（宣稱值，可能高估）；
 //  烏克蘭的經驗是分散、隱蔽的地面部隊很難被遠程火力大量殲滅。數字皆★推估：
 //  隱蔽中：每營每階段被定位（精確到能下一整個打擊包）的機率依制空——攻方優勢 5%、均勢 3%、守方優勢 1.5%；
-//   城市 ×0.5（建築與平民遮蔽）、山地 ×0.5（林木與地形）、夜間 ×0.7、雲雨或颱風 ×0.6
+//   城市 ×0.5（建築與平民遮蔽）、城鎮 ×0.75（城市的一半）、山地 ×0.5（林木與地形）、夜間 ×0.7、雲雨或颱風 ×0.6
 //  與敵軍接觸（同格或相鄰格有敵方地面部隊，或相鄰海上有攻方登陸船團——灘頭火力準備時守軍在監視範圍內）：前線部隊集中作戰、被偵察與無人機持續盯住，定位 35%
 //  已知位置：開戰頭 2 個回合仍在平時駐地或預構陣地（開戰時的位置，沒移動過）——多年情監偵早已掌握，定位 25%；第 3 回合起部隊已轉入野戰與備用陣地，恢復隱蔽
-const GLOC={ctl:{atk:.05,mid:.03,def:.015},city:.5,mtn:.5,night:.7,wx:.6,contact:.35,known:.25,knownT:2};
+const GLOC={ctl:{atk:.05,mid:.03,def:.015},city:.5,town:.75,mtn:.5,night:.7,wx:.6,contact:.35,known:.25,knownT:2};
 const isGnd=u=>!!u&&!isLch(u)&&!isShip(u)&&!atSea(u)&&CPW[u.type]!==undefined;
 function gContact(t){const h=hexOf(t);return [h,...nbrs(h.c,h.r)].some(n=>n&&unitsAt(n.k).some(e=>e.side!==t.side&&alive(e)&&!isShip(e)&&(isLand(n)?!atSea(e):e.side==='atk')));}
 function gKnown(t){const k=K(t.c,t.r);if(t.k0===undefined)t.k0=S.turn<=1?k:null;return S.turn<=GLOC.knownT&&t.k0===k;}
@@ -493,7 +496,7 @@ function gLocP(t){
   if(gContact(t)){p=GLOC.contact;f.push('與敵軍接觸，定位 '+Math.round(p*100)+'%');}
   else if(kn){p=GLOC.known;f.push('仍在開戰前已知的駐地或陣地，定位 '+Math.round(p*100)+'%');}
   else{p=GLOC.ctl[S.airCtl||'mid'];f.push('隱蔽中，制空'+AIRCTL[S.airCtl||'mid']+'時每營定位 '+(Math.round(p*1000)/10)+'%');
-    if(h.t==='city'){p*=GLOC.city;f.push('城市 ×'+GLOC.city);}else if(h.t==='mtn'){p*=GLOC.mtn;f.push('山地 ×'+GLOC.mtn);}
+    if(h.t==='city'){p*=GLOC.city;f.push('城市 ×'+GLOC.city);}else if(h.town){p*=GLOC.town;f.push('城鎮 ×'+GLOC.town);}else if(h.t==='mtn'){p*=GLOC.mtn;f.push('山地 ×'+GLOC.mtn);}
     if(S.turn%2===0){p*=GLOC.night;f.push('夜間 ×'+GLOC.night);}
     if(S.weather&&(S.weather.id==='bad'||tyThreat(S.weather))){p*=GLOC.wx;f.push('雲雨或颱風 ×'+GLOC.wx);}}
   if(!gContact(t)&&isrF()<1){p*=isrF();f.push('共軍指揮與偵察受損 ×'+(Math.round(isrF()*100)/100));}
@@ -549,7 +552,7 @@ function strike(t){
   if(window.__st)window.__st.push(t.type);
   const h=hexOf(t),soft=!covered(h)&&!(t.type==='ssm'||t.type==='hmr'||t.type==='mlrs')||atSea(t),pk=fireTake(h,soft);if(!pk)return false;S.stats.fire++;civHit('TW',h,'strike');
   const mob=isLch(t); // 機動發射車：先過殺傷鏈（定位與時效）
-  const need=Math.min(6,Math.max(2,((h.t==='city'||h.t==='mtn')?6:5)-((S.mods.strikeEase&&S.mods.strikeEase[S.turn])||0)));
+  const need=Math.min(6,Math.max(2,5+terrCover(h)-((S.mods.strikeEase&&S.mods.strikeEase[S.turn])||0)));
   if(mob&&lchFound(t,pk.k==='g'?'cm':'bm')<=0){
     fxq({t:'air',at:[t.c,t.r],hit:false,tsea:false,org:orgPick('pla'),k:pk.hs?'hs':pk.k==='g'?'cm':'bm'});
     log('火力打擊 '+hname(h)+'：'+(t.revealed?'發射車已轉移，打到空的陣地':'沒有找到（或已打過所有找到的）真正發射車，打中誘餌與空車')+'（'+t.locL.txt+'；本階段找到的車都已打過；推估）');checkInstant();return;}
