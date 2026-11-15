@@ -173,6 +173,31 @@ function tileDetail0(h,x,y){
 const FAR={};
 let GUAM_LL=null; // 關島示意位置（供海底地形判斷）
 // 外圍示意區的地標：以真實經緯度定位（粗格座標 = 細格像素 / KS），陸地形狀見 ISLANDS
+// 知名地標：只在放大到 900% 以上時顯示（#map.zhi），不能點選、不影響規則。位置為實際經緯度；圖示以底部中央為原點、高約 10 單位
+const LM_SEG=[0,1,2,3,4].map(i=>'M-1.2 '+(-2.5-i*1.2)+'L-1.8 '+(-3.7-i*1.2)+'L1.8 '+(-3.7-i*1.2)+'L1.2 '+(-2.5-i*1.2)+'Z').join('');
+const LANDMARKS=[
+  ['台北101',121.5645,25.0340,'<path d="M-2.1 0L-1.6 -2.5L1.6 -2.5L2.1 0Z'+LM_SEG+'M-.7 -8.5L-.7 -9.4L.7 -9.4L.7 -8.5Z"/><path class="ln" d="M0 -9.4L0 -11.6"/>'],
+  ['總統府',121.5119,25.0400,'<path d="M-5.2 0L-5.2 -2.4L-4 -2.4L-4 -3.5L-3 -3.5L-3 -2.4L-1 -2.4L-1 -6.4L0 -7.8L1 -6.4L1 -2.4L3 -2.4L3 -3.5L4 -3.5L4 -2.4L5.2 -2.4L5.2 0Z"/>'],
+  ['高雄85大樓',120.3000,22.6117,'<path d="M-2.7 0L-2.7 -6.2L-1.1 -6.2L-1.1 -9.6L1.1 -9.6L1.1 -6.2L2.7 -6.2L2.7 0L1.1 0L1.1 -3.8L-1.1 -3.8L-1.1 0Z"/><path class="ln" d="M0 -9.6L0 -11.6"/>'],
+  ['彰化大佛',120.5497,24.0780,'<circle cx="0" cy="-6.3" r="1.25"/><circle cx="0" cy="-7.7" r=".55"/>'+
+    '<path d="M-1.5 -5.1Q-3.1 -3.6 -3.6 -1.9L-4.8 -1.2L-4.8 0L4.8 0L4.8 -1.2L3.6 -1.9Q3.1 -3.6 1.5 -5.1Z"/><path d="M-5.4 .4L5.4 .4L4.4 1.5L-4.4 1.5Z"/>'],
+  ['淡江大橋',121.4180,25.1700,'<path class="ln" d="M-8 -1.6L8 -1.6M-1.5 0L-1.5 -9M-1.5 -8.6L-7 -1.6M-1.5 -7.4L-5.2 -1.6M-1.5 -6.2L-3.4 -1.6M-1.5 -8.6L6.5 -1.6M-1.5 -7.4L4.3 -1.6M-1.5 -6.2L2 -1.6"/>']];
+function landmarkSVG(){
+  const s=R*.055;let o='<g class="lmk">';
+  for(const [n,lon,lat,g] of LANDMARKS){
+    const [c,r]=llToRC(lon,lat),h=TER[K(c,r)],p=llPx(lon,lat),x=p[0],y=p[1]-(h?elev(h):0);
+    o+='<g data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+s.toFixed(3)+')">'+g+'<text y="5.6" text-anchor="middle">'+n+'</text></g>';
+  }
+  return o+'</g>';
+}
+function landmarkDim(){ // 地標和棋子重疊時變淡，不擋住棋子上的字
+  if(!$('#map').classList.contains('zhi'))return;
+  const us=S&&S.units?S.units.map(u=>cen(u.c,u.r)):[];
+  document.querySelectorAll('#gL .lmk>g').forEach(e=>{
+    const x=+e.dataset.x,y=+e.dataset.y;
+    e.classList.toggle('dim',us.some(p=>x-p[0]>-.7*R&&x-p[0]<1.3*R&&y-p[1]>-.9*R&&y-p[1]<1.15*R));
+  });
+}
 const llPx=(lon,lat)=>{const o=center(GEO.c0,GEO.r0),ox=center(GEO.c0+1,GEO.r0)[0]-o[0],oy=center(GEO.c0,GEO.r0+1)[1]-o[1];
   return [o[0]+(lon-GEO.lon0)/GEO.dlon*ox,o[1]+(GEO.lat0-lat)/GEO.dlat*oy];};
 function farPlace(lon,lat,t,name,tag,who){const [x,y]=llPx(lon,lat);FAR[name]={lon,lat,x:x/KS,y:y/KS,t,name,tag:tag||null,who:who||null};}
@@ -437,7 +462,9 @@ function buildStatic(){
   o+='<text class="big" font-size="13" x="'+cc(15,7)[0]+'" y="'+cc(15,7)[1]+'" writing-mode="tb">太平洋</text>';
   o+='<text class="big" font-size="12" x="'+cc(1,1)[0]+'" y="'+cc(1,1)[1]+'" writing-mode="tb">大陸沿海</text>';
   $('#gS').innerHTML=o;
+  $('#gL').innerHTML=landmarkSVG(); // 地標畫在棋子上方（不能點選），所在格有棋子時也看得到
   $('#map').classList.toggle('zlo',FG>2&&(typeof ZOOM==='undefined'?1:ZOOM)<1.6);
+  $('#map').classList.toggle('zhi',typeof ZOOM!=='undefined'&&ZOOM>=9);
   const svg=$('#map');svg.setAttribute('viewBox',(-MX0)+' '+(-MY0)+' '+EVBW.toFixed(1)+' '+EVBH.toFixed(1));
   STATIC.fleets=FLEETS.map(F=>{const a=center(F.from[0],F.from[1]),b=center(F.to[0],F.to[1]);return [b[0]-a[0],b[1]-a[1]];});
   STATIC.built=true;
@@ -655,5 +682,6 @@ function renderMap(){
   o+=mapMarksSVG();
   o+=mapTargetsSVG();
   $('#gD').innerHTML=o;
+  landmarkDim();
   animateUnitSlides();
 }

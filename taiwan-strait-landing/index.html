@@ -607,6 +607,10 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 #map .river{fill:none;stroke:#5b9cc4;stroke-linecap:round;stroke-linejoin:round;opacity:.95;pointer-events:none} #map .rvb{fill:none;stroke:#e9efe0;stroke-linecap:round;opacity:.55;pointer-events:none}
 #map .rvl{fill:#2f6f98;font-style:italic;pointer-events:none;display:none} body.rvl-on #map:not(.zlo) .rvl{display:inline} #map .peak{fill:#5a4a2a;font-weight:700;pointer-events:none}
 #map.zlo .rvl,#map.zlo .peak{display:none}
+#map .lmk{display:none;pointer-events:none} #map.zhi .lmk{display:inline} #map .lmk .dim{opacity:.38} #map .lmk .dim text{display:none}
+#map .lmk path,#map .lmk circle{fill:var(--ink);opacity:.82;stroke:var(--panel);stroke-width:.5;paint-order:stroke;stroke-linejoin:round}
+#map .lmk .ln{fill:none;stroke:var(--ink);stroke-width:.55;stroke-linecap:round;paint-order:normal}
+#map .lmk text{font-size:3.4px;font-weight:700;fill:var(--ink);stroke:var(--panel);stroke-width:.9;paint-order:stroke;stroke-linejoin:round}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #map .coast{stroke:#c9bb8a} :root:not([data-theme="light"]) #map .rvl{fill:#8cc4e6} :root:not([data-theme="light"]) #map .peak{fill:#e0cf9a}}
 :root[data-theme="dark"] #map .coast{stroke:#c9bb8a} :root[data-theme="dark"] #map .rvl{fill:#8cc4e6} :root[data-theme="dark"] #map .peak{fill:#e0cf9a}
 #map .btag{cursor:pointer} #map .btag rect{fill:#fff;stroke:var(--def);stroke-width:1.4;opacity:.94} #map .btag text{fill:var(--def);font-weight:700;pointer-events:none} #map .btl{stroke:var(--def);stroke-width:1;stroke-dasharray:2 2;opacity:.7;pointer-events:none} #map .btl.lost{stroke:var(--atk)} #map.zlo .btag,#map.zlo .btl{display:none}
@@ -668,7 +672,7 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
         <button class="ghost" id="btnSfx" aria-pressed="false">🔇<span class="bl"> 警報：關</span></button>
         <span class="dd">Ctrl＋滾輪可縮放；縮小可看外圍示意區（美中日各方投射武力的基地與海域），放大後可拖曳</span>
       </div>
-      <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"><defs id="mdefs"></defs><g id="gX"></g><g id="gS"></g><g id="gE"></g><g id="gD"></g><g id="gF" style="pointer-events:none"></g></svg><button class="loc" id="btnLoc" aria-label="回到台灣" title="回到台灣"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3.5 11.2 20.5 3.5 12.8 20.5 11 13Z" fill="#1a73e8" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg></button></div>
+      <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"><defs id="mdefs"></defs><g id="gX"></g><g id="gS"></g><g id="gE"></g><g id="gD"></g><g id="gL" style="pointer-events:none"></g><g id="gF" style="pointer-events:none"></g></svg><button class="loc" id="btnLoc" aria-label="回到台灣" title="回到台灣"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3.5 11.2 20.5 3.5 12.8 20.5 11 13Z" fill="#1a73e8" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg></button></div>
       <div class="vcap" id="vcap" hidden>
         <div class="vctl">
           <button class="ghost" id="vPrevT" title="上一回合" aria-label="上一回合">⏮</button>
@@ -828,40 +832,40 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-15.05' -->
-<script src="js/dict.js?v=2026-11-15.05"></script>
-<script src="js/i18n.js?v=2026-11-15.05"></script>
-<script src="js/btnfix.js?v=2026-11-15.05"></script>
-<script src="js/geo.js?v=2026-11-15.05"></script>
-<script src="js/dem.js?v=2026-11-15.05"></script>
-<script src="js/urban.js?v=2026-11-15.05"></script>
-<script src="js/map.js?v=2026-11-15.05"></script>
-<script src="js/state.js?v=2026-11-15.05"></script>
-<script src="js/rules.js?v=2026-11-15.05"></script>
-<script src="js/supply.js?v=2026-11-15.05"></script>
-<script src="js/ending.js?v=2026-11-15.05"></script>
-<script src="js/theater.js?v=2026-11-15.05"></script>
-<script src="js/airwar.js?v=2026-11-15.05"></script>
-<script src="js/carrier.js?v=2026-11-15.05"></script>
-<script src="js/strike.js?v=2026-11-15.05"></script>
-<script src="js/airstrike.js?v=2026-11-15.05"></script>
-<script src="js/decisions.js?v=2026-11-15.05"></script>
-<script src="js/report.js?v=2026-11-15.05"></script>
-<script src="js/turn.js?v=2026-11-15.05"></script>
-<script src="js/ai.js?v=2026-11-15.05"></script>
-<script src="js/render.js?v=2026-11-15.05"></script>
-<script src="js/fxanim.js?v=2026-11-15.05"></script>
-<script src="js/fx.js?v=2026-11-15.05"></script>
-<script src="js/video.js?v=2026-11-15.05"></script>
-<script src="js/stats.js?v=2026-11-15.05"></script>
-<script src="js/input.js?v=2026-11-15.05"></script>
-<script src="js/unitinfo.js?v=2026-11-15.05"></script>
-<script src="js/version.js?v=2026-11-15.05"></script>
-<script src="js/changelog.js?v=2026-11-15.05"></script>
-<script src="js/app.js?v=2026-11-15.05"></script>
-<script src="js/missions.js?v=2026-11-15.05"></script>
-<script src="js/mission_carrier.js?v=2026-11-15.05"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-15.06' -->
+<script src="js/dict.js?v=2026-11-15.06"></script>
+<script src="js/i18n.js?v=2026-11-15.06"></script>
+<script src="js/btnfix.js?v=2026-11-15.06"></script>
+<script src="js/geo.js?v=2026-11-15.06"></script>
+<script src="js/dem.js?v=2026-11-15.06"></script>
+<script src="js/urban.js?v=2026-11-15.06"></script>
+<script src="js/map.js?v=2026-11-15.06"></script>
+<script src="js/state.js?v=2026-11-15.06"></script>
+<script src="js/rules.js?v=2026-11-15.06"></script>
+<script src="js/supply.js?v=2026-11-15.06"></script>
+<script src="js/ending.js?v=2026-11-15.06"></script>
+<script src="js/theater.js?v=2026-11-15.06"></script>
+<script src="js/airwar.js?v=2026-11-15.06"></script>
+<script src="js/carrier.js?v=2026-11-15.06"></script>
+<script src="js/strike.js?v=2026-11-15.06"></script>
+<script src="js/airstrike.js?v=2026-11-15.06"></script>
+<script src="js/decisions.js?v=2026-11-15.06"></script>
+<script src="js/report.js?v=2026-11-15.06"></script>
+<script src="js/turn.js?v=2026-11-15.06"></script>
+<script src="js/ai.js?v=2026-11-15.06"></script>
+<script src="js/render.js?v=2026-11-15.06"></script>
+<script src="js/fxanim.js?v=2026-11-15.06"></script>
+<script src="js/fx.js?v=2026-11-15.06"></script>
+<script src="js/video.js?v=2026-11-15.06"></script>
+<script src="js/stats.js?v=2026-11-15.06"></script>
+<script src="js/input.js?v=2026-11-15.06"></script>
+<script src="js/unitinfo.js?v=2026-11-15.06"></script>
+<script src="js/version.js?v=2026-11-15.06"></script>
+<script src="js/changelog.js?v=2026-11-15.06"></script>
+<script src="js/app.js?v=2026-11-15.06"></script>
+<script src="js/missions.js?v=2026-11-15.06"></script>
+<script src="js/mission_carrier.js?v=2026-11-15.06"></script>
 <script>if(missionId())setTimeout(()=>missionStart(missionId()),0);</script>
-<script src="js/gamepad.js?v=2026-11-15.05"></script>
+<script src="js/gamepad.js?v=2026-11-15.06"></script>
 </body>
 </html>
