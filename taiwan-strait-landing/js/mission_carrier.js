@@ -15,7 +15,7 @@ MISSION_DEFS.carrier={
   note:'本關沿用主遊戲的規則與 2026 年的兵力，武器數字沒有為了關卡調整。結局「攻方暫停攻台」是假設情境，不是對真實戰局的預測。',
   ids:null,
   check(){
-    if(!this.ids||!this.ids.length){const cvs=S.units.filter(u=>u.type==='cv'&&u.side==='atk');this.ids=cvs.map(u=>u.id);this.snap={U:Object.assign({},S.stats.use||{}),F:Object.assign({},S.stats.fired||{}),P:Object.assign({},S.pools),TW:S.air?S.air.TW:0,PLA:S.air?S.air.PLA:0,ships:S.units.filter(u=>u.fl&&alive(u)).reduce((a,u)=>a+u.hp,0)};this.nm={};cvs.forEach(u=>{this.nm[u.id]=u.cvi!=null&&AIR.CV[u.cvi]?AIR.CV[u.cvi].n:'共軍航艦';});} // 開局時航艦棋子還沒擺上前不算；先記下艦名（沉沒後棋子就不在了）
+    if(!this.ids||!this.ids.length){const cvs=S.units.filter(u=>u.type==='cv'&&u.side==='atk');this.ids=cvs.map(u=>u.id);this.snap={UB:JSON.parse(JSON.stringify(S.stats.useBy||{})),U:Object.assign({},S.stats.use||{}),F:Object.assign({},S.stats.fired||{}),P:Object.assign({},S.pools),TW:S.air?S.air.TW:0,PLA:S.air?S.air.PLA:0,ships:S.units.filter(u=>u.fl&&alive(u)).reduce((a,u)=>a+u.hp,0)};this.nm={};cvs.forEach(u=>{this.nm[u.id]=u.cvi!=null&&AIR.CV[u.cvi]?AIR.CV[u.cvi].n:'共軍航艦';});} // 開局時航艦棋子還沒擺上前不算；先記下艦名（沉沒後棋子就不在了）
     if(!this.ids.length)return null;
     for(const id of this.ids){const u=S.units.find(x=>x.id===id);const nm=(this.nm&&this.nm[id])||'共軍航艦';
       if(!u||!alive(u)||u.hp<=1){const t=S.turn,st=t<=2?3:t===3?2:1;
@@ -33,7 +33,8 @@ function carrierDebrief(nm,t,st){
   const by={};H.forEach(h=>{by[h.why]=(by[h.why]||0)+h.n;});
   const D=MISSION_DEFS.carrier.snap||{P:S.p0,TW:S.air?S.air.TW0:0,PLA:S.air?S.air.PLA0:0,ships:S.rocShips0||0},P=S.pools,P0=D.P;
   const U0=D.U||{},F0=D.F||{},dif=(A,B)=>Object.entries(A||{}).map(([k,v])=>[k,v-(B[k]||0)]).filter(x=>x[1]>0);
-  const sorties=dif(S.stats.use,U0).map(([k,v])=>k+' '+v+' 次'),fired=dif(S.stats.fired,F0).map(([k,v])=>k+' '+v+' 枚');
+  const UB0=D.UB||{},byW=k=>{const d=dif((S.stats.useBy||{})[k],UB0[k]||{});return d.length?'（'+d.map(([w,v])=>w+' '+v).join('、')+'）':'';};
+  const sorties=dif(S.stats.use,U0).map(([k,v])=>k+' '+v+' 次'+byW(k)),fired=dif(S.stats.fired,F0).map(([k,v])=>k+' '+v+' 枚');
   const escLost=(S.stats.escLost||{}).atk||0,twAir=S.air?Math.max(0,Math.round(D.TW-S.air.TW)):0,ships=Math.max(0,D.ships-S.units.filter(u=>u.fl&&alive(u)).reduce((a,u)=>a+u.hp,0)),subs=Math.max(0,(P0.rocSub||0)-(P.rocSub||0));
   const li=a=>'<ul class="mdeb">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
   return '<div class="mgoal"><b>致命一擊</b>：'+(last?last.why+'（第 '+last.t+' 回合）':'海上交戰的抽象攻擊')+'</div>'+

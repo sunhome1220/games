@@ -68,7 +68,7 @@ function afLose(n,rate){const L=takeInt(n*rate*(S.airCtl==='atk'?1.5:1),'afLoss'
 // 一次出擊：x＝{u}（海上或島上的攻方單位）｜{cn:基地 id}｜{stg:集結中的單位}；auto＝電腦自動（不跳訊息）
 function afStrike(k,x,auto){
   if(afBudget(k)<=0){if(!auto)toast('這座機場本階段已沒有可出擊的打擊機',3000);return false;}
-  const h0=TER[k],from=[h0.c,h0.r],nm=(h0.name||'機場');let txt=null,L=0;useRec('空軍出擊（批，每批 4 架）',1);
+  const h0=TER[k],from=[h0.c,h0.r],nm=(h0.name||'機場');let txt=null,L=0;useRec('空軍出擊（批，每批 4 架）',1,null,0,nm);
   if(x.u&&atSea(x.u)){
     const t=x.u,A=afAsm(k);if(!A){if(!auto)toast((afWing(k)||[])[1]+' 沒有反艦飛彈',3000);return false;}const n=Math.min(AFS.pk,Math.floor(S.pools[A.pool]||0));if(n<=0){if(!auto)toast(A.n+' 已用完',3000);return false;}
     const pc=afCapP(t);
@@ -105,13 +105,13 @@ function coordStrike(k,t,nb,co){
   const pc=afCapP(t),bases=[TER[k]].concat(afUsable().filter(h=>h.k!==k)).filter(h=>afBudget(h.k)>0&&afCanHit(h.k,{u:t}));
   let tot=0,fl=0,cut=0,L=0,LA=0,parts=[];
   const used={};
-  for(let i=0;i<nb;i++){const h=bases.find(b=>afBudget(b.k)>0&&(S.pools[afAsm(b.k).pool]||0)>=1);if(!h)break;const A=afAsm(h.k),n=Math.min(AFS.pk,Math.floor(S.pools[A.pool]||0));if(n<=0)break;S.afB[h.k].n--;useRec('空軍出擊（批，每批 4 架）',1);
+  for(let i=0;i<nb;i++){const h=bases.find(b=>afBudget(b.k)>0&&(S.pools[afAsm(b.k).pool]||0)>=1);if(!h)break;const A=afAsm(h.k),n=Math.min(AFS.pk,Math.floor(S.pools[A.pool]||0));if(n<=0)break;S.afB[h.k].n--;useRec('空軍出擊（批，每批 4 架）',1,null,0,h.name||'基地');
     if(pc>0&&hitP(pc,'afCAP')){cut++;const l=takeInt(1.5,'afCAPloss');L+=l?airLose('def',l,'air'):0;fxCapX([h.c,h.r],t);continue;}
     S.pools[A.pool]-=n;used[A.n]=(used[A.n]||0)+n;useRec(null,0,A.n+'（空射）',n);tot+=n;fl++;const la=afLose(AFS.pk,adCover(t).length?AFS.loss:0);L+=la;LA+=la;}
   if(fl||cut)parts.push('空軍 '+(fl+cut)+' 批'+(Object.keys(used).length?'：'+Object.entries(used).map(([a,b])=>a+' '+b+' 枚').join('、'):'')+(cut?'（'+cut+' 批遭艦載機攔截、未發射）':''));
   let sN=0,sH=0,fN=[];
   for(const id of co||[]){const m=S.units.find(x=>x.id===id);if(!m||!targets(m).includes(t))continue;const n=coN(m);if(n<=0)continue;
-    if(m.fl){m.mag.asm-=n;m.shots=0;m.acted=true;fN.push(m.fl.s);useRec('艦隊齊射',1,fleetWn(m)+'（艦射）',n);}else{const pl=ssmPool(m);S.pools[pl]=Math.max(0,Math.round(((S.pools[pl]||0)-n/100)*100)/100);m.shots--;sN++;if(ssmHp(m))sH++;useRec('岸置反艦飛彈射擊',1,ssmHp(m)?'魚叉（岸防）':'雄二／雄三（岸置）',n);}
+    if(m.fl){m.mag.asm-=n;m.shots=0;m.acted=true;fN.push(m.fl.s);useRec('艦隊齊射',1,fleetWn(m)+'（艦射）',n,m.fl.n);}else{const pl=ssmPool(m);S.pools[pl]=Math.max(0,Math.round(((S.pools[pl]||0)-n/100)*100)/100);m.shots--;sN++;if(ssmHp(m))sH++;useRec('岸置反艦飛彈射擊',1,ssmHp(m)?'魚叉（岸防）':'雄二／雄三（岸置）',n,(ssmHp(m)?'魚叉岸防 ':'雄風 ')+hname(hexOf(m)));}
     m.revealed=true;tot+=n;}
   if(sN-sH)parts.push('岸置雄風 '+(sN-sH)+' 個單位');if(sH)parts.push('魚叉岸防 '+sH+' 個單位');if(fN.length)parts.push('艦隊 '+fN.join('、'));
   let txt;
