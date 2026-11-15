@@ -1,6 +1,8 @@
 'use strict';
 /* ---------- turn flow ---------- */
-const ATK_REINF={2:[['amph','north'],['amph','central'],['arm'],['mar','north']],3:[['mar','central'],['amph','north'],['amph','central'],['arm']],4:[['amph','north'],['amph','central'],['arm'],['amph','north']],5:[['amph','north'],['amph','central'],['arm'],['amph','central']],6:[['amph','north'],['amph','central'],['mar','central'],['arm']],7:[['amph','north'],['amph','central'],['arm'],['amph','north']],8:[['amph','north'],['amph','central'],['amph','central']]};
+const ATK_REINF={2:[['amph','north'],['amph','central'],['arm'],['mar','north']],3:[['mar','central'],['amph','north'],['amph','central'],['arm']],4:[['amph','north'],
+    ['amph','central'],['arm'],['amph','north']],5:[['amph','north'],['amph','central'],['arm'],['amph','central']],6:[['amph','north'],['amph','central'],['mar','central'],
+    ['arm']],7:[['amph','north'],['amph','central'],['arm'],['amph','north']],8:[['amph','north'],['amph','central'],['amph','central']]};
 const DEF_REINF={2:[SPOT.taipei,SPOT.taichung],3:[SPOT.taoyuan,SPOT.tainan],4:[SPOT.hsinchu,SPOT.kaohsiung]};
 // 預排增援到第 8 回合為止；之後不會憑空生出新的旅（要更多兵力只能在戰前準備階段選擇擴大動員）
 function placeNear(k,filter){
@@ -343,9 +345,9 @@ function landSync(){
 // 單次齊射（陸基或潛艦）：n 枚打 t；有艦隊防空走齊射模型
 function pieceSalvo(m,t,n,wn,key){
   n=Math.min(n,m.mag.asm);if(n<=0)return false;m.mag.asm-=n;m.revealed=true;
-  const r=salvoCalc(t,n,false,key+'>'+t.type),big=t.type==='cv'||t.type==='csg',steps=big?takeInt(r.hits/2,'salvoBig'):r.hits;
+  const r=salvoHit(t,n,key+'>'+t.type),big=isBigShip(t),steps=r.steps;
   fxSalvo([m.c,m.r],t,r);
-  log(uname(m)+'以 '+n+' 枚'+wn+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+(steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):'，未造成重創')+'（齊射模型，參數為推估）');
+  log(uname(m)+'以 '+n+' 枚'+wn+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
   if(steps)damage(t,steps,TYPES[m.type].n+wn);checkInstant();return true;
 }
 function shipFoes(u,R){return S.units.filter(e=>e.side==='atk'&&atSea(e)&&isShip(e)&&e.type!=='hk'&&e.type!=='fob'&&rd(hexOf(u),hexOf(e))<=R);}
@@ -403,7 +405,10 @@ function wxMapSVG(){ // 地圖：各海域浪高標籤、颱風（中心、暴�
     if(t.trail&&t.trail.length)o+='<polyline points="'+t.trail.concat([[t.lon,t.lat]]).map(p=>P(p).map(v=>v.toFixed(1)).join(',')).join(' ')+'" fill="none" stroke="#8e44ad" stroke-width="2" stroke-dasharray="2 4" opacity=".7"/>';
     o+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+(2*R).toFixed(1)+'" fill="#8e44ad" fill-opacity=".04" stroke="#8e44ad" stroke-opacity=".25" stroke-dasharray="4 6"/>';
     o+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+R.toFixed(1)+'" fill="#8e44ad" fill-opacity=".1" stroke="#8e44ad" stroke-opacity=".6" stroke-width="2"/>';
-    if(nx){const [x2,y2]=P([nx.lon,nx.lat]);o+='<line x1="'+x.toFixed(1)+'" y1="'+y.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="#8e44ad" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#tyArr)" opacity=".8"/><circle cx="'+x2.toFixed(1)+'" cy="'+y2.toFixed(1)+'" r="5" fill="none" stroke="#8e44ad" stroke-width="2" opacity=".8"/>';}
+    if(nx){const [x2,y2]=P([nx.lon,nx.lat]);
+      o+='<line x1="'+x.toFixed(1)+'" y1="'+y.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="#8e44ad" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#tyArr)" opacity=".8"/><circle cx="'+
+          x2.toFixed(1)+'" cy="'+y2.toFixed(1)+'" r="5" fill="none" stroke="#8e44ad" stroke-width="2" opacity=".8"/>';
+      }
     o+='<defs><marker id="tyArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8e44ad"/></marker></defs>';
     o+='<g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+')"><circle r="16" fill="#8e44ad" fill-opacity=".85"/><path d="M0-11C7-11 11-5 9 1M0 11C-7 11-11 5-9-1M11 0C11 7 5 11-1 9M-11 0C-11-7-5-11 1-9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle r="3" fill="#fff"/></g>';
     o+='<text x="'+x.toFixed(1)+'" y="'+(y-22).toFixed(1)+'" text-anchor="middle" font-size="12" font-weight="800" fill="#8e44ad" stroke="var(--panel,#fff)" stroke-width="3" paint-order="stroke">'+TYC[t.cls].n+'颱風・暴風半徑 '+t.R+' km</text>';
@@ -446,7 +451,12 @@ function uscSync(){let first=null;for(const id of CSGS){const u=uscSync1(id);if(
 function uscSync1(id){
   const f=S.fx&&S.fx.units.find(x=>x.id===id);if(!f)return null;let u=csgPieceOf(f);const ci=csgIdx(id);
   const on=f&&f.hp>0&&fxActive(f);
-  if(!on){if(u)S.units=S.units.filter(x=>x!==u&&!(x.type==='ssn'&&x.grp===u.id));const es=S.units.filter(e=>e.ally==='US'&&isEsc(e)&&(!u||e.grp===u.id)&&(u||!S.units.some(x=>x.type==='csg'&&x.id===e.grp)));if(es.length){S.units=S.units.filter(e=>!es.includes(e));log('美軍護航艦隨'+csgName(ci)+'撤離戰區（'+es.length+' 艘）');}return null;}
+  if(!on){if(u)S.units=S.units.filter(x=>x!==u&&!(x.type==='ssn'&&x.grp===u.id));
+    const es=S.units.filter(e=>e.ally==='US'&&isEsc(e)&&(!u||e.grp===u.id)&&(u||!S.units.some(x=>x.type==='csg'&&x.id===e.grp)));
+    if(es.length){S.units=S.units.filter(e=>!es.includes(e));
+    log('美軍護航艦隨'+csgName(ci)+'撤離戰區（'+es.length+' 艘）');
+    }return null;
+    }
   if(!u){
     const [c,r]=llToRC(USC_HOME[0],USC_LAT[ci]||USC_HOME[1]);const k0=TER[K(c,r)]?K(c,r):null;
     const h=k0&&TER[k0].t==='sea'&&!unitAt(k0)?TER[k0]:placeNear(k0||Object.keys(TER).find(k=>TER[k].t==='sea'),x=>x.t==='sea'&&x.c>=c-3);
@@ -465,7 +475,17 @@ async function uscTurn(){
 }
 async function uscMove(u){
   if(u.moved)return;u.prev=[u.c,u.r];
-  if(cvOOA(u)){const foe=S.units.filter(e=>e.side==='atk'&&atSea(e)&&isShip(e));let best=null,bs=-1e9;for(const [k,v] of reach(u)){if(v.kind!=='sail')continue;const h=TER[k],sc=(foe.length?Math.min(...foe.map(e=>hd(h,hexOf(e)))):0)+h.c*.5;if(sc>bs){bs=sc;best=k;}}if(best){doMove(u,best,'sail');render();await sleep(200);}return;} // 失去戰鬥能力：往東撤離
+  if(cvOOA(u)){const foe=S.units.filter(e=>e.side==='atk'&&atSea(e)&&isShip(e));
+    let best=null,bs=-1e9;
+    for(const [k,v] of reach(u)){if(v.kind!=='sail')continue;
+    const h=TER[k],sc=(foe.length?Math.min(...foe.map(e=>hd(h,hexOf(e)))):0)+h.c*.5;
+    if(sc>bs){bs=sc;
+    best=k;
+    }}if(best){doMove(u,best,'sail');
+    render();
+    await sleep(200);
+    }return;
+    } // 失去戰鬥能力：往東撤離
   const rc=reach(u),tw=Object.values(TER).filter(h=>h.isl==='TW'&&h.coastal);
   const foe=S.units.filter(e=>e.side==='atk'&&atSea(e));
   // 有共軍水面艦隊時：待在對方艦射反艦飛彈射程（＋2 格）外，但在自己艦載機的打擊距離內；沒有時：維持在台灣東岸外約 6 格
@@ -530,7 +550,15 @@ async function beginPhase(side){
   if(typeof MISSION!=='undefined'&&MISSION&&MISSION.phase(side))return; // 關卡挑戰：限時到了就結束
   S.phase=side;S.sel=null;S.mode=null;
   GHOSTS.clear();S.units.forEach(u=>{u.inc=0;u.dropHide=0;if(side==='def')u.revealed=!!(u.mT&&S.turn<u.mT);});
-  for(const u of S.units)if(u.side===side){u.moved=false;u.acted=false;if(u.type==='hk'){if(hexOf(u).t==='port'){u.tp=hkTp(u);u.hm=HK_HM;}u.shots=hkSpent(u)?0:1;}if(isEsc(u))u.shots=1;if(u.type==='mlrs'&&u.rl>0)u.rl--;if(isMsl(u))u.shots=(u.type==='ssm'&&S.pools&&(S.pools[ssmPool(u)]||0)<=0)?0:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):u.type==='mlrs'?(u.rl>0?0:1):u.type==='hmr'?(u.lu=0,Math.ceil(ssmReady(u)/HMR_PKG)):u.type==='ff'?1:2;}
+  for(const u of S.units)if(u.side===side){u.moved=false;
+    u.acted=false;
+    if(u.type==='hk'){if(hexOf(u).t==='port'){u.tp=hkTp(u);
+    u.hm=HK_HM;
+    }u.shots=hkSpent(u)?0:1;
+    }if(isEsc(u))u.shots=1;
+    if(u.type==='mlrs'&&u.rl>0)u.rl--;
+    if(isMsl(u))u.shots=(u.type==='ssm'&&S.pools&&(S.pools[ssmPool(u)]||0)<=0)?0:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):u.type==='mlrs'?(u.rl>0?0:1):u.type==='hmr'?(u.lu=0,Math.ceil(ssmReady(u)/HMR_PKG)):u.type==='ff'?1:2;
+    }
   for(const u of S.units)if(u.side===side&&(u.type==='hmr'||u.type==='mlrs')&&u.veh!=null&&ssmReady(u)<=0)u.shots=0; // 車都不能射了
   if(side==='atk')S.turnStart={snap:snap(),lv:Object.assign({},S.fx.lv),owner:Object.assign({},S.owner)};
   if(window.TSL_RUMBLE&&humanTurn())TSL_RUMBLE('turn'); // 輪到自己操作時短震一下

@@ -12,7 +12,8 @@ function collectRun(){
   const cs=conditions(),n=cs.filter(c=>c.atk).length,R=S.result||{side:n>=2?'atk':'def',n},c=costSummary(),ev={};
   S.events.forEach(e=>{if(e.choice)ev[e.id]=e.choice;});
   const src=hitSrc;
-  return {srcA:src('atk'),srcD:src('def'),lim:!!R.limited,win:R.side==='atk'&&!R.limited,draw:R.side==='draw',n:R.n,early:!!R.early,tp:cs[0].atk,pt:cs[1].atk,fo:cs[2].atk,milA:c.mil.atk.n,milD:c.mil.def.n,civ:c.civ.TW,mkt:c.mkt,us:S.fx.lv.US,usPost:usIdx(),usRet:S.us.hist.some(h=>h.retreat),ev,end:R.ending,sA:R.scoreA,sD:R.scoreD};
+  return {srcA:src('atk'),srcD:src('def'),lim:!!R.limited,win:R.side==='atk'&&!R.limited,draw:R.side==='draw',n:R.n,early:!!R.early,tp:cs[0].atk,pt:cs[1].atk,fo:cs[2].atk,
+      milA:c.mil.atk.n,milD:c.mil.def.n,civ:c.civ.TW,mkt:c.mkt,us:S.fx.lv.US,usPost:usIdx(),usRet:S.us.hist.some(h=>h.retreat),ev,end:R.ending,sA:R.scoreA,sD:R.scoreD};
 }
 function statBar(label,p,cls){return '<div class="sbar"><span>'+label+'</span><i><em class="'+(cls||'')+'" style="width:'+p+'%"></em></i><b>'+p+'%</b></div>';}
 function statsHTML(rows){
@@ -31,7 +32,10 @@ function statsHTML(rows){
   takeaways.push(W/N>=.6?'這組設定對攻方有利：約 '+pct(W,N)+'% 的局攻方達成勝利條件。':W/N<=.25?'這組設定對守方有利：攻方只有約 '+pct(W,N)+'% 的局達成勝利條件。':'這組設定雙方互有勝負：攻方約 '+pct(W,N)+'% 的局獲勝。');
   const cond=[['首都台北',rows.filter(r=>r.tp).length],['主要港口',rows.filter(r=>r.pt).length],['島上戰力',rows.filter(r=>r.fo).length]].sort((a,b)=>a[1]-b[1]);
   {const av=(side,k)=>rows.reduce((x,r)=>x+r[side][k],0)/N,f1=v=>v.toFixed(1);
-   takeaways.push('損失來源（每局平均'+(plainT()?'受創次數':'步數')+'）：攻方共 '+f1(['TW','US','JP','GND','OTH'].reduce((x,k)=>x+av('srcA',k),0))+(plainT()?' 次':' 步')+'，其中台灣反艦飛彈與海空軍 '+f1(av('srcA','TW'))+'、美軍 '+f1(av('srcA','US'))+'、日本 '+f1(av('srcA','JP'))+'、地面戰鬥 '+f1(av('srcA','GND'))+'；守方共 '+f1(['TW','US','JP','GND','OTH'].reduce((x,k)=>x+av('srcD',k),0))+(plainT()?' 次':' 步')+'，其中共軍火力打擊等 '+f1(av('srcD','OTH')+av('srcD','TW'))+'、地面戰鬥 '+f1(av('srcD','GND'))+'。');}
+   takeaways.push('損失來源（每局平均'+(plainT()?'受創次數':'步數')+'）：攻方共 '+f1(['TW','US','JP','GND','OTH'].reduce((x,k)=>x+av('srcA',k),0))+(plainT()?' 次':' 步')+'，其中台灣反艦飛彈與海空軍 '+
+       f1(av('srcA','TW'))+'、美軍 '+f1(av('srcA','US'))+'、日本 '+f1(av('srcA','JP'))+'、地面戰鬥 '+f1(av('srcA','GND'))+'；守方共 '+f1(['TW','US','JP','GND','OTH'].reduce((x,k)=>x+av('srcD',
+       k),0))+(plainT()?' 次':' 步')+'，其中共軍火力打擊等 '+f1(av('srcD','OTH')+av('srcD','TW'))+'、地面戰鬥 '+f1(av('srcD','GND'))+'。');
+     }
   {const av=k=>Math.round(rows.reduce((x,r)=>x+(r[k]||0),0)/N);takeaways.push('結局分布：'+ENDORDER.map(k=>ENDCARDS[k].t+' '+pct(rows.filter(r=>r.end===k).length,N)+'%').join('、')+'；平均評分 攻方 '+av('sA')+'、守方 '+av('sD')+'。');}
   takeaways.push('三項條件中最難達成的是「'+cond[0][0]+'」（'+pct(cond[0][1],N)+'%），最容易的是「'+cond[2][0]+'」（'+pct(cond[2][1],N)+'%）。');
   if(best&&best.gap>=15)takeaways.push('決策中影響最大的是「'+best.name+'」：選「'+best.hi.k+'」時攻方勝率約 '+pct(best.hi.w,best.hi.n)+'%，選「'+best.lo.k+'」時約 '+pct(best.lo.w,best.lo.n)+'%。');
@@ -42,8 +46,11 @@ function statsHTML(rows){
   if(ret.length>=5)takeaways.push('美軍因傷亡升高而退縮的有 '+ret.length+' 局（'+pct(ret.length,N)+'%），這些局攻方勝率約 '+pct(ret.filter(r=>r.win).length,ret.length)+'%'+(eng.length>=5?'；參戰且未退縮的局約 '+pct(eng.filter(r=>r.win).length,eng.length)+'%':'')+'。');
   const usFull=rows.filter(r=>r.us>=3);if(usFull.length>=8&&usFull.length<N-7)takeaways.push('美國全面參戰時攻方勝率約 '+pct(usFull.filter(r=>r.win).length,usFull.length)+'%，其他情況約 '+pct(rows.filter(r=>r.us<3&&r.win).length,rows.filter(r=>r.us<3).length)+'%。');
   const outs='<h3>攻方勝率 '+pct(W,N)+'%　<span class="dd">僵局 '+pct(rows.filter(r=>r.draw).length,N)+'%・守方勝 '+pct(N-W-rows.filter(r=>r.draw).length,N)+'%</span></h3>';
-  const costT='<table class="ctable"><tbody><tr><td>攻方軍人傷亡</td><td>'+range('milA',v=>ppl(v))+'</td></tr><tr><td>守方軍人傷亡</td><td>'+range('milD',v=>ppl(v))+'</td></tr><tr><td>台灣平民傷亡</td><td>'+range('civ',v=>ppl(v))+'</td></tr><tr><td>全球股市</td><td>'+range('mkt',v=>v.toFixed(1)+'%')+'</td></tr></tbody></table>';
-  const usT='<table class="ctable"><tbody><tr><td colspan="3"><b>最高參戰程度</b></td></tr>'+us.sort((a,b)=>LV.US.indexOf(a.k)-LV.US.indexOf(b.k)).map(x=>'<tr><td>'+x.k+'</td><td>'+x.n+' 局</td><td>攻方勝率 '+pct(x.w,x.n)+'%'+(x.n<8?'<span class="dd">（樣本少）</span>':'')+'</td></tr>').join('')+'<tr><td colspan="3"><b>結束時的立場</b></td></tr>'+up.sort((a,b)=>b.n-a.n).map(x=>'<tr><td>'+x.k+'</td><td>'+x.n+' 局</td><td>攻方勝率 '+pct(x.w,x.n)+'%'+(x.n<8?'<span class="dd">（樣本少）</span>':'')+'</td></tr>').join('')+'</tbody></table>';
+  const costT='<table class="ctable"><tbody><tr><td>攻方軍人傷亡</td><td>'+range('milA',v=>ppl(v))+'</td></tr><tr><td>守方軍人傷亡</td><td>'+range('milD',v=>ppl(v))+'</td></tr><tr><td>台灣平民傷亡</td><td>'+
+      range('civ',v=>ppl(v))+'</td></tr><tr><td>全球股市</td><td>'+range('mkt',v=>v.toFixed(1)+'%')+'</td></tr></tbody></table>';
+  const usT='<table class="ctable"><tbody><tr><td colspan="3"><b>最高參戰程度</b></td></tr>'+us.sort((a,b)=>LV.US.indexOf(a.k)-LV.US.indexOf(b.k)).map(x=>'<tr><td>'+x.k+
+      '</td><td>'+x.n+' 局</td><td>攻方勝率 '+pct(x.w,x.n)+'%'+(x.n<8?'<span class="dd">（樣本少）</span>':'')+'</td></tr>').join('')+'<tr><td colspan="3"><b>結束時的立場</b></td></tr>'+
+      up.sort((a,b)=>b.n-a.n).map(x=>'<tr><td>'+x.k+'</td><td>'+x.n+' 局</td><td>攻方勝率 '+pct(x.w,x.n)+'%'+(x.n<8?'<span class="dd">（樣本少）</span>':'')+'</td></tr>').join('')+'</tbody></table>';
   return '<div class="finw"><div class="fin-head"><div class="eyebrow">統計結果 · '+N+' 局</div>'+outs+
     '<div class="dd">95% 信賴區間約 '+Math.round(lo*100)+'%～'+Math.round(hi*100)+'%。設定：第 '+$('#optT').value+' 回合判定、'+ERA[$('#optEra').value].n+'、'+optLabel('optBuild',$('#optBuild').value)+'、'+optLabel('optFx',$('#optFx').value)+'。雙方由電腦操作，事件決策與擲骰隨機。</div>'+
     '<ul class="stk">'+takeaways.map(t=>'<li>'+t+'</li>').join('')+'</ul></div>'+
@@ -64,7 +71,10 @@ async function runStats(N){
   const keep={S,final:REC.final,frames:REC.frames,prev:REC.prev};
   const box=mboxSet('ev');$('#resume').hidden=true;$('#modal').hidden=false;
   const rows=[];
-  const prog=i=>{box.innerHTML='<div class="eyebrow">統計中</div><h3>正在模擬 '+i+' / '+N+' 局</h3><div class="pbar"><i style="width:'+Math.round(i/N*100)+'%"></i></div><p class="dd">雙方由電腦操作，事件決策與擲骰隨機；通常不到一分鐘。</p><div class="btns"><button class="ghost" id="stCancel">取消並顯示目前結果</button></div>';$('#stCancel').onclick=()=>{STAT.cancel=true;};};
+  const prog=i=>{box.innerHTML='<div class="eyebrow">統計中</div><h3>正在模擬 '+i+' / '+N+' 局</h3><div class="pbar"><i style="width:'+Math.round(i/N*100)+'%"></i></div><p class="dd">雙方由電腦操作，事件決策與擲骰隨機；通常不到一分鐘。</p><div class="btns"><button class="ghost" id="stCancel">取消並顯示目前結果</button></div>';
+    $('#stCancel').onclick=()=>{STAT.cancel=true;
+    };
+    };
   prog(0);await new Promise(r=>setTimeout(r,30));
   for(let i=0;i<N&&!STAT.cancel;i++){
     try{await simRun(true);rows.push(collectRun());}catch(e){console.error(e);break;}

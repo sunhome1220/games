@@ -14,7 +14,8 @@
     let d=document.getElementById('wn');if(d)d.remove();
     d=document.createElement('div');d.id='wn';d.setAttribute('role','dialog');d.setAttribute('aria-label','加入主畫面');
     const steps=ios?['點 Safari 下方（或右上角）的「分享」按鈕','在選單中往下找並點「加入主畫面」','按「新增」，之後就能像 App 一樣從主畫面開啟']:['點瀏覽器右上角的選單（⋮）','選「安裝應用程式」或「加到主畫面」','確認後，之後就能像 App 一樣從主畫面開啟'];
-    d.innerHTML='<div class="wn-card"><button class="wn-x" aria-label="關閉">✕</button><h3>加入主畫面</h3><p style="margin:0 0 6px;font-size:13.5px">把遊戲加到主畫面，可以全螢幕開啟、不用每次輸入網址：</p><ol style="margin:4px 0 0;padding-left:20px;font-size:13.5px">'+steps.map(x=>'<li style="margin:5px 0">'+x+'</li>').join('')+'</ol><div class="btns"><button id="wnOk">知道了</button></div></div>';
+    d.innerHTML='<div class="wn-card"><button class="wn-x" aria-label="關閉">✕</button><h3>加入主畫面</h3><p style="margin:0 0 6px;font-size:13.5px">把遊戲加到主畫面，可以全螢幕開啟、不用每次輸入網址：</p><ol style="margin:4px 0 0;padding-left:20px;font-size:13.5px">'+
+        steps.map(x=>'<li style="margin:5px 0">'+x+'</li>').join('')+'</ol><div class="btns"><button id="wnOk">知道了</button></div></div>';
     document.body.appendChild(d);const close=()=>d.remove();d.querySelector('#wnOk').onclick=close;d.querySelector('.wn-x').onclick=close;d.addEventListener('click',e=>{if(e.target===d)close();});d.querySelector('#wnOk').focus();
   };
   sync();
@@ -109,8 +110,11 @@ const SETUP_PAGES=[
   {sel:'optEra',q:'兵力年代（年份）',opts:Object.fromEntries(Object.entries(ERA).map(([y,e])=>[y,[e.n,e.d,e.short]]))}]},
  {t:'戰前集結',s:'集結',d:'集結越公開，台美日越早準備。',fields:[
   {sel:'optExer',q:'演習規模（借演習轉為攻擊）',when:()=>!isSim()&&$('#optBuild').value==='exercise',opts:{small:['小規模','同歷次環台軍演（單日約 150 架次、十幾艘軍艦）。識破約 15%。基準。'],mid:['中規模','超過歷次軍演。護航艦 +2（預先部署在海峽），識破約 45%。'],huge:['空前大規模','近乎戰爭的規模。護航艦 +3、兩棲旅 +1，但識破約 85%。']}},
-  {sel:'optLift',q:'共軍海運運力估計（登陸艦與運輸船）',when:()=>!isSim(),opts:{'0':['保守','總運力約 8 個旅（約 3～4 萬人）：兩棲艦群 4 個可直接搶灘；滾裝船 4 個旅要等拿下港口，或守住灘頭架設浮動碼頭才能卸載（後續梯隊）。依 2025 年分析的保守估計。'],'1':['中間（基準）','總運力約 11 個旅（約 4 萬人）：兩棲艦群 5 個可直接搶灘；滾裝船 6 個旅屬後續梯隊，要港口或浮動碼頭。依多數公開估計的中間值。'],'2':['樂觀','總運力約 13 個旅（約 6 萬人）：兩棲艦群 5 個可直接搶灘；滾裝船 8 個旅屬後續梯隊，要港口或浮動碼頭。依 Shugart 2022 年軍民合計的樂觀估計。']}},
-  {sel:'optMonth',q:'開戰月份（決定天候機率）',opts:{'1':['1 月','東北季風、浪高；無颱風。守方動員較慢。'],'2':['2 月','東北季風、浪高；無颱風。守方動員較慢。'],'3':['3 月','東北季風尾聲，天候漸穩。'],'4':['4 月','春季窗口：海象最穩定，第 1 回合必為好天氣。基準設定。'],'5':['5 月','天候尚可，梅雨前後。'],'6':['6 月','梅雨季，濕度高、能見度時好時壞。'],'7':['7 月','颱風季開始，惡劣天候機率上升（無東北季風）。'],'8':['8 月','颱風季高峰，惡劣天候機率最高。'],'9':['9 月','颱風季高峰，惡劣天候機率高。'],'10':['10 月','秋季窗口：能見度佳，第 1 回合火力 +2；東北季風開始。'],'11':['11 月','東北季風，浪高。'],'12':['12 月','東北季風、浪高；無颱風。守方動員較慢。']}},
+  {sel:'optLift',q:'共軍海運運力估計（登陸艦與運輸船）',when:()=>!isSim(),opts:{'0':['保守','總運力約 8 個旅（約 3～4 萬人）：兩棲艦群 4 個可直接搶灘；滾裝船 4 個旅要等拿下港口，或守住灘頭架設浮動碼頭才能卸載（後續梯隊）。依 2025 年分析的保守估計。'],
+      '1':['中間（基準）','總運力約 11 個旅（約 4 萬人）：兩棲艦群 5 個可直接搶灘；滾裝船 6 個旅屬後續梯隊，要港口或浮動碼頭。依多數公開估計的中間值。'],'2':['樂觀','總運力約 13 個旅（約 6 萬人）：兩棲艦群 5 個可直接搶灘；滾裝船 8 個旅屬後續梯隊，要港口或浮動碼頭。依 Shugart 2022 年軍民合計的樂觀估計。']}},
+  {sel:'optMonth',q:'開戰月份（決定天候機率）',opts:{'1':['1 月','東北季風、浪高；無颱風。守方動員較慢。'],'2':['2 月','東北季風、浪高；無颱風。守方動員較慢。'],'3':['3 月','東北季風尾聲，天候漸穩。'],'4':['4 月','春季窗口：海象最穩定，第 1 回合必為好天氣。基準設定。'],
+      '5':['5 月','天候尚可，梅雨前後。'],'6':['6 月','梅雨季，濕度高、能見度時好時壞。'],'7':['7 月','颱風季開始，惡劣天候機率上升（無東北季風）。'],'8':['8 月','颱風季高峰，惡劣天候機率最高。'],'9':['9 月','颱風季高峰，惡劣天候機率高。'],'10':['10 月',
+      '秋季窗口：能見度佳，第 1 回合火力 +2；東北季風開始。'],'11':['11 月','東北季風，浪高。'],'12':['12 月','東北季風、浪高；無颱風。守方動員較慢。']}},
   {sel:'optBuild',q:'攻方怎麼集結？',when:()=>!isSim(),opts:{open:['公開全面集結','兵力最多（+2 兩棲旅、+1 重型旅、護航艦隊 +2），但守方提早動員、美國航艦已在附近。'],exercise:['演習掩護','以軍演名義集結，雙方都只有部分預警。基準。'],surprise:['戰略突襲','兵力少一截（−2 兩棲旅、−1 重型旅），換取守方動員延後。']}},
   {sel:'optAxN',q:'攻擊軸線：北部（林口、桃園，可多選）',when:()=>!isSim(),opts:{'0':['不指定／電腦決定','北、中部都不勾時，由電腦選一個主攻區並集中兵力。'],'1':['選擇北部','朝台北方向（林口、淡水、桃園）。']}},
   {sel:'optAxC',q:'攻擊軸線：中部（新竹、苗栗、台中港）',when:()=>!isSim(),opts:{'0':['不選',''],'1':['選擇中部','朝台中港與新竹方向。']}},
@@ -123,12 +127,15 @@ const SETUP_PAGES=[
   {sel:'optWiDArms',grp:'def',q:'軍購準時到貨',opts:{'0':['關閉',''],'1':['開啟','美製武器如期交付：守方反艦飛彈 +3、防空 +1；2026 年海馬士第二批（18 輛、陸軍戰術飛彈 20 枚）開戰前到貨，其他年代長程飛彈 +2。']}},
   {sel:'optWiLocal',grp:'def',q:'國造武器提前量產',opts:{'0':['關閉',''],'1':['開啟','海鯤潛艦 +1、長程飛彈 +3。依官方量產計畫的樂觀假設，屬推估。']}},
   {sel:'optWiAllies',grp:'def',q:'美日提前介入',opts:{'0':['關閉',''],'1':['開啟','美軍航艦打擊群提前到位。']}}]},
- {t:'守方戰前準備',s:'守備',d:'開戰前守方的備戰、預警反應與兵力部署，都在這裡先決定，開戰後不再彈窗。選「電腦決定」就由電腦隨機挑一項（不含🔥）。每項都標明好處與代價。',fields:EVENTS.filter(e=>e.setup).map(e=>({sel:e.setup,q:e.title,when:()=>$('#optMode').value!=='play'||$('#optSide').value!=='atk',opts:Object.fromEntries([['auto',['電腦決定','由電腦隨機挑一項。']]].concat(e.choice.options.map(o=>[o.id,[o.label,o.desc]])))}))},
+ {t:'守方戰前準備',s:'守備',d:'開戰前守方的備戰、預警反應與兵力部署，都在這裡先決定，開戰後不再彈窗。選「電腦決定」就由電腦隨機挑一項（不含🔥）。每項都標明好處與代價。',fields:EVENTS.filter(e=>e.setup).map(e=>({sel:e.setup,q:e.title,when:()=>$('#optMode').value!=='play'||$('#optSide').value!=='atk',
+     opts:Object.fromEntries([['auto',['電腦決定','由電腦隨機挑一項。']]].concat(e.choice.options.map(o=>[o.id,[o.label,o.desc]])))}))},
  {t:'美日參戰與確認',s:'確認',d:'美國、日本是否參戰、以什麼方式參戰，會大幅改變戰局。下方是設定摘要；任何一頁都可以回去修改，所有頁面看過之後，在哪一頁都能開始作戰。',fields:[
   {sel:'optAirGen',q:'空軍裝備世代（隱形機占比）',opts:{legacy:['非隱形為主','雙方戰機以第四代為主，隱形機很少。'],mixed:['混合（基準）','共軍殲-20／殲-35 約兩成、盟軍 F-35／F-22 約四成；台灣沒有隱形機。隱形占比隨年代每年略增。'],stealthy:['隱形佔多數','共軍約四成五、盟軍約六成五為隱形機；台灣仍沒有。']}},
   {sel:'optAirModel',q:'空戰模型',opts:{bvr:['視距外（基準）','隱形占比、反隱形感測與電子戰會影響制空與防空突破。盟軍要參戰後隱形機才會出現。'],simple:['簡化','不計隱形與電戰，沿用舊的制空判定。']}},
   {sel:'optEW',q:'電子戰強度',opts:{low:['低','干擾弱：空戰與飛彈較容易命中，損失較大。'],mid:['中（基準）',''],high:['高','干擾強：空戰飛彈較易被干擾落空，損失較小；對岸防空壓制也較容易。']}},
-  {sel:'optFx',q:'參戰情境',opts:{interest:['依自身利益決定','美日不擲骰，依戰況與自身利益評估是否參戰：半導體與第一島鏈、攻方是否已拿下港口或台北、守軍撐不撐得住、美軍傷亡、日本與美國彼此的態度、本國基地是否被打。事件節點會列出評估理由。','依利益'],intel:['只提供情報（不公開參戰）','美國只提供情報與目標資料（守方反艦飛彈命中門檻 −1），不補給、不出兵、不公開參戰；日本中立，戰區基地也不能被打擊。','只提供情報'],none:['不介入（台灣孤軍）','美日全程不參戰，戰區基地也不能被打擊。'],full:['開戰即全面介入','美日第 1 回合就參戰，航艦仍要 2 回合才抵達。']}},{sel:'optAlly',q:'美日盟軍由誰操作',when:()=>$('#optMode').value==='play'&&$('#optSide').value!=='atk',opts:{ai:['電腦操作','美日艦隊與潛艦由電腦依戰況行動。'],player:['你操作','美日參戰後，你可以移動美航艦、護航艦、海自艦艇與攻擊潛艦，下達艦隊齊射、艦載機打擊與戰斧巡弋飛彈；沒下令的單位在結束階段由電腦代為行動。美日是否參戰仍由戰況決定。']}}],summary:true},
+  {sel:'optFx',q:'參戰情境',opts:{interest:['依自身利益決定','美日不擲骰，依戰況與自身利益評估是否參戰：半導體與第一島鏈、攻方是否已拿下港口或台北、守軍撐不撐得住、美軍傷亡、日本與美國彼此的態度、本國基地是否被打。事件節點會列出評估理由。','依利益'],intel:['只提供情報（不公開參戰）',
+      '美國只提供情報與目標資料（守方反艦飛彈命中門檻 −1），不補給、不出兵、不公開參戰；日本中立，戰區基地也不能被打擊。','只提供情報'],none:['不介入（台灣孤軍）','美日全程不參戰，戰區基地也不能被打擊。'],full:['開戰即全面介入','美日第 1 回合就參戰，航艦仍要 2 回合才抵達。']}},{sel:'optAlly',
+      q:'美日盟軍由誰操作',when:()=>$('#optMode').value==='play'&&$('#optSide').value!=='atk',opts:{ai:['電腦操作','美日艦隊與潛艦由電腦依戰況行動。'],player:['你操作','美日參戰後，你可以移動美航艦、護航艦、海自艦艇與攻擊潛艦，下達艦隊齊射、艦載機打擊與戰斧巡弋飛彈；沒下令的單位在結束階段由電腦代為行動。美日是否參戰仍由戰況決定。']}}],summary:true},
 ];
 const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
 function optLabel(sel,v){for(const f of PREF_FIELDS.concat(...SETUP_PAGES.map(pg=>pg.fields)))if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
@@ -150,7 +157,8 @@ function renderWizard(){
   const pg=SETUP_PAGES[WZ.i],N=vis.length,pos=vis.indexOf(WZ.i);WZ.done[WZ.i]=true;
   $('#wzStep').textContent='作戰設定 · 第 '+(pos+1)+' / '+N+' 頁';
   $('#wzTitle').textContent=pg.t;$('#wzDesc').textContent=pg.d;
-  $('#wzChips').innerHTML=vis.map((i,n)=>{const x=SETUP_PAGES[i];return '<button data-i="'+i+'" class="'+(i===WZ.i?'on':'')+(WZ.done[i]?' ok':'')+'" title="'+x.t+'" aria-label="第 '+(n+1)+' 頁 '+x.t+'" aria-current="'+(i===WZ.i?'step':'false')+'"><i>'+(WZ.done[i]&&i!==WZ.i?'✓':n+1)+'</i><span>'+x.s+'</span></button>';}).join('');
+  $('#wzChips').innerHTML=vis.map((i,n)=>{const x=SETUP_PAGES[i];return '<button data-i="'+i+'" class="'+(i===WZ.i?'on':'')+(WZ.done[i]?' ok':'')+'" title="'+x.t+
+      '" aria-label="第 '+(n+1)+' 頁 '+x.t+'" aria-current="'+(i===WZ.i?'step':'false')+'"><i>'+(WZ.done[i]&&i!==WZ.i?'✓':n+1)+'</i><span>'+x.s+'</span></button>';}).join('');
   let h='';
   let gcur=null;const GN={atk:'攻方',def:'守方'};WZ.open=WZ.open||{};
   const gclose=()=>{if(gcur){h+='</details>';gcur=null;}};
@@ -158,7 +166,9 @@ function renderWizard(){
     if(f.grp!==gcur){gclose();if(f.grp){gcur=f.grp;h+='<details class="rg wzg" data-g="'+f.grp+'"'+(WZ.open[f.grp]?' open':'')+'><summary><b>'+GN[f.grp]+'</b></summary>';}}
     const cur=$('#'+f.sel).value;
     const ent=Object.entries(f.opts);
-    h+='<div class="wz-q">'+f.q+'</div><div class="seg" role="radiogroup" aria-label="'+f.q+'" style="--n:'+(ent.length<=3?ent.length:2)+'">'+ent.map(([v,o])=>'<button class="segb'+(v===cur?' on':'')+'"'+''+' role="radio" aria-checked="'+(v===cur)+'" data-sel="'+f.sel+'" data-v="'+v+'">'+(o[2]||o[0])+'</button>').join('')+'</div><div class="seg-desc"><b>'+(f.opts[cur]?f.opts[cur][0]:'')+'</b>　'+(f.opts[cur]?f.opts[cur][1]:'')+'</div>';
+    h+='<div class="wz-q">'+f.q+'</div><div class="seg" role="radiogroup" aria-label="'+f.q+'" style="--n:'+(ent.length<=3?ent.length:2)+'">'+ent.map(([v,o])=>'<button class="segb'+
+        (v===cur?' on':'')+'"'+''+' role="radio" aria-checked="'+(v===cur)+'" data-sel="'+f.sel+'" data-v="'+v+'">'+(o[2]||o[0])+'</button>').join('')+'</div><div class="seg-desc"><b>'+
+        (f.opts[cur]?f.opts[cur][0]:'')+'</b>　'+(f.opts[cur]?f.opts[cur][1]:'')+'</div>';
   });
   gclose();
   const note=pg.note&&pg.note();if(note)h+='<div class="wz-note">'+note+'</div>';
@@ -167,10 +177,15 @@ function renderWizard(){
     if(isVideo())rows.push(['操作','電腦自動（影片）'],['播放',optLabel('optVSpeed',$('#optVSpeed').value)]);else if(!sim)rows.push(['操作',optLabel('optSide',$('#optSide').value)]);else rows.push(['速度',optLabel('optSpeed',$('#optSpeed').value)]);
     rows.push(['判定',optLabel('optT',$('#optT').value)]);rows.push(['年代',optLabel('optEra',$('#optEra').value)]);
     rows.push(['集結',sim?'推演中選擇':optLabel('optBuild',$('#optBuild').value)]);
-    rows.push(['參戰',optLabel('optFx',$('#optFx').value)]);if(!sim&&$('#optSide').value!=='atk')rows.push(['盟軍',optLabel('optAlly',$('#optAlly').value)]);rows.push(['空戰',optLabel('optAirModel',$('#optAirModel').value)+'・'+optLabel('optAirGen',$('#optAirGen').value)+'・電戰'+optLabel('optEW',$('#optEW').value)]);rows.push(['快訊',optLabel('optNews',$('#optNews').value)]);rows.push(['語音',optLabel('optVoice',$('#optVoice').value)]);
+    rows.push(['參戰',optLabel('optFx',$('#optFx').value)]);
+      if(!sim&&$('#optSide').value!=='atk')rows.push(['盟軍',optLabel('optAlly',$('#optAlly').value)]);
+      rows.push(['空戰',optLabel('optAirModel',$('#optAirModel').value)+'・'+optLabel('optAirGen',$('#optAirGen').value)+'・電戰'+optLabel('optEW',$('#optEW').value)]);
+      rows.push(['快訊',optLabel('optNews',$('#optNews').value)]);
+      rows.push(['語音',optLabel('optVoice',$('#optVoice').value)]);
     h+='<table class="wz-sum">'+rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('')+'</table>';
   }
-  if(pg.summary)h+='<div class="wz-seed"><label>戰局碼（選填）<input id="wzSeed" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="貼上別人的戰局碼，可重現同樣的設定與天候" value="'+(WZ.seedTxt||'').replace(/"/g,'&quot;')+'"></label><div class="dd">戰局碼包含設定與亂數種子（天候、擲骰結果）；空白就自動產生，結局頁會顯示本局的碼。你的決策不同，局勢仍會不同。</div></div>';
+  if(pg.summary)h+='<div class="wz-seed"><label>戰局碼（選填）<input id="wzSeed" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="貼上別人的戰局碼，可重現同樣的設定與天候" value="'+
+      (WZ.seedTxt||'').replace(/"/g,'&quot;')+'"></label><div class="dd">戰局碼包含設定與亂數種子（天候、擲骰結果）；空白就自動產生，結局頁會顯示本局的碼。你的決策不同，局勢仍會不同。</div></div>';
   $('#wzBody').innerHTML=h;
   $('#wzPrev').disabled=pos===0;$('#wzNext').disabled=pos===N-1;
   const left=vis.map((i,n)=>WZ.done[i]?null:n+1).filter(Boolean),b=$('#btnStart');
@@ -266,7 +281,8 @@ function fitZoom(){
 }
 $('#btnFs').onclick=()=>setFs(true);
 {const b=$('#btnRng');if(b){b.setAttribute('aria-pressed',RNG_ALL);b.onclick=()=>{RNG_ALL=!RNG_ALL;b.setAttribute('aria-pressed',RNG_ALL);try{localStorage.setItem('tsl-rng',RNG_ALL?'1':'0');}catch(e){}renderMap();};}}$('#fsExit').onclick=()=>setFs(false);
-document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('mapfs')){document.body.classList.remove("mapfs");setZoom(savedZoom||1,true);}else if(document.fullscreenElement&&document.body.classList.contains('mapfs'))requestAnimationFrame(fitZoom);});
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('mapfs')){document.body.classList.remove("mapfs");setZoom(savedZoom||1,
+    true);}else if(document.fullscreenElement&&document.body.classList.contains('mapfs'))requestAnimationFrame(fitZoom);});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('mapfs'))setFs(false);});
 $('#fsStrike').onclick=()=>$('#btnStrike').click();$('#fsEnd').onclick=()=>$('#btnEnd').click();
 
@@ -322,7 +338,10 @@ function askIntent(side){
     const cur=Object.assign({},(S.lastIntent&&S.lastIntent[side])||{});
     const sumTxt=()=>{const a=intentGroups(side).map(g=>{const o=g.o.find(x=>x[0]===(cur[g.k]||''));return o&&o[0]?g.t+'：'+o[1]:'';}).filter(Boolean);return a.length?a.join('　·　'):'全部照電腦判斷';};
     box.innerHTML='<div class="eyebrow">第 '+S.turn+' 回合 · '+SIDE[side]+'階段</div><h3>指揮官意圖</h3><p class="dd">電腦代打前，先下達本階段的作戰重點（只影響這一階段）。下面是目前的選擇，點一列可更改。</p>'+
-      '<div class="itbody">'+intentGroups(side).map(g=>'<div class="itgrp" data-g="'+g.k+'"><button class="ithead" aria-expanded="false" data-g="'+g.k+'"><span class="intg">'+g.t+'</span><span class="itcur"></span><i>▾</i></button><div class="itcards" hidden role="radiogroup" aria-label="'+g.t+'">'+g.o.map(o=>'<button class="segb itc'+((cur[g.k]||'')===o[0]?' on':'')+'" role="radio" data-g="'+g.k+'" data-v="'+o[0]+'"><b>'+o[1]+'</b>'+(o[2]?'<span>效果：'+o[2]+'</span>':'')+(o[3]?'<span class="cost">代價：'+o[3]+'</span>':'')+'</button>').join('')+'</div></div>').join('')+'</div>'+
+      '<div class="itbody">'+intentGroups(side).map(g=>'<div class="itgrp" data-g="'+g.k+'"><button class="ithead" aria-expanded="false" data-g="'+g.k+'"><span class="intg">'+
+          g.t+'</span><span class="itcur"></span><i>▾</i></button><div class="itcards" hidden role="radiogroup" aria-label="'+g.t+'">'+g.o.map(o=>'<button class="segb itc'+
+          ((cur[g.k]||'')===o[0]?' on':'')+'" role="radio" data-g="'+g.k+'" data-v="'+o[0]+'"><b>'+o[1]+'</b>'+(o[2]?'<span>效果：'+o[2]+'</span>':'')+(o[3]?'<span class="cost">代價：'+
+          o[3]+'</span>':'')+'</button>').join('')+'</div></div>').join('')+'</div>'+
       '<label class="itskip"><input type="checkbox" id="itSkip"> '+TX('這一局之後不再詢問，沿用這次的設定（可按「重設意圖」改）')+'</label><div class="itfoot"><div class="itsum" id="itSum"></div><div class="itbtns"><button class="ghost" id="itNo">取消</button><button id="itGo">開始代打</button></div></div>';
     box.classList.add('itbox');
     const fin=r=>{box.classList.remove('itbox');$('#modal').hidden=true;box.classList.remove('ev');done(r);};
@@ -340,7 +359,8 @@ function askIntent(side){
 const intentSig=()=>[S.weather&&S.weather.n,S.fx&&S.fx.lv?S.fx.lv.US+'/'+S.fx.lv.JP:'',Math.floor(S.units.filter(u=>u.side==='atk').length/3),Math.floor(S.units.filter(u=>u.side==='def').length/3),S.typhoon?1:0].join('|');
 function defLedger(){ // 守方彈藥帳：存量、本階段可打發數、海上敵船團（讓打擊對象的取捨有依據）
   const P=S.pools;if(!P)return '';const sea=S.units.filter(u=>u.side==='atk'&&atSea(u)&&isShip(u)),tr=sea.filter(u=>u.type==='cvy'||u.type==='lst'||u.type==='ro').length,sub=S.units.filter(u=>u.side==='def'&&u.type==='hk').length;
-  return '　彈藥：反艦飛彈（雄風 '+fmt1(P.rocAS)+'、魚叉岸防 '+fmt1(P.rocHCD||0)+'）、長程飛彈 '+fmt1(P.rocMsl)+((P.rocAtc||0)+(P.rocGml||0)>0?'、陸軍戰術飛彈 '+Math.round(P.rocAtc||0)+' 枚、火箭彈 '+Math.round(P.rocGml||0)+' 莢艙':'')+'（縱深打擊本階段可打 '+(S.dfire||0)+' 波，每波 4 枚）、防空 '+P.rocAD+(sub?'、海鯤 '+sub+' 艘':'')+'；海上敵船團 '+sea.length+' 支（其中運輸船 '+tr+' 支）。';
+  return '　彈藥：反艦飛彈（雄風 '+fmt1(P.rocAS)+'、魚叉岸防 '+fmt1(P.rocHCD||0)+'）、長程飛彈 '+fmt1(P.rocMsl)+((P.rocAtc||0)+(P.rocGml||0)>0?'、陸軍戰術飛彈 '+Math.round(P.rocAtc||0)+' 枚、火箭彈 '+
+      Math.round(P.rocGml||0)+' 莢艙':'')+'（縱深打擊本階段可打 '+(S.dfire||0)+' 波，每波 4 枚）、防空 '+P.rocAD+(sub?'、海鯤 '+sub+' 艘':'')+'；海上敵船團 '+sea.length+' 支（其中運輸船 '+tr+' 支）。';
 }
 async function assistPhase(){
   if(!humanTurn())return;

@@ -15,7 +15,9 @@ function newState(){
   S={turn:1,phase:'atk',T:8,ctrl:{atk:'human',def:'ai'},weather:WEATHER.good,fire:0,units:[],owner:{},log:[],
      sel:null,mode:null,busy:false,over:false,started:false,nid:1,hover:null,zoneFlip:0,
      sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods(),
-     pools:null,mines:{},baseStruck:{US:0,JP:0},afl:{},bh:{},bhNote:false,portDown:{},portAsked:{},truce:{atk:{n:0,t:-9},def:{n:0,t:-9}},fx:null,simAuto:false,thSel:null,news:[],hits:[],newsOn:true,fxScen:'interest',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,esc:[],reserves:0,tpHold:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
+     pools:null,mines:{},baseStruck:{US:0,JP:0},afl:{},bh:{},bhNote:false,portDown:{},portAsked:{},truce:{atk:{n:0,t:-9},def:{n:0,t:-9}},fx:null,simAuto:false,thSel:null,
+         news:[],hits:[],newsOn:true,fxScen:'interest',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,
+         esc:[],reserves:0,tpHold:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
   for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
   // 每個單位約一個旅（4,000～5,000 人）。共軍第一波約 40,000～55,000 人（兩棲艦隊首波運力估計 2～4 萬），後續波次由增援補上
   const A=[['arm','3,3'],['arm','3,7'],['arm','2,9'],
@@ -119,9 +121,9 @@ function rocFleetHit(why){ // 抽象的海空打擊命中守方海軍：船數�
 function fleetSalvo(m,t){
   const A=fleetAgg(m);const n=Math.min(m.mag.asm,A.sh*FLEET_PER);if(n<=0)return false;
   m.mag.asm-=n;m.shots=0;m.acted=true;m.revealed=true;
-  const r=salvoCalc(t,n,false,'fleet>'+t.type),big=t.type==='cv'||t.type==='csg',steps=big?takeInt(r.hits/2,'salvoBig'):r.hits;
+  const r=salvoHit(t,n,'fleet>'+t.type),big=isBigShip(t),steps=r.steps;
   fxSalvo([m.c,m.r],t,r);
-  log(m.fl.n+'齊射 '+n+' 枚'+fleetWn(m)+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+(steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):'，未造成重創')+'（齊射模型，參數為推估）');
+  log(m.fl.n+'齊射 '+n+' 枚'+fleetWn(m)+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
   if(steps)damage(t,steps,m.fl.n+'反艦飛彈');
   checkInstant();return true;
 }

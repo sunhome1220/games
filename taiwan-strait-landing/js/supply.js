@@ -20,9 +20,13 @@ function interdictOptions(){
   const I=supplyIntel(),opts=[{id:'normal',label:'照常作戰',desc:'維持原本的攻擊目標。',est:'不影響補給',rec:false}];
   const pc=Math.min(.9,.45*I.prot),hitsE=Math.min(I.cargo,3*pc),gain={};
   if(I.cv.length>0){gain.convoy=hitsE;
-    opts.push({id:'convoy',label:'全力打補給船團',desc:'海上有 '+I.cv.length+' 個補給船團（貨量共 '+I.cargo+' 點'+(I.near!=null?'，最近的離卸載點約 '+I.near+' 格':'')+'）。反艦飛彈、潛艦、戰機優先打船團：額外 3 次攻擊，每次命中約 '+Math.round(pc*100)+'%（已計入攻方護航）；代價是反艦飛彈存量 −2，也少打登陸船團。',est:'再擊中約 '+hitsE.toFixed(1)+' 次，攻方少約 '+hitsE.toFixed(1)+' 點貨量',rec:false});}
+    opts.push({id:'convoy',label:'全力打補給船團',desc:'海上有 '+I.cv.length+' 個補給船團（貨量共 '+I.cargo+' 點'+(I.near!=null?'，最近的離卸載點約 '+I.near+' 格':'')+'）。反艦飛彈、潛艦、戰機優先打船團：額外 3 次攻擊，每次命中約 '+
+        Math.round(pc*100)+'%（已計入攻方護航）；代價是反艦飛彈存量 −2，也少打登陸船團。',est:'再擊中約 '+hitsE.toFixed(1)+' 次，攻方少約 '+hitsE.toFixed(1)+' 點貨量',rec:false});
+      }
   if(I.airN>0&&I.plInt>I.plBase){gain.air=I.airN*(I.plInt-I.plBase); // 守方戰機飛不起來（機場全癱瘓）就沒有這個選項
-    opts.push({id:'air',label:'全力攔截運輸機',desc:'攻方戰機 '+(S.air?S.air.PLA:'')+' 架，每回合可空投約 '+I.airN+' 點（要天候允許才能飛）。目前運輸機被擊落機率約 '+Math.round(I.plBase*100)+'%（防空'+(S.sead?'已被壓制':'尚可')+'、制空'+AIRCTL[S.airCtl||'mid']+'）；集中攔截後約 '+Math.round(I.plInt*100)+'%。代價是出擊的戰機可能折損（1/3 機率守方空軍 −1）。',est:'空投再少約 '+gain.air.toFixed(1)+' 點，被擊落的運輸機算攻方空軍損失',rec:false});}
+    opts.push({id:'air',label:'全力攔截運輸機',desc:'攻方戰機 '+(S.air?S.air.PLA:'')+' 架，每回合可空投約 '+I.airN+' 點（要天候允許才能飛）。目前運輸機被擊落機率約 '+Math.round(I.plBase*100)+'%（防空'+(S.sead?'已被壓制':'尚可')+
+        '、制空'+AIRCTL[S.airCtl||'mid']+'）；集中攔截後約 '+Math.round(I.plInt*100)+'%。代價是出擊的戰機可能折損（1/3 機率守方空軍 −1）。',est:'空投再少約 '+gain.air.toFixed(1)+' 點，被擊落的運輸機算攻方空軍損失',rec:false});
+      }
   if(I.sinks.length>0&&I.ucap>=3){gain.sabotage=Math.min(2,I.ucap);
     opts.push({id:'sabotage',label:'特種部隊破壞港口後勤設施',desc:'攻方目前有 '+I.sinks.length+' 處可卸貨（港口、灘頭、補給站 '+I.fob+' 個），卸載能力 '+I.ucap+' 點。特種部隊襲擊卸載碼頭與油料庫：下回合卸載能力 −2；代價是破壞行動造成平民傷亡 +1,500。',est:'卸載能力 '+I.ucap+' → '+Math.max(0,I.ucap-2)+'；只有船團要卸貨時才有效',rec:false});}
   // 火力打擊灘頭補給站：位置固定、物資集中的軟目標（★每次 50%），用雷霆2000 或海馬士；代價是發射車開火後暴露
@@ -45,7 +49,14 @@ async function interdictEval(){
   if(S.over||S.turn<3||!hasBeachhead())return;
   const info=interdictOptions(),manual=(S.sim&&!S.simAuto)||(!S.video&&S.ctrl.def==='human');
   if(info.opts.length<=1)return; // 攻方補給沒有可打的管道，不必決策
-  const ai=()=>{const rest=info.opts.filter(x=>x.id!=='normal');if(Math.random()>=.3||S.pools.rocAS<3||!rest.length)return info.opts[0];const w={convoy:50,air:30,sabotage:20,fob:35,mine:20,deny:15};let tot=rest.reduce((a,x)=>a+w[x.id],0),r=Math.random()*tot;for(const x of rest){r-=w[x.id];if(r<=0)return x;}return rest[0];};
+  const ai=()=>{const rest=info.opts.filter(x=>x.id!=='normal');
+    if(Math.random()>=.3||S.pools.rocAS<3||!rest.length)return info.opts[0];
+    const w={convoy:50,air:30,sabotage:20,fob:35,mine:20,deny:15};
+    let tot=rest.reduce((a,x)=>a+w[x.id],0),r=Math.random()*tot;
+    for(const x of rest){r-=w[x.id];
+    if(r<=0)return x;
+    }return rest[0];
+    };
   let o;
   if(manual)o=await askTruce(info,ai);
   else{o=ai();if(!(S.rec&&REC.quiet)&&o.id!=='normal')toast(info.title+'：'+o.label);}
@@ -53,7 +64,17 @@ async function interdictEval(){
   log('【'+rec.title+'】守方選擇「'+o.label+'」');
   m.intd=m.intd||{};
   if(o.id!=='normal'){m.intd[t+1]=o.id;S.stats.interdict=(S.stats.interdict||0)+1;m.lastInterdict=t;}
-  if(o.id==='convoy'){pAdd('rocAS',-2);const prot=Math.max(.2,1-Math.min(.6,S.pools.plaNavy/25)-((S.supOrd&&S.supOrd[t]&&S.supOrd[t].escort)?.25:0));let hit=0;for(let i=0;i<3;i++){const cs=S.units.filter(x=>x.side==='atk'&&x.type==='cvy'&&atSea(x));if(!cs.length)break;const c=pickBest(cs,x=>x.hp);if(hitP(Math.min(.9,.45*prot),'intdConvoy')){hit++;damage(c,1,'守方（攔截補給船團）');}}eff.push('對補給船團額外發動 3 次攻擊，命中 '+hit,'反艦飛彈存量 −2');log('守方集中攻擊補給船團：命中 '+hit+' 次');}
+  if(o.id==='convoy'){pAdd('rocAS',-2);
+    const prot=Math.max(.2,1-Math.min(.6,S.pools.plaNavy/25)-((S.supOrd&&S.supOrd[t]&&S.supOrd[t].escort)?.25:0));
+    let hit=0;
+    for(let i=0;i<3;i++){const cs=S.units.filter(x=>x.side==='atk'&&x.type==='cvy'&&atSea(x));
+    if(!cs.length)break;
+    const c=pickBest(cs,x=>x.hp);
+    if(hitP(Math.min(.9,.45*prot),'intdConvoy')){hit++;
+    damage(c,1,'守方（攔截補給船團）');
+    }}eff.push('對補給船團額外發動 3 次攻擊，命中 '+hit,'反艦飛彈存量 −2');
+    log('守方集中攻擊補給船團：命中 '+hit+' 次');
+    }
   else if(o.id==='air'){if(hitP(1/3,'intdAir')){const l=airLose('def',2);eff.push('出擊戰機折損，守方戰機 −'+l+' 架（推估）');}eff.push('下回合空投被擊落機率 +30%');}
   else if(o.id==='sabotage'){if(S.cost&&S.cost.civ)S.cost.civ.TW+=1500;eff.push('下回合船團卸載能力 −2','平民傷亡 +1,500');}
   else if(o.id==='fob'){pAdd('rocRkt',-1);let hit=0;for(let i=0;i<2;i++){const fs=S.units.filter(x=>x.side==='atk'&&x.type==='fob'&&alive(x)&&x.hp>0);if(!fs.length)break;const f=pickBest(fs,x=>-x.hp);if(hitP(.5,'intdFob')){hit++;damage(f,1,'守方火力（灘頭補給站）');}}

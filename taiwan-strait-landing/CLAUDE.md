@@ -73,7 +73,11 @@
 - 模擬對局：每個彈窗點 `#mbox .opt`／`#evRoll`／`#evGo`／`#itGo`，人類回合點 `#btnAssist`。長時間工作用 `( cmd & )` 背景執行再等結果。
 - 語法檢查：`for f in js/*.js; do node --check $f; done`。
 - 改程式用 Python 腳本替換時，對每個 `old` 先 `assert s.count(old)==1`。
-- 新舊版比對（重構時用）：`?debug=1` 的 `window.__score(cfg)` 跑一場電腦推演並回傳分數；用 `addInitScript` 把 `Math.random` 換成固定種子的亂數，新舊兩版結果應完全相同。
+- **程式風格**（2026-11-14.93 整理）：一行不超過約 300 字；不要把多個敘述擠在同一行，也不要在單行程式中間插 `//` 註解（會吃掉後半行）。重複出現的流程抽成共用函式：
+  - 齊射：`salvoHit(t,n,key)`（攔截＋命中＋航艦每 2 枚扣 1 步，回傳含 `steps`）、`salvoStepTxt(t,steps,none)`（戰報的扣步文字）、`isBigShip(t)`；動畫用 `fxSalvo(from,t,r,air)`。
+  - 動畫：格子座標轉畫面位置用 `fxPos([c,r])`。
+  - 拆長行工具：`tools/refactor/split_semis.js`、`split_commas.js`（需 `npm i acorn`），會比對前後語法樹，相同才寫入。
+- 新舊版比對（重構時用）：`node tools/refactor/score_check.js`，重構前後輸出必須完全相同；或`?debug=1` 的 `window.__score(cfg)` 跑一場電腦推演並回傳分數；用 `addInitScript` 把 `Math.random` 換成固定種子的亂數，新舊兩版結果應完全相同。
 - **不要用 `git checkout -- <檔案>` 或 `git checkout <檔案>` 還原**——會丟掉所有未提交的修改（曾經因此重做全部工作）。要保護進度就先 `git commit`。
 - 不要用 `git push --force` 覆蓋別人的分支；覆蓋自己剛推錯的分支用 `--force-with-lease`。
 - 提交訊息與 PR 描述結尾要加上工作階段給的署名行。

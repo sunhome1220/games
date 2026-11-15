@@ -156,7 +156,9 @@ const SPOT={};
   const cover=(h,polys)=>{const [lon,lat]=rcToLL(h.c,h.r);let n=0;for(const [dx,dy] of SMP){const x=lon+dx*GEO.dlon,y=lat+dy*GEO.dlat*1.15;if(polys.some(P=>inPoly(x,y,P)))n++;}return n/SMP.length;};
   // 山地（約海拔 1,000 公尺以上，含雪山、中央、玉山、阿里山山脈與海岸山脈、大屯火山群）：★依地形圖手繪的近似輪廓（誤差約 5～10 km；沒有可下載的高程資料）
   const MTN=[
-    [[121.62,24.97],[121.72,24.86],[121.68,24.68],[121.74,24.56],[121.70,24.30],[121.62,24.10],[121.50,23.90],[121.35,23.50],[121.25,23.20],[121.10,22.95],[121.00,22.75],[120.90,22.45],[120.85,22.15],[120.75,22.15],[120.66,22.45],[120.66,22.80],[120.70,23.10],[120.62,23.35],[120.68,23.60],[120.78,23.82],[120.88,24.05],[120.97,24.32],[121.08,24.58],[121.27,24.78],[121.45,24.90]],
+    [[121.62,24.97],[121.72,24.86],[121.68,24.68],[121.74,24.56],[121.70,24.30],[121.62,24.10],[121.50,23.90],[121.35,23.50],[121.25,23.20],[121.10,22.95],[121.00,
+        22.75],[120.90,22.45],[120.85,22.15],[120.75,22.15],[120.66,22.45],[120.66,22.80],[120.70,23.10],[120.62,23.35],[120.68,23.60],[120.78,23.82],[120.88,24.05],[120.97,
+        24.32],[121.08,24.58],[121.27,24.78],[121.45,24.90]],
     [[121.62,23.90],[121.56,23.50],[121.46,23.20],[121.30,22.94],[121.20,22.82],[121.15,22.86],[121.27,23.06],[121.38,23.32],[121.46,23.58],[121.53,23.88]],
     [[121.47,25.22],[121.62,25.24],[121.66,25.13],[121.52,25.11]]];
   for(const h of Object.values(TER))if(h.isl==='TW'||h.isl==='PH'){h.t='sea';h.isl=null;h.name=null;h.cliff=false;h.mud=false;}
@@ -255,7 +257,9 @@ const SPOTC={};
   const AN={fuding:[120.2,26.7],lianjiang:[119.6,26.25],fuzhou:[119.62,26.0],pingtan:[119.78,25.52],putian:[119.1,25.3],huian:[118.9,25.0],quanzhou:[118.65,24.85],jinjiang:[118.55,24.7],xiamen:[118.12,24.46],dongshan:[117.5,23.75],shantou:[116.72,23.36]};
   const used={};
   const pick=(an,i)=>{const [lon,lat]=AN[an];const list=cn.filter(h=>coastalC(h)).sort((a,b)=>dist(a,lon,lat)-dist(b,lon,lat));return list[i]||list[0];};
-  const M={'3,0':['fuding',0],'4,-1':['fuding',1],'4,-2':['fuding',2],'3,1':['lianjiang',0],'3,2':['fuzhou',1],'3,3':['fuzhou',0],'4,4':['pingtan',0],'3,4':['pingtan',1],'3,5':['putian',0],'3,6':['huian',0],'3,7':['quanzhou',0],'2,8':['jinjiang',0],'2,9':['xiamen',0],'2,10':['xiamen',1],'1,9':['xiamen',2],'1,10':['dongshan',0],'1,14':['shantou',1],'1,15':['shantou',0]};
+  const M={'3,0':['fuding',0],'4,-1':['fuding',1],'4,-2':['fuding',2],'3,1':['lianjiang',0],'3,2':['fuzhou',1],'3,3':['fuzhou',0],'4,4':['pingtan',0],'3,4':['pingtan',
+      1],'3,5':['putian',0],'3,6':['huian',0],'3,7':['quanzhou',0],'2,8':['jinjiang',0],'2,9':['xiamen',0],'2,10':['xiamen',1],'1,9':['xiamen',2],'1,10':['dongshan',0],
+      '1,14':['shantou',1],'1,15':['shantou',0]};
   for(const [k,[an,i]] of Object.entries(M)){const h=an==='fuzhou'&&i===0?TER[SPOTC.fuzhou]:an==='pingtan'&&i===0?TER[SPOTC.pingtan]:an==='quanzhou'&&i===0?TER[SPOTC.quanzhou]:an==='xiamen'&&i===0?TER[SPOTC.xiamen]:an==='shantou'&&i===0?TER[SPOTC.shantou]:pick(an,i);if(h)MAINC[k]=h.k;}
   MAINC['2,4']=SPOTC['龍田'];MAINC['2,6']=SPOTC['惠安'];
 })();
@@ -315,9 +319,13 @@ function portHold(){ // 攻方控制（未被破壞）的主要港口卸載容�
   return {cap,need,ok:cap>=need};
 }
 // 麥寮港（雲林，台塑六輕工業專用港）：年吞吐量約 7,000 萬噸以上、可進出 30 萬噸級油輪的深水港，但碼頭多為石化、煤、油專用，不是貨櫃或滾裝碼頭——列為次要港口；也是雲林泥灘海岸唯一能靠岸卸載的地方
-const MINOR_PORTS=(()=>{const o={};[['麥寮港',120.19,23.79],['新竹港',120.92,24.85],['安平港',120.16,22.99],['烏石港',121.84,24.87],['富岡港',121.19,22.79]].forEach(([n,lon,lat])=>{let b=null,bd=1e9;for(const h of Object.values(TER)){if(h.isl!=='TW'||!h.coastal||h.t==='port'||h.t==='air'||o[h.k])continue;const [a,c]=rcToLL(h.c,h.r),d=Math.hypot((a-lon)/GEO.dlon,(c-lat)/GEO.dlat);if(d<bd){bd=d;b=h;}}if(b)o[b.k]=n;});return o;})(); // 依經緯度放在最近的海岸格 // 次要港口：占領後補給容量 +2（共 3），不計入勝負條件、重型旅仍需主要港口才能上岸
+const MINOR_PORTS=(()=>{const o={};[['麥寮港',120.19,23.79],['新竹港',120.92,24.85],['安平港',120.16,22.99],['烏石港',121.84,24.87],['富岡港',121.19,22.79]].forEach(([n,lon,lat])=>{let b=null,
+    bd=1e9;for(const h of Object.values(TER)){if(h.isl!=='TW'||!h.coastal||h.t==='port'||h.t==='air'||o[h.k])continue;const [a,c]=rcToLL(h.c,h.r),d=Math.hypot((a-lon)/GEO.dlon,
+    (c-lat)/GEO.dlat);if(d<bd){bd=d;b=h;}}if(b)o[b.k]=n;});return o;})(); // 依經緯度放在最近的海岸格 // 次要港口：占領後補給容量 +2（共 3），不計入勝負條件、重型旅仍需主要港口才能上岸
 const ZONES={north:[SPOT.linkou,SPOT.tamsui,SPOT.taoyuanap],central:[SPOT.miaoli,SPOT.hsinchu,SPOT.tcport],penghu:[SPOT.penghu,SPOT.magong]};
 
 // 空降目標（★推估，依公開分析：奪取灘頭附近的機場、阻斷守方往灘頭增援的橋梁與要道）：第 1 個空降旅打機場，第 2 個打灘頭後方的橋梁
 const ABN_PTS={north:[['桃園機場',121.23,25.08],['大漢溪橋（鶯歌）',121.36,24.95],['頭前溪橋（新竹）',121.01,24.82]],central:[['清泉崗機場',120.61,24.26],['濁水溪橋（西螺）',120.46,23.81],['頭前溪橋（新竹）',121.01,24.82]]};
-const ABN_GOAL={};for(const z in ABN_PTS)ABN_GOAL[z]=ABN_PTS[z].map(([n,lo,la])=>{const [c,r]=llToRC(lo,la);let b=null,bd=1e9;for(const h of Object.values(TER)){if(h.isl!=='TW'||h.t==='mtn')continue;const d=hd(h,{c,r});if(d<bd){bd=d;b=h;}}return b?b.k:SPOT.taoyuan;});ABN_GOAL.north[0]=SPOT.taoyuanap;
+const ABN_GOAL={};
+  for(const z in ABN_PTS)ABN_GOAL[z]=ABN_PTS[z].map(([n,lo,la])=>{const [c,r]=llToRC(lo,la);let b=null,bd=1e9;for(const h of Object.values(TER)){if(h.isl!=='TW'||h.t==='mtn')continue;const d=hd(h,{c,r});if(d<bd){bd=d;b=h;}}return b?b.k:SPOT.taoyuan;});
+  ABN_GOAL.north[0]=SPOT.taoyuanap;

@@ -21,7 +21,12 @@ function rangeTop(c,r,n){const [cx,cy]=center(c,r);return [cx,cy-(n+.5)*HPX];}
 const kmOf=n=>Math.round(n*KM_HEX).toLocaleString();
 function rangeRingsSVG(u,lite){ // u：航艦或護航艦；lite＝一鍵全開時只畫防空傘與對艦打擊距離
   if(!u||!alive(u))return '';const sd=u.side,o=[],lbl=[];
-  const ring=(c,r,n,cls,txt)=>{if(n<=0)return;{const [cx,cy]=center(c,r);o.push('<circle class="rr '+cls+' '+sd+'" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+((n+.5)*HPX).toFixed(1)+'"/>');}if(txt){const [x,y]=rangeTop(c,r,n);lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+txt+'</text>');}};
+  const ring=(c,r,n,cls,txt)=>{if(n<=0)return;
+    {const [cx,cy]=center(c,r);
+    o.push('<circle class="rr '+cls+' '+sd+'" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+((n+.5)*HPX).toFixed(1)+'"/>');
+    }if(txt){const [x,y]=rangeTop(c,r,n);
+    lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+txt+'</text>');
+    }};
   const grp=u.type==='cv'||u.type==='csg'||u.type==='ddh'?u:(u.grp?S.units.find(x=>x.id===u.grp&&alive(x)):null);
   if(u.type==='cv'||u.type==='csg'||u.type==='ddh'){
     const c=cvwCarriers(sd==='atk'?'atk':'def').find(x=>x.u===u);
@@ -105,7 +110,9 @@ window.TSL_HEX={R,c2p:(c,r)=>center(c,r),ok:(c,r)=>!!TER[K(c,r)],nb:(c,r)=>nbrs(
 const ptsStr=v=>v.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
 const STATIC={built:false};
 const ANIM={pos:new Map(),gid:null,ok:true};
-function tileGrad(id,v,fb){return '<linearGradient id="'+id+'" x1=".1" y1="0" x2=".85" y2="1"><stop offset="0" stop-color="'+fb+'" style="stop-color:color-mix(in srgb,var(--'+v+') 76%,#fff)"/><stop offset="1" stop-color="'+fb+'" style="stop-color:color-mix(in srgb,var(--'+v+') 93%,#000)"/></linearGradient>';}
+function tileGrad(id,v,fb){return '<linearGradient id="'+id+'" x1=".1" y1="0" x2=".85" y2="1"><stop offset="0" stop-color="'+fb+'" style="stop-color:color-mix(in srgb,var(--'+
+    v+') 76%,#fff)"/><stop offset="1" stop-color="'+fb+'" style="stop-color:color-mix(in srgb,var(--'+v+') 93%,#000)"/></linearGradient>';
+  }
 function bldg(cx,cy,w,hh){ // small isometric building: front, right side, roof
   const d=w*.45;
   return '<g class="bd"><polygon class="bf" points="'+[cx-w/2,cy,cx+w/2,cy,cx+w/2,cy-hh,cx-w/2,cy-hh].join(',')+'"/>'+
@@ -125,7 +132,8 @@ function tileDetail0(h,x,y){
   if(tt==='city')return bldg(x-9,y+7,8,11)+bldg(x+2,y+8,9,16)+bldg(x+11,y+5,7,9);
   if(tt==='mtn'&&h.elev!=null)return h.elev>=2000&&((h.c+h.r)&1)===0?peak(x,y+9,20,17):''; // 台澎：顏色表示高度，只在 2,000 公尺以上隔格畫一座小山
   if(tt==='mtn')return peak(x-6,y+8,24,22)+peak(x+9,y+10,17,14);
-  if(h.t==='port')return '<rect class="pier" x="'+(x-3)+'" y="'+(y+3)+'" width="6" height="14" rx="1"/><rect class="cont c1" x="'+(x-12)+'" y="'+(y+2)+'" width="8" height="5"/><rect class="cont c2" x="'+(x+5)+'" y="'+(y+6)+'" width="8" height="5"/><path class="crane" d="M'+(x+9)+' '+(y+4)+'V'+(y-10)+'H'+(x-2)+'"/>';
+  if(h.t==='port')return '<rect class="pier" x="'+(x-3)+'" y="'+(y+3)+'" width="6" height="14" rx="1"/><rect class="cont c1" x="'+(x-12)+'" y="'+(y+2)+'" width="8" height="5"/><rect class="cont c2" x="'+
+      (x+5)+'" y="'+(y+6)+'" width="8" height="5"/><path class="crane" d="M'+(x+9)+' '+(y+4)+'V'+(y-10)+'H'+(x-2)+'"/>';
   if(h.t==='air')return '<polygon class="rwy" points="'+[x-15,y+2,x+13,y-4,x+15,y,x-13,y+6].join(',')+'"/><path class="rwl" d="M'+(x-11)+' '+(y+3)+'L'+(x+11)+' '+(y-2)+'"/>';
   return '';
 }
@@ -155,7 +163,10 @@ const llInv=(px,py)=>{const o=center(GEO.c0,GEO.r0),ox=center(GEO.c0+1,GEO.r0)[0
 })();
 // 外圍陸地：島鏈用「線段＋半徑」(度)，大島用多邊形；畫在細格上（半徑已留一點寬度讓窄島至少占一格）
 const ISL_POLY=[
-  [[120.5,18.5],[120.78,18.58],[121.07,18.62],[121.25,18.6],[121.45,18.5],[121.63,18.37],[121.82,18.3],[122.0,18.3],[122.12,18.42],[122.2,18.5],[122.22,18.38],[122.3,18.1],[122.36,17.7],[122.5,17.2],[122.48,16.9],[122.4,16.6],[122.22,16.38],[122.15,16.28],[122.02,16.05],[121.75,15.85],[121.6,15.7],[121.45,15.4],[119.95,15.4],[119.9,15.8],[119.9,16.15],[119.88,16.4],[120.1,16.35],[120.2,16.12],[120.3,16.0],[120.4,16.2],[120.33,16.62],[120.35,17.1],[120.38,17.57],[120.45,17.95],[120.52,18.2]] // 呂宋北部（Cape Engaño、Casiguran 灣、Lingayen 灣、Cape Bolinao）
+  [[120.5,18.5],[120.78,18.58],[121.07,18.62],[121.25,18.6],[121.45,18.5],[121.63,18.37],[121.82,18.3],[122.0,18.3],[122.12,18.42],[122.2,18.5],[122.22,18.38],[122.3,
+      18.1],[122.36,17.7],[122.5,17.2],[122.48,16.9],[122.4,16.6],[122.22,16.38],[122.15,16.28],[122.02,16.05],[121.75,15.85],[121.6,15.7],[121.45,15.4],[119.95,15.4],
+      [119.9,15.8],[119.9,16.15],[119.88,16.4],[120.1,16.35],[120.2,16.12],[120.3,16.0],[120.4,16.2],[120.33,16.62],[120.35,17.1],[120.38,17.57],[120.45,17.95],[120.52,
+      18.2]] // 呂宋北部（Cape Engaño、Casiguran 灣、Lingayen 灣、Cape Bolinao）
 ];
 // 圖外地點的示意形狀：以示意位置為錨點，縮小後畫出（九州 0.5 倍、關島原尺寸、舟山群島）
 (function(){
@@ -240,7 +251,9 @@ function buildFar(){
   // 外圍示意區：地形一律用與遊戲格相同的細格；標示、投射區仍用舊座標系（粗格）再整組縮放 KS 對齊
   const center=oCenter,VBW=OVBW,VBH=OVBH,W=OW,R=OR,COL0=OC0,COL1=OC1,ROW0=OR0,ROW1=OR1,MX0=oMX0,MX1=oMX1,MY0=oMY0,MY1=oMY1,EVBW=OVBW+oMX0+oMX1,EVBH=OVBH+oMY0+oMY1,TER=TERC;
   const RF=FINE.R,fx0=-oMX0*KS-RF*2,fx1=(OVBW+oMX1)*KS+RF*2,fy0=-oMY0*KS-RF*2,fy1=(OVBH+oMY1)*KS+RF*2;
-  const POLY=[[112,31.5],[122.3,31.5],[122.0,30.8],[122.2,30.0],[121.9,29.6],[121.8,29.0],[121.5,28.5],[120.9,27.9],[120.5,27.4],[120.35,26.8],[119.9,26.5],[119.62,26.25],[119.68,25.95],[119.8,25.62],[119.6,25.35],[119.15,25.25],[118.95,24.98],[118.65,24.62],[118.2,24.45],[117.95,24.3],[117.5,23.7],[117.0,23.4],[116.7,23.2],[116.0,22.85],[115.4,22.7],[114.9,22.3],[114.6,22.1],[113.8,22.3],[112,22.3]];
+  const POLY=[[112,31.5],[122.3,31.5],[122.0,30.8],[122.2,30.0],[121.9,29.6],[121.8,29.0],[121.5,28.5],[120.9,27.9],[120.5,27.4],[120.35,26.8],[119.9,26.5],[119.62,
+      26.25],[119.68,25.95],[119.8,25.62],[119.6,25.35],[119.15,25.25],[118.95,24.98],[118.65,24.62],[118.2,24.45],[117.95,24.3],[117.5,23.7],[117.0,23.4],[116.7,23.2],
+      [116.0,22.85],[115.4,22.7],[114.9,22.3],[114.6,22.1],[113.8,22.3],[112,22.3]];
   const inPoly=(x,y,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;};
   const farL=Object.values(FAR).map(f=>[f.x*KS,f.y*KS,f]);
   const fine=new Map();
@@ -311,8 +324,12 @@ function buildFar(){
     if(f.tag)o+='<text class="far-tag" x="'+x+'" y="'+(y+18)+'" fill="'+col[f.who]+'">'+f.tag+'</text>';
   }
   let oS='';
-  const Z=(c,r,rx,ry,who,t)=>{const [x,y]=center(c,r);return '<ellipse pointer-events="none" cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" fill="none" stroke="'+col[who]+'" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="6 4"/>'+(t?'<text class="far-tag" x="'+x+'" y="'+(y+ry+10)+'" fill="'+col[who]+'">'+t+'</text>':'');};
-  const SUBG=(x,y,who,dash)=>'<g><ellipse cx="'+x+'" cy="'+(y+7)+'" rx="16" ry="4" fill="#000" opacity=".15"/><path d="M'+(x-17)+' '+(y+2)+'q0 -6 8 -6h18q9 0 9 6q0 6 -9 6h-18q-8 0 -8 -6z" fill="'+col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".55"':'')+'/><path d="M'+(x-4)+' '+(y-4)+'v-5h8v5" fill="'+col[who]+'" stroke="#fff" stroke-width="1"/><path d="M'+(x+2)+' '+(y-9)+'v-5h4" fill="none" stroke="#fff" stroke-width="1.2"/><path d="M'+(x-17)+' '+(y+2)+'l-4 -3m4 3l-4 4" stroke="'+col[who]+'" stroke-width="1.5"/></g>';
+  const Z=(c,r,rx,ry,who,t)=>{const [x,y]=center(c,r);
+    return '<ellipse pointer-events="none" cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" fill="none" stroke="'+col[who]+'" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="6 4"/>'+(t?'<text class="far-tag" x="'+x+'" y="'+(y+ry+10)+'" fill="'+col[who]+'">'+t+'</text>':'');
+    };
+  const SUBG=(x,y,who,dash)=>'<g><ellipse cx="'+x+'" cy="'+(y+7)+'" rx="16" ry="4" fill="#000" opacity=".15"/><path d="M'+(x-17)+' '+(y+2)+'q0 -6 8 -6h18q9 0 9 6q0 6 -9 6h-18q-8 0 -8 -6z" fill="'+
+      col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".55"':'')+'/><path d="M'+(x-4)+' '+(y-4)+'v-5h8v5" fill="'+col[who]+'" stroke="#fff" stroke-width="1"/><path d="M'+
+      (x+2)+' '+(y-9)+'v-5h4" fill="none" stroke="#fff" stroke-width="1.2"/><path d="M'+(x-17)+' '+(y+2)+'l-4 -3m4 3l-4 4" stroke="'+col[who]+'" stroke-width="1.5"/></g>';
   // 航艦打擊群：側視剪影，尺寸控制在一個細格以內。美軍＝尼米茲／福特級（平甲板、斜角甲板、艦島居中偏後）；
   // 共軍＝遼寧／山東（滑躍式艦艏、較寬的艦島與雷達罩）。座標以艦艏朝右的 56 單位寬為準，再縮放。
   const CVG=(x,y,who)=>{const f=col[who],ln='stroke="#fff" stroke-width=".7" vector-effect="non-scaling-stroke" stroke-linejoin="round"',us=who==='us';
@@ -330,7 +347,8 @@ function buildFar(){
     dd:'<rect class="sym" x="-9" y="-12" width="18" height="10"/><path class="sym" d="M-7 -6h14l-2 3h-10z"/><path class="sym" d="M-2 -6v-3h4v3"/>'};
   const SH=(c,r,who,t,sub,dash)=>{const [x,y]=center(c,r),isSub=/潛艦/.test(t),cvg=/航艦/.test(sub),kind=isSub?'sub':cvg?'cv':'dd',sh=isSub?(who==='jp'?'SS':'SSN'):cvg?(who==='atk'?'CV':'CSG'):'DDG';
     const cls=who;const ch='<g class="fu fclick'+(dash?' hid':'')+'" data-far="'+t+'"><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+FK.toFixed(4)+')">'+
-      '<ellipse class="ush" cx="0" cy="11" rx="16" ry="5"/><rect class="uside '+cls+'" x="-15" y="-9" width="30" height="22" rx="3"/><rect class="body '+cls+'" x="-15" y="-14" width="30" height="23" rx="3"/><rect class="uhi" x="-13" y="-13" width="26" height="3" rx="1.5"/>'+FSYM[kind]+'<text class="tx" x="0" y="6.5">'+sh+'</text></g></g>';
+      '<ellipse class="ush" cx="0" cy="11" rx="16" ry="5"/><rect class="uside '+cls+'" x="-15" y="-9" width="30" height="22" rx="3"/><rect class="body '+cls+'" x="-15" y="-14" width="30" height="23" rx="3"/><rect class="uhi" x="-13" y="-13" width="26" height="3" rx="1.5"/>'+
+          FSYM[kind]+'<text class="tx" x="0" y="6.5">'+sh+'</text></g></g>';
     return ch+'<text class="far-lbl" x="'+x+'" y="'+(y-16*FK-2).toFixed(1)+'">'+t+'</text><text class="far-tag" x="'+x+'" y="'+(y+14*FK+7).toFixed(1)+'" fill="'+col[who]+'">'+sub+'</text>';};
   o+=Z(26.5,-1,115,70,'us','美日 沖繩投射區')+Z(19.5,4,150,95,'jp','日本 先島投射區')+Z(26.5,22,95,60,'us','美軍 關島投射區')+Z(27.5,-5.5,95,50,'jp','日本 九州')
     +Z(-4,5,62,300,'atk','共軍 大陸沿海投射區')+Z(8,-3.5,85,55,'atk','共軍 東海艦隊');
@@ -343,10 +361,16 @@ function buildFar(){
 }
 const nearCity=h=>Object.values(TER).some(x=>x!==h&&x.name&&(x.t==='city'||x.t==='port')&&hd(x,h)<=Math.round(kmH(25)));
 function buildStatic(){
-  const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+tileGrad('gt-plain2','land2','#d3d0a8')+tileGrad('gt-plain3','land3','#dfd5b3')+tileGrad('gt-hill','hill','#c9bd92')+tileGrad('gt-main2','main2','#c3c6b6')+tileGrad('gt-main3','main3','#cec8b8')+tileGrad('gt-mainhill','mainhill','#b9b3a1')+tileGrad('gt-mainmtn','mainmtn','#a39d8c')+tileGrad('gt-maincity','maincity','#d4cfc2')+['#a9c98b','#c3cc8f','#c9bd86','#b3a374','#998b62','#7f7552','#686344'].map((c,i)=>tileGrad('gt-e'+i,'e'+i,c)).join('')+tileGrad('gt-tcity','tcity','#b8b6ae')+
+  const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+tileGrad('gt-plain2',
+      'land2','#d3d0a8')+tileGrad('gt-plain3','land3','#dfd5b3')+tileGrad('gt-hill','hill','#c9bd92')+tileGrad('gt-main2','main2','#c3c6b6')+tileGrad('gt-main3','main3',
+      '#cec8b8')+tileGrad('gt-mainhill','mainhill','#b9b3a1')+tileGrad('gt-mainmtn','mainmtn','#a39d8c')+tileGrad('gt-maincity','maincity','#d4cfc2')+['#a9c98b','#c3cc8f',
+      '#c9bd86','#b3a374','#998b62','#7f7552','#686344'].map((c,i)=>tileGrad('gt-e'+i,'e'+i,c)).join('')+tileGrad('gt-tcity','tcity','#b8b6ae')+
     '<linearGradient id="gu-atk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d4574d" style="stop-color:color-mix(in srgb,var(--atk) 72%,#fff)"/><stop offset="1" stop-color="#a02a24" style="stop-color:color-mix(in srgb,var(--atk) 90%,#000)"/></linearGradient>'+
     '<linearGradient id="gu-def" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a82c8" style="stop-color:color-mix(in srgb,var(--def) 72%,#fff)"/><stop offset="1" stop-color="#18457d" style="stop-color:color-mix(in srgb,var(--def) 90%,#000)"/></linearGradient>'+
-'<linearGradient id="gu-atk-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--atk) 84%,#000)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--atk) 52%,#000)"/></linearGradient>'+'<linearGradient id="gu-def-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--def) 84%,#000)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--def) 52%,#000)"/></linearGradient>'+'<linearGradient id="gu-atk-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--atk) 38%,#fff)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--atk) 62%,#fff)"/></linearGradient>'+'<linearGradient id="gu-def-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--def) 38%,#fff)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--def) 62%,#fff)"/></linearGradient>'+
+'<linearGradient id="gu-atk-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--atk) 84%,#000)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--atk) 52%,#000)"/></linearGradient>'+
+    '<linearGradient id="gu-def-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--def) 84%,#000)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--def) 52%,#000)"/></linearGradient>'+
+    '<linearGradient id="gu-atk-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--atk) 38%,#fff)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--atk) 62%,#fff)"/></linearGradient>'+
+    '<linearGradient id="gu-def-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--def) 38%,#fff)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--def) 62%,#fff)"/></linearGradient>'+
     '<linearGradient id="gSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9c5ce" style="stop-color:color-mix(in srgb,var(--sea) 78%,#fff)"/><stop offset="1" stop-color="#8fb0bb" style="stop-color:color-mix(in srgb,var(--sea) 94%,#000)"/></linearGradient>';
   $('#mdefs').innerHTML=defs;
   const sea=[],land=[];Object.values(TER).forEach(h=>(isLand(h)?land:sea).push(h));
@@ -372,7 +396,9 @@ function buildStatic(){
     if(h.cliff)o+='<polygon class="cliff" points="'+hexPts(x,y,R-3)+'"/>';
     if(h.mud)o+='<polygon class="mud" points="'+hexPts(x,y,R-3)+'"/>';
     o+=tileDetail(h,x,y);
-    if(h.name&&(h.t!=='plain'||h.isl==='JP'||['宜蘭','恆春','澎湖'].includes(h.name))&&!(h.t==='air'&&(nearCity(h)||h.isl==='TW'))){ /* 台澎機場的名稱改由可點的基地標籤（baseTagsSVG）顯示 */const ob=h.k===TAIPEI||PORTS.includes(h.k);o+='<text class="lbl'+(ob?' obj':' minor')+'" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x+'" y="'+(FG>2?y-R*1.2:y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';} // 機場旁 25 km 內已有城市或港口名就不重複標（點機場仍看得到名稱）；縮小時只顯示勝負要點
+    if(h.name&&(h.t!=='plain'||h.isl==='JP'||['宜蘭','恆春','澎湖'].includes(h.name))&&!(h.t==='air'&&(nearCity(h)||h.isl==='TW'))){ /* 台澎機場的名稱改由可點的基地標籤（baseTagsSVG）顯示 */const ob=h.k===TAIPEI||PORTS.includes(h.k);
+      o+='<text class="lbl'+(ob?' obj':' minor')+'" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x+'" y="'+(FG>2?y-R*1.2:y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';
+      } // 機場旁 25 km 內已有城市或港口名就不重複標（點機場仍看得到名稱）；縮小時只顯示勝負要點
     o+='</g>';
   }
   o+=coastRiverSVG(land);
@@ -408,7 +434,8 @@ function unitSVG(u){
   else if(u.type==='cv'||u.type==='csg'||u.type==='ddh')sym=box+'<path class="sym" d="M'+(x-8)+' '+(by+5.5)+'h16l-1.2 3h-13.6z"/><path class="sym" d="M'+(x+2)+' '+(by+5.5)+'v-2.6h3v2.6"/>';
   else if(u.type==='hk'||u.type==='ssn')sym=box+'<path class="sym" d="M'+(x-8)+' '+(by+7)+'q8-8 16 0z"/><path class="sym" d="M'+(x-1)+' '+(by+3)+'h3v3h-3z"/>';
   else if(u.type==='dd'||u.type==='ff'||!!SHIPW[u.type])sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+6)+'h14l-2 3h-10z"/><path class="sym" d="M'+(x-2)+' '+(by+6)+'v-3h4v3"/>';
-  else if(u.type==='hmr'||u.type==='mlrs')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+8)+'h12M'+(x-4)+' '+(by+7.5)+'l7 -5M'+(x-1)+' '+(by+7.5)+'l7 -5M'+(x+2)+' '+(by+7.5)+'l5 -3.5"/><circle class="sym" cx="'+(x-4)+'" cy="'+(by+8.6)+'" r="1"/><circle class="sym" cx="'+(x+4)+'" cy="'+(by+8.6)+'" r="1"/>';
+  else if(u.type==='hmr'||u.type==='mlrs')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+8)+'h12M'+(x-4)+' '+(by+7.5)+'l7 -5M'+(x-1)+' '+(by+7.5)+'l7 -5M'+(x+2)+
+      ' '+(by+7.5)+'l5 -3.5"/><circle class="sym" cx="'+(x-4)+'" cy="'+(by+8.6)+'" r="1"/><circle class="sym" cx="'+(x+4)+'" cy="'+(by+8.6)+'" r="1"/>';
   else if(u.type==='ssm'||u.type==='nme'||u.type==='mdt')sym=box+'<path class="sym" d="M'+(x-5)+' '+(by+8)+'L'+x+' '+(by+2)+'L'+(x+5)+' '+(by+8)+'M'+x+' '+(by+2)+'V'+(by+9)+'"/>';
   else if(u.type==='lst'||u.type==='ro')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+7)+'h14l-2 2.5h-10z"/><path class="sym" d="M'+(x-5)+' '+(by+7)+'v-2.5h10v2.5"/>';
   else if(u.type==='cvy')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+7)+'h14l-2 2.5h-10z"/><path class="sym" d="M'+(x-4)+' '+(by+7)+'v-3h8v3"/>';
@@ -416,9 +443,16 @@ function unitSVG(u){
   else if(u.type==='abn')sym=box+X+'<path class="sym" d="M'+(x-5)+' '+(by+bh)+'Q'+x+' '+(by+4)+' '+(x+5)+' '+(by+bh)+'"/>';
   else if(u.type==='amph'||u.type==='mar')sym=box+X+'<path class="sym" d="M'+(bx+1)+' '+(by+bh-1.5)+'q2.5 -2 5 0t5 0t5 0"/>';
   else sym=box+X;
-  let pips='';const lv=isLch(u)&&u.veh!=null&&!u.ghostFleet,n=u.mhp>6||lv?0:(u.mhp||T.hp);if(lv&&(ssmReady(u)<lchV0(u)||sel))pips='<text x="'+x+'" y="'+(y+20.5)+'" text-anchor="middle" font-size="7" font-weight="800" fill="'+(ssmReady(u)<lchV0(u)?'#c0392b':'var(--ink)')+'">'+ssmReady(u)+'/'+lchV0(u)+' 車</text>';else if(u.mhp>6)pips='<text x="'+x+'" y="'+(y+20.5)+'" text-anchor="middle" font-size="7" font-weight="800" fill="var(--ink)">'+u.hp+'/'+u.mhp+' 艘</text>';for(let i=0;i<n;i++){const px=x-(n-1)*3.5+i*7;pips+='<circle class="pip '+(i<u.hp?'full':'lost')+'" cx="'+px+'" cy="'+(y+17.5)+'" r="2"/>';}
+  let pips='';
+    const lv=isLch(u)&&u.veh!=null&&!u.ghostFleet,n=u.mhp>6||lv?0:(u.mhp||T.hp);
+    if(lv&&(ssmReady(u)<lchV0(u)||sel))pips='<text x="'+x+'" y="'+(y+20.5)+'" text-anchor="middle" font-size="7" font-weight="800" fill="'+(ssmReady(u)<lchV0(u)?'#c0392b':'var(--ink)')+'">'+ssmReady(u)+'/'+lchV0(u)+' 車</text>';
+    else if(u.mhp>6)pips='<text x="'+x+'" y="'+(y+20.5)+'" text-anchor="middle" font-size="7" font-weight="800" fill="var(--ink)">'+u.hp+'/'+u.mhp+' 艘</text>';
+    for(let i=0;i<n;i++){const px=x-(n-1)*3.5+i*7;
+    pips+='<circle class="pip '+(i<u.hp?'full':'lost')+'" cx="'+px+'" cy="'+(y+17.5)+'" r="2"/>';
+    }
   const sea=atSea(u);
-  const wf=US/(16/26*1.18),wake=sea&&LITE?'<ellipse class="wk still" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':sea?'<ellipse class="wk" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/><ellipse class="wk w2" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':'';
+  const wf=US/(16/26*1.18),wake=sea&&LITE?'<ellipse class="wk still" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':sea?'<ellipse class="wk" cx="'+
+      x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/><ellipse class="wk w2" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':'';
   return '<g class="u'+(sel?' sel':'')+(done?' done':'')+'" data-k="'+K(u.c,u.r)+'" data-id="'+u.id+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+wake+
     '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')">'+'<ellipse class="ush" cx="'+x+'" cy="'+(y+11)+'" rx="16" ry="5"/>'+
     '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
@@ -428,7 +462,8 @@ function unitSVG(u){
       const b=u.boundTo&&S.units.find(z=>z.id===u.boundTo);if(!b)return '';
       if(S.ctrl&&S.ctrl.def==='human'&&S.ctrl.atk!=='human'&&!S.sim&&!S.video)return '';
       const t=TYPES[b.type].s+b.hp,w=Math.max(14,t.length*6.4+4);
-      return '<rect x="'+(x-15)+'" y="'+(y-18)+'" width="'+w.toFixed(1)+'" height="8.5" rx="2" fill="#111" opacity=".9"/><text x="'+(x-15+w/2).toFixed(1)+'" y="'+(y-11.6)+'" text-anchor="middle" font-size="6.3" font-weight="700" fill="#fff">'+t+'</text>';})())+(sea?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-12)+'" r="2.6"/>':'')+'</g></g></g>';
+      return '<rect x="'+(x-15)+'" y="'+(y-18)+'" width="'+w.toFixed(1)+'" height="8.5" rx="2" fill="#111" opacity=".9"/><text x="'+(x-15+w/2).toFixed(1)+'" y="'+
+          (y-11.6)+'" text-anchor="middle" font-size="6.3" font-weight="700" fill="#fff">'+t+'</text>';})())+(sea?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-12)+'" r="2.6"/>':'')+'</g></g></g>';
 }
 const FLEETS=[{id:'csg',el:'csgM',from:[32,10],to:[31,10]},{id:'jmsdf',el:'jmsdfM',from:[26,-4],to:[20,-3]}]; // 美日艦隊：參戰後逐回合由基地海域駛向台灣周邊（from／to 為遠景格座標）
 function fleetProgress(F){ // 0＝在原處、1＝到位
@@ -486,17 +521,21 @@ function baseMarkersSVG(){
     const pt=P['c'+id];if(!pt)continue;const [x,y]=pt,hp=cnShown(id),tg=dOn&&cnTargets().includes(id);
     const shape=B.kind==='rf'?'<polygon class="mcb" points="0,-10 10,0 0,10 -10,0"/>':B.kind==='air'?'<polygon class="mcb" points="0,-9 9,7 -9,7"/>':B.kind==='navy'?'<rect class="mcb" x="-8" y="-8" width="16" height="16"/>':B.kind==='isr'?'<polygon class="mcb" points="0,-10 3,-3 10,0 3,3 0,10 -3,3 -10,0 -3,-3"/>':'<circle class="mcb" r="8"/>';
     const pd=(S.cnPend&&S.cnPend.id===id)||(S.afPend&&S.afPend.x.cn===id);
-    o+='<g class="mcg'+(hp>0?'':' off')+(pd?' pend':'')+'" data-cn="'+id+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+US.toFixed(3)+')"><circle r="24" fill="transparent" class="hit"/>'+shape+'<text class="mnum" y="4">'+hp+'</text>'+(tg?'<circle class="ttg d" r="16"/>':'')+'<text class="mlb" x="'+(B.side==='l'?-13:13)+'" y="3"'+(B.side==='l'?' text-anchor="end"':'')+'>'+B.n+'</text></g>';
+    o+='<g class="mcg'+(hp>0?'':' off')+(pd?' pend':'')+'" data-cn="'+id+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+US.toFixed(3)+')"><circle r="24" fill="transparent" class="hit"/>'+
+        shape+'<text class="mnum" y="4">'+hp+'</text>'+(tg?'<circle class="ttg d" r="16"/>':'')+'<text class="mlb" x="'+(B.side==='l'?-13:13)+'" y="3"'+(B.side==='l'?' text-anchor="end"':'')+'>'+B.n+'</text></g>';
   }
   for(const [b,B] of Object.entries(BASES)){
     const pt=P['b'+b];if(!pt)continue;const [x,y]=pt,us=S.fx.units.filter(f=>f.base===b),live=us.filter(f=>f.hp>0).length,act=us.some(fxActive),tg=strikeOn&&baseTargets(b).length;
-    o+='<g class="mbg" data-b="'+b+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+US.toFixed(3)+')"><circle r="24" fill="transparent" class="hit"/><circle class="mbd '+B.c.toLowerCase()+(act?' on':'')+'" r="10"/><text class="mnum'+(act?' w':'')+'" y="4">'+live+'</text>'+(tg?'<circle class="ttg" r="16"/>':'')+'<text class="mlb" x="14" y="4">'+B.n+'</text></g>';
+    o+='<g class="mbg" data-b="'+b+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+US.toFixed(3)+')"><circle r="24" fill="transparent" class="hit"/><circle class="mbd '+
+        B.c.toLowerCase()+(act?' on':'')+'" r="10"/><text class="mnum'+(act?' w':'')+'" y="4">'+live+'</text>'+(tg?'<circle class="ttg" r="16"/>':'')+'<text class="mlb" x="14" y="4">'+B.n+'</text></g>';
   }
   return o;
 }
 function textZoomFix(){ // 放大到 500% 以上時，地名、浪高等文字以自己的座標為中心縮小（不用 CSS transform-box：iOS Safari 對 SVG 文字支援不完整，會跑位）
   const k=typeof ZOOM!=='undefined'&&ZOOM>5?5/ZOOM:1;
-  document.querySelectorAll('#map .lbl,#map .wxl,#map .mport,#map .big,#map .fxt,#map .btag').forEach(e=>{if(k===1){if(e.__tz){e.removeAttribute('transform');e.__tz=0;}return;}const x=+(e.getAttribute('x')||e.getAttribute('data-x'))||0,y=+(e.getAttribute('y')||e.getAttribute('data-y'))||0;e.setAttribute('transform','translate('+x+' '+y+') scale('+k.toFixed(4)+') translate('+(-x)+' '+(-y)+')');e.__tz=1;});
+  document.querySelectorAll('#map .lbl,#map .wxl,#map .mport,#map .big,#map .fxt,#map .btag').forEach(e=>{if(k===1){if(e.__tz){e.removeAttribute('transform');e.__tz=0;}return;}const x=+
+      (e.getAttribute('x')||e.getAttribute('data-x'))||0,y=+(e.getAttribute('y')||e.getAttribute('data-y'))||0;e.setAttribute('transform','translate('+x+' '+y+') scale('+
+      k.toFixed(4)+') translate('+(-x)+' '+(-y)+')');e.__tz=1;});
 }
 function renderMap(){
   if(!STATIC.built)buildStatic();
@@ -518,15 +557,22 @@ function renderMap(){
    if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)))o+=rangeRingsSVG(iu,false);}
   S.units.filter(u=>!subHidden(u)&&!(u.ship&&atSea(u))&&!u.dropHide).concat([...GHOSTS.values()]).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
   // 潛艦「上次發現點」：目前沒被發現的潛艦，只在地圖上留下最後被發現的位置（淡虛線圈與回合數）
-  S.units.filter(u=>subHidden(u)&&u.last&&S.turn-u.last.turn<=6).forEach(u=>{const p=cen(u.last.c,u.last.r);o+='<g class="lastseen" opacity=".8"><circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(R*.55).toFixed(1)+'" fill="none" stroke="#3f7fd0" stroke-width="1.6" stroke-dasharray="4 3"/><text x="'+p[0].toFixed(1)+'" y="'+(p[1]+4).toFixed(1)+'" text-anchor="middle" font-size="11" fill="#3f7fd0" font-weight="700">?</text><text x="'+p[0].toFixed(1)+'" y="'+(p[1]+R*.55+10).toFixed(1)+'" text-anchor="middle" font-size="9" fill="#3f7fd0">'+TX('潛艦 上次發現點')+' T'+u.last.turn+'</text></g>';});
+  S.units.filter(u=>subHidden(u)&&u.last&&S.turn-u.last.turn<=6).forEach(u=>{const p=cen(u.last.c,u.last.r);o+='<g class="lastseen" opacity=".8"><circle cx="'+p[0].toFixed(1)+
+      '" cy="'+p[1].toFixed(1)+'" r="'+(R*.55).toFixed(1)+'" fill="none" stroke="#3f7fd0" stroke-width="1.6" stroke-dasharray="4 3"/><text x="'+p[0].toFixed(1)+'" y="'+
+      (p[1]+4).toFixed(1)+'" text-anchor="middle" font-size="11" fill="#3f7fd0" font-weight="700">?</text><text x="'+p[0].toFixed(1)+'" y="'+(p[1]+R*.55+10).toFixed(1)+
+      '" text-anchor="middle" font-size="9" fill="#3f7fd0">'+TX('潛艦 上次發現點')+' T'+u.last.turn+'</text></g>';});
   o+=facSVG();
   o+=wxMapSVG();
   o+=ghostFleetsSVG();
   o+=baseMarkersSVG();
   o+=baseTagsSVG();
   for(const k of Object.keys(MINOR_PORTS)){const h=TER[k];if(!h)continue;const [x,y]=cen(h.c,h.r);o+='<text class="mport" style="font-size:'+(14*Math.max(.55,SC)).toFixed(1)+'px" x="'+(x+R*.7).toFixed(1)+'" y="'+(y-R*.35).toFixed(1)+'">⚓</text>';} // 次要港口標記畫在單位之上
-  Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<g class="mine" pointer-events="none"><circle cx="'+x.toFixed(1)+'" cy="'+(y+8).toFixed(1)+'" r="4.5" fill="#222" stroke="#ffd45a" stroke-width="1.2"/><path d="M'+(x-7).toFixed(1)+' '+(y+8).toFixed(1)+'h14M'+x.toFixed(1)+' '+(y+1).toFixed(1)+'v14" stroke="#ffd45a" stroke-width="1"/></g>';});
-  airfields().forEach(h=>{const lv=afLevel(h.k);if(!lv)return;const [x,y]=cen(h.c,h.r);o+='<text class="fxt af'+lv+'" pointer-events="none" x="'+(x+R*.65).toFixed(1)+'" y="'+(y-R*.4).toFixed(1)+'" text-anchor="middle" style="font-size:'+((lv===3?15:12)*Math.max(.55,SC)).toFixed(1)+'px;stroke-width:'+(3*Math.max(.55,SC)).toFixed(1)+'px" fill="'+(lv===3?'#c0392b':lv===2?'#e67e22':'#e0a800')+'">'+(lv===3?'✕':'⚠')+'</text>';});
+  Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<g class="mine" pointer-events="none"><circle cx="'+x.toFixed(1)+
+      '" cy="'+(y+8).toFixed(1)+'" r="4.5" fill="#222" stroke="#ffd45a" stroke-width="1.2"/><path d="M'+(x-7).toFixed(1)+' '+(y+8).toFixed(1)+'h14M'+x.toFixed(1)+' '+(y+
+      1).toFixed(1)+'v14" stroke="#ffd45a" stroke-width="1"/></g>';});
+  airfields().forEach(h=>{const lv=afLevel(h.k);if(!lv)return;const [x,y]=cen(h.c,h.r);o+='<text class="fxt af'+lv+'" pointer-events="none" x="'+(x+R*.65).toFixed(1)+
+      '" y="'+(y-R*.4).toFixed(1)+'" text-anchor="middle" style="font-size:'+((lv===3?15:12)*Math.max(.55,SC)).toFixed(1)+'px;stroke-width:'+(3*Math.max(.55,SC)).toFixed(1)+
+      'px" fill="'+(lv===3?'#c0392b':lv===2?'#e67e22':'#e0a800')+'">'+(lv===3?'✕':'⚠')+'</text>';});
   Object.keys(S.portDown||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<text class="fxt dead" pointer-events="none" x="'+x.toFixed(1)+'" y="'+(y+4).toFixed(1)+'" text-anchor="middle" font-size="18" fill="#c0392b">✕</text>';});
   (S.focus||[]).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<ellipse class="vfocus" cx="'+x.toFixed(1)+'" cy="'+(y+4).toFixed(1)+'" rx="17" ry="12"/>';});
   if(humanTurn()){
@@ -542,7 +588,10 @@ function renderMap(){
     rings.forEach(([u,c])=>{const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy;o+='<circle class="ring '+c+'" cx="'+x+'" cy="'+y+'" r="'+(15*rf).toFixed(1)+'" style="stroke-width:'+(2.5*Math.max(.6,rf)).toFixed(1)+'px"/>';});
     // 已選定的目標：粗的實線圈＋十字；空軍出擊中的基地：藍色實線圈
     const pu=S.cnPend&&S.cnPend.u?S.units.find(x=>x.id===S.cnPend.u):S.afPend&&(S.afPend.x.u||S.afPend.x.stg)?S.units.find(x=>x.id===(S.afPend.x.u||S.afPend.x.stg)):null;
-    if(pu&&alive(pu)){const [x0,y0]=cen(pu.c,pu.r),[sx,sy]=stackPos(pu),x=x0+sx,y=y0+sy,r=19*rf,w=Math.max(1.5,3.5*rf);o+='<g class="pendmk" pointer-events="none"><circle cx="'+x+'" cy="'+y+'" r="'+r.toFixed(1)+'" fill="none" stroke="#e8b400" stroke-width="'+w.toFixed(1)+'"/><path d="M'+(x-r*1.35)+' '+y+'h'+(r*.55)+'M'+(x+r*.8)+' '+y+'h'+(r*.55)+'M'+x+' '+(y-r*1.35)+'v'+(r*.55)+'M'+x+' '+(y+r*.8)+'v'+(r*.55)+'" stroke="#e8b400" stroke-width="'+w.toFixed(1)+'"/></g>';}
+    if(pu&&alive(pu)){const [x0,y0]=cen(pu.c,pu.r),[sx,sy]=stackPos(pu),x=x0+sx,y=y0+sy,r=19*rf,w=Math.max(1.5,3.5*rf);
+      o+='<g class="pendmk" pointer-events="none"><circle cx="'+x+'" cy="'+y+'" r="'+r.toFixed(1)+'" fill="none" stroke="#e8b400" stroke-width="'+w.toFixed(1)+'"/><path d="M'+
+          (x-r*1.35)+' '+y+'h'+(r*.55)+'M'+(x+r*.8)+' '+y+'h'+(r*.55)+'M'+x+' '+(y-r*1.35)+'v'+(r*.55)+'M'+x+' '+(y+r*.8)+'v'+(r*.55)+'" stroke="#e8b400" stroke-width="'+w.toFixed(1)+'"/></g>';
+      }
     if((S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK&&TER[S.afK]){const [x,y]=cen(TER[S.afK].c,TER[S.afK].r);o+='<circle pointer-events="none" cx="'+x+'" cy="'+y+'" r="'+(R*1.05).toFixed(1)+'" fill="none" stroke="var(--def)" stroke-width="'+Math.max(1.5,3*rf).toFixed(1)+'"/>';}
   }
   $('#gD').innerHTML=o;
