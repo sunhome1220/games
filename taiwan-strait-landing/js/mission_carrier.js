@@ -15,7 +15,7 @@ MISSION_DEFS.carrier={
   note:'本關沿用主遊戲的規則與 2026 年的兵力，武器數字沒有為了關卡調整。結局「攻方暫停攻台」是假設情境，不是對真實戰局的預測。',
   ids:null,
   check(){
-    if(!this.ids||!this.ids.length){const cvs=S.units.filter(u=>u.type==='cv'&&u.side==='atk');this.ids=cvs.map(u=>u.id);this.snap={P:Object.assign({},S.pools),TW:S.air?S.air.TW:0,PLA:S.air?S.air.PLA:0,ships:S.units.filter(u=>u.fl&&alive(u)).reduce((a,u)=>a+u.hp,0)};this.nm={};cvs.forEach(u=>{this.nm[u.id]=u.cvi!=null&&AIR.CV[u.cvi]?AIR.CV[u.cvi].n:'共軍航艦';});} // 開局時航艦棋子還沒擺上前不算；先記下艦名（沉沒後棋子就不在了）
+    if(!this.ids||!this.ids.length){const cvs=S.units.filter(u=>u.type==='cv'&&u.side==='atk');this.ids=cvs.map(u=>u.id);this.snap={U:Object.assign({},S.stats.use||{}),F:Object.assign({},S.stats.fired||{}),P:Object.assign({},S.pools),TW:S.air?S.air.TW:0,PLA:S.air?S.air.PLA:0,ships:S.units.filter(u=>u.fl&&alive(u)).reduce((a,u)=>a+u.hp,0)};this.nm={};cvs.forEach(u=>{this.nm[u.id]=u.cvi!=null&&AIR.CV[u.cvi]?AIR.CV[u.cvi].n:'共軍航艦';});} // 開局時航艦棋子還沒擺上前不算；先記下艦名（沉沒後棋子就不在了）
     if(!this.ids.length)return null;
     for(const id of this.ids){const u=S.units.find(x=>x.id===id);const nm=(this.nm&&this.nm[id])||'共軍航艦';
       if(!u||!alive(u)||u.hp<=1){const t=S.turn,st=t<=2?3:t===3?2:1;
@@ -31,13 +31,16 @@ MISSION_DEFS.carrier={
 function carrierDebrief(nm,t,st){
   const H=(S.hits||[]).filter(h=>h.type==='cv'&&h.side==='atk'&&h.cvn===nm),last=H[H.length-1];
   const by={};H.forEach(h=>{by[h.why]=(by[h.why]||0)+h.n;});
-  const D=MISSION_DEFS.carrier.snap||{P:S.p0,TW:S.air?S.air.TW0:0,PLA:S.air?S.air.PLA0:0,ships:S.rocShips0||0},P=S.pools,P0=D.P,used=(k,mul,unit,label)=>{const d=Math.round(((P0[k]||0)-(P[k]||0))*mul);return d>0?label+' '+d+' '+unit:null;};
-  const ammo=[used('rocAAsh',1,'枚','魚叉（空射）'),used('rocHf2A',1,'枚','雄二空射型'),used('rocAS',100,'枚','雄二／雄三（岸置）'),used('rocHCD',100,'枚','魚叉岸防'),used('rocAtc',1,'枚','陸軍戰術飛彈'),used('rocMsl',25,'枚','長程飛彈（約）')].filter(Boolean);
+  const D=MISSION_DEFS.carrier.snap||{P:S.p0,TW:S.air?S.air.TW0:0,PLA:S.air?S.air.PLA0:0,ships:S.rocShips0||0},P=S.pools,P0=D.P;
+  const U0=D.U||{},F0=D.F||{},dif=(A,B)=>Object.entries(A||{}).map(([k,v])=>[k,v-(B[k]||0)]).filter(x=>x[1]>0);
+  const sorties=dif(S.stats.use,U0).map(([k,v])=>k+' '+v+' 次'),fired=dif(S.stats.fired,F0).map(([k,v])=>k+' '+v+' 枚');
   const escLost=(S.stats.escLost||{}).atk||0,twAir=S.air?Math.max(0,Math.round(D.TW-S.air.TW)):0,ships=Math.max(0,D.ships-S.units.filter(u=>u.fl&&alive(u)).reduce((a,u)=>a+u.hp,0)),subs=Math.max(0,(P0.rocSub||0)-(P.rocSub||0));
   const li=a=>'<ul class="mdeb">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
   return '<div class="mgoal"><b>致命一擊</b>：'+(last?last.why+'（第 '+last.t+' 回合）':'海上交戰的抽象攻擊')+'</div>'+
     (Object.keys(by).length?'<div class="mgoal"><b>'+nm+' 受到的攻擊</b>'+li(Object.entries(by).map(([w,n])=>w+'：−'+n+' 步'))+'</div>':'')+
     '<div class="mgoal"><b>共軍損失</b>'+li(['航艦 '+nm+(H.some(h=>h.dead)?' 沉沒':' 重創失能'),'護航艦 '+escLost+' 艘','戰機（含艦載機）約 '+(S.air?Math.max(0,Math.round(D.PLA-S.air.PLA)):0)+' 架'])+'</div>'+
-    '<div class="mgoal"><b>台灣付出的代價</b>'+li(['戰機 '+twAir+' 架','艦艇 '+ships+' 艘','潛艦 '+subs+' 艘'].concat(ammo.length?['彈藥：'+ammo.join('、')]:[]))+'</div>'+
+    '<div class="mgoal"><b>台灣出動</b>'+li(sorties.length?sorties:['（沒有出動紀錄）'])+'</div>'+
+    '<div class="mgoal"><b>台灣發射的飛彈</b>'+li(fired.length?fired:['（沒有發射紀錄）'])+'</div>'+
+    '<div class="mgoal"><b>台灣戰損</b>'+li(['戰機 '+twAir+' 架','艦艇 '+ships+' 艘','潛艦 '+subs+' 艘'])+'</div>'+
     '<div class="wz-note">用了 '+t+' 個回合。'+(st<3?'更早完成可以拿到更多星。':'')+'</div>';
 }

@@ -21,6 +21,7 @@ const hmrFor=tg=>{const ll=tgLL(tg);if(!ll||(S.pools.rocAtc||0)<ROCLR.pk)return 
 const lrWpn=(km,tg)=>(tg!==undefined?!!hmrFor(tg):km<=ATC_KM&&atcDeepOK())?'atc':(S.pools.rocMsl||0)>0?'msl':null;
 function lrSpend(km,tg){ // 台灣縱深打擊扣彈：回傳 {wp,src}；沒有可用的飛彈回傳 null
   const wp=lrWpn(km,tg),P=S.pools;if(!wp)return null;
+  useRec('縱深打擊波次',1,wp==='atc'?'陸軍戰術飛彈':'雄二E',ROCLR.pk);
   if(wp==='atc'){const h=tg!==undefined?hmrFor(tg):hmrDeep();P.rocAtc-=ROCLR.pk;h.shots--;h.lu=(h.lu||0)+ROCLR.pk;h.revealed=true;return {wp,src:h};}
   P.rocMsl=Math.max(0,Math.round((P.rocMsl-ROCLR.pk/ROCLR.per)*100)/100);const k=S.turn+'def';if(!S.mslUse||S.mslUse.k!==k)S.mslUse={k,n:0};S.mslUse.n++;return {wp,src:null};
 }

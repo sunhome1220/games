@@ -297,7 +297,7 @@ function hkPick(u,t){ // 選用武器：近距離優先魚雷（命中較高）�
 function fireSub(u,t){
   if(!subTargets(u).includes(t))return false;
   const w=hkPick(u,t);if(!w)return false;
-  if(w==='tp')u.tp--;else u.hm--;u.shots=0;u.acted=true;u.revealed=true;u.last={c:u.c,r:u.r,turn:S.turn};
+  if(w==='tp')u.tp--;else u.hm--;u.shots=0;u.acted=true;u.revealed=true;u.last={c:u.c,r:u.r,turn:S.turn};useRec('潛艦攻擊',1,w==='hm'?'潛射魚叉':'重型魚雷（齊射）',1);
   const nm=w==='hm'?'魚叉飛彈':'重型魚雷',sv=w==='hm'&&adCover(t).length?salvoCalc(t,1,false,'hkSalvo>'+t.type):null; // 魚叉在艦隊防空涵蓋內：以齊射模型計算
   const hit=sv?sv.hits>0:hitP(w==='hm'?Math.max(.1,hkP(t,u)-.12):hkP(t,u),'sub:'+w+'>'+t.type),big=t.type==='cv'||t.type==='csg',steps=!hit?0:sv&&big?takeInt(.5,'salvoBig'):1;
   log(subNm(u)+'以'+nm+'攻擊 '+uname(t)+(sv?'：對方防空發射 '+sv.I+' 枚攔截彈，':'')+(hit?'命中'+(steps?'':'（航艦體積大，未造成重創）'):'未命中')+'（魚雷 '+u.tp+' 齊射、魚叉 '+u.hm+' 枚'+(sv?'；齊射模型，參數為推估':'')+'）');
