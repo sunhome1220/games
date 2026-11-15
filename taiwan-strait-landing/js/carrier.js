@@ -173,7 +173,7 @@ const SHIPW={
   ddg:{ad:80,adR:kmH(160),asm:8,asmN:'魚叉',asmR:kmH(120),lam:8,salvo:4,chan:4}};
 // ★chan＝每艘一波能同時接戰的來襲飛彈數（推估；柏克級有 3 具 SPG-62 照射雷達、提康德羅加級 4 具，可分時導引多枚）；航艦自身近迫防禦另可處理 2 枚（攔截率 50%）
 // ★休斯齊射模型參數（推估）：反艦飛彈尋標命中率 0.8；艦隊防空每枚來襲發射 2 枚攔截彈，單枚攔截率 0.7（彈道飛彈 0.5）
-const SALVO={pSeek:.8,pInt:.7,pIntBM:.5,perMsl:2};
+const SALVO={pSeek:.8,pSeekEW:.6,pInt:.7,pIntBM:.5,perMsl:2,ciws:2}; // pSeekEW：★有護航艦干擾與誘餌時的尋標命中率；ciws：★每艘護航艦每階段近迫防禦接戰數
 const isEsc=u=>!!SHIPW[u.type];
 const tname=t=>t.fl?t.fl.n:t.wp==='hp'?'魚叉岸防系統':t.hl?subNm(t):TYPES[t.type].n;
 // ---------- 第 3c 階段：對地巡弋飛彈與反潛（★皆為推估）----------
@@ -217,10 +217,13 @@ const isBigShip=t=>t.type==='cv'||t.type==='csg';
 function salvoHit(t,n,key,bigKey){const r=salvoCalc(t,n,false,key);r.steps=isBigShip(t)?takeInt(r.hits/2,bigKey||'salvoBig'):r.hits;return r;}
 const salvoStepTxt=(t,steps,none)=>steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):(none||''); // 戰報：扣了幾步（艦隊寫艘數）
 function salvoCalc(t,n,bm,key){
-  const pk=1-Math.pow(1-(bm?SALVO.pIntBM:SALVO.pInt),SALVO.perMsl);let left=n,I=0,kill=0;
+  const pk=1-Math.pow(1-(bm?SALVO.pIntBM:SALVO.pInt),SALVO.perMsl),cov=adCover(t).length>0||S.units.some(e=>e!==t&&e.side===t.side&&alive(e)&&(isEsc(e)||e.type==='dd')&&rd(hexOf(e),hexOf(t))<=kmH(30));let left=n,I=0,kill=0;
   for(const e of adCover(t)){if(left<=0)break;const c=Math.min(left,chLeft(e,chanOf(e)),Math.floor(e.mag.ad/SALVO.perMsl));if(c<=0)continue;e.chU+=c;e.mag.ad-=c*SALVO.perMsl;I+=c*SALVO.perMsl;kill+=c*pk;left-=c;}
   if(left>0&&(t.type==='cv'||t.type==='csg')){const c=Math.min(left,chLeft(t,2));t.chU+=c;kill+=c*.5;left-=c;} // 航艦自身近迫防禦
-  const surv=Math.max(0,n-kill),hits=Math.min(n,takeInt(surv*SALVO.pSeek,key||'salvo'));
+  // ★護航艦近迫防禦（近迫武器砲、紅旗-10、方陣快砲等）：目標 30 km 內的護航艦或艦隊，每階段各再接戰 2 枚突破的飛彈，攔下機率 50%
+  if(left>0)for(const e of S.units){if(left<=0)break;if(e===t||e.side!==t.side||!alive(e)||!(isEsc(e)||e.fl||e.type==='dd')||rd(hexOf(e),hexOf(t))>kmH(30))continue;
+    const st=S.turn+S.phase;if(e.cpT!==st){e.cpT=st;e.cpU=0;}const c=Math.min(left,Math.max(0,SALVO.ciws-e.cpU));if(c<=0)continue;e.cpU+=c;kill+=c*.5;left-=c;}
+  const surv=Math.max(0,n-kill),hits=Math.min(n,takeInt(surv*(cov?SALVO.pSeekEW:SALVO.pSeek),key||'salvo')); // ★艦隊裡有護航艦時，電子干擾與誘餌讓尋標命中率降低
   return {n,I,surv,hits};
 }
 function fireSalvo(m,t){
