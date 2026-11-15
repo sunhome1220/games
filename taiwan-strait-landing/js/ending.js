@@ -105,7 +105,7 @@ function failGuide(k){ // 攻方失敗時：這局輸在哪裡，以及對應的
 document.addEventListener('click',e=>{const b=e.target.closest('[data-failgo]');if(!b)return;
   b.getAttribute('data-failgo').split(',').forEach(id=>{const el=$('#'+id);if(el){el.value='1';el.dispatchEvent(new Event('change'));}});
   try{saveSetup();}catch(x){}location.reload();});
-function seedHTML(){if(!S.seedCode)return '';return '<div class="erates"><div class="enote dd">戰局碼：<code class="seedc" hidden>'+S.seedCode+'</code> <button class="ghost sm" data-copyseed="1">複製</button><br>在設定最後一頁貼上這個碼，就能用同樣的設定與天候、擲骰結果重玩；你的決策不同，結果仍會不同。</div></div>';}
+function seedHTML(){if(!S.seedCode)return '';return '<div class="erates"><div class="enote dd">戰局碼：<code class="seedc" hidden>'+S.seedCode+'</code> <button class="ghost sm" data-copyseed="1">複製</button><br>在設定最後一頁貼上這個碼，就能用同樣的設定與天候、擲骰結果重玩；決策不同，結果仍會不同。</div></div>';}
 function ratingHTML(m){
   if(S.sandbox&&S.sandbox.length)return '<div class="erates"><div class="enote dd">本局使用了假設情境：'+S.sandbox.join('、')+'。結果不代表真實預測。</div></div>';
   const human=sd=>!S.sim&&!S.video&&S.ctrl&&S.ctrl[sd]==='human';
@@ -180,7 +180,7 @@ function renderHistoryDetail(i){
     '<div class="escores"><div class="escore atk"><div class="eh"><b>攻方</b><span class="eg g'+x.gA+'">'+x.gA+'</span><span class="et">'+x.sA+' / 100</span></div></div><div class="escore def"><div class="eh"><b>守方</b><span class="eg g'+
         x.gD+'">'+x.gD+'</span><span class="et">'+x.sD+' / 100</span></div></div></div>'+
     '<div class="dd" style="margin-top:8px">台灣平民傷亡約 '+ppl(x.civ)+' · 攻方軍人傷亡約 '+ppl(x.milA)+' · 守方約 '+ppl(x.milD)+' · 全球股市 '+x.mkt+'% · 美國介入程度 '+x.us+'、日本 '+x.jp+'</div>';
-  h+='<div class="hlist-h"><b>你的決策與事件</b><span class="dd">'+x.ch.length+' 項</span></div>'+(x.ch.length?'<ol class="hch">'+x.ch.map(c=>'<li><span class="dd">'+c[0]+'</span>　<b>'+c[1]+'</b></li>').join('')+'</ol>':'<div class="wz-note">沒有決策紀錄。</div>');
+  h+='<div class="hlist-h"><b>決策與事件</b><span class="dd">'+x.ch.length+' 項</span></div>'+(x.ch.length?'<ol class="hch">'+x.ch.map(c=>'<li><span class="dd">'+c[0]+'</span>　<b>'+c[1]+'</b></li>').join('')+'</ol>':'<div class="wz-note">沒有決策紀錄。</div>');
   h+='<div class="btns" style="margin-top:14px"><button id="hBack">← 回到列表</button><button class="ghost" id="hDel">刪除這筆</button></div>';
   box.innerHTML=h;
   $('#hBack').onclick=renderHistory;
@@ -225,7 +225,7 @@ function endGame(early,side,label){
   const defView=!S.sim&&!S.video&&S.ctrl.def==='human'&&S.ctrl.atk!=='human';
   const DT=['守住首都台北','守住主要港口','島上戰力不落下風'];
   const chips=cs.map((c,i)=>{const okv=defView?!c.atk:c.atk;return '<div class="fc '+(okv?'ok':'no')+'"><span class="fi">'+(okv?'✓':'✕')+'</span><div><b>'+(defView?DT[i]:c.title)+'</b><span class="dd">'+c.now+'</span></div></div>';}).join('');
-  const basis='<ul class="fin-basis">'+cs.map((c,i)=>'<li><b>'+(defView?DT[i]:c.title)+'</b>：判定標準——'+(defView?(['台北沒有被攻方控制','攻方控制的主要港口卸載容量不足以支撐島上部隊','攻方島上綜合戰力不如守方，或不到'+cpTxt(4)+'（站不穩）'][i]):c.desc)+'；結果——'+c.now+'，'+(defView?(!c.atk?'守方達成':'守方未達成'):(c.atk?'攻方達成':'攻方未達成'))+'。</li>').join('')+'</ul>';
+  const basis='<ul class="fin-basis">'+cs.map((c,i)=>'<li><b>'+(defView?DT[i]:c.title)+'</b>：判定標準——'+(defView?(['台北沒有被攻方控制','攻方控制的主要港口卸載容量不足以支撐島上部隊','攻方島上綜合戰力不如守方，或不到'+cpTxt(4)+'（難以鞏固灘頭）'][i]):c.desc)+'；結果——'+c.now+'，'+(defView?(!c.atk?'守方達成':'守方未達成'):(c.atk?'攻方達成':'攻方未達成'))+'。</li>').join('')+'</ul>';
   const html='<div class="finw"><div class="fin-head"><div class="eyebrow">'+(early?'提前結束 · 第 '+S.turn+' 回合':'第 '+S.T+' 回合 判定')+'</div>'+
     '<h3 class="verdict '+v.s+'">'+v.t+'</h3><p class="fvd">'+v.d+'</p>'+
     '<div class="fin-conds'+(defView?' dv':'')+'">'+chips+'</div>'+basis+'<div class="fin-score">'+(defView?'守方守住 <b>'+(3-n)+'</b> / 3 項（攻方達成 '+n+' 項，需 2 項以上才獲勝）':'攻方達成 <b>'+
