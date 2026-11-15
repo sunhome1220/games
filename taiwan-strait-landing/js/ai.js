@@ -160,7 +160,7 @@ async function aiAtkCvRetreat(u,C){const {h}=C;
 async function aiAtkCarrier(u,C){const {h}=C;
   if(u.type==='cv'){ // 航艦群：在東岸海域游弋，遇到岸置飛彈威脅就向外海退
     const rc=reach(u),others=S.units.filter(x=>x.type==='cv'&&x!==u);let best=null;
-    const sc=(k)=>ssmThreat(k)*3+others.reduce((a,x)=>a+Math.max(0,kmH(140)-hd(TER[k],hexOf(x))),0)*.6+Math.abs(TER[k].c-31)*.15+cvAggr(u,TER[k]);
+    const sc=(k)=>{const d=cvTwKm(TER[k]);return ssmThreat(k)*3+others.reduce((a,x)=>a+Math.max(0,kmH(140)-hd(TER[k],hexOf(x))),0)*.6+(d<CV_STANDOFF?(CV_STANDOFF-d)/10:(d-CV_STANDOFF)/60)+cvAggr(u,TER[k]);}; // 保持在台灣岸置與艦射飛彈射程外（約 300 km）
     let bs=sc(h.k)-.6;
     for(const [k,v] of rc){if(v.kind!=='sail')continue;const t=sc(k)+Math.random()*.8;if(t<bs){bs=t;best=k;}}
     if(best){doMove(u,best,'sail');render();await sleep(240);}
