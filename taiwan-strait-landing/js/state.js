@@ -119,7 +119,7 @@ function fleetSalvo(m,t){
   const A=fleetAgg(m);const n=Math.min(m.mag.asm,A.sh*FLEET_PER);if(n<=0)return false;
   m.mag.asm-=n;m.shots=0;m.acted=true;m.revealed=true;
   const r=salvoCalc(t,n,false,'fleet>'+t.type),big=t.type==='cv'||t.type==='csg',steps=big?takeInt(r.hits/2,'salvoBig'):r.hits;
-  fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit:r.hits>0});
+  fxSalvo([m.c,m.r],t,r);
   log(m.fl.n+'齊射 '+n+' 枚反艦飛彈攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+(steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):'，未造成重創')+'（齊射模型，參數為推估）');
   if(steps)damage(t,steps,m.fl.n+'反艦飛彈');
   checkInstant();return true;

@@ -686,7 +686,7 @@ function fireSalvo(m,t){
   const W=SHIPW[m.type];if(!m.mag||m.mag.asm<=0)return false;
   const n=Math.min(W.salvo,m.mag.asm);m.mag.asm-=n;m.shots=Math.max(0,(m.shots||1)-1);if(m.shots<=0)m.acted=true;m.revealed=true;
   const r=salvoCalc(t,n,false,'salvo:'+m.type+'>'+t.type);
-  fxq({t:'hmr',from:[m.c,m.r],to:[t.c,t.r],hit:r.hits>0,atc:true});
+  fxSalvo([m.c,m.r],t,r);
   const big=t.type==='cv'||t.type==='csg',steps=big?takeInt(r.hits/2,'salvoBig'):r.hits; // ★航艦體積大：每 2 枚命中扣 1 步
   log(uname(m)+'以 '+n+' 枚'+W.asmN+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+(steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):'，未造成重創')+'（齊射模型，參數為推估）');
   if(steps)damage(t,steps,W.asmN+'齊射');

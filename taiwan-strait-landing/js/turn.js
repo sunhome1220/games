@@ -344,7 +344,7 @@ function landSync(){
 function pieceSalvo(m,t,n,wn,key){
   n=Math.min(n,m.mag.asm);if(n<=0)return false;m.mag.asm-=n;m.revealed=true;
   const r=salvoCalc(t,n,false,key+'>'+t.type),big=t.type==='cv'||t.type==='csg',steps=big?takeInt(r.hits/2,'salvoBig'):r.hits;
-  fxq({t:'msl',from:[m.c,m.r],to:[t.c,t.r],hit:r.hits>0});
+  fxSalvo([m.c,m.r],t,r);
   log(uname(m)+'以 '+n+' 枚'+wn+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+(steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):'，未造成重創')+'（齊射模型，參數為推估）');
   if(steps)damage(t,steps,TYPES[m.type].n+wn);checkInstant();return true;
 }

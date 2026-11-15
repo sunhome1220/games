@@ -4,6 +4,8 @@ const FXQ=[];
 const SVGNS='http://www.w3.org/2000/svg';
 let PREVIEW=false;
 const fxq=o=>{if(!PREVIEW)FXQ.push(o);};
+// 齊射動畫：n 枚反艦飛彈飛向船艦；目標或護航艦有防空時，畫出攔截彈升空：攔下的空中爆炸、突破的命中或落海，最後顯示「攔截 X／命中 Y」
+const fxSalvo=(from,t,r)=>{if(!PREVIEW)FXQ.push({t:'salvo',from,to:[t.c,t.r],n:r.n,I:r.I,surv:r.surv,hits:r.hits,side:t.side});};
 const fxToast=(s,ms)=>{if(PREVIEW)return;FXQ.push({t:'toast',s,ms});}; // 打擊結果的訊息：等飛彈或戰機飛到、爆炸後才跳出
 const reduce=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 let FXSPD=1;const fxK=()=>((S&&S.video&&V.sp)?Math.max(.2,1/V.sp):1)/FXSPD; // 動畫速度設定：0.5／1／2／4 倍
@@ -336,6 +338,12 @@ const subHidden=u=>(u.type==='hk'||u.type==='ssn')&&u.side==='def'&&!u.revealed&
 const unitAtVis=k=>S.units.find(u=>K(u.c,u.r)===k&&!subHidden(u));
 function runFx(o){
   if(o.t==='toast'){toast(o.s,o.ms);return;}
+  if(o.t==='salvo'){const PP=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]),a=PP(o.from),b=PP(o.to),sh=Math.max(1,Math.min(6,o.n)),f=sh/o.n;
+    const ni=o.I>0?Math.min(sh,Math.round((o.n-o.surv)*f)):0,nh=o.hits>0?Math.max(1,Math.min(sh-ni,Math.round(o.hits*f))):0,cls=o.side==='def'?'def':'atk';
+    for(let i=0;i<sh;i++){const a2=[a[0]+(NR()-.5)*10,a[1]+(NR()-.5)*10],md=i<ni?'int':'pass',hit=i>=ni&&i<ni+nh;
+      setTimeout(()=>{if(o.I>0)fxIntercept(a2,b,'asm',md,hit,true,cls);else fxFlight(a2,b,'asm',()=>fxImpact(b,hit,true,true));},i*110*fxK());}
+    setTimeout(()=>fxText(b,(o.I>0?'攔截 '+Math.round(o.n-o.surv)+'／':'')+'命中 '+o.hits,o.hits?'dead':cls,1400),(fxDur('asm',Math.hypot(b[0]-a[0],b[1]-a[1]))+sh*110+300)*fxK());
+    return;}
   const PO=h=>{const q=oCenter(h[0],h[1]);return [q[0]*KS,q[1]*KS];}; // 外圍／港口出發點（舊座標）
   const P=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);
   if(o.t==='atk'){
@@ -388,6 +396,7 @@ function fxArrive(o){
       if((o.org||o.from)&&o.k)return fl(o.ad&&o.k==='bomb'?'cm':o.k,dd);return (o.org||o.from)?Math.min(900,260+dd*.7):420;}
     if(o.t==='msl')return fl('asm',dist(P(o.from),P(o.to)));
     if(o.t==='cva')return cvaGeo(o).tot;
+    if(o.t==='salvo'){const q=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);return fl('asm',dist(q(o.from),q(o.to)))+Math.min(6,o.n)*110+300;}
     if(o.t==='drop'){const q=h=>TER[K(h[0],h[1])]?cen(h[0],h[1]):center(h[0],h[1]);return fxDur('plane',dist(q(o.from),q(o.at)))+900;}
     if(o.t==='atk')return o.sea?340:260+2*95;
     if(o.t==='hmr'){const dd=dist(cen(o.from[0],o.from[1]),cen(o.to[0],o.to[1]));return fxDur(o.atc?'atc':'rkt',dd)+(o.atc?0:2*120);}
@@ -404,7 +413,7 @@ function playFx(list){
   const nShots=list.filter(x=>x.t==='air'||x.t==='msl').length,stepAir=nShots>=8?45:nShots>=4?85:170,stepMsl=nShots>=8?45:nShots>=4?70:110; // 齊射：發數多時間隔縮短，看起來是一起發射
   list.forEach(o=>{
     let start;
-    if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='sub'||o.t==='air'||o.t==='tfa'||o.t==='cva'||o.t==='drop'){start=t;last=t;hitAt=t+(o.t==='tfa'?tfaDur(o):fxArrive(o));t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
+    if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='sub'||o.t==='air'||o.t==='tfa'||o.t==='cva'||o.t==='drop'||o.t==='salvo'){start=t;last=t;hitAt=t+(o.t==='tfa'?tfaDur(o):fxArrive(o));t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
     else if(o.t==='dmg'||o.t==='dead'||o.t==='txt'||o.t==='toast')start=Math.max(last+360,hitAt+80); // 等這一發武器飛到、爆炸後才顯示結果
     else start=0;
     if(start>0)setTimeout(()=>runFx(o),start*k);else runFx(o);
