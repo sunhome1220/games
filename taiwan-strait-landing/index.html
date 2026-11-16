@@ -53,6 +53,7 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%} /* iPhone 橫向時不要自動放大段落文字（彈窗說明會變得比標題還大） */
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
 .app{max-width:1680px;margin:0 auto;padding-block:calc(20px + env(safe-area-inset-top,0px)) 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header{position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:16px}
@@ -342,7 +343,8 @@ body.gp #evGo::before,body.gp #itGo::before,body.gp #evRoll::before,body.gp #evO
 body.gp #cfY::before{content:'✕ ';font-weight:700}
 body.gp #cfN::before{content:'○ ';font-weight:700}
 #gpHint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:14;display:none;background:var(--panel);border:1px solid var(--ink);border-radius:16px;padding:4px 12px;font-size:12px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-body.gp.playing #gpHint{display:block}
+body.gp.playing #gpHint{display:block;pointer-events:none;animation:gpfade .6s 8s forwards} body.gphelp #gpHint{animation:none}
+@keyframes gpfade{to{opacity:0;visibility:hidden}}
 #gpHint .more{display:none} body.gphelp #gpHint{white-space:normal;width:min(520px,calc(100vw - 24px));border-radius:10px;padding:8px 12px;line-height:1.7;z-index:25} body.gphelp #gpHint .more{display:inline} body.gphelp #gpHint .less{display:none}
 /* 手機橫向（高度不足）：標題列壓成一列、地圖工具列直排浮在左側、操作按鈕直排在右側，地圖占滿其餘空間 */
 @media (max-width:960px) and (orientation:landscape) and (max-height:540px){
@@ -365,6 +367,27 @@ body.gp.playing #gpHint{display:block}
   .coach{bottom:8px;left:calc((100vw - 136px)/2);width:min(420px,calc(100vw - 136px - 130px))}
   #gpHint{bottom:auto;top:calc(50px + env(safe-area-inset-top,0px));left:calc((100vw - 136px)/2);max-width:calc(100vw - 136px - 130px);overflow:hidden;text-overflow:ellipsis}
   #toast{left:calc((100vw - 136px)/2)}
+  /* 全螢幕：狀態與縮放一列；三個操作按鈕固定在右側直排；提示一行；不顯示圖例列 */
+  body.mapfs .board::after{content:'';position:fixed;top:0;right:0;bottom:0;width:calc(136px + env(safe-area-inset-right,0px));background:var(--panel);border-left:1px solid var(--line);z-index:1}
+  body.mapfs .fshud,body.mapfs .fshint,body.mapfs .mapwrap{margin-right:calc(136px + env(safe-area-inset-right,0px))}
+  body.mapfs .fshud{flex-wrap:nowrap;gap:6px;padding:calc(4px + env(safe-area-inset-top,0px)) 8px 4px max(12px,env(safe-area-inset-left,0px))}
+  body.mapfs .fshud .sp{display:none}
+  body.mapfs .fshud .fst-text{-webkit-line-clamp:1;white-space:nowrap;text-overflow:ellipsis;display:block}
+  body.mapfs .fshud .zb,body.mapfs #fsNew,body.mapfs #fsExit{width:34px;min-width:34px;height:34px}
+  body.mapfs #fsStrike,body.mapfs #fsAssist,body.mapfs #fsEnd{position:fixed;z-index:2;right:max(8px,env(safe-area-inset-right,0px));width:120px;height:46px;min-height:0;flex:none;white-space:normal;line-height:1.15;font-size:13.5px}
+  body.mapfs #fsEnd{bottom:calc(8px + env(safe-area-inset-bottom,0px))} body.mapfs #fsAssist{bottom:calc(62px + env(safe-area-inset-bottom,0px))} body.mapfs #fsStrike{bottom:calc(116px + env(safe-area-inset-bottom,0px))}
+  body.mapfs .fshint{padding-top:1px;padding-bottom:2px;font-size:11.5px}
+  body.mapfs .lgdwrap{display:none}
+  body.mapfs #gpHint{top:auto;bottom:6px}
+  /* 資訊卡：橫向時可用整個高度，預設停在操作按鈕左邊 */
+  body .ucard{width:min(300px,42vw);max-height:calc(100dvh - 64px);bottom:8px;right:calc(144px + env(safe-area-inset-right,0px))}
+  body .ucard.moved{max-height:calc(100dvh - 16px);right:auto;bottom:auto}
+  /* 彈窗：用滿高度、字級與留白縮小 */
+  #modal{padding:8px max(8px,env(safe-area-inset-right,0px)) 8px max(8px,env(safe-area-inset-left,0px))}
+  .mbox{max-width:720px;max-height:calc(100dvh - 16px);padding:12px 16px} .mbox.ev{max-width:760px}
+  .mbox h3{font-size:20px;margin:2px 0 4px}
+  body .mbox.ev.evfix{height:calc(100dvh - 16px)}
+  body .mbox.ev .btns.stk{bottom:-12px;margin:8px -16px -12px;padding:8px 16px 10px}
 }
 /* tabs, wizard */
 .side{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow-y:auto;padding-right:2px}
@@ -863,42 +886,42 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-16.07' -->
-<script src="js/dict.js?v=2026-11-16.07"></script>
-<script src="js/i18n.js?v=2026-11-16.07"></script>
-<script src="js/btnfix.js?v=2026-11-16.07"></script>
-<script src="js/geo.js?v=2026-11-16.07"></script>
-<script src="js/dem.js?v=2026-11-16.07"></script>
-<script src="js/urban.js?v=2026-11-16.07"></script>
-<script src="js/map.js?v=2026-11-16.07"></script>
-<script src="js/state.js?v=2026-11-16.07"></script>
-<script src="js/rules.js?v=2026-11-16.07"></script>
-<script src="js/supply.js?v=2026-11-16.07"></script>
-<script src="js/ending.js?v=2026-11-16.07"></script>
-<script src="js/theater.js?v=2026-11-16.07"></script>
-<script src="js/airwar.js?v=2026-11-16.07"></script>
-<script src="js/carrier.js?v=2026-11-16.07"></script>
-<script src="js/asw.js?v=2026-11-16.07"></script>
-<script src="js/psub.js?v=2026-11-16.07"></script>
-<script src="js/strike.js?v=2026-11-16.07"></script>
-<script src="js/airstrike.js?v=2026-11-16.07"></script>
-<script src="js/decisions.js?v=2026-11-16.07"></script>
-<script src="js/report.js?v=2026-11-16.07"></script>
-<script src="js/turn.js?v=2026-11-16.07"></script>
-<script src="js/ai.js?v=2026-11-16.07"></script>
-<script src="js/render.js?v=2026-11-16.07"></script>
-<script src="js/fxanim.js?v=2026-11-16.07"></script>
-<script src="js/fx.js?v=2026-11-16.07"></script>
-<script src="js/video.js?v=2026-11-16.07"></script>
-<script src="js/stats.js?v=2026-11-16.07"></script>
-<script src="js/input.js?v=2026-11-16.07"></script>
-<script src="js/unitinfo.js?v=2026-11-16.07"></script>
-<script src="js/version.js?v=2026-11-16.07"></script>
-<script src="js/changelog.js?v=2026-11-16.07"></script>
-<script src="js/app.js?v=2026-11-16.07"></script>
-<script src="js/missions.js?v=2026-11-16.07"></script>
-<script src="js/mission_carrier.js?v=2026-11-16.07"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-16.08' -->
+<script src="js/dict.js?v=2026-11-16.08"></script>
+<script src="js/i18n.js?v=2026-11-16.08"></script>
+<script src="js/btnfix.js?v=2026-11-16.08"></script>
+<script src="js/geo.js?v=2026-11-16.08"></script>
+<script src="js/dem.js?v=2026-11-16.08"></script>
+<script src="js/urban.js?v=2026-11-16.08"></script>
+<script src="js/map.js?v=2026-11-16.08"></script>
+<script src="js/state.js?v=2026-11-16.08"></script>
+<script src="js/rules.js?v=2026-11-16.08"></script>
+<script src="js/supply.js?v=2026-11-16.08"></script>
+<script src="js/ending.js?v=2026-11-16.08"></script>
+<script src="js/theater.js?v=2026-11-16.08"></script>
+<script src="js/airwar.js?v=2026-11-16.08"></script>
+<script src="js/carrier.js?v=2026-11-16.08"></script>
+<script src="js/asw.js?v=2026-11-16.08"></script>
+<script src="js/psub.js?v=2026-11-16.08"></script>
+<script src="js/strike.js?v=2026-11-16.08"></script>
+<script src="js/airstrike.js?v=2026-11-16.08"></script>
+<script src="js/decisions.js?v=2026-11-16.08"></script>
+<script src="js/report.js?v=2026-11-16.08"></script>
+<script src="js/turn.js?v=2026-11-16.08"></script>
+<script src="js/ai.js?v=2026-11-16.08"></script>
+<script src="js/render.js?v=2026-11-16.08"></script>
+<script src="js/fxanim.js?v=2026-11-16.08"></script>
+<script src="js/fx.js?v=2026-11-16.08"></script>
+<script src="js/video.js?v=2026-11-16.08"></script>
+<script src="js/stats.js?v=2026-11-16.08"></script>
+<script src="js/input.js?v=2026-11-16.08"></script>
+<script src="js/unitinfo.js?v=2026-11-16.08"></script>
+<script src="js/version.js?v=2026-11-16.08"></script>
+<script src="js/changelog.js?v=2026-11-16.08"></script>
+<script src="js/app.js?v=2026-11-16.08"></script>
+<script src="js/missions.js?v=2026-11-16.08"></script>
+<script src="js/mission_carrier.js?v=2026-11-16.08"></script>
 <script>if(missionId())setTimeout(()=>missionStart(missionId()),0);</script>
-<script src="js/gamepad.js?v=2026-11-16.07"></script>
+<script src="js/gamepad.js?v=2026-11-16.08"></script>
 </body>
 </html>
