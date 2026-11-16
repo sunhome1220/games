@@ -276,8 +276,8 @@ if(/[?&]debug=1/.test(location.search))window.__fxShot=(a,b,o)=>fxShot(a,b,o);
 if(/[?&]debug=1/.test(location.search))window.__fxFlight=(a,b,k)=>fxFlight(a,b,k);window.__fxDur=(k,hex)=>Math.round(fxDur(k,hex*HPX));
 // 守方潛艦對攻方玩家隱蔽：沒開火暴露前看不到（雙方都由人操作、守方玩家、或電腦對電腦觀戰時看得到）
 const subInPort=u=>u.type==='hk'&&hexOf(u).t==='port'&&hexOf(u).isl==='TW'; // 回港補給的潛艦停在碼頭，位置固定、看得到，也能被飛彈與空襲打擊
-const canHitSub=u=>u.type==='hk'?subInPort(u):!(u.type==='ssn'||u.type==='nme'||u.type==='mdt');
-const subHidden=u=>(u.type==='hk'||u.type==='ssn')&&u.side==='def'&&!u.revealed&&!subInPort(u)&&!S.over&&S.ctrl.atk==='human'&&S.ctrl.def!=='human'&&!S.video&&!S.sim;
+const canHitSub=u=>u.type==='hk'?subInPort(u):u.type==='psub'?psubInPort(u):!(u.type==='ssn'||u.type==='nme'||u.type==='mdt');
+const subHidden=u=>(((u.type==='hk'||u.type==='ssn')&&u.side==='def'&&!subInPort(u)&&S.ctrl.atk==='human'&&S.ctrl.def!=='human')||(u.type==='psub'&&!psubInPort(u)&&S.ctrl.def==='human'&&S.ctrl.atk!=='human'))&&!u.revealed&&!S.over&&!S.video&&!S.sim;
 const unitAtVis=k=>S.units.find(u=>K(u.c,u.r)===k&&!subHidden(u));
 
 // 狀態列說明：點（或鍵盤 Enter）狀態標籤，彈出白話說明；再點一次或點別處關閉
@@ -343,6 +343,7 @@ function renderCtrl(){
   else if((S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK){const n=afRings().length+(S.mode==='afC'?afCNT(S.afK).length:0);
     hint='✈ 空軍出擊中：'+(TER[S.afK].name||'基地')+'・'+AF_MODE_N[S.mode]+'——點紅圈'+(S.mode==='afC'?'或大陸基地':'')+'的目標（可攻擊 '+n+' 個）'+(S.afPend?'；已選定，看面板確認（點其他目標可切換，面板可拖曳）':'')+'。按下方「取消出擊」或點空地離開。';
     }
+  else if(S.mode==='helo')hint='🚁 反潛直升機：點圓圈（150 km）內的海域搜索潛艦；找到會投擲魚雷攻擊。';
   else if(S.mode==='strike'&&S.phase==='def'&&S.cnPend)hint='🎯 縱深打擊：已選定目標，看面板確認發射；點其他目標可切換，面板可拖曳。';
   else if(S.mode==='strike')hint=S.phase==='atk'?'點選任一守方單位、台灣的機場，或地圖上的美日基地進行火力打擊，每次消耗 1 點。':'點選地圖上的大陸基地（紅色圖形），或直接點右側「中方基地」清單的一列，進行長程打擊，每次消耗 1 發長程飛彈。';
   else if(S.sel&&S.sel.type==='hmr'&&S.phase==='def'){const n=targets(S.sel).length;hint='海馬士只能打陸上目標：4 格內用火箭彈，14 格內用陸軍戰術飛彈（各有庫存）；每次最多 4 輛齊射，每階段次數依可射車數，發射後可再移動。'+(n?'橘圈＝目前射程內可打擊的 '+n+' 個目標，點選目標發射。':'目前射程內沒有陸上目標（海上船團要靠反艦飛彈）。');}
@@ -387,6 +388,7 @@ function stWeapons(u,h,st){
   if(u.type==='hmr')st.push('本階段剩 '+(u.side===S.phase?u.shots:Math.ceil(ssmReady(u)/HMR_PKG))+' 次齊射（每次最多 4 輛）：火箭彈射程約 80 km，庫存 '+Math.round(S.pools?S.pools.rocGml||0:0)+' 個莢艙；陸軍戰術飛彈射程約 300 km，庫存 '+Math.round(S.pools?S.pools.rocAtc||0:0)+' 枚飛彈');
   else if(u.type==='ssn')st.push('隱蔽：開火暴露、被護航艦發現才現身，無法被火力打擊；魚雷 '+u.tp+'、魚叉 '+u.hm+'、戰斧 '+u.mag.lam+' 枚（★推估），每回合移動最多約 '+Math.round(SPD.subMax*KM_HEX)+' km'+(u.grp?'，跟著航艦行動':''));
   else if(u.type==='nme'||u.type==='mdt')st.push('部署在日本領土，只能被基地打擊；'+(u.type==='nme'?'海軍打擊飛彈 '+u.mag.asm+' 枚（射程 '+kmOf(NME.R)+' km）':'戰斧 '+u.mag.lam+' 枚、標準六型 '+u.mag.asm+' 枚（射程 '+kmOf(MDT.R)+' km）')+'（★推估）');
+  else if(u.type==='psub')st.push((psubInPort(u)?'停在大陸港口補彈中：可被飛彈與空襲打擊。':'在海上：平常看不見，開火才暴露；守方護航艦、艦隊與 P-3C 反潛巡邏機有機會發現。')+'魚雷 '+(u.tp||0)+' / '+psubCls(u).tp+' 齊射（射程約 60 km）、鷹擊-18 '+(u.hm||0)+' / '+psubCls(u).hm+' 枚（約 220 km）；彈藥用完回大陸港口補彈（★推估）');
   else if(u.type==='hk')st.push((subInPort(u)?'停在母港補給中：位置固定，可被飛彈與空襲打擊。':'在海上：一般情況下無法被偵測或攻擊。')+'重型魚雷 '+(u.tp||0)+' / '+hkTp(u)+' 齊射（射程約 60 km）、魚叉飛彈 '+(u.hm||0)+' / '+HK_HM+' 枚（射程約 120 km）；射擊後暴露，可能遭反潛攻擊；回母港才能補彈');
   else if(isMsl(u))st.push('本階段剩 '+(u.side===S.phase?u.shots:(u.type==='ff'?1:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):2))+' 發，射程約 '+Math.round((u.fl?fleetAgg(u).asmR:kmH(160))*KM_HEX)+' km');
 }
@@ -419,6 +421,7 @@ function placeLoc(){ // 「回到台灣」按鈕：貼在地圖目前看得到�
   const b=$('#btnLoc'),w=document.querySelector('.mapwrap');if(!b||!w)return;
   const r=w.getBoundingClientRect(),bar=document.querySelector('.mbar'),lim=bar&&getComputedStyle(bar).display!=='none'?bar.getBoundingClientRect().top:innerHeight; // fixed 元素的 offsetParent 是 null，不能用來判斷是否顯示
   const bottom=Math.min(r.bottom,lim,innerHeight),vis=!document.body.classList.contains('fin-open')&&r.height>0&&bottom-Math.max(r.top,0)>110&&S.started;
+  const lg=$('#rngLeg');if(lg){const on=vis&&lg.childElementCount>0;lg.style.display=on?'block':'none';if(on){lg.style.left=(Math.max(r.left,0)+8)+'px';lg.style.top=(Math.max(r.top,0)+8)+'px';lg.style.maxWidth=Math.max(160,Math.min(r.right,innerWidth)-Math.max(r.left,0)-70)+'px';}}
   b.style.display=vis?'flex':'none';if(!vis)return;
   const left=Math.min(r.right,innerWidth)-12-44,co=document.getElementById('coach');
   let bt=bottom;
@@ -451,7 +454,7 @@ function renderInfoSide(){
     const en=effNote(u);if(en.length)o+='<div class="hint effn">數值修正：'+en.join('、')+'</div>';
     const st=unitStatusList(u,h);
     o+='<div class="hint">'+st.join(' · ')+'</div>';
-    o+=fleetPanelHTML(u);if(h.t==='air'&&h.isl==='TW')o+=afPanelHTML(h.k);
+    o+=fleetPanelHTML(u);o+=hkPanelHTML(u);o+=heloPanelHTML(u);if(h.t==='air'&&h.isl==='TW')o+=afPanelHTML(h.k);
     if(humanTurn()&&allyHuman()&&S.phase==='def'&&u.ally&&u.side==='def'){const ts=tomShooters(u);
       if(ts.length||(u.type==='csg'&&S.units.some(e=>e.grp===u.id&&e.mag&&e.mag.lam>0)))o+='<div class="cvord"><button class="ghost" id="btnTom"'+(ts.length?'':' disabled')+
           '>戰斧巡弋飛彈縱深打擊<small class="pn">（可發射 '+ts.length+' 艘、每次 '+LAM.per+' 枚）</small></button></div><div class="hint">按下後點地圖上的大陸基地；會先警告升級後果。</div>';

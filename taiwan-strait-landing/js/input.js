@@ -36,6 +36,11 @@ $('#map').addEventListener('click',async e=>{
     }
     S.mode=null;render();return;
   }
+  if(S.mode==='helo'){ // 反潛直升機：點搜索的海域
+    const hu=S.units.find(x=>x.id===S.heloU),th=TER[k];
+    if(hu&&th&&th.t==='sea'&&hd(hexOf(hu),th)<=ASW.R)heloSearch(hu,th);else toast('請點直升機半徑（150 km）內的海域',2500);
+    S.mode=null;render();return;
+  }
   if(S.mode==='strike'){
     if(S.phase==='atk'&&u&&u.side==='def'&&strikeable(u)&&S.fire>0){strike(u);if(S.fire<=0)S.mode=null;}
     else if(S.phase==='def'&&u&&u.side==='atk'&&hexOf(u).isl==='CN'&&S.dfire>0&&lrOK()){if(stgFound(u)>0){S.cnPend={u:u.id};}else toast('這個集結中的單位本階段沒有被找到（或找到的部分都打過了），打不到',3200);}
@@ -48,7 +53,7 @@ $('#map').addEventListener('click',async e=>{
   if(sel&&u&&u!==sel&&u.side===sel.side){const rc=reach(sel);if(rc.has(k)){humanMove(sel,k,rc.get(k).kind);if(!alive(sel)||(sel.acted&&!targets(sel).length))S.sel=null;render();return;}}
   if(u){
     if(sel&&u.side!==sel.side&&targets(sel).includes(u)){
-      if(sel.type==='hk')fireSub(sel,u);else if(isMsl(sel)||isEsc(sel)||sel.ally)fireMissile(sel,u);else attack(sel,u);
+      if(sel.type==='hk')fireSub(sel,u);else if(sel.type==='psub')psubFire(sel,u);else if(isMsl(sel)||isEsc(sel)||sel.ally)fireMissile(sel,u);else attack(sel,u);
       if(sel.acted||!alive(sel))S.sel=null;
     } else S.sel=(S.sel===u||(u.ally&&!allyHuman()))?null:u; // 預設美日由電腦操作，點了只看資訊；選「你操作」時可選取
     render();return;

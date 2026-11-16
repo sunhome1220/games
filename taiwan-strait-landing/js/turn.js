@@ -80,6 +80,7 @@ function rollWeather(){ // 取得這一回合的天候，並預先產生下一�
 function dockOK(u,n){ // 船艇靠港：潛艦與守方艦艇回守方港口；攻方船艇與登陸部隊回大陸港口或自己掌握的港口
   if(n.t!=='port'||unitsAt(n.k).length>=STACK_MAX+1||!unitsAt(n.k).every(z=>z.side===u.side))return false;
   if(u.type==='hk'||u.type==='ff')return n.isl==='TW'&&S.owner[n.k]==='def';
+  if(u.type==='psub')return n.isl==='CN';
   if(u.side==='atk'&&(isShip(u)||u.type==='amph'||u.type==='mar'||u.type==='arm'))return n.isl==='CN'||S.owner[n.k]==='atk';
   return false;
 }
@@ -88,7 +89,7 @@ function shelterOrder(side){
   const own=Object.values(TER).filter(h=>h.t==='port'&&(side==='atk'?(h.isl==='CN'||S.owner[h.k]==='atk'):(h.isl==='TW'&&S.owner[h.k]==='def')));
   if(!own.length)return 0;
   const dp=h=>Math.min.apply(null,own.map(q=>hd(h,q)));let moved=0,n=0;
-  for(const u of S.units.filter(x=>x.side===side&&atSea(x)&&x.type!=='hk'&&x.type!=='fob'&&(isShip(x)||x.type==='amph'||x.type==='mar'||x.type==='arm')&&shelterAt(x))){
+  for(const u of S.units.filter(x=>x.side===side&&atSea(x)&&!isSubT(x)&&x.type!=='fob'&&(isShip(x)||x.type==='amph'||x.type==='mar'||x.type==='arm')&&shelterAt(x))){
     n++;u.shelterT=S.turn;if(u.moved||u.acted)continue;
     const rc=reach(u);let b=null,bs=dp(hexOf(u));
     for(const [k,v] of rc){if(v.kind!=='sail'&&v.kind!=='move')continue;const sc=dp(TER[k]);if(sc<bs){bs=sc;b=k;}}
@@ -100,11 +101,11 @@ function shelterOrder(side){
 // 預報：下一回合某一格的浪高（海峽預報的誤差比例套用到各海域）
 function fcWave(h){const N=S.nextW;if(!N)return 0;const v=wxWave(h,N);return N.wave>0&&S.fcH!=null?v*S.fcH/N.wave:v;}
 const shelterAt=u=>atSea(u)&&fcWave(hexOf(u))>=2.2;
-function shelterNeeded(side){if(!S.started||S.over||!S.nextW)return false;return S.units.some(u=>(!side||u.side===side)&&u.type!=='hk'&&u.type!=='fob'&&(isShip(u)||u.type==='amph'||u.type==='mar'||u.type==='arm')&&shelterAt(u));} // 只有預報會受影響的海域才需要避風（颱風看預測路徑）
+function shelterNeeded(side){if(!S.started||S.over||!S.nextW)return false;return S.units.some(u=>(!side||u.side===side)&&!isSubT(u)&&u.type!=='fob'&&(isShip(u)||u.type==='amph'||u.type==='mar'||u.type==='arm')&&shelterAt(u));} // 只有預報會受影響的海域才需要避風（颱風看預測路徑）
 function waveAttrition(){ // 依每艘船所在海域的浪高
   let n=0,hx=0;const grp=u=>u.type==='dd'||u.type==='cv'?[5,.3]:(u.type==='ff'||u.type==='cvy'||u.type==='amph'||u.type==='mar'||u.type==='arm')?[2.5,.5]:null;
   for(const u of S.units.slice()){
-    if(!atSea(u)||u.type==='hk'||u.type==='fob')continue;const g=grp(u),h=wxWave(hexOf(u));if(!g||h<=g[0])continue;hx=Math.max(hx,h);
+    if(!atSea(u)||isSubT(u)||u.type==='fob')continue;const g=grp(u),h=wxWave(hexOf(u));if(!g||h<=g[0])continue;hx=Math.max(hx,h);
     const sheltered=u.shelterT===S.turn-1?.5:1,ev=g[1]*(h-g[0])/3.5*sheltered;
     if(takeInt(ev,'wave:'+u.side+u.type)>=1){damage(u,1,'風浪');n++;}
   }
@@ -350,7 +351,7 @@ function pieceSalvo(m,t,n,wn,key){
   log(uname(m)+'以 '+n+' 枚'+wn+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
   if(steps)damage(t,steps,TYPES[m.type].n+wn);checkInstant();return true;
 }
-function shipFoes(u,R){return S.units.filter(e=>e.side==='atk'&&atSea(e)&&isShip(e)&&e.type!=='hk'&&e.type!=='fob'&&rd(hexOf(u),hexOf(e))<=R);}
+function shipFoes(u,R){return S.units.filter(e=>e.side==='atk'&&atSea(e)&&isShip(e)&&!isSubT(e)&&e.type!=='fob'&&rd(hexOf(u),hexOf(e))<=R);}
 function nmeFire(t0){const m=nmePiece();if(!m||m.acted||m.mag.asm<=0)return;const ts=shipFoes(m,NME.R);if(!ts.length)return;m.acted=true;pieceSalvo(m,t0&&ts.includes(t0)?t0:pickBest(ts,escVal),Math.min(m.mag.asm,2*m.hp),'海軍打擊飛彈（NMESIS）','nme');}
 function mdtFire(t0){const m=mdtPiece();if(!m||m.acted||m.mag.asm<=0)return;const ts=shipFoes(m,MDT.R);if(!ts.length)return;m.acted=true;pieceSalvo(m,t0&&ts.includes(t0)?t0:pickBest(ts,escVal),Math.min(m.mag.asm,m.hp),'標準六型飛彈','mdt');}
 // 美軍攻擊潛艦：每回合移動後，射程內有艦艇就開火（3 格內優先魚雷；6 格內魚叉）
@@ -552,6 +553,8 @@ function phaseReset(side){
   GHOSTS.clear();S.units.forEach(u=>{u.inc=0;u.dropHide=0;if(side==='def')u.revealed=!!(u.mT&&S.turn<u.mT);});
   for(const u of S.units)if(u.side===side){u.moved=false;
     u.acted=false;
+    if(u.type==='hk'&&hkAtHome(u)&&u.hp<TYPES.hk.hp){u.rep=(u.rep||0)+1;if(u.rep>=2){u.rep=0;u.hp++;log(subNm(u)+' 在母港左營完成維修，恢復 1 步');}} // ★母港維修：每 2 回合 1 步
+    if(u.type==='psub'){if(psubInPort(u)){u.tp=psubCls(u).tp;u.hm=psubCls(u).hm;}u.shots=1;}
     if(u.type==='hk'){if(hexOf(u).t==='port'){u.tp=hkTp(u);
     u.hm=HK_HM;
     }u.shots=hkSpent(u)?0:1;
@@ -563,6 +566,7 @@ function phaseReset(side){
 }
 // 攻方階段開始：天候、空戰、火力點數、飛彈預警、無人機、獵殺艦隊、艦載機、增援
 async function atkPhaseStart(){
+  if(S.ctrl.atk!=='human'||S.sim)heloAuto('atk');
     S.weather=rollWeather();if(S.weather.id==='bad')S.stats.badWx++;waveAttrition();if(S.over)return;
     if(S.turn===1&&!S.sirenDone&&!S.sim&&!S.video&&!REC.quiet){S.sirenDone=true;SFX.siren(6);} // 第一波：空襲警報
     uscSync();jmsSync();cvwPlan();airBattle();S.fire=computeFire();warnNotice();droneWave();huntFleets();doRetaliation();sweepMines();uscSync();antiCarrier();if(S.over)return;
@@ -576,6 +580,8 @@ async function atkPhaseStart(){
 }
 // 守方階段開始：後備旅動員、縱深打擊份額、美國檢討、艦艇出港、海上交戰
 async function defPhaseStart(){
+  psubDetect();
+  if(S.ctrl.def!=='human'||S.sim)heloAuto('def');
     if(supply().over)S.stats.over++;
     let wave=(DEF_REINF[S.turn-S.mods.defReinfDelay]||[]).slice(); // 守方後備旅動員受裝備庫存限制，4 回合後沒有新的後備旅
     if(S.mods.defReinfHalve)wave=wave.filter((k,i)=>i%2===0);

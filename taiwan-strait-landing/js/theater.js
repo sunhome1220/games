@@ -72,6 +72,7 @@ function placeShips(){
   // 共軍航艦群在台灣東側海域活動
   CV_START.slice(0,Math.min(3,P.plaCV)).forEach(([lo,la],ci)=>{const [c,r]=llToRC(lo,la),h=TER[K(c,r)];if(h&&h.t==='sea'&&canStack({side:'atk'},
       h.k)){const cvU=mkUnit('atk','cv',h.k,{});cvU.cvi=ci;cvU.wmag=CVW.PLA[ci].mag;S.units.push(cvU);spawnEscorts(cvU,ESC_PLA,'atk');}});
+  psubSpawn(); // 共軍潛艦：開戰前已出港布署
   rocFleetsSpawn(); // 台灣海軍：6 個艦隊在母港（組成依年份）
   // 潛艦：劍龍級 2 艘（海龍、海虎，左營）＋海鯤（依年份）。高雄、花蓮港出港（隱蔽、魚雷有限，回港才能補彈）
   const pref=[SPOT.hualien,SPOT.kaohsiung],hkp=Object.values(TER).filter(h=>h.isl==='TW'&&h.t==='port'&&S.owner[h.k]==='def').map(h=>h.k).sort((x,y)=>((pref.indexOf(x)+1)||9)-((pref.indexOf(y)+1)||9));
@@ -88,7 +89,7 @@ function subSea(k){ // 潛艦開戰前就從母港出港，在港外約 30～50 
 }
 function syncShips(){
   if(!S.pools)return;
-  for(const [type,side,key] of [['dd','atk','plaNavy'],['cv','atk','plaCV'],['hk','def','rocSub']]){
+  for(const [type,side,key] of [['dd','atk','plaNavy'],['cv','atk','plaCV'],['hk','def','rocSub'],['psub','atk','plaSub']]){
     const us=S.units.filter(u=>u.type===type&&u.side===side);let extra=us.length-Math.max(0,S.pools[key]);
     while(extra>0&&us.length){const u=us.pop();fxq({t:'dead',at:[u.c,u.r],type:u.type,side:u.side});S.units=S.units.filter(x=>x!==u);extra--;log(uname(u)+' 在 '+hname(hexOf(u))+' 被擊沉（海上交戰）');}
   }
@@ -124,7 +125,7 @@ function sweepMines(){
   syncMines();log('攻方掃雷：清除 '+got.join('、')+'。');
 }
 const POOLN={rocHf2A:'雄二空射型（經國號；★數量未公開，推估 40 枚）',rocHCD:'魚叉岸防系統飛彈（每點約 100 枚；依交付時程）',plaFAC:'海峽輕型艦艇（022 飛彈快艇、056 輕型護衛艦；★1 點約 6 艘，推估）',plaDrone:'舊戰機改裝無人機（誘餌，每個攻方階段放出 40 架消耗守方攔截彈）',
-    rocRkt:'雷霆2000火箭彈庫存（每發 1 點）',plaLst:'兩棲艦群（運旅、可搶灘；往返制，一旦被擊沉即永久損失）',plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（含核動力攻擊潛艦）',rocMine:'布雷（火山布雷車、水雷）',
+    rocRkt:'雷霆2000火箭彈庫存（每發 1 點）',plaLst:'兩棲艦群（運旅、可搶灘；往返制，一旦被擊沉即永久損失）',plaLift:'補給運輸船（商船、滾裝船）：往返運補，被擊沉就永久損失',rocAS:'雄二／雄三反艦飛彈（每點約 100 枚）',plaSub:'潛艦（地圖棋子：1 點＝1 個棋子，約 2～3 艘，含 093 型核潛艦）',rocMine:'布雷（火山布雷車、水雷）',
     plaAir:'陸基空軍（東部戰區）',plaCV:'航艦（含艦載機）',plaCM:'巡弋飛彈（長劍、鷹擊）',plaAD:'防空',plaNavy:'海軍護航艦隊',rf:'短程彈道飛彈與長程火箭',plaLR:'東風-26／21D',plaHS:'東風-17 高超音速',rocAir:'空軍（F-16V 等）',rocNavy:'海軍',
     rocSub:'潛艦（海鯤）',rocAD:'防空（天弓等）',rocMsl:'長程對地飛彈（雄二E 等；1 點≈25 枚）',rocAtc:'陸軍戰術飛彈（ATACMS，海馬士用；每點 1 枚）',rocAAsh:'空射反艦飛彈（AGM-84L 魚叉；每點 1 枚）',rocWC:'萬劍彈（經國號空射對地，射程約 200 km；每點 1 枚）',
     rocSlam:'SLAM-ER 空射對地飛彈（射程約 270 km；每點 1 枚）',rocGml:'GMLRS 精準火箭彈（海馬士用；每點 1 個莢艙＝6 發）',rocDrone:'無人機與巡飛彈'};
@@ -451,22 +452,7 @@ function seaBattle(){
   }
   // 海鯤潛艦是棋子（由玩家操作或依指揮官意圖行動），不再在此自動擲骰
   // 共軍海空兵力搜尋並攻擊出港的守方艦艇：改由攻方階段的 huntFleets 計算
-  // 共軍潛艦：在海峽與西太平洋攻擊美日艦艇與守方海軍；美日反潛兵力薄弱時幾乎不受壓力
-  if(P.plaSub>0){
-    const csg=act.find(f=>isCSG(f)),jm=act.find(f=>f.id==='jmsdf'),ssn=act.find(f=>f.id==='ssn');
-    const A=usAswScreen(),asw=(jm?1:0)+(ssn?1:0)+(csg?(uscPiece()?A/3:1):0)+(P.rocNavy>=3?1:0)+(P.rocSub>0?1:0); // 美航艦在地圖上：反潛屏障依護航艦與 MH-60R 架數
-    const tg=[...act.filter(f=>f.kind==='ship'||isCSG(f))];
-    for(let i=0;i<Math.min(P.plaSub,3);i++){
-      const t=tg.length&&(hitP(.7,'subTarget')||P.rocNavy<=0)?pickBest(tg,x=>(isCSG(x)?10:0)+x.hp):null;
-      const need=(t&&isCSG(t)?6:5)-(asw===0?1:0);
-      if(t&&isCSG(t)&&csgPieceOf(t)){const pu=csgPieceOf(t),Ag=usAswScreen(pu),pc=.3/(1+.25*Ag);if(hitP(pc,'subCsg')){out.push('共軍潛艦突破反潛屏障，魚雷擊傷 '+t.n+'（命中率 '+Math.round(pc*100)+'%，★推估）');damage(pu,1,'共軍潛艦魚雷');}}
-      else if(t&&t.id==='jmsdf'&&jmsPieces().length){if(hitP(pNeed(need),'seaBattle')){const v=pickBest(jmsPieces(),x=>x.hp);out.push('共軍潛艦魚雷命中 '+uname(v));damage(v,1,'共軍潛艦魚雷');jmsSync();}}
-      else if(t){if(hitP(pNeed(need),'seaBattle')){t.hp--;out.push('共軍潛艦擊傷 '+t.n+'（−1）');}}
-      else if(P.rocNavy>0&&hitP(pNeed(5-(asw===0?1:0)),'seaBattle')){const m=rocFleetHit('共軍潛艦魚雷');if(m)out.push('共軍潛艦擊沉守方艦艇：'+m);}
-    }
-    if(asw===0)out.push('反潛兵力薄弱，共軍潛艦在太平洋幾乎不受壓力');
-    else if(P.plaSub>0&&hitP(csg&&uscPiece()?Math.max(Math.ceil(asw/2)/6,Math.min(.6,.05*A)):Math.ceil(asw/2)/6,'seaBattle')){P.plaSub--;out.push('共軍潛艦遭反潛擊沉（攻方潛艦 −1）');}
-  }
+  // 共軍潛艦已改成地圖棋子（js/psub.js），不再在此抽象擲骰
   if(out.length)log('第 '+S.turn+' 回合海上交戰：'+out.join('、'));
 }
 function baseNeed(b){
