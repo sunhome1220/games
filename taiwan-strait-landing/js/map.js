@@ -71,6 +71,7 @@ const TYPES={
   ddg:{n:'柏克級驅逐艦',s:'神盾艦',atk:0,def:2,mv:kmH(120),hp:2},
   ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:kmH(120),hp:2},
   hk:{n:'海鯤潛艦',s:'潛艦',atk:0,def:1,mv:kmH(120),hp:2},
+  psub:{n:'共軍潛艦群',s:'潛艦',atk:0,def:1,mv:kmH(120),hp:2},
   lst:{n:'兩棲艦群',s:'兩棲艦',atk:0,def:1,mv:kmH(120),hp:2},
   ro:{n:'滾裝船團',s:'滾裝',atk:0,def:1,mv:kmH(80),hp:2},
   cvy:{n:'補給船團',s:'補給',atk:0,def:1,mv:kmH(80),hp:2}, // 滾裝客貨輪比軍艦慢：每回合最多航行 2 個舊格

@@ -254,6 +254,7 @@ async function aiAtkUnit(u){
   if(isEsc(u)){if(escTargets(u).length){escAutoFire('atk');render();await sleep(240);}return;} // 護航艦：移動跟著航艦，只負責開火（協同齊射）
   if(isSup(u)||u.type==='lst'||u.type==='ro')return; // 補給船團、補給站與運輸船由補給與運力系統自動處理
   const h=hexOf(u);
+  if(u.type==='psub'){await psubTurn(u);return;}
   if(await aiAtkCvRetreat(u,{h}))return;
   if(await aiAtkCarrier(u,{h}))return;
   if(await aiAtkEscort(u,{h}))return;

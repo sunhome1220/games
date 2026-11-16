@@ -53,7 +53,7 @@ const AFCOAST={};const afCoast=k=>{if(AFCOAST[k]==null){if(!CNCOAST)CNCOAST=Obje
 const afRel=k=>Math.min(afRad(k),afCoast(k)/2); // 打大陸時最遠飛到哪裡發射
 const afCNwpK=(k,x)=>{const d=afDist(k,x),r=afRel(k);return d<=AFS.wc.km+r&&(S.pools.rocWC||0)>=AFS.pk?'wc':d<=AFS.slam.km+r&&(S.pools.rocSlam||0)>=AFS.pk?'slam':null;};
 const afReach=(k,x)=>x&&x.c==null||(x&&hexOf(x).isl==='CN')?afRel(k)+AFS.slam.km:atSea(x)?afRad(k)+((afAsm(k)||{}).km||0):afRad(k); // 顯示用的可達距離
-const afShipT=k=>{const A=afAsm(k);if(!A||(S.pools[A.pool]||0)<1)return [];return S.units.filter(e=>e.side==='atk'&&atSea(e)&&isShip(e)&&e.type!=='hk'&&e.type!=='fob'&&!e.ship&&afDist(k,e)<=afRad(k)+A.km);};
+const afShipT=k=>{const A=afAsm(k);if(!A||(S.pools[A.pool]||0)<1)return [];return S.units.filter(e=>e.side==='atk'&&atSea(e)&&isShip(e)&&!isSubT(e)&&e.type!=='fob'&&!e.ship&&afDist(k,e)<=afRad(k)+A.km);};
 const afLandT=k=>S.units.filter(e=>e.side==='atk'&&!atSea(e)&&!e.ship&&(hexOf(e).isl==='TW'||hexOf(e).isl==='PH')&&afDist(k,e)<=afRad(k));
 const afCNT=k=>cnTargets().filter(id=>afCNwpK(k,id));
 const afStgT=k=>stgTargets().filter(u=>afCNwpK(k,u));

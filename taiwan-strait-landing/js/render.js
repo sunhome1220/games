@@ -453,7 +453,7 @@ function ghostDrop(id){
   document.querySelectorAll('[data-id="'+id+'"]').forEach(e=>{if(!e.closest('#gF'))e.remove();});
 }
 // 棋子色調分三類（攻方紅、守方藍各自三種深淺，海上與陸上共用）：深＝火力打擊（飛彈、火箭砲、潛艦、飛彈艇）、標準＝作戰部隊、淡＝後勤運輸（船團、補給站、運輸船）
-const unitCat=t=>(t==='ssm'||t==='hmr'||t==='mlrs'||t==='hk'||t==='ssn'||t==='nme'||t==='mdt'||t==='ff')?'f':(t==='cvy'||t==='fob'||t==='lst'||t==='ro')?'l':'m';
+const unitCat=t=>(t==='ssm'||t==='hmr'||t==='mlrs'||t==='hk'||t==='ssn'||t==='psub'||t==='nme'||t==='mdt'||t==='ff')?'f':(t==='cvy'||t==='fob'||t==='lst'||t==='ro')?'l':'m';
 function unitSVG(u){
   const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy,stacked=sx!==0,T=TYPES[u.type];
   const done=S.started&&u.side===S.phase&&u.acted,sel=S.sel===u||!!(u.boundTo&&S.sel&&S.sel.id===u.boundTo),yy=y-2;
@@ -462,7 +462,7 @@ function unitSVG(u){
   const X='<path class="sym" d="M'+bx+' '+by+'L'+(bx+bw)+' '+(by+bh)+'M'+(bx+bw)+' '+by+'L'+bx+' '+(by+bh)+'"/>';
   if(u.type==='arm'||u.type==='tank')sym=box+'<ellipse class="sym" cx="'+x+'" cy="'+(by+5)+'" rx="6" ry="3"/>';
   else if(u.type==='cv'||u.type==='csg'||u.type==='ddh')sym=box+'<path class="sym" d="M'+(x-8)+' '+(by+5.5)+'h16l-1.2 3h-13.6z"/><path class="sym" d="M'+(x+2)+' '+(by+5.5)+'v-2.6h3v2.6"/>';
-  else if(u.type==='hk'||u.type==='ssn')sym=box+'<path class="sym" d="M'+(x-8)+' '+(by+7)+'q8-8 16 0z"/><path class="sym" d="M'+(x-1)+' '+(by+3)+'h3v3h-3z"/>';
+  else if(u.type==='hk'||u.type==='ssn'||u.type==='psub')sym=box+'<path class="sym" d="M'+(x-8)+' '+(by+7)+'q8-8 16 0z"/><path class="sym" d="M'+(x-1)+' '+(by+3)+'h3v3h-3z"/>';
   else if(u.type==='dd'||u.type==='ff'||!!SHIPW[u.type])sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+6)+'h14l-2 3h-10z"/><path class="sym" d="M'+(x-2)+' '+(by+6)+'v-3h4v3"/>';
   else if(u.type==='hmr'||u.type==='mlrs')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+8)+'h12M'+(x-4)+' '+(by+7.5)+'l7 -5M'+(x-1)+' '+(by+7.5)+'l7 -5M'+(x+2)+
       ' '+(by+7.5)+'l5 -3.5"/><circle class="sym" cx="'+(x-4)+'" cy="'+(by+8.6)+'" r="1"/><circle class="sym" cx="'+(x+4)+'" cy="'+(by+8.6)+'" r="1"/>';

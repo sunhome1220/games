@@ -37,7 +37,7 @@ function newState(){
 }
 const hexOf=u=>TER[K(u.c,u.r)];
 const isMsl=u=>u.type==='ssm'||u.type==='ff'||u.type==='hmr'||u.type==='mlrs';
-const isShip=u=>u.type==='dd'||u.type==='ff'||u.type==='hk'||u.type==='ssn'||u.type==='cv'||u.type==='csg'||!!SHIPW[u.type]||u.type==='cvy'||u.type==='fob'||u.type==='lst'||u.type==='ro'; // 補給船團與灘頭補給站不是作戰部隊，不計入兵力
+const isShip=u=>u.type==='dd'||u.type==='ff'||u.type==='hk'||u.type==='psub'||u.type==='ssn'||u.type==='cv'||u.type==='csg'||!!SHIPW[u.type]||u.type==='cvy'||u.type==='fob'||u.type==='lst'||u.type==='ro'; // 補給船團與灘頭補給站不是作戰部隊，不計入兵力
 const isSup=u=>u.type==='cvy'||u.type==='fob';
 const kCR=k=>{const h=TER[k];if(h)return h;const [c,r]=String(k).split(',').map(Number);return {c,r};}; // 格代碼→座標（比對數字比每個單位都組字串快）
 const unitAt=k=>{const h=kCR(k);return S.units.find(u=>u.c===h.c&&u.r===h.r);};
@@ -54,7 +54,7 @@ let LOGN=0;
 function log(msg){S.log.unshift({t:S.turn,p:S.phase,msg,n:++LOGN});if(S.log.length>300)S.log.pop();}
 function toast(msg,ms){if(S&&S.rec)return;const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),ms||1500);}
 function hname(h){return h.name||(TERN[h.t]+' '+h.c+'-'+h.r);}
-function uname(u){return (u.fl?u.fl.n:u.wp==='hp'?'魚叉岸防系統':u.hl?'劍龍級潛艦（'+u.nm+'）':TYPES[u.type].n)+'（'+SIDE[u.side]+'）';}
+function uname(u){return (u.fl?u.fl.n:u.type==='psub'?psubCls(u).n:u.wp==='hp'?'魚叉岸防系統':u.hl?'劍龍級潛艦（'+u.nm+'）':TYPES[u.type].n)+'（'+SIDE[u.side]+'）';}
 // ---------- 台灣海軍：依真實艦隊編制，一個棋子＝一個艦隊（★艦隊歸屬與武器數字為推估）----------
 // 每艘：防空飛彈 ad、防空涵蓋 adR（格）、反艦飛彈 asm、反艦射程 asmR（格）、同時接戰數 ch
 const RFW={kl:{n:'基隆級',w:'魚叉',ad:60,adR:kmH(120),asm:8,asmR:kmH(120),ch:2},ck:{n:'成功級',w:'雄二／雄三',ad:36,adR:kmH(40),asm:8,asmR:kmH(160),ch:2},pf:{n:'派里級',w:'雄二',ad:36,adR:kmH(40),asm:4,asmR:kmH(120),ch:2},

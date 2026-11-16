@@ -53,7 +53,7 @@ $('#map').addEventListener('click',async e=>{
   if(sel&&u&&u!==sel&&u.side===sel.side){const rc=reach(sel);if(rc.has(k)){humanMove(sel,k,rc.get(k).kind);if(!alive(sel)||(sel.acted&&!targets(sel).length))S.sel=null;render();return;}}
   if(u){
     if(sel&&u.side!==sel.side&&targets(sel).includes(u)){
-      if(sel.type==='hk')fireSub(sel,u);else if(isMsl(sel)||isEsc(sel)||sel.ally)fireMissile(sel,u);else attack(sel,u);
+      if(sel.type==='hk')fireSub(sel,u);else if(sel.type==='psub')psubFire(sel,u);else if(isMsl(sel)||isEsc(sel)||sel.ally)fireMissile(sel,u);else attack(sel,u);
       if(sel.acted||!alive(sel))S.sel=null;
     } else S.sel=(S.sel===u||(u.ally&&!allyHuman()))?null:u; // 預設美日由電腦操作，點了只看資訊；選「你操作」時可選取
     render();return;
