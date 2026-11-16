@@ -570,7 +570,7 @@ function ucPlace(){
     cd.style.left=Math.max(4,Math.min(innerWidth-w-4,e.clientX-d.dx))+'px';cd.style.top=Math.max(4,Math.min(innerHeight-h-4,e.clientY-d.dy))+'px';});
   const end=()=>{if(!d)return;if(d.moved){try{localStorage.setItem('tsl-ucard-pos',JSON.stringify({fx:parseFloat(cd.style.left)/innerWidth,fy:parseFloat(cd.style.top)/innerHeight}));}catch(e){}}d=null;};
   cd.addEventListener('pointerup',end);cd.addEventListener('pointercancel',end);
-  $('#ucClose').onclick=()=>{UC.closedKey=UC.key;cd.hidden=true;};
+  $('#ucClose').onclick=()=>{UC.closedKey=UC.key;cd.hidden=true;if(S&&S.baseSel){S.baseSel=null;render();}};
   $('#ucMin').onclick=()=>ucSetMin(true);$('#ucChip').onclick=()=>ucSetMin(false);
   cd.addEventListener('dblclick',()=>{try{localStorage.removeItem('tsl-ucard-pos');}catch(e){}ucPlace();}); // 連點兩下回到右下角
   addEventListener('resize',()=>{if(!cd.hidden)ucPlace();else syncUCard();});

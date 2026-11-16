@@ -40,7 +40,7 @@
     e.click();window.TSL_RUMBLE&&TSL_RUMBLE('tap');return true;};
   const PRIMARY='#evRoll,#evGo,#itGo,#evOk,#cfY,#modal .mbox button:not(.ghost):not(.opt):not(.mnew)';
   // 按鈕導覽：游標「吸」在某個按鈕上（navEl），像 Tab／方向鍵一樣在選項之間跳；彈窗開著時一律用這個模式，資訊卡則用十字鍵上下進入
-  let navEl=null,navT=0,navN=0;
+  let navEl=null,navT=0,navN=0,lastBase=null;
   const NAVSEL='button:not(.mnew),input,select,summary';
   const navList=()=>{const m=document.querySelector('#modal:not([hidden])');
     if(m)return [...m.querySelectorAll(NAVSEL)].filter(shown);
@@ -77,6 +77,10 @@
     const modalEl=document.querySelector('#modal:not([hidden])');
     if(navEl&&(!shown(navEl)||(!!modalEl)!==!!navEl.closest('#modal')))navEl=null;
     if(modalEl&&!navEl){const d0=navDefault();if(d0)toEl(d0);}
+    { // 剛點選基地（出擊卡）：游標直接跳到卡片的第一個按鈕，搖桿上下選、✕ 按下、左右推回到地圖
+      const bs=typeof S!=='undefined'&&S?S.baseSel||null:null;
+      if(bs!==lastBase){lastBase=bs;if(bs&&!modalEl){const l=navList();if(l.length&&l[0].closest('#ucard'))toEl(l[0]);}}
+    }
     if(navEl){
       const sy=Math.abs(ly)>.5?(ly>0?1:-1):0,sx=Math.abs(lx)>.5?(lx>0?1:-1):0,d=sy||(modalEl?sx:0);
       if(d){const now=Date.now();if(!navT||now-navT>(navN===1?320:170)){navT=now;navN++;btnStep(d);}}
@@ -138,7 +142,7 @@
     }
     if(press(0)&&el&&!dragStarted&&!drag){
       if(el.tagName==='SELECT'){el.selectedIndex=(el.selectedIndex+1)%el.options.length;el.dispatchEvent(new Event('change',{bubbles:true}));}
-      else if(navEl)el.click();
+      else if(navEl){el.click();if(!modalEl)navEl=null;} // 資訊卡的按鈕按下後回到地圖游標（例如接著要在地圖上選目標）
       else el.dispatchEvent(ev('click'));
       window.TSL_RUMBLE&&TSL_RUMBLE('tap');}
     dragStarted=b(0)&&!!drag;

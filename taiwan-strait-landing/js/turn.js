@@ -549,7 +549,7 @@ function antiCarrier(){
 }
 // 階段開始：清除上一階段的狀態、重設本方單位的行動與射擊次數
 function phaseReset(side){
-  S.phase=side;S.sel=null;S.mode=null;
+  S.phase=side;S.sel=null;S.mode=null;S.baseSel=null;
   GHOSTS.clear();S.units.forEach(u=>{u.inc=0;u.dropHide=0;if(side==='def')u.revealed=!!(u.mT&&S.turn<u.mT);});
   for(const u of S.units)if(u.side===side){u.moved=false;
     u.acted=false;
