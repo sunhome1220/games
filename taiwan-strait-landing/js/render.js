@@ -25,17 +25,26 @@ function rngLegSync(){
   d.innerHTML=RNG_LEG.map(e=>'<div>'+sw(e)+'<span class="rrl '+e.sd+'">'+e.txt+'</span></div>').join('');
   if(typeof placeLoc==='function')placeLoc();
 }
+// 畫一個射程圈（n＝格數）並記進圖例
+function rrRing(o,lbl,c,r,n,cls,sd,txt,lite){if(n<=0)return;
+  const [cx,cy]=center(c,r);o.push('<circle class="rr '+cls+' '+sd+'" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+((n+.5)*HPX).toFixed(1)+'"/>');
+  if(!txt)return;if(!lite)RNG_LEG.push({cls,sd,txt});
+  const [x,y]=rangeTop(c,r,n);lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+txt+'</text>');
+}
+// 台灣空軍基地的射程圈：作戰半徑（打島上目標）、對艦打擊距離（再加空射反艦飛彈射程）、對大陸打擊距離（飛到海峽中線附近再發射萬劍彈或 SLAM-ER）
+function baseRingsSVG(k){
+  const h=TER[k];if(!h||typeof afWing!=='function'||!afWing(k)||S.owner[k]==='atk')return '';const o=[],lbl=[],P=S.pools||{},n=km=>km/KM_HEX-.5;
+  const R=afRad(k),A=afAsm(k),cn=(P.rocSlam||0)>=AFS.pk?AFS.slam:(P.rocWC||0)>=AFS.pk?AFS.wc:null;
+  rrRing(o,lbl,h.c,h.r,n(R),'r','def','戰機作戰半徑 '+kmOf(R/KM_HEX)+' km（'+afWing(k)[1]+'）');
+  if(A&&(P[A.pool]||0)>=1)rrRing(o,lbl,h.c,h.r,n(R+A.km),'d','def','對艦打擊距離 '+kmOf((R+A.km)/KM_HEX)+' km（'+A.n+'）');
+  if(cn){const d=Math.round(afRel(k)+cn.km);rrRing(o,lbl,h.c,h.r,n(d),'x','def','對大陸打擊距離 '+kmOf(d/KM_HEX)+' km（'+cn.n+'）');}
+  return o.join('')+lbl.join('');
+}
 function rangeTop(c,r,n){const [cx,cy]=center(c,r);return [cx,cy-(n+.5)*HPX];}
 const kmOf=n=>Math.round(n*KM_HEX).toLocaleString();
 function rangeRingsSVG(u,lite){ // u：航艦或護航艦；lite＝一鍵全開時只畫防空傘與對艦打擊距離
   if(!u||!alive(u))return '';const sd=u.side,o=[],lbl=[];
-  const ring=(c,r,n,cls,txt)=>{if(n<=0)return;
-    {const [cx,cy]=center(c,r);
-    o.push('<circle class="rr '+cls+' '+sd+'" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+((n+.5)*HPX).toFixed(1)+'"/>');
-    }if(txt&&!lite)RNG_LEG.push({cls,sd,txt});
-    if(txt){const [x,y]=rangeTop(c,r,n);
-    lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+txt+'</text>');
-    }};
+  const ring=(c,r,n,cls,txt)=>rrRing(o,lbl,c,r,n,cls,sd,txt,lite);
   const grp=u.type==='cv'||u.type==='csg'||u.type==='ddh'?u:(u.grp?S.units.find(x=>x.id===u.grp&&alive(x)):null);
   if(u.type==='cv'||u.type==='csg'||u.type==='ddh'){
     const c=cvwCarriers(sd==='atk'?'atk':'def').find(x=>x.u===u);
@@ -595,6 +604,7 @@ function mapUnitsSVG(){let o='';RNG_LEG=[];
   {const iu=S.sel&&alive(S.sel)?S.sel:(S.hoverId?S.units.find(x=>x.id===S.hoverId):null); // 射程圈：一鍵全開時畫雙方所有航艦艦隊；點選（或游標停在）艦艇時畫該艦
    if(S.started&&RNG_ALL)S.units.filter(x=>(x.type==='cv'||x.type==='csg'||x.type==='ddh')&&alive(x)&&x!==iu).forEach(x=>{o+=rangeRingsSVG(x,true);});
    if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)))o+=rangeRingsSVG(iu,false);
+   if(S.started){const bk=(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK?S.afK:!iu&&S.baseSel&&S.baseSel===S.hover?S.baseSel:null;if(bk)o+=baseRingsSVG(bk);}
    rngLegSync();}
   S.units.filter(u=>!subHidden(u)&&!(u.ship&&atSea(u))&&!u.dropHide).concat([...GHOSTS.values()]).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
   // 潛艦「上次發現點」：目前沒被發現的潛艦，只在地圖上留下最後被發現的位置（淡虛線圈與回合數）
