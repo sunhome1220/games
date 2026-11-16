@@ -164,6 +164,10 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .u .uside{fill:#444;stroke:none} .u .ush{fill:#000;opacity:.28;pointer-events:none} .u .uhi{fill:#fff;opacity:.28;pointer-events:none}
 .u .wk{fill:none;stroke:#fff;stroke-opacity:.55;stroke-width:1.3;transform-box:fill-box;transform-origin:center;animation:wake 2.6s ease-out infinite;pointer-events:none}
 .u .wk.w2{animation-delay:-1.3s}
+@keyframes smk{0%{transform:translate(-3px,6px) scale(.45);opacity:0}25%{opacity:.85}100%{transform:translate(4px,-9px) scale(1.5);opacity:0}}
+.smk{pointer-events:none} .smk circle{fill:#26262a;opacity:.8;transform-box:fill-box;transform-origin:center;animation:smk 2.4s linear infinite}
+.smk .s2{animation-delay:-.8s} .smk .s3{animation-delay:-1.6s} .smk .fl{fill:#ff8a1f;stroke:#b3261e;stroke-width:.5}
+.smk.still circle{animation:none;opacity:.7} .u.ooa .body,.u.ooa .uside{filter:saturate(.35) brightness(.72)}
 @keyframes wake{from{transform:scale(.7);opacity:.8}to{transform:scale(1.5);opacity:0}}
 .fxt{font-size:13px;font-weight:900;stroke:#fff;stroke-width:3px;paint-order:stroke;font-family:var(--f-body)}
 .fxt.atk{fill:#c8372d} .fxt.def{fill:#1f5aa6} .fxt.dead{fill:#7a1810;font-size:15px}
@@ -295,7 +299,7 @@ body.mapfs .mbar{display:none!important}
 /* video mode */
 .vfocus{fill:none;stroke:var(--accent);stroke-width:3;pointer-events:none;animation:vpulse 1.1s ease-in-out infinite}
 @keyframes vpulse{0%,100%{opacity:.95}50%{opacity:.35}}
-@media (prefers-reduced-motion:reduce){.wv,.u .wk,.vfocus{animation:none}}
+@media (prefers-reduced-motion:reduce){.wv,.u .wk,.vfocus,.smk circle{animation:none}}
 .u .wk.still{animation:none;stroke-opacity:.35} /* 手機精簡模式：航跡不做循環動畫（省電） */
 .vcap{margin-top:8px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 10px}
 .vcap[hidden]{display:none}
@@ -331,11 +335,37 @@ body.mapfs .mbar{display:none!important}
 #vbusy[hidden]{display:none}
 .gpk{display:none}
 body.gp #btnStrike::before{content:'△ ';font-weight:700}
-body.gp #btnEnd::before{content:'≡ ';font-weight:700}
+body.gp #btnEnd::before,body.gp #mbEnd::before,body.gp #fsEnd::before{content:'≡ ';font-weight:700}
+body.gp #mbStrike::before,body.gp #fsStrike::before{content:'△ ';font-weight:700}
+body.gp #btnAssist::before,body.gp #mbAssist::before,body.gp #fsAssist::before{content:'□ ';font-weight:700}
+body.gp #evGo::before,body.gp #itGo::before,body.gp #evRoll::before,body.gp #evOk::before{content:'△ ';font-weight:700}
 body.gp #cfY::before{content:'✕ ';font-weight:700}
 body.gp #cfN::before{content:'○ ';font-weight:700}
 #gpHint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:14;display:none;background:var(--panel);border:1px solid var(--ink);border-radius:16px;padding:4px 12px;font-size:12px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 body.gp.playing #gpHint{display:block}
+#gpHint .more{display:none} body.gphelp #gpHint{white-space:normal;width:min(520px,calc(100vw - 24px));border-radius:10px;padding:8px 12px;line-height:1.7;z-index:25} body.gphelp #gpHint .more{display:inline} body.gphelp #gpHint .less{display:none}
+/* 手機橫向（高度不足）：標題列壓成一列、地圖工具列直排浮在左側、操作按鈕直排在右側，地圖占滿其餘空間 */
+@media (max-width:960px) and (orientation:landscape) and (max-height:540px){
+  h1{font-size:22px}
+  body.playing{padding-bottom:0}
+  body.playing .app{padding-block:calc(4px + env(safe-area-inset-top,0px)) 8px;padding-right:calc(136px + env(safe-area-inset-right,0px))}
+  body.playing header{flex-wrap:nowrap;gap:6px;padding-bottom:4px;margin-bottom:4px;border-bottom-width:1px}
+  body.playing .htitle{flex:none;order:2} body.playing .htitle h1{display:none} body.playing .stop{margin-left:0}
+  body.playing .statusbar{order:1;flex:1 1 0;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-height:0}
+  body.playing .statusbar>*{flex:none;max-width:none;white-space:nowrap;flex-wrap:nowrap}
+  body.playing .mapbar{position:fixed;z-index:13;left:calc(max(16px,env(safe-area-inset-left,0px)) + 6px);top:calc(52px + env(safe-area-inset-top,0px));flex-direction:column;flex-wrap:wrap;align-content:flex-start;
+    max-height:calc(100dvh - 64px);overflow:visible;gap:4px;margin:0}
+  body.playing .mapbar button{min-height:32px;min-width:38px!important;padding:2px 6px;background:color-mix(in srgb,var(--panel) 88%,transparent)}
+  body.playing .mapbar .dd{display:none}
+  body.playing:not(.mapfs) .mapwrap{height:calc(100dvh - 54px - env(safe-area-inset-top,0px))!important;max-height:none!important}
+  body.playing:not(.mapfs) .mbar{top:0;bottom:0;left:auto;right:0;width:calc(136px + env(safe-area-inset-right,0px));flex-direction:column;flex-wrap:nowrap;align-items:stretch;justify-content:flex-end;gap:8px;
+    border-top:0;border-left:1px solid var(--line);box-shadow:-4px 0 14px rgba(0,0,0,.14);padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) 8px}
+  .mbar #mbText{flex:none;white-space:normal;margin-bottom:auto}
+  .mbar button,.mbar #mbStrike{flex:none;min-height:46px}
+  .coach{bottom:8px;left:calc((100vw - 136px)/2);width:min(420px,calc(100vw - 136px - 130px))}
+  #gpHint{bottom:auto;top:calc(50px + env(safe-area-inset-top,0px));left:calc((100vw - 136px)/2);max-width:calc(100vw - 136px - 130px);overflow:hidden;text-overflow:ellipsis}
+  #toast{left:calc((100vw - 136px)/2)}
+}
 /* tabs, wizard */
 .side{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow-y:auto;padding-right:2px}
 @media (max-width:960px){.side{position:static;max-height:none}}
@@ -826,49 +856,49 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="ucChip" class="ucchip" hidden aria-label="展開資訊卡片" title="點一下回到原本大小"></button>
 <div id="wxWin" class="wxwin" hidden title="天候：點一下看說明；拖曳移動，靠近邊緣或角落會吸附"><div id="wxBody"></div></div>
 <div id="ucard" class="ucard" hidden><button class="uc-m" id="ucMin" aria-label="縮到最小" title="縮到最小（會停在左下角，再按展開）">—</button><button class="uc-x" id="ucClose" aria-label="關閉" title="關閉（拖曳可移動，連點兩下回到右下角）">✕</button><div id="ucBody"></div></div>
-<div id="gpHint">✕ 點選　△ 火力　≡ 結束階段　○ 取消　右搖桿 平移　L2/R2 縮放</div>
+<div id="gpHint"><span class="less">✕ 點選　○ 取消　△ 火力　□ 代打　≡ 結束階段　Share 全部按鍵</span><span class="more"><b>手把按鍵</b>（再按 Share 收起）<br>左搖桿：移動游標　右搖桿：平移地圖　L2／R2：縮放<br>✕：點選　○：取消／關閉資訊卡<br>△：火力打擊　□：電腦代打　≡（Options）：結束階段<br>有彈窗時 △ 或 ≡：按彈窗的主要按鈕<br>十字鍵 ←→：下一個還沒行動的己方單位<br>十字鍵 ↑↓：游標跳到上／下一個按鈕<br>L1／R1：切換側欄分頁　L3：全螢幕　R3：回到台灣</span></div>
 <div id="vcard" class="vcard" hidden><button class="vc-x" id="vcClose" aria-label="關閉" title="關閉">✕</button><div class="vc-body" id="vcBody"></div></div>
 <div id="vbusy" hidden>正在模擬戰局…</div>
 <div id="modal" hidden><button class="mnew" id="mNew" hidden title="放棄這一局，回到作戰設定">↺ 重新開始</button><div class="mbox" id="mbox"></div></div>
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-16.05' -->
-<script src="js/dict.js?v=2026-11-16.05"></script>
-<script src="js/i18n.js?v=2026-11-16.05"></script>
-<script src="js/btnfix.js?v=2026-11-16.05"></script>
-<script src="js/geo.js?v=2026-11-16.05"></script>
-<script src="js/dem.js?v=2026-11-16.05"></script>
-<script src="js/urban.js?v=2026-11-16.05"></script>
-<script src="js/map.js?v=2026-11-16.05"></script>
-<script src="js/state.js?v=2026-11-16.05"></script>
-<script src="js/rules.js?v=2026-11-16.05"></script>
-<script src="js/supply.js?v=2026-11-16.05"></script>
-<script src="js/ending.js?v=2026-11-16.05"></script>
-<script src="js/theater.js?v=2026-11-16.05"></script>
-<script src="js/airwar.js?v=2026-11-16.05"></script>
-<script src="js/carrier.js?v=2026-11-16.05"></script>
-<script src="js/asw.js?v=2026-11-16.05"></script>
-<script src="js/psub.js?v=2026-11-16.05"></script>
-<script src="js/strike.js?v=2026-11-16.05"></script>
-<script src="js/airstrike.js?v=2026-11-16.05"></script>
-<script src="js/decisions.js?v=2026-11-16.05"></script>
-<script src="js/report.js?v=2026-11-16.05"></script>
-<script src="js/turn.js?v=2026-11-16.05"></script>
-<script src="js/ai.js?v=2026-11-16.05"></script>
-<script src="js/render.js?v=2026-11-16.05"></script>
-<script src="js/fxanim.js?v=2026-11-16.05"></script>
-<script src="js/fx.js?v=2026-11-16.05"></script>
-<script src="js/video.js?v=2026-11-16.05"></script>
-<script src="js/stats.js?v=2026-11-16.05"></script>
-<script src="js/input.js?v=2026-11-16.05"></script>
-<script src="js/unitinfo.js?v=2026-11-16.05"></script>
-<script src="js/version.js?v=2026-11-16.05"></script>
-<script src="js/changelog.js?v=2026-11-16.05"></script>
-<script src="js/app.js?v=2026-11-16.05"></script>
-<script src="js/missions.js?v=2026-11-16.05"></script>
-<script src="js/mission_carrier.js?v=2026-11-16.05"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-16.07' -->
+<script src="js/dict.js?v=2026-11-16.07"></script>
+<script src="js/i18n.js?v=2026-11-16.07"></script>
+<script src="js/btnfix.js?v=2026-11-16.07"></script>
+<script src="js/geo.js?v=2026-11-16.07"></script>
+<script src="js/dem.js?v=2026-11-16.07"></script>
+<script src="js/urban.js?v=2026-11-16.07"></script>
+<script src="js/map.js?v=2026-11-16.07"></script>
+<script src="js/state.js?v=2026-11-16.07"></script>
+<script src="js/rules.js?v=2026-11-16.07"></script>
+<script src="js/supply.js?v=2026-11-16.07"></script>
+<script src="js/ending.js?v=2026-11-16.07"></script>
+<script src="js/theater.js?v=2026-11-16.07"></script>
+<script src="js/airwar.js?v=2026-11-16.07"></script>
+<script src="js/carrier.js?v=2026-11-16.07"></script>
+<script src="js/asw.js?v=2026-11-16.07"></script>
+<script src="js/psub.js?v=2026-11-16.07"></script>
+<script src="js/strike.js?v=2026-11-16.07"></script>
+<script src="js/airstrike.js?v=2026-11-16.07"></script>
+<script src="js/decisions.js?v=2026-11-16.07"></script>
+<script src="js/report.js?v=2026-11-16.07"></script>
+<script src="js/turn.js?v=2026-11-16.07"></script>
+<script src="js/ai.js?v=2026-11-16.07"></script>
+<script src="js/render.js?v=2026-11-16.07"></script>
+<script src="js/fxanim.js?v=2026-11-16.07"></script>
+<script src="js/fx.js?v=2026-11-16.07"></script>
+<script src="js/video.js?v=2026-11-16.07"></script>
+<script src="js/stats.js?v=2026-11-16.07"></script>
+<script src="js/input.js?v=2026-11-16.07"></script>
+<script src="js/unitinfo.js?v=2026-11-16.07"></script>
+<script src="js/version.js?v=2026-11-16.07"></script>
+<script src="js/changelog.js?v=2026-11-16.07"></script>
+<script src="js/app.js?v=2026-11-16.07"></script>
+<script src="js/missions.js?v=2026-11-16.07"></script>
+<script src="js/mission_carrier.js?v=2026-11-16.07"></script>
 <script>if(missionId())setTimeout(()=>missionStart(missionId()),0);</script>
-<script src="js/gamepad.js?v=2026-11-16.05"></script>
+<script src="js/gamepad.js?v=2026-11-16.07"></script>
 </body>
 </html>

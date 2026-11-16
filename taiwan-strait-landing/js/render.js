@@ -506,7 +506,7 @@ function ghostDrop(id){
 }
 // 棋子色調分三類（攻方紅、守方藍各自三種深淺，海上與陸上共用）：深＝火力打擊（飛彈、火箭砲、潛艦、飛彈艇）、標準＝作戰部隊、淡＝後勤運輸（船團、補給站、運輸船）
 const unitCat=t=>(t==='ssm'||t==='hmr'||t==='mlrs'||t==='hk'||t==='ssn'||t==='psub'||t==='nme'||t==='mdt'||t==='ff')?'f':(t==='cvy'||t==='fob'||t==='lst'||t==='ro')?'l':'m';
-function unitSVG(u){
+function unitSVG(u,withSmoke){
   const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy,stacked=sx!==0,T=TYPES[u.type];
   const done=S.started&&u.side===S.phase&&u.acted,sel=S.sel===u||!!(u.boundTo&&S.sel&&S.sel.id===u.boundTo),yy=y-2;
   let sym='';const bx=x-9,by=yy-10,bw=18,bh=10;
@@ -532,10 +532,13 @@ function unitSVG(u){
     for(let i=0;i<n;i++){const px=x-(n-1)*3.5+i*7;
     pips+='<circle class="pip '+(i<u.hp?'full':'lost')+'" cx="'+px+'" cy="'+(y+17.5)+'" r="2"/>';
     }
+  // 重創、失去戰鬥能力（航艦剩 1 步）：棋子變暗、右上角冒黑煙
+  const ooa=cvOOA(u),smoke=ooa?'<g class="smk'+(LITE?' still':'')+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')"><circle class="s1" cx="'+(x+8)+'" cy="'+(y-15)+'" r="3"/><circle class="s2" cx="'+(x+10.5)+'" cy="'+(y-20)+'" r="3.8"/><circle class="s3" cx="'+
+      (x+13.5)+'" cy="'+(y-26)+'" r="4.6"/><path class="fl" d="M'+(x+5.5)+' '+(y-13)+'q1.2 -3.2 2.6 -4.6q.4 2 1.6 2.8q1 1 .6 1.8z"/></g>':'';
   const sea=atSea(u);
   const wf=US/(16/26*1.18),wake=sea&&LITE?'<ellipse class="wk still" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':sea?'<ellipse class="wk" cx="'+
       x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/><ellipse class="wk w2" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':'';
-  return '<g class="u'+(sel?' sel':'')+(done?' done':'')+'" data-k="'+K(u.c,u.r)+'" data-id="'+u.id+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+wake+
+  return '<g class="u'+(sel?' sel':'')+(done?' done':'')+(ooa?' ooa':'')+'" data-k="'+K(u.c,u.r)+'" data-id="'+u.id+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+wake+
     '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')">'+'<ellipse class="ush" cx="'+x+'" cy="'+(y+11)+'" rx="16" ry="5"/>'+
     '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
     '<rect class="body '+u.side+' c'+unitCat(u.type)+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="23" rx="3"/>'+
@@ -545,7 +548,7 @@ function unitSVG(u){
       if(S.ctrl&&S.ctrl.def==='human'&&S.ctrl.atk!=='human'&&!S.sim&&!S.video)return '';
       const t=TYPES[b.type].s+b.hp,w=Math.max(14,t.length*6.4+4);
       return '<rect x="'+(x-15)+'" y="'+(y-18)+'" width="'+w.toFixed(1)+'" height="8.5" rx="2" fill="#111" opacity=".9"/><text x="'+(x-15+w/2).toFixed(1)+'" y="'+
-          (y-11.6)+'" text-anchor="middle" font-size="6.3" font-weight="700" fill="#fff">'+t+'</text>';})())+(sea?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-12)+'" r="2.6"/>':'')+'</g></g></g>';
+          (y-11.6)+'" text-anchor="middle" font-size="6.3" font-weight="700" fill="#fff">'+t+'</text>';})())+(sea?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-12)+'" r="2.6"/>':'')+'</g></g></g>'+(withSmoke&&smoke?'\u0001'+smoke:''); // 黑煙接在 \u0001 後面，由 mapUnitsSVG 移到所有棋子上方，才不會被旁邊的棋子蓋住
 }
 const FLEETS=[{id:'csg',el:'csgM',from:[32,10],to:[31,10]},{id:'jmsdf',el:'jmsdfM',from:[26,-4],to:[20,-3]}]; // 美日艦隊：參戰後逐回合由基地海域駛向台灣周邊（from／to 為遠景格座標）
 function fleetProgress(F){ // 0＝在原處、1＝到位
@@ -634,13 +637,14 @@ function mapOverlaySVG(){let o='';
   }
   return o;}
 // 射程圈、棋子、潛艦上次發現點
-function mapUnitsSVG(){let o='';RNG_LEG=[];
+function mapUnitsSVG(){let o='',smk='';RNG_LEG=[];
   {const iu=S.sel&&alive(S.sel)?S.sel:(S.hoverId?S.units.find(x=>x.id===S.hoverId):null); // 射程圈：一鍵全開時畫雙方所有航艦艦隊；點選（或游標停在）艦艇時畫該艦
    if(S.started&&RNG_ALL)S.units.filter(x=>(x.type==='cv'||x.type==='csg'||x.type==='ddh')&&alive(x)&&x!==iu).forEach(x=>{o+=rangeRingsSVG(x,true);});
    if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)||iu.fl||iu.type==='dd')&&!subHidden(iu))o+=rangeRingsSVG(iu,false);
    if(S.started){const bk=(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK?S.afK:!iu&&S.baseSel&&S.baseSel===S.hover?S.baseSel:null;if(bk)o+=baseRingsSVG(bk);}
    rngLegSync();}
-  S.units.filter(u=>!subHidden(u)&&!(u.ship&&atSea(u))&&!u.dropHide).concat([...GHOSTS.values()]).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
+  S.units.filter(u=>!subHidden(u)&&!(u.ship&&atSea(u))&&!u.dropHide).concat([...GHOSTS.values()]).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{const p=unitSVG(u,true).split('\u0001');o+=p[0];if(p[1])smk+=p[1];});
+  o+=smk;
   // 潛艦「上次發現點」：目前沒被發現的潛艦，只在地圖上留下最後被發現的位置（淡虛線圈與回合數）
   S.units.filter(u=>subHidden(u)&&u.last&&S.turn-u.last.turn<=6).forEach(u=>{const p=cen(u.last.c,u.last.r);o+='<g class="lastseen" opacity=".8"><circle cx="'+p[0].toFixed(1)+
       '" cy="'+p[1].toFixed(1)+'" r="'+(R*.55).toFixed(1)+'" fill="none" stroke="#3f7fd0" stroke-width="1.6" stroke-dasharray="4 3"/><text x="'+p[0].toFixed(1)+'" y="'+

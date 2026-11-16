@@ -1,4 +1,5 @@
-/* 手把原型（Gamepad API）：左搖桿移動游標、✕＝點選、△＝火力打擊、Options＝結束階段、○＝取消。
+/* 手把（Gamepad API）：左搖桿移動游標、✕＝點選、○＝取消、△＝火力打擊、□＝電腦代打、Options＝結束階段（有彈窗時 △／Options＝彈窗的主要按鈕）、
+   十字鍵 ←→＝切換到下一個還沒行動的己方單位、↑↓＝游標跳到彈窗或資訊卡的上／下一個按鈕、L1／R1＝切換側欄分頁、L3＝全螢幕、R3＝回到台灣、Share＝按鍵說明。
    只在偵測到手把時啟動；滑鼠與觸控不受影響。DualSense 在 Chrome 用標準對應（0=✕ 1=○ 3=△ 9=Options）。 */
 (function(){
   if(!navigator.getGamepads)return;
@@ -30,6 +31,32 @@
     for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);pts.push(toS(m,px+H.R*Math.cos(a),py+H.R*Math.sin(a)).map(v=>v.toFixed(1)).join(','));}
     hp.setAttribute('points',pts.join(' '));}
   let x=innerWidth/2,y=innerHeight/2,prev={},lastEl=null,running=false,on=false,drag=null,dragStarted=false,zt=0;
+  // ---- 快速鍵：直接按到常用的介面按鈕 ----
+  const shown=e=>!!e&&!e.disabled&&!e.hidden&&e.getClientRects().length>0;
+  const clickIf=(sel,any)=>{ // 依序找第一個看得到的按鈕來按；any＝都看不到時（例如在別的分頁裡），仍按第一個可用的
+    const es=sel.split(',').map(s=>document.querySelector(s.trim())).filter(e=>e&&!e.disabled&&!e.hidden),e=es.find(shown)||(any?es[0]:null);
+    if(!e)return false;
+    e.click();window.TSL_RUMBLE&&TSL_RUMBLE('tap');return true;};
+  const PRIMARY='#evRoll,#evGo,#itGo,#evOk,#cfY,#modal .mbox button:not(.ghost):not(.opt):not(.mnew)';
+  const toEl=e=>{try{e.scrollIntoView({block:'nearest',inline:'nearest'});}catch(_){}const r=e.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;hc=null;};
+  function tabStep(d){const bs=[...document.querySelectorAll('#sidetabs button')].filter(shown);if(!bs.length)return;
+    const i=bs.findIndex(e=>e.classList.contains('on')),n=bs[((i<0?0:i)+d+bs.length)%bs.length];n.click();toEl(n);window.TSL_RUMBLE&&TSL_RUMBLE('step');}
+  function btnStep(d){ // 彈窗開著：彈窗裡的按鈕；否則：資訊卡、打擊確認列與指揮面板裡的按鈕
+    const sel=document.querySelector('#modal:not([hidden])')?'#modal button':'#ucard:not([hidden]) button,.cpb button,#info button,#ctrl button';
+    const bs=[...document.querySelectorAll(sel)].filter(shown);if(!bs.length)return;
+    const el=document.elementFromPoint(x,y),cur=el&&el.closest('button'),i=bs.indexOf(cur);
+    toEl(bs[i<0?(d>0?0:bs.length-1):(i+d+bs.length)%bs.length]);window.TSL_RUMBLE&&TSL_RUMBLE('step');}
+  let unitI=-1;
+  function unitStep(d){ // 還沒移動也還沒行動的己方單位：把地圖捲到它、游標移過去並點選
+    if(typeof S==='undefined'||!S||!S.started||S.over||document.querySelector('#modal:not([hidden])'))return;
+    if(typeof humanTurn==='function'&&!humanTurn())return;
+    const us=S.units.filter(u=>u.side===S.phase&&!u.acted&&!u.moved&&document.querySelector('#map .u[data-id="'+u.id+'"]'));if(!us.length)return;
+    unitI=((unitI+d)%us.length+us.length)%us.length;
+    const w=document.querySelector('.mapwrap'),g=document.querySelector('#map .u[data-id="'+us[unitI].id+'"]'),r=g.getBoundingClientRect(),b=w.getBoundingClientRect();
+    w.scrollLeft+=r.left+r.width/2-(b.left+b.width/2);w.scrollTop+=r.top+r.height/2-(b.top+b.height/2);
+    requestAnimationFrame(()=>{const e=document.querySelector('#map .u[data-id="'+us[unitI].id+'"]');if(!e)return;const q=e.getBoundingClientRect();x=q.left+q.width/2;y=q.top+q.height/2;hc=null;
+      e.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window}));window.TSL_RUMBLE&&TSL_RUMBLE('step');});
+  }
   const pickPad=()=>{const ps=navigator.getGamepads?navigator.getGamepads():[];for(const p of ps)if(p&&p.connected)return p;return null;};
   const dz=v=>Math.abs(v)<.2?0:v;
   function frame(){
@@ -88,10 +115,25 @@
     }
     if(press(0)&&el&&!dragStarted&&!drag){el.dispatchEvent(ev('click'));window.TSL_RUMBLE&&TSL_RUMBLE('tap');}
     dragStarted=b(0)&&!!drag;
-    if(press(3)){const s=document.querySelector('#btnStrike');if(s&&!s.disabled&&!s.hidden)s.click();}
-    if(press(9)){const e=document.querySelector('#btnEnd');if(e&&!e.disabled&&!e.hidden)e.click();}
-    if(press(1)){const c=document.querySelector('#modal:not([hidden]) .ghost, #modal:not([hidden]) button#cfN');if(c)c.click();}
-    prev={0:b(0),1:b(1),3:b(3),9:b(9)};
+    const modal=!!document.querySelector('#modal:not([hidden])');
+    if(press(3)||press(9)){ // △／Options：有彈窗時按彈窗的主要按鈕；沒有彈窗時 △＝火力打擊、Options＝結束階段
+      if(modal)clickIf(PRIMARY);
+      else clickIf(press(3)?'#mbStrike,#fsStrike,#btnStrike':'#mbEnd,#fsEnd,#btnEnd',true);
+    }
+    if(press(2)&&!modal)clickIf('#mbAssist,#fsAssist,#btnAssist',true); // □：電腦代打
+    if(press(1)){ // ○：取消（彈窗的取消鈕 → 取消打擊模式 → 關閉資訊卡）
+      if(modal)clickIf('#modal .ghost,#modal button#cfN');
+      else if(typeof S!=='undefined'&&S&&S.mode==='strike')clickIf('#mbStrike,#fsStrike,#btnStrike',true);
+      else clickIf('#ucard:not([hidden]) #ucClose');
+    }
+    if(press(4)||press(5))tabStep(press(5)?1:-1); // L1／R1：側欄分頁
+    if(press(14)||press(15))unitStep(press(15)?1:-1); // 十字鍵左右：下一個還沒行動的己方單位
+    if(press(12)||press(13))btnStep(press(13)?1:-1); // 十字鍵上下：游標跳到上／下一個按鈕
+    if(press(10))clickIf('#btnFs,#fsExit'); // L3：全螢幕
+    if(press(11))clickIf('#btnLoc'); // R3：回到台灣
+    if(press(8))document.body.classList.toggle('gphelp'); // Share：按鍵說明
+    prev={};
+    for(let i=0;i<17;i++)prev[i]=b(i);
     requestAnimationFrame(frame);
   }
   const start=()=>{if(!running){running=true;requestAnimationFrame(frame);}};
