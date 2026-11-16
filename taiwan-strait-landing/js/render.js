@@ -17,6 +17,14 @@ function rangePts(c,r,n){
   if(n<=0)return '';const x0=c-(r-(r&1))/2,z0=r,[cx,cy]=center(c,r),D=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]]; // 立方座標 (x,z) 方向
   return D.map(([dx,dz])=>{const x=x0+dx*n,z=z0+dz*n,cc=x+(z-(z&1))/2,[px,py]=center(cc,z),f=(n+.5)/n;return (cx+(px-cx)*f).toFixed(1)+','+(cy+(py-cy)*f).toFixed(1);}).join(' ');
 }
+// 射程圈圖例：大圈的文字常在畫面外，另在地圖看得到的左上角列出每個圈的線型與說明
+let RNG_LEG=[];
+function rngLegSync(){
+  let d=$('#rngLeg');if(!d){d=document.createElement('div');d.id='rngLeg';d.setAttribute('aria-live','polite');document.body.appendChild(d);}
+  const sw=e=>'<svg width="30" height="12" aria-hidden="true">'+(e.cls==='ad'?'<rect class="rr ad '+e.sd+'" x="2" y="2" width="26" height="8" rx="3"/>':'<line class="rr '+e.cls+' '+e.sd+'" x1="1" y1="6" x2="29" y2="6"/>')+'</svg>';
+  d.innerHTML=RNG_LEG.map(e=>'<div>'+sw(e)+'<span class="rrl '+e.sd+'">'+e.txt+'</span></div>').join('');
+  if(typeof placeLoc==='function')placeLoc();
+}
 function rangeTop(c,r,n){const [cx,cy]=center(c,r);return [cx,cy-(n+.5)*HPX];}
 const kmOf=n=>Math.round(n*KM_HEX).toLocaleString();
 function rangeRingsSVG(u,lite){ // u：航艦或護航艦；lite＝一鍵全開時只畫防空傘與對艦打擊距離
@@ -24,7 +32,8 @@ function rangeRingsSVG(u,lite){ // u：航艦或護航艦；lite＝一鍵全開�
   const ring=(c,r,n,cls,txt)=>{if(n<=0)return;
     {const [cx,cy]=center(c,r);
     o.push('<circle class="rr '+cls+' '+sd+'" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+((n+.5)*HPX).toFixed(1)+'"/>');
-    }if(txt){const [x,y]=rangeTop(c,r,n);
+    }if(txt&&!lite)RNG_LEG.push({cls,sd,txt});
+    if(txt){const [x,y]=rangeTop(c,r,n);
     lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">'+txt+'</text>');
     }};
   const grp=u.type==='cv'||u.type==='csg'||u.type==='ddh'?u:(u.grp?S.units.find(x=>x.id===u.grp&&alive(x)):null);
@@ -582,10 +591,11 @@ function mapOverlaySVG(){let o='';
   }
   return o;}
 // 射程圈、棋子、潛艦上次發現點
-function mapUnitsSVG(){let o='';
+function mapUnitsSVG(){let o='';RNG_LEG=[];
   {const iu=S.sel&&alive(S.sel)?S.sel:(S.hoverId?S.units.find(x=>x.id===S.hoverId):null); // 射程圈：一鍵全開時畫雙方所有航艦艦隊；點選（或游標停在）艦艇時畫該艦
    if(S.started&&RNG_ALL)S.units.filter(x=>(x.type==='cv'||x.type==='csg'||x.type==='ddh')&&alive(x)&&x!==iu).forEach(x=>{o+=rangeRingsSVG(x,true);});
-   if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)))o+=rangeRingsSVG(iu,false);}
+   if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)))o+=rangeRingsSVG(iu,false);
+   rngLegSync();}
   S.units.filter(u=>!subHidden(u)&&!(u.ship&&atSea(u))&&!u.dropHide).concat([...GHOSTS.values()]).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
   // 潛艦「上次發現點」：目前沒被發現的潛艦，只在地圖上留下最後被發現的位置（淡虛線圈與回合數）
   S.units.filter(u=>subHidden(u)&&u.last&&S.turn-u.last.turn<=6).forEach(u=>{const p=cen(u.last.c,u.last.r);o+='<g class="lastseen" opacity=".8"><circle cx="'+p[0].toFixed(1)+
