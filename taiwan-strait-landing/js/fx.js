@@ -314,7 +314,7 @@ function renderStatus(){
         '%。':''))+'>制空 <b>'+({atk:'攻優',mid:'均勢',def:'守優'}[ac])+'</b>'+(S.sead?' · 防空壓制':'')+(afShare()<1?' · 機場 '+Math.round(afShare()*100)+'%':'')+'</span>'+
     '<span class="chip tp"'+tip('s','【補給】攻方島上有 '+sp.used+' 個部隊需要彈藥與油糧，補給容量 '+sp.cap+'。'+(sp.over?'需求超過容量，部隊會一回合比一回合損耗，連續多回合缺補給攻方會崩潰。要打開港口、灘頭或補給站來提高容量。':'容量足夠。補給靠港口、灘頭卸貨、空投與就地徵用。'))+(sp.over?' style="border-color:var(--atk);color:var(--atk)"':'')+'>補給 <b>'+sp.used+' / '+sp.cap+'</b></span>';
   $('#status').innerHTML=stHTML;{const ch=[...$('#status').children];$('#statusTop').innerHTML=ch.slice(0,2).map(c=>c.outerHTML).join('');
-    const wb=$('#wxBody');wb.innerHTML='';const wx=ch.find(c=>(c.dataset.tip||'').startsWith('【天候】'));
+    const wb=$('#wxBody');wb.innerHTML='';const wx=ch.find(c=>(c.dataset.tip||'').startsWith('【天候'));
     if(wx&&wxMobile()){wx.classList.add('wxmoved'); // 手機：天候搬到地圖上的小膠囊（原狀態列隱藏）；點一下顯示完整說明
       const wv=W.wave,lv=wv==null?'g':wv>=2.5?'r':wv>1.25?'o':'g',ty=W.ty||(S.nextW&&S.nextW.ty)||S.fcTyphoon; // 顏色門檻＝灘頭卸載規則：1.25 m 以下不受影響、2.5 m 以上無法卸載
       const pill=document.createElement('span');pill.className='chip tp wxp '+lv;pill.setAttribute('data-tip',wx.dataset.tip);pill.setAttribute('tabindex','0');pill.setAttribute('role','button');
