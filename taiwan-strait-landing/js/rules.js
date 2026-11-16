@@ -131,8 +131,8 @@ function terrCover(h){return h.t==='city'||h.t==='mtn'?1:h.town?.5:0;}
 const coverTxt=h=>terrCover(h)>=1?'（城市／山地較難）':terrCover(h)>0?'（城鎮稍難）':'';
 function seaPen(u){if(!atSea(u))return 0;const wh=wxWave(hexOf(u)),wp=wh>2?2:wh>1.25?1:0;return (u.type==='mar'?-1:-2)-wp;} // 搶灘突擊：浪高越大，登陸艇越難靠岸（>1.25 公尺 −1、>2.0 公尺 −2）
 const ADJ_N=()=>Math.round(kmH(ADJ_KM)); // 「相鄰」的格數（ring2 的半徑）
-function inZOC(side,h){ // 等同 ring2(h) 裡有敵方地面部隊：直接掃單位比掃 ring2 每一格快（10 km 格時 ring2 有約 60 格）
-  const R=ADJ_N();
+function inZOC(side,h){ // ZOC_KM（10 km＝相鄰格）內有敵方地面部隊：直接掃單位，比逐格查快
+  const R=Math.max(1,Math.round(kmH(ZOC_KM)));
   return S.units.some(e=>{if(e.side===side||isMsl(e)||isShip(e))return false;const n=hexOf(e);if(!n||!isLand(n)||(e.type==='abn'&&n.isl==='CN'))return false;const d=hd(h,n);return d>=1&&d<=R;});
 }
 function support(u,t){
