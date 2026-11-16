@@ -1,5 +1,6 @@
 /* 手把（Gamepad API）：左搖桿移動游標、✕＝點選、○＝取消、△＝火力打擊、□＝電腦代打、Options＝結束階段（有彈窗時 △／Options＝彈窗的主要按鈕）、
-   十字鍵 ←→＝切換到下一個還沒行動的己方單位、↑↓＝游標跳到彈窗或資訊卡的上／下一個按鈕、L1／R1＝切換側欄分頁、L3＝全螢幕、R3＝回到台灣、Share＝按鍵說明。
+   十字鍵 ←→＝切換到下一個還沒行動的己方單位、↑↓＝游標跳到資訊卡的上／下一個按鈕（之後左搖桿上下也能切換，左右離開）；
+   彈窗開著時游標自動吸在選項上，左搖桿或十字鍵四個方向＝上／下一個選項（像 Tab 與方向鍵），右搖桿＝捲動彈窗內容；L1／R1＝切換側欄分頁、L3＝全螢幕、R3＝回到台灣、Share＝按鍵說明。
    只在偵測到手把時啟動；滑鼠與觸控不受影響。DualSense 在 Chrome 用標準對應（0=✕ 1=○ 3=△ 9=Options）。 */
 (function(){
   if(!navigator.getGamepads)return;
@@ -38,13 +39,21 @@
     if(!e)return false;
     e.click();window.TSL_RUMBLE&&TSL_RUMBLE('tap');return true;};
   const PRIMARY='#evRoll,#evGo,#itGo,#evOk,#cfY,#modal .mbox button:not(.ghost):not(.opt):not(.mnew)';
-  const toEl=e=>{try{e.scrollIntoView({block:'nearest',inline:'nearest'});}catch(_){}const r=e.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;hc=null;};
+  // 按鈕導覽：游標「吸」在某個按鈕上（navEl），像 Tab／方向鍵一樣在選項之間跳；彈窗開著時一律用這個模式，資訊卡則用十字鍵上下進入
+  let navEl=null,navT=0,navN=0;
+  const NAVSEL='button:not(.mnew),input,select,summary';
+  const navList=()=>{const m=document.querySelector('#modal:not([hidden])');
+    if(m)return [...m.querySelectorAll(NAVSEL)].filter(shown);
+    for(const sel of ['.cpb button','#ucard:not([hidden]) #ucBody button','#info button']){ // 打擊確認列 → 資訊卡 → 側欄資訊卡；只取第一組有按鈕的
+      const l=[...document.querySelectorAll(sel)].filter(shown);if(l.length)return l;}
+    return [];};
+  const navDefault=()=>{const l=navList();return l.find(e=>e.classList.contains('on')&&e.classList.contains('opt'))||l.find(e=>e.classList.contains('opt'))||l.find(e=>e.matches(PRIMARY))||l[0]||null;};
+  const toEl=e=>{navEl=e;try{e.scrollIntoView({block:'nearest',inline:'nearest'});}catch(_){}try{e.focus({preventScroll:true});}catch(_){}const r=e.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;hc=null;};
   function tabStep(d){const bs=[...document.querySelectorAll('#sidetabs button')].filter(shown);if(!bs.length)return;
     const i=bs.findIndex(e=>e.classList.contains('on')),n=bs[((i<0?0:i)+d+bs.length)%bs.length];n.click();toEl(n);window.TSL_RUMBLE&&TSL_RUMBLE('step');}
   function btnStep(d){ // 彈窗開著：彈窗裡的按鈕；否則：資訊卡、打擊確認列與指揮面板裡的按鈕
-    const sel=document.querySelector('#modal:not([hidden])')?'#modal button':'#ucard:not([hidden]) button,.cpb button,#info button,#ctrl button';
-    const bs=[...document.querySelectorAll(sel)].filter(shown);if(!bs.length)return;
-    const el=document.elementFromPoint(x,y),cur=el&&el.closest('button'),i=bs.indexOf(cur);
+    const bs=navList();if(!bs.length)return;
+    const el=document.elementFromPoint(x,y),cur=navEl&&bs.includes(navEl)?navEl:el&&el.closest(NAVSEL),i=bs.indexOf(cur);
     toEl(bs[i<0?(d>0?0:bs.length-1):(i+d+bs.length)%bs.length]);window.TSL_RUMBLE&&TSL_RUMBLE('step');}
   let unitI=-1;
   function unitStep(d){ // 還沒移動也還沒行動的己方單位：把地圖捲到它、游標移過去並點選
@@ -53,7 +62,7 @@
     const us=S.units.filter(u=>u.side===S.phase&&!u.acted&&!u.moved&&document.querySelector('#map .u[data-id="'+u.id+'"]'));if(!us.length)return;
     unitI=((unitI+d)%us.length+us.length)%us.length;
     const w=document.querySelector('.mapwrap'),g=document.querySelector('#map .u[data-id="'+us[unitI].id+'"]'),r=g.getBoundingClientRect(),b=w.getBoundingClientRect();
-    w.scrollLeft+=r.left+r.width/2-(b.left+b.width/2);w.scrollTop+=r.top+r.height/2-(b.top+b.height/2);
+    navEl=null;w.scrollLeft+=r.left+r.width/2-(b.left+b.width/2);w.scrollTop+=r.top+r.height/2-(b.top+b.height/2);
     requestAnimationFrame(()=>{const e=document.querySelector('#map .u[data-id="'+us[unitI].id+'"]');if(!e)return;const q=e.getBoundingClientRect();x=q.left+q.width/2;y=q.top+q.height/2;hc=null;
       e.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window}));window.TSL_RUMBLE&&TSL_RUMBLE('step');});
   }
@@ -64,7 +73,18 @@
     if(!pad){on=false;cur.hidden=true;hx.style.display='none';running=false;document.body.classList.remove('gp');return;}
     if(!on){on=true;cur.hidden=false;x=innerWidth/2;y=innerHeight/2;document.body.classList.add('gp');}
     const lx=dz(pad.axes[0]||0),ly=dz(pad.axes[1]||0),vis=document.body.classList.contains('playing')||!!document.querySelector('#modal:not([hidden])');
-    const hh=vis?hexAtCursor():null;
+    // 按鈕導覽模式：彈窗開著（自動吸到目前選項或第一個選項），或已用十字鍵跳到資訊卡的按鈕上
+    const modalEl=document.querySelector('#modal:not([hidden])');
+    if(navEl&&(!shown(navEl)||(!!modalEl)!==!!navEl.closest('#modal')))navEl=null;
+    if(modalEl&&!navEl){const d0=navDefault();if(d0)toEl(d0);}
+    if(navEl){
+      const sy=Math.abs(ly)>.5?(ly>0?1:-1):0,sx=Math.abs(lx)>.5?(lx>0?1:-1):0,d=sy||(modalEl?sx:0);
+      if(d){const now=Date.now();if(!navT||now-navT>(navN===1?320:170)){navT=now;navN++;btnStep(d);}}
+      else{navT=0;navN=0;}
+      if(!modalEl&&sx&&!sy)navEl=null; // 資訊卡：往左右推就離開按鈕，回到地圖游標
+    }
+    if(navEl){const r=navEl.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;} // 內容捲動時游標跟著按鈕
+    const hh=vis&&!navEl?hexAtCursor():null;
     if(hh){ // 六角格模式：游標固定在格子中心；推搖桿跳到該方向最接近的相鄰格（按住時連續跳）
       const H=window.TSL_HEX,m=hh.m;let c=hh.c,r=hh.r;
       if(Math.hypot(lx,ly)>.5){const now=Date.now();
@@ -81,20 +101,23 @@
       hexOn=hc!==null;
     }else{
       hexOn=false;hc=null;stepT=0;stepN=0;
-      x=Math.max(0,Math.min(innerWidth-1,x+lx*9));
-      y=Math.max(0,Math.min(innerHeight-1,y+ly*9));
+      if(!navEl){
+        x=Math.max(0,Math.min(innerWidth-1,x+lx*9));
+        y=Math.max(0,Math.min(innerHeight-1,y+ly*9));
+      }
     }
     cur.style.left=x+'px';cur.style.top=y+'px';
     cur.style.display=vis&&!hexOn?'':'none';
     cur.hidden=cur.style.display==='none';
     hx.style.display=vis&&hexOn?'':'none';
-    const el=hexOn?(mapEl(x,y)||document.elementFromPoint(x,y)):document.elementFromPoint(x,y); // 六角格模式：點的是地圖上那一格（不是蓋在上面的卡片）
+    const el=navEl||(hexOn?(mapEl(x,y)||document.elementFromPoint(x,y)):document.elementFromPoint(x,y)); // 六角格模式：點的是地圖上那一格（不是蓋在上面的卡片）
     if(el&&el!==lastEl){lastEl=el;el.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:x,clientY:y}));}
     const b=i=>!!(pad.buttons[i]&&pad.buttons[i].pressed),press=i=>b(i)&&!prev[i];
     const ev=t=>new MouseEvent(t,{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window});
     // 右搖桿：平移地圖
     const mw=document.querySelector('.mapwrap');const ax=pad.axes;
-    if(mw&&(dz(ax[2]||0)||dz(ax[3]||0))){mw.scrollLeft+=dz(ax[2]||0)*14;mw.scrollTop+=dz(ax[3]||0)*14;}
+    if(modalEl){const mb=modalEl.querySelector('.fin-body')||modalEl.querySelector('.mbox');if(mb&&dz(ax[3]||0)){mb.scrollTop+=dz(ax[3]||0)*14;if(navEl&&Math.abs(ax[3])>.5)navT=Date.now();}} // 彈窗：右搖桿捲動內容
+    else if(mw&&(dz(ax[2]||0)||dz(ax[3]||0))){mw.scrollLeft+=dz(ax[2]||0)*14;mw.scrollTop+=dz(ax[3]||0)*14;}
     // L2／R2：縮放（送出與 Ctrl＋滾輪相同的事件）
     const tv=i=>(pad.buttons[i]&&pad.buttons[i].value)||0;
     if(mw&&(tv(6)>.1||tv(7)>.1)&&(!zt||Date.now()-zt>140)){zt=Date.now();mw.dispatchEvent(new WheelEvent('wheel',{ctrlKey:true,deltaY:tv(7)>tv(6)?-100:100,bubbles:true,cancelable:true}));}
@@ -113,7 +136,11 @@
         drag=null;
       }
     }
-    if(press(0)&&el&&!dragStarted&&!drag){el.dispatchEvent(ev('click'));window.TSL_RUMBLE&&TSL_RUMBLE('tap');}
+    if(press(0)&&el&&!dragStarted&&!drag){
+      if(el.tagName==='SELECT'){el.selectedIndex=(el.selectedIndex+1)%el.options.length;el.dispatchEvent(new Event('change',{bubbles:true}));}
+      else if(navEl)el.click();
+      else el.dispatchEvent(ev('click'));
+      window.TSL_RUMBLE&&TSL_RUMBLE('tap');}
     dragStarted=b(0)&&!!drag;
     const modal=!!document.querySelector('#modal:not([hidden])');
     if(press(3)||press(9)){ // △／Options：有彈窗時按彈窗的主要按鈕；沒有彈窗時 △＝火力打擊、Options＝結束階段
@@ -127,7 +154,7 @@
       else clickIf('#ucard:not([hidden]) #ucClose');
     }
     if(press(4)||press(5))tabStep(press(5)?1:-1); // L1／R1：側欄分頁
-    if(press(14)||press(15))unitStep(press(15)?1:-1); // 十字鍵左右：下一個還沒行動的己方單位
+    if(press(14)||press(15)){if(modal)btnStep(press(15)?1:-1);else unitStep(press(15)?1:-1);} // 十字鍵左右：下一個還沒行動的己方單位；彈窗裡＝切換選項
     if(press(12)||press(13))btnStep(press(13)?1:-1); // 十字鍵上下：游標跳到上／下一個按鈕
     if(press(10))clickIf('#btnFs,#fsExit'); // L3：全螢幕
     if(press(11))clickIf('#btnLoc'); // R3：回到台灣
