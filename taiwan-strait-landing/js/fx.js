@@ -455,7 +455,7 @@ function renderInfoSide(){
     const en=effNote(u);if(en.length)o+='<div class="hint effn">數值修正：'+en.join('、')+'</div>';
     const st=unitStatusList(u,h);
     o+='<div class="hint">'+st.join(' · ')+'</div>';
-    o+=fleetPanelHTML(u);o+=hkPanelHTML(u);o+=heloPanelHTML(u);if(h.t==='air'&&h.isl==='TW')o+=afPanelHTML(h.k);
+    o+=fleetPanelHTML(u);o+=hkPanelHTML(u);o+=heloPanelHTML(u);if(u.type==='heli'&&heliB(u.hb))o+=heliPanelHTML(heliB(u.hb));if(h.t==='air'&&h.isl==='TW')o+=afPanelHTML(h.k);
     if(humanTurn()&&allyHuman()&&S.phase==='def'&&u.ally&&u.side==='def'){const ts=tomShooters(u);
       if(ts.length||(u.type==='csg'&&S.units.some(e=>e.grp===u.id&&e.mag&&e.mag.lam>0)))o+='<div class="cvord"><button class="ghost" id="btnTom"'+(ts.length?'':' disabled')+
           '>戰斧巡弋飛彈縱深打擊<small class="pn">（可發射 '+ts.length+' 艘、每次 '+LAM.per+' 枚）</small></button></div><div class="hint">按下後點地圖上的大陸基地；會先警告升級後果。</div>';
@@ -463,7 +463,6 @@ function renderInfoSide(){
     setTimeout(()=>{const bt=document.getElementById('btnTom');if(bt)bt.onclick=()=>{S.sel=u;S.mode=S.mode==='tom'?null:'tom';render();};const bv=document.getElementById('btnVolley'),
         bc=document.getElementById('btnCvw'),bl=document.getElementById('btnCvwL');if(bl)bl.onclick=()=>{S.sel=u;S.mode=S.mode==='cvwL'?null:'cvwL';render();};if(bv)bv.onclick=()=>{S.sel=u;S.mode=S.mode==='volley'?null:'volley';render();};if(bc)bc.onclick=()=>{S.sel=u;S.mode=S.mode==='cvw'?null:'cvw';render();};},0);
     if(matchMedia('(hover:none)').matches)o+='<button class="ghost" id="btnDetail" data-id="'+u.id+'">詳細資料（照片、說明、規則）</button>';
-  } else if(S.baseSel===h.k&&heliAt(h.k)){o+=heliPanelHTML(heliAt(h.k));
   } else if(h.t==='air'&&h.isl==='TW'){const lv=afLevel(h.k);
     o+='<h2 style="color:var(--def)">'+(h.name||'機場')+'</h2>';
     /* 有標題，手機浮動資訊卡才會出現（才點得到出擊按鈕） */o+='<div class="hint">機場：'+(S.owner[h.k]==='atk'?'被攻方占領（無法起降）':afTxt(h.k))+'；每個守方階段搶修好 1 條。守方空軍只能從還能用的機場起飛；整體可用機場能量 '+Math.round(afShare()*100)+'%。</div>'+afPanelHTML(h.k);

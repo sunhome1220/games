@@ -14,8 +14,6 @@ $('#map').addEventListener('click',async e=>{
   if(bE){const b=bE.getAttribute('data-b');
     if(humanTurn()&&S.phase==='atk'&&S.mode==='strike'&&S.fire>0&&baseTargets(b).length){const w=escalationText(b);if(w&&!(await confirmBox(w)))return;strikeBase(b);if(S.fire<=0)S.mode=null;render();return;}
     return;}
-  const hbE=e.target.closest('[data-hbase]'); // 攻擊直升機基地標籤
-  if(hbE){const b=heliB(hbE.getAttribute('data-hbase'));const k=b&&heliBaseK(b);if(k){FARSEL=null;S.sel=null;S.hover=k;S.hoverId=null;S.baseSel=k;S.hlB=b.id;UC.closedKey=null;render();}return;}
   const btE=e.target.closest('[data-base]'); // 基地標籤：直接選機場（就算機場上有部隊）
   if(btE){const k=btE.getAttribute('data-base');FARSEL=null;
     if(humanTurn()&&S.phase==='atk'&&S.mode==='strike'&&S.fire>0&&strikeAirfield(k)){if(S.fire<=0)S.mode=null;render();return;}

@@ -16,14 +16,16 @@ const HELI={
 };
 const HELI_SHIP=['lst','ro','cvy'];
 function heliB(id){return HELI.b.find(b=>b.id===id);}
-// 基地格：離實際位置最近的台灣陸地格
-function heliBaseK(b){
-  if(b.k&&TER[b.k])return b.k;const [c,r]=llToRC(b.lon,b.lat);let h=TER[K(c,r)];
-  if(!h||h.isl!=='TW'||!isLand(h))h=Object.values(TER).filter(x=>x.isl==='TW'&&isLand(x)).sort((a,x)=>hd(a,TER[K(c,r)]||a)-hd(x,TER[K(c,r)]||x))[0];
-  b.k=h?h.k:null;return b.k;
-}
+// 棋子：開局放在旅的駐地（離實際位置最近、還有空位的台灣陸地格）；不移動，從所在格出擊
+const heliUnit=b=>S.units.find(u=>u.type==='heli'&&u.hb===b.id&&alive(u));
+function heliGeoK(b){const [c,r]=llToRC(b.lon,b.lat),h0=TER[K(c,r)];if(h0&&h0.isl==='TW'&&isLand(h0)&&canStack({side:'def',type:'heli'},h0.k))return h0.k;
+  const h=placeNear(K(c,r),x=>x.isl==='TW'&&isLand(x)&&x.t!=='mtn'&&S.owner[x.k]!=='atk');return h?h.k:null;}
+function heliSpawn(){for(const b of HELI.b){const k=heliGeoK(b);if(k)S.units.push(mkUnit('def','heli',k,{hb:b.id}));}}
+function heliBaseK(b){const u=heliUnit(b);return u?K(u.c,u.r):null;}
+// 棋子被火力打擊或地面攻擊打掉 1 步：★停在地面的直升機按比例損失（每步約一半）
+function heliGroundLoss(u,n){const b=heliB(u.hb);if(!b)return;const st=heliSt()[b.id],hp0=Math.max(1,u.hp+n),L=u.hp<=0?st.n:Math.round(st.n*n/hp0);if(L<=0)return;st.n-=L;log(b.n+'基地遭攻擊，地面上的 '+b.ac+' 損失約 '+L+' 架（推估）');}
 function heliSt(){if(!S.heli){S.heli={hf:HELI.hf0};HELI.b.forEach(b=>{S.heli[b.id]={n:b.n0};});}return S.heli;}
-const heliUp=b=>{const k=heliBaseK(b);return !!k&&S.owner[k]!=='atk'&&heliSt()[b.id].n>0;};
+const heliUp=b=>!!heliUnit(b)&&heliSt()[b.id].n>0;
 function heliBudget(b){
   const st=heliSt()[b.id],key=S.turn+S.phase;
   if(!st.bud||st.bud.t!==key)st.bud={t:key,n:heliUp(b)&&S.phase==='def'?takeInt(st.n*b.ready*(HELI.share[S.airCtl||'mid']||.75)/HELI.pk,'heliB:'+b.id):0};
@@ -36,10 +38,12 @@ function heliNearCoast(t){
 }
 const heliDist=(b,t)=>Math.round(kmLL(rcToLL(TER[heliBaseK(b)].c,TER[heliBaseK(b)].r),rcToLL(t.c,t.r)));
 function heliShipT(b){
+  if(!heliUp(b))return [];
   if(b.hf&&(heliSt().hf||0)<1)return [];
   return S.units.filter(e=>e.side==='atk'&&alive(e)&&atSea(e)&&HELI_SHIP.includes(e.type)&&heliNearCoast(e)&&heliDist(b,e)<=HELI.R);
 }
 function heliLandT(b){
+  if(!heliUp(b))return [];
   if(b.hf&&(heliSt().hf||0)<1)return [];
   return S.units.filter(e=>e.side==='atk'&&alive(e)&&!atSea(e)&&!e.ship&&(hexOf(e).isl==='TW'||hexOf(e).isl==='PH')&&heliDist(b,e)<=HELI.R);
 }
@@ -74,18 +78,10 @@ function heliAuto(){
       break;}
   }
 }
-// 地圖標籤（基地格上的小標籤，可點）
-function heliTagsSVG(){
-  if(!S.started)return '';let o='';
-  for(const b of HELI.b){const k=heliBaseK(b);if(!k)continue;const h=TER[k],[x,y0]=cen(h.c,h.r),y=y0-R*.62,fs=8.5*Math.max(.72,SC),w=(b.id.length+2.2)*fs*.62+10,hh=fs+7,dead=!heliUp(b);
-    o+='<g class="btag'+(dead?' lost':'')+'" data-hbase="'+b.id+'"><rect x="'+(x-w/2).toFixed(1)+'" y="'+(y-hh/2).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="3"/><text x="'+x.toFixed(1)+'" y="'+(y+fs*.36).toFixed(1)+'" text-anchor="middle" font-size="'+fs.toFixed(1)+'">🚁'+b.id+'</text></g>';}
-  return o;
-}
-const heliAt=k=>HELI.b.find(b=>heliBaseK(b)===k);
 const HELI_MODE_N={hlS:'攻擊近岸船團',hlL:'攻擊上岸部隊'};
 function heliPanelHTML(b){
   const st=heliSt(),n=heliBudget(b),up=heliUp(b);
-  let o='<h2 style="color:var(--def)">'+b.n+'（'+b.ac+'）</h2><div class="hint">現有約 '+st[b.id].n+' 架'+(up?'；本階段可出擊 '+n+' 批（每批 4 架）':S.owner[heliBaseK(b)]==='atk'?'；基地已被占領，無法出擊':'')+
+  let o='<div class="hint"><b>'+b.n+'（'+b.ac+'）</b>：現有約 '+st[b.id].n+' 架'+(up?'；本階段可出擊 '+n+' 批（每批 4 架）':'；已無法出擊')+
     '；'+(b.hf?'AGM-114L 地獄火 '+Math.round(st.hf)+' 枚（2008 年軍售 1,000 枚）':'地獄火／拖式飛彈庫存未公開，不設上限')+'。作戰半徑約 '+HELI.R+' km，只打離岸 '+HELI.coast+' km 內的船團與上岸部隊；地獄火射程約 8 km，要飛到灘頭附近，會被艦艇防空與戰機擊落（推估）。沒用完的批數在階段結束時由電腦自動出擊。</div>';
   if(humanTurn()&&S.phase==='def'&&S.ctrl.def==='human'&&n>0){const nS=heliShipT(b).length,nL=heliLandT(b).length;
     o+='<div class="cvord"><button class="ghost" id="btnHlS"'+(nS?'':' disabled')+'>攻擊近岸船團<small class="pn">（'+(nS?'可打 '+nS+' 個':'範圍內沒有船團')+'）</small></button><button class="ghost" id="btnHlL"'+(nL?'':' disabled')+'>攻擊上岸部隊<small class="pn">（'+(nL?'可打 '+nL+' 個':'範圍內沒有上岸部隊')+'）</small></button></div>';

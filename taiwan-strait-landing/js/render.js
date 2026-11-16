@@ -505,7 +505,7 @@ function ghostDrop(id){
   document.querySelectorAll('[data-id="'+id+'"]').forEach(e=>{if(!e.closest('#gF'))e.remove();});
 }
 // 棋子色調分三類（攻方紅、守方藍各自三種深淺，海上與陸上共用）：深＝火力打擊（飛彈、火箭砲、潛艦、飛彈艇）、標準＝作戰部隊、淡＝後勤運輸（船團、補給站、運輸船）
-const unitCat=t=>(t==='ssm'||t==='hmr'||t==='mlrs'||t==='hk'||t==='ssn'||t==='psub'||t==='nme'||t==='mdt'||t==='ff')?'f':(t==='cvy'||t==='fob'||t==='lst'||t==='ro')?'l':'m';
+const unitCat=t=>(t==='ssm'||t==='hmr'||t==='heli'||t==='mlrs'||t==='hk'||t==='ssn'||t==='psub'||t==='nme'||t==='mdt'||t==='ff')?'f':(t==='cvy'||t==='fob'||t==='lst'||t==='ro')?'l':'m';
 function unitSVG(u,withSmoke){
   const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy,stacked=sx!==0,T=TYPES[u.type];
   const done=S.started&&u.side===S.phase&&u.acted,sel=S.sel===u||!!(u.boundTo&&S.sel&&S.sel.id===u.boundTo),yy=y-2;
@@ -522,6 +522,7 @@ function unitSVG(u,withSmoke){
   else if(u.type==='lst'||u.type==='ro')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+7)+'h14l-2 2.5h-10z"/><path class="sym" d="M'+(x-5)+' '+(by+7)+'v-2.5h10v2.5"/>';
   else if(u.type==='cvy')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+7)+'h14l-2 2.5h-10z"/><path class="sym" d="M'+(x-4)+' '+(by+7)+'v-3h8v3"/>';
   else if(u.type==='fob')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+8)+'h12M'+(x-4)+' '+(by+8)+'v-5h8v5"/>';
+  else if(u.type==='heli')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+3)+'h14M'+x+' '+(by+3)+'v2M'+(x-4)+' '+(by+7)+'q4 -3 7 0q-3 2.5 -7 0zM'+(x+3)+' '+(by+7)+'h4"/>';
   else if(u.type==='abn')sym=box+X+'<path class="sym" d="M'+(x-5)+' '+(by+bh)+'Q'+x+' '+(by+4)+' '+(x+5)+' '+(by+bh)+'"/>';
   else if(u.type==='amph'||u.type==='mar')sym=box+X+'<path class="sym" d="M'+(bx+1)+' '+(by+bh-1.5)+'q2.5 -2 5 0t5 0t5 0"/>';
   else sym=box+X;
@@ -543,7 +544,7 @@ function unitSVG(u,withSmoke){
     '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
     '<rect class="body '+u.side+' c'+unitCat(u.type)+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="23" rx="3"/>'+
     '<rect class="uhi" x="'+(x-13)+'" y="'+(y-13)+'" width="26" height="3" rx="1.5"/>'+sym+
-    '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+(u.fl?u.fl.s:T.s)+'</text>'+pips+((()=>{ // 運輸船載著什麼：只有攻方自己（或觀戰）看得到，格式「兵種簡稱＋剩餘步數」；守方玩家只能看到船
+    '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+(u.fl?u.fl.s:u.type==='heli'?u.hb+' 旅':T.s)+'</text>'+pips+((()=>{ // 運輸船載著什麼：只有攻方自己（或觀戰）看得到，格式「兵種簡稱＋剩餘步數」；守方玩家只能看到船
       const b=u.boundTo&&S.units.find(z=>z.id===u.boundTo);if(!b)return '';
       if(S.ctrl&&S.ctrl.def==='human'&&S.ctrl.atk!=='human'&&!S.sim&&!S.video)return '';
       const t=TYPES[b.type].s+b.hp,w=Math.max(14,t.length*6.4+4);
@@ -715,7 +716,7 @@ function renderMap(){
   o+=wxMapSVG();
   o+=ghostFleetsSVG();
   o+=baseMarkersSVG();
-  o+=baseTagsSVG();o+=heliTagsSVG();
+  o+=baseTagsSVG();
   o+=mapMarksSVG();
   o+=mapTargetsSVG();
   o+=heloRingSVG();
