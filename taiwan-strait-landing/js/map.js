@@ -129,6 +129,7 @@ const MAINC={}; // 舊版大陸座標 → 新版（真實經緯度）大陸地�
 const FK=k=>{if(MAINC[k])return MAINC[k];const [c,r]=k.split(',').map(Number);return K(FG*c+(r&1)*FG/2,FG*r);};
 const FC=(c,r)=>[FG*c+(r&1)*FG/2,FG*r];
 const cc=(c,r)=>{const [a,b]=FC(c,r);return center(a,b);};
+const ZOC_KM=10; // 控制區：敵軍進入單位 10 km 內（相鄰格）要停下（使用者 2026-11-16 選定；原本跟著 ADJ_KM 用 20 km，敵軍永遠只能停在第 2 圈）
 const ADJ_KM=20; // 地面戰鬥的「相鄰」（攻擊距離、控制區）：20 km 內＝旅的直射武器加旅屬砲兵（155 mm 約 15～24 km）能交戰的距離（使用者 2026-11-14 選定；原本沿用舊粗格的 40 km）
 function ring2(h){ // 距離 ADJ_KM 內的格（相當於舊版的「相鄰」）
   if(h.n2)return h.n2;const seen=new Set([h.k]),out=[];let fr=[h];

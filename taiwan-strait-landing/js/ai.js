@@ -18,8 +18,10 @@ async function aiTryAttack(u,thr,focus){
   ts=ts.filter(t=>hexOf(t).isl!=='KM'); // 金門、馬祖已無駐軍，雙方都無視
   if(!ts.length)return false;
   let best=null,bs=-99,braw=-99;
+  const far=ts.filter(t=>isArtShot(u,t));ts=ts.filter(t=>!isArtShot(u,t)); // 相鄰的先考慮突擊；都不划算才砲擊 20 km 內的目標
   for(const t of ts){const e=est(u,t),f=focus&&focus.includes(hexOf(t).k),adj=e+(f?3:0);if(adj>bs){bs=adj;best=t;braw=e+(f?2:0);}}
-  if(braw>=thr){attack(u,best);render();await sleep(380);return true;}
+  if(best&&braw>=thr){attack(u,best);render();await sleep(380);return true;}
+  if(far.length){const t=pickBest(far,x=>artP(u,x)*(tgtVal(x)+1)+(TYPES[x.type].hp-x.hp)*.3);artFire(u,t);render();await sleep(300);return true;}
   return false;
 }
 function enemyAdj(k,side){const h=TER[k],R=ADJ_N();return S.units.reduce((a,e)=>{if(e.side===side||!canHitSub(e))return a;const d=hd(h,hexOf(e));return a+(d>=1&&d<=R?1:0);},0);} // 等同 ring2 內的敵軍數
@@ -377,7 +379,7 @@ async function ffSortie(m){ // 艦艇出港，保持在飛彈射程（約 6 格�
 }
 async function aiDef(){
   await aiCnStrikes();
-  afAuto();render(); // 守方空軍各機場出擊
+  afAuto();heliAuto();render(); // 守方空軍各機場出擊、攻擊直升機
   if(shelterNeeded('def')&&!(S.shelterDone&&S.shelterDone.def===S.turn)){S.shelterDone=S.shelterDone||{};S.shelterDone.def=S.turn;shelterOrder('def');}
   for(const sb of S.units.filter(u=>u.side==='def'&&u.type==='hk')){if(S.over)return;await subTurn(sb);}
   let vol=0;const MS=(S.intent||{}).msl;let salvoT=null;const scoot=[];

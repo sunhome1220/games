@@ -14,6 +14,8 @@ $('#map').addEventListener('click',async e=>{
   if(bE){const b=bE.getAttribute('data-b');
     if(humanTurn()&&S.phase==='atk'&&S.mode==='strike'&&S.fire>0&&baseTargets(b).length){const w=escalationText(b);if(w&&!(await confirmBox(w)))return;strikeBase(b);if(S.fire<=0)S.mode=null;render();return;}
     return;}
+  const hbE=e.target.closest('[data-hbase]'); // 攻擊直升機基地標籤
+  if(hbE){const b=heliB(hbE.getAttribute('data-hbase'));const k=b&&heliBaseK(b);if(k){FARSEL=null;S.sel=null;S.hover=k;S.hoverId=null;S.baseSel=k;S.hlB=b.id;UC.closedKey=null;render();}return;}
   const btE=e.target.closest('[data-base]'); // 基地標籤：直接選機場（就算機場上有部隊）
   if(btE){const k=btE.getAttribute('data-base');FARSEL=null;
     if(humanTurn()&&S.phase==='atk'&&S.mode==='strike'&&S.fire>0&&strikeAirfield(k)){if(S.fire<=0)S.mode=null;render();return;}
@@ -26,7 +28,8 @@ $('#map').addEventListener('click',async e=>{
   let u=hitU||unitAtVis(k);
   if(u&&u.boundTo&&u.side===S.phase&&!(S.sel&&S.sel.side!==u.side)){const b=S.units.find(y=>y.id===u.boundTo);if(b&&alive(b))u=b;} // 點自己的運輸船＝選取船上的旅（旅不畫在海上）
   if(S.mode==='tom')S.mode=null;
-  if((S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&afClick(u))return; // 守方空軍：點目標
+  if((S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&afClick(u))return;
+  if((S.mode==='hlS'||S.mode==='hlL')&&heliClick(u))return; // 攻擊直升機：點目標 // 守方空軍：點目標
   if(S.mode==='volley'||S.mode==='cvw'||S.mode==='cvwL'){ // 航艦命令：點選射程內的目標
     const cv=S.sel&&cvOwn(S.sel)?S.sel:null;
     if(cv&&S.mode==='cvwL'){cvwManualLand(cv,{u:u&&u.side!==cv.side?u:null,af:k,port:k});}

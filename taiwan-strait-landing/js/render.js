@@ -642,6 +642,7 @@ function mapUnitsSVG(){let o='',smk='';RNG_LEG=[];
    if(S.started&&RNG_ALL)S.units.filter(x=>(x.type==='cv'||x.type==='csg'||x.type==='ddh')&&alive(x)&&x!==iu).forEach(x=>{o+=rangeRingsSVG(x,true);});
    if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)||iu.fl||iu.type==='dd')&&!subHidden(iu))o+=rangeRingsSVG(iu,false);
    if(S.started){const bk=(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK?S.afK:!iu&&S.baseSel&&S.baseSel===S.hover?S.baseSel:null;if(bk)o+=baseRingsSVG(bk);}
+   if(S.started)o+=heliRangeSVG();
    rngLegSync();}
   S.units.filter(u=>!subHidden(u)&&!(u.ship&&atSea(u))&&!u.dropHide).concat([...GHOSTS.values()]).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{const p=unitSVG(u,true).split('\u0001');o+=p[0];if(p[1])smk+=p[1];});
   o+=smk;
@@ -671,9 +672,10 @@ function targetRings(){
     if(S.mode==='strike'){if(S.phase==='atk')rings=S.units.filter(u=>u.side==='def'&&strikeable(u)).map(u=>[u,'strike']);else if(S.phase==='def'&&S.dfire>0&&lrOK())rings=stgTargets().map(u=>[u,'strike']);}
     else if(S.mode==='volley'&&S.sel&&cvOwn(S.sel))rings=volleyTargets(S.sel).map(u=>[u,'strike']);
     else if(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')rings=afRings().map(u=>[u,'strike']);
+    else if(S.mode==='hlS'||S.mode==='hlL')rings=heliRings().map(u=>[u,'strike']);
     else if(S.mode==='cvw'&&S.sel&&cvOwn(S.sel)){const I=cvwManualInfo(S.sel);rings=I&&I.n>0?I.foes.map(u=>[u,'strike']):[];}
     else if(S.mode==='cvwL'&&S.sel&&cvOwn(S.sel)){const I=cvwManualLandInfo(S.sel);rings=I&&I.n>0?I.tg.filter(x=>x.u).map(x=>[x.u,'strike']):[];}
-    else if(S.sel&&alive(S.sel)&&S.sel.side===S.phase)rings=targets(S.sel).map(u=>[u,'']);
+    else if(S.sel&&alive(S.sel)&&S.sel.side===S.phase)rings=targets(S.sel).map(u=>[u,isGndAtk(S.sel)&&isArtShot(S.sel,u)?'art':'']);
   return rings.filter(([u])=>!subHidden(u)&&!(u.ship&&atSea(u))); // 地圖上沒畫出來的單位（船上的旅、隱蔽的潛艦）不畫圈
 }
 function mapTargetsSVG(){let o='';
@@ -713,7 +715,7 @@ function renderMap(){
   o+=wxMapSVG();
   o+=ghostFleetsSVG();
   o+=baseMarkersSVG();
-  o+=baseTagsSVG();
+  o+=baseTagsSVG();o+=heliTagsSVG();
   o+=mapMarksSVG();
   o+=mapTargetsSVG();
   o+=heloRingSVG();
