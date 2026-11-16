@@ -53,6 +53,12 @@ function rangeRingsSVG(u,lite){ // u：航艦或護航艦；lite＝一鍵全開�
     if(c){if(!lite)ring(u.c,u.r,c.w.r,'r','艦載機作戰半徑 '+kmOf(c.w.r)+' km');
       if((u.wmag||0)>0)ring(u.c,u.r,c.w.r+c.w.asmR,'d','對艦打擊距離 '+kmOf(c.w.r+c.w.asmR)+' km（'+c.nm+'）');}
     if(lite){const [x,y]=rangeTop(u.c,u.r,Math.max(...S.units.filter(e=>e.grp===u.id&&isEsc(e)&&alive(e)).map(e=>SHIPW[e.type].adR),kmH(40)));lbl.push('<text class="rrl '+sd+'" x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle">防空傘</text>');}
+  }else if(u.fl){ // 台灣艦隊：艦隊防空與艦射反艦飛彈（取艦隊中最遠的射程）
+    const A=fleetAgg(u),W=u.fl.m.filter(([k,n])=>n>0&&RFW[k].asm>0&&RFW[k].asmR===A.asmR).map(([k])=>RFW[k].w)[0]||'反艦飛彈';
+    if(A.adR&&(!u.mag||u.mag.ad>0))ring(u.c,u.r,A.adR,'ad','艦隊防空 '+kmOf(A.adR)+' km');
+    if(A.asmR&&(!u.mag||u.mag.asm>0))ring(u.c,u.r,A.asmR,'r',W+' '+kmOf(A.asmR)+' km');
+  }else if(u.type==='dd'){ // 共軍護航艦棋子（052D＋054A）：防空
+    ring(u.c,u.r,DDW.adR,'ad','防空 '+kmOf(DDW.adR)+' km');
   }else if(isEsc(u)){
     const W=SHIPW[u.type];if(u.mag&&u.mag.ad>0)ring(u.c,u.r,W.adR,'ad','防空 '+kmOf(W.adR)+' km');
     if(u.mag&&u.mag.asm>0)ring(u.c,u.r,W.asmR,'r',W.asmN+' '+kmOf(W.asmR)+' km');
@@ -631,7 +637,7 @@ function mapOverlaySVG(){let o='';
 function mapUnitsSVG(){let o='';RNG_LEG=[];
   {const iu=S.sel&&alive(S.sel)?S.sel:(S.hoverId?S.units.find(x=>x.id===S.hoverId):null); // 射程圈：一鍵全開時畫雙方所有航艦艦隊；點選（或游標停在）艦艇時畫該艦
    if(S.started&&RNG_ALL)S.units.filter(x=>(x.type==='cv'||x.type==='csg'||x.type==='ddh')&&alive(x)&&x!==iu).forEach(x=>{o+=rangeRingsSVG(x,true);});
-   if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)))o+=rangeRingsSVG(iu,false);
+   if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)||iu.fl||iu.type==='dd')&&!subHidden(iu))o+=rangeRingsSVG(iu,false);
    if(S.started){const bk=(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK?S.afK:!iu&&S.baseSel&&S.baseSel===S.hover?S.baseSel:null;if(bk)o+=baseRingsSVG(bk);}
    rngLegSync();}
   S.units.filter(u=>!subHidden(u)&&!(u.ship&&atSea(u))&&!u.dropHide).concat([...GHOSTS.values()]).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{o+=unitSVG(u);});
