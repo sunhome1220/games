@@ -127,7 +127,7 @@ function pickStrike(){
   let best=null,bs=-1;
   for(const d of S.units){
     if(d.side!=='def'||!canHitSub(d))continue;const h=hexOf(d);
-    if(isGnd(d)&&gFound(d)<=0)continue; // 地面旅：本階段沒找到任何營
+    if(isLocG(d)&&gFound(d)<=0)continue; // 地面旅：本階段沒找到任何營
     if(isLch(d)&&lchFound(d,'bm')<=0)continue; // 發射車：本階段偵察沒找到、或找到的都打過了——看不到的目標排不進打擊清單 // 海上的潛艦打不到；港內補給中的潛艦是固定目標
     const subBonus=d.type==='hk'?4:0;
     if(h.isl==='KM')continue; // 金馬無駐軍，雙方無視
