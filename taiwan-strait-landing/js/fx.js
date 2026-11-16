@@ -420,11 +420,11 @@ function syncLegend(first){const d=$('#lgd');if(!d)return;const mob=matchMedia('
 syncLegend(true);addEventListener('resize',()=>syncLegend(false));
 function placeLoc(){ // 「回到台灣」按鈕：貼在地圖目前看得到的右下角（地圖比畫面高時也不會被擠到畫面外）
   const b=$('#btnLoc'),w=document.querySelector('.mapwrap');if(!b||!w)return;
-  const r=w.getBoundingClientRect(),bar=document.querySelector('.mbar'),lim=bar&&getComputedStyle(bar).display!=='none'?bar.getBoundingClientRect().top:innerHeight; // fixed 元素的 offsetParent 是 null，不能用來判斷是否顯示
+  const r=w.getBoundingClientRect(),bar=document.querySelector('.mbar'),br=bar&&getComputedStyle(bar).display!=='none'?bar.getBoundingClientRect():null,side=br&&br.width<innerWidth*.6,lim=br&&!side?br.top:innerHeight; // 手機橫向時操作列在右側（side），不限制高度、改限制右緣 // fixed 元素的 offsetParent 是 null，不能用來判斷是否顯示
   const bottom=Math.min(r.bottom,lim,innerHeight),vis=!document.body.classList.contains('fin-open')&&r.height>0&&bottom-Math.max(r.top,0)>110&&S.started;
   const lg=$('#rngLeg');if(lg){const on=vis&&lg.childElementCount>0;lg.style.display=on?'block':'none';if(on){lg.style.left=(Math.max(r.left,0)+8)+'px';lg.style.top=(Math.max(r.top,0)+8)+'px';lg.style.maxWidth=Math.max(160,Math.min(r.right,innerWidth)-Math.max(r.left,0)-70)+'px';}}
   b.style.display=vis?'flex':'none';if(!vis)return;
-  const left=Math.min(r.right,innerWidth)-12-44,co=document.getElementById('coach');
+  const left=Math.min(r.right,side?br.left:innerWidth,innerWidth)-12-44,co=document.getElementById('coach');
   let bt=bottom;
   if(co&&!co.hidden&&getComputedStyle(co).display!=='none'){ // 新手引導訊息和按鈕重疊時，按鈕移到訊息上方
     const cr=co.getBoundingClientRect();
@@ -572,7 +572,7 @@ function ucPlace(){
     cd.style.left=Math.max(4,Math.min(innerWidth-w-4,e.clientX-d.dx))+'px';cd.style.top=Math.max(4,Math.min(innerHeight-h-4,e.clientY-d.dy))+'px';});
   const end=()=>{if(!d)return;if(d.moved){try{localStorage.setItem('tsl-ucard-pos',JSON.stringify({fx:parseFloat(cd.style.left)/innerWidth,fy:parseFloat(cd.style.top)/innerHeight}));}catch(e){}}d=null;};
   cd.addEventListener('pointerup',end);cd.addEventListener('pointercancel',end);
-  $('#ucClose').onclick=()=>{UC.closedKey=UC.key;cd.hidden=true;};
+  $('#ucClose').onclick=()=>{UC.closedKey=UC.key;cd.hidden=true;if(S&&S.baseSel){S.baseSel=null;render();}};
   $('#ucMin').onclick=()=>ucSetMin(true);$('#ucChip').onclick=()=>ucSetMin(false);
   cd.addEventListener('dblclick',()=>{try{localStorage.removeItem('tsl-ucard-pos');}catch(e){}ucPlace();}); // 連點兩下回到右下角
   addEventListener('resize',()=>{if(!cd.hidden)ucPlace();else syncUCard();});

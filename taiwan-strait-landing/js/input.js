@@ -65,5 +65,5 @@ $('#map').addEventListener('click',async e=>{
   S.sel=null;render();
 });
 let LAST_TOUCH=0;document.addEventListener('touchstart',()=>{LAST_TOUCH=Date.now();},{passive:true,capture:true}); // 手機點一下會先產生模擬的滑鼠移入事件：跳過，避免資訊卡先蓋到手指下，讓這次點擊落在卡片上而不是地圖
-$('#map').addEventListener('mouseover',e=>{if(Date.now()-LAST_TOUCH<1000)return;const el=e.target.closest('[data-k]');if(!el||S.sel)return;const k=el.getAttribute('data-k'),
+$('#map').addEventListener('mouseover',e=>{if(Date.now()-LAST_TOUCH<1000)return;const el=e.target.closest('[data-k]');if(!el||S.sel||S.baseSel)return;const k=el.getAttribute('data-k'), // 已點選基地（S.baseSel）：資訊卡固定住，游標移開不會換成別格
     ue=e.target.closest('[data-id]'),hid=ue?+ue.dataset.id:null;if(k!==S.hover||hid!==S.hoverId){S.hover=k;S.hoverId=hid;if(FARSEL)FARSEL=null;renderInfo();}});

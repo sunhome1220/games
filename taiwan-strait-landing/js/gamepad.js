@@ -1,4 +1,6 @@
-/* 手把原型（Gamepad API）：左搖桿移動游標、✕＝點選、△＝火力打擊、Options＝結束階段、○＝取消。
+/* 手把（Gamepad API）：左搖桿移動游標、✕＝點選、○＝取消、△＝火力打擊、□＝電腦代打、Options＝結束階段（有彈窗時 △／Options＝彈窗的主要按鈕）、
+   十字鍵 ←→＝切換到下一個還沒行動的己方單位、↑↓＝游標跳到資訊卡的上／下一個按鈕（之後左搖桿上下也能切換，左右離開）；
+   彈窗開著時游標自動吸在選項上，左搖桿或十字鍵四個方向＝上／下一個選項（像 Tab 與方向鍵），右搖桿＝捲動彈窗內容；L1／R1＝切換側欄分頁、L3＝全螢幕、R3＝回到台灣、Share＝按鍵說明。
    只在偵測到手把時啟動；滑鼠與觸控不受影響。DualSense 在 Chrome 用標準對應（0=✕ 1=○ 3=△ 9=Options）。 */
 (function(){
   if(!navigator.getGamepads)return;
@@ -30,14 +32,97 @@
     for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);pts.push(toS(m,px+H.R*Math.cos(a),py+H.R*Math.sin(a)).map(v=>v.toFixed(1)).join(','));}
     hp.setAttribute('points',pts.join(' '));}
   let x=innerWidth/2,y=innerHeight/2,prev={},lastEl=null,running=false,on=false,drag=null,dragStarted=false,zt=0;
+  // ---- 快速鍵：直接按到常用的介面按鈕 ----
+  const shown=e=>!!e&&!e.disabled&&!e.hidden&&e.getClientRects().length>0;
+  const clickIf=(sel,any)=>{ // 依序找第一個看得到的按鈕來按；any＝都看不到時（例如在別的分頁裡），仍按第一個可用的
+    const es=sel.split(',').map(s=>document.querySelector(s.trim())).filter(e=>e&&!e.disabled&&!e.hidden),e=es.find(shown)||(any?es[0]:null);
+    if(!e)return false;
+    e.click();window.TSL_RUMBLE&&TSL_RUMBLE('tap');return true;};
+  const PRIMARY='#evRoll,#evGo,#itGo,#evOk,#cfY,#modal .mbox button:not(.ghost):not(.opt):not(.mnew)';
+  // 按鈕導覽：游標「吸」在某個按鈕上（navEl），像 Tab／方向鍵一樣在選項之間跳；彈窗開著時一律用這個模式，資訊卡則用十字鍵上下進入
+  let navEl=null,navT=0,navN=0,lastBase=null;
+  const setupOn=()=>typeof S!=='undefined'&&S&&!S.started&&!document.body.classList.contains('playing')&&!!document.querySelector('#wzBody')&&document.querySelector('#wzBody').getClientRects().length>0; // 作戰設定頁（開始鈕在看完每一頁前是停用的，所以看設定內容區）
+  const NAVSEL='button:not(.mnew),input,select,summary';
+  const navList=()=>{const m=document.querySelector('#modal:not([hidden])');
+    if(m)return [...m.querySelectorAll(NAVSEL)].filter(shown);
+    if(setupOn())return [...document.querySelectorAll('#wzBody button,#wzPrev,#wzNext,#btnStart,#btnDefault')].filter(shown);
+    for(const sel of ['.cpb button','#ucard:not([hidden]) #ucBody button','#info button']){ // 打擊確認列 → 資訊卡 → 側欄資訊卡；只取第一組有按鈕的
+      const l=[...document.querySelectorAll(sel)].filter(shown);if(l.length)return l;}
+    return [];};
+  const navDefault=()=>{const l=navList();return l.find(e=>e.classList.contains('on')&&e.classList.contains('opt'))||l.find(e=>e.classList.contains('opt'))||l.find(e=>e.matches(PRIMARY))||l[0]||null;};
+  const toEl=e=>{navEl=e;try{e.scrollIntoView({block:'nearest',inline:'nearest'});}catch(_){}try{e.focus({preventScroll:true});}catch(_){}const r=e.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;hc=null;};
+  function tabStep(d){const bs=[...document.querySelectorAll('#sidetabs button')].filter(shown);if(!bs.length)return;
+    const i=bs.findIndex(e=>e.classList.contains('on')),n=bs[((i<0?0:i)+d+bs.length)%bs.length];n.click();toEl(n);window.TSL_RUMBLE&&TSL_RUMBLE('step');}
+  // 依方向找下一個按鈕：(vx,vy)＝推的方向。先找該方向上最近的按鈕（橫向排列的選項往下會跳到下一列），找不到再依清單順序
+  function dirStep(vx,vy){
+    const bs=navList();if(!bs.length)return;
+    const cur=navEl&&bs.includes(navEl)?navEl:null;
+    if(!cur){toEl(bs[vx+vy>0?0:bs.length-1]);return;}
+    const a=cur.getBoundingClientRect(),ax=a.left+a.width/2,ay=a.top+a.height/2;let best=null,bd=1e9;
+    for(const e of bs){if(e===cur)continue;const r=e.getBoundingClientRect(),dx=r.left+r.width/2-ax,dy=r.top+r.height/2-ay;
+      const along=dx*vx+dy*vy,perp=Math.abs(dx*vy-dy*vx);
+      if(along<=4||perp>along*2.2)continue; // 只看推的方向前方（約 ±65°）
+      const sc=along+perp*2.5;if(sc<bd){bd=sc;best=e;}}
+    if(best){toEl(best);window.TSL_RUMBLE&&TSL_RUMBLE('step');}
+    else btnStep(vx+vy>0?1:-1);
+  }
+  function btnStep(d){ // 彈窗開著：彈窗裡的按鈕；否則：資訊卡、打擊確認列與指揮面板裡的按鈕
+    const bs=navList();if(!bs.length)return;
+    const el=document.elementFromPoint(x,y),cur=navEl&&bs.includes(navEl)?navEl:el&&el.closest(NAVSEL),i=bs.indexOf(cur);
+    toEl(bs[i<0?(d>0?0:bs.length-1):(i+d+bs.length)%bs.length]);window.TSL_RUMBLE&&TSL_RUMBLE('step');}
+  // 打擊、出擊、齊射等選目標的模式：十字鍵左右在橘圈目標之間切換（地圖捲過去、游標停在目標上），✕ 確認
+  const TMODES=['strike','volley','afS','afL','afC','cvw','cvwL'];let tgtI=-1,tgtPick=null; // tgtPick＝{id,x,y}：十字鍵選定的目標，✕ 會點這個棋子（同格疊了好幾個單位時不會點錯）
+  function targetStep(d){
+    const ts=targetRings().map(r=>r[0]).filter(u=>document.querySelector('#map .u[data-id="'+u.id+'"]'));if(!ts.length)return;
+    tgtI=((tgtI+d)%ts.length+ts.length)%ts.length;const u=ts[tgtI];navEl=null;
+    centerOn(document.querySelector('#map .u[data-id="'+u.id+'"]'));
+    requestAnimationFrame(()=>{const e=document.querySelector('#map .u[data-id="'+u.id+'"]');if(!e)return;const q=e.getBoundingClientRect();x=q.left+q.width/2;y=q.top+q.height/2;hc=null;
+      tgtPick={id:u.id,x,y,k:u.c+','+u.r};lastEl=document.elementFromPoint(x,y);
+      if(!S.sel){S.hover=u.c+','+u.r;S.hoverId=u.id;if(typeof renderInfo==='function')renderInfo();} // 資訊卡顯示這個目標（不是同格最上面的棋子）
+      window.TSL_RUMBLE&&TSL_RUMBLE('step');
+      if(typeof toast==='function')toast(TX('目標')+' '+(tgtI+1)+'/'+ts.length+'：'+(typeof uname==='function'?uname(u):'')+TX('（✕ 確認）'),1600);});
+  }
+  // 把棋子捲到地圖可見範圍的正中央（地圖框與整頁都會捲；手機上地圖比畫面高時也看得到，不會被浮動資訊卡蓋住）
+  function centerOn(g){if(!g)return;const w=document.querySelector('.mapwrap'),r=g.getBoundingClientRect(),b=w.getBoundingClientRect();
+    w.scrollLeft+=r.left+r.width/2-(b.left+b.width/2);w.scrollTop+=r.top+r.height/2-(b.top+b.height/2);
+    try{g.scrollIntoView({block:'center',inline:'nearest'});}catch(_){}}
+  let unitI=-1;
+  function unitStep(d){ // 還沒移動也還沒行動的己方單位：把地圖捲到它、游標移過去並點選
+    if(typeof S==='undefined'||!S||!S.started||S.over||document.querySelector('#modal:not([hidden])'))return;
+    if(typeof humanTurn==='function'&&!humanTurn())return;
+    const us=S.units.filter(u=>u.side===S.phase&&!u.acted&&!u.moved&&document.querySelector('#map .u[data-id="'+u.id+'"]'));if(!us.length)return;
+    unitI=((unitI+d)%us.length+us.length)%us.length;
+    const w=document.querySelector('.mapwrap'),g=document.querySelector('#map .u[data-id="'+us[unitI].id+'"]'),r=g.getBoundingClientRect(),b=w.getBoundingClientRect();
+    navEl=null;centerOn(g);
+    requestAnimationFrame(()=>{const e=document.querySelector('#map .u[data-id="'+us[unitI].id+'"]');if(!e)return;const q=e.getBoundingClientRect();x=q.left+q.width/2;y=q.top+q.height/2;hc=null;
+      e.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window}));window.TSL_RUMBLE&&TSL_RUMBLE('step');});
+  }
   const pickPad=()=>{const ps=navigator.getGamepads?navigator.getGamepads():[];for(const p of ps)if(p&&p.connected)return p;return null;};
   const dz=v=>Math.abs(v)<.2?0:v;
   function frame(){
     const pad=pickPad();
     if(!pad){on=false;cur.hidden=true;hx.style.display='none';running=false;document.body.classList.remove('gp');return;}
     if(!on){on=true;cur.hidden=false;x=innerWidth/2;y=innerHeight/2;document.body.classList.add('gp');}
-    const lx=dz(pad.axes[0]||0),ly=dz(pad.axes[1]||0),vis=document.body.classList.contains('playing')||!!document.querySelector('#modal:not([hidden])');
-    const hh=vis?hexAtCursor():null;
+    const lx=dz(pad.axes[0]||0),ly=dz(pad.axes[1]||0),vis=document.body.classList.contains('playing')||!!document.querySelector('#modal:not([hidden])')||setupOn();
+    // 按鈕導覽模式：彈窗開著（自動吸到目前選項或第一個選項），或已用十字鍵跳到資訊卡的按鈕上
+    const modalEl=document.querySelector('#modal:not([hidden])');
+    if(navEl&&(!shown(navEl)||(!!modalEl)!==!!navEl.closest('#modal')||(!modalEl&&!navEl.closest('.ucard,.cpb,#info')&&!setupOn())))navEl=null;
+    if(modalEl&&!navEl){const d0=navDefault();if(d0)toEl(d0);}
+    const setup=!modalEl&&setupOn();
+    if(setup&&!navEl){const l=navList(),d0=l.find(e=>e.classList.contains('on'))||l[0];if(d0)toEl(d0);} // 作戰設定頁：游標吸在選項上
+    { // 剛點選基地（出擊卡）：游標直接跳到卡片的第一個按鈕，搖桿上下選、✕ 按下、左右推回到地圖
+      const bs=typeof S!=='undefined'&&S?S.baseSel||null:null;
+      if(bs!==lastBase){lastBase=bs;if(bs&&!modalEl){const l=navList();if(l.length&&l[0].closest('#ucard'))toEl(l[0]);}}
+    }
+    if(navEl){
+      const sy=Math.abs(ly)>.5?(ly>0?1:-1):0,sx=Math.abs(lx)>.5?(lx>0?1:-1):0,d=sy||(modalEl||setup?sx:0);
+      if(d){const now=Date.now();if(!navT||now-navT>(navN===1?320:170)){navT=now;navN++;if(modalEl||setup){const ax=Math.abs(lx)>Math.abs(ly);dirStep(ax?sx:0,ax?0:sy);}else btnStep(d);}}
+      else{navT=0;navN=0;}
+      if(!modalEl&&!setup&&sx&&!sy)navEl=null; // 資訊卡：往左右推就離開按鈕，回到地圖游標
+    }
+    if(navEl){const r=navEl.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;} // 內容捲動時游標跟著按鈕
+    const hh=vis&&!navEl?hexAtCursor():null;
+    if(tgtPick&&Math.hypot(lx,ly)>.5)tgtPick=null; // 推了搖桿：不再是十字鍵選定的目標
     if(hh){ // 六角格模式：游標固定在格子中心；推搖桿跳到該方向最接近的相鄰格（按住時連續跳）
       const H=window.TSL_HEX,m=hh.m;let c=hh.c,r=hh.r;
       if(Math.hypot(lx,ly)>.5){const now=Date.now();
@@ -54,20 +139,24 @@
       hexOn=hc!==null;
     }else{
       hexOn=false;hc=null;stepT=0;stepN=0;
-      x=Math.max(0,Math.min(innerWidth-1,x+lx*9));
-      y=Math.max(0,Math.min(innerHeight-1,y+ly*9));
+      if(!navEl){
+        x=Math.max(0,Math.min(innerWidth-1,x+lx*9));
+        y=Math.max(0,Math.min(innerHeight-1,y+ly*9));
+      }
     }
     cur.style.left=x+'px';cur.style.top=y+'px';
     cur.style.display=vis&&!hexOn?'':'none';
     cur.hidden=cur.style.display==='none';
     hx.style.display=vis&&hexOn?'':'none';
-    const el=hexOn?(mapEl(x,y)||document.elementFromPoint(x,y)):document.elementFromPoint(x,y); // 六角格模式：點的是地圖上那一格（不是蓋在上面的卡片）
-    if(el&&el!==lastEl){lastEl=el;el.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:x,clientY:y}));}
+    const el=navEl||(hexOn?(mapEl(x,y)||document.elementFromPoint(x,y)):document.elementFromPoint(x,y)); // 六角格模式：點的是地圖上那一格（不是蓋在上面的卡片）
+    const onPick=tgtPick&&(Math.hypot(x-tgtPick.x,y-tgtPick.y)<6||(hh&&hh.c+','+hh.r===tgtPick.k));
+    if(el&&el!==lastEl&&!onPick){lastEl=el;el.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:x,clientY:y}));}
     const b=i=>!!(pad.buttons[i]&&pad.buttons[i].pressed),press=i=>b(i)&&!prev[i];
     const ev=t=>new MouseEvent(t,{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window});
     // 右搖桿：平移地圖
     const mw=document.querySelector('.mapwrap');const ax=pad.axes;
-    if(mw&&(dz(ax[2]||0)||dz(ax[3]||0))){mw.scrollLeft+=dz(ax[2]||0)*14;mw.scrollTop+=dz(ax[3]||0)*14;}
+    if(modalEl){const mb=modalEl.querySelector('.fin-body')||modalEl.querySelector('.mbox');if(mb&&dz(ax[3]||0)){mb.scrollTop+=dz(ax[3]||0)*14;if(navEl&&Math.abs(ax[3])>.5)navT=Date.now();}} // 彈窗：右搖桿捲動內容
+    else if(mw&&(dz(ax[2]||0)||dz(ax[3]||0))){mw.scrollLeft+=dz(ax[2]||0)*14;mw.scrollTop+=dz(ax[3]||0)*14;}
     // L2／R2：縮放（送出與 Ctrl＋滾輪相同的事件）
     const tv=i=>(pad.buttons[i]&&pad.buttons[i].value)||0;
     if(mw&&(tv(6)>.1||tv(7)>.1)&&(!zt||Date.now()-zt>140)){zt=Date.now();mw.dispatchEvent(new WheelEvent('wheel',{ctrlKey:true,deltaY:tv(7)>tv(6)?-100:100,bubbles:true,cancelable:true}));}
@@ -86,12 +175,36 @@
         drag=null;
       }
     }
-    if(press(0)&&el&&!dragStarted&&!drag){el.dispatchEvent(ev('click'));window.TSL_RUMBLE&&TSL_RUMBLE('tap');}
+    if(press(0)&&el&&!dragStarted&&!drag){
+      if(el.tagName==='SELECT'){el.selectedIndex=(el.selectedIndex+1)%el.options.length;el.dispatchEvent(new Event('change',{bubbles:true}));}
+      else if(navEl){el.click();if(!modalEl&&!setup)navEl=null;}
+      else if(tgtPick&&(Math.hypot(x-tgtPick.x,y-tgtPick.y)<6||(hh&&hh.c+','+hh.r===tgtPick.k))&&TMODES.includes(S&&S.mode)&&document.querySelector('#map .u[data-id="'+tgtPick.id+'"]')){
+        const g=document.querySelector('#map .u[data-id="'+tgtPick.id+'"]'),t=g.querySelector('.body')||g;tgtPick=null;
+        t.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window}));} // 資訊卡的按鈕按下後回到地圖游標（例如接著要在地圖上選目標）
+      else el.dispatchEvent(ev('click'));
+      window.TSL_RUMBLE&&TSL_RUMBLE('tap');}
     dragStarted=b(0)&&!!drag;
-    if(press(3)){const s=document.querySelector('#btnStrike');if(s&&!s.disabled&&!s.hidden)s.click();}
-    if(press(9)){const e=document.querySelector('#btnEnd');if(e&&!e.disabled&&!e.hidden)e.click();}
-    if(press(1)){const c=document.querySelector('#modal:not([hidden]) .ghost, #modal:not([hidden]) button#cfN');if(c)c.click();}
-    prev={0:b(0),1:b(1),3:b(3),9:b(9)};
+    const modal=!!document.querySelector('#modal:not([hidden])');
+    if(press(3)||press(9)){ // △／Options：有彈窗時按彈窗的主要按鈕；沒有彈窗時 △＝火力打擊、Options＝結束階段
+      if(modal){if(!document.querySelector('#modal.fin-on'))clickIf(PRIMARY);} // 結算頁沒有「主要按鈕」：避免誤按套用假設情境、重新開局
+      else if(setupOn()){if(press(9))clickIf('#btnStart');}
+      else clickIf(press(3)?'#mbStrike,#fsStrike,#btnStrike':'#mbEnd,#fsEnd,#btnEnd',true);
+    }
+    if(press(2)&&!modal)clickIf('#mbAssist,#fsAssist,#btnAssist',true); // □：電腦代打
+    if(press(1)){ // ○：取消（彈窗的取消鈕 → 取消打擊模式 → 關閉資訊卡）
+      if(document.querySelector('#modal.fin-on:not([hidden])'))clickIf('#btnClose'); // 結算頁：○＝檢視地圖
+      else if(modal)clickIf('#modal .ghost,#modal button#cfN');
+      else if(typeof S!=='undefined'&&S&&S.mode==='strike')clickIf('#mbStrike,#fsStrike,#btnStrike',true);
+      else clickIf('#ucard:not([hidden]) #ucClose');
+    }
+    if(press(4)||press(5)){if(!modal&&setupOn())clickIf(press(5)?'#wzNext':'#wzPrev');else tabStep(press(5)?1:-1);} // L1／R1：側欄分頁；作戰設定頁＝上一頁／下一頁
+    if(press(14)||press(15)){const d=press(15)?1:-1;if(modal||setupOn())dirStep(d,0);else if(TMODES.includes(S&&S.mode)&&typeof targetRings==='function'&&targetRings().length)targetStep(d);else unitStep(d);} // 十字鍵左右：下一個還沒行動的己方單位；彈窗裡＝切換選項
+    if(press(12)||press(13)){const d=press(13)?1:-1;if(modal||setupOn())dirStep(0,d);else btnStep(d);} // 十字鍵上下：游標跳到上／下一個按鈕
+    if(press(10))clickIf('#btnFs,#fsExit'); // L3：全螢幕
+    if(press(11))clickIf('#btnLoc'); // R3：回到台灣
+    if(press(8))document.body.classList.toggle('gphelp'); // Share：按鍵說明
+    prev={};
+    for(let i=0;i<17;i++)prev[i]=b(i);
     requestAnimationFrame(frame);
   }
   const start=()=>{if(!running){running=true;requestAnimationFrame(frame);}};
