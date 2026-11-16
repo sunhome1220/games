@@ -331,7 +331,7 @@ function renderCtrl(){
   if(!S.started)return;
   const h=humanTurn();
   $('#phaseTitle').textContent=S.over?'作戰結束':'第 '+S.turn+' 回合 · '+SIDE[S.phase]+'指揮';
-  const bs=$('#btnStrike'),atkP=S.phase==='atk',pts=atkP?S.fire:(S.dfire||0),afM=S.mode==='afS'||S.mode==='afL'||S.mode==='afC';bs.hidden=false;bs.disabled=!h||(pts<=0&&!afM);bs.classList.toggle('on',S.mode==='strike'||afM);
+  const bs=$('#btnStrike'),atkP=S.phase==='atk',pts=atkP?S.fire:(S.dfire||0),afM=S.mode==='afS'||S.mode==='afL'||S.mode==='afC'||(S.mode==='hlS'||S.mode==='hlL');bs.hidden=false;bs.disabled=!h||(pts<=0&&!afM);bs.classList.toggle('on',S.mode==='strike'||afM);
   bs.textContent=afM?'取消出擊':S.mode==='strike'?'取消打擊（剩 '+pts+'）':(atkP?'火力打擊（'+pts+' 點）':'縱深打擊（'+pts+' 波）');
   $('#btnEnd').disabled=!h;$('#btnEnd').hidden=S.sim;if(S.sim)bs.hidden=true;
   const ba=$('#btnAssist');ba.disabled=!h;ba.hidden=S.sim||S.video;
@@ -343,6 +343,7 @@ function renderCtrl(){
   else if((S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK){const n=afRings().length+(S.mode==='afC'?afCNT(S.afK).length:0);
     hint='✈ 空軍出擊中：'+(TER[S.afK].name||'基地')+'・'+AF_MODE_N[S.mode]+'——點紅圈'+(S.mode==='afC'?'或大陸基地':'')+'的目標（可攻擊 '+n+' 個）'+(S.afPend?'；已選定，看面板確認（點其他目標可切換，面板可拖曳）':'')+'。按下方「取消出擊」或點空地離開。';
     }
+  else if((S.mode==='hlS'||S.mode==='hlL')&&heliB(S.hlB))hint='🚁 攻擊直升機出擊中：'+heliB(S.hlB).n+'・'+HELI_MODE_N[S.mode]+'——點紅圈的目標（可攻擊 '+heliRings().length+' 個，剩 '+heliBudget(heliB(S.hlB))+' 批）。按下方「取消出擊」或點空地離開。';
   else if(S.mode==='helo')hint='🚁 反潛直升機：點圓圈（150 km）內的海域搜索潛艦；找到會投擲魚雷攻擊。';
   else if(S.mode==='strike'&&S.phase==='def'&&S.cnPend)hint='🎯 縱深打擊：已選定目標，看面板確認發射；點其他目標可切換，面板可拖曳。';
   else if(S.mode==='strike')hint=S.phase==='atk'?'點選任一守方單位、台灣的機場，或地圖上的美日基地進行火力打擊，每次消耗 1 點。':'點選地圖上的大陸基地（紅色圖形），或直接點右側「中方基地」清單的一列，進行長程打擊，每次消耗 1 發長程飛彈。';
@@ -462,6 +463,7 @@ function renderInfoSide(){
     setTimeout(()=>{const bt=document.getElementById('btnTom');if(bt)bt.onclick=()=>{S.sel=u;S.mode=S.mode==='tom'?null:'tom';render();};const bv=document.getElementById('btnVolley'),
         bc=document.getElementById('btnCvw'),bl=document.getElementById('btnCvwL');if(bl)bl.onclick=()=>{S.sel=u;S.mode=S.mode==='cvwL'?null:'cvwL';render();};if(bv)bv.onclick=()=>{S.sel=u;S.mode=S.mode==='volley'?null:'volley';render();};if(bc)bc.onclick=()=>{S.sel=u;S.mode=S.mode==='cvw'?null:'cvw';render();};},0);
     if(matchMedia('(hover:none)').matches)o+='<button class="ghost" id="btnDetail" data-id="'+u.id+'">詳細資料（照片、說明、規則）</button>';
+  } else if(S.baseSel===h.k&&heliAt(h.k)){o+=heliPanelHTML(heliAt(h.k));
   } else if(h.t==='air'&&h.isl==='TW'){const lv=afLevel(h.k);
     o+='<h2 style="color:var(--def)">'+(h.name||'機場')+'</h2>';
     /* 有標題，手機浮動資訊卡才會出現（才點得到出擊按鈕） */o+='<div class="hint">機場：'+(S.owner[h.k]==='atk'?'被攻方占領（無法起降）':afTxt(h.k))+'；每個守方階段搶修好 1 條。守方空軍只能從還能用的機場起飛；整體可用機場能量 '+Math.round(afShare()*100)+'%。</div>'+afPanelHTML(h.k);
