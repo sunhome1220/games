@@ -36,6 +36,11 @@ $('#map').addEventListener('click',async e=>{
     }
     S.mode=null;render();return;
   }
+  if(S.mode==='helo'){ // 反潛直升機：點搜索的海域
+    const hu=S.units.find(x=>x.id===S.heloU),th=TER[k];
+    if(hu&&th&&th.t==='sea'&&hd(hexOf(hu),th)<=ASW.R)heloSearch(hu,th);else toast('請點直升機半徑（150 km）內的海域',2500);
+    S.mode=null;render();return;
+  }
   if(S.mode==='strike'){
     if(S.phase==='atk'&&u&&u.side==='def'&&strikeable(u)&&S.fire>0){strike(u);if(S.fire<=0)S.mode=null;}
     else if(S.phase==='def'&&u&&u.side==='atk'&&hexOf(u).isl==='CN'&&S.dfire>0&&lrOK()){if(stgFound(u)>0){S.cnPend={u:u.id};}else toast('這個集結中的單位本階段沒有被找到（或找到的部分都打過了），打不到',3200);}

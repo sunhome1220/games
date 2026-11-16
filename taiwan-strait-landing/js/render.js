@@ -653,6 +653,7 @@ function renderMap(){
   o+=baseTagsSVG();
   o+=mapMarksSVG();
   o+=mapTargetsSVG();
+  o+=heloRingSVG();
   $('#gD').innerHTML=o;
   animateUnitSlides();
 }

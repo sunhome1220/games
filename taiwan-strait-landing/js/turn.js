@@ -564,6 +564,7 @@ function phaseReset(side){
 }
 // 攻方階段開始：天候、空戰、火力點數、飛彈預警、無人機、獵殺艦隊、艦載機、增援
 async function atkPhaseStart(){
+  if(S.ctrl.atk!=='human'||S.sim)heloAuto('atk');
     S.weather=rollWeather();if(S.weather.id==='bad')S.stats.badWx++;waveAttrition();if(S.over)return;
     if(S.turn===1&&!S.sirenDone&&!S.sim&&!S.video&&!REC.quiet){S.sirenDone=true;SFX.siren(6);} // 第一波：空襲警報
     uscSync();jmsSync();cvwPlan();airBattle();S.fire=computeFire();warnNotice();droneWave();huntFleets();doRetaliation();sweepMines();uscSync();antiCarrier();if(S.over)return;
@@ -577,6 +578,7 @@ async function atkPhaseStart(){
 }
 // 守方階段開始：後備旅動員、縱深打擊份額、美國檢討、艦艇出港、海上交戰
 async function defPhaseStart(){
+  if(S.ctrl.def!=='human'||S.sim)heloAuto('def');
     if(supply().over)S.stats.over++;
     let wave=(DEF_REINF[S.turn-S.mods.defReinfDelay]||[]).slice(); // 守方後備旅動員受裝備庫存限制，4 回合後沒有新的後備旅
     if(S.mods.defReinfHalve)wave=wave.filter((k,i)=>i%2===0);

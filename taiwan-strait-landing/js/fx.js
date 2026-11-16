@@ -343,6 +343,7 @@ function renderCtrl(){
   else if((S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK){const n=afRings().length+(S.mode==='afC'?afCNT(S.afK).length:0);
     hint='✈ 空軍出擊中：'+(TER[S.afK].name||'基地')+'・'+AF_MODE_N[S.mode]+'——點紅圈'+(S.mode==='afC'?'或大陸基地':'')+'的目標（可攻擊 '+n+' 個）'+(S.afPend?'；已選定，看面板確認（點其他目標可切換，面板可拖曳）':'')+'。按下方「取消出擊」或點空地離開。';
     }
+  else if(S.mode==='helo')hint='🚁 反潛直升機：點圓圈（150 km）內的海域搜索潛艦；找到會投擲魚雷攻擊。';
   else if(S.mode==='strike'&&S.phase==='def'&&S.cnPend)hint='🎯 縱深打擊：已選定目標，看面板確認發射；點其他目標可切換，面板可拖曳。';
   else if(S.mode==='strike')hint=S.phase==='atk'?'點選任一守方單位、台灣的機場，或地圖上的美日基地進行火力打擊，每次消耗 1 點。':'點選地圖上的大陸基地（紅色圖形），或直接點右側「中方基地」清單的一列，進行長程打擊，每次消耗 1 發長程飛彈。';
   else if(S.sel&&S.sel.type==='hmr'&&S.phase==='def'){const n=targets(S.sel).length;hint='海馬士只能打陸上目標：4 格內用火箭彈，14 格內用陸軍戰術飛彈（各有庫存）；每次最多 4 輛齊射，每階段次數依可射車數，發射後可再移動。'+(n?'橘圈＝目前射程內可打擊的 '+n+' 個目標，點選目標發射。':'目前射程內沒有陸上目標（海上船團要靠反艦飛彈）。');}
@@ -445,7 +446,7 @@ function renderInfoSide(){
     const en=effNote(u);if(en.length)o+='<div class="hint effn">數值修正：'+en.join('、')+'</div>';
     const st=unitStatusList(u,h);
     o+='<div class="hint">'+st.join(' · ')+'</div>';
-    o+=fleetPanelHTML(u);o+=hkPanelHTML(u);if(h.t==='air'&&h.isl==='TW')o+=afPanelHTML(h.k);
+    o+=fleetPanelHTML(u);o+=hkPanelHTML(u);o+=heloPanelHTML(u);if(h.t==='air'&&h.isl==='TW')o+=afPanelHTML(h.k);
     if(humanTurn()&&allyHuman()&&S.phase==='def'&&u.ally&&u.side==='def'){const ts=tomShooters(u);
       if(ts.length||(u.type==='csg'&&S.units.some(e=>e.grp===u.id&&e.mag&&e.mag.lam>0)))o+='<div class="cvord"><button class="ghost" id="btnTom"'+(ts.length?'':' disabled')+
           '>戰斧巡弋飛彈縱深打擊<small class="pn">（可發射 '+ts.length+' 艘、每次 '+LAM.per+' 枚）</small></button></div><div class="hint">按下後點地圖上的大陸基地；會先警告升級後果。</div>';
