@@ -246,7 +246,7 @@ function targets(u){
     return S.units.filter(e=>e.side!==u.side&&atSea(e)&&!e.ship&&!isSubT(e)&&rd(hexOf(u),hexOf(e))<=R);
     } // 船上的旅不單獨列為目標：打運輸船，船沉了旅一併損失
   const h=hexOf(u);if(h.isl==='CN')return [];
-  return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以
+  return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)&&(hd(h,hexOf(e))<=1||hasArt(u))); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以。相鄰格才能突擊，20 km 只有編有砲兵的旅能砲擊
 }
 
 function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥中的損失不會讓外海的運輸艦跟著沉（損失的是登陸艇與部隊）；船被擊沉時船上的旅一併損失
@@ -367,7 +367,26 @@ function matchMod(u,t,th){const rough=th.t==='city'||th.t==='mtn';
   return {n:0};}
 // 空降時運輸機群被防空擊落的機率（★推估）：依守方剩餘防空與制空；防空全失時仍有肩射與機槍 5%
 function dropAD(){const P=S.pools||{},p0=(S.p0&&S.p0.rocAD)||1,f=Math.max(0,Math.min(1,(P.rocAD||0)/p0)),c={atk:.5,mid:1,def:1.5}[S.airCtl||'mid']||1;return Math.min(.6,(.05+.25*f)*c);}
+// ★旅屬砲兵（推估）：聯兵旅、裝甲旅、兩棲合成旅、陸戰旅、重型合成旅都編有砲兵營（155 mm／122 mm，射程約 15～24 km）；
+//  空降旅只有迫擊砲、後備旅的砲兵編制不明，不計。在海上（登陸途中）不能砲擊。
+const ART_T={inf:1,tank:1,amph:1,mar:1,arm:1};
+const hasArt=u=>!!ART_T[u.type]&&!atSea(u);
+const GND_T=['amph','mar','abn','arm','inf','tank','res'];
+const isGndAtk=u=>GND_T.includes(u.type);
+const isArtShot=(u,t)=>isGndAtk(u)&&!atSea(u)&&hd(hexOf(u),hexOf(t))>1;
+// ★砲擊（推估）：每次打掉 1 步的機率 20%，城鎮 ×0.75、城市與山地 ×0.5，依砲擊方剩餘戰力比例；砲擊方沒有損失，也不能推進占領
+function artP(u,t){return .2*(1-.5*terrCover(hexOf(t)))*Math.max(0,u.hp)/TYPES[u.type].hp;}
+function artFire(u,t){
+  const th=hexOf(t);if(th.isl==='TW'||th.isl==='PH')civHit('TW',th,'combat');
+  const p=artP(u,t),hit=hitP(p,'art:'+u.type+'>'+t.type);
+  log(uname(u)+' 以旅屬砲兵砲擊 '+hname(th)+' 的 '+TYPES[t.type].n+'（約 '+Math.round(hd(hexOf(u),th)*KM_HEX)+' km）：'+(hit?'命中，守方 −1 步':'未造成重大損失')+'（命中率 '+Math.round(p*100)+'%'+coverTxt(th)+'，推估）');
+  fxq({t:'atk',from:[u.c,u.r],to:[t.c,t.r],hit,sea:false,tsea:false});if(!hit)fxq({t:'txt',at:[t.c,t.r],s:'未重創',col:t.side});
+  u.acted=true;u.moved=true;
+  if(hit)damage(t,1,'砲擊');
+  checkInstant();
+}
 function attack(u,t){
+  if(isArtShot(u,t))return artFire(u,t);
   const th=hexOf(t);if(th.isl==='TW'||th.isl==='PH')civHit('TW',th,'combat');
   const sup=support(u,t),pen=seaPen(u);
   const rv=!atSea(u)?riverX(hexOf(u),th):null,mm=matchMod(u,t,th),A=effAtk(u)+sup+pen+mm.n, D=effDef(t)+terrDef(th)+(rv?1:0), x=A-D; // 隔河攻擊：守方防禦 +1
