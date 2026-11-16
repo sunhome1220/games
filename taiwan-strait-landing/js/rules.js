@@ -140,9 +140,10 @@ function support(u,t){
   for(const h of ring2(t))for(const f of unitsAt(h.k))if(f!==u&&f.side===u.side&&!isMsl(f)&&!(h.isl==='CN'))n++;
   return Math.min(2,n);
 }
-const canSail=u=>u.type==='ff'||u.type==='hk'||u.type==='ssn'||u.type==='csg'||(u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm'||u.type==='dd'||u.type==='cv'||u.type==='cvy'||u.type==='lst'||u.type==='ro'));
+const canSail=u=>u.type==='ff'||u.type==='hk'||u.type==='psub'||u.type==='ssn'||u.type==='csg'||(u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm'||u.type==='dd'||u.type==='cv'||u.type==='cvy'||u.type==='lst'||u.type==='ro'));
 function canEmbark(u,h){
   if(u.type==='ff'||u.type==='hk')return h.t==='port'&&unitsAt(h.k).every(x=>x.side===u.side);
+  if(u.type==='psub')return h.t==='port'&&h.isl==='CN';
   if(!isLand(h)||!h.coastal||S.owner[h.k]!=='atk')return false;
   return h.t==='port'||(u.type!=='arm'&&h.isl==='CN');
 }
@@ -190,7 +191,7 @@ function landReach(u,res){
 // ★潛艦在水下幾乎不受浪高影響：3 格以內為安靜潛航，最多 5 格（高速或呼吸管航行，噪音大，下一次被反潛發現的機率加倍）
 const SPD={war:kmH(40),subQuiet:kmH(60),subMax:kmH(100)}; // 公里換成格：軍艦比商船多 40 km、潛艦安靜航行 60 km、最快 100 km（每回合）
 const isWarship=u=>isEsc(u)||u.type==='cv'||u.type==='csg'||u.type==='dd'||u.type==='ff';
-const seaMove=u=>u.type==='hk'||u.type==='ssn'?SPD.subMax:(S.weather&&S.weather.base!=null?seaOfH(wxWave(hexOf(u))):S.weather.sea)+(isWarship(u)?SPD.war:0); // 依所在海域的浪高
+const seaMove=u=>u.type==='hk'||u.type==='ssn'||u.type==='psub'?SPD.subMax:(S.weather&&S.weather.base!=null?seaOfH(wxWave(hexOf(u))):S.weather.sea)+(isWarship(u)?SPD.war:0); // 依所在海域的浪高
 function seaReach(u,res){
   const here=hexOf(u);const startSea=here.t==='sea';
   if(!startSea&&!canEmbark(u,here))return;
@@ -221,7 +222,7 @@ function reach(u){
     for(const t of atkAF())if(afRoom(u,t.k))res.set(t.k,{kind:'drop'}); // 占領的機場：可直接機降（天候不佳時也要能起降才行）
     return res;
   }
-  if(isLand(h)&&u.type!=='ff'&&u.type!=='hk')landReach(u,res);
+  if(isLand(h)&&u.type!=='ff'&&u.type!=='hk'&&u.type!=='psub')landReach(u,res);
   if(canSail(u))seaReach(u,res);
   if(isBde(u)&&!u.ship&&isLand(h)&&h.isl==='CN'&&freeShipKind(u,h)===null)for(const [k,v] of [...res])if(v.kind==='sail'||v.kind==='land')res.delete(k); // 沒有可用的運輸船就出不了海
   return res;
@@ -233,15 +234,16 @@ function targets(u){
     return S.units.filter(e=>e.side!==u.side&&!atSea(e)&&!isMsl(e)&&hexOf(e).isl!=='CN'&&(()=>{const d=rd(hu,hexOf(e));return d<=(atc?kmH(300):kmH(80));})());} // 大陸沿岸集結中的部隊不在目標內（那由長程對地打擊處理）
   if(u.type==='mlrs'){ // 雷霆2000：面積性火力，射程依彈種 15／30／45 km（每格約 20 km）＝最遠 2 格；打海灘上的部隊與靠岸的船團（反登陸），需有彈藥庫存
     if(u.shots<=0||(S.pools&&S.pools.rocRkt||0)<1)return [];const hu=hexOf(u);
-    return S.units.filter(e=>e.side!==u.side&&!isMsl(e)&&hexOf(e).isl!=='CN'&&rd(hu,hexOf(e))<=kmH(40));}
+    return S.units.filter(e=>e.side!==u.side&&!isMsl(e)&&canHitSub(e)&&hexOf(e).isl!=='CN'&&rd(hu,hexOf(e))<=kmH(40));}
   if(isEsc(u))return escTargets(u);
   if(u.type==='hk')return subTargets(u);
+  if(u.type==='psub')return psubTargets(u);
   if(u.type==='ssn'){if(u.acted||!(u.tp>0||u.hm>0))return [];return shipFoes(u,kmH(120)).filter(e=>(u.tp>0&&rd(hexOf(u),hexOf(e))<=kmH(60))||u.hm>0);}
   if(u.type==='nme'||u.type==='mdt'){if(u.acted||!u.mag||u.mag.asm<=0)return [];return shipFoes(u,u.type==='nme'?NME.R:MDT.R);}
   if(isMsl(u)){if(u.shots<=0||(u.fl&&!(u.mag&&u.mag.asm>0)))return [];
     if(u.type==='ssm'&&(S.pools[ssmPool(u)]||0)<=0)return [];
     const R=u.fl?fleetAgg(u).asmR:ssmHp(u)?kmH(120):kmH(160);
-    return S.units.filter(e=>e.side!==u.side&&atSea(e)&&!e.ship&&rd(hexOf(u),hexOf(e))<=R);
+    return S.units.filter(e=>e.side!==u.side&&atSea(e)&&!e.ship&&!isSubT(e)&&rd(hexOf(u),hexOf(e))<=R);
     } // 船上的旅不單獨列為目標：打運輸船，船沉了旅一併損失
   const h=hexOf(u);if(h.isl==='CN')return [];
   return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以
@@ -289,6 +291,7 @@ function unitDestroyed(u,why){if(isEsc(u)){S.stats.escLost=S.stats.escLost||{atk
       }if(u.type==='dd'&&S.pools)S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);
       if(u.type==='ff'&&S.pools)S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);
       if(u.type==='hk'&&S.pools)S.pools.rocSub=Math.max(0,S.pools.rocSub-1);
+      if(u.type==='psub'&&S.pools)S.pools.plaSub=Math.max(0,S.pools.plaSub-1);
       if(u.type==='cv'&&S.pools){S.pools.plaCV=Math.max(0,S.pools.plaCV-1);
       if(u.cvi!=null){S.cvGone=S.cvGone||[];
       S.cvGone.push(u.cvi);
@@ -332,6 +335,7 @@ function endPhaseGuard(){ // 回傳 true＝先擋下並提示
 }
 function doMove(u,k,kind){
   const from=hexOf(u);const h=TER[k];
+  if(u.type==='psub'&&kind==='sail')u.loud=hd(from,h)>SPD.subQuiet;
   if(u.type==='hk'&&kind==='sail'){u.loud=hd(from,h)>SPD.subQuiet;if(u.loud&&!subHidden(u))log(subNm(u)+'高速航行約 '+Math.round(hd(from,h)*KM_HEX)+' km（超過 '+Math.round(SPD.subQuiet*KM_HEX)+' km），噪音大，下一次被反潛發現的機率加倍');}
   if(kind==='sail'&&isBde(u)&&!u.ship&&isLand(from)&&from.isl==='CN')embark(u,from);
   u.c=h.c;u.r=h.r;u.moved=true;if(u.type==='cv'||u.type==='csg'||u.type==='ddh')escFollow(u); // 護航艦跟著航艦移動

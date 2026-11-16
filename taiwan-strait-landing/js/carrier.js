@@ -15,7 +15,7 @@ function cvwCarriers(side){
   if(side==='def')return uscPieces().map(u=>{const f=csgFx(u);if(!f||f.hp<=1)return null;const ui=csgIdx(f.id);return {u,i:-1,ui,w:CVW.US,nm:CVW.US.asmN,sor:sortiesOf(S.air.usF[ui]*f.hp/3,AIR.US.rate)*supMult(u),n:ui?'美第 '+(ui+1)+' 航艦':'美航艦'};}).filter(Boolean);
   return S.units.filter(u=>u.type==='cv'&&u.side==='atk'&&u.cvi!=null&&alive(u)&&u.hp>1).map(u=>({u,i:u.cvi,w:CVW.PLA[u.cvi],nm:CVW.plaN,sor:sortiesOf(S.air.cvF[u.cvi],AIR.CV[u.cvi].rate)*Math.max(0,u.hp)/3,n:AIR.CV[u.cvi].n}));
 }
-const cvwFoes=(side,c)=>S.units.filter(e=>e.side!==side&&atSea(e)&&isShip(e)&&e.type!=='hk'&&e.type!=='fob'&&!subHidden(e)&&rd(hexOf(c.u),hexOf(e))<=c.w.r+c.w.asmR);
+const cvwFoes=(side,c)=>S.units.filter(e=>e.side!==side&&atSea(e)&&isShip(e)&&!isSubT(e)&&e.type!=='fob'&&!subHidden(e)&&rd(hexOf(c.u),hexOf(e))<=c.w.r+c.w.asmR);
 // 對地目標（作戰半徑內）：
 //  共軍艦載機：守方的陸地單位（部隊、飛彈車）與還沒癱瘓的機場；
 //  美軍艦載機：攻方在陸地上的任何單位（台灣、澎湖、大陸沿岸港內船隻…）與被攻方占領、還能用的港口。
@@ -240,7 +240,7 @@ function fireSalvo(m,t){
 }
 function escTargets(u){
   if(!isEsc(u)||u.shots<=0||!u.mag||u.mag.asm<=0)return [];const W=SHIPW[u.type];
-  return S.units.filter(e=>e.side!==u.side&&atSea(e)&&isShip(e)&&e.type!=='hk'&&!subHidden(e)&&rd(hexOf(u),hexOf(e))<=W.asmR);
+  return S.units.filter(e=>e.side!==u.side&&atSea(e)&&isShip(e)&&!isSubT(e)&&!subHidden(e)&&rd(hexOf(u),hexOf(e))<=W.asmR);
 }
 const escVal=e=>e.type==='cv'||e.type==='csg'?(cvOOA(e)?.5:6):e.type==='tak'?5:isEsc(e)?4:e.type==='lst'||e.type==='ro'?3.5:e.type==='cvy'?3:e.type==='dd'||e.type==='ff'?2.5:1;
 // 協同齊射：射程內能打到同一目標的護航艦一起發射，用數量飽和對方防空（現實中的艦隊戰術）

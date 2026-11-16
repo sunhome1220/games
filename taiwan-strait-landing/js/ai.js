@@ -254,6 +254,7 @@ async function aiAtkUnit(u){
   if(isEsc(u)){if(escTargets(u).length){escAutoFire('atk');render();await sleep(240);}return;} // 護航艦：移動跟著航艦，只負責開火（協同齊射）
   if(isSup(u)||u.type==='lst'||u.type==='ro')return; // 補給船團、補給站與運輸船由補給與運力系統自動處理
   const h=hexOf(u);
+  if(u.type==='psub'){await psubTurn(u);return;}
   if(await aiAtkCvRetreat(u,{h}))return;
   if(await aiAtkCarrier(u,{h}))return;
   if(await aiAtkEscort(u,{h}))return;
@@ -307,9 +308,12 @@ function fireSub(u,t){
   if(hitP(pa,'sub:'+w+'>'+t.type)){log(subNm(u)+'被反潛兵力發現並攻擊');damage(u,1,'反潛攻擊');}
   render();return true;
 }
-function hkHomeStep(u){ // 往最近的守方港口前進：回傳 {k,eta,inPort}；k 為這回合能到的最近格
-  if(hexOf(u).t==='port'&&hexOf(u).isl==='TW')return {home:true};
-  const ports=Object.values(TER).filter(h=>h.isl==='TW'&&h.t==='port'&&S.owner[h.k]==='def');if(!ports.length)return null;
+// 潛艦母港：左營（高雄）潛艦基地（海龍、海虎、海鯤都隸屬 256 戰隊）；在母港才能維修，★每 2 回合修好 1 步
+const HK_HOME=()=>SPOT.kaohsiung;
+const hkAtHome=u=>K(u.c,u.r)===HK_HOME();
+function hkHomeStep(u,homeOnly){ // 往最近的守方港口（homeOnly＝只去母港）前進：回傳 {k,eta,inPort}；k 為這回合能到的最近格
+  if(homeOnly?hkAtHome(u):(hexOf(u).t==='port'&&hexOf(u).isl==='TW'))return {home:true};
+  const ports=Object.values(TER).filter(h=>h.isl==='TW'&&h.t==='port'&&S.owner[h.k]==='def'&&(!homeOnly||h.k===HK_HOME()));if(!ports.length)return null;
   const dp=h=>Math.min.apply(null,ports.map(q=>hd(h,q)));
   const rc=reach(u);let b=null,bs=dp(hexOf(u));
   for(const [k,v] of rc){if(v.kind!=='sail'&&v.kind!=='move')continue;const sc=dp(TER[k]);if(sc<bs){bs=sc;b=k;}}
@@ -332,7 +336,7 @@ async function subTurn(u){ // 電腦操作海鯤：依指揮官意圖選目標�
   const pool=S.units.filter(e=>e.side==='atk'&&atSea(e)&&HK_P[e.type]&&(!types||types.includes(e.type)));
   const best=()=>{const ts=subTargets(u).filter(e=>!types||types.includes(e.type));ts.sort((a,b)=>HK_V[b.type]*hkP(b,u)-HK_V[a.type]*hkP(a,u));return ts[0];};
   if(hkSpent(u)){ // 彈藥用盡：自動回母港補彈
-    const st=hkHomeStep(u);if(st&&st.k){doMove(u,st.k,'sail');if(!subHidden(u))log(subNm(u)+'彈藥用盡，返回母港補彈');render();await sleep(240);}return;}
+    const st=hkHomeStep(u,u.hp<TYPES.hk.hp);if(st&&st.k){doMove(u,st.k,'sail');if(!subHidden(u))log(subNm(u)+'彈藥用盡，返回母港補彈');render();await sleep(240);}return;}
   let t=best();
   if(!t&&pool.length){
     const rc=reach(u),want=hkRange(u)>kmH(60)?kmH(100):kmH(40);let bk=null,bs=Math.min.apply(null,pool.map(e=>hd(hexOf(u),hexOf(e))));
@@ -344,14 +348,21 @@ async function subTurn(u){ // 電腦操作海鯤：依指揮官意圖選目標�
   if(t){fireSub(u,t);await sleep(300);}
 }
 // 手動操作：把選取的潛艦開回母港；切換武器
-function hkGoHome(){
+function hkGoHome(homeOnly){
   const u=S.sel;if(!u||u.type!=='hk'||!humanTurn()||u.moved)return;
-  const st=hkHomeStep(u);
-  if(!st){toast('找不到可回的母港');return;}
-  if(st.home){toast('已在母港，會自動補滿彈藥');return;}
+  const st=hkHomeStep(u,homeOnly===true),nm=homeOnly===true?'母港（左營）':'港口';
+  if(!st){toast(homeOnly===true?'母港已失守或無法前往':'找不到可回的港口');return;}
+  if(st.home){toast('已在'+nm+'，下個階段補滿彈藥'+(homeOnly===true?'，受損的話會逐步維修':''));return;}
   if(!st.k){toast('這回合無法移動');return;}
   humanMove(u,st.k,'sail');
-  toast(st.arrive?'抵達母港，下個階段補滿彈藥':'朝母港前進（約還需 '+st.eta+' 回合）');render();
+  toast(st.arrive?'抵達'+nm+'，下個階段補滿彈藥'+(homeOnly===true?'並開始維修':''):'朝'+nm+'前進（約還需 '+st.eta+' 回合）');render();
+}
+// 資訊卡上的潛艦按鈕：回最近港口（補彈）、回母港（補彈＋維修）
+function hkPanelHTML(u){
+  if(!u||u.type!=='hk'||u.side!=='def'||!humanTurn()||S.phase!=='def'||u.moved)return '';
+  setTimeout(()=>{const a=document.getElementById('hkNear'),b=document.getElementById('hkHome');if(a)a.onclick=()=>{S.sel=u;hkGoHome(false);};if(b)b.onclick=()=>{S.sel=u;hkGoHome(true);};},0);
+  const dmg=u.hp<TYPES.hk.hp;
+  return '<div class="cvord"><button class="ghost" id="hkNear">⚓ 回最近港口<small class="pn">（補滿彈藥）</small></button><button class="ghost" id="hkHome">🏠 回母港 左營<small class="pn">（補彈'+(dmg?'＋維修受損':'、可維修')+'）</small></button></div>';
 }
 function hkCycleWpn(){const o=['auto','tp','hm'];S.hkWpn=o[(o.indexOf(hkPref())+1)%3];render();}
 async function ffSortie(m){ // 艦艇出港，保持在飛彈射程（約 6 格）外圍，避開護航艦
