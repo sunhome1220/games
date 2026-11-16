@@ -52,7 +52,13 @@ const alive=u=>S.units.includes(u);
 
 let LOGN=0;
 function log(msg){S.log.unshift({t:S.turn,p:S.phase,msg,n:++LOGN});if(S.log.length>300)S.log.pop();}
-function toast(msg,ms){if(S&&S.rec)return;const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),ms||1500);}
+function toast(msg,ms){if(S&&S.rec)return;const t=$('#toast');t.textContent=msg;t.classList.remove('open','cut');t.classList.add('show');
+  t.classList.toggle('cut',t.scrollHeight>t.clientHeight+2||t.scrollWidth>t.clientWidth+2); // 超過兩行被截斷：提示可以點開看全文
+  clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show','open'),ms||1500);}
+// 點快訊：第一次展開全文並停留（不自動消失），再點一次關閉。快訊顯示時會擋住點擊，不會誤觸後面的「重新開始」等按鈕
+$('#toast').addEventListener('click',e=>{e.stopPropagation();e.preventDefault();const t=e.currentTarget;if(!t.classList.contains('show'))return;clearTimeout(toast.h);
+  if(t.classList.contains('open')||!t.classList.contains('cut')){t.classList.remove('show','open');return;}
+  t.classList.add('open');});
 function hname(h){return h.name||(TERN[h.t]+' '+h.c+'-'+h.r);}
 function uname(u){return (u.fl?u.fl.n:u.type==='psub'?psubCls(u).n:u.wp==='hp'?'魚叉岸防系統':u.hl?'劍龍級潛艦（'+u.nm+'）':TYPES[u.type].n)+'（'+SIDE[u.side]+'）';}
 // ---------- 台灣海軍：依真實艦隊編制，一個棋子＝一個艦隊（★艦隊歸屬與武器數字為推估）----------

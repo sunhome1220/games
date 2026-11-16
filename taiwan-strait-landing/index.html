@@ -651,8 +651,12 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 .hd+.escores .eh{flex-wrap:wrap;gap:4px 8px}.hd+.escores .et{font-size:15px}
 .hch{margin:6px 0 0;padding-left:20px;font-size:13px;line-height:1.5}
 @media (max-width:620px){.hgrid{grid-template-columns:1fr}.hd{grid-template-columns:1fr}.hdi{max-width:220px}}
-#toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 18px;border-radius:3px;font-weight:700;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30;white-space:nowrap}
-#toast.show{opacity:1}
+#toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 18px;border-radius:3px;font-weight:700;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30;white-space:normal;width:max-content;max-width:min(640px,calc(100vw - 24px));box-sizing:border-box;line-height:1.4;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+#toast.show{opacity:1;pointer-events:auto;cursor:pointer} /* 顯示中：可以點（不會穿透到後面的按鈕），點一下展開全文、再點收起 */
+#toast.open{-webkit-line-clamp:unset;max-height:60vh;overflow-y:auto}
+#toast.cut{padding-right:34px} #toast.cut::after{content:'▾';position:absolute;right:10px;bottom:6px;font-size:16px;line-height:1;opacity:.8} /* 被截斷：右下角小箭頭表示可以點開 */
+#toast.open::after{content:'✕';font-size:13px}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 .mcg.pend circle:not(.hit){stroke:#e8b400 !important;stroke-width:4px !important} /* 已選定的大陸基地 */
 .cvord button.on{background:var(--def);color:#fff;border-color:var(--def)}
@@ -887,42 +891,42 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-16.10' -->
-<script src="js/dict.js?v=2026-11-16.10"></script>
-<script src="js/i18n.js?v=2026-11-16.10"></script>
-<script src="js/btnfix.js?v=2026-11-16.10"></script>
-<script src="js/geo.js?v=2026-11-16.10"></script>
-<script src="js/dem.js?v=2026-11-16.10"></script>
-<script src="js/urban.js?v=2026-11-16.10"></script>
-<script src="js/map.js?v=2026-11-16.10"></script>
-<script src="js/state.js?v=2026-11-16.10"></script>
-<script src="js/rules.js?v=2026-11-16.10"></script>
-<script src="js/supply.js?v=2026-11-16.10"></script>
-<script src="js/ending.js?v=2026-11-16.10"></script>
-<script src="js/theater.js?v=2026-11-16.10"></script>
-<script src="js/airwar.js?v=2026-11-16.10"></script>
-<script src="js/carrier.js?v=2026-11-16.10"></script>
-<script src="js/asw.js?v=2026-11-16.10"></script>
-<script src="js/psub.js?v=2026-11-16.10"></script>
-<script src="js/strike.js?v=2026-11-16.10"></script>
-<script src="js/airstrike.js?v=2026-11-16.10"></script>
-<script src="js/decisions.js?v=2026-11-16.10"></script>
-<script src="js/report.js?v=2026-11-16.10"></script>
-<script src="js/turn.js?v=2026-11-16.10"></script>
-<script src="js/ai.js?v=2026-11-16.10"></script>
-<script src="js/render.js?v=2026-11-16.10"></script>
-<script src="js/fxanim.js?v=2026-11-16.10"></script>
-<script src="js/fx.js?v=2026-11-16.10"></script>
-<script src="js/video.js?v=2026-11-16.10"></script>
-<script src="js/stats.js?v=2026-11-16.10"></script>
-<script src="js/input.js?v=2026-11-16.10"></script>
-<script src="js/unitinfo.js?v=2026-11-16.10"></script>
-<script src="js/version.js?v=2026-11-16.10"></script>
-<script src="js/changelog.js?v=2026-11-16.10"></script>
-<script src="js/app.js?v=2026-11-16.10"></script>
-<script src="js/missions.js?v=2026-11-16.10"></script>
-<script src="js/mission_carrier.js?v=2026-11-16.10"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-16.11' -->
+<script src="js/dict.js?v=2026-11-16.11"></script>
+<script src="js/i18n.js?v=2026-11-16.11"></script>
+<script src="js/btnfix.js?v=2026-11-16.11"></script>
+<script src="js/geo.js?v=2026-11-16.11"></script>
+<script src="js/dem.js?v=2026-11-16.11"></script>
+<script src="js/urban.js?v=2026-11-16.11"></script>
+<script src="js/map.js?v=2026-11-16.11"></script>
+<script src="js/state.js?v=2026-11-16.11"></script>
+<script src="js/rules.js?v=2026-11-16.11"></script>
+<script src="js/supply.js?v=2026-11-16.11"></script>
+<script src="js/ending.js?v=2026-11-16.11"></script>
+<script src="js/theater.js?v=2026-11-16.11"></script>
+<script src="js/airwar.js?v=2026-11-16.11"></script>
+<script src="js/carrier.js?v=2026-11-16.11"></script>
+<script src="js/asw.js?v=2026-11-16.11"></script>
+<script src="js/psub.js?v=2026-11-16.11"></script>
+<script src="js/strike.js?v=2026-11-16.11"></script>
+<script src="js/airstrike.js?v=2026-11-16.11"></script>
+<script src="js/decisions.js?v=2026-11-16.11"></script>
+<script src="js/report.js?v=2026-11-16.11"></script>
+<script src="js/turn.js?v=2026-11-16.11"></script>
+<script src="js/ai.js?v=2026-11-16.11"></script>
+<script src="js/render.js?v=2026-11-16.11"></script>
+<script src="js/fxanim.js?v=2026-11-16.11"></script>
+<script src="js/fx.js?v=2026-11-16.11"></script>
+<script src="js/video.js?v=2026-11-16.11"></script>
+<script src="js/stats.js?v=2026-11-16.11"></script>
+<script src="js/input.js?v=2026-11-16.11"></script>
+<script src="js/unitinfo.js?v=2026-11-16.11"></script>
+<script src="js/version.js?v=2026-11-16.11"></script>
+<script src="js/changelog.js?v=2026-11-16.11"></script>
+<script src="js/app.js?v=2026-11-16.11"></script>
+<script src="js/missions.js?v=2026-11-16.11"></script>
+<script src="js/mission_carrier.js?v=2026-11-16.11"></script>
 <script>if(missionId())setTimeout(()=>missionStart(missionId()),0);</script>
-<script src="js/gamepad.js?v=2026-11-16.10"></script>
+<script src="js/gamepad.js?v=2026-11-16.11"></script>
 </body>
 </html>
