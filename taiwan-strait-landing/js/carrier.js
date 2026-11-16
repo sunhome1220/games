@@ -60,7 +60,7 @@ function cvwLandHit(side,c,x){
     if(mob&&t.locN<=0){
       fxq({t:'air',at:[t.c,t.r],hit:false,tsea:false,from,k:'bomb'});txt='空襲 '+hname(h)+'：'+(t.revealed?'發射車已轉移':'沒能定位真正的發射車，打中誘餌與空車')+'（'+L.txt+'）';
     }else{
-      const need=Math.min(6,(h.t==='city'||h.t==='mtn'?6:5)+(hid?1:0));ok=hitP(mob?lchKillP({k:'g'}):pNeed(need),'cvwLand:'+side+':'+t.type);
+      const need=Math.min(6,5+terrCover(h)+(hid?1:0));ok=hitP(mob?lchKillP({k:'g'}):pNeed(need),'cvwLand:'+side+':'+t.type);
       fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:false,from,k:'bomb'});
       txt='空襲 '+hname(h)+' 的 '+tname(t)+(ok?'：命中':'：未命中');
       if(ok){if(isLch(t)&&t.veh!=null){t.locN=Math.max(0,(t.locN||0)-1);txt+='，'+ssmHit(t,src+'空襲');}else damage(t,1,src+'空襲');}

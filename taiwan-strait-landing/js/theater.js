@@ -399,7 +399,7 @@ function antiShip(who,shots,need,canLand,tag,ok0,fk){
     else if(P.plaNavy>0){if(hitP(pNeed(need),'antiShip')){he++;P.plaNavy--;if(P.plaCV>0&&hitP(pNeed(5+(P.plaNavy>=5?1:0)),'antiShip')){const m=cvHitAbstract('asm',who);if(m){cvh++;log(m);}}}}
     else if(canLand){
       const land=S.units.filter(u=>u.side==='atk'&&onTW(u));if(!land.length)break;
-      const t=pickBest(land,x=>tgtVal(x)*10+x.hp),h=hexOf(t),ok=hitP(pNeed(h.t==='city'||h.t==='mtn'?6:5),'antiShip');
+      const t=pickBest(land,x=>tgtVal(x)*10+x.hp),h=hexOf(t),ok=hitP(pNeed(5+terrCover(h)),'antiShip');
         fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:false,org:base==='roc'&&rocOrigin(fk,t)?undefined:orgPick(base),from:base==='roc'?rocOrigin(fk,t)||undefined:undefined,k:fk||'cm'});
         if(ok){hl++;
         damage(t,1,who);

@@ -178,6 +178,7 @@ function tileDetail0(h,x,y){
   if(FG>2&&h.vt&&(tt==='mtn'||tt==='hill')&&((h.c+h.r)&1))return ''; // 細格時大陸山地與丘陵隔格才畫，避免過密
   if(tt==='hill')return peak(x-3,y+9,20,12)+peak(x+9,y+10,13,8);
   if(tt==='city')return bldg(x-9,y+7,8,11)+bldg(x+2,y+8,9,16)+bldg(x+11,y+5,7,9);
+  if(h.town)return bldg(x-8,y+6,7,5)+bldg(x+5,y+9,8,7); // 城鎮：兩棟低矮房屋
   if(tt==='mtn'&&h.elev!=null)return h.elev>=2000&&((h.c+h.r)&1)===0?peak(x,y+9,20,17):''; // 台澎：顏色表示高度，只在 2,000 公尺以上隔格畫一座小山
   if(tt==='mtn')return peak(x-6,y+8,24,22)+peak(x+9,y+10,17,14);
   if(h.t==='port')return '<rect class="pier" x="'+(x-3)+'" y="'+(y+3)+'" width="6" height="14" rx="1"/><rect class="cont c1" x="'+(x-12)+'" y="'+(y+2)+'" width="8" height="5"/><rect class="cont c2" x="'+
@@ -190,6 +191,31 @@ function tileDetail0(h,x,y){
 const FAR={};
 let GUAM_LL=null; // 關島示意位置（供海底地形判斷）
 // 外圍示意區的地標：以真實經緯度定位（粗格座標 = 細格像素 / KS），陸地形狀見 ISLANDS
+// 知名地標：只在放大到 900% 以上時顯示（#map.zhi），不能點選、不影響規則。位置為實際經緯度；圖示以底部中央為原點、高約 10 單位
+const LM_SEG=[0,1,2,3,4].map(i=>'M-1.2 '+(-2.5-i*1.2)+'L-1.8 '+(-3.7-i*1.2)+'L1.8 '+(-3.7-i*1.2)+'L1.2 '+(-2.5-i*1.2)+'Z').join('');
+const LANDMARKS=[
+  ['台北101',121.5645,25.0340,'<path d="M-2.1 0L-1.6 -2.5L1.6 -2.5L2.1 0Z'+LM_SEG+'M-.7 -8.5L-.7 -9.4L.7 -9.4L.7 -8.5Z"/><path class="ln" d="M0 -9.4L0 -11.6"/>'],
+  ['總統府',121.5119,25.0400,'<path d="M-5.2 0L-5.2 -2.4L-4 -2.4L-4 -3.5L-3 -3.5L-3 -2.4L-1 -2.4L-1 -6.4L0 -7.8L1 -6.4L1 -2.4L3 -2.4L3 -3.5L4 -3.5L4 -2.4L5.2 -2.4L5.2 0Z"/>'],
+  ['高雄85大樓',120.3000,22.6117,'<path d="M-2.7 0L-2.7 -6.2L-1.1 -6.2L-1.1 -9.6L1.1 -9.6L1.1 -6.2L2.7 -6.2L2.7 0L1.1 0L1.1 -3.8L-1.1 -3.8L-1.1 0Z"/><path class="ln" d="M0 -9.6L0 -11.6"/>'],
+  ['彰化大佛',120.5497,24.0780,'<circle cx="0" cy="-6.3" r="1.25"/><circle cx="0" cy="-7.7" r=".55"/>'+
+    '<path d="M-1.5 -5.1Q-3.1 -3.6 -3.6 -1.9L-4.8 -1.2L-4.8 0L4.8 0L4.8 -1.2L3.6 -1.9Q3.1 -3.6 1.5 -5.1Z"/><path d="M-5.4 .4L5.4 .4L4.4 1.5L-4.4 1.5Z"/>'],
+  ['淡江大橋',121.4180,25.1700,'<path class="ln" d="M-8 -1.6L8 -1.6M-1.5 0L-1.5 -9M-1.5 -8.6L-7 -1.6M-1.5 -7.4L-5.2 -1.6M-1.5 -6.2L-3.4 -1.6M-1.5 -8.6L6.5 -1.6M-1.5 -7.4L4.3 -1.6M-1.5 -6.2L2 -1.6"/>']];
+function landmarkSVG(){
+  const s=R*.055;let o='<g class="lmk">';
+  for(const [n,lon,lat,g] of LANDMARKS){
+    const [c,r]=llToRC(lon,lat),h=TER[K(c,r)],p=llPx(lon,lat),x=p[0],y=p[1]-(h?elev(h):0);
+    o+='<g data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+s.toFixed(3)+')">'+g+'<text y="5.6" text-anchor="middle">'+n+'</text></g>';
+  }
+  return o+'</g>';
+}
+function landmarkDim(){ // 地標和棋子重疊時變淡，不擋住棋子上的字
+  if(!$('#map').classList.contains('zhi'))return;
+  const us=S&&S.units?S.units.map(u=>cen(u.c,u.r)):[];
+  document.querySelectorAll('#gL .lmk>g').forEach(e=>{
+    const x=+e.dataset.x,y=+e.dataset.y;
+    e.classList.toggle('dim',us.some(p=>x-p[0]>-.7*R&&x-p[0]<1.3*R&&y-p[1]>-.9*R&&y-p[1]<1.15*R));
+  });
+}
 const llPx=(lon,lat)=>{const o=center(GEO.c0,GEO.r0),ox=center(GEO.c0+1,GEO.r0)[0]-o[0],oy=center(GEO.c0,GEO.r0+1)[1]-o[1];
   return [o[0]+(lon-GEO.lon0)/GEO.dlon*ox,o[1]+(GEO.lat0-lat)/GEO.dlat*oy];};
 function farPlace(lon,lat,t,name,tag,who){const [x,y]=llPx(lon,lat);FAR[name]={lon,lat,x:x/KS,y:y/KS,t,name,tag:tag||null,who:who||null};}
@@ -412,7 +438,7 @@ function buildStatic(){
   const defs=tileGrad('gt-plain','land','#d9d1ad')+tileGrad('gt-city','city','#cfc4a0')+tileGrad('gt-mtn','mtn','#b5a47c')+tileGrad('gt-main','main','#c8c4b8')+tileGrad('gt-plain2',
       'land2','#d3d0a8')+tileGrad('gt-plain3','land3','#dfd5b3')+tileGrad('gt-hill','hill','#c9bd92')+tileGrad('gt-main2','main2','#c3c6b6')+tileGrad('gt-main3','main3',
       '#cec8b8')+tileGrad('gt-mainhill','mainhill','#b9b3a1')+tileGrad('gt-mainmtn','mainmtn','#a39d8c')+tileGrad('gt-maincity','maincity','#d4cfc2')+['#a9c98b','#c3cc8f',
-      '#c9bd86','#b3a374','#998b62','#7f7552','#686344'].map((c,i)=>tileGrad('gt-e'+i,'e'+i,c)).join('')+tileGrad('gt-tcity','tcity','#b8b6ae')+
+      '#c9bd86','#b3a374','#998b62','#7f7552','#686344'].map((c,i)=>tileGrad('gt-e'+i,'e'+i,c)).join('')+tileGrad('gt-tcity','tcity','#b8b6ae')+tileGrad('gt-town','town','#b4c0a2')+
     '<linearGradient id="gu-atk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d4574d" style="stop-color:color-mix(in srgb,var(--atk) 72%,#fff)"/><stop offset="1" stop-color="#a02a24" style="stop-color:color-mix(in srgb,var(--atk) 90%,#000)"/></linearGradient>'+
     '<linearGradient id="gu-def" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a82c8" style="stop-color:color-mix(in srgb,var(--def) 72%,#fff)"/><stop offset="1" stop-color="#18457d" style="stop-color:color-mix(in srgb,var(--def) 90%,#000)"/></linearGradient>'+
 '<linearGradient id="gu-atk-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--atk) 84%,#000)"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--atk) 52%,#000)"/></linearGradient>'+
@@ -436,7 +462,7 @@ function buildStatic(){
   for(const h of land){const [x,y]=center(h.c,h.r),d=elev(h);o+='<polygon class="tl-sh" points="'+ptsStr(hexV(x+3,y+d+4,R))+'"/>';}
   for(const h of land){
     const [x,y0]=center(h.c,h.r),d=elev(h),y=y0-d,v=hexV(x,y,R),b=v.map(p=>[p[0],p[1]+d]);
-    const key=h.isl==='CN'||h.t==='main'?VTKEY(h.vt,true):h.elev!=null?(h.t==='city'?'tcity':'e'+Math.min(6,Math.floor(h.elev/500))):(h.t==='city'?'city':h.t==='mtn'?'mtn':'plain'); // 台澎：依海拔每 500 公尺分色（地形圖配色），城市灰色
+    const key=h.isl==='CN'||h.t==='main'?VTKEY(h.vt,true):h.elev!=null?(h.t==='city'?'tcity':h.town?'town':'e'+Math.min(6,Math.floor(h.elev/500))):(h.t==='city'?'city':h.t==='mtn'?'mtn':'plain'); // 台澎：依海拔每 500 公尺分色（地形圖配色），城市灰色
     o+='<g class="tile t-'+key+'">';
     [[3,4,'l'],[2,3,'l'],[1,2,'r'],[0,1,'r']].forEach(([i,j,s])=>{o+='<polygon class="sd '+s+'" points="'+ptsStr([v[i],v[j],b[j],b[i]])+'"/>';});
     o+='<polygon class="tt" fill="url(#gt-'+key+')" points="'+ptsStr(v)+'" data-k="'+h.k+'"/>';
@@ -454,7 +480,9 @@ function buildStatic(){
   o+='<text class="big" font-size="13" x="'+cc(15,7)[0]+'" y="'+cc(15,7)[1]+'" writing-mode="tb">太平洋</text>';
   o+='<text class="big" font-size="12" x="'+cc(1,1)[0]+'" y="'+cc(1,1)[1]+'" writing-mode="tb">大陸沿海</text>';
   $('#gS').innerHTML=o;
+  $('#gL').innerHTML=landmarkSVG(); // 地標畫在棋子上方（不能點選），所在格有棋子時也看得到
   $('#map').classList.toggle('zlo',FG>2&&(typeof ZOOM==='undefined'?1:ZOOM)<1.6);
+  $('#map').classList.toggle('zhi',typeof ZOOM!=='undefined'&&ZOOM>=9);
   const svg=$('#map');svg.setAttribute('viewBox',(-MX0)+' '+(-MY0)+' '+EVBW.toFixed(1)+' '+EVBH.toFixed(1));
   STATIC.fleets=FLEETS.map(F=>{const a=center(F.from[0],F.from[1]),b=center(F.to[0],F.to[1]);return [b[0]-a[0],b[1]-a[1]];});
   STATIC.built=true;
@@ -675,5 +703,6 @@ function renderMap(){
   o+=mapTargetsSVG();
   o+=heloRingSVG();
   $('#gD').innerHTML=o;
+  landmarkDim();
   animateUnitSlides();
 }

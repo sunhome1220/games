@@ -101,7 +101,7 @@ function money(b){
   return b>=1000?(b/1000).toFixed(2)+' 兆美元':Math.round(b*10).toLocaleString(LOC)+' 億美元';}
 function civHit(where,h,kind){
   // civilian casualties and damage from fighting at a hex; cities are far deadlier than open ground
-  const C=S.cost,c=h.t==='city'?1:h.t==='port'?.5:h.t==='mtn'?.02:.12;
+  const C=S.cost,c=h.t==='city'?1:h.t==='port'?.5:h.t==='mtn'?.02:h.town?.2:.12; // 城鎮 0.2：人口密度約為城市的五分之一（★推估，見 docs/data/map.md）
   const base={strike:180,combat:900}[kind];
   C.civ[where]+=Math.round(base*c*(where==='TW'?(S.mods.civMul||1)*(kind==='strike'?warnCiv():1):1));C.dmg[where]+=(kind==='combat'?2:.5)*c+.05;
 }

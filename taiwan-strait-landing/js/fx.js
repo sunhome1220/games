@@ -423,7 +423,13 @@ function placeLoc(){ // 「回到台灣」按鈕：貼在地圖目前看得到�
   const bottom=Math.min(r.bottom,lim,innerHeight),vis=!document.body.classList.contains('fin-open')&&r.height>0&&bottom-Math.max(r.top,0)>110&&S.started;
   const lg=$('#rngLeg');if(lg){const on=vis&&lg.childElementCount>0;lg.style.display=on?'block':'none';if(on){lg.style.left=(Math.max(r.left,0)+8)+'px';lg.style.top=(Math.max(r.top,0)+8)+'px';lg.style.maxWidth=Math.max(160,Math.min(r.right,innerWidth)-Math.max(r.left,0)-70)+'px';}}
   b.style.display=vis?'flex':'none';if(!vis)return;
-  b.style.left=(Math.min(r.right,innerWidth)-12-44)+'px';b.style.top=(bottom-12-44)+'px';
+  const left=Math.min(r.right,innerWidth)-12-44,co=document.getElementById('coach');
+  let bt=bottom;
+  if(co&&!co.hidden&&getComputedStyle(co).display!=='none'){ // 新手引導訊息和按鈕重疊時，按鈕移到訊息上方
+    const cr=co.getBoundingClientRect();
+    if(cr.right>left-8&&cr.left<left+52&&cr.top<bottom&&cr.bottom>bottom-68)bt=cr.top;
+  }
+  b.style.left=left+'px';b.style.top=(bt-12-44)+'px';
 }
 let locQ=0;const locReq=()=>{if(locQ)return;locQ=requestAnimationFrame(()=>{locQ=0;placeLoc();});};
 addEventListener('scroll',locReq,true);addEventListener('resize',locReq);
@@ -439,7 +445,7 @@ function renderInfoSide(){
   const u=S.sel&&alive(S.sel)?S.sel:(S.hover&&S.baseSel!==S.hover?(hu&&K(hu.c,hu.r)===S.hover?hu:unitAt(S.hover)):null); // 點基地標籤：顯示機場本身
   const h=u?hexOf(u):(S.hover?TER[S.hover]:null);
   if(!h){el.innerHTML='<div class="k">點選地圖上的單位或地格查看資料。</div>';return;}
-  let o='<div class="eyebrow">'+hname(h)+' · '+TERN[h.t]+(h.cliff?' · 斷崖':'')+(h.mud?' · 泥灘潮間帶':'')+(MINOR_PORTS[h.k]?' · 次要港口：'+MINOR_PORTS[h.k]+'（占領後補給 +2，不計入勝負條件）':'')+
+  let o='<div class="eyebrow">'+hname(h)+' · '+TERN[h.t]+(h.town?'（城鎮）':'')+(h.cliff?' · 斷崖':'')+(h.mud?' · 泥灘潮間帶':'')+(MINOR_PORTS[h.k]?' · 次要港口：'+MINOR_PORTS[h.k]+'（占領後補給 +2，不計入勝負條件）':'')+
       ((S.bh&&S.bh[h.k]&&S.turn-S.bh[h.k]>=1&&S.owner[h.k]==='atk')?' · 灘頭堡（補給 +2）':'')+(isLand(h)?' · '+SIDE[S.owner[h.k]]+'控制':'')+'</div>';
   if(u){
     const T=TYPES[u.type];
@@ -484,12 +490,39 @@ function renderLog(){
 }
 function renderAll(){renderMap();renderStatus();renderCtrl();renderInfo();renderVC();renderNodes();renderLog();renderTheater();renderCost();}
 // while recording a video simulation, a render call stores a frame instead of drawing
+// 開局視角：第 1 回合輪到玩家時，畫面裡看得到的己方單位不到三分之一，就把地圖捲到己方單位最集中的地方（每一局、每一方只做一次）
+const FOCUS_DONE=new WeakMap();
+function focusOwnOnce(){
+  if(!S||!S.started||S.over||S.sim||S.video||S.rec||S.turn!==1||!humanTurn())return;
+  let done=FOCUS_DONE.get(S);
+  if(!done){done={};FOCUS_DONE.set(S,done);}
+  if(done[S.phase])return;
+  const w=document.querySelector('.mapwrap');
+  if(!w||document.body.classList.contains('mapfs')||w.scrollWidth<=w.clientWidth+2&&w.scrollHeight<=w.clientHeight+2)return;
+  done[S.phase]=true;
+  const pts=[];
+  for(const u of S.units){
+    if(u.side!==S.phase||u.hp<=0)continue;
+    const p=center(u.c,u.r);
+    pts.push([(MX0+p[0])/EVBW*w.scrollWidth,(MY0+p[1])/EVBH*w.scrollHeight]);
+  }
+  if(!pts.length)return;
+  const inView=(p,l,t)=>p[0]>=l&&p[0]<=l+w.clientWidth&&p[1]>=t&&p[1]<=t+w.clientHeight;
+  const seen=pts.filter(p=>inView(p,w.scrollLeft,w.scrollTop)).length;
+  if(seen*3>=pts.length)return;
+  let best=null,bn=-1;
+  for(const c of pts){ // 以每個單位為中心試一次，取畫面內己方單位最多的位置
+    const l=c[0]-w.clientWidth/2,t=c[1]-w.clientHeight/2,n=pts.filter(p=>inView(p,l,t)).length;
+    if(n>bn){bn=n;best=[l,t];}
+  }
+  if(bn>seen){w.scrollLeft=best[0];w.scrollTop=best[1];}
+}
 // 新手引導：人類操作的前 2 回合，依目前動作顯示「下一步該做什麼」，可按 ✕ 永久關閉
 function coachUpdate(){
   let el=document.getElementById('coach');
   const off=(()=>{try{return localStorage.getItem('tsl-coach')==='off';}catch(e){return false;}})();
   const show=!off&&S&&S.started&&!S.over&&!S.sim&&!S.video&&!S.rec&&S.turn<=2&&humanTurn();
-  if(!show){if(el)el.hidden=true;return;}
+  if(!show){if(el&&!el.hidden){el.hidden=true;locReq();}return;}
   const side=S.phase,col=side==='atk'?'紅色':'藍色',me=S.units.filter(u=>u.side===side),moved=me.some(u=>u.moved||u.acted);
   let step,txt;
   if(S.mode==='strike'){step='第 2 步：火力打擊';txt='點地圖上有橘圈的敵方目標來打擊；不想打了，再按一次「火力打擊」取消。';}
@@ -497,12 +530,12 @@ function coachUpdate(){
   else if(!moved){step='第 1 步：選單位';txt='點一個'+col+'單位（例如沿岸的'+(side==='atk'?'兩棲旅，先讓它出航':'步兵旅')+'）。';}
   else{step='第 3 步：收尾';txt='還有單位想動就繼續；想打擊按「火力打擊」，不想一個個點就按「電腦代打」；做完按「結束階段」。';}
   if(!el){el=document.createElement('div');el.id='coach';el.className='coach';el.setAttribute('role','status');document.body.appendChild(el);}
-  el.hidden=false;
+  el.hidden=false;locReq();
   const key=step+txt;
     if(el.dataset.k!==key){el.dataset.k=key;
     el.innerHTML='<b>新手引導 · '+TX(step)+'</b>'+TX(txt)+'<button aria-label="'+TX('關閉引導')+'" title="'+TX('關閉引導（之後不再顯示）')+'">✕</button>';
     el.querySelector('button').onclick=()=>{try{localStorage.setItem('tsl-coach','off');
-    }catch(e){}el.hidden=true;
+    }catch(e){}el.hidden=true;locReq();
     };
     }
 }
@@ -572,7 +605,7 @@ function ucPlace(){
   addEventListener('pointerup',end);addEventListener('pointercancel',end);
   addEventListener('resize',()=>{wxWinSync();renderStatus();apply();});
 })();
-function render(){coachUpdate();
+function render(){focusOwnOnce();coachUpdate();
   if(typeof MISSION!=='undefined'&&MISSION)MISSION.tick();
   /* 關卡挑戰：檢查過關條件 */if(S.rec)recordFrame();
   else{renderAll();
