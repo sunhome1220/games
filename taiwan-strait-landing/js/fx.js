@@ -308,7 +308,7 @@ function renderStatus(){
         23.3]:[120.9,21.35]).toFixed(1)+' m').join('、')+(W.ty?'；'+TYC[W.ty.cls].n+'颱風，暴風半徑 '+W.ty.R+' km，距海峽 '+Math.round(kmLL([W.ty.lon,W.ty.lat],WXREF))+' km':'')+'）':'')+
         '：海上每回合可移動 '+W.sea+' 格；灘頭卸載能力 '+Math.round(Math.max(0,Math.min(1,(2.5-(W.wave||0))/1.25))*100)+'%、港口 '+Math.round(Math.max(.3,Math.min(1,(4-(W.wave||0))/2))*100)+
         '%；'+(W.air?'空降與空襲可以進行':'空降與空襲停擺')+(W.fire?'；火力 '+W.fire:'')+'。浪高 2.5 公尺以上，海上登陸艦、運兵船與補給船團開始損耗，5 公尺以上護航艦與航艦也會。'+(S.fcH!=null?'預報下回合浪高約 '+S.fcH.toFixed(1)+' 公尺（誤差約 ±0.3，颱風時 ±0.6）。':'')+
-        (shelterNeeded()?'預報風浪偏大，可以下「避風令」。':''))+'>天候 '+W.n+(S.fcH!=null?' · 預報 '+S.fcH.toFixed(1)+' 公尺'+(S.fcTyphoon?'（颱風）':''):'')+' · 海上移動 <b>'+W.sea+'</b></span>'+
+        (shelterNeeded()?'預報風浪偏大，可以下「避風令」。':''))+'><span>天候 '+W.n+(S.fcH!=null?' · 預報 '+S.fcH.toFixed(1)+' 公尺'+(S.fcTyphoon?'（颱風）':''):'')+' · <span style="white-space:nowrap">海上移動 <b>'+W.sea+'</b></span></span></span>'+
     '<span class="chip tp"'+tip('f',atkP?'【火力】攻方這個階段可以打擊 '+S.fire+' 個目標（火箭軍飛彈、空軍、艦砲等的總和，按「火力打擊」再點目標；每點命中率不高，優先打威脅大的目標）。'+(S.fireNote?S.fireNote:''):'【火力】守方的火力來自岸置飛彈與盟軍；本回合攻方火力 '+S.fire+' 點。'+(S.fireNote?S.fireNote:''))+'>火力 <b>'+S.fire+'</b></span>'+
     '<span class="chip tp"'+tip('a','【制空】雙方空軍對抗的結果：'+AIRCTL[ac]+'。制空優勢的一方空襲與空降更順利、損失較小。'+(S.sead?'目前守方防空被壓制，攻方飛機較安全。':'')+(afShare()<1?'機場受損，起降能力剩 '+Math.round(afShare()*100)+
         '%。':''))+'>制空 <b>'+({atk:'攻優',mid:'均勢',def:'守優'}[ac])+'</b>'+(S.sead?' · 防空壓制':'')+(afShare()<1?' · 機場 '+Math.round(afShare()*100)+'%':'')+'</span>'+
