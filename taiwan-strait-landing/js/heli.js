@@ -68,14 +68,17 @@ function heliStrike(b,t,auto){
   if(hit)damage(t,1,b.n+'攻擊直升機');
   checkInstant();return true;
 }
-// 電腦自動：先打近岸船團（補給、兩棲優先），再打上岸的裝甲與兩棲部隊
+// 電腦自動：依效率挑目標＝每批期望打掉的步數 ÷ 預估損失架數（載著旅的船命中時船和旅各扣 1 步，算 2 步）
+//  ★期望步數太低的不打（一般 0.15 步、攻方空優時 0.3 步，保留兵力給更好的時機）
+const heliLaden=t=>atSea(t)&&!!t.boundTo&&S.units.some(x=>x.id===t.boundTo&&alive(x));
+const heliExp=(b,t)=>heliP(b,t)*(heliLaden(t)?2:1);
+const heliEff=(b,t)=>heliExp(b,t)/(HELI.pk*heliLossRate(t)+.05);
 function heliAuto(){
-  if(S.over||S.phase!=='def')return;
+  if(S.over||S.phase!=='def')return;const min=S.airCtl==='atk'?.3:.15;
   for(const b of HELI.b){let g=20;
     while(heliBudget(b)>0&&g-->0&&!S.over){
-      const sh=heliShipT(b);if(sh.length){heliStrike(b,pickBest(sh,t=>tgtVal(t)+heliP(b,t)*3),true);continue;}
-      const ld=heliLandT(b);if(ld.length){heliStrike(b,pickBest(ld,t=>tgtVal(t)*heliP(b,t)*10+t.hp),true);continue;}
-      break;}
+      const ts=heliShipT(b).concat(heliLandT(b)).filter(t=>heliExp(b,t)>=min);if(!ts.length)break;
+      heliStrike(b,pickBest(ts,t=>heliEff(b,t)+heliExp(b,t)*.01),true);}
   }
 }
 const HELI_MODE_N={hlS:'攻擊近岸船團',hlL:'攻擊上岸部隊'};
