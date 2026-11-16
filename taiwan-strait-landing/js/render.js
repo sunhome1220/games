@@ -664,16 +664,21 @@ function mapMarksSVG(){let o='';
   (S.focus||[]).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<ellipse class="vfocus" cx="'+x.toFixed(1)+'" cy="'+(y+4).toFixed(1)+'" rx="17" ry="12"/>';});
   return o;}
 // 可攻擊目標圈、已選定目標、出擊中的基地
-function mapTargetsSVG(){let o='';
-  if(humanTurn()){
-    let rings=[];
+// 地圖上畫橘圈的目標（棋子＋圈的種類）；手把切換目標也用這份清單
+function targetRings(){
+  if(!S||!S.started||!humanTurn())return [];
+  let rings=[];
     if(S.mode==='strike'){if(S.phase==='atk')rings=S.units.filter(u=>u.side==='def'&&strikeable(u)).map(u=>[u,'strike']);else if(S.phase==='def'&&S.dfire>0&&lrOK())rings=stgTargets().map(u=>[u,'strike']);}
     else if(S.mode==='volley'&&S.sel&&cvOwn(S.sel))rings=volleyTargets(S.sel).map(u=>[u,'strike']);
     else if(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')rings=afRings().map(u=>[u,'strike']);
     else if(S.mode==='cvw'&&S.sel&&cvOwn(S.sel)){const I=cvwManualInfo(S.sel);rings=I&&I.n>0?I.foes.map(u=>[u,'strike']):[];}
     else if(S.mode==='cvwL'&&S.sel&&cvOwn(S.sel)){const I=cvwManualLandInfo(S.sel);rings=I&&I.n>0?I.tg.filter(x=>x.u).map(x=>[x.u,'strike']):[];}
     else if(S.sel&&alive(S.sel)&&S.sel.side===S.phase)rings=targets(S.sel).map(u=>[u,'']);
-    rings=rings.filter(([u])=>!subHidden(u)&&!(u.ship&&atSea(u))); // 地圖上沒畫出來的單位（船上的旅、隱蔽的潛艦）不畫圈
+  return rings.filter(([u])=>!subHidden(u)&&!(u.ship&&atSea(u))); // 地圖上沒畫出來的單位（船上的旅、隱蔽的潛艦）不畫圈
+}
+function mapTargetsSVG(){let o='';
+  if(humanTurn()){
+    const rings=targetRings();
     const rf=US/(16/26*1.18); // 目標圈跟著棋子大小縮放
     rings.forEach(([u,c])=>{const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy;o+='<circle class="ring '+c+'" cx="'+x+'" cy="'+y+'" r="'+(15*rf).toFixed(1)+'" style="stroke-width:'+(2.5*Math.max(.6,rf)).toFixed(1)+'px"/>';});
     // 已選定的目標：粗的實線圈＋十字；空軍出擊中的基地：藍色實線圈

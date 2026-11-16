@@ -327,7 +327,7 @@ function endPhaseGuard(){ // 回傳 true＝先擋下並提示
   const atkP=S.phase==='atk',fire=atkP?S.fire:(S.dfire||0);
   const idle=S.turn<=2?S.units.filter(u=>u.side===S.phase&&!u.garrison&&!u.ally&&!isSup(u)&&reach(u).size>0).length:0;
   const msg=[];if(fire>0)msg.push('還有 '+fire+' 點火力沒用（不會累積到下回合）');if(idle>0)msg.push('還有 '+idle+' 個單位可以行動');
-  const b=$('#btnEnd');
+  const b={set textContent(t){['#btnEnd','#mbEnd','#fsEnd'].forEach(q=>{const e=$(q);if(e)e.textContent=t;});}}; // 三處結束階段按鈕同步顯示
   if(!msg.length||endPhaseGuard.t>Date.now()){endPhaseGuard.t=0;b.textContent=TX('結束階段');return false;}
   endPhaseGuard.t=Date.now()+4000;b.textContent=TX('確定結束階段？');toast(msg.join('；')+'。再按一次「結束階段」確認。',3500);
   clearTimeout(endPhaseGuard.h);endPhaseGuard.h=setTimeout(()=>{endPhaseGuard.t=0;b.textContent=TX('結束階段');},4000);
