@@ -54,11 +54,21 @@ function freeShipKind(u,h){ // 這個旅現在能不能裝船：回傳 'lst'／'
   if(nearPort&&P.plaLift>(S.roReserve||0))return 'ro';
   return null;
 }
+// 滾裝船風險提醒（只提醒，不限制）：商船改裝、航速慢、沒有自身防空，要等制空優勢與可卸載的港口／浮動碼頭才安全
+function roRisk(){
+  if(!S||!S.started||S.over||!S.pools)return '';
+  const noAir=S.airCtl!=='atk',dock=PORTS.some(k=>S.owner[k]==='atk'&&!S.portDown[k])||Object.values(TER).some(floatPier);
+  if(noAir&&!dock)return '⚠ 提醒：滾裝船是商船改裝、航速慢、沒有自身防空。目前制空'+AIRCTL[S.airCtl||'mid']+'、攻方也還沒控制能卸載的港口或浮動碼頭，這時出航容易被打沉，到了也沒地方卸載；建議先等（可以不理會這個提醒）。';
+  if(noAir)return '⚠ 提醒：目前制空'+AIRCTL[S.airCtl||'mid']+'（不是攻方優勢），滾裝船沒有自身防空，出航容易被打沉。';
+  if(!dock)return '⚠ 提醒：攻方還沒控制能卸載的港口或浮動碼頭，滾裝船到了也沒地方卸載。';
+  return '';
+}
 function embark(u,h){
   const kind=freeShipKind(u,h);if(kind==='have'||kind==='na'||!kind)return;
   const P=S.pools;if(kind==='lst')P.plaLst--;else P.plaLift--;
   const sh=mkUnit('atk',kind,h.k,{boundTo:u.id});S.units.push(sh);u.ship=sh.id;
   log(uname(u)+' 裝上'+TYPES[kind].n+'（剩 兩棲艦群 '+fmt1(P.plaLst)+'、滾裝船團 '+fmt1(P.plaLift)+'）');
+  if(kind==='ro'&&typeof humanTurn==='function'&&humanTurn()){const w=roRisk();if(w)toast(w,5200);} // 只提醒，不限制
 }
 function liftTurn(){ // 攻方階段開始：卸載完的運輸船返航大陸港口，靠港後裝載一回合再回到運力池
   const P=S.pools,t=S.turn;P.plaLst+=(S.lstBack&&S.lstBack[t])||0;

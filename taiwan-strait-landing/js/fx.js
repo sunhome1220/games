@@ -388,8 +388,9 @@ function landWhy(u){
 function stMove(u,h,st){
   if(atSea(u))st.push('海上航行中');
   if(isBde(u)&&u.side==='atk'&&isLand(h)&&h.isl==='CN'&&!u.ship&&freeShipKind(u,h)===null)st.push('沒有可用的運輸船，要等船返航才能出海');
-  if(u.ship){const sh=shipOf(u);if(sh)st.push('乘坐'+TYPES[sh.type].n+(sh.type==='ro'?'（只能在港口卸載）':'（可搶灘）'));landWhy(u).forEach(x=>st.push(x));}
-  if(u.boundTo){const b=S.units.find(x=>x.id===u.boundTo);st.push('載著'+(b?TYPES[b.type].n+'（'+(plainT()?'戰力 '+pctU(b)+'%':b.hp+' 步')+'）':'旅')+'：船沉了，船上的旅一起損失');if(b&&b.ship===u.id)landWhy(b).forEach(x=>st.push(x));} // 點到船時也顯示船上的旅為什麼不能登陸
+  else if(isBde(u)&&u.side==='atk'&&isLand(h)&&h.isl==='CN'&&!u.ship&&freeShipKind(u,h)==='ro'){const w=roRisk();if(w)st.push('這個旅出航會搭滾裝船（兩棲艦已用完）。'+w);}
+  if(u.ship){const sh=shipOf(u);if(sh)st.push('乘坐'+TYPES[sh.type].n+(sh.type==='ro'?'（只能在港口卸載）':'（可搶灘）'));if(sh&&sh.type==='ro'&&!u.moved){const w=roRisk();if(w)st.push(w);}landWhy(u).forEach(x=>st.push(x));}
+  if(u.boundTo){const b=S.units.find(x=>x.id===u.boundTo);st.push('載著'+(b?TYPES[b.type].n+'（'+(plainT()?'戰力 '+pctU(b)+'%':b.hp+' 步')+'）':'旅')+'：船沉了，船上的旅一起損失');if(u.type==='ro'){const w=roRisk();if(w)st.push(w);}if(b&&b.ship===u.id)landWhy(b).forEach(x=>st.push(x));} // 點到船時也顯示船上的旅為什麼不能登陸
   if((u.type==='lst'||u.type==='ro')&&u.ret)st.push('卸載完畢，正返航大陸港口');
   if(cvOOA(u))st.push('失去戰鬥能力（飛行甲板受損）：艦載機無法起降，撤離戰場中；攻擊方不會再優先打它');
 }
