@@ -86,6 +86,34 @@
   function centerOn(g){if(!g)return;const w=document.querySelector('.mapwrap'),r=g.getBoundingClientRect(),b=w.getBoundingClientRect();
     w.scrollLeft+=r.left+r.width/2-(b.left+b.width/2);w.scrollTop+=r.top+r.height/2-(b.top+b.height/2);
     try{g.scrollIntoView({block:'center',inline:'nearest'});}catch(_){}}
+  // 選了己方單位：十字鍵左右在「這個單位能做的事」之間切換——先是可攻擊的目標（橘圈），再是值得去的目的地：
+  // 有地名的格（港口、城市、機場）、緊鄰敵軍的格，以及每個方向（每 30°）最遠能到的格。目的地依方位順時針排列
+  const KIND={move:'移動',sail:'出航',land:'登陸',drop:'空降'};
+  function selOptions(u){
+    const h=TER[u.c+','+u.r];if(!h)return [];
+    const out=targets(u).filter(t=>document.querySelector('#map .u[data-id="'+t.id+'"]')).map(t=>({id:t.id,k:t.c+','+t.r,lab:TX('攻擊')+'：'+uname(t)}));
+    const [x0,y0]=center(h.c,h.r),pick=new Map(),far={},foes=S.units.filter(e=>e.side!==u.side&&alive(e)&&!subHidden(e));
+    for(const [k,v] of reach(u)){const t=TER[k];if(!t)continue;const [x,y]=center(t.c,t.r),ang=(Math.atan2(x-x0,-(y-y0))*180/Math.PI+360)%360,dist=rd(h,t),sec=Math.floor(ang/30);
+      const e={k,kind:v.kind,ang,dist,t};
+      if(t.name||foes.some(f=>rd(TER[f.c+','+f.r]||t,t)<=kmH(ADJ_KM)))pick.set(k,e);
+      if(!far[sec]||dist>far[sec].dist)far[sec]=e;}
+    for(const s in far)pick.set(far[s].k,far[s]);
+    const dir=a=>TX(['北','東北','東','東南','南','西南','西','西北'][Math.round(a/45)%8]);
+    return out.concat([...pick.values()].sort((a,b)=>a.ang-b.ang||b.dist-a.dist).map(e=>({k:e.k,lab:TX(KIND[e.kind]||'移動')+'：'+(e.t.name||dir(e.ang)+' '+Math.round(e.dist*KM_HEX)+' km')})));
+  }
+  let selI=-1,selKey='';
+  function selStep(d){
+    const u=S.sel,ops=selOptions(u);if(!ops.length)return false;
+    const key=u.id+':'+u.c+','+u.r+':'+(u.moved?1:0);if(key!==selKey){selKey=key;selI=d>0?-1:0;} // 換了單位或位置：從頭開始
+    selI=((selI+d)%ops.length+ops.length)%ops.length;const o=ops[selI];navEl=null;
+    const g=o.id?document.querySelector('#map .u[data-id="'+o.id+'"]'):document.querySelector('#map polygon[data-k="'+o.k+'"]');if(!g)return false;
+    centerOn(g);
+    requestAnimationFrame(()=>{const e=o.id?document.querySelector('#map .u[data-id="'+o.id+'"]'):document.querySelector('#map polygon[data-k="'+o.k+'"]');if(!e)return;
+      const q=e.getBoundingClientRect();x=q.left+q.width/2;y=q.top+q.height/2;hc=null;
+      tgtPick={id:o.id||null,k:o.k,x,y,sel:u.id};lastEl=document.elementFromPoint(x,y);window.TSL_RUMBLE&&TSL_RUMBLE('step');
+      if(typeof toast==='function')toast((selI+1)+'/'+ops.length+'　'+o.lab+TX('（✕ 確認）'),1800);});
+    return true;
+  }
   let unitI=-1;
   function unitStep(d){ // 還沒移動也還沒行動的己方單位：把地圖捲到它、游標移過去並點選
     if(typeof S==='undefined'||!S||!S.started||S.over||document.querySelector('#modal:not([hidden])'))return;
@@ -95,7 +123,8 @@
     const w=document.querySelector('.mapwrap'),g=document.querySelector('#map .u[data-id="'+us[unitI].id+'"]'),r=g.getBoundingClientRect(),b=w.getBoundingClientRect();
     navEl=null;centerOn(g);
     requestAnimationFrame(()=>{const e=document.querySelector('#map .u[data-id="'+us[unitI].id+'"]');if(!e)return;const q=e.getBoundingClientRect();x=q.left+q.width/2;y=q.top+q.height/2;hc=null;
-      e.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window}));window.TSL_RUMBLE&&TSL_RUMBLE('step');});
+      e.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window}));window.TSL_RUMBLE&&TSL_RUMBLE('step');
+      if(S.sel&&typeof toast==='function')toast(TX('選取')+'：'+uname(S.sel)+'　'+(selOptions(S.sel).length?TX('←→ 切換行動、'):'')+TX('○ 換下一個單位'),2200);});
   }
   const pickPad=()=>{const ps=navigator.getGamepads?navigator.getGamepads():[];for(const p of ps)if(p&&p.connected)return p;return null;};
   const dz=v=>Math.abs(v)<.2?0:v;
@@ -178,6 +207,9 @@
     if(press(0)&&el&&!dragStarted&&!drag){
       if(el.tagName==='SELECT'){el.selectedIndex=(el.selectedIndex+1)%el.options.length;el.dispatchEvent(new Event('change',{bubbles:true}));}
       else if(navEl){el.click();if(!modalEl&&!setup)navEl=null;}
+      else if(tgtPick&&tgtPick.sel&&onPick&&S.sel&&S.sel.id===tgtPick.sel){ // 十字鍵選定的攻擊目標或目的地：點那個棋子／那一格
+        const g=tgtPick.id?document.querySelector('#map .u[data-id="'+tgtPick.id+'"]'):document.querySelector('#map polygon[data-k="'+tgtPick.k+'"]'),t=g&&(g.querySelector('.body')||g);tgtPick=null;selKey='';
+        if(t)t.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window}));}
       else if(tgtPick&&(Math.hypot(x-tgtPick.x,y-tgtPick.y)<6||(hh&&hh.c+','+hh.r===tgtPick.k))&&TMODES.includes(S&&S.mode)&&document.querySelector('#map .u[data-id="'+tgtPick.id+'"]')){
         const g=document.querySelector('#map .u[data-id="'+tgtPick.id+'"]'),t=g.querySelector('.body')||g;tgtPick=null;
         t.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window}));} // 資訊卡的按鈕按下後回到地圖游標（例如接著要在地圖上選目標）
@@ -195,10 +227,11 @@
       if(document.querySelector('#modal.fin-on:not([hidden])'))clickIf('#btnClose'); // 結算頁：○＝檢視地圖
       else if(modal)clickIf('#modal .ghost,#modal button#cfN');
       else if(typeof S!=='undefined'&&S&&S.mode==='strike')clickIf('#mbStrike,#fsStrike,#btnStrike',true);
+      else if(typeof S!=='undefined'&&S&&S.sel&&!S.mode){S.sel=null;tgtPick=null;if(typeof render==='function')render();} // 取消選取單位（之後十字鍵左右＝換單位）
       else clickIf('#ucard:not([hidden]) #ucClose');
     }
     if(press(4)||press(5)){if(!modal&&setupOn())clickIf(press(5)?'#wzNext':'#wzPrev');else tabStep(press(5)?1:-1);} // L1／R1：側欄分頁；作戰設定頁＝上一頁／下一頁
-    if(press(14)||press(15)){const d=press(15)?1:-1;if(modal||setupOn())dirStep(d,0);else if(TMODES.includes(S&&S.mode)&&typeof targetRings==='function'&&targetRings().length)targetStep(d);else unitStep(d);} // 十字鍵左右：下一個還沒行動的己方單位；彈窗裡＝切換選項
+    if(press(14)||press(15)){const d=press(15)?1:-1;if(modal||setupOn())dirStep(d,0);else if(TMODES.includes(S&&S.mode)&&typeof targetRings==='function'&&targetRings().length)targetStep(d);else if(S&&S.sel&&alive(S.sel)&&S.sel.side===S.phase&&!S.mode&&humanTurn()&&selStep(d)){}else unitStep(d);} // 十字鍵左右：下一個還沒行動的己方單位；彈窗裡＝切換選項
     if(press(12)||press(13)){const d=press(13)?1:-1;if(modal||setupOn())dirStep(0,d);else btnStep(d);} // 十字鍵上下：游標跳到上／下一個按鈕
     if(press(10))clickIf('#btnFs,#fsExit'); // L3：全螢幕
     if(press(11))clickIf('#btnLoc'); // R3：回到台灣
