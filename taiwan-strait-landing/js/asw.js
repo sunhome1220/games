@@ -15,12 +15,12 @@ function heloSearch(u,h){
   if(!heloReady(u)||hd(hexOf(u),h)>ASW.R)return false;
   u.heloT=S.turn+S.phase;const n=Math.min(ASW.maxH,heloN(u));
   const subs=S.units.filter(s=>s.side!==u.side&&isSubT(s)&&alive(s)&&atSea(s)&&hd(hexOf(s),h)<=ASW.area).sort((a,b)=>hd(hexOf(a),h)-hd(hexOf(b),h));
-  let txt='沒有發現潛艦',found=false;
+  let txt='沒有發現潛艦',found=false,kill=false;
   if(subs.length){const s=subs[0],m=s.type==='hk'?hkU(s)[1]:s.type==='psub'?psubCls(s).det:.8,p=1-Math.pow(1-Math.min(.9,ASW.pFind*m),n);
     if(hitP(p,'heloFind')){found=true;s.revealed=true;s.last={c:s.c,r:s.r,turn:S.turn};const k=hitP(ASW.pKill,'heloKill');
-      txt='發現 '+uname(s)+'，投擲魚雷'+(k?'命中':'未命中')+'（發現 '+Math.round(p*100)+'%、命中 '+Math.round(ASW.pKill*100)+'%，推估）';if(k)damage(s,1,'反潛直升機魚雷');}}
+      kill=k;txt='發現 '+uname(s)+'，投擲魚雷'+(k?'命中':'未命中')+'（發現 '+Math.round(p*100)+'%、命中 '+Math.round(ASW.pKill*100)+'%，推估）';if(k)damage(s,1,'反潛直升機魚雷');}}
   log(uname(u)+' 出動反潛直升機 '+n+' 架搜索 '+hname(h)+' 一帶：'+txt);
-  fxq({t:'txt',at:[h.c,h.r],s:found?'發現潛艦':'未發現',col:u.side});
+  fxq({t:'helo',from:[u.c,u.r],at:[h.c,h.r],found,kill,side:u.side,s:found?(kill?'發現潛艦・命中':'發現潛艦'):'未發現'}); // 直升機飛去搜索、繞圈投聲納浮標、發現就投魚雷，再飛回
   useRec('反潛直升機搜索',1,null,0,u.fl?u.fl.n:uname(u));
   return true;
 }
