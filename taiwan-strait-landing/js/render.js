@@ -626,7 +626,10 @@ function baseMarkersSVG(){
   }
   return o;
 }
-function textZoomFix(){ // 放大到 500% 以上時，地名、浪高等文字以自己的座標為中心縮小（不用 CSS transform-box：iOS Safari 對 SVG 文字支援不完整，會跑位）
+// 射程圈的線寬與文字大小固定為螢幕像素（地圖整張放大時不跟著變粗、變大）：--ik＝1／（每個座標單位的螢幕像素數）
+function ringScaleSync(){const m=document.querySelector('#map');if(!m)return;let k=1;try{const c=m.getScreenCTM();k=c&&c.a>0?c.a:1;}catch(e){}
+  const ik=(1/k).toFixed(4);if(m.__ik!==ik){m.__ik=ik;m.style.setProperty('--ik',ik);}}
+function textZoomFix(){ringScaleSync(); // 放大到 500% 以上時，地名、浪高等文字以自己的座標為中心縮小（不用 CSS transform-box：iOS Safari 對 SVG 文字支援不完整，會跑位）
   const k=typeof ZOOM!=='undefined'&&ZOOM>5?5/ZOOM:1;
   document.querySelectorAll('#map .lbl,#map .wxl,#map .mport,#map .big,#map .fxt,#map .btag').forEach(e=>{if(k===1){if(e.__tz){e.removeAttribute('transform');e.__tz=0;}return;}const x=+
       (e.getAttribute('x')||e.getAttribute('data-x'))||0,y=+(e.getAttribute('y')||e.getAttribute('data-y'))||0;e.setAttribute('transform','translate('+x+' '+y+') scale('+
