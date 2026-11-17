@@ -459,6 +459,12 @@ function ammoBar(n,v,m,unit){const r=m>0?v/m:0,f=x=>Math.abs(x-Math.round(x))<.0
 function ammoBarsHTML(u){
   const rows=ammoRows(u).map(x=>ammoBar(x.n,x.v,x.m));
   if(isLch(u)&&u.veh!=null&&!u.ghostFleet)rows.push(ammoBar(TX('發射車（輛）'),ssmReady(u),lchV0(u)));
+  // 防空接戰上限（休斯齊射模型）：每一波最多接戰幾枚來襲；同一階段內多次齊射會累計（已用的在下一個階段歸零）
+  const isAD=u.fl||u.type==='dd'||(isEsc(u)&&SHIPW[u.type]&&SHIPW[u.type].chan>0)||(u.type==='ddh'&&SHIPW.ddh);
+  const cap=isAD&&u.mag&&u.mag.ad>0?chanOf(u):0;
+  if(cap>0){const used=u.chT===S.turn+S.phase?(u.chU||0):0,left=Math.max(0,Math.min(cap-used,Math.floor(u.mag.ad/SALVO.perMsl)));
+    rows.push('<div class="adcap">'+TX('防空接戰')+'：'+TX('每波最多')+' <b>'+cap+'</b> '+TX('枚來襲')+(used?'，'+TX('本階段還能接戰')+' <b class="'+(left?'':'r')+'">'+left+'</b> '+TX('枚'):'')+
+      '<small>（'+TX('每枚來襲用')+' '+SALVO.perMsl+' '+TX('枚攔截彈；超過上限的不會被攔截，近迫防禦另可處理')+' '+SALVO.ciws+' '+TX('枚')+'；★'+TX('推估')+'）</small></div>');}
   return rows.length?'<div class="ammo">'+rows.join('')+'</div>':'';
 }
 // 守方彈藥存量（全軍共用）：滿載＝該年代的開局存量（S.p0，previewEra 設定）；之後若有補充超過，就取看過的最大值
@@ -467,7 +473,8 @@ function poolTrack(){if(S&&S.started&&S.pools)['rocAS','rocHCD','rocMsl','rocAtc
 function defLedgerBars(){
   const P=S.pools;if(!P)return '';const row=(n,k,unit)=>{const m=poolMax(k);return m>0?ammoBar(n,P[k]||0,m,unit):'';};
   return '<div class="eyebrow" style="margin-top:6px">'+TX('守方彈藥存量（全軍共用）')+'</div><div class="ammo">'+row(TX('雄風反艦'),'rocAS')+row(TX('魚叉岸防'),'rocHCD')+row(TX('長程飛彈'),'rocMsl')+
-    row(TX('陸軍戰術飛彈（枚）'),'rocAtc')+row(TX('海馬士火箭（莢艙）'),'rocGml')+row(TX('雷霆2000'),'rocRkt')+row(TX('防空'),'rocAD')+'</div>';
+    row(TX('陸軍戰術飛彈（枚）'),'rocAtc')+row(TX('海馬士火箭（莢艙）'),'rocGml')+row(TX('雷霆2000'),'rocRkt')+row(TX('防空'),'rocAD')+'</div>'+
+    '<div class="adcap">'+TX('陸上防空每回合最多接戰')+' <b>'+MSL.adCap+'</b> '+TX('枚來襲')+'<small>（'+TX('21 個連 × 8 枚，只保護機場、港口、城市；★推估')+'）</small></div>';
 }
 function renderInfoSide(){
   const el=$('#info');
