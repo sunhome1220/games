@@ -362,6 +362,16 @@ function renderCtrl(){
   const ua=h&&undoAvail();$('#btnUndo').hidden=!ua;$('#mbUndo').hidden=!ua;
 }
 // 載運的旅「現在為什麼不能登陸」：本回合還能行動、卻沒有任何橘色（可登陸）格子時，說明規則與附近每個候選格的原因
+// 這個旅（在船上）登陸這一格不行的原因；空字串＝可以。供資訊卡說明與地圖登陸提示標籤共用
+function landWhyHex(u,n){
+  const sh=shipOf(u),ro=!!sh&&sh.type==='ro';
+  const floatWhy=n=>S.owner[n.k]!=='atk'?'還沒占領'+(ro?'（滾裝船不能搶灘）':''):enemyAdj(n.k,'atk')>0?'旁邊還有敵軍':n.isl!=='TW'?'只有台灣本島能架浮動碼頭':wxWave(n)>1.25?'浪太高（'+wxWave(n).toFixed(1)+' m）':'條件不符';
+  if(n.k===TAIPEI)return '台北市區不能登陸';if(n.cliff)return '斷崖';if(n.mud)return '泥灘';if(n.t==='mtn')return '山地';
+    if(u.type==='arm'){if(n.t==='port'){if(S.owner[n.k]!=='atk')return '港口還在守方手上';if(S.portDown[n.k])return '港口已被破壞';}else if(ro)return floatWhy(n);else return '重型旅只能進攻方控制的港口';}
+    else if(ro&&n.t!=='port'&&!floatPier(n))return floatWhy(n);
+    if(!canStack(u,n.k))return '格內有敵軍或已滿';
+  return '';
+}
 function landWhy(u){
   if(!u||u.side!=='atk'||!u.ship||u.moved||u.acted||!alive(u)||typeof reach!=='function')return [];
   const rc=reach(u);for(const v of rc.values())if(v.kind==='land')return [];
@@ -372,12 +382,7 @@ function landWhy(u){
   if(!cand.size){
     let best=null,bd=1e9;for(const x of Object.values(TER)){if(!isLand(x)||!x.coastal||x.isl==='JP'||x.isl==='CN')continue;const d=rd(here,x);if(d<bd){bd=d;best=x;}}
     out.push('這回合開不到岸邊'+(best?'：最近的海岸（'+hname(best)+'）約 '+Math.round(bd*KM_HEX)+' km，而海上移動力只有 '+seaMove(u)+' 格（約 '+Math.round(seaMove(u)*KM_HEX)+' km）':'')+'。');return out;}
-  const floatWhy=n=>S.owner[n.k]!=='atk'?'還沒占領'+(ro?'（滾裝船不能搶灘）':''):enemyAdj(n.k,'atk')>0?'旁邊還有敵軍':n.isl!=='TW'?'只有台灣本島能架浮動碼頭':wxWave(n)>1.25?'浪太高（'+wxWave(n).toFixed(1)+' m）':'條件不符';
-  const why=n=>{
-    if(n.k===TAIPEI)return '台北市區不能登陸';if(n.cliff)return '斷崖';if(n.mud)return '泥灘';if(n.t==='mtn')return '山地';
-    if(u.type==='arm'){if(n.t==='port'){if(S.owner[n.k]!=='atk')return '港口還在守方手上';if(S.portDown[n.k])return '港口已被破壞';}else if(ro)return floatWhy(n);else return '重型旅只能進攻方控制的港口';}
-    else if(ro&&n.t!=='port'&&!floatPier(n))return floatWhy(n);
-    if(!canStack(u,n.k))return '格內有敵軍或已滿';return '';};
+  const why=n=>landWhyHex(u,n);
   const ports=[],groups={};
   for(const n of cand.values()){const w=why(n);if(!w)continue;if(n.t==='port')ports.push(hname(n)+'：'+w);else(groups[w]=groups[w]||[]).push(n);}
   const lines=ports.slice(0,3);
@@ -586,14 +591,28 @@ function focusOwnOnce(){
   if(bn>seen){w.scrollLeft=best[0];w.scrollTop=best[1];}
 }
 // 新手引導：人類操作的前 2 回合，依目前動作顯示「下一步該做什麼」，可按 ✕ 永久關閉
+// 登陸新手引導：玩家攻方在登陸過程的幾個狀態（有部隊在海上、選了船上的旅、上岸之後）；回傳 [標題,說明] 或 null
+function landCoach(){
+  if(!S||!S.started||S.phase!=='atk'||!S.ctrl||S.ctrl.atk!=='human')return null;
+  const u=S.sel;
+  if(u&&alive(u)&&u.side==='atk'&&u.ship&&!u.moved&&!u.acted){
+    const sh=shipOf(u),ro=!!sh&&sh.type==='ro';for(const v of reach(u).values())if(v.kind==='land')return ['登陸：選地點','橘色格子＝可登陸，點一格就上岸（上岸後這個旅本回合不能再動）。地圖上的「★推薦」標籤是守軍少、離目標近的位置；工具列的「登陸提示」可以開關標籤。'];
+    return ro?['登陸：滾裝船','滾裝船不能搶灘，要在已控制的港口或浮動碼頭卸載，現在還沒有。可以先用登陸艦搶灘、占下港口；詳細原因看資訊卡。']:['登陸：還沒靠岸','這個旅現在沒有可登陸的格子。綠色格子＝可航行的海面，往岸邊靠近，下回合再登陸；詳細原因看資訊卡。'];
+  }
+  if(!u&&S.units.some(x=>x.side==='atk'&&x.ship&&alive(x)&&!x.moved&&!x.acted))return ['登陸：你有部隊在海上','點選海上的船（或船上的旅），亮橘色的格子就是可登陸的位置，綠色是可航行的海面；「登陸提示」標籤會指出適合的地點。'];
+  const fl=S.stats&&S.stats.firstLand;
+  if(fl!=null&&S.turn<=fl+1)return ['登陸之後','灘頭已經有部隊：接著占領港口與城市（★勝負目標）、顧好補給（容量看狀態列）；滾裝船要等港口或浮動碼頭才能卸載重型旅。'];
+  return null;
+}
 function coachUpdate(){
   let el=document.getElementById('coach');
   const off=(()=>{try{return localStorage.getItem('tsl-coach')==='off';}catch(e){return false;}})();
-  const show=!off&&S&&S.started&&!S.over&&!S.sim&&!S.video&&!S.rec&&S.turn<=2&&humanTurn();
+  const show=!off&&S&&S.started&&!S.over&&!S.sim&&!S.video&&!S.rec&&humanTurn()&&(S.turn<=2||landCoach()!==null);
   if(!show){if(el&&!el.hidden){el.hidden=true;locReq();}return;}
   const side=S.phase,col=side==='atk'?'紅色':'藍色',me=S.units.filter(u=>u.side===side),moved=me.some(u=>u.moved||u.acted);
   let step,txt;
   if(S.mode==='strike'){step='第 2 步：火力打擊';txt='點地圖上有橘圈的敵方目標來打擊；不想打了，再按一次「火力打擊」取消。';}
+  else if(landCoach()){[step,txt]=landCoach();}
   else if(S.sel){step='第 2 步：下令';txt='點綠色格子＝移動；點橘圈的敵方單位＝攻擊。點空白處可取消選取。';}
   else if(!moved){step='第 1 步：選單位';txt='點一個'+col+'單位（例如沿岸的'+(side==='atk'?'兩棲旅，先讓它出航':'步兵旅')+'）。';}
   else{step='第 3 步：收尾';txt='還有單位想動就繼續；想打擊按「火力打擊」，不想一個個點就按「電腦代打」；做完按「結束階段」。';}

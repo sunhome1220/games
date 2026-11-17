@@ -686,6 +686,11 @@ body.mapfs .fshint{display:block;padding:4px max(12px,env(safe-area-inset-left,0
 #map .lmk text{font-size:3.4px;font-weight:700;fill:var(--ink);stroke:var(--panel);stroke-width:.9;paint-order:stroke;stroke-linejoin:round}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #map .coast{stroke:#c9bb8a} :root:not([data-theme="light"]) #map .rvl{fill:#8cc4e6} :root:not([data-theme="light"]) #map .peak{fill:#e0cf9a}}
 :root[data-theme="dark"] #map .coast{stroke:#c9bb8a} :root[data-theme="dark"] #map .rvl{fill:#8cc4e6} :root[data-theme="dark"] #map .peak{fill:#e0cf9a}
+#map .ltg{pointer-events:none} #map .ltg rect{fill:var(--panel);stroke:#e08a1e;stroke-width:1.2} #map .ltg text{fill:var(--ink);font-weight:700;paint-order:normal} #map .ltg .ltl{stroke:#e08a1e;stroke-width:1;stroke-dasharray:2 2;fill:none}
+#map .ltg.rec rect{fill:#fff3d6;stroke:#c88710;stroke-width:1.6} #map .ltg.rec text{fill:#6b4a00} #map .ltg.rec .ltl{stroke:#c88710}
+#map .ltg.drop rect,#map .ltg.drop .ltl{stroke:#8a5cc0} #map .ltg.blk rect,#map .ltg.blk .ltl{stroke:#8e9a94} #map .ltg.blk text{fill:var(--muted)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #map .ltg.rec rect{fill:#4a3a12} :root:not([data-theme="light"]) #map .ltg.rec text{fill:#ffe29a}}
+:root[data-theme="dark"] #map .ltg.rec rect{fill:#4a3a12} :root[data-theme="dark"] #map .ltg.rec text{fill:#ffe29a}
 #map .btag{cursor:pointer} #map.mvsel .btag{opacity:.3;pointer-events:none;transition:opacity .15s} /* 下移動命令時：機場標籤半透明且不擋點擊 */ #map .btag rect{fill:#fff;stroke:var(--def);stroke-width:1.4;opacity:.94} #map .btag text{fill:var(--def);font-weight:700;pointer-events:none} #map .btl{stroke:var(--def);stroke-width:1;stroke-dasharray:2 2;opacity:.7;pointer-events:none} #map .btl.lost{stroke:var(--atk)} #map.zlo .btag,#map.zlo .btl{display:none}
 #map .btag.lost rect{stroke:var(--atk)} #map .btag.lost text{fill:var(--atk);text-decoration:line-through}
 #afPend .cob{min-width:30px;min-height:28px;padding:0 6px} #afPend label.co{display:block;cursor:pointer} #afPend label.co input{vertical-align:middle}
@@ -742,6 +747,7 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
         <span class="mb-l">地圖</span>
         <button class="ghost zb" data-z="-1" aria-label="縮小">－</button><button class="ghost zv" id="zLabel" title="重設為 300%">300%</button><button class="ghost zb" data-z="1" aria-label="放大">＋</button>
         <button class="ghost" id="btnFs" aria-label="全螢幕" title="全螢幕">⛶<span class="bl"> 全螢幕</span></button>
+        <button class="ghost" id="btnLand" aria-pressed="false" aria-label="登陸提示" title="選了要登陸的旅後，在地圖上標出各處適合的登陸方式（搶灘、港口卸載、浮動碼頭、空降）與推薦位置" hidden>⚓<span class="bl"> 登陸提示</span></button>
         <button class="ghost" id="btnRng" aria-pressed="false" aria-label="射程" title="顯示雙方航艦艦隊的防空傘與艦載機對艦打擊距離">◎<span class="bl"> 射程</span></button>
         <span class="dd">Ctrl＋滾輪可縮放；縮小可看外圍示意區（美中日各方投射武力的基地與海域），放大後可拖曳</span>
       </div>
@@ -765,6 +771,11 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
         <span><i style="background:var(--mtn)"></i>山地（防禦 +2，移動 2）</span>
         <span><i style="background:var(--main)"></i>大陸沿海</span>
         <span><i style="background:var(--atk);opacity:.4"></i>攻方控制</span>
+        <span><i style="background:var(--hl-move)"></i>綠＝可移動／可航行</span>
+        <span><i style="background:var(--hl-land)"></i>橘＝可登陸（登陸艦搶灘、滾裝船進港）</span>
+        <span><i style="background:var(--hl-drop)"></i>紫＝可空降</span>
+        <span><i style="background:transparent;border:2px solid var(--atk);border-radius:50%"></i>橘圈＝可攻擊的目標</span>
+        <span>「搶灘／港口卸載／浮動碼頭／空降」小標籤＝選了旅之後各處適合的登陸方式，★＝推薦（守軍少、離目標近）；用地圖工具列的「登陸提示」開關</span>
         <span>虛線邊＝斷崖海岸、點線邊＝泥灘潮間帶，皆不可登陸</span>
         <span style="color:var(--accent)">★ 勝負目標</span>
         <span><i style="background:var(--accent);border-radius:50%"></i>棋子下方圓點＝戰力「步」，實心為剩餘、空心為已損失</span>
@@ -905,44 +916,45 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-17.16' -->
-<script src="js/dict.js?v=2026-11-17.16"></script>
-<script src="js/i18n.js?v=2026-11-17.16"></script>
-<script src="js/btnfix.js?v=2026-11-17.16"></script>
-<script src="js/geo.js?v=2026-11-17.16"></script>
-<script src="js/dem.js?v=2026-11-17.16"></script>
-<script src="js/urban.js?v=2026-11-17.16"></script>
-<script src="js/map.js?v=2026-11-17.16"></script>
-<script src="js/state.js?v=2026-11-17.16"></script>
-<script src="js/rules.js?v=2026-11-17.16"></script>
-<script src="js/supply.js?v=2026-11-17.16"></script>
-<script src="js/ending.js?v=2026-11-17.16"></script>
-<script src="js/theater.js?v=2026-11-17.16"></script>
-<script src="js/airwar.js?v=2026-11-17.16"></script>
-<script src="js/sam.js?v=2026-11-17.16"></script>
-<script src="js/carrier.js?v=2026-11-17.16"></script>
-<script src="js/asw.js?v=2026-11-17.16"></script>
-<script src="js/psub.js?v=2026-11-17.16"></script>
-<script src="js/strike.js?v=2026-11-17.16"></script>
-<script src="js/airstrike.js?v=2026-11-17.16"></script>
-<script src="js/heli.js?v=2026-11-17.16"></script>
-<script src="js/decisions.js?v=2026-11-17.16"></script>
-<script src="js/report.js?v=2026-11-17.16"></script>
-<script src="js/turn.js?v=2026-11-17.16"></script>
-<script src="js/ai.js?v=2026-11-17.16"></script>
-<script src="js/render.js?v=2026-11-17.16"></script>
-<script src="js/fxanim.js?v=2026-11-17.16"></script>
-<script src="js/fx.js?v=2026-11-17.16"></script>
-<script src="js/video.js?v=2026-11-17.16"></script>
-<script src="js/stats.js?v=2026-11-17.16"></script>
-<script src="js/input.js?v=2026-11-17.16"></script>
-<script src="js/unitinfo.js?v=2026-11-17.16"></script>
-<script src="js/version.js?v=2026-11-17.16"></script>
-<script src="js/changelog.js?v=2026-11-17.16"></script>
-<script src="js/app.js?v=2026-11-17.16"></script>
-<script src="js/missions.js?v=2026-11-17.16"></script>
-<script src="js/mission_carrier.js?v=2026-11-17.16"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-17.17' -->
+<script src="js/dict.js?v=2026-11-17.17"></script>
+<script src="js/i18n.js?v=2026-11-17.17"></script>
+<script src="js/btnfix.js?v=2026-11-17.17"></script>
+<script src="js/geo.js?v=2026-11-17.17"></script>
+<script src="js/dem.js?v=2026-11-17.17"></script>
+<script src="js/urban.js?v=2026-11-17.17"></script>
+<script src="js/map.js?v=2026-11-17.17"></script>
+<script src="js/state.js?v=2026-11-17.17"></script>
+<script src="js/rules.js?v=2026-11-17.17"></script>
+<script src="js/supply.js?v=2026-11-17.17"></script>
+<script src="js/ending.js?v=2026-11-17.17"></script>
+<script src="js/theater.js?v=2026-11-17.17"></script>
+<script src="js/airwar.js?v=2026-11-17.17"></script>
+<script src="js/sam.js?v=2026-11-17.17"></script>
+<script src="js/carrier.js?v=2026-11-17.17"></script>
+<script src="js/asw.js?v=2026-11-17.17"></script>
+<script src="js/psub.js?v=2026-11-17.17"></script>
+<script src="js/strike.js?v=2026-11-17.17"></script>
+<script src="js/airstrike.js?v=2026-11-17.17"></script>
+<script src="js/heli.js?v=2026-11-17.17"></script>
+<script src="js/decisions.js?v=2026-11-17.17"></script>
+<script src="js/report.js?v=2026-11-17.17"></script>
+<script src="js/turn.js?v=2026-11-17.17"></script>
+<script src="js/ai.js?v=2026-11-17.17"></script>
+<script src="js/render.js?v=2026-11-17.17"></script>
+<script src="js/landtips.js?v=2026-11-17.17"></script>
+<script src="js/fxanim.js?v=2026-11-17.17"></script>
+<script src="js/fx.js?v=2026-11-17.17"></script>
+<script src="js/video.js?v=2026-11-17.17"></script>
+<script src="js/stats.js?v=2026-11-17.17"></script>
+<script src="js/input.js?v=2026-11-17.17"></script>
+<script src="js/unitinfo.js?v=2026-11-17.17"></script>
+<script src="js/version.js?v=2026-11-17.17"></script>
+<script src="js/changelog.js?v=2026-11-17.17"></script>
+<script src="js/app.js?v=2026-11-17.17"></script>
+<script src="js/missions.js?v=2026-11-17.17"></script>
+<script src="js/mission_carrier.js?v=2026-11-17.17"></script>
 <script>if(missionId())setTimeout(()=>missionStart(missionId()),0);</script>
-<script src="js/gamepad.js?v=2026-11-17.16"></script>
+<script src="js/gamepad.js?v=2026-11-17.17"></script>
 </body>
 </html>
