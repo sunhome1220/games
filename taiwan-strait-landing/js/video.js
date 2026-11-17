@@ -343,7 +343,7 @@ function exportReportText(){
   let o=textHead('戰後檢討報告')+'\n'+body+'\n';
   dlBlob(new Blob([o],{type:'text/plain;charset=utf-8'}),'taiwan-strait-report-'+stampNow()+'.txt');toast(TX('已匯出報告文字'),1500);
 }
-$('#btnShot').onclick=exportShot;$('#btnLogExp').onclick=exportLogText;
+const bShot=$('#btnShot');if(bShot)bShot.onclick=exportShot;$('#btnLogExp').onclick=exportLogText;
 /* ---------- 語音播報（Web Speech API；預設關閉） ---------- */
 const VOICE={n:0,
   get on(){return !!window.speechSynthesis&&$('#optVoice').value==='1';},
@@ -374,11 +374,11 @@ const SFX={ctx:null,get on(){const e=$('#optSfx');return !!e&&e.value==='1';},
 document.addEventListener('pointerdown',()=>{if(SFX.on)SFX.ac();},true); // 手機瀏覽器要使用者點擊後才能出聲
 function sfxBtn(){const b=$('#btnSfx');if(!b)return;const on=SFX.on||VOICE.on;b.innerHTML=(on?'🔊':'🔇')+'<span class="bl"> 音效：'+(on?'開':'關')+'</span>';b.title='警報與語音播報（一起開關；細項在設定）';b.setAttribute('aria-pressed',on?'true':'false');}
 function setOpt(id,v){const e=$('#'+id);if(!e||e.value===v)return;e.value=v;e.dispatchEvent(new Event('change'));}
-$('#btnSfx').onclick=()=>{const turnOn=!(SFX.on||VOICE.on);setOpt('optSfx',turnOn?'1':'0');if(window.speechSynthesis)setOpt('optVoice',turnOn?'1':'0');sfxBtn();if(turnOn)SFX.siren(2);};
+const bSfx=$('#btnSfx');if(bSfx)bSfx.onclick=()=>{const turnOn=!(SFX.on||VOICE.on);setOpt('optSfx',turnOn?'1':'0');if(window.speechSynthesis)setOpt('optVoice',turnOn?'1':'0');sfxBtn();if(turnOn)SFX.siren(2);};
 $('#optSfx').addEventListener('change',sfxBtn);$('#optVoice').addEventListener('change',sfxBtn);sfxBtn();
 $('#optFxSpd').addEventListener('change',()=>{FXSPD=+$('#optFxSpd').value||1;});$('#optTerm').addEventListener('change',()=>{TERM=$('#optTerm').value||'plain';});setTimeout(()=>{TERM=$('#optTerm').value||'plain';},0);setTimeout(()=>{FXSPD=+$('#optFxSpd').value||1;},0);
-function voiceBtn(){const b=$('#btnVoice');b.hidden=true;if(!window.speechSynthesis)return;const on=$('#optVoice').value==='1';b.innerHTML=(on?'🔊':'🔈')+'<span class="bl"> 語音：'+(on?'開':'關')+'</span>';b.setAttribute('aria-pressed',on);if(!on)VOICE.stop();}
-$('#btnVoice').onclick=()=>{const e=$('#optVoice');e.value=e.value==='1'?'0':'1';e.dispatchEvent(new Event('change'));if(e.value==='1')VOICE.speak('語音播報已開啟',{flush:true});};
+function voiceBtn(){const b=$('#btnVoice');if(!b)return;b.hidden=true;if(!window.speechSynthesis)return;const on=$('#optVoice').value==='1';b.innerHTML=(on?'🔊':'🔈')+'<span class="bl"> 語音：'+(on?'開':'關')+'</span>';b.setAttribute('aria-pressed',on);if(!on)VOICE.stop();}
+const bVoice=$('#btnVoice');if(bVoice)bVoice.onclick=()=>{const e=$('#optVoice');e.value=e.value==='1'?'0':'1';e.dispatchEvent(new Event('change'));if(e.value==='1')VOICE.speak('語音播報已開啟',{flush:true});};
 $('#optVoice').addEventListener('change',()=>{try{localStorage.setItem('tsl-voice-user','1');}catch(e){}voiceBtn();});
 voiceBtn();
 /* ---------- 事件卡：可拖曳（位置會記住）、可按右上 ✕ 關閉 ---------- */
