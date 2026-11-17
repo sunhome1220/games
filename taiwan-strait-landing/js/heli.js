@@ -68,7 +68,7 @@ function heliStrike(b,t,auto){
   if(b.side==='def')useRec('攻擊直升機出擊（批，每批 4 架）',1,b.hf?'AGM-114L 地獄火':null,b.hf?HELI.hfPer:0,b.n,t);
   const p=heliP(b,t),hit=hitP(p,'heli:'+b.id+'>'+t.type);
   const L=Math.min(st[b.id].n,takeInt(HELI.pk*heliLossRate(t,b),'heliLoss'));st[b.id].n-=L;
-  fxq({t:'air',at:[t.c,t.r],hit,tsea:atSea(t),from,k:'bomb'});
+  fxq({t:'air',at:[t.c,t.r],hit,tsea:atSea(t),from,k:'heli',col:b.side==='atk'?'#d9534a':'#3f7fd0'}); // 直升機動畫：慢速、懸停發射地獄火
   const s=(b.side==='def'?'守方':'攻方')+b.n+'（'+b.ac+'）以'+nm+'攻擊 '+hname(hexOf(t))+' 的 '+uname(t)+(hit?'：命中':'：未命中')+'（命中率 '+Math.round(p*100)+'%'+(L?'，被擊落 '+L+' 架':'')+'；推估）';
   log(s);if(!auto)fxToast(s,4000);
   if(hit)damage(t,1,b.side==='def'?b.n+'攻擊直升機':b.n);
