@@ -133,7 +133,7 @@ function pickStrike(){
     const subBonus=d.type==='hk'?4:0;
     if(h.isl==='KM')continue; // 金馬無駐軍，雙方無視
     let s=Math.random()+subBonus;
-    if(d.type==='ssm')s+=9;else if(d.type==='ff')s-=3;
+    if(d.type==='ssm')s+=9;else if(d.type==='ff')s-=3;else if(d.type==='sam')s+=10; // ★壓制防空：打開空降與後續打擊的缺口
     if(atkLand.some(a=>hd(hexOf(a),h)<=kmH(40)))s+=7+(TYPES[d.type].hp-d.hp);
     else if(!isMsl(d)&&atkSea.some(a=>hd(hexOf(a),h)<=kmH(40)))s+=6; // 登陸前火力準備：海上的登陸部隊附近（預定灘頭）的守軍
     if(prep.some(p=>hd(p,h)<=kmH(20)))s+=20; // 集中火力準備：選定的登陸地段
@@ -191,7 +191,7 @@ async function aiAtkAirborne(u,C){const {h}=C;
     if(dropAD()>=.3&&S.turn<3)return true; // ★防空還強時先不空降，等防空被壓制（最晚第 3 回合仍要執行）
     const IX=(S.intent||{}).axis,zn=IX==='north'||IX==='central'?IX:aiPlan().zone;
     const rc=reach(u);let best=null,bs=1e9;const g=TER[ABN_GOAL[zn][u.goal||0]];
-    for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+Math.random()*.4;if(s<bs){bs=s;best=k;}}
+    for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+dropAD(TER[k])*10+Math.random()*.4; /* 避開防空涵蓋 */if(s<bs){bs=s;best=k;}}
     if(best){doMove(u,best,'drop');render();await sleep(380);}
     return true;
   }

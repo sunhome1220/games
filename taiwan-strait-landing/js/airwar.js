@@ -27,6 +27,7 @@ const MSL={srbmPer:4,rktPer:8,srbmLaunch:300,rktLaunch:480,rkt:1440,rktR:kmH(340
 function mslInit(){
   const P=S.pools,k=Math.max(.25,(P.rocAD||0)/4);
   S.adI={p3:Math.round(MSL.ad2026.p3*k),p2:Math.round(MSL.ad2026.p2*k),tk:Math.round(MSL.ad2026.tk*k)};
+  samSpawn(); // 防空飛彈棋子：把攔截彈分給各營
   S.msl={srbm:Math.round((P.rf||0)*MSL.rfScale),rkt:MSL.rkt};adSync(true);mslSync(true);
   S.msl.srbm0=S.msl.srbm;S.adI0=adTot();
 }
@@ -34,10 +35,10 @@ const adTot=()=>S.adI?S.adI.p3+S.adI.p2+S.adI.tk:0;
 // 其他規則仍以「防空點數」（rocAD）運作：每 250 枚攔截彈＝1 點。其他程式改了點數時，按比例換算回攔截彈
 function adSync(init){
   const P=S.pools;if(!S.adI||!P)return;
-  if(!init&&S._ad!=null&&P.rocAD!==S._ad){const tot=adTot();
+  if(!init&&S._ad!=null&&P.rocAD!==S._ad&&!(S.sam&&samScale(P.rocAD,S._ad))){const tot=adTot();
     if(tot>0){const f=Math.max(0,P.rocAD*MSL.adPerPt/Math.max(1,S._ad*MSL.adPerPt));for(const k of ['p3','p2','tk'])S.adI[k]=Math.max(0,Math.round(S.adI[k]*f));}
     else if(P.rocAD>S._ad)S.adI.tk+=(P.rocAD-S._ad)*MSL.adPerPt;}
-  P.rocAD=Math.round(adTot()/MSL.adPerPt);S._ad=P.rocAD;
+  samAgg();P.rocAD=Math.round(adTot()/MSL.adPerPt);S._ad=P.rocAD;
 }
 // 火箭軍點數（rf）也維持舊尺度：1 點≈28 枚短程彈道飛彈
 function mslSync(init){
@@ -45,7 +46,7 @@ function mslSync(init){
   if(!init&&S._rf!=null&&P.rf!==S._rf)S.msl.srbm=Math.max(0,Math.round(S.msl.srbm+(P.rf-S._rf)*MSL.rfScale));
   P.rf=Math.round(S.msl.srbm/MSL.rfScale*10)/10;S._rf=P.rf;
 }
-const covered=h=>h&&(h.isl==='TW'||h.isl==='PH')&&(h.t==='air'||h.t==='port'||h.t==='city')&&S.owner[h.k]!=='atk'; // 攔截彈保護的固定重要目標（澎湖也有天弓三型與刺針，共用守方攔截彈）
+const covered=h=>h&&(h.isl==='TW'||h.isl==='PH')&&(h.t==='air'||h.t==='port'||h.t==='city'||unitsAt(h.k).some(u=>u.type==='sam'))&&S.owner[h.k]!=='atk'&&samCovBM(h); // 防空棋子：還要在某個營的彈道飛彈防禦範圍內 // 攔截彈保護的固定重要目標（澎湖也有天弓三型與刺針，共用守方攔截彈）
 let CNCOAST=null;
 const rktOK=h=>{if(!CNCOAST)CNCOAST=Object.values(TER).filter(x=>x.isl==='CN'&&x.coastal);return CNCOAST.some(c=>rd(c,h)<=MSL.rktR);};
 // 取一點火力：回傳 {k:'g'|'s'|'r',n}（g＝空軍、巡弋飛彈等其他來源；s＝短程彈道飛彈；r＝長程火箭）
@@ -59,8 +60,9 @@ function fireTake(h,soft,noRkt){
   return {k,n:0};
 }
 // 攔截：n 枚來襲，每枚 2 枚攔截彈，先用愛國者三型；回傳突破的枚數（小數）與發射的攔截彈
-function adIntercept(n){
-  adSync();if(!S.adI)return {surv:n,I:0};let e=Math.min(n,Math.max(0,S.adLeft||0),Math.floor(adTot()/2)),kill=0,I=0;
+function adIntercept(n,h){
+  adSync();if(!S.adI)return {surv:n,I:0};
+  if(S.sam){const r=samIntercept(n,h);P_adFix();return r;} // 防空棋子：只有涵蓋目標的營能攔截let e=Math.min(n,Math.max(0,S.adLeft||0),Math.floor(adTot()/2)),kill=0,I=0;
   for(let i=0;i<e;i++){const k=S.adI.p3>=2?'p3':S.adI.tk>=2?'tk':S.adI.p2>=2?'p2':null;if(!k)break;S.adI[k]-=2;I+=2;kill+=1-Math.pow(1-MSL.pk[k]*((k==='p3'||k==='p2')&&!facUp('leshan')?(intelOK()?WARN.sat.pk:.8):1),2);} // 樂山雷達被摧毀：愛國者少了預警與目標指示
   S.adLeft=Math.max(0,(S.adLeft||0)-I/2);P_adFix();return {surv:Math.max(0,n-kill),I};
 }
@@ -69,7 +71,7 @@ function P_adFix(){if(!S.pools||!S.adI)return;S.pools.rocAD=Math.round(adTot()/M
 function pkgMod(pk,h,t){
   if(!pk||pk.k==='g')return {m:1,txt:''};
   let m=1,txt='';const nm=pk.k==='s'?'短程彈道飛彈':'長程火箭';
-  if(covered(h)){const r=adIntercept(pk.n);m*=r.surv/pk.n;txt=nm+' '+pk.n+' 枚，守方發射 '+r.I+' 枚攔截彈，約 '+(Math.round(r.surv*10)/10)+' 枚突破';}
+  if(covered(h)){const r=adIntercept(pk.n,h);m*=r.surv/pk.n;txt=nm+' '+pk.n+' 枚，守方發射 '+r.I+' 枚攔截彈，約 '+(Math.round(r.surv*10)/10)+' 枚突破';}
   else txt=nm+' '+pk.n+' 枚';
   if(t&&atSea(t)){m*=MSL.sea;txt+='；海上移動目標難以命中（×'+MSL.sea+'）';}
   else if(t&&!covered(h)&&!(t.type==='ssm'||t.type==='hmr'||t.type==='mlrs')&&!isShip(t)&&!isGnd(t)){ // 地面旅改由殺傷鏈（gFound）處理分散與隱蔽，不再重複打折
@@ -118,7 +120,7 @@ const plaAirOld=()=>S.air?8*S.air.PLA/Math.max(1,S.air.PLA0):S.pools.plaAir;
 
 function computeFire(){
   const P=S.pools,t=S.turn,rs=cnShare('rf'),as=cnShare('air');
-  mslSync();adSync();S.adLeft=MSL.adCap; // 每個攻方階段：守方各連重新可接戰
+  mslSync();adSync();S.adLeft=MSL.adCap;samReset(); // 每個攻方階段：守方各連重新可接戰
   const sP=Math.min(Math.floor(S.msl.srbm/MSL.srbmPer),Math.round(MSL.srbmLaunch/MSL.srbmPer*rs)),rP=Math.min(Math.floor(S.msl.rkt/MSL.rktPer),Math.round(MSL.rktLaunch/MSL.rktPer)); // 發射車數決定每回合上限；飛彈在實際打擊時才扣
   const hs=Math.min(P.plaHS,Math.round((t<=3?2:1)*rs));P.plaHS-=hs; // DF-17 hypersonic: not reduced by the defender's air defense
   const cm0=Math.min(P.plaCM,Math.round((t<=3?2:1)*as));P.plaCM-=cm0;const cm=Math.max(0,cm0-(P.rocAD>=5?1:0)); // cruise missiles are intercepted more easily than ballistic ones
@@ -126,7 +128,7 @@ function computeFire(){
   const air=Math.max(0,Math.round(plaSor/AIR.perFire)); // ★陸基機出擊架次依制空狀況分配給對地打擊；航艦艦載機依任務分配的對地比例；每 10 架次＝1 點 // ★出擊架次依制空狀況分配給對地打擊，每 10 架次＝1 點
   const add=S.mods.fireAdd[t]||0,sd=S.sead?1:0; // 守方防空不再直接扣火力點數：改在每個打擊包實際攔截
   S.fireNote=(rs<1||as<1?'大陸基地受損：火箭軍旅可用 '+Math.round(rs*100)+'%、機場可用 '+Math.round(as*100)+'%。':'')+'短程彈道飛彈 '+sP+' 波（每波 4 枚，存量 '+S.msl.srbm+' 枚）＋長程火箭 '+rP+' 波（每波 8 枚，只打得到台灣西半部，存量 '+
-      S.msl.rkt+' 枚）'+(hs?'＋東風-17 '+hs:'')+(cm?'＋巡弋飛彈 '+cm:'')+'＋空軍 '+air+(sd?'＋防空壓制 1':'')+'（守方攔截彈 '+adTot()+' 枚，每回合最多接戰 '+MSL.adCap+' 枚）'+(S.weather.fire?'－天候 '+(-S.weather.fire):'')+
+      S.msl.rkt+' 枚）'+(hs?'＋東風-17 '+hs:'')+(cm?'＋巡弋飛彈 '+cm:'')+'＋空軍 '+air+(sd?'＋防空壓制 1':'')+'（守方攔截彈 '+adTot()+' 枚，每回合最多接戰 '+(S.sam?samCap():MSL.adCap)+' 枚）'+(S.weather.fire?'－天候 '+(-S.weather.fire):'')+
       (add?(add>0?'＋':'－')+'事件 '+Math.abs(add):'');
   let lam=0;for(const e of S.units.filter(e=>e.side==='atk'&&isEsc(e)&&alive(e)&&e.mag&&e.mag.lam>=LAM.per)){e.mag.lam-=LAM.per;lam++;} // ★每艘 055／052D 每回合發射 4 枚對地巡弋飛彈＝1 點火力
   if(lam)S.fireNote+='＋艦射對地巡弋飛彈 '+lam;

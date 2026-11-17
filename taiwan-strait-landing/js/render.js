@@ -57,6 +57,9 @@ function rangeRingsSVG(u,lite){ // u：航艦或護航艦；lite＝一鍵全開�
     const A=fleetAgg(u),W=u.fl.m.filter(([k,n])=>n>0&&RFW[k].asm>0&&RFW[k].asmR===A.asmR).map(([k])=>RFW[k].w)[0]||'反艦飛彈';
     if(A.adR&&(!u.mag||u.mag.ad>0))ring(u.c,u.r,A.adR,'ad','艦隊防空 '+kmOf(A.adR)+' km');
     if(A.asmR&&(!u.mag||u.mag.asm>0))ring(u.c,u.r,A.asmR,'r',W+' '+kmOf(A.asmR)+' km');
+  }else if(u.type==='sam'){ // 防空飛彈營：彈道飛彈防禦範圍、對飛機範圍
+    const Y=samSys(u);if(Y.bmR&&samMag(u)>0)ring(u.c,u.r,kmH(Y.bmR),'ad',lite?'':'彈道飛彈防禦 '+Y.bmR+' km');
+    if(!lite)ring(u.c,u.r,kmH(Y.acR),'r','對飛機 '+Y.acR+' km');
   }else if(u.type==='dd'){ // 共軍護航艦棋子（052D＋054A）：防空
     ring(u.c,u.r,DDW.adR,'ad','防空 '+kmOf(DDW.adR)+' km');
   }else if(isEsc(u)){
@@ -506,7 +509,7 @@ function ghostDrop(id){
   document.querySelectorAll('[data-id="'+id+'"]').forEach(e=>{if(!e.closest('#gF'))e.remove();});
 }
 // 棋子色調分三類（攻方紅、守方藍各自三種深淺，海上與陸上共用）：深＝火力打擊（飛彈、火箭砲、潛艦、飛彈艇）、標準＝作戰部隊、淡＝後勤運輸（船團、補給站、運輸船）
-const unitCat=t=>(t==='ssm'||t==='hmr'||t==='heli'||t==='mlrs'||t==='hk'||t==='ssn'||t==='psub'||t==='nme'||t==='mdt'||t==='ff')?'f':(t==='cvy'||t==='fob'||t==='lst'||t==='ro')?'l':'m';
+const unitCat=t=>(t==='ssm'||t==='hmr'||t==='heli'||t==='sam'||t==='mlrs'||t==='hk'||t==='ssn'||t==='psub'||t==='nme'||t==='mdt'||t==='ff')?'f':(t==='cvy'||t==='fob'||t==='lst'||t==='ro')?'l':'m';
 function unitSVG(u,withSmoke){
   const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy,stacked=sx!==0,T=TYPES[u.type];
   const done=S.started&&u.side===S.phase&&u.acted,sel=S.sel===u||!!(u.boundTo&&S.sel&&S.sel.id===u.boundTo),yy=y-2;
@@ -524,6 +527,7 @@ function unitSVG(u,withSmoke){
   else if(u.type==='cvy')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+7)+'h14l-2 2.5h-10z"/><path class="sym" d="M'+(x-4)+' '+(by+7)+'v-3h8v3"/>';
   else if(u.type==='fob')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+8)+'h12M'+(x-4)+' '+(by+8)+'v-5h8v5"/>';
   else if(u.type==='heli')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+3)+'h14M'+x+' '+(by+3)+'v2M'+(x-4)+' '+(by+7)+'q4 -3 7 0q-3 2.5 -7 0zM'+(x+3)+' '+(by+7)+'h4"/>';
+  else if(u.type==='sam')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+9)+'Q'+x+' '+(by-1)+' '+(x+6)+' '+(by+9)+'M'+x+' '+(by+9)+'V'+(by+3)+'"/>';
   else if(u.type==='aas')sym=box+X+'<path class="sym" d="M'+(x-7)+' '+(by-2)+'h14M'+x+' '+(by-2)+'v2"/>';
   else if(u.type==='abn')sym=box+X+'<path class="sym" d="M'+(x-5)+' '+(by+bh)+'Q'+x+' '+(by+4)+' '+(x+5)+' '+(by+bh)+'"/>';
   else if(u.type==='amph'||u.type==='mar')sym=box+X+'<path class="sym" d="M'+(bx+1)+' '+(by+bh-1.5)+'q2.5 -2 5 0t5 0t5 0"/>';
@@ -549,7 +553,7 @@ function unitSVG(u,withSmoke){
     '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
     '<rect class="body '+u.side+' c'+unitCat(u.type)+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="23" rx="3"/>'+
     '<rect class="uhi" x="'+(x-13)+'" y="'+(y-13)+'" width="26" height="3" rx="1.5"/>'+sym+
-    '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+(u.fl?u.fl.s:u.type==='heli'&&heliB(u.hb)?heliB(u.hb).tag:T.s)+'</text>'+pips+((()=>{ // 運輸船載著什麼：只有攻方自己（或觀戰）看得到，格式「兵種簡稱＋剩餘步數」；守方玩家只能看到船
+    '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+(u.fl?u.fl.s:u.type==='heli'&&heliB(u.hb)?heliB(u.hb).tag:u.type==='sam'&&samSite(u)?samSite(u).tag:T.s)+'</text>'+pips+((()=>{ // 運輸船載著什麼：只有攻方自己（或觀戰）看得到，格式「兵種簡稱＋剩餘步數」；守方玩家只能看到船
       const b=u.boundTo&&S.units.find(z=>z.id===u.boundTo);if(!b)return '';
       if(S.ctrl&&S.ctrl.def==='human'&&S.ctrl.atk!=='human'&&!S.sim&&!S.video)return '';
       const t=TYPES[b.type].s+b.hp,w=Math.max(14,t.length*6.4+4);
@@ -645,8 +649,8 @@ function mapOverlaySVG(){let o='';
 // 射程圈、棋子、潛艦上次發現點
 function mapUnitsSVG(){let o='',smk='';RNG_LEG=[];
   {const iu=S.sel&&alive(S.sel)?S.sel:(S.hoverId?S.units.find(x=>x.id===S.hoverId):null); // 射程圈：一鍵全開時畫雙方所有航艦艦隊；點選（或游標停在）艦艇時畫該艦
-   if(S.started&&RNG_ALL)S.units.filter(x=>(x.type==='cv'||x.type==='csg'||x.type==='ddh')&&alive(x)&&x!==iu).forEach(x=>{o+=rangeRingsSVG(x,true);});
-   if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)||iu.fl||iu.type==='dd')&&!subHidden(iu))o+=rangeRingsSVG(iu,false);
+   if(S.started&&RNG_ALL)S.units.filter(x=>(x.type==='cv'||x.type==='csg'||x.type==='ddh'||x.type==='sam')&&alive(x)&&x!==iu).forEach(x=>{o+=rangeRingsSVG(x,true);});
+   if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)||iu.fl||iu.type==='dd'||iu.type==='sam')&&!subHidden(iu))o+=rangeRingsSVG(iu,false);
    if(S.started){const bk=(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK?S.afK:!iu&&S.baseSel&&S.baseSel===S.hover?S.baseSel:null;if(bk)o+=baseRingsSVG(bk);}
    if(S.started)o+=heliRangeSVG();
    rngLegSync();}

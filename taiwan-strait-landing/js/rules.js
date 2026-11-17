@@ -133,11 +133,11 @@ function seaPen(u){if(!atSea(u))return 0;const wh=wxWave(hexOf(u)),wp=wh>2?2:wh>
 const ADJ_N=()=>Math.round(kmH(ADJ_KM)); // 「相鄰」的格數（ring2 的半徑）
 function inZOC(side,h){ // ZOC_KM（10 km＝相鄰格）內有敵方地面部隊：直接掃單位，比逐格查快
   const R=Math.max(1,Math.round(kmH(ZOC_KM)));
-  return S.units.some(e=>{if(e.side===side||isMsl(e)||isShip(e)||e.type==='heli')return false;const n=hexOf(e);if(!n||!isLand(n)||(isAirT(e)&&n.isl==='CN'))return false;const d=hd(h,n);return d>=1&&d<=R;});
+  return S.units.some(e=>{if(e.side===side||isMsl(e)||isShip(e)||isFixT(e))return false;const n=hexOf(e);if(!n||!isLand(n)||(isAirT(e)&&n.isl==='CN'))return false;const d=hd(h,n);return d>=1&&d<=R;});
 }
 function support(u,t){
   let n=0;
-  for(const h of ring2(t))for(const f of unitsAt(h.k))if(f!==u&&f.side===u.side&&!isMsl(f)&&f.type!=='heli'&&!(h.isl==='CN'))n++;
+  for(const h of ring2(t))for(const f of unitsAt(h.k))if(f!==u&&f.side===u.side&&!isMsl(f)&&!isFixT(f)&&!(h.isl==='CN'))n++;
   return Math.min(2,n);
 }
 const canSail=u=>u.type==='ff'||u.type==='hk'||u.type==='psub'||u.type==='ssn'||u.type==='csg'||(u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm'||u.type==='dd'||u.type==='cv'||u.type==='cvy'||u.type==='lst'||u.type==='ro'));
@@ -213,7 +213,7 @@ function seaReach(u,res){
 }
 function reach(u){
   const res=new Map();if(u.moved||u.acted)return res;const h=hexOf(u);
-  if(u.boundTo||u.type==='heli')return res; // 載著旅的運輸船跟著旅一起走；攻擊直升機旅留在基地（從基地出擊）
+  if(u.boundTo||isFixT(u))return res; // 載著旅的運輸船跟著旅一起走；攻擊直升機旅留在基地（從基地出擊）
   if(u.esc)return res; // 護航艦跟著航艦移動，不單獨移動
   if(isAirT(u)&&!u.dropped&&h.isl==='CN'){
     if(S.weather.air)for(const t of Object.values(TER)){
@@ -238,7 +238,7 @@ function targets(u){
   if(isEsc(u))return escTargets(u);
   if(u.type==='hk')return subTargets(u);
   if(u.type==='psub')return psubTargets(u);
-  if(u.type==='heli')return []; // 攻擊直升機用資訊卡的出擊按鈕
+  if(isFixT(u))return []; // 攻擊直升機用資訊卡的出擊按鈕；防空營自動攔截
   if(u.type==='ssn'){if(u.acted||!(u.tp>0||u.hm>0))return [];return shipFoes(u,kmH(120)).filter(e=>(u.tp>0&&rd(hexOf(u),hexOf(e))<=kmH(60))||u.hm>0);}
   if(u.type==='nme'||u.type==='mdt'){if(u.acted||!u.mag||u.mag.asm<=0)return [];return shipFoes(u,u.type==='nme'?NME.R:MDT.R);}
   if(isMsl(u)){if(u.shots<=0||(u.fl&&!(u.mag&&u.mag.asm>0)))return [];
@@ -255,7 +255,7 @@ function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥
   S.hits.push({c:u.c,r:u.r,t:S.turn,side:u.side,type:u.type,n:Math.min(n,u.hp),sea:atSea(u),why:why||'地面戰鬥',dead:n>=u.hp,cvn:u.type==='cv'&&u.cvi!=null?AIR.CV[u.cvi].n:null});
   fxq({t:'dmg',id:u.id,at:[u.c,u.r],n:Math.min(n,u.hp),side:u.side});
   if(isLch(u)&&u.veh!=null&&!S._vehHit){u.veh=Math.max(0,Math.round(u.veh-n*ssmVPS(u)));u.fk=(u.fk||[]).slice(0,u.veh);} // 地面戰鬥、先制打擊：每步＝4 輛完全摧毀
-  u.hp-=n;if(u.fl&&u.hp>0)fleetLose(u,n);if(u.type==='heli')heliGroundLoss(u,n);
+  u.hp-=n;if(u.fl&&u.hp>0)fleetLose(u,n);if(u.type==='heli')heliGroundLoss(u,n);if(u.type==='sam')samLoss(u,n);
   shipHitEffects(u,why);
   if(u.hp<=0){unitDestroyed(u,why);return true;}
   return false;
@@ -349,7 +349,7 @@ function doMove(u,k,kind){
     u.acted=true;u.dropped=true;
     const heli=u.type==='aas',vb=heli?'機降':'空降',lift=heli?'直升機群':'運輸機群';
     let msg=uname(u)+' '+vb+' '+hname(h);
-    const al=atkAF().includes(h),hot=!al&&inZOC(u.side,h),pA=dropAD()*(al?.5:1),org=[from.c,from.r]; // 機降到已占領的機場：★攔截機率減半、不會遭落點地面壓制
+    const al=atkAF().includes(h),hot=!al&&inZOC(u.side,h),pA=dropAD(h)*(al?.5:1),org=[from.c,from.r]; // 機降到已占領的機場：★攔截機率減半、不會遭落點地面壓制
     if(al)msg=uname(u)+' 以運輸機機降已占領的 '+hname(h);
     const shot=hitP(pA,'dropAD'),hp0=u.hp; // 運輸機群先要飛過守方防空，被擊落的部分整批損失
     const lz=hot&&hitP(.5,'dropHot');      // 落點旁有守方部隊：落地時遭地面火力壓制
@@ -371,7 +371,7 @@ function matchMod(u,t,th){const rough=th.t==='city'||th.t==='mtn';
   if(isAirT(u)&&ARMOR.includes(t.type))return {n:-1,t:TYPES[u.type].s+'旅沒有重武器'};
   return {n:0};}
 // 空降時運輸機群被防空擊落的機率（★推估）：依守方剩餘防空與制空；防空全失時仍有肩射與機槍 5%
-function dropAD(){const P=S.pools||{},p0=(S.p0&&S.p0.rocAD)||1,f=Math.max(0,Math.min(1,(P.rocAD||0)/p0)),c={atk:.5,mid:1,def:1.5}[S.airCtl||'mid']||1;return Math.min(.6,(.05+.25*f)*c);}
+function dropAD(h){const P=S.pools||{},p0=(S.p0&&S.p0.rocAD)||1,f=h&&S.sam?samDropF(h):Math.max(0,Math.min(1,(P.rocAD||0)/p0)),c={atk:.5,mid:1,def:1.5}[S.airCtl||'mid']||1;return Math.min(.6,(.05+.25*f)*c);}
 // ★旅屬砲兵（推估）：聯兵旅、裝甲旅、兩棲合成旅、陸戰旅、重型合成旅都編有砲兵營（155 mm／122 mm，射程約 15～24 km）；
 //  空降旅只有迫擊砲、後備旅的砲兵編制不明，不計。在海上（登陸途中）不能砲擊。
 const ART_T={inf:1,tank:1,amph:1,mar:1,arm:1};
@@ -516,7 +516,8 @@ function locateP(t,kind){
 //  已知位置：開戰頭 2 個回合仍在平時駐地或預構陣地（開戰時的位置，沒移動過）——多年情監偵早已掌握，定位 25%；第 3 回合起部隊已轉入野戰與備用陣地，恢復隱蔽
 const GLOC={ctl:{atk:.05,mid:.03,def:.015},city:.5,town:.75,mtn:.5,night:.7,wx:.6,contact:.35,known:.25,knownT:2};
 const isGnd=u=>!!u&&!isLch(u)&&!isShip(u)&&!atSea(u)&&CPW[u.type]!==undefined;
-const isLocG=u=>isGnd(u)||(!!u&&u.type==='heli'); // 要先定位才打得到（地面旅、疏散中的攻擊直升機）
+const isFixT=u=>!!u&&(u.type==='heli'||u.type==='sam'); // 留在原地、不參與地面戰鬥的棋子
+const isLocG=u=>isGnd(u)||isFixT(u); // 要先定位才打得到（地面旅、疏散中的攻擊直升機）
 function gContact(t){const h=hexOf(t);return [h,...nbrs(h.c,h.r)].some(n=>n&&unitsAt(n.k).some(e=>e.side!==t.side&&alive(e)&&!isShip(e)&&(isLand(n)?!atSea(e):e.side==='atk')));}
 function gKnown(t){const k=K(t.c,t.r);if(t.k0===undefined)t.k0=S.turn<=1&&t.type!=='heli'?k:null;return S.turn<=GLOC.knownT&&t.k0===k;}
 function gLocP(t){
@@ -528,6 +529,7 @@ function gLocP(t){
     if(h.t==='city'){p*=GLOC.city;f.push('城市 ×'+GLOC.city);}else if(h.town){p*=GLOC.town;f.push('城鎮 ×'+GLOC.town);}else if(h.t==='mtn'){p*=GLOC.mtn;f.push('山地 ×'+GLOC.mtn);}
     if(S.turn%2===0){p*=GLOC.night;f.push('夜間 ×'+GLOC.night);}
     if(S.weather&&(S.weather.id==='bad'||tyThreat(S.weather))){p*=GLOC.wx;f.push('雲雨或颱風 ×'+GLOC.wx);}}
+  if(t.type==='sam'&&t.emitT>=S.turn-1&&p<SAM.emit){p=SAM.emit;f.push('雷達開機接戰後遭電子偵察定位 '+Math.round(p*100)+'%');}
   if(!gContact(t)&&isrF()<1){p*=isrF();f.push('共軍指揮與偵察受損 ×'+(Math.round(isrF()*100)/100));}
   return {p,txt:f.join('、')};
 }
