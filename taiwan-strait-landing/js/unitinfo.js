@@ -173,14 +173,14 @@ function readSetup(){
   S.newsOn=$('#optNews').value!=='0';S.newsCompact=$('#optNews').value==='2';S.fxScen=$('#optFx').value==='dice'?'interest':$('#optFx').value;S.airGen=$('#optAirGen').value;S.airModel=$('#optAirModel').value;S.ewLv=$('#optEW').value;S.allyCtl=$('#optAlly').value==='player'?'player':'ai';
 }
 ['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optExer','#optLift','#optMonth','#optFxBias','#optWiLift','#optWiShip','#optWiWx',
-    '#optWiDArms','#optWiLocal','#optWiAllies','#optPreDiplo','#optPreDeploy','#optReact','#optNavy','#optPenghu','#optPrepos','#optNews','#optVoice','#optSfx','#optFxSpd',
+    '#optWiDArms','#optWiLocal','#optWiAllies','#optPreDiplo','#optPreDeploy','#optReact','#optNavy','#optPenghu','#optPrepos','#optNews','#optVoice','#optFxSpd',
     '#optTerm','#optFx','#optAlly','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
 const CFG_IDS=['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optExer','optLift','optMonth','optFxBias','optWiLift','optWiShip','optWiWx',
     'optWiDArms','optWiLocal','optWiAllies','optPreDiplo','optPreDeploy','optReact','optNavy','optPenghu','optPrepos','optFx','optAlly','optAirGen','optAirModel','optEW',
-    'optNews','optVoice','optSfx','optFxSpd','optTerm','optAxN','optAxC','optAxP'];
+    'optNews','optVoice','optFxSpd','optTerm','optAxN','optAxC','optAxP'];
 const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optExer:'small',optLift:'1',optMonth:'4',optFxBias:'0',
     optWiLift:'0',optWiShip:'0',optWiWx:'0',optWiDArms:'0',optWiLocal:'0',optWiAllies:'0',optPreDiplo:'auto',optPreDeploy:'auto',optReact:'auto',optNavy:'auto',optPenghu:'auto',
-    optPrepos:'auto',optFx:'interest',optAlly:'ai',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optSfx:'0',optFxSpd:'1',optTerm:'plain',optAxN:'0',optAxC:'0',optAxP:'1'};
+    optPrepos:'auto',optFx:'interest',optAlly:'ai',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optFxSpd:'1',optTerm:'plain',optAxN:'0',optAxC:'0',optAxP:'1'};
 $('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
 // one-off start with the default settings; the saved setup choices are left as they were
 $('#btnDefault').onclick=()=>{

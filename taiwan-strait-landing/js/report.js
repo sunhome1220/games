@@ -359,7 +359,8 @@ function buildNews(){
   if(!items.length)items.push(b.as?'島上激戰持續，雙方陷入膠著':'攻方船團仍在海峽渡海集結');
   return {t,items,a,b,weather:S.weather.n};
 }
-function menOnTW(side){return S.units.filter(u=>u.side===side&&onTW(u)).reduce((a,u)=>a+PERS[u.type]/TYPES[u.type].hp*u.hp,0);}
+function menOnTW(side){return S.units.filter(u=>u.side===side&&onTW(u)&&PERS[u.type]).reduce( // 只算有人數資料的地面部隊（與傷亡統計一致）；攻擊直升機旅、在港的艦艇沒有人數資料，不算（原本會變成 NaN）
+  (a,u)=>a+PERS[u.type]/TYPES[u.type].hp*u.hp,0);}
 function newsArt(t){
   const [x0]=cc(2,0);let o='';
   for(const h of Object.values(TER)){if(!isLand(h))continue;const [x,y]=center(h.c,h.r);
