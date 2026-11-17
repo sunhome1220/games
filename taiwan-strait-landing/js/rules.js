@@ -290,7 +290,7 @@ function unitDestroyed(u,why){if(isEsc(u)){S.stats.escLost=S.stats.escLost||{atk
     if(u.ship){const sh=shipOf(u);
       if(sh)S.units=S.units.filter(x=>x!==sh);
       }if(u.type==='dd'&&S.pools)S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);
-      if(u.type==='ff'&&S.pools)S.pools.rocNavy=Math.max(0,S.pools.rocNavy-1);
+      if(u.type==='ff'&&S.pools)S.pools.rocNavy=Math.max(0,rnd3(S.pools.rocNavy-ffW(u)));
       if(u.type==='hk'&&S.pools)S.pools.rocSub=Math.max(0,S.pools.rocSub-1);
       if(u.type==='psub'&&S.pools)S.pools.plaSub=Math.max(0,S.pools.plaSub-1);
       if(u.type==='cv'&&S.pools){S.pools.plaCV=Math.max(0,S.pools.plaCV-1);
@@ -301,7 +301,7 @@ function unitDestroyed(u,why){if(isEsc(u)){S.stats.escLost=S.stats.escLost||{atk
       }
     if(!isShip(u)){const rest=unitsAt(K(u.c,u.r));
       if(rest.length&&rest.every(isShip)){rest.forEach(x=>{fxq({t:'dead',at:[x.c,x.r],type:x.type,side:x.side});S.units=S.units.filter(y=>y!==x);if(x.type==='ff')S.pools.rocNavy=Math.max(0,
-          S.pools.rocNavy-1);if(x.type==='dd')S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(x.type==='cv')S.pools.plaCV=Math.max(0,S.pools.plaCV-1);log(uname(x)+' 隨港口失守而損失');});
+          rnd3(S.pools.rocNavy-ffW(x)));if(x.type==='dd')S.pools.plaNavy=Math.max(0,S.pools.plaNavy-1);if(x.type==='cv')S.pools.plaCV=Math.max(0,S.pools.plaCV-1);log(uname(x)+' 隨港口失守而損失');});
       }}log(uname(u)+' 在 '+hname(hexOf(u))+' 被殲滅'+(why?'（'+why+'）':''));
 }
 // 占領：該格與周圍沒有敵軍的陸地格一併易主（細格版的「控制範圍」）

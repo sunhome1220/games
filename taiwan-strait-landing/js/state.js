@@ -73,8 +73,17 @@ const ROCF=[
   {id:'124',n:'124 艦隊（左營）',s:'124',home:'kaohsiung',m:y=>[['kd',6]]},
   {id:'131',n:'131 艦隊（基隆）',s:'131',home:'keelung',m:y=>[['ck',5]]},
   {id:'146',n:'146 艦隊（馬公）',s:'146',home:'magong',m:y=>[['ck',3],['pf',2]]},
-  {id:'hjN',n:'海蛟大隊（北）',s:'海蛟北',home:'suao',m:y=>[['tc',4],['kh',15]]},
-  {id:'hjS',n:'海蛟大隊（南）',s:'海蛟南',home:'kaohsiung',m:y=>[['tc',3],['kh',15]]}];
+  // 光六快艇與沱江級（原海蛟大隊，2014 年併入 131 艦隊；2026 年預定改隸濱海作戰指揮部）。★拆成 6 個小隊分散部署（小艇沒有艦載指管、防空薄弱，集中沒有好處）：
+  // 艘數合計不變（沱江 7、光六 30）；各隊母港為推估。w＝這個棋子占「一個艦隊」的比例（1／3）：守方海軍損失與戰損計數（rocNavy）依它換算，總量與原本 6 個艦隊相同
+  {id:'fbN1',n:'光六・沱江快艇隊（北一）',s:'艇北1',home:'suao',w:1/3,m:y=>[['tc',2],['kh',5]]},
+  {id:'fbN2',n:'光六・沱江快艇隊（北二）',s:'艇北2',home:'keelung',w:1/3,m:y=>[['tc',1],['kh',5]]},
+  {id:'fbN3',n:'光六・沱江快艇隊（北三）',s:'艇北3',home:'hualien',w:1/3,m:y=>[['tc',1],['kh',5]]},
+  {id:'fbS1',n:'光六・沱江快艇隊（南一）',s:'艇南1',home:'kaohsiung',w:1/3,m:y=>[['tc',1],['kh',5]]},
+  {id:'fbS2',n:'光六・沱江快艇隊（南二）',s:'艇南2',home:'magong',w:1/3,m:y=>[['tc',1],['kh',5]]},
+  {id:'fbS3',n:'光六・沱江快艇隊（南三）',s:'艇南3',home:'tcport',w:1/3,m:y=>[['tc',1],['kh',5]]}];
+const ffW=u=>(u.fl&&u.fl.w)||1; // 艦隊棋子占一個艦隊的比例（主力艦隊 1、快艇小隊 1/3）
+const ffWsum=()=>S.units.filter(u=>u.fl&&alive(u)).reduce((a,u)=>a+ffW(u),0);
+const rnd3=x=>Math.round(x*1e6)/1e6; // 消除 1/3 累加的浮點誤差
 const fleetWn=u=>{const order=['雄二','雄三','魚叉'],w=new Set();u.fl.m.forEach(([k,n])=>{if(n>0&&RFW[k].asm>0)RFW[k].w.split('／').forEach(x=>w.add(x));});return order.filter(x=>w.has(x)).join('／')||'反艦飛彈';};
 const fleetCls=u=>u.fl.m.filter(([k,n])=>n>0&&RFW[k].asm>0).map(([k])=>RFW[k].n).join('、'); // 有反艦飛彈的艦型 // ★各艦反艦飛彈種類（依公開資料：基隆級、濟陽級魚叉；成功級、沱江級雄二／雄三；康定級、光六雄二；派里級推估為雄二）
 const FLEET_PER=2; // ★每艘每次齊射 2 枚
@@ -90,10 +99,10 @@ function fleetLose(u,n){ // 損失 n 艘：從船數最多的艦型扣起；飛�
 function rocFleetsSpawn(){
   const y=+S.era||2026;let n=0,ships=0;
   for(const F of ROCF){const k0=SPOT[F.home],h=k0&&TER[k0]&&unitsAt(k0).length<STACK_MAX?TER[k0]:placeNear(k0,x=>x.t==='sea'&&hd(x,TER[k0])<=kmH(40)&&unitsAt(x.k).length<STACK_MAX)||placeNear(k0,x=>x.isl==='TW'&&x.t==='port'&&unitsAt(x.k).length<STACK_MAX);if(!h)continue; // 母港已滿：停在港外相鄰海域
-    const u=mkUnit('def','ff',h.k,{});u.fl={id:F.id,n:F.n,s:F.s,m:F.m(y).filter(([,c])=>c>0).map(x=>x.slice())};const A=fleetAgg(u);u.hp=A.hp;u.mhp=A.hp;u.mag={ad:A.ad,asm:A.asm,lam:0};S.units.push(u);n++;ships+=A.hp;}
-  S.pools.rocNavy=n;S.p0.rocNavy=n;S.rocShips0=ships;
+    const u=mkUnit('def','ff',h.k,{});u.fl={id:F.id,n:F.n,s:F.s,w:F.w||1,m:F.m(y).filter(([,c])=>c>0).map(x=>x.slice())};const A=fleetAgg(u);u.hp=A.hp;u.mhp=A.hp;u.mag={ad:A.ad,asm:A.asm,lam:0};S.units.push(u);n+=F.w||1;ships+=A.hp;}
+  n=rnd3(n);S.pools.rocNavy=n;S.p0.rocNavy=n;S.rocShips0=ships;
 }
-// 開戰前海軍部署：east＝疏散到花蓮、台東外海；disperse＝母港附近 2 格內外海；戰略突襲時只有海蛟大隊來得及出港
+// 開戰前海軍部署：east＝疏散到花蓮、台東外海；disperse＝母港附近 2 格內外海；戰略突襲時只有快艇隊來得及出港
 // 澎湖守備方針：堅守／開戰前增援（玉山艦）／棄守
 function penghuPolicy(c){
   const free=(k,f)=>placeNear(k,x=>f(x)&&isLand(x)&&x.t!=='mtn'&&!unitAt(x.k));
@@ -114,7 +123,7 @@ function penghuPolicy(c){
 }
 function navyDeploy(c){
   if(c!=='east'&&c!=='disperse')return ['台灣海軍艦隊留在母港'];
-  const late=S.mods.buildup==='surprise',fs=S.units.filter(u=>u.fl&&alive(u)&&(!late||/^hj/.test(u.fl.id))),used=new Set(),moved=[];
+  const late=S.mods.buildup==='surprise',fs=S.units.filter(u=>u.fl&&alive(u)&&(!late||/^fb/.test(u.fl.id))),used=new Set(),moved=[];
   const free=x=>x&&x.t==='sea'&&!used.has(x.k)&&unitsAt(x.k).length<STACK_MAX;
   const eastSea=Object.values(TER).filter(x=>{if(x.t!=='sea')return false;const [lon,lat]=rcToLL(x.c,x.r);return lon>121.6&&lon<122.3&&lat>22.4&&lat<24.6;}).sort((a,b)=>a.r-b.r);
   for(const u of fs){let h=null;

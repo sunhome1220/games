@@ -412,7 +412,7 @@ function antiShip(who,shots,need,canLand,tag,ok0,fk){
 }
 async function navalPhase(){
   const P=S.pools;
-  if(P.rocNavy>0){antiShip('守方海軍',Math.ceil(Math.max(0,P.rocNavy-S.units.filter(u=>u.type==='ff').length)/2),4,false,'','roc','cm');} // 艦隊被攻方海空兵力打擊：改由攻方階段的 huntFleets 依定位與齊射模型計算
+  if(P.rocNavy>0){antiShip('守方海軍',Math.ceil(Math.max(0,P.rocNavy-ffWsum()-1e-4)/2),4,false,'','roc','cm');} // 艦隊被攻方海空兵力打擊：改由攻方階段的 huntFleets 依定位與齊射模型計算
   // 守方空軍改由各機場出擊（airstrike.js：afStrike／afAuto），彈藥有實際庫存、損失依架次
   if(P.rocDrone>0){antiShip('無人機與巡飛彈',Math.min(P.rocDrone,3),5,false,'','roc','drone');if(hitP(1/3,'navalPhase')){P.rocDrone--;log('無人機群遭干擾與攔截 −1');}}
   jmsSync();const act=S.fx.units.filter(fxActive);S._cvwDone=false;
@@ -442,7 +442,7 @@ function seaBattle(){
     if(P.rocNavy>0&&hitP(.5,'seaBattle')){const m=rocFleetHit('海上交戰');if(m)out.push(m);}
     else if(ships.length&&hitP(pNeed(5),'seaBattle')){const f=pickBest(ships.filter(x=>x.hp>0),x=>x.hp);if(f){f.hp--;out.push(f.n+' −1');if(isCSG(f)&&f.hp<=0)usCarrierSunk('海上交戰（'+f.n+'）');}}
   }
-  for(let i=0;i<Math.min(2,Math.max(0,P.rocNavy-S.units.filter(u=>u.fl).length));i++)if(P.plaNavy>0&&hitP(pNeed(5+(P.plaCV>0&&P.plaNavy>=6?1:0)),'seaBattle')){P.plaNavy--;out.push('攻方護航艦 −1');}
+  for(let i=0;i<Math.min(2,Math.floor(Math.max(0,P.rocNavy-ffWsum()+1e-4)));i++)if(P.plaNavy>0&&hitP(pNeed(5+(P.plaCV>0&&P.plaNavy>=6?1:0)),'seaBattle')){P.plaNavy--;out.push('攻方護航艦 −1');}
   for(const sb of subs){
     if(sb.hp<=0)continue;
     if(hitP(.5,'seaBattle')){
