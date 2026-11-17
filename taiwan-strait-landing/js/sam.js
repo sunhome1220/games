@@ -9,9 +9,10 @@
 const SAM={
   sys:{p:{n:'愛國者',bmR:40,acR:100},t:{n:'天弓三型',bmR:40,acR:100},n:{n:'NASAMS',bmR:0,acR:40}},
   sites:[
-    {id:'PN',sys:'p',n:'愛國者 北部營',tag:'愛國者',lon:121.38,lat:25.08,bat:3},
+    {id:'PN',sys:'p',n:'愛國者 北部營',tag:'愛國者',lon:121.15,lat:24.95,bat:3},
     {id:'PC',sys:'p',n:'愛國者 中部營',tag:'愛國者',lon:120.62,lat:24.26,bat:3},
     {id:'PS',sys:'p',n:'愛國者 南部營',tag:'愛國者',lon:120.30,lat:22.80,bat:3},
+    {id:'PE',sys:'p',n:'愛國者 第 4 營（花東）',tag:'愛國者',lon:121.60,lat:23.98,bat:2}, // 2025 年成立、配合 PAC-3 MSE；★2 個連
     {id:'TN',sys:'t',n:'天弓三型 北部',tag:'天弓三',lon:121.55,lat:25.08,bat:4},
     {id:'TC',sys:'t',n:'天弓三型 中部',tag:'天弓三',lon:120.50,lat:24.08,bat:3},
     {id:'TS',sys:'t',n:'天弓三型 南部',tag:'天弓三',lon:120.25,lat:23.00,bat:3},
