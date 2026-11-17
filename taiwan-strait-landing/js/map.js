@@ -38,7 +38,7 @@ const ACC={};
 function hitP(p,key){const k=key||'x';p=Math.max(0,Math.min(1,p));let a=(ACC[k]===undefined?.5:ACC[k])+p,h=false;if(a>=1){a-=1;h=true;}ACC[k]=a;LAST={p,r:'—',L:0,pe:p,hit:h,det:true};return h;}
 function takeInt(ev,key){const k=key||'x';const a=(ACC[k]===undefined?.5:ACC[k])+ev,n=Math.floor(a);ACC[k]=a-n;return n;}
 // 「成功機率」＝這次攻擊造成一次效果（扣 1 步、基地受損一級）的機率，已含武器命中與目標分散、掩蔽的折扣
-const stepOdds=(u,p)=>'打掉 1 步'+(['amph','mar','arm','abn','inf','tank','res'].includes(u.type)?'（約一個營）':'')+'的機率 <b>'+Math.round(p*100)+'%</b>；目標剩 '+u.hp+' 步';
+const stepOdds=(u,p)=>'打掉 1 步'+(['amph','mar','arm','abn','aas','inf','tank','res'].includes(u.type)?'（約一個營）':'')+'的機率 <b>'+Math.round(p*100)+'%</b>；目標剩 '+u.hp+' 步';
 const lastTxt=()=>LAST.det?'成功機率 '+Math.round(LAST.p*100)+'%（固定規則）':'基礎 '+Math.round(LAST.p*100)+'%・運氣 '+((LAST.pe-LAST.p)>=0?'+':'')+Math.round((LAST.pe-LAST.p)*100)+'%（擲 '+LAST.r+'）→ '+Math.round(LAST.pe*100)+'%';
 const SIDE={atk:'攻方',def:'守方'};
 const TERN={sea:'海域',main:'大陸',plain:'平原',city:'城市',mtn:'山地',port:'港口',air:'機場'};
@@ -47,6 +47,7 @@ const TYPES={
   amph:{n:'兩棲合成旅',s:'兩棲',atk:3,def:3,mv:kmH(80),hp:3},
   mar:{n:'陸戰旅',s:'陸戰',atk:3,def:3,mv:kmH(80),hp:3},
   abn:{n:'空降旅',s:'空降',atk:3,def:2,mv:kmH(80),hp:2},
+  aas:{n:'空中突擊旅（直升機機降）',s:'機降',atk:3,def:2,mv:kmH(80),hp:2},
   arm:{n:'重型合成旅',s:'裝甲',atk:5,def:3,mv:kmH(120),hp:3},
   inf:{n:'聯兵旅',s:'步兵',atk:2,def:3,mv:kmH(80),hp:3},
   tank:{n:'裝甲旅',s:'裝甲',atk:4,def:3,mv:kmH(120),hp:3},
@@ -71,7 +72,7 @@ const TYPES={
   ddg:{n:'柏克級驅逐艦',s:'神盾艦',atk:0,def:2,mv:kmH(120),hp:2},
   ff:{n:'守方艦艇群（巡防艦、飛彈快艇）',s:'艦艇',atk:0,def:1,mv:kmH(120),hp:2},
   hk:{n:'海鯤潛艦',s:'潛艦',atk:0,def:1,mv:kmH(120),hp:2},
-  heli:{n:'陸軍攻擊直升機旅',s:'直升機',atk:0,def:1,mv:0,hp:2},
+  heli:{n:'攻擊直升機部隊',s:'直升機',atk:0,def:1,mv:0,hp:2},
   psub:{n:'共軍潛艦群',s:'潛艦',atk:0,def:1,mv:kmH(120),hp:2},
   lst:{n:'兩棲艦群',s:'兩棲艦',atk:0,def:1,mv:kmH(120),hp:2},
   ro:{n:'滾裝船團',s:'滾裝',atk:0,def:1,mv:kmH(80),hp:2},

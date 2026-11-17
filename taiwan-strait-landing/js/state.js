@@ -24,6 +24,7 @@ function newState(){
     ['amph','3,1','north'],['amph','3,2','north'],['amph','4,4','north'],['amph','3,4','north'],['amph','3,5','central'],['amph','3,6','central'],['amph','2,8','central'],['amph','3,7','central'],
     ['mar','3,0','north'],['mar','2,10','penghu'],['mar','2,9','central'],['abn','2,4',null,0],['abn','2,6',null,1]];
   A.forEach(([t,k,z,g])=>S.units.push(mkUnit('atk',t,FK(k),{zone:z||null,goal:g})));
+  {const [c,r]=llToRC(119.5,25.5),h=placeNear(K(c,r),x=>x.isl==='CN'&&isLand(x));if(h)S.units.push(mkUnit('atk','aas',h.k,{goal:0}));} // ★空中突擊旅：東部戰區陸航旅的直升機一次約可機降一個加強營，以 1 個棋子代表，前進部署在福建沿岸（平潭對岸）
   // 守方：陸軍作戰旅約 20 餘個（含裝甲、機械化、步兵、陸戰隊 2 個旅）加上快速動員的後備旅；岸置飛彈另計
   const D=[['inf',SPOT.taipei,1],['inf',SPOT.taipei],['res',SPOT.taipei],
     ['inf',SPOT.keelung,1],['inf',SPOT.taoyuan],['tank',SPOT.hukou],['tank',SPOT.hukou],

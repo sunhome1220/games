@@ -631,6 +631,7 @@ async function endPhase(){
   if(S.over||!S.started)return;
   if(S.phase==='atk'&&S.ctrl.atk==='human'&&!S.sim&&!S.video&&S.units.some(u=>cvOwn(u)&&(u.cvwT===S.turn&&u.cvwB>0||u.cvwLT===S.turn&&u.cvwLB>0))){cvwStrike('atk');S.mode=null;render();if(S.over)return;} // 沒用完的艦載機對艦份額自動出擊
   if(S.phase==='atk')return beginPhase('def');
+  if(S.phase==='atk'&&!S.over&&!(typeof MISSION!=='undefined'&&MISSION&&S.ctrl.atk==='human'))heliAuto('atk'); // 共軍直-10 沒用完的批數
   if(S.phase==='def'){if(!(typeof MISSION!=='undefined'&&MISSION&&S.ctrl.def==='human')){afAuto();heliAuto();}S.mode=null;render();if(S.over)return;} // 關卡挑戰：玩家沒派完的空軍份額不自動出擊（要自己下令）
   if(allyHuman()){S.busy=true;try{await allyEndAuto();}finally{S.busy=false;}if(S.over)return;}
   S.stats.tpHold=S.owner[TAIPEI]==='atk'?(S.stats.tpHold||0)+1:0;
