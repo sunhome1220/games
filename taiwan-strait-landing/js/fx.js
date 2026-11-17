@@ -345,7 +345,7 @@ function renderCtrl(){
   else if((S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK){const n=afRings().length+(S.mode==='afC'?afCNT(S.afK).length:0);
     hint='✈ 空軍出擊中：'+(TER[S.afK].name||'基地')+'・'+AF_MODE_N[S.mode]+'——點紅圈'+(S.mode==='afC'?'或大陸基地':'')+'的目標（可攻擊 '+n+' 個）'+(S.afPend?'；已選定，看面板確認（點其他目標可切換，面板可拖曳）':'')+'。按下方「取消出擊」或點空地離開。';
     }
-  else if((S.mode==='hlS'||S.mode==='hlL')&&heliB(S.hlB))hint='🚁 攻擊直升機出擊中：'+heliB(S.hlB).n+'・'+HELI_MODE_N[S.mode]+'——點紅圈的目標（可攻擊 '+heliRings().length+' 個，剩 '+heliBudget(heliB(S.hlB))+' 批）。按下方「取消出擊」或點空地離開。';
+  else if((S.mode==='hlS'||S.mode==='hlL')&&heliB(S.hlB))hint='🚁 攻擊直升機出擊中：'+heliB(S.hlB).n+'・'+heliModeN(heliB(S.hlB),S.mode)+'——點紅圈的目標（可攻擊 '+heliRings().length+' 個，剩 '+heliBudget(heliB(S.hlB))+' 批）。按下方「取消出擊」或點空地離開。';
   else if(S.mode==='helo')hint='🚁 反潛直升機：點圓圈（150 km）內的海域搜索潛艦；找到會投擲魚雷攻擊。';
   else if(S.mode==='strike'&&S.phase==='def'&&S.cnPend)hint='🎯 縱深打擊：已選定目標，看面板確認發射；點其他目標可切換，面板可拖曳。';
   else if(S.mode==='strike')hint=S.phase==='atk'?'點選任一守方單位、台灣的機場，或地圖上的美日基地進行火力打擊，每次消耗 1 點。':'點選地圖上的大陸基地（紅色圖形），或直接點右側「中方基地」清單的一列，進行長程打擊，每次消耗 1 發長程飛彈。';
@@ -402,7 +402,7 @@ function unitStatusList(u,h){ // 單位狀態說明（資訊卡與滑鼠提示�
   stLauncher(u,h,st);
   stNaval(u,h,st);
   stWeapons(u,h,st);
-  if(u.type==='abn'&&!u.dropped&&h.isl==='CN')st.push('待命空降');
+  if(isAirT(u)&&!u.dropped&&h.isl==='CN')st.push(u.type==='aas'?'待命機降（直升機，約 '+AIR_R.aas+' km 內）':'待命空降');
   if(u.garrison)st.push('守備部隊');
   if(S.started&&u.side===S.phase)st.push(u.acted?'本階段已完成':u.moved?'已移動，仍可攻擊':'可行動');
   if(terrDef(h))st.push('地形防禦 +'+terrDef(h));

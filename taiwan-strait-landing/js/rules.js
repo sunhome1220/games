@@ -133,7 +133,7 @@ function seaPen(u){if(!atSea(u))return 0;const wh=wxWave(hexOf(u)),wp=wh>2?2:wh>
 const ADJ_N=()=>Math.round(kmH(ADJ_KM)); // 「相鄰」的格數（ring2 的半徑）
 function inZOC(side,h){ // ZOC_KM（10 km＝相鄰格）內有敵方地面部隊：直接掃單位，比逐格查快
   const R=Math.max(1,Math.round(kmH(ZOC_KM)));
-  return S.units.some(e=>{if(e.side===side||isMsl(e)||isShip(e)||e.type==='heli')return false;const n=hexOf(e);if(!n||!isLand(n)||(e.type==='abn'&&n.isl==='CN'))return false;const d=hd(h,n);return d>=1&&d<=R;});
+  return S.units.some(e=>{if(e.side===side||isMsl(e)||isShip(e)||e.type==='heli')return false;const n=hexOf(e);if(!n||!isLand(n)||(isAirT(e)&&n.isl==='CN'))return false;const d=hd(h,n);return d>=1&&d<=R;});
 }
 function support(u,t){
   let n=0;
@@ -215,9 +215,9 @@ function reach(u){
   const res=new Map();if(u.moved||u.acted)return res;const h=hexOf(u);
   if(u.boundTo||u.type==='heli')return res; // 載著旅的運輸船跟著旅一起走；攻擊直升機旅留在基地（從基地出擊）
   if(u.esc)return res; // 護航艦跟著航艦移動，不單獨移動
-  if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
+  if(isAirT(u)&&!u.dropped&&h.isl==='CN'){
     if(S.weather.air)for(const t of Object.values(TER)){
-      if((t.isl==='TW'||t.isl==='PH')&&t.t!=='mtn'&&canStack(u,t.k)&&rd(h,t)<=kmH(400))res.set(t.k,{kind:'drop'});
+      if((t.isl==='TW'||t.isl==='PH')&&t.t!=='mtn'&&canStack(u,t.k)&&rd(h,t)<=kmH(AIR_R[u.type]))res.set(t.k,{kind:'drop'});
     }
     for(const t of atkAF())if(afRoom(u,t.k))res.set(t.k,{kind:'drop'}); // 占領的機場：可直接機降（天候不佳時也要能起降才行）
     return res;
@@ -275,7 +275,7 @@ function shipHitEffects(u,why){
 }
 // 單位被殲滅：統計、移除棋子、連帶效果（船上的旅、港內艦艇、海軍點數、航艦）
 function unitDestroyed(u,why){if(isEsc(u)){S.stats.escLost=S.stats.escLost||{atk:0,def:0};S.stats.escLost[u.side]++;}if(u.type==='ssn')S.stats.ssnLost=(S.stats.ssnLost||0)+1;if(u.ally==='JP')S.stats.jpShip=(S.stats.jpShip||0)+1;
-    if(['amph','mar','abn','arm','inf','tank','res'].includes(u.type)){S.stats.bdeLost=S.stats.bdeLost||{atk:0,def:0};S.stats.bdeLost[u.side]++;}
+    if(['amph','mar','abn','aas','arm','inf','tank','res'].includes(u.type)){S.stats.bdeLost=S.stats.bdeLost||{atk:0,def:0};S.stats.bdeLost[u.side]++;}
     if(u.type==='cvy'){S.stats.cvySunk=(S.stats.cvySunk||0)+1;if(S.pools)S.pools.plaLift=Math.max(0,S.pools.plaLift)+0;}
     if(u.type==='fob')log('攻方灘頭補給站被摧毀：卸載能力與庫存空間下降');
     fxq({t:'dead',at:[u.c,u.r],type:u.type,side:u.side,id:u.id});ghostAdd(u);S.units=S.units.filter(x=>x!==u);
@@ -347,7 +347,8 @@ function doMove(u,k,kind){
   if(kind==='land'){fxq({t:'land',at:[h.c,h.r]});u.acted=true;log(uname(u)+' 於 '+hname(h)+' 登陸');mineCheck(u,h);}
   else if(kind==='drop'){
     u.acted=true;u.dropped=true;
-    let msg=uname(u)+' 空降 '+hname(h);
+    const heli=u.type==='aas',vb=heli?'機降':'空降',lift=heli?'直升機群':'運輸機群';
+    let msg=uname(u)+' '+vb+' '+hname(h);
     const al=atkAF().includes(h),hot=!al&&inZOC(u.side,h),pA=dropAD()*(al?.5:1),org=[from.c,from.r]; // 機降到已占領的機場：★攔截機率減半、不會遭落點地面壓制
     if(al)msg=uname(u)+' 以運輸機機降已占領的 '+hname(h);
     const shot=hitP(pA,'dropAD'),hp0=u.hp; // 運輸機群先要飛過守方防空，被擊落的部分整批損失
@@ -355,16 +356,19 @@ function doMove(u,k,kind){
     const lose=(shot?1:0)+(lz?1:0),dead=lose>=hp0;
     fxq({t:'drop',from:org,at:[h.c,h.r],lost:shot?1:0,fail:dead,id:u.id});
     if(!S.sim&&!S.video&&!REC.quiet&&!S.rec&&!reduce()){u.dropHide=1;setTimeout(()=>{if(u.dropHide){u.dropHide=0;render();}},8000);} // 動畫中的運輸機還沒飛到前，地圖上先不畫這個空降旅（保險：最多 8 秒）
-    if(lose){msg+='，'+[shot?'運輸機群遭防空攔截（攔截率 '+Math.round(pA*100)+'%，推估）':'',lz?'落點遭地面火力壓制':''].filter(Boolean).join('、')+'，損失 '+stpU(u,Math.min(lose,hp0))+(dead?'，空降失敗':'，其餘部隊落地');log(msg);damage(u,lose,'空降損失');return;}
-    log(msg+'：運輸機群突破防空，部隊落地（攔截率 '+Math.round(pA*100)+'%，推估）');
+    if(lose){msg+='，'+[shot?lift+'遭防空攔截（攔截率 '+Math.round(pA*100)+'%，推估）':'',lz?'落點遭地面火力壓制':''].filter(Boolean).join('、')+'，損失 '+stpU(u,Math.min(lose,hp0))+(dead?'，'+vb+'失敗':'，其餘部隊落地');log(msg);damage(u,lose,vb+'損失');return;}
+    log(msg+'：'+lift+'突破防空，部隊落地（攔截率 '+Math.round(pA*100)+'%，推估）');
   } else{if(kind==='sail'&&from.t!=='sea'&&!subHidden(u))log(uname(u)+' 自 '+hname(from)+' 出航');if(kind==='sail'||kind==='move')mineCheck(u,h);}
 }
 // 兵種相剋（★推估）：裝甲在平地壓制輕步兵；空降旅沒有重武器打不動裝甲；裝甲進城市或山地施展不開、易遭反裝甲伏擊
-const ARMOR=['arm','tank'],LIGHT=['abn','res'],FOOT=['inf','res','abn','mar','amph'];
+// 空降旅（運輸機，約 400 km）、空中突擊旅（直-20／直-8 直升機機降，★約 250 km：福建沿岸到台灣西岸約 150～200 km，載重時作戰半徑有限）
+const isAirT=u=>!!u&&(u.type==='abn'||u.type==='aas');
+const AIR_R={abn:400,aas:250};
+const ARMOR=['arm','tank'],LIGHT=['abn','aas','res'],FOOT=['inf','res','abn','aas','mar','amph'];
 function matchMod(u,t,th){const rough=th.t==='city'||th.t==='mtn';
   if(ARMOR.includes(u.type)&&LIGHT.includes(t.type)&&!rough&&!th.town)return {n:1,t:'裝甲在平地對輕步兵'}; // 城鎮：聚落、水田與溝渠讓裝甲展不開，沒有平地優勢，但也不到城市巷戰的劣勢（★推估）
   if(ARMOR.includes(u.type)&&FOOT.includes(t.type)&&rough)return {n:-1,t:'裝甲攻擊'+(th.t==='city'?'城市':'山地')+'裡的步兵'};
-  if(u.type==='abn'&&ARMOR.includes(t.type))return {n:-1,t:'空降旅沒有重武器'};
+  if(isAirT(u)&&ARMOR.includes(t.type))return {n:-1,t:TYPES[u.type].s+'旅沒有重武器'};
   return {n:0};}
 // 空降時運輸機群被防空擊落的機率（★推估）：依守方剩餘防空與制空；防空全失時仍有肩射與機槍 5%
 function dropAD(){const P=S.pools||{},p0=(S.p0&&S.p0.rocAD)||1,f=Math.max(0,Math.min(1,(P.rocAD||0)/p0)),c={atk:.5,mid:1,def:1.5}[S.airCtl||'mid']||1;return Math.min(.6,(.05+.25*f)*c);}
@@ -372,7 +376,7 @@ function dropAD(){const P=S.pools||{},p0=(S.p0&&S.p0.rocAD)||1,f=Math.max(0,Math
 //  空降旅只有迫擊砲、後備旅的砲兵編制不明，不計。在海上（登陸途中）不能砲擊。
 const ART_T={inf:1,tank:1,amph:1,mar:1,arm:1};
 const hasArt=u=>!!ART_T[u.type]&&!atSea(u);
-const GND_T=['amph','mar','abn','arm','inf','tank','res'];
+const GND_T=['amph','mar','abn','aas','arm','inf','tank','res'];
 const isGndAtk=u=>GND_T.includes(u.type);
 const isArtShot=(u,t)=>isGndAtk(u)&&!atSea(u)&&hd(hexOf(u),hexOf(t))>1;
 // ★砲擊（推估）：每次打掉 1 步的機率 20%，城鎮 ×0.75、城市與山地 ×0.5，依砲擊方剩餘戰力比例；砲擊方沒有損失，也不能推進占領
@@ -601,7 +605,7 @@ function strike(t){
 // 「步」是戰棋的耗損單位；通俗模式改用「戰力 %」「艘」「發射車」「航艦損傷狀態」，合計則換算成「相當於幾個旅」
 let TERM='plain';const plainT=()=>TERM!=='steps';
 // ★推估 綜合戰力權重（每步，以兩棲合成旅 1 步＝1.0 為基準）：依實際裝備對照 ST 100-9 範例（裝甲連 3.2、機步連 2.0、輕步兵連 1.0）。重型合成旅（99A＋04A）、M1A2T 裝甲旅≈裝甲；兩棲旅（05 式兩棲突擊砲＋步戰車）與聯兵旅（M60A3／CM-11 戰車營＋機步營）同屬戰車＋機步混編≈2.4；空降旅（03 式傘兵戰車）介於輕步兵與機步；後備旅＝輕步兵再依訓練打折。發射車、火箭車不計入地面戰力
-const CPW={arm:1.3,tank:1.2,amph:1,mar:1,inf:1,abn:.6,res:.35};
+const CPW={arm:1.3,tank:1.2,amph:1,mar:1,inf:1,abn:.6,aas:.6,res:.35};
 const cpOf=u=>Math.max(0,u.hp)*(CPW[u.type]||0);
 const cpR=x=>Math.round(x*10)/10;
 const fmt1=x=>typeof x==='number'?String(Math.round(x*10)/10):x; // 顯示用：最多一位小數（避免 13.399999999999999）

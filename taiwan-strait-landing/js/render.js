@@ -524,6 +524,7 @@ function unitSVG(u,withSmoke){
   else if(u.type==='cvy')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+7)+'h14l-2 2.5h-10z"/><path class="sym" d="M'+(x-4)+' '+(by+7)+'v-3h8v3"/>';
   else if(u.type==='fob')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+8)+'h12M'+(x-4)+' '+(by+8)+'v-5h8v5"/>';
   else if(u.type==='heli')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+3)+'h14M'+x+' '+(by+3)+'v2M'+(x-4)+' '+(by+7)+'q4 -3 7 0q-3 2.5 -7 0zM'+(x+3)+' '+(by+7)+'h4"/>';
+  else if(u.type==='aas')sym=box+X+'<path class="sym" d="M'+(x-7)+' '+(by-2)+'h14M'+x+' '+(by-2)+'v2"/>';
   else if(u.type==='abn')sym=box+X+'<path class="sym" d="M'+(x-5)+' '+(by+bh)+'Q'+x+' '+(by+4)+' '+(x+5)+' '+(by+bh)+'"/>';
   else if(u.type==='amph'||u.type==='mar')sym=box+X+'<path class="sym" d="M'+(bx+1)+' '+(by+bh-1.5)+'q2.5 -2 5 0t5 0t5 0"/>';
   else sym=box+X;
@@ -548,7 +549,7 @@ function unitSVG(u,withSmoke){
     '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
     '<rect class="body '+u.side+' c'+unitCat(u.type)+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="23" rx="3"/>'+
     '<rect class="uhi" x="'+(x-13)+'" y="'+(y-13)+'" width="26" height="3" rx="1.5"/>'+sym+
-    '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+(u.fl?u.fl.s:u.type==='heli'?u.hb+' 旅':T.s)+'</text>'+pips+((()=>{ // 運輸船載著什麼：只有攻方自己（或觀戰）看得到，格式「兵種簡稱＋剩餘步數」；守方玩家只能看到船
+    '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+(u.fl?u.fl.s:u.type==='heli'&&heliB(u.hb)?heliB(u.hb).tag:T.s)+'</text>'+pips+((()=>{ // 運輸船載著什麼：只有攻方自己（或觀戰）看得到，格式「兵種簡稱＋剩餘步數」；守方玩家只能看到船
       const b=u.boundTo&&S.units.find(z=>z.id===u.boundTo);if(!b)return '';
       if(S.ctrl&&S.ctrl.def==='human'&&S.ctrl.atk!=='human'&&!S.sim&&!S.video)return '';
       const t=TYPES[b.type].s+b.hp,w=Math.max(14,t.length*6.4+4);

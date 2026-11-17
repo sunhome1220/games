@@ -88,6 +88,7 @@ async function aiAtk(){
   const rank=u=>{const h=hexOf(u);return h.isl==='TW'||h.isl==='PH'?0:h.t==='sea'?1:2;};
   const order=S.units.filter(u=>u.side==='atk').sort((a,b)=>rank(a)-rank(b));
   for(const u of order){if(S.over)return;if(alive(u))await aiAtkUnit(u);}
+  heliAuto('atk'); // 共軍直-10：地面部隊行動後，支援灘頭接戰
   if(aiScreen())render();
 }
 // 電腦攻方：船團編隊——海上的運輸船、登陸艦與載旅船艇不在任何防空艦涵蓋內時，把還沒行動的護航艦開到能涵蓋它的位置
@@ -183,7 +184,7 @@ async function aiAtkEscort(u,C){const {h}=C;
 }
 // 電腦攻方：空降旅（機降到占領的機場、或依防空與目標選落點）
 async function aiAtkAirborne(u,C){const {h}=C;
-  if(u.type==='abn'&&!u.dropped&&h.isl==='CN'){
+  if(isAirT(u)&&!u.dropped&&h.isl==='CN'){
     const AF=atkAF();
     if(AF.length){const t=AF.find(x=>afRoom(u,x.k));if(t){doMove(u,t.k,'drop');render();await sleep(380);return true;}} // 已占領可用的機場：直接機降
     if(!S.weather.air||S.turn>3)return true;
@@ -383,7 +384,7 @@ async function aiDef(){
   if(shelterNeeded('def')&&!(S.shelterDone&&S.shelterDone.def===S.turn)){S.shelterDone=S.shelterDone||{};S.shelterDone.def=S.turn;shelterOrder('def');}
   for(const sb of S.units.filter(u=>u.side==='def'&&u.type==='hk')){if(S.over)return;await subTurn(sb);}
   let vol=0;const MS=(S.intent||{}).msl;let salvoT=null;const scoot=[];
-  const HV=['arm','tank','amph','mar','abn','cv'];
+  const HV=['arm','tank','amph','mar','abn','aas','cv'];
   for(const m of S.units.filter(u=>u.side==='def'&&isMsl(u))){
     if(S.over)return;if(!alive(m))continue;
     if((MS==='save'||MS==='scoot')&&m.shots>1)m.shots=1;
@@ -400,7 +401,7 @@ async function aiDef(){
       if(!ts.length)break; // 電腦把陸軍戰術飛彈留給高價值目標（裝甲、兩棲、陸戰、空降旅），其他目標只在火箭彈射程內才打
       if(m.type==='hmr'||m.type==='mlrs'){const w={arm:4,tank:4,amph:4,mar:4,abn:3,inf:2,res:2};const far=x=>m.type==='hmr'&&rd(hexOf(m),hexOf(x))>kmH(80)?1:0;
         if(m.type==='hmr'){const noG=((S.pools||{}).rocGml||0)<1;for(let i=ts.length-1;i>=0;i--){const x=ts[i];if((far(x)||noG)&&FOOT.includes(x.type))ts.splice(i,1);}if(!ts.length)break;} // 陸軍戰術飛彈打分散步兵效果差，不浪費
-        const lg=x=>m.type==='hmr'&&HM==='log'?(x.type==='fob'?2:PORTS.includes(K(x.c,x.r))?1:0):0,bc=x=>m.type==='hmr'&&HM==='beach'&&hexOf(x).coastal&&['arm','tank','amph','mar','abn'].includes(x.type)?1:0;
+        const lg=x=>m.type==='hmr'&&HM==='log'?(x.type==='fob'?2:PORTS.includes(K(x.c,x.r))?1:0):0,bc=x=>m.type==='hmr'&&HM==='beach'&&hexOf(x).coastal&&['arm','tank','amph','mar','abn','aas'].includes(x.type)?1:0;
         ts.sort((a,b)=>lg(b)-lg(a)||bc(b)-bc(a)||(w[b.type]||1)-(w[a.type]||1)||far(a)-far(b)||a.hp-b.hp);} // 同樣價值時先打近的（用火箭彈，省下陸軍戰術飛彈）
       else{const pr=t=>AS==='tr'?((t.type==='ro'||t.type==='lst'||t.type==='cvy')?2+(cargo(t)?1:0):0):AS==='esc'?((isEsc(t)||t.type==='dd')?2:0):0;{const k=ts.filter(t=>!cvOOA(t));if(k.length)ts=k;else break;}ts.sort((a,b)=>pr(b)-pr(a)||tgtVal(b)-tgtVal(a)||a.hp-b.hp);} // 指揮官意圖：反艦打擊優先
       if(MS==='salvo'){if(!(salvoT&&alive(salvoT)&&ts.includes(salvoT)))salvoT=ts[0];else ts=[salvoT];}

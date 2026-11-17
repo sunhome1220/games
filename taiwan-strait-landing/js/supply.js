@@ -128,8 +128,8 @@ function updateBeachheads(){ // 灘岸格連續被攻方控制 2 個回合就成
 }
 // 空降部隊孤立（★推估）：落地後連續 2 個攻方階段，40 km 內沒有從海上登陸的友軍、也不在可空運的機場上，就補給中斷、每回合損失 1 步
 function abnIsolation(){
-  const AF=atkAF().map(h=>h.k),sea=S.units.filter(u=>u.side==='atk'&&onTW(u)&&u.type!=='abn'&&!isShip(u)&&u.hp>0);
-  for(const u of S.units.filter(x=>x.side==='atk'&&x.type==='abn'&&x.dropped&&onTW(x)&&x.hp>0)){
+  const AF=atkAF().map(h=>h.k),sea=S.units.filter(u=>u.side==='atk'&&onTW(u)&&!isAirT(u)&&!isShip(u)&&u.hp>0);
+  for(const u of S.units.filter(x=>x.side==='atk'&&isAirT(x)&&x.dropped&&onTW(x)&&x.hp>0)){
     const ok=AF.includes(K(u.c,u.r))||sea.some(e=>hd(hexOf(e),hexOf(u))<=kmH(40));
     if(ok){u.iso=0;continue;}u.iso=(u.iso||0)+1;
     if(u.iso>=2){log(uname(u)+' 在 '+hname(hexOf(u))+' 孤立已 '+u.iso+' 回合（40 km 內沒有登陸友軍、也沒有可空運的機場）：彈藥與補給斷絕，損失 '+stpU(u,1));damage(u,1,'空降部隊孤立');}
