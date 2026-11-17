@@ -734,6 +734,8 @@ function renderMap(){
   o+=mapTargetsSVG();
   o+=heloRingSVG();
   $('#gD').innerHTML=o;
+  // 選了己方單位、正要下移動命令時：機場標籤變半透明且不能點，不然標籤蓋在海上的目標格上會點不到（點基地改看資訊要先取消選取）
+  {const mv=!!(S.started&&S.sel&&alive(S.sel)&&S.sel.side===S.phase&&!S.mode&&humanTurn()&&reach(S.sel).size>0);$('#map').classList.toggle('mvsel',mv);}
   landmarkDim();
   animateUnitSlides();
 }
