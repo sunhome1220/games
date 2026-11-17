@@ -399,8 +399,12 @@ function wxMapSVG(){ // 地圖：各海域浪高標籤、颱風（中心、暴�
     const cand=h0?Object.values(TER).filter(q=>q.t==='sea'&&hd(q,h0)<=kmH(80)):[];let best=[x0,y0],bs=1e9;
     for(const q of [{c:c0,r:r0}].concat(cand)){const [x,y]=center(q.c,q.r),hit=upx.filter(([ux,uy])=>Math.abs(ux-x)<hw+uR&&Math.abs(uy-(y-4))<hh+uR).length,sc=hit*100+Math.hypot(x-x0,y-y0)/HPX;if(sc<bs){bs=sc;best=[x,y];}}
     return best;};
-  for(const z in A){const v=wxWaveLL(z==='W'?WXREF:A[z]),txt=WXZ[z]+' '+v.toFixed(1)+' m',[x,y]=spot(A[z],txt),col=v>=2.5?'#c0392b':v>1.25?'#d68910':'#2e86c1';
-    o+='<text class="wxl" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="middle" font-size="'+(11*Math.max(.7,SC)).toFixed(1)+'" font-weight="800" fill="'+col+'" stroke="var(--panel,#fff)" stroke-width="3" paint-order="stroke" opacity=".85">'+WXZ[z]+' '+v.toFixed(1)+' m</text>';}
+  // 浪高徽章：波浪圖示＋海域名＋浪高；顏色＝灘頭卸載規則的門檻（綠：1.25 m 以下不受影響；橘：受限；紅：2.5 m 以上無法卸載）
+  for(const z in A){const v=wxWaveLL(z==='W'?WXREF:A[z]),txt=WXZ[z].replace('海域','')+' '+v.toFixed(1)+' m',[x,y]=spot(A[z],txt),col=v>=2.5?'#c0392b':v>1.25?'#d68910':'#2e8b57';
+    const fs=10*Math.max(.7,SC),w=[...txt].reduce((a,ch)=>a+(/[\u3000-\u9fff]/.test(ch)?fs:fs*.58),0)+fs*2.1,h=fs*1.7;
+    o+='<g class="wxl" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'"><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+')"><rect x="'+(-w/2).toFixed(1)+'" y="'+(-h*.72).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="'+(h/2).toFixed(1)+
+      '" fill="var(--panel,#fff)" fill-opacity=".86" stroke="'+col+'" stroke-width="1.2"/><path d="M'+(-w/2+fs*.45).toFixed(1)+' '+(-fs*.15).toFixed(1)+'q'+(fs*.2).toFixed(1)+' '+(-fs*.3).toFixed(1)+' '+(fs*.4).toFixed(1)+' 0t'+(fs*.4).toFixed(1)+' 0" fill="none" stroke="'+col+'" stroke-width="1.6" stroke-linecap="round"/>'+
+      '<text x="'+(fs*.55).toFixed(1)+'" y="0" text-anchor="middle" font-size="'+fs.toFixed(1)+'" font-weight="700" fill="var(--ink,#222)"><tspan>'+WXZ[z].replace('海域','')+' </tspan><tspan fill="'+col+'" font-weight="800">'+v.toFixed(1)+' m</tspan></text></g></g>';} // 外層 g 給 textZoomFix 放大時縮字用
   const t=W.ty;
   if(t){const [x,y]=P([t.lon,t.lat]),R=t.R*pxKm,nx=S.nextW&&S.nextW.ty;
     if(t.trail&&t.trail.length)o+='<polyline points="'+t.trail.concat([[t.lon,t.lat]]).map(p=>P(p).map(v=>v.toFixed(1)).join(',')).join(' ')+'" fill="none" stroke="#8e44ad" stroke-width="2" stroke-dasharray="2 4" opacity=".7"/>';
