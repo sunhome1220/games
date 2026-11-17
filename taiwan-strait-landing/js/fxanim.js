@@ -13,6 +13,42 @@ const reduce=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: redu
 let FXSPD=1;const fxK=()=>((S&&S.video&&V.sp)?Math.max(.2,1/V.sp):1)/FXSPD; // 動畫速度設定：0.5／1／2／4 倍
 function el(tag,at,parent){const e=document.createElementNS(SVGNS,tag);for(const k in at)e.setAttribute(k,at[k]);if(!parent)e.__t=performance.now();(parent||document.getElementById('gF')).appendChild(e);return e;}
 function tween(ms,fn,end){ms*=fxK();const t0=performance.now();(function f(t){const k=Math.min(1,Math.max(0,(t-t0)/ms));fn(k);if(k<1)requestAnimationFrame(f);else if(end)end();})(t0);}
+// ---------- 飛機返航：以固定速度、有限轉彎半徑飛回基地（不再原地瞬間掉頭）----------
+// 三種轉法（動畫用 NR() 隨機挑，不吃戰局種子）：
+//   u    水平 U 形迴轉：朝一側以中等半徑轉 180°，再直飛回去
+//   tear 淚滴形迴轉：先向外偏約 40°飛一小段，再反向大弧轉回（航線呈淚滴狀）
+//   split 急轉脫離：小半徑急轉，轉彎中機影縮小再放大（像俯衝改出）
+// 轉彎時機影 y 軸壓扁一點，看起來像壓坡度（bank）
+function turnPath(p0,h0,home,style){
+  const R=style==='split'?11:style==='tear'?26:20,ds=1.5,pts=[];let p=p0.slice(),h=h0,len=0;
+  const wrap=a=>Math.atan2(Math.sin(a),Math.cos(a)),dir=a=>wrap(Math.atan2(home[1]-p[1],home[0]-p[0])-a);
+  const e0=dir(h);let s=Math.abs(e0)>2.8?(NR()<.5?1:-1):Math.sign(e0)||1; // 目標幾乎在正後方：左轉右轉隨機
+  const plan=style==='tear'?[{turn:-s,ang:.7},{fly:22},{turn:s}]:[{turn:s}];
+  const step=(dh,bank)=>{h+=dh;p=[p[0]+Math.cos(h)*ds,p[1]+Math.sin(h)*ds];len+=ds;pts.push([p[0],p[1],h,bank,len]);};
+  pts.push([p[0],p[1],h,0,0]);
+  for(const seg of plan){
+    if(seg.fly){for(let x=0;x<seg.fly;x+=ds)step(0,0);continue;}
+    if(seg.ang){for(let a=0;a<seg.ang;a+=ds/R)step(seg.turn*ds/R,1);continue;}
+    for(let i=0;i<3000;i++){const e=dir(h);if(Math.abs(e)<ds/R)break;const sg=Math.abs(e)>2.9?seg.turn:Math.sign(e);step(sg*ds/R,1);} // 轉到朝向基地為止
+  }
+  for(let i=0;i<4000;i++){const d=Math.hypot(home[0]-p[0],home[1]-p[1]);if(d<ds*1.5)break;const e=dir(h);step(Math.max(-ds/R,Math.min(ds/R,e)),Math.min(1,Math.abs(e)*R/ds));} // 直飛回去（小幅修正）
+  return {pts,len:Math.max(len,1)};
+}
+const TURNS=['u','u','tear','tear','split'];
+// pose(p,ang,k,sc,bank)：k＝0..1 進度；sc＝機影縮放（split 時變化）；淡出由呼叫端依 k 處理。maxLen：只飛這麼長就結束（脫離後淡出用）
+function flyBack(p0,h0,home,pose,done,opt){
+  opt=opt||{};const style=opt.style||TURNS[Math.floor(NR()*TURNS.length)],P=turnPath(p0,h0,home,style);
+  const L=Math.min(P.len,opt.maxLen||1e9),pts=P.pts.filter(q=>q[4]<=L);let i=0;
+  const turnEnd=pts.findIndex((q,j)=>j>0&&q[3]===0&&pts[j-1][3]===1);const tl=turnEnd>0?pts[turnEnd][4]:L;
+  // 時間分配：直線段沿用原本的飛行速度；轉彎段依轉過的角度給時間（180°＝TURN_MS），短距離返航時轉彎也不會只有幾格畫面
+  const TURN_MS=style==='split'?520:680,v=L/(opt.ms||fxDur('plane',L)),T=[0];
+  for(let j=1;j<pts.length;j++){const da=Math.abs(Math.atan2(Math.sin(pts[j][2]-pts[j-1][2]),Math.cos(pts[j][2]-pts[j-1][2])));T.push(T[j-1]+Math.max((pts[j][4]-pts[j-1][4])/v,da/Math.PI*TURN_MS));}
+  const tot=T[T.length-1]||1;
+  tween(tot,k=>{const want=k*tot;while(i<pts.length-1&&T[i+1]<=want)i++;const q=pts[i];
+    const sc=style==='split'&&q[4]<tl?1-.32*Math.sin(Math.PI*q[4]/tl):1;pose([q[0],q[1]],q[2],k,sc,q[3]);},done);
+  return style;
+}
+if(/[?&]debug=1/.test(location.search))window.__turnPath=turnPath;
 function bez(a,c,b,t){const u=1-t;return [u*u*a[0]+2*u*t*c[0]+t*t*b[0],u*u*a[1]+2*u*t*c[1]+t*t*b[1]];}
 const FXS=()=>Math.max(.55,SC)*(typeof ZOOM!=='undefined'&&ZOOM>5?5/ZOOM:1); // 特效尺寸：跟著格子大小縮小，放大到 500% 以上時不再變大
 function fxFlash(p,r1,r2,col,ms,par){r1*=FXS();r2*=FXS();const e=el('circle',{cx:p[0],cy:p[1],r:r1,fill:col,opacity:.9},par);tween(ms,k=>{e.setAttribute('r',r1+(r2-r1)*k);e.setAttribute('opacity',.9*(1-k));},()=>e.remove());}
@@ -81,9 +117,39 @@ function fxShot(a,b,o){
 // 動畫速度與真實速度成正比：同一比例尺（★真實 1 秒＝動畫 3 毫秒），最短 0.18 秒（太快看不到）、最長 3.5 秒（魚雷、無人機會被這個上限截短）
 // 平均速度（m/s，概略）：東風-17 滑翔體 ~2500（約 7 馬赫）、短程彈道飛彈 ~2000（約 6 馬赫）、防空飛彈 ~1500、空對空飛彈 ~1300、陸軍戰術飛彈 ~1000、
 // 火箭 ~900、砲彈 ~800、次音速反艦飛彈 ~280、導引炸彈 ~280、戰機 ~250、巡弋飛彈 ~250、無人機與巡飛彈 ~60、重型魚雷 ~25（約 50 節）
-const FXV={hs:2500,bm:2000,sam:1500,aam:1300,atc:1000,rkt:900,arty:800,asm:280,bomb:280,plane:250,cm:250,drone:60,torp:25},FX_SEC=3;
+// heli：攻擊直升機巡航約 260～290 km/h（AH-64E 約 280、AH-1W 約 280），約戰機（約 900 km/h，plane:250）的 0.3 倍；atgm：地獄火約 1.3 馬赫
+const FXV={hs:2500,bm:2000,sam:1500,aam:1300,atc:1000,rkt:900,arty:800,asm:280,bomb:280,plane:250,heli:75,atgm:450,cm:250,drone:60,torp:25},FX_SEC=3;
 function fxDur(k,dPx){const km=dPx/(HPX/KM_HEX);return Math.max(180,Math.min(3500,km*1000/(FXV[k]||300)*FX_SEC));}
-function fxFlight(a,b,k,end){
+// 攻擊直升機：在目標前約 8 km 發射地獄火（射程約 8 km）；距離太近時取一半
+const heliStand=dd=>Math.min(dd*.5,HPX*8/KM_HEX),HELI_HOVER=380;
+// 俯視的直升機：機身、尾桁、尾旋翼，主旋翼兩片槳葉持續旋轉（SMIL，iOS 也支援）
+function heliGlyph(col){col=col||'#3f7fd0';const g=el('g',{opacity:0});
+  g.innerHTML='<ellipse cx="5" cy="6" rx="12" ry="4" fill="#000" opacity=".22"/>'+ // 地面陰影：表示在空中
+    '<path d="M-4 0H-15" stroke="#f4f4f0" stroke-width="3.6" stroke-linecap="round"/><path d="M-4 0H-15" stroke="'+col+'" stroke-width="1.9" stroke-linecap="round"/>'+
+    '<path d="M-15 -3V3" stroke="#f4f4f0" stroke-width="2.4" stroke-linecap="round"/><path d="M-15 -3V3" stroke="'+col+'" stroke-width="1.1" stroke-linecap="round"/>'+
+    '<ellipse cx="2" cy="0" rx="7" ry="3.2" fill="'+col+'" stroke="#f4f4f0" stroke-width="1.1"/><ellipse cx="5.5" cy="0" rx="2.2" ry="1.6" fill="#cfe6f7" opacity=".85"/>'+
+    '<circle cx="2" cy="0" r="10.5" fill="#fff" fill-opacity=".12" stroke="#fff" stroke-opacity=".35" stroke-width=".6"/>'+ // 旋翼轉動的範圍
+    '<g><path d="M-8.5 0H12.5M2 -10.5V10.5" stroke="#f4f4f0" stroke-width="1.3" stroke-linecap="round"/>'+
+    '<animateTransform attributeName="transform" type="rotate" from="0 2 0" to="360 2 0" dur=".18s" repeatCount="indefinite"/></g>';
+  return g;}
+// 反潛直升機搜索：從艦艇起飛，慢速飛到搜索海域，繞一圈投放聲納浮標（浮標落水的小水圈）；發現潛艦就投魚雷，最後轉彎飛回母艦
+const HELO_LOOP=1300;
+function heloGeo(o){const a=fxPos(o.from),b=fxPos(o.at),dd=Math.hypot(b[0]-a[0],b[1]-a[1]);return {a,b,dd,tIn:fxDur('heli',dd),tOut:fxDur('heli',dd)};}
+function fxHelo(o){
+  if(reduce())return;const G=heloGeo(o),ang=Math.atan2(G.b[1]-G.a[1],G.b[0]-G.a[0]),hg=heliGlyph(o.side==='atk'?'#d9534a':'#3f7fd0'),Rl=14*FXS();
+  const pose=(p,an,op)=>{hg.setAttribute('transform','translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+(an*180/Math.PI).toFixed(0)+') scale('+(FXS()*1.3).toFixed(3)+')');if(op!=null)hg.setAttribute('opacity',op);};
+  setTimeout(()=>{try{hg.remove();}catch(e){}},(G.tIn+G.tOut+HELO_LOOP+3000)*fxK()); // 保險：殘留的圖示一定清掉
+  pose(G.a,ang,0);
+  tween(G.tIn,t=>pose([G.a[0]+(G.b[0]-G.a[0])*t,G.a[1]+(G.b[1]-G.a[1])*t],ang,Math.min(1,t*8)),()=>{
+    const c=[G.b[0]-Math.sin(ang)*Rl,G.b[1]+Math.cos(ang)*Rl];let drop=0; // 繞圈中心在航向右側（畫面 y 向下）：從進場點、進場方向順勢右轉一圈，回到同一點
+    tween(HELO_LOOP,t=>{const th=ang-Math.PI/2+t*Math.PI*2,p=[c[0]+Math.cos(th)*Rl,c[1]+Math.sin(th)*Rl];pose(p,th+Math.PI/2,1);
+      const want=Math.floor(t*4);while(drop<want){drop++;fxRing(p,1,5,'#d8f4ff',600,1.1);}},()=>{ // 每 1/4 圈投一枚聲納浮標
+      if(o.found){fxRing(G.b,2,16,'#bfeaff',700,1.6);fxShot(G.b,[G.b[0]+(NR()-.5)*10,G.b[1]+12],{arc:0,dur:500,color:'#9fe6ff',trail:'#5fb4e0',w:1.2,r:1.8,end:()=>{if(o.kill)fxImpact(G.b,true,true,true);}});}
+      fxText(G.b,o.s,o.side||'def',1100);
+      flyBack(G.b,ang,G.a,(p,an,t)=>pose(p,an,t<.85?1:Math.max(0,1-(t-.85)/.15)),()=>hg.remove(),{style:'u',ms:G.tOut});
+    });});
+}
+function fxFlight(a,b,k,end,opt){
   const dd=Math.hypot(b[0]-a[0],b[1]-a[1]);
   if(k==='hs'){ // 東風-17：推進段像彈道飛彈往上爬，分離後換成高超音速滑翔體，以較平的彈道、左右機動衝向目標（電漿層高溫：橘白色熱光）
     const T=fxDur('hs',dd),mid=[a[0]+(b[0]-a[0])*.38,a[1]+(b[1]-a[1])*.38-Math.min(110,dd*.32+30)];
@@ -106,15 +172,24 @@ function fxFlight(a,b,k,end){
   }else if(k==='arty'){
     fxFlash(a,2,9,'#ffe08a',160);
     fxShot(a,b,{arc:Math.min(46,dd*.4+14),dur:fxDur('arty',dd),color:'#ffe08a',trail:'#ffb347',w:2,r:2.4,end});
+  }else if(k==='heli'){ // 攻擊直升機：慢速飛到距目標約 8 km 處懸停，發射地獄火，再慢速轉彎返回基地
+    const ang=Math.atan2(b[1]-a[1],b[0]-a[0]),so=heliStand(dd),rel=[b[0]-Math.cos(ang)*so,b[1]-Math.sin(ang)*so],hg=heliGlyph(opt&&opt.col);
+    const pose=(p,an,op,sc,bk)=>{hg.setAttribute('transform','translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+(an*180/Math.PI).toFixed(0)+') scale('+(FXS()*1.5*(sc||1)).toFixed(3)+')');if(op!=null)hg.setAttribute('opacity',op);};
+    pose(a,ang,0);
+    tween(fxDur('heli',dd-so),t=>pose([a[0]+(rel[0]-a[0])*t,a[1]+(rel[1]-a[1])*t],ang,Math.min(1,t*8)),()=>{
+      tween(HELI_HOVER,t=>pose([rel[0],rel[1]+Math.sin(t*Math.PI*2)*1.2],ang,1),()=>{ // 懸停瞄準
+        fxFlash(rel,1.5,6,'#fff3c4',160);
+        fxShot(rel,b,{arc:2,dur:fxDur('atgm',so),color:'#fff3c4',trail:'#ffb347',w:1.2,r:2,style:'mis',shape:'cm',end});
+        flyBack(rel,ang,a,(p,an,t,sc,bk)=>pose(p,an,t<.85?1:Math.max(0,1-(t-.85)/.15)),()=>hg.remove(),{style:'u',ms:fxDur('heli',dd-so)});
+      });});
   }else{ // 'bomb'：飛機低空飛過、投下炸彈
     const ang=Math.atan2(b[1]-a[1],b[0]-a[0]),rel=[a[0]+(b[0]-a[0])*.72,a[1]+(b[1]-a[1])*.72-14];
     const pl=airGlyph('bm','#e9edf0',{glow:true});pl.querySelectorAll('path[stroke]').forEach(q=>q.setAttribute('stroke','#555'));pl.setAttribute('data-sc','1');
     tween(fxDur('plane',dd*.72),t=>{const x=a[0]+(rel[0]-a[0])*t,y=a[1]+(rel[1]-a[1])*t;pl.setAttribute('transform','translate('+x.toFixed(1)+' '+y.toFixed(1)+') rotate('+(ang*180/Math.PI).toFixed(0)+') scale(.85)');},()=>{
       fxShot(rel,b,{arc:-4,dur:fxDur('bomb',Math.hypot(b[0]-rel[0],b[1]-rel[1])),color:'#4a4a4a',trail:'#9aa0a6',w:.8,r:2.4,style:'mis',shape:'bomb',end});
       // 投彈後調頭，飛回出發的航艦或機場，快到時才淡出（降落）
-      const bk=Math.atan2(a[1]-rel[1],a[0]-rel[0]);tween(fxDur('plane',Math.hypot(a[0]-rel[0],a[1]-rel[1])),t=>{const x=rel[0]+(a[0]-rel[0])*t,y=rel[1]+(a[1]-rel[1])*t;pl.setAttribute('transform',
-          'translate('+x.toFixed(1)+' '+y.toFixed(1)+') rotate('+(bk*180/Math.PI).toFixed(0)+') scale(.85)');pl.setAttribute('opacity',t<.85?1:Math.max(0,1-(t-.85)/.15));},
-          ()=>pl.remove()); // 導引炸彈：有彈體、沿落下方向飛（不再是圓球）
+      flyBack(rel,ang,a,(p,an,t,sc,bk)=>{pl.setAttribute('transform','translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+(an*180/Math.PI).toFixed(0)+') scale('+(.85*sc).toFixed(3)+' '+(.85*sc*(1-.28*bk)).toFixed(3)+')');
+          pl.setAttribute('opacity',t<.85?1:Math.max(0,1-(t-.85)/.15));},()=>pl.remove()); // 導引炸彈：有彈體、沿落下方向飛（不再是圓球）
     });
   }
 }
@@ -194,11 +269,13 @@ function fxDog(o){
     if(!v){tween(760,k=>{place(g,[p[0]+26*k,p[1]+44*k*k+10*k],ang+k*9,1-.35*k);g.setAttribute('opacity',1-k*k);},()=>g.remove());return;}
     tween(760,k=>{v.el.setAttribute('transform','translate('+(v.dx+10*k)+' '+(v.dy+28*k*k+6*k)+') rotate('+(k*160).toFixed(0)+') scale('+(.5*FXS()*(1-.4*k))+')');v.el.setAttribute('opacity',1-k*k);if(!LITE&&NR()<.4)fxPuff([p[0]+10*k+v.dx,p[1]+28*k*k+v.dy],2,5,'#4a4a4a',.7,560);},()=>{v.el.remove();
       // 被擊落一架後，剩下的編隊朝自己的基地脫離（不用航向反轉：返航途中被擊中時，反轉會變成朝敵方飛）
-      const q=g._p||p,bk=home?Math.atan2(home[1]-q[1],home[0]-q[0]):ang+Math.PI;tween(1200,k=>{place(g,[q[0]+Math.cos(bk)*120*k,q[1]+Math.sin(bk)*120*k],bk);g.setAttribute('opacity',k<.6?1:1-(k-.6)/.4);},()=>g.remove());});
+      const q=g._p||p,a0=g._a!=null?g._a:ang,hm=home||[q[0]-Math.cos(a0)*300,q[1]-Math.sin(a0)*300];
+      flyBack(q,a0,hm,(pp,an,k,sc,bk)=>{g.setAttribute('transform','translate('+pp[0].toFixed(1)+' '+pp[1].toFixed(1)+') rotate('+(an*180/Math.PI).toFixed(0)+') scale('+(.95*sc).toFixed(3)+' '+(.95*sc*(1-.28*bk)).toFixed(3)+')');
+        g.setAttribute('opacity',k<.6?1:1-(k-.6)/.4);},()=>g.remove(),{maxLen:170,ms:1400});});
   };
   // 一路飛行：直線接近 → 通過交戰點時齊射 → 不停留、半圓 U 形轉彎 → 沿平行航線返航（速度恆定，沒有停在空中）
   const mkPath=(st,pe,sg)=>{
-    const L1=Math.hypot(pe[0]-st[0],pe[1]-st[1])||1,d=[(pe[0]-st[0])/L1,(pe[1]-st[1])/L1],n=[-d[1]*sg,d[0]*sg],R=30,S=2*L1+Math.PI*R;
+    const L1=Math.hypot(pe[0]-st[0],pe[1]-st[1])||1,d=[(pe[0]-st[0])/L1,(pe[1]-st[1])/L1],n=[-d[1]*sg,d[0]*sg],R=[20,30,42][Math.floor(NR()*3)],S=2*L1+Math.PI*R; // 迴轉半徑三種：急轉／一般／大弧
     const c=[pe[0]+n[0]*R,pe[1]+n[1]*R];
     const pos=x=>{x=Math.max(0,Math.min(S,x));
       if(x<L1)return [[st[0]+d[0]*x,st[1]+d[1]*x],Math.atan2(d[1],d[0])];
@@ -277,8 +354,8 @@ function fxCarrierAir(o){
       else fxFlight(src,G.b,'asm',()=>fxImpact(G.b,last&&o.hit,true,true)); // 艦載機的反艦飛彈
     },j*130*fxK());
     // 調頭返航：朝自己的航艦飛回去，快到航艦時才淡出（降落）
-    const back=Math.atan2(G.a[1]-G.p[1],G.a[0]-G.p[0]);
-    setTimeout(()=>tween(Math.min(1800,350+G.dp*1.1),k=>place(lerp(G.p,G.a,k),back,k<.85?1:Math.max(0,1-(k-.85)/.15)),()=>g.remove()),(G.n*130+80)*fxK());
+    setTimeout(()=>flyBack(G.p,ang,G.a,(p,an,k,sc,bk)=>{g.setAttribute('transform','translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+(an*180/Math.PI).toFixed(0)+') scale('+sc.toFixed(3)+' '+(sc*(1-.28*bk)).toFixed(3)+')');
+      g.setAttribute('opacity',k<.85?1:Math.max(0,1-(k-.85)/.15));},()=>g.remove(),{ms:Math.min(2600,500+G.dp*1.6)}),(G.n*130+80)*fxK());
   });
 }
 if(/[?&]debug=1/.test(location.search))window.__cva=o=>fxCarrierAir(o);
@@ -342,7 +419,7 @@ function runFx(o){
     const b=P(o.at),src=o.src||'w',org=o.org||o.from,s=o.from?P(o.from):o.org?PO(o.org):src==='w'?[b[0]-200,b[1]-150]:src==='e'?[b[0]+200,b[1]-165]:[b[0],b[1]-230];
     const dd=Math.hypot(s[0]-b[0],s[1]-b[1]);if(org)fxFlash(s,3,14,'#fff',260);
     if(org&&o.k&&o.ad&&!reduce())fxIntercept(s,b,o.k==='bomb'?'cm':o.k,o.ad,o.hit,o.tsea,o.adSide||'def');
-    else if(org&&o.k)fxFlight(s,b,o.k,()=>fxImpact(b,o.hit,o.tsea,true));
+    else if(org&&o.k)fxFlight(s,b,o.k,()=>fxImpact(b,o.hit,o.tsea,true),{col:o.col});
     else fxShot(s,b,{arc:org?Math.min(110,dd*.12):-12,dur:org?Math.min(900,260+dd*.7):420,color:'#fff',trail:'#ff9a3c',w:3,r:3.5,end:()=>fxImpact(b,o.hit,o.tsea,true)});
   }else if(o.t==='cva'){fxCarrierAir(o);
   }else if(o.t==='dmg'){
@@ -354,6 +431,7 @@ function runFx(o){
     const gh=document.createElementNS(SVGNS,'g');gh.innerHTML=unitSVG({id:-1,c:o.at[0],r:o.at[1],type:o.type,side:o.side,hp:1,moved:true,acted:false});document.getElementById('gF').appendChild(gh);
     tween(620,k=>{gh.setAttribute('opacity',1-k);gh.setAttribute('transform','translate(0,'+(-6*k).toFixed(1)+')');},()=>gh.remove());
     fxText(p,'殲滅','dead',1100);
+  }else if(o.t==='helo'){fxHelo(o);
   }else if(o.t==='txt'){fxText(P(o.at),o.s,o.col||'def',900);
   }else if(o.t==='land'){const p=P(o.at);fxRing(p,4,24,'#ffffff',620,2.5);fxRing(p,2,15,'#cfeaf5',480,2);
   }else if(o.t==='hmr'){fxHimars(o);
@@ -375,13 +453,14 @@ function fxDrop(o){ // 空降：運輸機群從大陸飛到落點；被擊落的
 // 一發武器從開始到命中（或攔截）的時間（毫秒，未乘播放速度）；公式與 fxFlight／fxShot／fxHimars／fxSub 相同
 function fxArrive(o){
   const PO=h=>{const q=oCenter(h[0],h[1]);return [q[0]*KS,q[1]*KS];},P=fxPos;
-  const fl=(k,d)=>k==='bomb'?fxDur('plane',d*.72)+fxDur('bomb',d*.28):fxDur(k,d);
+  const fl=(k,d)=>k==='bomb'?fxDur('plane',d*.72)+fxDur('bomb',d*.28):k==='heli'?fxDur('heli',d-heliStand(d))+HELI_HOVER+fxDur('atgm',heliStand(d)):fxDur(k,d);
   const dist=(a,b)=>Math.hypot(b[0]-a[0],b[1]-a[1]);
   try{
     if(o.t==='air'){const b=P(o.at),src=o.src||'w',s=o.from?P(o.from):o.org?PO(o.org):src==='w'?[b[0]-200,b[1]-150]:src==='e'?[b[0]+200,b[1]-165]:[b[0],b[1]-230],dd=dist(s,b);
       if((o.org||o.from)&&o.k)return fl(o.ad&&o.k==='bomb'?'cm':o.k,dd);return (o.org||o.from)?Math.min(900,260+dd*.7):420;}
     if(o.t==='msl')return fl('asm',dist(P(o.from),P(o.to)));
     if(o.t==='cva')return cvaGeo(o).tot;
+    if(o.t==='helo'){const G=heloGeo(o);return G.tIn+HELO_LOOP+300;}
     if(o.t==='salvo'){const q=fxPos,d=dist(q(o.from),q(o.to)),rp=o.air?o.air.km/KM_HEX*HPX:d;return (o.air&&d>rp?fxDur('plane',d-rp):0)+fl('asm',Math.min(d,rp))+Math.min(6,o.n)*110+300;}
     if(o.t==='capx'){const q=fxPos;return fxDur('plane',dist(q(o.from),q(o.to))*.55)+420;}
     if(o.t==='drop'){const q=fxPos;return fxDur('plane',dist(q(o.from),q(o.at)))+900;}
@@ -400,7 +479,7 @@ function playFx(list){
   const nShots=list.filter(x=>x.t==='air'||x.t==='msl').length,stepAir=nShots>=8?45:nShots>=4?85:170,stepMsl=nShots>=8?45:nShots>=4?70:110; // 齊射：發數多時間隔縮短，看起來是一起發射
   list.forEach(o=>{
     let start;
-    if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='sub'||o.t==='air'||o.t==='tfa'||o.t==='cva'||o.t==='drop'||o.t==='salvo'||o.t==='capx'){start=t;last=t;hitAt=t+(o.t==='tfa'?tfaDur(o):fxArrive(o));t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
+    if(o.t==='atk'||o.t==='msl'||o.t==='hmr'||o.t==='sub'||o.t==='air'||o.t==='tfa'||o.t==='cva'||o.t==='drop'||o.t==='salvo'||o.t==='capx'||o.t==='helo'){start=t;last=t;hitAt=t+(o.t==='tfa'?tfaDur(o):fxArrive(o));t+=(o.t==='air'?stepAir:o.t==='atk'?70:stepMsl);}
     else if(o.t==='dmg'||o.t==='dead'||o.t==='txt'||o.t==='toast')start=Math.max(last+360,hitAt+80); // 等這一發武器飛到、爆炸後才顯示結果
     else start=0;
     if(start>0)setTimeout(()=>runFx(o),start*k);else runFx(o);
