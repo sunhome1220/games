@@ -132,7 +132,7 @@ function portOptions(k){
   opts.push({id:'demolish',label:'破壞港口設施',desc:'炸毀碼頭、吊車與航道：攻方即使占領也無法使用，重型旅無法從該港上岸、補給容量只剩 +1，也不計入攻方「控制港口」；攻方占領並整修 2 個回合後才恢復。',est:'拖慢攻方、可能保住「主要港口」這項條件',rec:!R});
   opts.push({id:'wait',label:'暫緩決定',desc:'先不破壞，也不加派；下個守方階段若仍危急會再評估。但港口如果在攻方階段就失守，就來不及破壞。',est:'保留選擇，但有來不及的風險',rec:false});
   opts.push({id:'keep',label:'保留港口（不再評估）',desc:'設施完整保留；失守後攻方立即取得完整的港口功能。',est:'攻方奪港後馬上能卸載重型旅、補給容量 +4',rec:false});
-  opts.push({id:"x_raze",x:1,label:"🔥 連市區設施一併炸毀",desc:"港口連同市區設施炸毀，攻方至少 4 個回合無法使用；平民傷亡與經濟損失增加。",est:'攻方約 4 回合無法用港，但民生代價大',rec:false});
+  opts.push({id:'x_raze',label:'徹底破壞港口與周邊設施',desc:'除了碼頭、吊車與航道，連同港區倉儲、油槽與聯外道路橋梁一併破壞（事先疏散，不額外造成平民傷亡）：攻方至少 4 個回合無法使用；戰後重建的經濟損失較大。',est:'攻方約 4 回合無法用港，但經濟損失增加',rec:false});
   return {title:'港口破壞評估（守方）',blurb:nm+(gar>0?'守軍只剩'+stpN(gar):'已經沒有守軍')+'，攻方地面部隊已逼近，港口即將失守。要怎麼處理？（★為系統建議）',opts};
 }
 function applyPort(k,o){
@@ -140,7 +140,7 @@ function applyPort(k,o){
   if(o.id!=='wait'&&o.id!=='reinf')S.portAsked[k]=true;log('【'+rec.title+'】守方選擇「'+o.label+'」');
   if(o.id==='reinf'){const R=portReinf(k);if(R){const from=hname(hexOf(R));doMove(R,k,'move');const t=uname(R)+' 從 '+from+' 進駐 '+(h.name||'港口')+'加強防守';log(t);rec.effects.push(t);}}
   if(o.id==='demolish'){S.portDown[k]=S.turn;rec.effects.push((h.name||'港口')+'設施遭破壞：無法卸載重型旅、補給容量 +1、不計入控制港口，攻方整修需 2 個回合');fxq({t:'txt',at:[h.c,h.r],s:'破壞',col:'def'});}
-  if(o.id==='x_raze'){S.portDown[k]=S.turn+2;S.cost.civ.TW+=500;S.cost.dmg.TW+=2;rec.effects.push(...["設施連同市區遭炸毀：攻方至少 4 個回合無法使用，平民傷亡與經濟損失增加"]);fxq({t:'txt',at:[h.c,h.r],s:'炸毀',col:'def'});}
+  if(o.id==='x_raze'){S.portDown[k]=S.turn+2;S.cost.dmg.TW+=2;rec.effects.push('港口與周邊設施徹底破壞：攻方至少 4 個回合無法使用，經濟損失增加');fxq({t:'txt',at:[h.c,h.r],s:'徹底破壞',col:'def'});}
   rec.snap=snap();S.events.push(rec);
 }
 // 電腦：能加派就加派，否則破壞（固定規則）
