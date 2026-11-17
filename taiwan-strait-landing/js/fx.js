@@ -361,12 +361,35 @@ function renderCtrl(){
   const sh=h&&S.sel&&S.sel.type==='hk'&&alive(S.sel);$('#btnHkHome').hidden=!(sh&&!S.sel.moved);$('#btnHkWpn').hidden=!sh;$('#btnHkWpn').textContent=TX('武器：')+TX({auto:'自動',tp:'只用魚雷',hm:'只用魚叉'}[hkPref()]);
   const ua=h&&undoAvail();$('#btnUndo').hidden=!ua;$('#mbUndo').hidden=!ua;
 }
+// 載運的旅「現在為什麼不能登陸」：本回合還能行動、卻沒有任何橘色（可登陸）格子時，說明規則與附近每個候選格的原因
+function landWhy(u){
+  if(!u||u.side!=='atk'||!u.ship||u.moved||u.acted||!alive(u)||typeof reach!=='function')return [];
+  const rc=reach(u);for(const v of rc.values())if(v.kind==='land')return [];
+  const sh=shipOf(u),ro=!!sh&&sh.type==='ro',here=hexOf(u),out=[];
+  out.push(ro?'滾裝船不能搶灘：只能在攻方控制、未被破壞的港口，或已占領、旁邊沒有敵軍、浪高 1.25 m 以下的灘頭（浮動碼頭）卸載；格內有敵軍不能進。':'登陸艦可在沒有斷崖、泥灘、山地的海岸格搶灘；格內有敵軍不能進。');
+  const seas=[here].concat([...rc].filter(([,v])=>v.kind==='sail').map(([k])=>TER[k])).filter(x=>x&&x.t==='sea'),cand=new Map();
+  for(const s of seas)for(const n of nbrs(s.c,s.r)){if(n&&!cand.has(n.k)&&isLand(n)&&n.coastal&&n.isl!=='JP'&&n.isl!=='CN')cand.set(n.k,n);}
+  if(!cand.size){
+    let best=null,bd=1e9;for(const x of Object.values(TER)){if(!isLand(x)||!x.coastal||x.isl==='JP'||x.isl==='CN')continue;const d=rd(here,x);if(d<bd){bd=d;best=x;}}
+    out.push('這回合開不到岸邊'+(best?'：最近的海岸（'+hname(best)+'）約 '+Math.round(bd*KM_HEX)+' km，而海上移動力只有 '+seaMove(u)+' 格（約 '+Math.round(seaMove(u)*KM_HEX)+' km）':'')+'。');return out;}
+  const floatWhy=n=>S.owner[n.k]!=='atk'?'還沒占領'+(ro?'（滾裝船不能搶灘）':''):enemyAdj(n.k,'atk')>0?'旁邊還有敵軍':n.isl!=='TW'?'只有台灣本島能架浮動碼頭':wxWave(n)>1.25?'浪太高（'+wxWave(n).toFixed(1)+' m）':'條件不符';
+  const why=n=>{
+    if(n.k===TAIPEI)return '台北市區不能登陸';if(n.cliff)return '斷崖';if(n.mud)return '泥灘';if(n.t==='mtn')return '山地';
+    if(u.type==='arm'){if(n.t==='port'){if(S.owner[n.k]!=='atk')return '港口還在守方手上';if(S.portDown[n.k])return '港口已被破壞';}else if(ro)return floatWhy(n);else return '重型旅只能進攻方控制的港口';}
+    else if(ro&&n.t!=='port'&&!floatPier(n))return floatWhy(n);
+    if(!canStack(u,n.k))return '格內有敵軍或已滿';return '';};
+  const ports=[],groups={};
+  for(const n of cand.values()){const w=why(n);if(!w)continue;if(n.t==='port')ports.push(hname(n)+'：'+w);else(groups[w]=groups[w]||[]).push(n);}
+  const lines=ports.slice(0,3);
+  Object.entries(groups).sort((a,b)=>b[1].length-a[1].length).slice(0,3).forEach(([w,l])=>lines.push('海岸 '+l.length+' 格：'+w));
+  out.push('現在沒有可登陸的格子。附近岸邊——'+(lines.join('；')||'沒有可用的海岸格')+'。');return out;
+}
 // 單位狀態說明：移動與載運：海上、運輸船、返航、航艦失能
 function stMove(u,h,st){
   if(atSea(u))st.push('海上航行中');
   if(isBde(u)&&u.side==='atk'&&isLand(h)&&h.isl==='CN'&&!u.ship&&freeShipKind(u,h)===null)st.push('沒有可用的運輸船，要等船返航才能出海');
-  if(u.ship){const sh=shipOf(u);if(sh)st.push('乘坐'+TYPES[sh.type].n+(sh.type==='ro'?'（只能在港口卸載）':'（可搶灘）'));}
-  if(u.boundTo){const b=S.units.find(x=>x.id===u.boundTo);st.push('載著'+(b?TYPES[b.type].n+'（'+(plainT()?'戰力 '+pctU(b)+'%':b.hp+' 步')+'）':'旅')+'：船沉了，船上的旅一起損失');}
+  if(u.ship){const sh=shipOf(u);if(sh)st.push('乘坐'+TYPES[sh.type].n+(sh.type==='ro'?'（只能在港口卸載）':'（可搶灘）'));landWhy(u).forEach(x=>st.push(x));}
+  if(u.boundTo){const b=S.units.find(x=>x.id===u.boundTo);st.push('載著'+(b?TYPES[b.type].n+'（'+(plainT()?'戰力 '+pctU(b)+'%':b.hp+' 步')+'）':'旅')+'：船沉了，船上的旅一起損失');if(b&&b.ship===u.id)landWhy(b).forEach(x=>st.push(x));} // 點到船時也顯示船上的旅為什麼不能登陸
   if((u.type==='lst'||u.type==='ro')&&u.ret)st.push('卸載完畢，正返航大陸港口');
   if(cvOOA(u))st.push('失去戰鬥能力（飛行甲板受損）：艦載機無法起降，撤離戰場中；攻擊方不會再優先打它');
 }
