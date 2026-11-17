@@ -209,7 +209,7 @@ function escFollow(cv){
 function adCover(t){return S.units.filter(e=>e.side===t.side&&(isEsc(e)||e.fl||e.type==='dd')&&alive(e)&&e.mag&&e.mag.ad>0&&rd(hexOf(e),hexOf(t))<=adROf(e));}
 const grpCovered=t=>adCover(t).length>0; // 在任何防空艦涵蓋內（含護航艦保護的船團）：來襲飛彈以齊射模型攔截
 // 休斯齊射模型：n 枚來襲，防空發射 I＝min(庫存, 2n) 枚攔截彈，存活＝n − I × 攔截率，命中期望＝存活 × 尋標命中率（以小數累計取整數）
-// 休斯齊射模型：每艘防空艦一波最多接戰 chan 枚（受庫存限制），每枚用 2 枚攔截彈；超過接戰上限的來襲飛彈不會被攔截
+// 休斯齊射模型：每艘防空艦一波最多接戰 chan 枚（受庫存限制），每枚用 2 枚攔截彈；超過接戰上限的來襲飛彈不會被攔截；涵蓋範圍內的艦艇分攤接戰（見 salvoCalc）
 // 同一階段（同回合、同一方行動）內，多次射擊打同一支艦隊視為協同齊射：每艘防空艦已接戰的數量累加，超過上限的就攔不了
 const chLeft=(x,cap)=>{const st=S.turn+S.phase;if(x.chT!==st){x.chT=st;x.chU=0;}return Math.max(0,cap-x.chU);};
 // 齊射的共用流程：先算攔截與命中（salvoCalc），再換算成扣幾步——航艦體積大，★每 2 枚命中扣 1 步；其他船每枚命中扣 1 步
@@ -221,7 +221,13 @@ function salvoHit(t,n,key,bigKey){const r=salvoCalc(t,n,false,key);r.steps=isBig
 const salvoStepTxt=(t,steps,none)=>steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):(none||''); // 戰報：扣了幾步（艦隊寫艘數）
 function salvoCalc(t,n,bm,key){
   const pk=1-Math.pow(1-(bm?SALVO.pIntBM:SALVO.pInt),SALVO.perMsl),cov=adCover(t).length>0||S.units.some(e=>e!==t&&e.side===t.side&&alive(e)&&(isEsc(e)||e.type==='dd')&&rd(hexOf(e),hexOf(t))<=kmH(30));let left=n,I=0,kill=0;
-  for(const e of adCover(t)){if(left<=0)break;const c=Math.min(left,chLeft(e,chanOf(e)),Math.floor(e.mag.ad/SALVO.perMsl));if(c<=0)continue;e.chU+=c;e.mag.ad-=c*SALVO.perMsl;I+=c*SALVO.perMsl;kill+=c*pk;left-=c;}
+  // 分攤接戰：涵蓋範圍內的每艘防空艦都出力，不再由清單前面的艦先吃完。來襲飛彈一枚一枚分配給「本階段接戰負荷（已接戰÷接戰量上限）最低」的那一艘；
+  // 負荷相同時，取累計接戰次數（engN）較少的，再取接戰量大的。接戰量大的艦（055）分到較多、小的（054A）也輪得到；
+  // 每艘的接戰量上限、攔截彈庫存都不變，總接戰量與總攔截彈消耗不變，命中期望值不變
+  const ads=adCover(t).map(e=>{const full=Math.max(1,chanOf(e));return {e,full,cap:Math.min(chLeft(e,full),Math.floor(e.mag.ad/SALVO.perMsl))};});
+  while(left>0){let b=null,bl=0;for(const a of ads){if(a.cap<=0)continue;const l=a.e.chU/a.full;
+      if(!b||l<bl-1e-9||(Math.abs(l-bl)<1e-9&&((a.e.engN||0)<(b.e.engN||0)||((a.e.engN||0)===(b.e.engN||0)&&a.full>b.full)))){b=a;bl=l;}}
+    if(!b)break;b.e.chU++;b.e.engN=(b.e.engN||0)+1;b.e.mag.ad-=SALVO.perMsl;b.cap--;I+=SALVO.perMsl;kill+=pk;left--;}
   if(left>0&&(t.type==='cv'||t.type==='csg')){const c=Math.min(left,chLeft(t,2));t.chU+=c;kill+=c*.5;left-=c;} // 航艦自身近迫防禦
   // ★護航艦近迫防禦（近迫武器砲、紅旗-10、方陣快砲等）：目標 30 km 內的護航艦或艦隊，每階段各再接戰 2 枚突破的飛彈，攔下機率 50%
   if(left>0)for(const e of S.units){if(left<=0)break;if(e===t||e.side!==t.side||!alive(e)||!(isEsc(e)||e.fl||e.type==='dd')||rd(hexOf(e),hexOf(t))>kmH(30))continue;
