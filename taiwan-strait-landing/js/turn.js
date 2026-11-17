@@ -572,7 +572,6 @@ function phaseReset(side){
 async function atkPhaseStart(){
   if(S.ctrl.atk!=='human'||S.sim)heloAuto('atk');
     S.weather=rollWeather();if(S.weather.id==='bad')S.stats.badWx++;waveAttrition();if(S.over)return;
-    if(S.turn===1&&!S.sirenDone&&!S.sim&&!S.video&&!REC.quiet){S.sirenDone=true;SFX.siren(6);} // 第一波：空襲警報
     uscSync();jmsSync();cvwPlan();airBattle();S.fire=computeFire();warnNotice();droneWave();huntFleets();doRetaliation();sweepMines();uscSync();antiCarrier();if(S.over)return;
     if(S.ctrl.atk==='human'&&!S.sim&&!S.video)cvwPrepOnly('atk');else cvwStrike('atk');render();if(S.over)return; // 玩家操作攻方：艦載機對艦份額可先手動指定目標，階段結束時剩下的自動出擊
     if(S.turn>=3&&S.owner[MAGONG]!=='atk'&&S.units.some(u=>u.side==='def'&&hexOf(u).k===MAGONG)&&S.units.some(u=>u.side==='atk'&&atSea(u)&&!isShip(u))){antiShip('守方（澎湖前沿警戒）',1,4,false,'','roc','cm');render();}
