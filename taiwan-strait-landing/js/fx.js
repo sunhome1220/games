@@ -392,6 +392,7 @@ function stWeapons(u,h,st){
   if(u.type==='hmr')st.push('本階段剩 '+(u.side===S.phase?u.shots:Math.ceil(ssmReady(u)/HMR_PKG))+' 次齊射（每次最多 4 輛）：火箭彈射程約 80 km，庫存 '+Math.round(S.pools?S.pools.rocGml||0:0)+' 個莢艙；陸軍戰術飛彈射程約 300 km，庫存 '+Math.round(S.pools?S.pools.rocAtc||0:0)+' 枚飛彈');
   else if(u.type==='ssn')st.push('隱蔽：開火暴露、被護航艦發現才現身，無法被火力打擊；彈藥配置為推估，每回合移動最多約 '+Math.round(SPD.subMax*KM_HEX)+' km'+(u.grp?'，跟著航艦行動':''));
   else if(u.type==='nme'||u.type==='mdt')st.push('部署在日本領土，只能被基地打擊；'+(u.type==='nme'?'海軍打擊飛彈射程 '+kmOf(NME.R)+' km':'戰斧、標準六型射程 '+kmOf(MDT.R)+' km')+'（彈藥量為推估）');
+  else if(u.type==='sam')st.push(samStatus(u));
   else if(u.type==='psub')st.push((psubInPort(u)?'停在大陸港口補彈中：可被飛彈與空襲打擊。':'在海上：平常看不見，開火才暴露；守方護航艦、艦隊與 P-3C 反潛巡邏機有機會發現。')+'魚雷射程約 60 km、鷹擊-18 約 220 km；彈藥用完回大陸港口補彈（★推估）');
   else if(u.type==='hk')st.push((subInPort(u)?'停在母港補給中：位置固定，可被飛彈與空襲打擊。':'在海上：一般情況下無法被偵測或攻擊。')+'重型魚雷射程約 60 km（數量以齊射計）、魚叉飛彈射程約 120 km；射擊後暴露，可能遭反潛攻擊；回母港才能補彈');
   else if(isMsl(u))st.push('本階段剩 '+(u.side===S.phase?u.shots:(u.type==='ff'?1:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):2))+' 發，射程約 '+Math.round((u.fl?fleetAgg(u).asmR:kmH(160))*KM_HEX)+' km');
@@ -474,7 +475,7 @@ function defLedgerBars(){
   const P=S.pools;if(!P)return '';const row=(n,k,unit)=>{const m=poolMax(k);return m>0?ammoBar(n,P[k]||0,m,unit):'';};
   return '<div class="eyebrow" style="margin-top:6px">'+TX('守方彈藥存量（全軍共用）')+'</div><div class="ammo">'+row(TX('雄風反艦'),'rocAS')+row(TX('魚叉岸防'),'rocHCD')+row(TX('長程飛彈'),'rocMsl')+
     row(TX('陸軍戰術飛彈（枚）'),'rocAtc')+row(TX('海馬士火箭（莢艙）'),'rocGml')+row(TX('雷霆2000'),'rocRkt')+row(TX('防空'),'rocAD')+'</div>'+
-    '<div class="adcap">'+TX('陸上防空每回合最多接戰')+' <b>'+MSL.adCap+'</b> '+TX('枚來襲')+'<small>（'+TX('21 個連 × 8 枚，只保護機場、港口、城市；★推估')+'）</small></div>';
+    '<div class="adcap">'+TX('陸上防空每回合最多接戰')+' <b>'+(S.sam?samCap():MSL.adCap)+'</b> '+TX('枚來襲')+'<small>（'+TX(S.sam?'各防空營的連數 × 8 枚；只保護各營彈道飛彈防禦範圍內的機場、港口、城市；★推估':'21 個連 × 8 枚，只保護機場、港口、城市；★推估')+'）</small></div>';
 }
 function renderInfoSide(){
   const el=$('#info');

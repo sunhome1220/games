@@ -335,7 +335,7 @@ function intelStaging(){ // 守方階段開始：美國情報通報大陸沿岸�
 function facHex(id){let [c,r]=llToRC(FAC[id].ll[0],FAC[id].ll[1]);c=Math.max(COL0,Math.min(COL1-1,c));r=Math.max(ROW0,Math.min(ROW1-1,r));return TER[K(c,r)];}
 function strikeFac(id){
   if(!facUp(id))return false;const h=facHex(id),pk=fireTake(h,false);if(!pk)return false;S.stats.fire++;
-  const r=pk.n?adIntercept(pk.n):{surv:0,I:0},m=pk.n?r.surv/pk.n:1,ok=hitP(lchKillP(pk)*m,'fac:'+id);
+  const r=pk.n?adIntercept(pk.n,h):{surv:0,I:0},m=pk.n?r.surv/pk.n:1,ok=hitP(lchKillP(pk)*m,'fac:'+id);
   fxq({t:'air',at:[h.c,h.r],hit:ok,tsea:false,org:orgPick('pla'),k:pk.hs?'hs':pk.k==='g'?'cm':'bm',ad:r.I>0?(ok?'pass':'int'):undefined});
   if(ok){S.facDown=S.facDown||{};S.facDown[id]=S.turn;}
   log('火力打擊 '+FAC[id].n+(pk.n?'（'+pk.n+' 枚，守方發射 '+r.I+' 枚攔截彈）':'')+(ok?'：命中，雷達失效。'+FAC[id].d.split('。')[1]+'。':'：未命中'));
