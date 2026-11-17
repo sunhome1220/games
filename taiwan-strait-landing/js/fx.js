@@ -383,17 +383,17 @@ function stNaval(u,h,st){
     st.push('艦載機 '+Math.round(c.i<0?S.air.usF[c.ui]:S.air.cvF[c.i])+' 架（每回合約 '+Math.round(c.sor)+' 架次，作戰半徑約 '+kmOf(c.w.r)+' km）、'+c.nm+' '+Math.max(0,u.wmag||0)+
         ' 枚（射程 '+kmOf(c.w.asmR)+' km，對艦打擊距離 '+kmOf(c.w.r+c.w.asmR)+' km）'+(sp?'；本回合任務：制空 '+Math.round(sp[0]*100)+'%、對艦 '+Math.round(sp[1]*100)+'%、對地 '+Math.round(sp[2]*100)+'%':''));
       }}
-  if(u.fl){const A=fleetAgg(u);st.push('組成：'+fleetTxt(u)+'；防空飛彈 '+u.mag.ad+' 枚（涵蓋 '+kmOf(A.adR)+' km）、反艦飛彈（'+fleetWn(u)+'）'+u.mag.asm+' 枚（射程 '+kmOf(A.asmR)+' km，每艘每次齊射 '+FLEET_PER+' 枚）');}
-  if(isEsc(u)&&u.mag){const W=SHIPW[u.type];st.push('防空飛彈 '+u.mag.ad+' 枚（涵蓋 '+kmOf(W.adR)+' km）、'+W.asmN+' '+u.mag.asm+' 枚（射程 '+kmOf(W.asmR)+' km）'+(W.lam?'、對地飛彈 '+u.mag.lam+' 枚':'')+'；海上不能補充垂直發射管；跟著航艦移動');}
+  if(u.fl){const A=fleetAgg(u);st.push('組成：'+fleetTxt(u)+'；防空涵蓋 '+kmOf(A.adR)+' km、反艦飛彈（'+fleetWn(u)+'）射程 '+kmOf(A.asmR)+' km，每艘每次齊射 '+FLEET_PER+' 枚');}
+  if(isEsc(u)&&u.mag){const W=SHIPW[u.type];st.push('防空涵蓋 '+kmOf(W.adR)+' km、'+W.asmN+'射程 '+kmOf(W.asmR)+' km；海上不能補充垂直發射管；跟著航艦移動');}
 }
 // 單位狀態說明：武器單位：火箭砲、海馬士、美日飛彈、潛艦的彈藥與射擊次數
 function stWeapons(u,h,st){
   if(u.type==='mlrs')st.push('雷霆2000：射程最遠約 40 km，面積火力、命中比海馬士低；彈藥庫存剩 '+(S.pools?S.pools.rocRkt:0)+' 點；開火後下一階段要再裝填'+(u.rl>0?'（再裝填中，本階段不能開火）':'')+'，本階段剩 '+(u.side===S.phase?u.shots:1)+' 發');
   if(u.type==='hmr')st.push('本階段剩 '+(u.side===S.phase?u.shots:Math.ceil(ssmReady(u)/HMR_PKG))+' 次齊射（每次最多 4 輛）：火箭彈射程約 80 km，庫存 '+Math.round(S.pools?S.pools.rocGml||0:0)+' 個莢艙；陸軍戰術飛彈射程約 300 km，庫存 '+Math.round(S.pools?S.pools.rocAtc||0:0)+' 枚飛彈');
-  else if(u.type==='ssn')st.push('隱蔽：開火暴露、被護航艦發現才現身，無法被火力打擊；魚雷 '+u.tp+'、魚叉 '+u.hm+'、戰斧 '+u.mag.lam+' 枚（★推估），每回合移動最多約 '+Math.round(SPD.subMax*KM_HEX)+' km'+(u.grp?'，跟著航艦行動':''));
-  else if(u.type==='nme'||u.type==='mdt')st.push('部署在日本領土，只能被基地打擊；'+(u.type==='nme'?'海軍打擊飛彈 '+u.mag.asm+' 枚（射程 '+kmOf(NME.R)+' km）':'戰斧 '+u.mag.lam+' 枚、標準六型 '+u.mag.asm+' 枚（射程 '+kmOf(MDT.R)+' km）')+'（★推估）');
-  else if(u.type==='psub')st.push((psubInPort(u)?'停在大陸港口補彈中：可被飛彈與空襲打擊。':'在海上：平常看不見，開火才暴露；守方護航艦、艦隊與 P-3C 反潛巡邏機有機會發現。')+'魚雷 '+(u.tp||0)+' / '+psubCls(u).tp+' 齊射（射程約 60 km）、鷹擊-18 '+(u.hm||0)+' / '+psubCls(u).hm+' 枚（約 220 km）；彈藥用完回大陸港口補彈（★推估）');
-  else if(u.type==='hk')st.push((subInPort(u)?'停在母港補給中：位置固定，可被飛彈與空襲打擊。':'在海上：一般情況下無法被偵測或攻擊。')+'重型魚雷 '+(u.tp||0)+' / '+hkTp(u)+' 齊射（射程約 60 km）、魚叉飛彈 '+(u.hm||0)+' / '+HK_HM+' 枚（射程約 120 km）；射擊後暴露，可能遭反潛攻擊；回母港才能補彈');
+  else if(u.type==='ssn')st.push('隱蔽：開火暴露、被護航艦發現才現身，無法被火力打擊；彈藥配置為推估，每回合移動最多約 '+Math.round(SPD.subMax*KM_HEX)+' km'+(u.grp?'，跟著航艦行動':''));
+  else if(u.type==='nme'||u.type==='mdt')st.push('部署在日本領土，只能被基地打擊；'+(u.type==='nme'?'海軍打擊飛彈射程 '+kmOf(NME.R)+' km':'戰斧、標準六型射程 '+kmOf(MDT.R)+' km')+'（彈藥量為推估）');
+  else if(u.type==='psub')st.push((psubInPort(u)?'停在大陸港口補彈中：可被飛彈與空襲打擊。':'在海上：平常看不見，開火才暴露；守方護航艦、艦隊與 P-3C 反潛巡邏機有機會發現。')+'魚雷射程約 60 km、鷹擊-18 約 220 km；彈藥用完回大陸港口補彈（★推估）');
+  else if(u.type==='hk')st.push((subInPort(u)?'停在母港補給中：位置固定，可被飛彈與空襲打擊。':'在海上：一般情況下無法被偵測或攻擊。')+'重型魚雷射程約 60 km（數量以齊射計）、魚叉飛彈射程約 120 km；射擊後暴露，可能遭反潛攻擊；回母港才能補彈');
   else if(isMsl(u))st.push('本階段剩 '+(u.side===S.phase?u.shots:(u.type==='ff'?1:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):2))+' 發，射程約 '+Math.round((u.fl?fleetAgg(u).asmR:kmH(160))*KM_HEX)+' km');
 }
 function unitStatusList(u,h){ // 單位狀態說明（資訊卡與滑鼠提示共用）
