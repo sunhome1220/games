@@ -313,7 +313,14 @@ body.mapfs .mbar{display:none!important}
 .vctl button{padding:5px 10px;min-width:2.4em}
 .vctl input[type=range]{flex:1;min-width:120px;accent-color:var(--accent)}
 .vtime{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
-#hint{min-height:4.7em} #miniGoal{min-height:2.9em} #thHint{min-height:2.6em} #fsHint{min-height:1.6em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hint{min-height:4.7em}
+.ammo{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:3px 8px;margin:6px 0 4px;font-size:12px;line-height:1.2} /* 各列共用同一組欄位：長條起點對齊 */
+.ab{display:contents}
+.abn{color:var(--muted);white-space:nowrap}.abv{font-family:var(--f-mono);font-weight:700;white-space:nowrap;text-align:right;min-width:4.5em}.abv small{font-weight:400;color:var(--muted)}.abv.r{color:#d9453b}.abv.o{color:#e08a1e}
+.abt{height:7px;border-radius:4px;background:color-mix(in srgb,var(--line) 80%,transparent);overflow:hidden}
+.abt i{display:block;height:100%;border-radius:4px;background:var(--ok)}.abt i.o{background:#e08a1e}.abt i.r{background:#d9453b}
+.ucard .ammo{gap:2px 6px;margin:4px 0 2px;font-size:11px}
+#map .ub-t{fill:rgba(0,0,0,.35)} #map .ub-f.g{fill:#3aa76d} #map .ub-f.o{fill:#e08a1e} #map .ub-f.r{fill:#d9453b} #miniGoal{min-height:2.9em} #thHint{min-height:2.6em} #fsHint{min-height:1.6em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vlines{margin-top:8px;height:152px;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
 .vchips{min-height:56px;align-content:flex-start}
 .vtime{min-width:262px;text-align:right}
@@ -833,7 +840,7 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
             <button class="ghost" id="btnAssist" title="還沒行動的單位交給電腦處理，然後結束這個階段">電腦代打剩餘單位</button>
           </div>
           <button class="lnk" id="btnRestart" hidden>↺ 重新開始</button> <button class="lnk" id="btnAI" hidden title="你操作的一方改由電腦指揮，之後的回合自動進行">🤖 改由電腦接手</button>
-          <div class="hint" id="hint"></div>
+          <div class="hint" id="hint"></div><div id="ledger" hidden></div>
           <div class="proj" id="miniGoal"></div>
         </div>
         <div class="card" id="vbarCard" hidden>

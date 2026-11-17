@@ -537,6 +537,9 @@ function unitSVG(u,withSmoke){
   // 重創、失去戰鬥能力（航艦剩 1 步）：棋子變暗、右上角冒黑煙
   const ooa=cvOOA(u),smoke=ooa?'<g class="smk'+(LITE?' still':'')+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')"><circle class="s1" cx="'+(x+8)+'" cy="'+(y-15)+'" r="3"/><circle class="s2" cx="'+(x+10.5)+'" cy="'+(y-20)+'" r="3.8"/><circle class="s3" cx="'+
       (x+13.5)+'" cy="'+(y-26)+'" r="4.6"/><path class="fl" d="M'+(x+5.5)+' '+(y-13)+'q1.2 -3.2 2.6 -4.6q.4 2 1.6 2.8q1 1 .6 1.8z"/></g>':'';
+  {const ar=typeof ammoRows==='function'?ammoRows(u):[],tm=ar.reduce((a,x)=>a+x.m,0),tv=ar.reduce((a,x)=>a+x.v,0);
+    if(tm>0&&tv<tm-.01){const r=tv/tm,by=y+(u.mhp>6?23.5:21.5); // 艦隊棋子下方有「x/y 艘」文字，長條再往下一點
+      pips+='<rect class="ub-t" x="'+(x-12)+'" y="'+by+'" width="24" height="2.6" rx="1.3"/><rect class="ub-f '+ammoLv(r)+'" x="'+(x-12)+'" y="'+by+'" width="'+(24*r).toFixed(1)+'" height="2.6" rx="1.3"/>';}}
   const sea=atSea(u);
   const wf=US/(16/26*1.18),wake=sea&&LITE?'<ellipse class="wk still" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':sea?'<ellipse class="wk" cx="'+
       x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/><ellipse class="wk w2" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':'';

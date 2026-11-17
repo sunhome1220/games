@@ -357,8 +357,7 @@ function askIntent(side){
 const intentSig=()=>[S.weather&&S.weather.n,S.fx&&S.fx.lv?S.fx.lv.US+'/'+S.fx.lv.JP:'',Math.floor(S.units.filter(u=>u.side==='atk').length/3),Math.floor(S.units.filter(u=>u.side==='def').length/3),S.typhoon?1:0].join('|');
 function defLedger(){ // 守方彈藥帳：存量、本階段可打發數、海上敵船團（讓打擊對象的取捨有依據）
   const P=S.pools;if(!P)return '';const sea=S.units.filter(u=>u.side==='atk'&&atSea(u)&&isShip(u)),tr=sea.filter(u=>u.type==='cvy'||u.type==='lst'||u.type==='ro').length,sub=S.units.filter(u=>u.side==='def'&&u.type==='hk').length;
-  return '　彈藥：反艦飛彈（雄風 '+fmt1(P.rocAS)+'、魚叉岸防 '+fmt1(P.rocHCD||0)+'）、長程飛彈 '+fmt1(P.rocMsl)+((P.rocAtc||0)+(P.rocGml||0)>0?'、陸軍戰術飛彈 '+Math.round(P.rocAtc||0)+' 枚、火箭彈 '+
-      Math.round(P.rocGml||0)+' 莢艙':'')+'（縱深打擊本階段可打 '+(S.dfire||0)+' 波，每波 4 枚）、防空 '+P.rocAD+(sub?'、海鯤 '+sub+' 艘':'')+'；海上敵船團 '+sea.length+' 支（其中運輸船 '+tr+' 支）。';
+  return '　縱深打擊本階段可打 '+(S.dfire||0)+' 波（每波 4 枚）'+(sub?'、海鯤 '+sub+' 艘':'')+'；海上敵船團 '+sea.length+' 支（其中運輸船 '+tr+' 支）。彈藥存量見下方長條。';
 }
 async function assistPhase(){
   if(!humanTurn())return;

@@ -353,6 +353,7 @@ function renderCtrl(){
   else if(S.sel)hint='綠色＝可移動，橘色＝可登陸，紫色＝可空降；橘圈＝可攻擊目標。再點一次單位可取消選取。';
   else hint=S.phase==='atk'?'點選紅色單位下令。先把兩棲部隊從沿岸出航，下一回合搶灘。':'點選藍色單位下令。飛彈單位可射擊約 160 km 內海上的攻方船團。'+defLedger();
   $('#hint').textContent=hint;$('#fsHint').textContent=hint;
+  poolTrack();{const lg=$('#ledger');if(lg){const on=S.started&&S.phase==='def'&&humanTurn()&&!S.sim;lg.hidden=!on;lg.innerHTML=on?defLedgerBars():'';}}
   const fs1=$('#fsStrike'),fs2=$('#fsEnd');fs1.hidden=bs.hidden;fs1.disabled=bs.disabled;fs1.textContent=bs.textContent;fs1.classList.toggle('on',bs.classList.contains('on'));fs2.hidden=$('#btnEnd').hidden;fs2.disabled=$('#btnEnd').disabled;if(S.video){fs1.hidden=true;fs2.hidden=true;}
   const fa=$('#fsAssist');fa.hidden=ba.hidden;fa.disabled=ba.disabled;
   $('#mbText').textContent=$('#phaseTitle').textContent;const m1=$('#mbStrike'),m2=$('#mbAssist'),m3=$('#mbEnd');
@@ -437,6 +438,37 @@ function placeLoc(){ // 「回到台灣」按鈕：貼在地圖目前看得到�
 let locQ=0;const locReq=()=>{if(locQ)return;locQ=requestAnimationFrame(()=>{locQ=0;placeLoc();});};
 addEventListener('scroll',locReq,true);addEventListener('resize',locReq);
 function renderInfo(){renderInfoSide();syncUCard();locReq();}
+// ---------- 彈藥圖示：各彈種「剩餘／滿載」的長條（綠 >50%、橘 25～50%、紅 <25%）----------
+// 滿載量：艦艇依各型垂直發射管配置（SHIPW、DDW、RFW 艦隊加總）、潛艦依武器配置（HK_HM、hkTp、PSUB、SSN_ARM），美日飛彈單位依 NME／MDT；發射車依開局車數
+function ammoRows(u){
+  const R=[],add=(n,v,m)=>{if(m>0||v>0)R.push({n,v:Math.max(0,v||0),m:Math.max(m||0,v||0)});},g=u.mag||{};
+  if(u.fl){const A=fleetAgg(u);add(TX('防空'),g.ad,A.ad);add(fleetWn(u),g.asm,A.asm);}
+  else if(isEsc(u)&&SHIPW[u.type]){const W=SHIPW[u.type];add(TX('防空'),g.ad,W.ad);add(W.asmN,g.asm,W.asm);add(TX('對地'),g.lam,W.lam);}
+  else if(u.type==='dd')add(TX('防空'),g.ad,DDW.ad);
+  else if(u.type==='ddh'&&SHIPW.ddh)add(TX('防空'),g.ad,SHIPW.ddh.ad);
+  else if(u.type==='nme')add(TX('反艦'),g.asm,NME.asm);
+  else if(u.type==='mdt'){add(TX('反艦'),g.asm,MDT.asm);add(TX('對地'),g.lam,MDT.lam);}
+  else if(u.type==='ssn'){add(TX('魚雷'),u.tp,SSN_ARM.tp);add(TX('魚叉'),u.hm,SSN_ARM.hm);add(TX('戰斧'),g.lam,SSN_ARM.lam);}
+  else if(u.type==='hk'){add(TX('魚雷'),u.tp,hkTp(u));add(TX('魚叉'),u.hm,HK_HM);}
+  else if(u.type==='psub'&&PSUB[u.cls]){add(TX('魚雷'),u.tp,PSUB[u.cls].tp);add(TX('鷹擊-18'),u.hm,PSUB[u.cls].hm);}
+  return R;
+}
+const ammoLv=r=>r>.5?'g':r>=.25?'o':'r';
+function ammoBar(n,v,m,unit){const r=m>0?v/m:0,f=x=>Math.abs(x-Math.round(x))<.05?String(Math.round(x)):x.toFixed(1);
+  return '<div class="ab"><span class="abn">'+n+'</span><span class="abt"><i class="'+ammoLv(r)+'" style="width:'+Math.round(r*100)+'%"></i></span><span class="abv '+ammoLv(r)+'">'+f(v)+'<small>/'+f(m)+'</small></span></div>';} // 單位寫在名稱裡（長條才會對齊）
+function ammoBarsHTML(u){
+  const rows=ammoRows(u).map(x=>ammoBar(x.n,x.v,x.m));
+  if(isLch(u)&&u.veh!=null&&!u.ghostFleet)rows.push(ammoBar(TX('發射車（輛）'),ssmReady(u),lchV0(u)));
+  return rows.length?'<div class="ammo">'+rows.join('')+'</div>':'';
+}
+// 守方彈藥存量（全軍共用）：滿載＝該年代的開局存量（S.p0，previewEra 設定）；之後若有補充超過，就取看過的最大值
+function poolMax(k){const P=S.pools||{};S.poolMax=S.poolMax||{};const v=Math.max(P[k]||0,(S.p0&&S.p0[k])||0);if(!(S.poolMax[k]>=v))S.poolMax[k]=v;return S.poolMax[k];}
+function poolTrack(){if(S&&S.started&&S.pools)['rocAS','rocHCD','rocMsl','rocAtc','rocGml','rocAD','rocRkt'].forEach(poolMax);}
+function defLedgerBars(){
+  const P=S.pools;if(!P)return '';const row=(n,k,unit)=>{const m=poolMax(k);return m>0?ammoBar(n,P[k]||0,m,unit):'';};
+  return '<div class="eyebrow" style="margin-top:6px">'+TX('守方彈藥存量（全軍共用）')+'</div><div class="ammo">'+row(TX('雄風反艦'),'rocAS')+row(TX('魚叉岸防'),'rocHCD')+row(TX('長程飛彈'),'rocMsl')+
+    row(TX('陸軍戰術飛彈（枚）'),'rocAtc')+row(TX('海馬士火箭（莢艙）'),'rocGml')+row(TX('雷霆2000'),'rocRkt')+row(TX('防空'),'rocAD')+'</div>';
+}
 function renderInfoSide(){
   const el=$('#info');
   if(FARSEL&&FARINFO[FARSEL]&&!S.sel){const f=FARINFO[FARSEL];
@@ -454,6 +486,7 @@ function renderInfoSide(){
     const T=TYPES[u.type];
     o+='<h2 style="color:var(--'+u.side+')">'+T.n+'</h2>';
     o+='<div class="stats"><div><b>'+effAtk(u)+'</b><span>攻擊</span></div><div><b>'+effDef(u)+'</b><span>防禦</span></div><div><b>'+T.mv+'</b><span>移動</span></div><div><b>'+hpCell(u)[0]+'</b><span>'+hpCell(u)[1]+'</span></div></div>';
+    o+=ammoBarsHTML(u); // 彈藥長條（剩餘／滿載）
     const en=effNote(u);if(en.length)o+='<div class="hint effn">數值修正：'+en.join('、')+'</div>';
     const st=unitStatusList(u,h);
     o+='<div class="hint">'+st.join(' · ')+'</div>';
