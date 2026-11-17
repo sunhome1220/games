@@ -372,11 +372,12 @@ const SFX={ctx:null,get on(){const e=$('#optSfx');return !!e&&e.value==='1';},
     for(let t=0;t<T;t+=per){o.frequency.setValueAtTime(380,t0+t);o.frequency.linearRampToValueAtTime(820,t0+t+per*.55);o.frequency.linearRampToValueAtTime(380,t0+t+per);}
     g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.16,t0+.6);g.gain.setValueAtTime(.16,t0+T-1);g.gain.linearRampToValueAtTime(0,t0+T);o.start(t0);o.stop(t0+T+.1);}};
 document.addEventListener('pointerdown',()=>{if(SFX.on)SFX.ac();},true); // 手機瀏覽器要使用者點擊後才能出聲
-function sfxBtn(){const b=$('#btnSfx');if(!b)return;const on=SFX.on;b.innerHTML=(on?'🚨':'🔇')+'<span class="bl"> 警報：'+(on?'開':'關')+'</span>';b.setAttribute('aria-pressed',on?'true':'false');}
-$('#btnSfx').onclick=()=>{const e=$('#optSfx');e.value=e.value==='1'?'0':'1';e.dispatchEvent(new Event('change'));sfxBtn();if(e.value==='1')SFX.siren(2);};
-$('#optSfx').addEventListener('change',sfxBtn);
+function sfxBtn(){const b=$('#btnSfx');if(!b)return;const on=SFX.on||VOICE.on;b.innerHTML=(on?'🔊':'🔇')+'<span class="bl"> 音效：'+(on?'開':'關')+'</span>';b.title='警報與語音播報（一起開關；細項在設定）';b.setAttribute('aria-pressed',on?'true':'false');}
+function setOpt(id,v){const e=$('#'+id);if(!e||e.value===v)return;e.value=v;e.dispatchEvent(new Event('change'));}
+$('#btnSfx').onclick=()=>{const turnOn=!(SFX.on||VOICE.on);setOpt('optSfx',turnOn?'1':'0');if(window.speechSynthesis)setOpt('optVoice',turnOn?'1':'0');sfxBtn();if(turnOn)SFX.siren(2);};
+$('#optSfx').addEventListener('change',sfxBtn);$('#optVoice').addEventListener('change',sfxBtn);sfxBtn();
 $('#optFxSpd').addEventListener('change',()=>{FXSPD=+$('#optFxSpd').value||1;});$('#optTerm').addEventListener('change',()=>{TERM=$('#optTerm').value||'plain';});setTimeout(()=>{TERM=$('#optTerm').value||'plain';},0);setTimeout(()=>{FXSPD=+$('#optFxSpd').value||1;},0);
-function voiceBtn(){const b=$('#btnVoice');if(!window.speechSynthesis){b.hidden=true;return;}b.hidden=false;const on=$('#optVoice').value==='1';b.innerHTML=(on?'🔊':'🔈')+'<span class="bl"> 語音：'+(on?'開':'關')+'</span>';b.setAttribute('aria-pressed',on);if(!on)VOICE.stop();}
+function voiceBtn(){const b=$('#btnVoice');b.hidden=true;if(!window.speechSynthesis)return;const on=$('#optVoice').value==='1';b.innerHTML=(on?'🔊':'🔈')+'<span class="bl"> 語音：'+(on?'開':'關')+'</span>';b.setAttribute('aria-pressed',on);if(!on)VOICE.stop();}
 $('#btnVoice').onclick=()=>{const e=$('#optVoice');e.value=e.value==='1'?'0':'1';e.dispatchEvent(new Event('change'));if(e.value==='1')VOICE.speak('語音播報已開啟',{flush:true});};
 $('#optVoice').addEventListener('change',()=>{try{localStorage.setItem('tsl-voice-user','1');}catch(e){}voiceBtn();});
 voiceBtn();
