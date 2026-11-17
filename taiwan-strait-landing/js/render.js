@@ -459,7 +459,7 @@ function buildStatic(){
   const dist=new Map();let q=[];land.forEach(h=>{dist.set(h.k,0);q.push(h);});
   while(q.length){const h=q.shift();for(const n of nbrs(h.c,h.r)){if(!dist.has(n.k)){dist.set(n.k,dist.get(h.k)+1);q.push(n);}}}
   buildFar();
-  let o='';
+  let o='',lbls='';
   let wi=0;
   for(const h of sea){const [x,y]=center(h.c,h.r),[slon,slat]=rcToLL(h.c,h.r),sc=seaClass(slon,slat,dist.get(h.k));
     o+='<polygon class="tl-sea '+sc+'" points="'+hexPts(x,y,R)+'" data-k="'+h.k+'"/>';
@@ -477,11 +477,12 @@ function buildStatic(){
     if(h.mud)o+='<polygon class="mud" points="'+hexPts(x,y,R-3)+'"/>';
     o+=tileDetail(h,x,y);
     if(h.name&&(h.t!=='plain'||h.isl==='JP'||['宜蘭','恆春','澎湖'].includes(h.name))&&!(h.t==='air'&&(nearCity(h)||h.isl==='TW'))){ /* 台澎機場的名稱改由可點的基地標籤（baseTagsSVG）顯示 */const ob=h.k===TAIPEI||PORTS.includes(h.k);
-      o+='<text class="lbl'+(ob?' obj':' minor')+'" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x+'" y="'+(FG>2?y-R*1.2:y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';
+      lbls+='<text class="lbl'+(ob?' obj':' minor')+'" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x+'" y="'+(FG>2?y-R*1.2:y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';
       } // 機場旁 25 km 內已有城市或港口名就不重複標（點機場仍看得到名稱）；縮小時只顯示勝負要點
     o+='</g>';
   }
   o+=coastRiverSVG(land);
+  o+=lbls; // 地名畫在河流、海岸線之後，河流不會壓過字
   o+='<text class="big" font-size="15" x="'+cc(6,3)[0]+'" y="'+cc(6,3)[1]+'" writing-mode="tb">台灣海峽</text>';
   o+='<text class="big" font-size="13" x="'+cc(15,7)[0]+'" y="'+cc(15,7)[1]+'" writing-mode="tb">太平洋</text>';
   o+='<text class="big" font-size="12" x="'+cc(1,1)[0]+'" y="'+cc(1,1)[1]+'" writing-mode="tb">大陸沿海</text>';
@@ -648,10 +649,11 @@ function mapUnitsSVG(){let o='',smk='';RNG_LEG=[];
   S.units.filter(u=>!subHidden(u)&&!(u.ship&&atSea(u))&&!u.dropHide).concat([...GHOSTS.values()]).sort((a,b)=>cen(a.c,a.r)[1]-cen(b.c,b.r)[1]).forEach(u=>{const p=unitSVG(u,true).split('\u0001');o+=p[0];if(p[1])smk+=p[1];});
   o+=smk;
   // 潛艦「上次發現點」：目前沒被發現的潛艦，只在地圖上留下最後被發現的位置（淡虛線圈與回合數）
-  S.units.filter(u=>subHidden(u)&&u.last&&S.turn-u.last.turn<=6).forEach(u=>{const p=cen(u.last.c,u.last.r);o+='<g class="lastseen" opacity=".8"><circle cx="'+p[0].toFixed(1)+
-      '" cy="'+p[1].toFixed(1)+'" r="'+(R*.55).toFixed(1)+'" fill="none" stroke="#3f7fd0" stroke-width="1.6" stroke-dasharray="4 3"/><text x="'+p[0].toFixed(1)+'" y="'+
-      (p[1]+4).toFixed(1)+'" text-anchor="middle" font-size="11" fill="#3f7fd0" font-weight="700">?</text><text x="'+p[0].toFixed(1)+'" y="'+(p[1]+R*.55+10).toFixed(1)+
-      '" text-anchor="middle" font-size="9" fill="#3f7fd0">'+TX('潛艦 上次發現點')+' T'+u.last.turn+'</text></g>';});
+  // 潛艦「上次發現點」：淡淡的潛艦剪影＋小標籤「T 回合」，越久越淡；完整說明放在 title（滑鼠停留）
+  S.units.filter(u=>subHidden(u)&&u.last&&S.turn-u.last.turn<=6).forEach(u=>{const p=cen(u.last.c,u.last.r),k=US/(16/26*1.18),age=S.turn-u.last.turn,op=Math.max(.35,.8-age*.08),c=u.side==='atk'?'#c0392b':'#3f7fd0';
+    o+='<g class="lastseen" opacity="'+op.toFixed(2)+'" transform="translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') scale('+(k*1.3).toFixed(3)+')"><title>'+TX('潛艦上次被發現的位置')+'（第 '+u.last.turn+' 回合）</title>'+
+      '<path d="M-11 2q0-5 6-5h10q7 0 7 5t-7 5h-10q-6 0-6-5zM-2-3v-3h4v3" fill="none" stroke="'+c+'" stroke-width="1.4" stroke-dasharray="3 2" stroke-linejoin="round"/>'+
+      '<rect x="-9" y="9" width="18" height="9" rx="4.5" fill="var(--panel,#fff)" stroke="'+c+'" stroke-width=".8" opacity=".9"/><text x="0" y="15.8" text-anchor="middle" font-size="6.5" font-weight="700" fill="'+c+'">T'+u.last.turn+'</text></g>';});
   return o;}
 // 次要港口、水雷、機場與港口損毀、影片焦點
 function mapMarksSVG(){let o='';

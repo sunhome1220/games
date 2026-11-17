@@ -319,7 +319,9 @@ function renderStatus(){
       const wv=W.wave,lv=wv==null?'g':wv>=2.5?'r':wv>1.25?'o':'g',ty=W.ty||(S.nextW&&S.nextW.ty)||S.fcTyphoon; // 顏色門檻＝灘頭卸載規則：1.25 m 以下不受影響、2.5 m 以上無法卸載
       const pill=document.createElement('span');pill.className='chip tp wxp '+lv;pill.setAttribute('data-tip',wx.dataset.tip);pill.setAttribute('tabindex','0');pill.setAttribute('role','button');
       pill.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 20c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M5 10c1.5-3.5 5-5 8.5-4-2 1-2.5 3-1 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
-        (wv!=null?'<b>'+wv.toFixed(1)+'m</b>'+(S.fcH!=null?'<i>→'+S.fcH.toFixed(1)+'</i>':''):'<b>'+W.n+'</b>')+(ty?'<em>颱風</em>':'')+'<span class="sep">·</span><span class="mv">移動 <b>'+W.sea+'</b></span>';
+        (wv!=null?'<b>'+wv.toFixed(1)+' m</b>'+(S.fcH!=null?'<i title="'+TX('預報下回合')+'"'+(S.fcH>=2.5?' class="r"':S.fcH>1.25?' class="o"':'')+'>'+(S.fcH>wv+.05?'↗':S.fcH<wv-.05?'↘':'→')+S.fcH.toFixed(1)+'</i>':''):'<b>'+W.n+'</b>')+(ty?'<em>颱風</em>':'')+
+        '<span class="sep">·</span><span class="bc">'+(wv==null?'':wv<=1.25?TX('可搶灘'):wv>=2.5?TX('無法搶灘'):TX('搶灘')+' '+Math.round((2.5-wv)/1.25*100)+'%')+'</span>'+ // 灘頭卸載能力（同狀態列的規則）
+        '<span class="sep">·</span><span class="mv">'+TX('船速')+' <b>'+W.sea+'</b>'+TX('格')+'</span>';
       wb.appendChild(pill);}
     wxWinSync();}
   $('#fsStatus').textContent='第 '+S.turn+'/'+S.T+' 回合 · '+SIDE[S.phase]+' · '+String(S.weather.n).replace(/（[^）]*）/g,'').replace(/\s*公尺/,' m')+' · 火力 '+S.fire+' · 補給 '+sp.used+'/'+sp.cap;
