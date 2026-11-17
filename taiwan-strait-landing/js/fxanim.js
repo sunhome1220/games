@@ -137,7 +137,7 @@ const HELO_LOOP=1300;
 function heloGeo(o){const a=fxPos(o.from),b=fxPos(o.at),dd=Math.hypot(b[0]-a[0],b[1]-a[1]);return {a,b,dd,tIn:fxDur('heli',dd),tOut:fxDur('heli',dd)};}
 function fxHelo(o){
   if(reduce())return;const G=heloGeo(o),ang=Math.atan2(G.b[1]-G.a[1],G.b[0]-G.a[0]),hg=heliGlyph(o.side==='atk'?'#d9534a':'#3f7fd0'),Rl=14*FXS();
-  const pose=(p,an,op)=>{hg.setAttribute('transform','translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+(an*180/Math.PI).toFixed(0)+') scale('+(FXS()*1.3).toFixed(3)+')');if(op!=null)hg.setAttribute('opacity',op);};
+  const pose=(p,an,op)=>{hg.setAttribute('transform','translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+(an*180/Math.PI).toFixed(0)+') scale('+(FXS()*.65).toFixed(3)+')');if(op!=null)hg.setAttribute('opacity',op);};
   setTimeout(()=>{try{hg.remove();}catch(e){}},(G.tIn+G.tOut+HELO_LOOP+3000)*fxK()); // 保險：殘留的圖示一定清掉
   pose(G.a,ang,0);
   tween(G.tIn,t=>pose([G.a[0]+(G.b[0]-G.a[0])*t,G.a[1]+(G.b[1]-G.a[1])*t],ang,Math.min(1,t*8)),()=>{
@@ -174,7 +174,7 @@ function fxFlight(a,b,k,end,opt){
     fxShot(a,b,{arc:Math.min(46,dd*.4+14),dur:fxDur('arty',dd),color:'#ffe08a',trail:'#ffb347',w:2,r:2.4,end});
   }else if(k==='heli'){ // 攻擊直升機：慢速飛到距目標約 8 km 處懸停，發射地獄火，再慢速轉彎返回基地
     const ang=Math.atan2(b[1]-a[1],b[0]-a[0]),so=heliStand(dd),rel=[b[0]-Math.cos(ang)*so,b[1]-Math.sin(ang)*so],hg=heliGlyph(opt&&opt.col);
-    const pose=(p,an,op,sc,bk)=>{hg.setAttribute('transform','translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+(an*180/Math.PI).toFixed(0)+') scale('+(FXS()*1.5*(sc||1)).toFixed(3)+')');if(op!=null)hg.setAttribute('opacity',op);};
+    const pose=(p,an,op,sc,bk)=>{hg.setAttribute('transform','translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+(an*180/Math.PI).toFixed(0)+') scale('+(FXS()*.75*(sc||1)).toFixed(3)+')');if(op!=null)hg.setAttribute('opacity',op);};
     pose(a,ang,0);
     tween(fxDur('heli',dd-so),t=>pose([a[0]+(rel[0]-a[0])*t,a[1]+(rel[1]-a[1])*t],ang,Math.min(1,t*8)),()=>{
       tween(HELI_HOVER,t=>pose([rel[0],rel[1]+Math.sin(t*Math.PI*2)*1.2],ang,1),()=>{ // 懸停瞄準
