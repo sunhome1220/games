@@ -22,7 +22,7 @@ const kmH=km=>km/KM_HEX;
 const K=(c,r)=>c+','+r;
 const $=s=>document.querySelector(s);
 let GEN=0; // 每次重新開局加一：舊的非同步流程（動畫等待中）不會再接續執行
-const sleep=ms=>S&&S.rec?Promise.resolve():(g=>new Promise(r=>setTimeout(()=>{if(g===GEN)r();},ms*(S&&S.speed||1))))(GEN);
+const sleep=ms=>S&&S.rec?Promise.resolve():(g=>new Promise(r=>setTimeout(()=>{if(g===GEN)r();},(typeof FXOFF!=='undefined'&&FXOFF?0:ms*(S&&S.speed||1)))))(GEN); // 關閉動畫時不停頓（仍讓出一次事件迴圈，畫面不會凍結）
 const NR=Math.random.bind(Math); // 原生亂數：只給動畫用，不吃種子，讓同一個戰局碼在不同機器上走同樣的結果
 let SEEDF=null;
 function seedRng(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
