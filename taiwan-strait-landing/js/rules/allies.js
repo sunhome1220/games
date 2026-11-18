@@ -7,6 +7,7 @@ const USC_HOME=[128.4,23.6]; // 預設進場位置：台灣東方約 700 km 的�
 const JMS_HOME=[124.3,24.0],JMS_ENTRY=[128.3,25.9]; // ★掩護位置：石垣島南方；進場點：沖繩東南方（自佐世保南下，先在共軍艦射飛彈射程外）
 const jmsPieces=()=>S.units.filter(u=>u.ally==='JP'&&(u.type==='ddh'||isEsc(u))&&alive(u));
 const jmsLead=()=>S.units.find(u=>u.ally==='JP'&&u.type==='ddh'&&alive(u));
+const WXSPOTC={}; // 浪高徽章的候選海格（依錨點格快取；只與地形有關）
 function jmsSync(){
   const f=S.fx&&S.fx.units.find(x=>x.id==='jmsdf');if(!f)return;const on=f.hp>0&&fxActive(f),ps=jmsPieces();
   if(!on){if(ps.length&&f.hp>0){S.units=S.units.filter(x=>!ps.includes(x));log('海自護衛隊群撤離戰區');}return;}
@@ -108,7 +109,7 @@ function wxMapSVG(){ // 地圖：各海域浪高標籤、颱風（中心、暴�
   // 浪高文字避開棋子：在原定位置附近 4 格內的海面格中，挑文字框內棋子最少、離原位置最近的地方
   const upx=S.units.filter(u=>alive(u)).map(u=>center(u.c,u.r)),uR=R*.9;
   const spot=(ll,txt)=>{const [c0,r0]=llToRC(ll[0],ll[1]),h0=TER[K(c0,r0)],[x0,y0]=center(c0,r0),hw=txt.length*5.6+4,hh=8;
-    const cand=h0?Object.values(TER).filter(q=>q.t==='sea'&&hd(q,h0)<=kmH(80)):[];let best=[x0,y0],bs=1e9;
+    const cand=h0?(WXSPOTC[h0.k]||(WXSPOTC[h0.k]=terList('sea',q=>q.t==='sea').filter(q=>hd(q,h0)<=kmH(80)))):[];let best=[x0,y0],bs=1e9;
     for(const q of [{c:c0,r:r0}].concat(cand)){const [x,y]=center(q.c,q.r),hit=upx.filter(([ux,uy])=>Math.abs(ux-x)<hw+uR&&Math.abs(uy-(y-4))<hh+uR).length,sc=hit*100+Math.hypot(x-x0,y-y0)/HPX;if(sc<bs){bs=sc;best=[x,y];}}
     return best;};
   // 浪高徽章：波浪圖示＋海域名＋浪高；顏色＝灘頭卸載規則的門檻（綠：1.25 m 以下不受影響；橘：受限；紅：2.5 m 以上無法卸載）
