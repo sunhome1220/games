@@ -32,16 +32,15 @@ function carrierDebrief(nm,t,st){
   const H=(S.hits||[]).filter(h=>h.type==='cv'&&h.side==='atk'&&h.cvn===nm),last=H[H.length-1];
   const by={};H.forEach(h=>{by[h.why]=(by[h.why]||0)+h.n;});
   const D=MISSION_DEFS.carrier.snap||{P:S.p0,TW:S.air?S.air.TW0:0,PLA:S.air?S.air.PLA0:0,ships:S.rocShips0||0},P=S.pools,P0=D.P;
-  const U0=D.U||{},F0=D.F||{},dif=(A,B)=>Object.entries(A||{}).map(([k,v])=>[k,v-(B[k]||0)]).filter(x=>x[1]>0);
-  const UB0=D.UB||{},byW=k=>{const d=dif((S.stats.useBy||{})[k],UB0[k]||{});return d.length?'（'+d.map(([w,v])=>w+' '+v).join('、')+'）':'';};
-  const sorties=dif(S.stats.use,U0).map(([k,v])=>k+' '+v+' 次'+byW(k)),fired=dif(S.stats.fired,F0).map(([k,v])=>k+' '+v+' 枚');
+  const U0=D.U||{},F0=D.F||{};
+  const UB0=D.UB||{},byW=k=>{const d=misDiff((S.stats.useBy||{})[k],UB0[k]||{});return d.length?'（'+d.map(([w,v])=>w+' '+v).join('、')+'）':'';};
+  const sorties=misDiff(S.stats.use,U0).map(([k,v])=>k+' '+v+' 次'+byW(k)),fired=misDiff(S.stats.fired,F0).map(([k,v])=>k+' '+v+' 枚');
   const escLost=(S.stats.escLost||{}).atk||0,twAir=S.air?Math.max(0,Math.round(D.TW-S.air.TW)):0,ships=Math.max(0,D.ships-S.units.filter(u=>u.fl&&alive(u)).reduce((a,u)=>a+u.hp,0)),subs=Math.max(0,(P0.rocSub||0)-(P.rocSub||0));
-  const li=a=>'<ul class="mdeb">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
   return '<div class="mgoal"><b>致命一擊</b>：'+(last?last.why+'（第 '+last.t+' 回合）':'海上交戰的抽象攻擊')+'</div>'+
-    (Object.keys(by).length?'<div class="mgoal"><b>'+nm+' 受到的攻擊</b>'+li(Object.entries(by).map(([w,n])=>w+'：−'+n+' 步'))+'</div>':'')+
-    '<div class="mgoal"><b>共軍損失</b>'+li(['航艦 '+nm+(H.some(h=>h.dead)?' 沉沒':' 重創失能'),'護航艦 '+escLost+' 艘','戰機（含艦載機）約 '+(S.air?Math.max(0,Math.round(D.PLA-S.air.PLA)):0)+' 架'])+'</div>'+
-    cvPart(nm,D,dif,li)+
-    '<div class="mgoal"><b>整個任務期間（含其他行動）</b>'+li([
+    (Object.keys(by).length?'<div class="mgoal"><b>'+nm+' 受到的攻擊</b>'+misList(Object.entries(by).map(([w,n])=>w+'：−'+n+' 步'))+'</div>':'')+
+    '<div class="mgoal"><b>共軍損失</b>'+misList(['航艦 '+nm+(H.some(h=>h.dead)?' 沉沒':' 重創失能'),'護航艦 '+escLost+' 艘','戰機（含艦載機）約 '+(S.air?Math.max(0,Math.round(D.PLA-S.air.PLA)):0)+' 架'])+'</div>'+
+    cvPart(nm,D)+
+    '<div class="mgoal"><b>整個任務期間（含其他行動）</b>'+misList([
       '出動：'+(sorties.length?sorties.join('；'):'沒有'),
       '發射：'+(fired.length?fired.join('、'):'沒有'),
       '戰損：戰機 '+twAir+' 架、艦艇 '+ships+' 艘、潛艦 '+subs+' 艘（多半是共軍飛彈與空中打擊造成，不只是攻擊航艦時的損失）'])+'</div>'+
@@ -49,9 +48,9 @@ function carrierDebrief(nm,t,st){
 }
 
 // 只針對這艘航艦的艦隊（航艦與護航艦）：出動、發射、攻擊時被擊落的戰機
-function cvPart(nm,D,dif,li){
+function cvPart(nm,D){
   const C=(S.stats.cvUse||{})[nm]||{use:{},by:{},fired:{},air:0},C0=(D.CV||{})[nm]||{use:{},by:{},fired:{},air:0};
-  const by=k=>{const d=dif(C.by[k],C0.by[k]||{});return d.length?'（'+d.map(([w,v])=>w+' '+v).join('、')+'）':'';};
-  const u=dif(C.use,C0.use).map(([k,v])=>k+' '+v+' 次'+by(k)),f=dif(C.fired,C0.fired).map(([k,v])=>k+' '+v+' 枚'),tot=f.reduce((a,x)=>a+(+x.match(/(\d+) 枚$/)[1]),0),air=Math.round((C.air||0)-(C0.air||0));
-  return '<div class="mgoal"><b>攻擊 '+nm+' 艦隊的付出</b>（只計打航艦與它的護航艦）'+li((u.length?u:['（沒有出動紀錄）']).concat(f.length?['飛彈：'+f.join('、')+'，共 '+tot+' 枚']:[]).concat(['攻擊時被擊落的戰機：'+air+' 架']))+'</div>';
+  const by=k=>{const d=misDiff(C.by[k],C0.by[k]||{});return d.length?'（'+d.map(([w,v])=>w+' '+v).join('、')+'）':'';};
+  const u=misDiff(C.use,C0.use).map(([k,v])=>k+' '+v+' 次'+by(k)),f=misDiff(C.fired,C0.fired).map(([k,v])=>k+' '+v+' 枚'),tot=f.reduce((a,x)=>a+(+x.match(/(\d+) 枚$/)[1]),0),air=Math.round((C.air||0)-(C0.air||0));
+  return '<div class="mgoal"><b>攻擊 '+nm+' 艦隊的付出</b>（只計打航艦與它的護航艦）'+misList((u.length?u:['（沒有出動紀錄）']).concat(f.length?['飛彈：'+f.join('、')+'，共 '+tot+' 枚']:[]).concat(['攻擊時被擊落的戰機：'+air+' 架']))+'</div>';
 }
