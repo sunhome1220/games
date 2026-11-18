@@ -365,7 +365,7 @@ const VOICE={n:0,
   stop(){try{if(window.speechSynthesis)speechSynthesis.cancel();}catch(e){}this.n=0;}
 };
 function setOpt(id,v){const e=$('#'+id);if(!e||e.value===v)return;e.value=v;e.dispatchEvent(new Event('change'));}
-$('#optFxSpd').addEventListener('change',()=>{FXSPD=+$('#optFxSpd').value||1;});$('#optTerm').addEventListener('change',()=>{TERM=$('#optTerm').value||'plain';});setTimeout(()=>{TERM=$('#optTerm').value||'plain';},0);setTimeout(()=>{FXSPD=+$('#optFxSpd').value||1;},0);
+$('#optFxSpd').addEventListener('change',()=>{fxSet($('#optFxSpd').value);});$('#optTerm').addEventListener('change',()=>{TERM=$('#optTerm').value||'plain';});setTimeout(()=>{TERM=$('#optTerm').value||'plain';},0);setTimeout(()=>{fxSet($('#optFxSpd').value);},0);
 function voiceBtn(){const b=$('#btnVoice');if(!b)return;b.hidden=true;if(!window.speechSynthesis)return;const on=$('#optVoice').value==='1';b.innerHTML=(on?'🔊':'🔈')+'<span class="bl"> 語音：'+(on?'開':'關')+'</span>';b.setAttribute('aria-pressed',on);if(!on)VOICE.stop();}
 const bVoice=$('#btnVoice');if(bVoice)bVoice.onclick=()=>{const e=$('#optVoice');e.value=e.value==='1'?'0':'1';e.dispatchEvent(new Event('change'));if(e.value==='1')VOICE.speak('語音播報已開啟',{flush:true});};
 $('#optVoice').addEventListener('change',()=>{try{localStorage.setItem('tsl-voice-user','1');}catch(e){}voiceBtn();});
