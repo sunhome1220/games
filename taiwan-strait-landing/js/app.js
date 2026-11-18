@@ -213,7 +213,7 @@ function thFold(open){const t=document.querySelector('.theater');t.classList.tog
 $('#btnThFold').onclick=()=>thFold(document.querySelector('.theater').classList.contains('collapsed'));
 $('#btnThWide').onclick=()=>{const t=document.querySelector('.theater');t.classList.toggle('wide');$('#btnThWide').textContent=t.classList.contains('wide')?'縮小戰區圖':'放大戰區圖';};
 /* ---------- map zoom and fullscreen ---------- */
-let ZOOM=3;const ZMIN=.4,ZMAX=10,ZDEF=3; // 最大 1000%、預設 300%（10 km 格子放大看得清楚）
+let ZOOM=3;const ZMIN=.8,ZMAX=10,ZDEF=3; // 最大 1000%、預設 300%（10 km 格子放大看得清楚）
 function setZoom(z,recenter,anc){ // anc＝{fx,fy,px,py}：縮放後讓內容上的 (fx,fy)（占全圖比例）留在視窗內的 (px,py)——以手指中點或游標為錨點，像 Google 地圖
   const w=document.querySelector('.mapwrap'),m=$('#map'),old=ZOOM,fs=document.body.classList.contains('mapfs');
   const fx=(w.scrollLeft+w.clientWidth/2)/Math.max(1,w.scrollWidth),fy=(w.scrollTop+w.clientHeight/2)/Math.max(1,w.scrollHeight);
