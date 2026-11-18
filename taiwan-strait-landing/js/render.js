@@ -115,6 +115,15 @@ const RIVERS=[['淡水河',[[121.41,25.18],[121.46,25.12],[121.49,25.06],[121.46
   ['秀姑巒溪',[[121.51,23.47],[121.45,23.49],[121.40,23.43],[121.36,23.33],[121.30,23.20]]],
   ['卑南溪',[[121.16,22.77],[121.13,22.83],[121.15,22.93],[121.20,23.03],[121.23,23.12]]]];
 // 河流：平滑曲線（Catmull-Rom 轉貝茲），上游細、河口粗；底下一層淺色河岸，和凸起的地塊風格一致
+// 支流與主流交會：支流第 0 點（匯流點）貼到主流「實際畫出的曲線」上（平滑曲線不一定經過手畫的控制點，直接用座標會留縫）
+function rvSample(pts,k){const n=pts.length,P=i=>pts[Math.max(0,Math.min(n-1,i))],out=[];
+  for(let i=0;i<n-1;i++){const p0=P(i-1),p1=P(i),p2=P(i+1),p3=P(i+2),c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];
+    for(let t=0;t<k;t++){const u=t/k,a=(1-u)**3,b=3*u*(1-u)**2,c=3*u*u*(1-u),d=u**3;out.push([a*p1[0]+b*c1[0]+c*c2[0]+d*p2[0],a*p1[1]+b*c1[1]+c*c2[1]+d*p2[1]]);}}
+  out.push(pts[n-1]);return out;}
+function joinTrunk(pts,trunks,maxd){ // trunks：一條或多條主流的點列；回傳是否接上
+  let best=null,bd=maxd*maxd;const q=pts[0];
+  for(const T of trunks){const S=rvSample(T,16);for(let i=0;i<S.length-1;i++){const a=S[i],b=S[i+1],dx=b[0]-a[0],dy=b[1]-a[1],L=dx*dx+dy*dy,t=L?Math.max(0,Math.min(1,((q[0]-a[0])*dx+(q[1]-a[1])*dy)/L)):0,x=a[0]+t*dx,y=a[1]+t*dy,d=(x-q[0])**2+(y-q[1])**2;if(d<bd){bd=d;best=[x,y];}}}
+  if(best)pts[0]=best;return !!best;}
 function riverSVG(pts,w0,w1){ // w0＝河口（第 0 點）寬度、w1＝源頭寬度
   w0=w0||2.8;w1=w1||.7;const n=pts.length;if(n<2)return '';let bank='',water='';
   const P=i=>pts[Math.max(0,Math.min(n-1,i))],f=v=>v.toFixed(1);
@@ -165,14 +174,17 @@ function coastRiverSVG(land){
   if(d)o+='<path class="coast" d="'+d+'"/>';
   const lift=(lo,la)=>{const [c,r]=llToRC(lo,la),h=TER[K(c,r)];return h?elev(h):0;};
   const toPx=([lo,la])=>{const [x,y]=llPx(lo,la);return [x,y-lift(lo,la)];};
-  for(const [p,n,P] of TRIBS){const pts=P.map(toPx);o+=riverSVG(pts,1.5,.5);const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl rvt" font-size="'+(4.8*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-2).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
-  for(const [n,P] of RIVERS){const pts=P.map(toPx);pts[0]=mouthPt(P[0][0],P[0][1],pts[0]); // 河口對齊海岸格的邊
+  const TRUNK={};for(const [n,P] of RIVERS){const pts=P.map(toPx);pts[0]=mouthPt(P[0][0],P[0][1],pts[0]);TRUNK[n]=pts;} // 河口對齊海岸格的邊
+  for(const [p,n,P] of TRIBS){const pts=P.map(toPx);if(TRUNK[p])joinTrunk(pts,[TRUNK[p]],R*6);o+=riverSVG(pts,1.5,.5);const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl rvt" font-size="'+(4.8*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-2).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
+  for(const [n,P] of RIVERS){const pts=TRUNK[n];
     o+=riverSVG(pts);
     const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
   if(typeof OUTER_LAKES!=='undefined'){ // 大陸的河流與湖泊（只是背景，不影響規則；真實資料見 js/outer.js）
     for(const [n,L] of OUTER_LAKES){const pp=L.map(toPx);o+='<path class="lake" d="M'+pp.map(q=>q.map(v=>v.toFixed(1)).join(' ')).join('L')+'Z"/>';
       if(n&&pp.length>8){const cx=pp.reduce((a,q)=>a+q[0],0)/pp.length,cy=pp.reduce((a,q)=>a+q[1],0)/pp.length;o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+cx.toFixed(1)+'" y="'+cy.toFixed(1)+'" text-anchor="middle">'+n+'</text>';}}
-    for(const [n,P,sea] of OUTER_RIVERS){const pts=outerRiverPts(P,toPx,sea);if(pts.length<2)continue;o+=riverSVG(pts,n==='長江'?3.6:2,.6);
+    const ORV=OUTER_RIVERS.map(([n,P,sea])=>[n,outerRiverPts(P,toPx,sea)]),OPAR={'漢江':'長江'}; // 漢江在武漢匯入長江
+    for(const [n,pts] of ORV){const par=OPAR[n];if(par&&pts.length>1)joinTrunk(pts,ORV.filter(r=>r[0]===par).map(r=>r[1]),R*8);}
+    for(const [n,pts] of ORV){if(pts.length<2)continue;o+=riverSVG(pts,n==='長江'?3.6:2,.6);
       if(pts.length>6&&n!=='贛江'&&n!=='卡加延河'){const m=pts[Math.floor(pts.length/3)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}}}
   {const [c,r]=llToRC(120.957,23.470),h=TER[K(c,r)];if(h){const [x,y0]=center(h.c,h.r),y=y0-elev(h); // 玉山：和其他地名一樣放在所在格的中心上方（不用小數座標，放大到 500% 以上時才不會跑位）
     o+='<text class="lbl peak" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x.toFixed(1)+'" y="'+(FG>2?y-R*1.2:y-11).toFixed(1)+'">▲玉山</text>';}}
