@@ -2,9 +2,12 @@
 /* ---------- 關卡挑戰（框架）：網址加 ?mission=<id> 時啟用；沒有參數時完全不動作 ----------
    戰鬥規則全部沿用主遊戲；關卡只負責：開局設定、過關判定、限時、簡報與結算。
    核心程式只有三個掛勾點：beginPhase（MISSION.phase）、render（MISSION.tick）、endGame（MISSION.onEnd）。
-   各關內容放在 js/mission_*.js，用 MISSION_DEFS[id]={...} 註冊。 */
+   各關放在 missions/<id>.js，用 MISSION_DEFS[id]={...} 註冊；各關共用的小工具（結算清單、差量）放在這個檔案。 */
 const MISSION_DEFS={};
 var MISSION=null; // 用 var：核心程式以 typeof 檢查，沒有關卡時為 null
+// 各關結算共用：misList＝條列；misDiff＝兩份計數表相減，只留增加的 [名稱,差]
+const misList=a=>'<ul class="mdeb">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+const misDiff=(A,B)=>Object.entries(A||{}).map(([k,v])=>[k,v-((B||{})[k]||0)]).filter(x=>x[1]>0);
 function missionId(){const m=location.search.match(/[?&]mission=([a-z0-9_-]+)/i);return m?m[1]:null;}
 function missionStars(n){return '<span class="mstars">'+'★'.repeat(n)+'<span class="off">'+'★'.repeat(3-n)+'</span></span>';}
 function missionBox(html){const box=mboxSet('');box.innerHTML=html;$('#modal').hidden=false;return box;}

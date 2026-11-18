@@ -1,6 +1,6 @@
 # 關卡：72 小時奪港（攻方）
 
-程式：`missions/port.js`（網址 `?mission=port`，可加 `&ex=tcport|kaohsiung|keelung` 指定排除的港口）。框架見 `js/missions.js`。
+程式：`missions/port.js`（網址 `?mission=port`，可加 `&ex=tcport|kaohsiung|keelung` 指定排除的港口）。框架與共用工具見 `missions/common.js`。
 
 ## 規則
 - 你指揮攻方，主遊戲 2026 年兵力，武器數字不為關卡調整。

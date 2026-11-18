@@ -38,8 +38,7 @@ MISSION_DEFS.port={
     return {t:'奪下並守住港口',stars:st,d:'第 '+t+' 回合，'+T.map(p=>p[1]).join('、')+'都由攻方控制並撐過了守方的反擊。<br><b>（假設情境）</b>後續梯隊能否真的靠這兩個港口卸載，還要看空優、港口設施與守方殘存的火力。',extra:this.debrief(T,L,t,st)};
   },
   debrief(T,L,t,st){
-    const li=a=>'<ul class="mdeb">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
-    return '<div class="mgoal"><b>港口</b>'+li(T.map(([k,n])=>n+'：'+(portHeld(k)?'守住':S.owner[SPOT[k]]==='atk'?'設施被破壞':'未佔領')))+'</div>'+
+    return '<div class="mgoal"><b>港口</b>'+misList(T.map(([k,n])=>n+'：'+(portHeld(k)?'守住':S.owner[SPOT[k]]==='atk'?'設施被破壞':'未佔領')))+'</div>'+
       '<div class="mgoal"><b>運輸船損失</b>：派出約 '+L.s+' 艘，損失 '+L.sunk+' 艘（'+Math.round(L.r*100)+'%）'+(L.r>.4?'，超過 40%，只拿 ★':'')+'</div>'+
       '<div class="mgoal"><b>攻方旅損失</b>：'+(((S.stats.bdeLost||{}).atk)||0)+' 個</div>'+
       '<div class="wz-note">用了 '+t+' 個回合。'+(st<3?'運輸船損失少、第 4 回合前完成可以拿到更多星。':'')+'</div>';
