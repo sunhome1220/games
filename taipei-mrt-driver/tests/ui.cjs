@@ -1,0 +1,42 @@
+const { chromium } = require('playwright');
+const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x?'  '+x:''));
+(async()=>{
+  const b=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+  const ctx=await b.newContext({viewport:{width:390,height:800},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+  const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto('http://localhost:8765/taipei-mrt-driver/index.html');await p.waitForTimeout(900);
+  const go=await p.evaluate(()=>{const r=document.getElementById('m-go').getBoundingClientRect();return {top:r.top,bottom:r.bottom,h:innerHeight};});
+  ok('直握時「開始值勤」不用捲動就看得到',go.bottom<=go.h,JSON.stringify(go));
+  ok('進階設定、操作說明預設收合',await p.evaluate(()=>!document.getElementById('m-adv').open&&!document.getElementById('m-howto').open));
+  const vis=await p.evaluate(()=>['m-driver','m-theme','m-model','m-atp','m-quality'].map(i=>document.getElementById(i).checkVisibility()));
+  ok('進階設定收合時其控制項不可見',vis.every(v=>!v),JSON.stringify(vis));
+  await p.evaluate(()=>{document.getElementById('m-adv').open=true;});
+  ok('展開後控制項可見',await p.evaluate(()=>['m-driver','m-theme','m-model','m-atp','m-quality'].every(i=>document.getElementById(i).checkVisibility())));
+  await p.selectOption('#m-quality','low');
+  ok('畫質設定存檔',await p.evaluate(()=>JSON.parse(localStorage.getItem('mrt-set')).quality==='low'));
+  await p.selectOption('#m-quality','auto');
+  // 首次教學
+  await p.evaluate(()=>{document.getElementById('m-adv').open=false;window.scrollTo(0,0);});
+  const r=await p.evaluate(()=>{const b=document.getElementById('m-go').getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2];});
+  await p.touchscreen.tap(...r);await p.waitForTimeout(600);
+  ok('首次開始：顯示教學並暫停',await p.evaluate(()=>!document.getElementById('tut').hidden&&paused===true));
+  const t0=await p.evaluate(()=>__mrt.G.time);await p.waitForTimeout(500);
+  ok('教學顯示時時間不前進',await p.evaluate(t=>__mrt.G.time===t,t0));
+  const r2=await p.evaluate(()=>{const b=document.getElementById('tut-ok').getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2];});
+  await p.touchscreen.tap(...r2);await p.waitForTimeout(500);
+  ok('按「知道了」後教學消失並繼續',await p.evaluate(()=>document.getElementById('tut').hidden&&paused===false));
+  ok('旗標已記錄',await p.evaluate(()=>localStorage.getItem('mrt-tut')==='1'));
+  await p.evaluate(()=>{__mrt.startRun();});await p.waitForTimeout(300);
+  ok('第二次開始不再顯示教學',await p.evaluate(()=>document.getElementById('tut').hidden&&paused===false));
+  // 自動畫質
+  const q=await p.evaluate(()=>{SET.quality='auto';QS=1;pf={n:0,t:0,warm:90};for(let i=0;i<90;i++)perfAdapt(0.05,true);const a=QS;for(let i=0;i<1500;i++)perfAdapt(0.05,true);const lo=QS;
+    SET.quality='high';QS=1;pf={n:0,t:0,warm:90};for(let i=0;i<200;i++)perfAdapt(0.05,true);const hi=QS;
+    SET.quality='auto';QS=1;pf={n:0,t:0,warm:90};for(let i=0;i<400;i++)perfAdapt(0.016,true);const fine=QS;
+    return {a,lo,hi,fine};});
+  ok('很卡時降一級',Math.abs(q.a-0.8)<1e-6,JSON.stringify(q));
+  ok('降到下限 0.5 不再降',q.lo===0.5);
+  ok('固定高畫質不降',q.hi===1);
+  ok('順暢時不降',q.fine===1);
+  ok('無錯誤',errs.length===0,errs.join());
+  await b.close();
+})();
