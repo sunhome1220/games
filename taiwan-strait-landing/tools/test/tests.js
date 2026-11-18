@@ -35,6 +35,18 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
   r.push([o['amph/ro'][0]===0,'搭滾裝船的旅：海上不能突擊']);r.push([o['arm/ro'][0]===0,'重型旅：海上不能突擊']);
   r.push(...noErr(p,'快速測試'));await p.close();return r;});
 
+add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
+  const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
+    for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
+      if(q.x>40&&q.x<window.innerWidth-40&&q.y>140&&q.y<window.innerHeight-60&&!unitAt(h.k)&&(h.c*7+h.r*3)%97===0&&(()=>{const e=document.elementFromPoint(q.x,q.y);return !!(e&&e.closest('[data-sea]'));})())out.push({k:h.k,x:q.x,y:q.y});}
+    return out.slice(0,6);});
+  r.push([pts.length>=3,'找得到畫面內的海格可測 '+pts.length]);let okHover=0,okClick=0;
+  for(const q of pts){await p.mouse.move(q.x-30,q.y);await p.mouse.move(q.x,q.y,{steps:3});await p.waitForTimeout(60);if(await p.evaluate(k=>S.hover===k,q.k))okHover++;
+    await p.evaluate(()=>{S.hover=null;});await p.mouse.click(q.x,q.y);await p.waitForTimeout(60);if(await p.evaluate(k=>S.hover===k,q.k))okClick++;}
+  r.push([okHover===pts.length,'游標移到海格上：資訊卡跟著格子 '+okHover+'／'+pts.length]);r.push([okClick===pts.length,'點海格：反查到正確的格子 '+okClick+'／'+pts.length]);
+  r.push([await p.evaluate(()=>document.querySelectorAll('#map *').length<35000),'地圖 SVG 節點數 < 35,000（海面合併後約 30,000；合併前約 46,700）']);
+  r.push(...noErr(p,'海面點選'));await p.close();return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];
@@ -47,7 +59,7 @@ const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.read
 add('固定種子推演（1 場）','medium',c=>baseCheck(c,[0]));
 add('固定種子推演（其餘 3 場）','full',c=>baseCheck(c,[1,2,3]));
 
-const mission=async(c,q,hold,opts,want,name)=>{const p=await L.open(c.b,c.url,q,opts);const t=await L.playMission(p,hold);return [[t.includes(want),name+'：結算「'+want+'」'],...noErr(p,name)];};
+const mission=async(c,q,hold,opts,want,name)=>{const p=await L.open(c.b,c.url,q,opts);const t=await L.playMission(p,hold);const r=[[t.includes(want),name+'：結算「'+want+'」'],...noErr(p,name)];await p.close();return r;}; // 一定要關掉頁面：沒關的頁面會繼續在背景跑，拖慢後面的測試
 add('關卡完整流程（關閉動畫）','medium',async c=>[].concat(
   ...await Promise.all([mission(c,'?mission=port&ex=keelung&debug=1',true,{fast:true,hide:true},'任務成功','奪港過關'),mission(c,'?mission=port&ex=keelung&debug=1',false,{fast:true,hide:true},'任務失敗','奪港失敗')])));
 add('關卡完整流程（正常動畫）','full',async c=>[].concat(
