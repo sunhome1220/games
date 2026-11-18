@@ -257,6 +257,8 @@ function targets(u){
     return S.units.filter(e=>e.side!==u.side&&atSea(e)&&!e.ship&&!isSubT(e)&&rd(hexOf(u),hexOf(e))<=R);
     } // 船上的旅不單獨列為目標：打運輸船，船沉了旅一併損失
   const h=hexOf(u);if(h.isl==='CN')return [];
+  // 海上的搶灘突擊（登陸艇、兩棲載具靠岸）只有搭兩棲艦的兩棲旅與陸戰旅做得到：滾裝船沒有登陸艇、只能進港口或浮動碼頭卸載；重型旅也不能搶灘（只能在港口卸載）——這兩種在海上沒有可攻擊的目標
+  if(atSea(u)){const sh=u.ship&&shipOf(u);if(u.type==='arm'||(sh&&sh.type==='ro'))return [];}
   return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)&&(hd(h,hexOf(e))<=1||hasArt(u))); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以。相鄰格才能突擊，20 km 只有編有砲兵的旅能砲擊
 }
 
