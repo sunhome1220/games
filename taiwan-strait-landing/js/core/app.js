@@ -382,7 +382,8 @@ async function assistPhase(){
   if(!S.over)endPhase();
 }
 $('#btnIntentReset').onclick=()=>{if(S.intentSkip)S.intentSkip[S.phase]=false;toast('下次按「電腦代打」會再詢問指揮官意圖',1800);render();};
-$('#btnAssist').onclick=assistPhase;$('#fsAssist').onclick=assistPhase;$('#mbAssist').onclick=assistPhase;
+const assistClick=()=>{const X=barCtx();if(X&&X.assist){if(!X.assist.hide&&!X.assist.disabled)X.assist.run();return;}assistPhase();};
+$('#btnAssist').onclick=assistClick;$('#fsAssist').onclick=assistClick;$('#mbAssist').onclick=assistClick;
 $('#mbEnd').onclick=()=>$('#btnEnd').click();$('#mbStrike').onclick=()=>$('#btnStrike').click();
 function reset(){newState();readSetup();render();renderWizard();}
 loadSetup();

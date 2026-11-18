@@ -71,6 +71,23 @@ add('防空增購：各年份連數、設定頁、自動選址','medium',async c
   r.push([q.o.n===3&&q.o.x.length===3&&q.o.x.every(x=>!x.startsWith('pt@')),'電腦守方一律自動選址（不吃設定值）：'+q.o.x]);r.push(...noErr(q.p,'2032 電腦守方'));await q.p.close();
   return r;});
 
+add('攻擊模式的快捷按鈕（取代電腦代打／結束階段）','medium',async c=>{const r=[];
+  const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});
+  await p.evaluate(()=>{$('#optSide').value='def';$('#optSide').dispatchEvent(new Event('change'));});await L.startGame(p);
+  for(let i=0;i<100;i++){const x=await L.modalClick(p);if(x===2&&await p.evaluate(()=>humanTurn()&&document.querySelector('#modal').hidden))break;await p.waitForTimeout(150);}
+  const txt=()=>p.evaluate(()=>['mbStrike','mbAssist','mbEnd','btnStrike','btnAssist','btnEnd'].map(id=>{const e=document.getElementById(id);return e.hidden?'':e.textContent.trim()+(e.disabled?'|停':'');}));
+  const k=await p.evaluate(()=>{const h=afUsable().find(x=>afBudget(x.k)>0&&afBaseN(x.k)>0);if(!h)return null;S.baseSel=h.k;S.hover=h.k;S.sel=null;render();return h.k;});
+  r.push([!!k,'找得到可出擊的空軍基地']);if(!k){await p.close();return r;}
+  let t=await txt();r.push([t.slice(0,3).join()===['攻擊船團','空襲島上目標','打擊大陸沿岸'].map((x,i)=>x+(t[i].endsWith('|停')?'|停':'')).join()&&!t.some(x=>/電腦代打|結束階段/.test(x)),'基地卡開著：三個按鈕變成三種出擊方式（沒有「電腦代打」「結束階段」）'+t.slice(0,3)]);
+  const m=await p.evaluate(()=>{const N=afModeN(S.baseSel);const e=Object.entries(N).find(([m,n])=>n>0);return e?e[0]:null;});
+  if(m){await p.evaluate(m=>{const id={afS:'btnStrike',afL:'btnAssist',afC:'btnEnd'}[m];document.getElementById(id).click();},m);await p.waitForTimeout(200);t=await txt();
+    r.push([t[0]==='取消出擊'&&/^換方式/.test(t[1])&&t[2]==='確認出擊|停','出擊中：取消出擊／換方式／確認出擊（還沒選目標時停用） '+t.slice(0,3)]);
+    r.push([await p.evaluate(()=>{const e=document.getElementById('btnEnd');e.click();return S.phase==='def'&&S.mode!==null;}),'出擊中按「確認出擊」（停用）不會結束階段']);
+    await p.evaluate(()=>document.getElementById('btnStrike').click());await p.waitForTimeout(200);r.push([await p.evaluate(()=>S.mode===null),'按「取消出擊」離開出擊模式']);
+  }else r.push([true,'（目前沒有可用的出擊方式，略過出擊中的檢查）']);
+  await p.evaluate(()=>{S.baseSel=null;render();});t=await txt();r.push([/縱深打擊|火力打擊/.test(t[0])&&/電腦代打/.test(t[1])&&t[2]==='結束階段','離開基地卡後：恢復原本的三個按鈕 '+t.slice(0,3)]);
+  r.push(...noErr(p,'快捷按鈕'));await p.close();return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];

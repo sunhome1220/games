@@ -163,8 +163,8 @@ document.addEventListener('click',e=>{ // 守方縱深打擊：也可直接點�
     if(humanCN(id))return;
   S.cnSel=S.cnSel===id?null:id;S.thSel=null;render();
 });
-$('#btnStrike').onclick=()=>{if(!humanTurn())return;if(S.mode==='afS'||S.mode==='afL'||S.mode==='afC'||(S.mode==='hlS'||S.mode==='hlL')){S.mode=null;S.afPend=null;render();return;}S.mode=S.mode==='strike'?null:'strike';S.sel=null;render();}; // 空軍出擊模式中：這顆按鈕變成「取消出擊」
-$('#btnEnd').onclick=()=>{if(!humanTurn())return;if(endPhaseGuard())return;endPhase();};
+$('#btnStrike').onclick=()=>{if(!humanTurn())return;{const X=barCtx();if(X&&X.strike&&!X.strike.disabled){X.strike.run();return;}if(X&&X.strike)return;}if(S.mode==='afS'||S.mode==='afL'||S.mode==='afC'||(S.mode==='hlS'||S.mode==='hlL')){S.mode=null;S.afPend=null;render();return;}S.mode=S.mode==='strike'?null:'strike';S.sel=null;render();}; // 空軍出擊模式中：這顆按鈕變成「取消出擊」
+$('#btnEnd').onclick=()=>{if(!humanTurn())return;{const X=barCtx();if(X&&X.end){if(!X.end.hide&&!X.end.disabled)X.end.run();return;}}if(endPhaseGuard())return;endPhase();};
 $('#btnUndo').onclick=undoMove;$('#btnHkHome').onclick=hkGoHome;$('#btnHkWpn').onclick=hkCycleWpn;$('#mbUndo').onclick=undoMove;
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'&&S&&S.started&&undoAvail()){e.preventDefault();undoMove();}});
 function readSetup(){
