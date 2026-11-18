@@ -20,10 +20,10 @@ function ltag(k,txt,cls){
     '<rect x="'+(x-w/2).toFixed(1)+'" y="'+(ty-hh/2).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="'+(hh/2).toFixed(1)+'"/>'+
     '<text x="'+x.toFixed(1)+'" y="'+(ty+fs*.36).toFixed(1)+'" text-anchor="middle" font-size="'+fs.toFixed(1)+'">'+txt+'</text></g>';
 }
-function landTagsSVG(){
-  if(!S||!S.started||S.over||S.phase!=='atk'||S.mode||!landTipsOn()||!humanTurn())return '';
-  const u=S.sel;if(!u||!alive(u)||u.side!=='atk'||!(isBde(u)||isAirT(u))||u.moved||u.acted)return ''; // 兩棲／陸戰／重型旅與空降旅
-  LTPLACED=[];const rc=reach(u),sh=u.ship&&shipOf(u),ro=!!sh&&sh.type==='ro';
+// 這個旅的登陸／空降方案：可登陸格與空降格（依評分排序，小的較好）、推薦、名稱；標籤與手把選項共用
+function landPlan(u){
+  if(!S||!u||!alive(u)||u.side!=='atk'||!(isBde(u)||isAirT(u)))return null;
+  const rc=reach(u),sh=u.ship&&shipOf(u),ro=!!sh&&sh.type==='ro';
   const defs=S.units.filter(e=>e.side==='def'&&onTW(e)&&!isMsl(e)&&alive(e)),goals=PORTS.concat([TAIPEI]).filter(k=>S.owner[k]!=='atk');
   const lands=[],drops=[];
   for(const [k,v] of rc){
@@ -32,22 +32,22 @@ function landTagsSVG(){
     const md=goals.length?minD(k,goals):0,sc=md*.5+dS*.25+(v.kind==='land'?enemyAdj(k,'atk')*1.5-Math.min(friendAdj(k,'atk'),3):0);
     (v.kind==='land'?lands:drops).push({k,t,dS,sc});
   }
-  let o='';
-  if(lands.length){
-    lands.sort((a,b)=>a.sc-b.sc);
-    const ports=lands.filter(x=>x.t.t==='port').slice(0,2),others=lands.filter(x=>x.t.t!=='port').slice(0,4);
-    const recs=new Set(lands.slice(0,2).map(x=>x.k)),shown=ports.concat(others);
-    for(const x of shown){
-      const port=x.t.t==='port',name=port?(ro||u.type==='arm'?'港口卸載':'港口登陸'):(ro?'浮動碼頭':'搶灘'),rec=recs.has(x.k);
-      o+=ltag(x.k,(rec?'★推薦 ':'')+name+'・'+defTxt(x.dS),rec?'rec':'land');
-    }
-  }
-  if(drops.length){
-    drops.sort((a,b)=>a.sc-b.sc);
-    drops.slice(0,3).forEach((x,i)=>{o+=ltag(x.k,(i===0&&x.dS<=3?'★推薦 ':'')+'空降・'+defTxt(x.dS),i===0&&x.dS<=3?'rec':'drop');});
-  }
-  if(!lands.length&&!drops.length&&u.ship&&typeof landWhyHex==='function'){ // 沒有任何可登陸格：在附近港口標出為什麼不行
-    const seas=[hexOf(u)].concat([...rc].filter(([,v])=>v.kind==='sail').map(([k])=>TER[k])).filter(x=>x&&x.t==='sea'),seen=new Set();let n=0;
+  lands.sort((a,b)=>a.sc-b.sc);drops.sort((a,b)=>a.sc-b.sc);
+  const nameOf=x=>x.t.t==='port'?(ro||u.type==='arm'?'港口卸載':'港口登陸'):(ro?'浮動碼頭':'搶灘');
+  const recs=new Set(lands.slice(0,2).map(x=>x.k));if(drops.length&&drops[0].dS<=3)recs.add(drops[0].k);
+  // 要標示／列出的登陸格：2 個港口＋4 個其他，依評分排序
+  const shown=lands.filter(x=>x.t.t==='port').slice(0,2).concat(lands.filter(x=>x.t.t!=='port').slice(0,4)).sort((a,b)=>a.sc-b.sc);
+  return {rc,sh,ro,lands,drops,recs,shown,nameOf,dropsShown:drops.slice(0,3),label:(x,kind)=>(recs.has(x.k)?'★推薦 ':'')+(kind==='drop'?'空降':nameOf(x))+'・'+defTxt(x.dS)};
+}
+function landTagsSVG(){
+  if(!S||!S.started||S.over||S.phase!=='atk'||S.mode||!landTipsOn()||!humanTurn())return '';
+  const u=S.sel;if(!u||u.moved||u.acted)return '';
+  const pl=landPlan(u);if(!pl)return '';
+  LTPLACED=[];let o='';
+  for(const x of pl.shown)o+=ltag(x.k,pl.label(x,'land'),pl.recs.has(x.k)?'rec':'land');
+  for(const x of pl.dropsShown)o+=ltag(x.k,pl.label(x,'drop'),pl.recs.has(x.k)?'rec':'drop');
+  if(!pl.lands.length&&!pl.drops.length&&u.ship&&typeof landWhyHex==='function'){ // 沒有任何可登陸格：在附近港口標出為什麼不行
+    const seas=[hexOf(u)].concat([...pl.rc].filter(([,v])=>v.kind==='sail').map(([k])=>TER[k])).filter(x=>x&&x.t==='sea'),seen=new Set();let n=0;
     for(const s of seas){if(n>=3)break;for(const m of nbrs(s.c,s.r)){if(n>=3)break;if(!m||seen.has(m.k)||m.t!=='port'||m.isl==='CN'||m.isl==='JP')continue;seen.add(m.k);const w=landWhyHex(u,m);if(w){o+=ltag(m.k,'不能卸載・'+w,'blk');n++;}}}
   }
   return o;

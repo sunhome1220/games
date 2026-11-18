@@ -93,13 +93,20 @@
     const h=TER[u.c+','+u.r];if(!h)return [];
     const out=targets(u).filter(t=>document.querySelector('#map .u[data-id="'+t.id+'"]')).map(t=>({id:t.id,k:t.c+','+t.r,lab:TX('攻擊')+'：'+uname(t)}));
     const [x0,y0]=center(h.c,h.r),pick=new Map(),far={},foes=S.units.filter(e=>e.side!==u.side&&alive(e)&&!subHidden(e));
+    const dir=a=>TX(['北','東北','東','東南','南','西南','西','西北'][Math.round(a/45)%8]);
+    const where=k=>{const t=TER[k],[x,y]=center(t.c,t.r),ang=(Math.atan2(x-x0,-(y-y0))*180/Math.PI+360)%360;return t.name||dir(ang)+' '+Math.round(rd(h,t)*KM_HEX)+' km';};
     for(const [k,v] of reach(u)){const t=TER[k];if(!t)continue;const [x,y]=center(t.c,t.r),ang=(Math.atan2(x-x0,-(y-y0))*180/Math.PI+360)%360,dist=rd(h,t),sec=Math.floor(ang/30);
       const e={k,kind:v.kind,ang,dist,t};
       if(t.name||foes.some(f=>rd(TER[f.c+','+f.r]||t,t)<=kmH(ADJ_KM)))pick.set(k,e);
       if(!far[sec]||dist>far[sec].dist)far[sec]=e;}
     for(const s in far)pick.set(far[s].k,far[s]);
-    const dir=a=>TX(['北','東北','東','東南','南','西南','西','西北'][Math.round(a/45)%8]);
-    return out.concat([...pick.values()].sort((a,b)=>a.ang-b.ang||b.dist-a.dist).map(e=>({k:e.k,lab:TX(KIND[e.kind]||'移動')+'：'+(e.t.name||dir(e.ang)+' '+Math.round(e.dist*KM_HEX)+' km')})));
+    // 登陸／空降：把推薦的放在最前面（標籤同地圖上的登陸提示：★推薦、搶灘／港口卸載／浮動碼頭／空降、守軍多寡），其餘移動依方位排列
+    const pl=typeof landPlan==='function'?landPlan(u):null,first=[],used=new Set();
+    if(pl){
+      for(const x of pl.shown){used.add(x.k);first.push({k:x.k,lab:pl.label(x,'land')+'：'+where(x.k)});}
+      for(const x of pl.dropsShown){used.add(x.k);first.push({k:x.k,lab:pl.label(x,'drop')+'：'+where(x.k)});}
+    }
+    return out.concat(first,[...pick.values()].filter(e=>!used.has(e.k)).sort((a,b)=>a.ang-b.ang||b.dist-a.dist).map(e=>({k:e.k,lab:TX(KIND[e.kind]||'移動')+'：'+(e.t.name||dir(e.ang)+' '+Math.round(e.dist*KM_HEX)+' km')})));
   }
   let selI=-1,selKey='';
   function selStep(d){
@@ -118,7 +125,9 @@
   function unitStep(d){ // 還沒移動也還沒行動的己方單位：把地圖捲到它、游標移過去並點選
     if(typeof S==='undefined'||!S||!S.started||S.over||document.querySelector('#modal:not([hidden])'))return;
     if(typeof humanTurn==='function'&&!humanTurn())return;
-    const us=S.units.filter(u=>u.side===S.phase&&!u.acted&&!u.moved&&document.querySelector('#map .u[data-id="'+u.id+'"]'));if(!us.length)return;
+    const us=S.units.filter(u=>u.side===S.phase&&!u.acted&&!u.moved&&!(isEsc(u)||u.type==='dd'||((u.type==='lst'||u.type==='ro')&&!u.boundTo)||isSup(u))&&document.querySelector('#map .u[data-id="'+u.id+'"]')); // 跳過護航艦、沒載旅的運輸船（返航中）、補給船（跟著航艦或自動處理，不用手動操作）；載著旅的船要留著：旅在海上不畫出來，點船就是選船上的旅
+    if(!us.length)return;
+    us.sort((a,b)=>(b.boundTo?1:0)-(a.boundTo?1:0)); // 載著旅、正在海上的船排最前面（要登陸的先選到）；其餘維持原順序
     unitI=((unitI+d)%us.length+us.length)%us.length;
     const w=document.querySelector('.mapwrap'),g=document.querySelector('#map .u[data-id="'+us[unitI].id+'"]'),r=g.getBoundingClientRect(),b=w.getBoundingClientRect();
     navEl=null;centerOn(g);
