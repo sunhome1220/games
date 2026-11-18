@@ -64,6 +64,7 @@
   - 台灣與澎湖地形：Natural Earth 海岸線（`js/data/geo.js`）＋SRTM 海拔網格（`js/data/dem.js`，每格 `h.elev`；平均 ≥1,000 m 為山地）；兩個檔都由 `tools/geo/` 的腳本產生，不要手改、不要整檔讀。都市範圍：Natural Earth 都市區（`js/data/urban.js`，`tools/geo/build_urban.py` 產生）；每格 `h.urb`＝都市區占比，`h.town`＝城鎮（防禦 +1；打擊命中與定位的掩蔽為城市的一半，用 `terrCover(h)`；平民代價 0.2；細節見 `docs/data/map.md`），城市格數依人口換算（`js/core/map.js` 的 `METRO`）。畫面配色依 `h.elev` 每 500 m 一層。
   - 畫面：圖示、字級用 `SC`（＝R/16）縮放；地圖縮放 <160% 時 `#map.zlo`（只留勝負要點地名、棋子縮成一格 `US_SMALL`）。大陸沿岸、金門、琉球也用 Natural Earth（`GEO_CN`／`GEO_KM`／`GEO_JP`，共用 `gCover`）；馬祖沒有資料，依座標放小島格。
   - 仍以「一格」為單位、改尺度時要再檢查的：`nbrs` 一格內的鄰接（佔領擴張 `claim`、接觸判定 `gContact`、登陸）、`landDist` 步數成本、`ZONES` 等地點清單（目前都由經緯度換算，會自動跟著格子）。
+  - 地圖 SVG（2026-11-18.14）：海面不是每格一個 polygon，而是同色的海格合併成一個 `path.tl-sea[data-sea]`，浪紋分 9 組各一個 path。點選／游標移入海面時用 `seaHexAt()` 由座標反查格子（`input.js` 的 `mapHover` 另外聽 `mousemove`）；手把要取得某格的元素用 `hexEl(k)`（海格回傳透明探針）。**不要再寫 `#map polygon[data-k=…]` 去找海格**，會找不到。
   - 效能：10 km 約 9,000 格，一整場電腦推演桌機約 5 秒。熱點已改寫（`unitsAt`／`unitAt` 比對數字座標、`inZOC`／`enemyAdj` 直接掃單位、`twControl` 快取）；新程式不要在迴圈裡掃整個 `TER` 或每格呼叫 `unitsAt`。
 - 除錯鉤子：網址加 `?debug=1`，提供 `window.__S`、`__dog`、`__fg`、`__ledger` 等。
 

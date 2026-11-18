@@ -200,15 +200,15 @@ function buildFar(){
     });
   })();
   // 精簡模式（LITE）：不畫會持續動畫的海浪、減少山丘細節，降低圖層節點與動畫數量（約 2,000 個動畫、1 萬多節點）
-  let fineSvg='';let wi=0;const seaD={}; // 細格海面：同色的海格合併成一個 path（約 4,000 個節點 → 數個）
+  let fineSvg='';let wi=0;const seaD={},wvF=[[],[],[],[],[],[],[],[],[]]; // 浪紋依動畫延遲分 9 組，每組一個 path； // 細格海面：同色的海格合併成一個 path（約 4,000 個節點 → 數個）
   const farBand=h=>{const [lo,la]=rcToLL(h.c,h.r);return la>27.9||lo<115.1;}; // 後來擴大的北、西外圍：只畫色塊，不畫山丘細節與海浪（節點太多手機會慢）
   for(const h of fine.values()){
     if(h.t==='sea'){const [slon,slat]=rcToLL(h.c,h.r),dd=dist.get(K(h.c,h.r)),sc=seaClass(slon,slat,dd);(seaD[sc]=seaD[sc]||[]).push('M'+hexPts(h.x,h.y,RF).replace(/ /g,'L')+'Z');
-      if(!LITE&&sc!=='d1'&&(h.c+h.r)%2===0&&!farBand(h))fineSvg+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0"/>';}
+      if(!LITE&&sc!=='d1'&&(h.c+h.r)%2===0&&!farBand(h))wvF[wi++%9].push('M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0');}
     else{const nm=clickOf[K(h.c,h.r)];fineSvg+='<polygon class="tl-far'+(nm?' fclick':'')+'" fill="url(#gt-'+VTKEY(h.vt,h.t==='main')+')" stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'"'+(nm?' data-far="'+nm+'"':'')+'/>';
       if(!farBand(h)&&(h.vt==='mtn'||h.vt==='city'||(!LITE&&h.vt==='hill'&&((h.c*7+h.r*13)&3)!==0)))fineSvg+='<g pointer-events="none" opacity=".9">'+tileDetail({t:h.vt,vt:h.vt,c:h.c,r:h.r},h.x,h.y)+'</g>';}
   }
-  fineSvg=Object.entries(seaD).map(([c,d])=>'<path class="tl-sea '+c+'" d="'+d.join('')+'"/>').join('')+fineSvg;
+  fineSvg=Object.entries(seaD).map(([c,d])=>'<path class="tl-sea '+c+'" d="'+d.join('')+'"/>').join('')+fineSvg+wvF.map((d,i)=>d.length?'<path class="wv" style="animation-delay:'+(-i*.7).toFixed(1)+'s" d="'+d.join('')+'"/>':'').join('');
   const bg='<rect x="'+(-oMX0*KS-10)+'" y="'+(-oMY0*KS-10)+'" width="'+((OVBW+oMX0+oMX1)*KS+20).toFixed(0)+'" height="'+((OVBH+oMY0+oMY1)*KS+20).toFixed(0)+'" fill="url(#gSea)"/>';
   const tiles=Object.values(FAR).filter(f=>f.name).map(f=>[0,0,f.x,f.y,f]);
   let o='<g class="far">';
@@ -271,11 +271,13 @@ function buildStatic(){
   while(q.length){const h=q.shift();for(const n of nbrs(h.c,h.r)){if(!dist.has(n.k)){dist.set(n.k,dist.get(h.k)+1);q.push(n);}}}
   buildFar();
   let o='',lbls='';
-  let wi=0;
+  // 海面：同色的海格合併成一個 path（原本每格一個 polygon，約 7,800 個節點）；浪紋依動畫延遲分 9 組各一個 path。點選／游標移入海面時，用座標反查是哪一格（seaHexAt）
+  const seaP={},wvP=[[],[],[],[],[],[],[],[],[]];let wi=0;
   for(const h of sea){const [x,y]=center(h.c,h.r),[slon,slat]=rcToLL(h.c,h.r),sc=seaClass(slon,slat,dist.get(h.k));
-    o+='<polygon class="tl-sea '+sc+'" points="'+hexPts(x,y,R)+'" data-k="'+h.k+'"/>';
-    if(!LITE&&sc!=='d1'&&(h.c+h.r)%2===0){o+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(x-9)+' '+(y+2)+'q4.5 -4 9 0t9 0"/>';}
+    (seaP[sc]=seaP[sc]||[]).push('M'+hexPts(x,y,R).replace(/ /g,'L')+'Z');
+    if(!LITE&&sc!=='d1'&&(h.c+h.r)%2===0)wvP[wi++%9].push('M'+(x-9)+' '+(y+2)+'q4.5 -4 9 0t9 0');
   }
+  o+=Object.entries(seaP).map(([c,d])=>'<path class="tl-sea '+c+'" data-sea="1" d="'+d.join('')+'"/>').join('')+wvP.map((d,i)=>d.length?'<path class="wv" style="animation-delay:'+(-i*.7).toFixed(1)+'s" d="'+d.join('')+'"/>':'').join('');
   for(const h of land){const [x,y]=center(h.c,h.r),d=elev(h);o+='<polygon class="tl-sh" points="'+ptsStr(hexV(x+3,y+d+4,R))+'"/>';}
   for(const h of land){
     const [x,y0]=center(h.c,h.r),d=elev(h),y=y0-d,v=hexV(x,y,R),b=v.map(p=>[p[0],p[1]+d]);

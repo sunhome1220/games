@@ -1,6 +1,15 @@
 'use strict';
 /* 地圖繪製：地形、射程圈、艦隊資訊面板（自 render.js 拆出，內容不變；依序載入 render → render_outer → render_bases） */
 function center(c,r){return [KS*(OW/FG*(c+.5*(r&1))+OX0),KS*(1.5*OR/FG*r+OY0)];}
+// 海面合併成幾個大 path 後的對應：由座標反查是哪一格（只回傳海格的 key），以及給手把用的透明探針（取代原本每格一個的海面 polygon）
+function seaHexAt(el,cx,cy){
+  const m=el.getScreenCTM();if(!m)return null;const p=new DOMPoint(cx,cy).matrixTransform(m.inverse());
+  const r0=Math.round((p.y/KS-OY0)/(1.5*OR/FG)),c0=Math.round((p.x/KS-OX0)/(OW/FG)-.5*(r0&1));let best=null,bd=1e18;
+  for(let r=r0-1;r<=r0+1;r++)for(let c=c0-1;c<=c0+1;c++){const h=TER[K(c,r)];if(!h)continue;const [x,y]=center(c,r),d=(x-p.x)**2+(y-p.y)**2;if(d<bd){bd=d;best=h;}}
+  return best&&best.t==='sea'?best.k:null;}
+function hexEl(k){const e=document.querySelector('#map polygon[data-k="'+k+'"]');if(e)return e;const h=TER[k];if(!h)return null;
+  let pr=document.getElementById('seaProbe');if(!pr){pr=document.createElementNS(SVGNS,'polygon');pr.id='seaProbe';pr.setAttribute('fill','none');pr.setAttribute('pointer-events','none');document.getElementById('map').appendChild(pr);}
+  const [x,y]=center(h.c,h.r);pr.setAttribute('points',hexPts(x,y,R));pr.setAttribute('data-k',k);return pr;}
 function hexPts(x,y,rr){let p=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);p.push((x+rr*Math.cos(a)).toFixed(1)+','+(y+rr*Math.sin(a)).toFixed(1));}return p.join(' ');}
 const humanTurn=()=>S.started&&!S.over&&!S.busy&&S.ctrl[S.phase]==='human';
 /* ---------- 3D map: static terrain layer + dynamic layer + effects ---------- */

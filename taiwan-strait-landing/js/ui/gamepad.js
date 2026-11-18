@@ -113,9 +113,9 @@
     const u=S.sel,ops=selOptions(u);if(!ops.length)return false;
     const key=u.id+':'+u.c+','+u.r+':'+(u.moved?1:0);if(key!==selKey){selKey=key;selI=d>0?-1:0;} // 換了單位或位置：從頭開始
     selI=((selI+d)%ops.length+ops.length)%ops.length;const o=ops[selI];navEl=null;
-    const g=o.id?document.querySelector('#map .u[data-id="'+o.id+'"]'):document.querySelector('#map polygon[data-k="'+o.k+'"]');if(!g)return false;
+    const g=o.id?document.querySelector('#map .u[data-id="'+o.id+'"]'):hexEl(o.k);if(!g)return false;
     centerOn(g);
-    requestAnimationFrame(()=>{const e=o.id?document.querySelector('#map .u[data-id="'+o.id+'"]'):document.querySelector('#map polygon[data-k="'+o.k+'"]');if(!e)return;
+    requestAnimationFrame(()=>{const e=o.id?document.querySelector('#map .u[data-id="'+o.id+'"]'):hexEl(o.k);if(!e)return;
       const q=e.getBoundingClientRect();x=q.left+q.width/2;y=q.top+q.height/2;hc=null;
       tgtPick={id:o.id||null,k:o.k,x,y,sel:u.id};lastEl=document.elementFromPoint(x,y);window.TSL_RUMBLE&&TSL_RUMBLE('step');
       if(typeof toast==='function')toast((selI+1)+'/'+ops.length+'　'+o.lab+TX('（✕ 確認）'),1800);});
@@ -217,7 +217,7 @@
       if(el.tagName==='SELECT'){el.selectedIndex=(el.selectedIndex+1)%el.options.length;el.dispatchEvent(new Event('change',{bubbles:true}));}
       else if(navEl){el.click();if(!modalEl&&!setup)navEl=null;}
       else if(tgtPick&&tgtPick.sel&&onPick&&S.sel&&S.sel.id===tgtPick.sel){ // 十字鍵選定的攻擊目標或目的地：點那個棋子／那一格
-        const g=tgtPick.id?document.querySelector('#map .u[data-id="'+tgtPick.id+'"]'):document.querySelector('#map polygon[data-k="'+tgtPick.k+'"]'),t=g&&(g.querySelector('.body')||g);tgtPick=null;selKey='';
+        const g=tgtPick.id?document.querySelector('#map .u[data-id="'+tgtPick.id+'"]'):hexEl(tgtPick.k),t=g&&(g.querySelector('.body')||g);tgtPick=null;selKey='';
         if(t)t.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y,view:window}));}
       else if(tgtPick&&(Math.hypot(x-tgtPick.x,y-tgtPick.y)<6||(hh&&hh.c+','+hh.r===tgtPick.k))&&TMODES.includes(S&&S.mode)&&document.querySelector('#map .u[data-id="'+tgtPick.id+'"]')){
         const g=document.querySelector('#map .u[data-id="'+tgtPick.id+'"]'),t=g.querySelector('.body')||g;tgtPick=null;
