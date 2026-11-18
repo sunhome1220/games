@@ -142,6 +142,19 @@ function seaEdges(h){const out=[],[x,y0]=center(h.c,h.r),y=y0-elev(h),v=hexV(x,y
 let RVCOAST=null;
 function mouthPt(lo,la,raw){if(!RVCOAST)RVCOAST=Object.values(TER).filter(h=>h.isl==='TW'&&isLand(h)&&seaEdges(h).length);let best=null,bd=1e9;
   for(const h of RVCOAST)for(const [a,b] of seaEdges(h)){const m=[(a[0]+b[0])/2,(a[1]+b[1])/2],d=(m[0]-raw[0])**2+(m[1]-raw[1])**2;if(d<bd){bd=d;best=m;}}return best||raw;}
+// 外圍（大陸）河流的河口對齊：先去掉落在海格上的開頭幾點，再把河口點放在最近海岸格「靠海那條邊」的中點（不超出海岸、也不留縫）
+let OFINE=null; // buildFar 建好的外圍細格（Map）
+const HNBR=(c,r)=>((r&1)?[[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]:[[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]]).map(([a,b])=>[c+a,r+b]); // 第 k 邊朝向 60k 度，和 hexV 的頂點順序一致
+function cellLand(c,r){const h=TER[K(c,r)];if(h)return isLand(h);const f=OFINE&&OFINE.get(K(c,r));return !!f&&f.t!=='sea';}
+function outerRiverPts(P,toPx,sea){
+  let i=0;if(sea)while(i<P.length-2){const [c,r]=llToRC(P[i][0],P[i][1]);if(cellLand(c,r))break;i++;}
+  const Q=P.slice(i),pts=Q.map(toPx);if(!sea)return pts;
+  const [c0,r0]=llToRC(Q[0][0],Q[0][1]);let best=null,bd=1e18;
+  for(let dr=-12;dr<=12;dr++)for(let dc=-12;dc<=12;dc++){const c=c0+dc,r=r0+dr;if(!cellLand(c,r))continue;
+    const h=TER[K(c,r)],[x,y0]=center(c,r),v=hexV(x,y0-(h?elev(h):0),R),nb=HNBR(c,r);
+    for(let k=0;k<6;k++){if(cellLand(nb[k][0],nb[k][1]))continue;const m=[(v[k][0]+v[(k+1)%6][0])/2,(v[k][1]+v[(k+1)%6][1])/2],d=(m[0]-pts[0][0])**2+(m[1]-pts[0][1])**2;if(d<bd){bd=d;best=m;}}}
+  if(best){if(bd<(R*1.5)**2)pts[0]=best;else pts.unshift(best);} // 離海岸很近就把河口移到邊上；還有一段距離（資料只到市區附近）就延伸一段到海岸
+  return pts;}
 function coastRiverSVG(land){
   let o='',d='';
   for(const h of land){if(h.isl!=='TW'&&h.isl!=='PH')continue;if(h.elev!=null&&h.elev>=150||h.t==='mtn'||h.cliff)continue; /* 只在低平的海岸畫線（西岸平地和淺海顏色接近）；東岸山地、斷崖本來就分得很清楚 */const [x,y0]=center(h.c,h.r),y=y0-elev(h),v=hexV(x,y,R);
@@ -157,9 +170,10 @@ function coastRiverSVG(land){
     o+=riverSVG(pts);
     const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
   if(typeof OUTER_LAKES!=='undefined'){ // 大陸的河流與湖泊（只是背景，不影響規則；真實資料見 js/outer.js）
-    for(const L of OUTER_LAKES)o+='<path class="lake" d="M'+L.map(q=>toPx(q).map(v=>v.toFixed(1)).join(' ')).join('L')+'Z"/>';
-    for(const [n,P] of OUTER_RIVERS){const pts=P.map(toPx);o+=riverSVG(pts,2,.6);
-      if(P.length>6&&n!=='贛江'&&n!=='卡加延河'){const m=pts[Math.floor(pts.length/3)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}}}
+    for(const [n,L] of OUTER_LAKES){const pp=L.map(toPx);o+='<path class="lake" d="M'+pp.map(q=>q.map(v=>v.toFixed(1)).join(' ')).join('L')+'Z"/>';
+      if(n&&pp.length>8){const cx=pp.reduce((a,q)=>a+q[0],0)/pp.length,cy=pp.reduce((a,q)=>a+q[1],0)/pp.length;o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+cx.toFixed(1)+'" y="'+cy.toFixed(1)+'" text-anchor="middle">'+n+'</text>';}}
+    for(const [n,P,sea] of OUTER_RIVERS){const pts=outerRiverPts(P,toPx,sea);if(pts.length<2)continue;o+=riverSVG(pts,n==='長江'?3.6:2,.6);
+      if(pts.length>6&&n!=='贛江'&&n!=='卡加延河'){const m=pts[Math.floor(pts.length/3)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}}}
   {const [c,r]=llToRC(120.957,23.470),h=TER[K(c,r)];if(h){const [x,y0]=center(h.c,h.r),y=y0-elev(h); // 玉山：和其他地名一樣放在所在格的中心上方（不用小數座標，放大到 500% 以上時才不會跑位）
     o+='<text class="lbl peak" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x.toFixed(1)+'" y="'+(FG>2?y-R*1.2:y-11).toFixed(1)+'">▲玉山</text>';}}
   return o;
@@ -344,7 +358,8 @@ function buildFar(){
   const inPoly=(x,y,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;};
   const farL=Object.values(FAR).map(f=>[f.x*KS,f.y*KS,f]);
   const fine=new Map();
-  for(let r=-60;r<=90;r++)for(let c=-70;c<=110;c++){
+  const cMin=Math.floor((fx0/KS-OX0)/(OW/FG))-4,cMax=Math.ceil((fx1/KS-OX0)/(OW/FG))+4,rMin=Math.floor((fy0/KS-OY0)/(1.5*OR/FG))-4,rMax=Math.ceil((fy1/KS-OY0)/(1.5*OR/FG))+4; // 依外圍範圍算出要掃的格（不再寫死，否則擴大範圍後右、下角會缺格）
+  for(let r=rMin;r<=rMax;r++)for(let c=cMin;c<=cMax;c++){
     if(c>=FINE.c0&&c<FINE.c1&&r>=FINE.r0&&r<FINE.r1)continue;
     const [x,y]=fineCenter(c,r);if(x<fx0||x>fx1||y<fy0||y>fy1)continue;
     const [lon,lat]=rcToLL(c,r);let t='sea',name=null;
@@ -352,6 +367,7 @@ function buildFar(){
     else if(inIsl(lon,lat))t='plain';
     fine.set(K(c,r),{c,r,x,y,t});
   }
+  OFINE=fine;
   // 每個有名稱的外圍地點：最近的細格負責點選
   const clickOf={};
   for(const [px,py,f] of farL){if(!(f.name&&FARINFO[f.name]))continue;let best=null,bd=1e9;for(const h of fine.values()){if(h.t==='sea')continue;const d=Math.hypot(h.x-px,h.y-py);if(d<bd){bd=d;best=h;}}if(best)clickOf[K(best.c,best.r)]=f.name;}
@@ -393,11 +409,12 @@ function buildFar(){
   })();
   // 精簡模式（LITE）：不畫會持續動畫的海浪、減少山丘細節，降低圖層節點與動畫數量（約 2,000 個動畫、1 萬多節點）
   let fineSvg='';let wi=0;const seaD={}; // 細格海面：同色的海格合併成一個 path（約 4,000 個節點 → 數個）
+  const farBand=h=>{const [lo,la]=rcToLL(h.c,h.r);return la>27.9||lo<115.1;}; // 後來擴大的北、西外圍：只畫色塊，不畫山丘細節與海浪（節點太多手機會慢）
   for(const h of fine.values()){
     if(h.t==='sea'){const [slon,slat]=rcToLL(h.c,h.r),dd=dist.get(K(h.c,h.r)),sc=seaClass(slon,slat,dd);(seaD[sc]=seaD[sc]||[]).push('M'+hexPts(h.x,h.y,RF).replace(/ /g,'L')+'Z');
-      if(!LITE&&sc!=='d1'&&(h.c+h.r)%2===0)fineSvg+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0"/>';}
+      if(!LITE&&sc!=='d1'&&(h.c+h.r)%2===0&&!farBand(h))fineSvg+='<path class="wv" style="animation-delay:'+(-(wi++%9)*.7).toFixed(1)+'s" d="M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0"/>';}
     else{const nm=clickOf[K(h.c,h.r)];fineSvg+='<polygon class="tl-far'+(nm?' fclick':'')+'" fill="url(#gt-'+VTKEY(h.vt,h.t==='main')+')" stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'"'+(nm?' data-far="'+nm+'"':'')+'/>';
-      if(h.vt==='mtn'||h.vt==='city'||(!LITE&&h.vt==='hill'&&((h.c*7+h.r*13)&3)!==0))fineSvg+='<g pointer-events="none" opacity=".9">'+tileDetail({t:h.vt,vt:h.vt,c:h.c,r:h.r},h.x,h.y)+'</g>';}
+      if(!farBand(h)&&(h.vt==='mtn'||h.vt==='city'||(!LITE&&h.vt==='hill'&&((h.c*7+h.r*13)&3)!==0)))fineSvg+='<g pointer-events="none" opacity=".9">'+tileDetail({t:h.vt,vt:h.vt,c:h.c,r:h.r},h.x,h.y)+'</g>';}
   }
   fineSvg=Object.entries(seaD).map(([c,d])=>'<path class="tl-sea '+c+'" d="'+d.join('')+'"/>').join('')+fineSvg;
   const bg='<rect x="'+(-oMX0*KS-10)+'" y="'+(-oMY0*KS-10)+'" width="'+((OVBW+oMX0+oMX1)*KS+20).toFixed(0)+'" height="'+((OVBH+oMY0+oMY1)*KS+20).toFixed(0)+'" fill="url(#gSea)"/>';

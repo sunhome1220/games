@@ -6,7 +6,7 @@
 
 - 台灣、澎湖、金門、馬祖、福建與廣東沿岸，一律依經緯度的真實海岸線與地點位置繪製（大陸沿岸往北到福建北部）；浙江一帶（寧波、舟山、溫州等）已在遊戲格之外，改以外圍示意區表示。
 - 外圍示意區的地形也改為同尺寸的細格，與遊戲格無縫銜接。
-- 外圍示意區的大陸海岸線、河流（閩江、九龍江、甌江、東江、梅江、贛江上游）與湖泊：Natural Earth 1:10m（公有領域；ne_10m_land、ne_10m_rivers_lake_centerlines、ne_10m_lakes，geojson 取自 nvkelso/natural-earth-vector），由 `tools/geo/build_outer.py` 裁切到外圍範圍（約 114.5～130.2°E、16.8～28.5°N）並簡化，寫成 `js/outer.js`。只是背景，不影響規則（遊戲規則的過河判定仍用 `RIVERS`）。
+- 外圍示意區的大陸海岸線、河流（長江、漢江、淮河、富春江、閩江、九龍江、甌江、東江、梅江、贛江、卡加延河）與湖泊：Natural Earth 1:10m（公有領域；ne_10m_land、ne_10m_rivers_lake_centerlines、ne_10m_lakes，geojson 取自 nvkelso/natural-earth-vector），由 `tools/geo/build_outer.py` 裁切到外圍範圍（約 113.5～129.8°E、17.3～32.4°N；範圍定義在 `js/map.js` 的 `oMX0`／`oMX1`／`oMY0`／`oMY1`）並簡化，寫成 `js/outer.js`。只是背景，不影響規則（遊戲規則的過河判定仍用 `RIVERS`）。 ★長江鎮江以下的河口段（約 119.75～121.95°E）Natural Earth 中心線沒有資料，用 `build_outer.py` 的 `YZ_LOWER` 依鎮江、江陰、張家港、南通、啟東的位置手畫近似線。入海的河（`SEA` 清單）畫圖時河口對齊到最近海岸格靠海的那條邊；離海岸還有一段距離時延伸到邊上。
 
 ## 菲律賓
 

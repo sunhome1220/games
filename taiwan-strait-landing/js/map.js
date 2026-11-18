@@ -15,7 +15,7 @@ const COL0=FG*OC0-1, COL1=FG*OC1+1, ROW0=FG*OR0, ROW1=FG*OR1; // 細格索引範
 const VBW=OVBW*KS, VBH=OVBH*KS, GVBW=(OW*(OC1-OC0)+OW/2+OPAD*2)*KS; // GVBW＝整個遊戲格的寬度
 const oCenter=(c,r)=>[OW*(c-OC0+.5*(r&1))+OW/2+OPAD,(r-OR0)*1.5*OR+OR+OPAD];
 // 外圍示意區（僅縮小時可見，不參與遊戲）：左／右／上／下的延伸量（舊座標系 px）
-const oMX0=150, oMX1=760, oMY0=170, oMY1=400;
+const oMX0=330, oMX1=760, oMY0=720, oMY1=400;
 const MX0=oMX0*KS, MX1=oMX1*KS, MY0=oMY0*KS, MY1=oMY1*KS, EVBW=VBW+MX0+MX1, EVBH=VBH+MY0+MY1, EXT=EVBW/VBW;
 // 地圖尺度：每格（相鄰格中心距離）約幾公里。射程、移動、距離一律用公里寫，再用 kmH() 換成格數；要改格子大小只改 KM_HEX（地形與地點座標另需重建）
 const kmH=km=>km/KM_HEX;
