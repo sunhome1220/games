@@ -3,9 +3,9 @@
 來源：Natural Earth 1:10m（公有領域）的 ne_10m_land、ne_10m_rivers_lake_centerlines、ne_10m_lakes（geojson，
      取自 https://github.com/nvkelso/natural-earth-vector/tree/master/geojson）。
 用法：python3 tools/geo/build_outer.py <land.geojson> <rivers.geojson> <lakes.geojson>
-範圍 BB 略大於外圍示意區（約 115.1～129.7°E、17.4～27.9°N）。簡化容許誤差 TOL（度）。"""
+範圍 BB 略大於外圍示意區（約 113.6～129.7°E、17.4～32.3°N；範圍定義在 js/map.js 的 oMX0／oMX1／oMY0／oMY1）。簡化容許誤差 TOL（度）。"""
 import json, sys, math, pathlib
-BB = (114.5, 16.8, 130.2, 28.5)
+BB = (113.5, 17.3, 129.8, 32.4)
 TOL = 0.01
 def dp(pts, tol):
     if len(pts) < 3: return pts
@@ -48,7 +48,9 @@ for f in land['features']:
 cl = clip(best, BB)
 cl = dp(cl + [cl[0]], TOL)[:-1]
 # ---- 河流：只取範圍內的名稱；方向統一成「第 0 點＝河口」
-NAMES = {'Min': ('閩江', 'e'), 'Ou': ('甌江', 'e'), 'Jiulong': ('九龍江', 'e'), 'Dong': ('東江', 's'), 'Mei': ('梅江', 's'), 'Gan': ('贛江', 'n'), 'Cagayan': ('卡加延河', 'n')}
+NAMES = {'Yangtze': ('長江', 'e'), 'Han': ('漢江', 'e'), 'Huai': ('淮河', 'e'), 'Fuchun': ('富春江', 'e'), 'Min': ('閩江', 'e'), 'Ou': ('甌江', 'e'), 'Jiulong': ('九龍江', 'e'), 'Dong': ('東江', 's'), 'Mei': ('梅江', 's'), 'Gan': ('贛江', 'n'), 'Cagayan': ('卡加延河', 'n')}
+SEA = {'Yangtze', 'Min', 'Ou', 'Jiulong', 'Dong', 'Fuchun', 'Cagayan'}  # 河口在範圍內且通海（或通往河口）的河：繪圖時把河口對齊到海岸格的邊
+YZ_LOWER = [(121.95, 31.70), (121.85, 31.76), (121.50, 31.88), (121.15, 31.98), (120.85, 32.03), (120.55, 31.97), (120.28, 31.97), (120.0, 32.05), (119.75, 32.12)]
 rv = json.load(open(sys.argv[2])); rivers = []
 for f in rv['features']:
     nm = f['properties'].get('name')
@@ -60,19 +62,22 @@ for f in rv['features']:
         pts = dp(pts, TOL * 2)
         key = {'e': lambda p: -p[0], 's': lambda p: p[1], 'n': lambda p: -p[1]}[mouth]
         if key(pts[0]) > key(pts[-1]): pts = pts[::-1]
-        rivers.append((zh, pts))
+        if nm == 'Yangtze' and abs(pts[0][0] - 119.606) < 0.01:  # Natural Earth 的長江中心線只到鎮江（119.6°E），下游河口段沒有資料
+            pts = YZ_LOWER + pts  # ★推估：依鎮江、江陰、張家港、南通、啟東的位置手畫的近似線（第 0 點在河口）
+        rivers.append((zh, pts, 1 if nm in SEA else 0))
 # ---- 湖泊
+LAKEZH = {'Poyang Hu': '鄱陽湖', 'Tai Hu': '太湖', 'Chao Hu': '巢湖', 'Xinanjiang Shuiku': '新安江水庫', 'Xinfengjiang Shuiku': '新豐江水庫'}
 lk = json.load(open(sys.argv[3])); lakes = []
 for f in lk['features']:
     g = f['geometry']; polys = g['coordinates'] if g['type'] == 'MultiPolygon' else [g['coordinates']]
     for P in polys:
         ring = [tuple(q[:2]) for q in P[0]]
         c2 = clip(ring[:-1], BB)
-        if len(c2) >= 3: lakes.append(dp(c2 + [c2[0]], TOL)[:-1] if len(c2) > 8 else c2)
+        if len(c2) >= 3: lakes.append((LAKEZH.get(f['properties'].get('name'), ''), dp(c2 + [c2[0]], TOL)[:-1] if len(c2) > 8 else c2))
 out = ["'use strict';",
  "// 外圍示意區的真實地理資料：Natural Earth 1:10m（公有領域），由 tools/geo/build_outer.py 產生，不要手改。",
  'const OUTER_LAND=' + fmt(cl) + ';',
- 'const OUTER_RIVERS=[' + ','.join('[%s,%s]' % (json.dumps(n, ensure_ascii=False), fmt(p)) for n, p in rivers) + '];',
- 'const OUTER_LAKES=[' + ','.join(fmt(p) for p in lakes) + '];', '']
+ 'const OUTER_RIVERS=[' + ','.join('[%s,%s,%d]' % (json.dumps(n, ensure_ascii=False), fmt(p), z) for n, p, z in rivers) + '];',
+ 'const OUTER_LAKES=[' + ','.join('[%s,%s]' % (json.dumps(n, ensure_ascii=False), fmt(p)) for n, p in lakes) + '];', '']
 pathlib.Path(__file__).resolve().parents[2].joinpath('js', 'outer.js').write_text('\n'.join(out), encoding='utf-8')
 print(len(cl), 'land pts;', len(rivers), 'rivers;', len(lakes), 'lakes')
