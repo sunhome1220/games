@@ -156,6 +156,10 @@ function coastRiverSVG(land){
   for(const [n,P] of RIVERS){const pts=P.map(toPx);pts[0]=mouthPt(P[0][0],P[0][1],pts[0]); // 河口對齊海岸格的邊
     o+=riverSVG(pts);
     const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
+  if(typeof OUTER_LAKES!=='undefined'){ // 大陸的河流與湖泊（只是背景，不影響規則；真實資料見 js/outer.js）
+    for(const L of OUTER_LAKES)o+='<path class="lake" d="M'+L.map(q=>toPx(q).map(v=>v.toFixed(1)).join(' ')).join('L')+'Z"/>';
+    for(const [n,P] of OUTER_RIVERS){const pts=P.map(toPx);o+=riverSVG(pts,2,.6);
+      if(P.length>6&&n!=='贛江'&&n!=='卡加延河'){const m=pts[Math.floor(pts.length/3)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}}}
   {const [c,r]=llToRC(120.957,23.470),h=TER[K(c,r)];if(h){const [x,y0]=center(h.c,h.r),y=y0-elev(h); // 玉山：和其他地名一樣放在所在格的中心上方（不用小數座標，放大到 500% 以上時才不會跑位）
     o+='<text class="lbl peak" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x.toFixed(1)+'" y="'+(FG>2?y-R*1.2:y-11).toFixed(1)+'">▲玉山</text>';}}
   return o;
@@ -344,7 +348,7 @@ function buildFar(){
     if(c>=FINE.c0&&c<FINE.c1&&r>=FINE.r0&&r<FINE.r1)continue;
     const [x,y]=fineCenter(c,r);if(x<fx0||x>fx1||y<fy0||y>fy1)continue;
     const [lon,lat]=rcToLL(c,r);let t='sea',name=null;
-    if(inPoly(lon,lat,POLY))t='main';
+    if(typeof OUTER_LAND!=='undefined'?inPoly(lon,lat,OUTER_LAND):inPoly(lon,lat,POLY))t='main'; // 真實海岸線（js/outer.js）；沒有資料時退回手繪
     else if(inIsl(lon,lat))t='plain';
     fine.set(K(c,r),{c,r,x,y,t});
   }
