@@ -360,6 +360,7 @@ function renderCtrl(){
   m1.hidden=fs1.hidden;m1.disabled=fs1.disabled;m1.textContent=afM?'取消出擊':S.mode==='strike'?'取消打擊 '+pts:(atkP?'火力打擊 ':'縱深打擊 ')+pts;m1.classList.toggle('on',bs.classList.contains('on'));m2.hidden=ba.hidden;m2.disabled=ba.disabled;m3.hidden=$('#btnEnd').hidden;m3.disabled=$('#btnEnd').disabled;
   const sh=h&&S.sel&&S.sel.type==='hk'&&alive(S.sel);$('#btnHkHome').hidden=!(sh&&!S.sel.moved);$('#btnHkWpn').hidden=!sh;$('#btnHkWpn').textContent=TX('武器：')+TX({auto:'自動',tp:'只用魚雷',hm:'只用魚叉'}[hkPref()]);
   const ua=h&&undoAvail();$('#btnUndo').hidden=!ua;$('#mbUndo').hidden=!ua;
+  barApply(); // 選了空軍基地、出擊中、打擊中：三個按鈕改成該情境的快捷按鈕（modebar.js）
 }
 // 載運的旅「現在為什麼不能登陸」：本回合還能行動、卻沒有任何橘色（可登陸）格子時，說明規則與附近每個候選格的原因
 // 這個旅（在船上）登陸這一格不行的原因；空字串＝可以。供資訊卡說明與地圖登陸提示標籤共用

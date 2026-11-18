@@ -20,7 +20,8 @@ async function open(b,base,q,opts={}){
   const sep=q.includes('?')?'&':'?';await p.goto(base+q+(opts.fast?sep+'fast=1':''),{timeout:90000});await p.waitForTimeout(opts.wait||1200);return p;}
 const modalClick=p=>p.evaluate(()=>{const m=document.querySelector('#modal');if(m.hidden)return humanTurn()?2:0;
   const bs=[...m.querySelectorAll('button:not(.mnew)')].filter(x=>!x.disabled&&x.getClientRects().length);
-  const e=bs.find(x=>['nwGo','evGo','itGo','evRoll'].includes(x.id))||m.querySelector('.opt')||bs[0];if(e)e.click();return 1;});
+  const e=bs.find(x=>['nwGo','evGo','evOk','itGo','evRoll'].includes(x.id)&&!x.disabled)||m.querySelector('.opt:not(.on)')||m.querySelector('.opt')||bs.find(x=>!x.disabled); // 守方的事件卡要先選一個選項，確認鈕才會啟用
+  if(e)e.click();return 1;});
 async function startGame(p){await p.evaluate(()=>{for(let i=0;i<6;i++){const n=document.querySelector('#wzNext');if(n&&!n.disabled)n.click();}document.querySelector('#btnStart').click();});
   for(let i=0;i<150;i++){const r=await modalClick(p);if(r===2)return true;await p.waitForTimeout(60);}return false;}
 // 關卡：開始任務，一直點到結束（過關或失敗）；hold＝持續把兩個港口設成攻方控制（模擬守住）
@@ -28,6 +29,6 @@ async function playMission(p,hold){
   await p.click('#misGo');await p.waitForFunction(()=>S&&S.started,null,{timeout:60000});
   if(hold)await p.evaluate(()=>{setInterval(()=>{for(const k of[SPOT.tcport,SPOT.kaohsiung]){S.owner[k]='atk';S.portDown[k]=0;}},50);});
   for(let i=0;i<500&&!(await p.evaluate(()=>MISSION.done));i++){
-    await p.evaluate(()=>{const e=document.querySelector('#modal:not([hidden]) #mbox .opt,#evGo,#itGo,#evRoll');if(e)e.click();else if(humanTurn())document.querySelector('#btnEnd').click();});await p.waitForTimeout(250);}
+    await p.evaluate(()=>{const e=document.querySelector('#modal:not([hidden]) #mbox .opt,#evGo,#evOk:not([disabled]),#itGo,#evRoll');if(e)e.click();else if(humanTurn())document.querySelector('#btnEnd').click();});await p.waitForTimeout(250);}
   await p.waitForTimeout(2500);return (await p.textContent('#mbox')).replace(/\s+/g,' ');}
 module.exports={ROOT,serve,launch,open,startGame,playMission,modalClick};
