@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""外圍示意區用的真實地理資料：大陸陸地輪廓、河流、湖泊 → js/outer.js
+"""外圍示意區用的真實地理資料：大陸陸地輪廓、河流、湖泊 → js/data/outer.js
 來源：Natural Earth 1:10m（公有領域）的 ne_10m_land、ne_10m_rivers_lake_centerlines、ne_10m_lakes（geojson，
      取自 https://github.com/nvkelso/natural-earth-vector/tree/master/geojson）。
 用法：python3 tools/geo/build_outer.py <land.geojson> <rivers.geojson> <lakes.geojson>
-範圍 BB 略大於外圍示意區（約 113.6～129.7°E、17.4～32.3°N；範圍定義在 js/map.js 的 oMX0／oMX1／oMY0／oMY1）。簡化容許誤差 TOL（度）。"""
+範圍 BB 略大於外圍示意區（約 113.6～129.7°E、17.4～32.3°N；範圍定義在 js/core/map.js 的 oMX0／oMX1／oMY0／oMY1）。簡化容許誤差 TOL（度）。"""
 import json, sys, math, pathlib
 BB = (113.5, 17.3, 129.8, 32.4)
 TOL = 0.01
@@ -82,5 +82,5 @@ out = ["'use strict';",
  'const OUTER_RIVERS=[' + ','.join('[%s,%s,%d]' % (json.dumps(n, ensure_ascii=False), fmt(p), z) for n, p, z in rivers) + '];',
  'const OUTER_WATER=' + json.dumps([list(q) for q in YZ_WIDE]) + ';',
  'const OUTER_LAKES=[' + ','.join('[%s,%s]' % (json.dumps(n, ensure_ascii=False), fmt(p)) for n, p in lakes) + '];', '']
-pathlib.Path(__file__).resolve().parents[2].joinpath('js', 'outer.js').write_text('\n'.join(out), encoding='utf-8')
+pathlib.Path(__file__).resolve().parents[2].joinpath('js', 'data', 'outer.js').write_text('\n'.join(out), encoding='utf-8')
 print(len(cl), 'land pts;', len(rivers), 'rivers;', len(lakes), 'lakes')

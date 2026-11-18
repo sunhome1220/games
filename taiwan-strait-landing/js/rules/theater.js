@@ -453,7 +453,7 @@ function seaBattle(){
   }
   // 海鯤潛艦是棋子（由玩家操作或依指揮官意圖行動），不再在此自動擲骰
   // 共軍海空兵力搜尋並攻擊出港的守方艦艇：改由攻方階段的 huntFleets 計算
-  // 共軍潛艦已改成地圖棋子（js/psub.js），不再在此抽象擲骰
+  // 共軍潛艦已改成地圖棋子（js/rules/psub.js），不再在此抽象擲骰
   if(out.length)log('第 '+S.turn+' 回合海上交戰：'+out.join('、'));
 }
 function baseNeed(b){

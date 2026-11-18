@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the i18n dictionary js/dict.js (loaded by index.html before the other scripts).
+"""Build the i18n dictionary js/i18n/dict.js (loaded by index.html before the other scripts).
 Inputs: segs.json (source Chinese segments, indexed), c*.tsv (idx<TAB>en<TAB>ja), extras.tsv (key<TAB>en<TAB>ja).
 (Write ∅ in the ja column for a deliberately empty Japanese text.)
 The ja column may be left empty (or omitted): the Japanese UI then shows the English text instead of Chinese, and the key is listed in ja_todo.txt for a later batch translation.
@@ -9,9 +9,9 @@ import json, glob, os, re, sys
 import opencc
 here = os.path.dirname(os.path.abspath(__file__))
 root = os.path.join(here, '..', '..')
-out = os.path.join(root, 'js', 'dict.js')
+out = os.path.join(root, 'js', 'i18n', 'dict.js')
 # 簡體字表要涵蓋頁面與所有程式檔裡出現的字（含現有的 dict.js，與單檔時期掃整份 index.html 的範圍相同）
-pages = [os.path.join(root, 'index.html')] + sorted(glob.glob(os.path.join(root, 'js', '*.js')))
+pages = [os.path.join(root, 'index.html')] + sorted(glob.glob(os.path.join(root, 'js', '**', '*.js'), recursive=True))
 segs = json.load(open(os.path.join(here, 'segs.json'), encoding='utf-8'))
 OVR = {811: (' ×10k', ' 万'), 812: ('', '人'), 813: ('', '人')}
 def clean(k):
