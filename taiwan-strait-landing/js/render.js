@@ -665,7 +665,7 @@ function ringScaleSync(){const m=document.querySelector('#map');if(!m)return;let
   const ik=(1/k).toFixed(4);if(m.__ik!==ik){m.__ik=ik;m.style.setProperty('--ik',ik);}}
 function textZoomFix(){ringScaleSync(); // 放大到 500% 以上時，地名、浪高等文字以自己的座標為中心縮小（不用 CSS transform-box：iOS Safari 對 SVG 文字支援不完整，會跑位）
   const k=typeof ZOOM!=='undefined'&&ZOOM>5?5/ZOOM:1;
-  document.querySelectorAll('#map .lbl,#map .wxl,#map .mport,#map .big,#map .fxt,#map .btag').forEach(e=>{if(k===1){if(e.__tz){e.removeAttribute('transform');e.__tz=0;}return;}const x=+
+  document.querySelectorAll('#map .lbl,#map .wxl,#map .mport,#map .big,#map .fxt,#map .btag,#map .ltg').forEach(e=>{if(k===1){if(e.__tz){e.removeAttribute('transform');e.__tz=0;}return;}const x=+
       (e.getAttribute('x')||e.getAttribute('data-x'))||0,y=+(e.getAttribute('y')||e.getAttribute('data-y'))||0;e.setAttribute('transform','translate('+x+' '+y+') scale('+
       k.toFixed(4)+') translate('+(-x)+' '+(-y)+')');e.__tz=1;});
 }
@@ -766,8 +766,10 @@ function renderMap(){
   o+=baseTagsSVG();
   o+=mapMarksSVG();
   o+=mapTargetsSVG();
+  o+=landTagsSVG(); // 登陸提示標籤（landtips.js）
   o+=heloRingSVG();
   $('#gD').innerHTML=o;
+  if(typeof landTipsSync==='function')landTipsSync();
   // 選了己方單位、正要下移動命令時：機場標籤變半透明且不能點，不然標籤蓋在海上的目標格上會點不到（點基地改看資訊要先取消選取）
   {const mv=!!(S.started&&S.sel&&alive(S.sel)&&S.sel.side===S.phase&&!S.mode&&humanTurn()&&reach(S.sel).size>0);$('#map').classList.toggle('mvsel',mv);}
   landmarkDim();
