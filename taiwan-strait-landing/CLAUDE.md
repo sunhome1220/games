@@ -34,7 +34,7 @@
 2. 實作 → 用 Playwright 實測（見第四節）→ 語法檢查。
 3. 版本與資料：
    - `python3 tools/bump_version.py <版本>`，格式 `2026-11-10.NN`（NN 遞增）。會同時改 `js/version.js` 與 `index.html` 裡每個 js 檔的 `?v=` 快取參數。
-   - `CHANGELOG`（在 `js/core/changelog.js`）：加在 `const CHANGELOG=[` 之後第一筆（最新在最上面）。
+   - `CHANGELOG`（在 `js/core/changelog.js`）：加在 `const CHANGELOG=[` 之後第一筆（最新在最上面）。一版一行；只留最近 15 版，`bump_version.py` 會自動把更早的搬到 `js/core/changelog_old.js`（看「全部」時才載入，開頁不載入）。
    - **翻譯不用每次改**（使用者 2026-11-14 指示）：平常改動不補 `extras.tsv`、不重建字典；累積一陣子後，使用者要求時再一次補英文（`extras.tsv`）並執行 `python3 tools/i18n/build_dict.py`（需要 `pip install opencc-python-reimplemented`）。
 4. 提交、推送、用 GitHub MCP 開 PR。**不要擅自合併**。
    - 使用者說「合併」＝合併所有未合併的 PR（squash）；「合併N」＝只合併第 N 號。
@@ -47,9 +47,9 @@
 - **檔案配置**（2026-11-14.39 起由單一 `index.html` 拆開；只改相關的檔案，不要整批讀）：
   - `index.html`：HTML 與 CSS（CSS 留在頁內：規則裡有 `fill:url(#gu-atk)` 這類指向頁內 SVG 漸層的寫法，匯出截圖也會讀 `document.styleSheets`，搬到外部檔在部分瀏覽器與 `file://` 下有風險）。
   - `js/i18n/dict.js`：翻譯字典，`build_dict.py` 產生，**不要手改、不要讀**（單行約 680 KB）。`js/i18n.js`：語言切換；`js/ui/btnfix.js`：按鈕括號小字；`js/ui/gamepad.js`：手把。
-  - **`js/` 子資料夾分類**（2026-11-18.12）：`core/`（地圖、狀態、更新日誌、啟動）、`rules/`（規則、補給、戰區、空戰、飛彈、海戰、縱深打擊、決策、回合、電腦）、`ui/`（地圖與動畫、狀態列、輸入、手把、登陸提示）、`media/`（戰後報告、影片、統計、單位說明）、`i18n/`（字典、語言切換）、`missions/`（關卡挑戰，見下）、`data/`（地理資料，由 `tools/geo/` 產生）。`js/version.js` 留在 `js/` 根目錄：舊版（單檔時期）頁面的更新檢查固定抓這個路徑。載入順序仍以 `index.html` 為準，下面列的檔名省略子資料夾。
+  - **`js/` 子資料夾分類**（2026-11-18.12）：`core/`（地圖、狀態、更新日誌、啟動）、`rules/`（規則、補給、戰區、空戰、飛彈、海戰、縱深打擊、決策、回合、電腦）、`ui/`（地圖與動畫、狀態列、輸入、手把、登陸提示）、`media/`（戰後報告、影片、統計、單位說明）、`i18n/`（字典、語言切換）、`missions/`（關卡挑戰，見下）、`data/`（地理資料，由 `tools/geo/` 產生）。`js/version.js` 留在 `js/` 根目錄：舊版（單檔時期）頁面的更新檢查固定抓這個路徑。載入順序仍以 `index.html` 為準，下面列的檔名省略子資料夾。大檔已拆開（內容不變，依序載入）：`render`→`render_outer`→`render_bases`；`sealift`→`rules`→`killchain`→`verdict`；`fx`→`ammo`→`mobilecard`；`weather`→`truce`→`allies`→`turn`。**拆檔注意**：同一個檔案裡的 `function` 會提升，所以原本在檔案頂層就呼叫後面才定義的函式還能用；拆到不同檔案後就不行，頂層（載入當下）只能用前面檔案已宣告的東西。
   - 遊戲程式（依載入順序）：`map`（格子、地形、地點、亂數）→ `state`（狀態、台灣海軍）→ `rules`（規則、海運、殺傷鏈）→ `supply`（補給線）→ `ending`（結局、評分、難度、戰績）→ `theater`（事件節點、力量池、基地、美軍立場、雷達、海戰）→ `airwar`（空軍架數、飛彈與攔截、火力點數、空優）→ `carrier`（艦載機、航艦艦隊、護航艦、齊射）→ `strike`（縱深打擊）→ `decisions`（守方決策、重新開始）→ `report`（戰區圖、代價、戰後報告、快訊）→ `turn`（回合流程、天候、港口破壞、停戰、盟軍棋子）→ `ai` → `render`（地圖）→ `fxanim`（動畫）→ `fx`（狀態列、資訊卡、除錯鉤子、手機浮動卡片）→ `video`（影片、匯出、語音、事件卡）→ `stats` → `input` → `unitinfo`（單位說明、戰局碼）→ `version` → `changelog` → `app`（安裝、設定、精靈、縮放、更新檢查、啟動）。
-  - **關卡挑戰**（2026-11-14.84 起）：`js/missions/common.js`（框架與共用小工具 `misList`／`misDiff`）＋`js/missions/<id>.js`（各關，用 `MISSION_DEFS[id]` 註冊；每關說明放 `js/missions/<id>.md`），網址加 `?mission=<id>` 才啟用，沒有參數時完全不動作。戰鬥規則全部共用主遊戲；核心只有三個掛勾點：`beginPhase`（`MISSION.phase`）、`render`（`MISSION.tick`）、`endGame`（`MISSION.onEnd`），以及 `saveSetup` 在關卡中不存設定。關卡不可為了難度改武器數字，只能用開局情境調整；非史實的結局標「假設情境」。
+  - **關卡挑戰**（2026-11-14.84 起）：`js/missions/common.js`（框架與共用小工具 `misList`／`misDiff`）＋`js/missions/<id>.js`（各關，用 `MISSION_DEFS[id]` 註冊；每關說明放 `docs/missions/<id>.md`），網址加 `?mission=<id>` 才啟用，沒有參數時完全不動作。戰鬥規則全部共用主遊戲；核心只有三個掛勾點：`beginPhase`（`MISSION.phase`）、`render`（`MISSION.tick`）、`endGame`（`MISSION.onEnd`），以及 `saveSetup` 在關卡中不存設定。關卡不可為了難度改武器數字，只能用開局情境調整；非史實的結局標「假設情境」。
   - 這些檔案是**一般 script（不是 module）、共用同一個全域作用域**：頂層的 `const`／`let`／`function` 彼此看得到，所以頂層名稱不能重複，也不要和瀏覽器內建的全域名稱（`top`、`name`、`status`…）相同。函式可以跨檔互相呼叫；但**載入當下就執行的頂層程式**只能用到前面檔案已宣告的東西，所以新增檔案或調整順序後要重新載入確認沒有錯誤。每個檔案第一行是 `'use strict';`。
   - 新增 js 檔：在 `index.html` 依順序加 `<script src="js/名稱.js?v=版本"></script>`（`bump_version.py` 會檢查每個 js 檔都有 `?v=`）。
   - `index.html` 裡有一行含 `const VERSION='…'` 的註解，是給還停在單檔版的玩家端更新檢查用的，不要刪。
@@ -69,6 +69,7 @@
 
 ## 四、測試與工具注意事項
 
+- **冒煙測試**：`tools/test/smoke.js`（載入、更新日誌延遲載入、兩個關卡過關／失敗結算）。先在本資料夾 `python3 -m http.server 8765 &`，再 `node tools/test/smoke.js`；每個 PR 前跑一次，大搬動後一定要跑。
 - Playwright 已預裝：`require('playwright')`，`chromium.launch({executablePath:'/opt/pw-browsers/chromium'})`。加速用：`window.setTimeout` 包一層縮短等待。
 - 設定精靈現在有 **5～6 頁**，測試要連按 `#wzNext` 至少 5 次（用 `if(n&&!n.disabled)` 保護）才能 `#btnStart`。
 - 模擬對局：每個彈窗點 `#mbox .opt`／`#evRoll`／`#evGo`／`#itGo`，人類回合點 `#btnAssist`。長時間工作用 `( cmd & )` 背景執行再等結果。
