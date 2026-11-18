@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """台澎高程網格：用 SRTM（美國 NASA，公有領域；取自 AWS Terrain Tiles 的 skadi 圖磚 NxxEyyy.hgt.gz，1 角秒）
-算出每 0.02°（約 2 km）網格的平均海拔，存成 js/dem.js（每點 1 位元組＝海拔÷20 公尺，base64）。
+算出每 0.02°（約 2 km）網格的平均海拔，存成 js/data/dem.js（每點 1 位元組＝海拔÷20 公尺，base64）。
 用法：下載 N21..N25 × E119..E121 的 .hgt.gz 到某個資料夾，再執行 python3 tools/geo/build_dem.py <資料夾>"""
 import sys, gzip, base64, pathlib, numpy as np
 src = pathlib.Path(sys.argv[1])
@@ -33,6 +33,6 @@ for j in range(H):
 b64 = base64.b64encode(out.tobytes()).decode()
 js = ("'use strict';\n// 台澎高程網格（每 0.02° 約 2 km 的平均海拔，每點 1 位元組＝海拔÷20 公尺）：SRTM 1 角秒（NASA，公有領域），由 tools/geo/build_dem.py 產生，不要手改。\n"
       "const DEM={lon0:%s,lat1:%s,d:%s,w:%d,h:%d,b:'%s'};\n" % (LON0, LAT1, D, W, H, b64))
-p = pathlib.Path(__file__).resolve().parent.parent.parent / 'js' / 'dem.js'
+p = pathlib.Path(__file__).resolve().parent.parent.parent / 'js' / 'data' / 'dem.js'
 p.write_text(js, encoding='utf-8')
 print('grid', W, 'x', H, 'max m', int(out.max()) * 20, 'bytes', len(js))

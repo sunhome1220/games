@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """從 Natural Earth 1:10m 的都市區圖層（ne_10m_urban_areas，公有領域；依 MODIS 衛星影像判讀的建成區）
-抽出台灣本島的都市區多邊形（含內部的非都市空洞），簡化後寫成 js/urban.js。
+抽出台灣本島的都市區多邊形（含內部的非都市空洞），簡化後寫成 js/data/urban.js。
 用法：下載 https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_urban_areas.geojson
       python3 tools/geo/build_urban.py ne_10m_urban_areas.geojson
 簡化容許誤差 TOL（度，0.005°≈0.5 km）；面積小於 MIN_KM2 的多邊形與空洞略去（遠小於 10 km 一格）。"""
@@ -35,5 +35,5 @@ tot = sum(a for a, _ in polys)
 out = "'use strict';\n// 台灣都市區（建成區）輪廓：Natural Earth 1:10m ne_10m_urban_areas（公有領域），由 tools/geo/build_urban.py 產生，不要手改。\n"
 out += "// 每個多邊形＝[外環, 空洞…]，座標 [經度, 緯度]；共 %d 個、外環面積合計約 %d 平方公里。\n" % (len(polys), tot)
 out += 'const GEO_URB=' + json.dumps([p for _, p in polys], separators=(',', ':')).replace(']],[[[', ']],\n[[[') + ';\n'
-pathlib.Path(__file__).resolve().parents[2].joinpath('js/urban.js').write_text(out, encoding='utf-8')
+pathlib.Path(__file__).resolve().parents[2].joinpath('js/data/urban.js').write_text(out, encoding='utf-8')
 print(len(polys), 'polygons', round(tot), 'km2', sum(len(r) for _, p in polys for r in p), 'points')

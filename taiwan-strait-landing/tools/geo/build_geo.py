@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""從 Natural Earth 1:10m（world-atlas 套件的 countries-10m.json，公有領域）抽出台灣本島與澎湖群島的海岸線，簡化後寫成 js/geo.js。
+"""從 Natural Earth 1:10m（world-atlas 套件的 countries-10m.json，公有領域）抽出台灣本島與澎湖群島的海岸線，簡化後寫成 js/data/geo.js。
 用法：npm pack world-atlas@2.0.2 && tar xzf world-atlas-2.0.2.tgz
       python3 tools/geo/build_geo.py package/countries-10m.json
 簡化容許誤差 TOL（度，約 0.005°≈0.5 km）：遠小於 10 km 一格，換成更細的格子也夠用。"""
@@ -70,5 +70,5 @@ out = ("'use strict';\n// 台灣本島與澎湖群島的海岸線（經緯度）
        "const GEO_CN=[" + ','.join(fmt(p) for p in cn) + "];\n"
        "const GEO_KM=[" + ','.join(fmt(p) for p in km) + "];\n"
        "const GEO_JP=[" + ','.join(fmt(p) for p in jp) + "];\n")
-pathlib.Path(__file__).resolve().parent.parent.parent.joinpath('js', 'geo.js').write_text(out, encoding='utf-8')
+pathlib.Path(__file__).resolve().parent.parent.parent.joinpath('js', 'data', 'geo.js').write_text(out, encoding='utf-8')
 print('CN polys', len(cn), [len(dp(p, TOL)) for p in cn][:5], 'KM', len(km), 'JP', len(jp)); print('Taiwan main pts', len(main), '->', len(dp(main, TOL)), '; Penghu islands', len(ph), [len(dp(p, TOL)) for p in ph], '; other polys', len(polys) - 1 - len(ph))

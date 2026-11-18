@@ -179,7 +179,7 @@ function coastRiverSVG(land){
   for(const [n,P] of RIVERS){const pts=TRUNK[n];
     o+=riverSVG(pts);
     const m=pts[Math.min(pts.length-1,2)];o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+m[0].toFixed(1)+'" y="'+(m[1]-3).toFixed(1)+'" text-anchor="middle">'+n+'</text>';}
-  if(typeof OUTER_LAKES!=='undefined'){ // 大陸的河流與湖泊（只是背景，不影響規則；真實資料見 js/outer.js）
+  if(typeof OUTER_LAKES!=='undefined'){ // 大陸的河流與湖泊（只是背景，不影響規則；真實資料見 js/data/outer.js）
     for(const [n,L] of OUTER_LAKES){const pp=L.map(toPx);o+='<path class="lake" d="M'+pp.map(q=>q.map(v=>v.toFixed(1)).join(' ')).join('L')+'Z"/>';
       if(n&&pp.length>8){const cx=pp.reduce((a,q)=>a+q[0],0)/pp.length,cy=pp.reduce((a,q)=>a+q[1],0)/pp.length;o+='<text class="lbl rvl" font-size="'+(5.6*Math.max(.72,SC)).toFixed(1)+'" x="'+cx.toFixed(1)+'" y="'+cy.toFixed(1)+'" text-anchor="middle">'+n+'</text>';}}
     const ORV=OUTER_RIVERS.map(([n,P,sea])=>[n,outerRiverPts(P,toPx,sea)]),OPAR={'漢江':'長江'}; // 漢江在武漢匯入長江
@@ -381,7 +381,7 @@ function buildFar(){
     const [x,y]=fineCenter(c,r);if(x<fx0||x>fx1||y<fy0||y>fy1)continue;
     const [lon,lat]=rcToLL(c,r);let t='sea',name=null;
     if(typeof OUTER_WATER!=='undefined'&&inWaterBand(lon,lat,OUTER_WATER))t='sea'; // 寬河道（長江下游）：當水格，不畫細線
-    else if(typeof OUTER_LAND!=='undefined'?inPoly(lon,lat,OUTER_LAND):inPoly(lon,lat,POLY))t='main'; // 真實海岸線（js/outer.js）；沒有資料時退回手繪
+    else if(typeof OUTER_LAND!=='undefined'?inPoly(lon,lat,OUTER_LAND):inPoly(lon,lat,POLY))t='main'; // 真實海岸線（js/data/outer.js）；沒有資料時退回手繪
     else if(inIsl(lon,lat))t='plain';
     fine.set(K(c,r),{c,r,x,y,t});
   }

@@ -3,7 +3,7 @@
    用主遊戲 2026 年的兵力與規則（武器數字不為關卡調整）；你指揮攻方，6 回合（每回合約 12 小時，共 72 小時）內奪下並守住 2 個指定港口。
    候選港口：台中、高雄、基隆；每天輪流排除 1 個（依日期固定，同一天大家挑戰的一樣，不用亂數），網址加 &ex=tcport|kaohsiung|keelung 可指定排除哪個。
    「守住」＝港口格由攻方控制、港口設施沒被破壞，並且撐過一次守方階段。評星的 40%、第 4 回合門檻是出題者的設定（★推估），不是史料。
-   結局是假設情境。說明與數字來源見 missions/port.md。 */
+   結局是假設情境。說明與數字來源見 js/missions/port.md。 */
 const PORT_LIMIT=6,PORT_CAND=[['tcport','台中港'],['kaohsiung','高雄港'],['keelung','基隆港']];
 function portPick(){ // 排除一個候選港口，回傳要奪取的兩個 [key,名稱]
   const m=location.search.match(/[?&]ex=([a-z]+)/i),dayN=Math.floor(Date.now()/864e5);

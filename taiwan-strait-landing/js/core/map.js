@@ -173,7 +173,7 @@ const SPOT={};
     if(lon<119.9||lon>122.2||lat<21.8||lat>25.4)continue;
     if(cover(h,[GEO_TW])>=.5){h.t='plain';h.isl='TW';h.lon=lon;h.lat=lat;tw.push(h);} // 一半以上是陸地才算陸地格（Natural Earth 1:10m 海岸線）
   }
-  // 海拔：SRTM 高程網格（js/dem.js）在 7 個取樣點的平均；山地＝平均海拔 1,000 公尺以上（★門檻），沒有高程資料時退回手繪輪廓
+  // 海拔：SRTM 高程網格（js/data/dem.js）在 7 個取樣點的平均；山地＝平均海拔 1,000 公尺以上（★門檻），沒有高程資料時退回手繪輪廓
   const DEMA=typeof DEM!=='undefined'?Uint8Array.from(atob(DEM.b),ch=>ch.charCodeAt(0)):null;
   const demAt=(lon,lat)=>{const i=Math.floor((lon-DEM.lon0)/DEM.d),j=Math.floor((DEM.lat1-lat)/DEM.d);return i<0||j<0||i>=DEM.w||j>=DEM.h?0:DEMA[j*DEM.w+i]*20;};
   const hexElev=h=>{const [lon,lat]=rcToLL(h.c,h.r);let s=0;for(const [dx,dy] of SMP)s+=demAt(lon+dx*GEO.dlon,lat+dy*GEO.dlat*1.15);return Math.round(s/SMP.length);};
@@ -218,7 +218,7 @@ const SPOT={};
   put('chiashan','佳山基地','air',121.58,24.00);
   put('taitung','台東','city',121.14,22.76);
   put('chihhang','志航基地','air',121.10,22.76);
-  // 都市範圍：Natural Earth 都市區圖層（js/urban.js，依衛星影像判讀的建成區）。每格取 19 個取樣點，算出都市區占這一格的比例（h.urb）
+  // 都市範圍：Natural Earth 都市區圖層（js/data/urban.js，依衛星影像判讀的建成區）。每格取 19 個取樣點，算出都市區占這一格的比例（h.urb）
   if(typeof GEO_URB!=='undefined'){
     const SMU=SMP.concat([0,1,2,3,4,5].map(i=>[.2*Math.cos((i+.5)*Math.PI/3),.2*Math.sin((i+.5)*Math.PI/3)]),[0,1,2,3,4,5].map(i=>[.45*Math.cos((i+.5)*Math.PI/3),.45*Math.sin((i+.5)*Math.PI/3)]));
     const inUrb=(x,y)=>GEO_URB.some(P=>inPoly(x,y,P[0])&&!P.slice(1).some(H=>inPoly(x,y,H)));

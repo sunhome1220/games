@@ -34,7 +34,7 @@
 2. 實作 → 用 Playwright 實測（見第四節）→ 語法檢查。
 3. 版本與資料：
    - `python3 tools/bump_version.py <版本>`，格式 `2026-11-10.NN`（NN 遞增）。會同時改 `js/version.js` 與 `index.html` 裡每個 js 檔的 `?v=` 快取參數。
-   - `CHANGELOG`（在 `js/changelog.js`）：加在 `const CHANGELOG=[` 之後第一筆（最新在最上面）。
+   - `CHANGELOG`（在 `js/core/changelog.js`）：加在 `const CHANGELOG=[` 之後第一筆（最新在最上面）。
    - **翻譯不用每次改**（使用者 2026-11-14 指示）：平常改動不補 `extras.tsv`、不重建字典；累積一陣子後，使用者要求時再一次補英文（`extras.tsv`）並執行 `python3 tools/i18n/build_dict.py`（需要 `pip install opencc-python-reimplemented`）。
 4. 提交、推送、用 GitHub MCP 開 PR。**不要擅自合併**。
    - 使用者說「合併」＝合併所有未合併的 PR（squash）；「合併N」＝只合併第 N 號。
@@ -46,9 +46,10 @@
 
 - **檔案配置**（2026-11-14.39 起由單一 `index.html` 拆開；只改相關的檔案，不要整批讀）：
   - `index.html`：HTML 與 CSS（CSS 留在頁內：規則裡有 `fill:url(#gu-atk)` 這類指向頁內 SVG 漸層的寫法，匯出截圖也會讀 `document.styleSheets`，搬到外部檔在部分瀏覽器與 `file://` 下有風險）。
-  - `js/dict.js`：翻譯字典，`build_dict.py` 產生，**不要手改、不要讀**（單行約 680 KB）。`js/i18n.js`：語言切換；`js/btnfix.js`：按鈕括號小字；`js/gamepad.js`：手把。
+  - `js/i18n/dict.js`：翻譯字典，`build_dict.py` 產生，**不要手改、不要讀**（單行約 680 KB）。`js/i18n.js`：語言切換；`js/ui/btnfix.js`：按鈕括號小字；`js/ui/gamepad.js`：手把。
+  - **`js/` 子資料夾分類**（2026-11-18.12）：`core/`（地圖、狀態、更新日誌、啟動）、`rules/`（規則、補給、戰區、空戰、飛彈、海戰、縱深打擊、決策、回合、電腦）、`ui/`（地圖與動畫、狀態列、輸入、手把、登陸提示）、`media/`（戰後報告、影片、統計、單位說明）、`i18n/`（字典、語言切換）、`missions/`（關卡挑戰，見下）、`data/`（地理資料，由 `tools/geo/` 產生）。`js/version.js` 留在 `js/` 根目錄：舊版（單檔時期）頁面的更新檢查固定抓這個路徑。載入順序仍以 `index.html` 為準，下面列的檔名省略子資料夾。
   - 遊戲程式（依載入順序）：`map`（格子、地形、地點、亂數）→ `state`（狀態、台灣海軍）→ `rules`（規則、海運、殺傷鏈）→ `supply`（補給線）→ `ending`（結局、評分、難度、戰績）→ `theater`（事件節點、力量池、基地、美軍立場、雷達、海戰）→ `airwar`（空軍架數、飛彈與攔截、火力點數、空優）→ `carrier`（艦載機、航艦艦隊、護航艦、齊射）→ `strike`（縱深打擊）→ `decisions`（守方決策、重新開始）→ `report`（戰區圖、代價、戰後報告、快訊）→ `turn`（回合流程、天候、港口破壞、停戰、盟軍棋子）→ `ai` → `render`（地圖）→ `fxanim`（動畫）→ `fx`（狀態列、資訊卡、除錯鉤子、手機浮動卡片）→ `video`（影片、匯出、語音、事件卡）→ `stats` → `input` → `unitinfo`（單位說明、戰局碼）→ `version` → `changelog` → `app`（安裝、設定、精靈、縮放、更新檢查、啟動）。
-  - **關卡挑戰**（2026-11-14.84 起）：`missions/common.js`（框架與共用小工具 `misList`／`misDiff`）＋`missions/<id>.js`（各關，用 `MISSION_DEFS[id]` 註冊；每關說明放 `missions/<id>.md`），網址加 `?mission=<id>` 才啟用，沒有參數時完全不動作。戰鬥規則全部共用主遊戲；核心只有三個掛勾點：`beginPhase`（`MISSION.phase`）、`render`（`MISSION.tick`）、`endGame`（`MISSION.onEnd`），以及 `saveSetup` 在關卡中不存設定。關卡不可為了難度改武器數字，只能用開局情境調整；非史實的結局標「假設情境」。
+  - **關卡挑戰**（2026-11-14.84 起）：`js/missions/common.js`（框架與共用小工具 `misList`／`misDiff`）＋`js/missions/<id>.js`（各關，用 `MISSION_DEFS[id]` 註冊；每關說明放 `js/missions/<id>.md`），網址加 `?mission=<id>` 才啟用，沒有參數時完全不動作。戰鬥規則全部共用主遊戲；核心只有三個掛勾點：`beginPhase`（`MISSION.phase`）、`render`（`MISSION.tick`）、`endGame`（`MISSION.onEnd`），以及 `saveSetup` 在關卡中不存設定。關卡不可為了難度改武器數字，只能用開局情境調整；非史實的結局標「假設情境」。
   - 這些檔案是**一般 script（不是 module）、共用同一個全域作用域**：頂層的 `const`／`let`／`function` 彼此看得到，所以頂層名稱不能重複，也不要和瀏覽器內建的全域名稱（`top`、`name`、`status`…）相同。函式可以跨檔互相呼叫；但**載入當下就執行的頂層程式**只能用到前面檔案已宣告的東西，所以新增檔案或調整順序後要重新載入確認沒有錯誤。每個檔案第一行是 `'use strict';`。
   - 新增 js 檔：在 `index.html` 依順序加 `<script src="js/名稱.js?v=版本"></script>`（`bump_version.py` 會檢查每個 js 檔都有 `?v=`）。
   - `index.html` 裡有一行含 `const VERSION='…'` 的註解，是給還停在單檔版的玩家端更新檢查用的，不要刪。
@@ -59,8 +60,8 @@
 - 打擊大陸：`strikeCN`（人工與電腦共用同一個飛彈存量與命中公式）、`aiPickCN`。台灣方用 `lrSpend`：300 km 內優先用陸軍戰術飛彈（`rocAtc`，佔用海馬士一次齊射），其餘用雄二E（`rocMsl`）。
 - 海馬士：`HMR_ERA`（各年代發射車、棋子數、ATACMS 枚數、GMLRS 莢艙數）、`hmrSpread`（車數平均分配）、`HMR_PKG`（一次齊射最多 4 輛）。
 - 潛艦（海鯤）：`subTargets/fireSub/subHidden`；在海上隱蔽、回港時才看得到、可被打。
-- 地圖尺度：**每格約 10 km**（2026-11-14.46 起；`js/map.js` 開頭的 `KM_HEX`，`FG＝40÷KM_HEX` 是舊粗格的細分倍數）。**射程、移動、距離一律用公里寫，再用 `kmH(km)` 換成格數**（例如 `rd(a,b)<=kmH(80)`、`mv:kmH(80)`），不要寫裸的格數；像素距離用 `HPX`。地面「相鄰」＝`ADJ_KM`（20 km，`ring2`／`enemyAdj`：攻擊距離、支援）；控制區＝`ZOC_KM`（10 km，`inZOC`：敵軍進入相鄰格要停下）。
-  - 台灣與澎湖地形：Natural Earth 海岸線（`js/geo.js`）＋SRTM 海拔網格（`js/dem.js`，每格 `h.elev`；平均 ≥1,000 m 為山地）；兩個檔都由 `tools/geo/` 的腳本產生，不要手改、不要整檔讀。都市範圍：Natural Earth 都市區（`js/urban.js`，`tools/geo/build_urban.py` 產生）；每格 `h.urb`＝都市區占比，`h.town`＝城鎮（防禦 +1；打擊命中與定位的掩蔽為城市的一半，用 `terrCover(h)`；平民代價 0.2；細節見 `docs/data/map.md`），城市格數依人口換算（`js/map.js` 的 `METRO`）。畫面配色依 `h.elev` 每 500 m 一層。
+- 地圖尺度：**每格約 10 km**（2026-11-14.46 起；`js/core/map.js` 開頭的 `KM_HEX`，`FG＝40÷KM_HEX` 是舊粗格的細分倍數）。**射程、移動、距離一律用公里寫，再用 `kmH(km)` 換成格數**（例如 `rd(a,b)<=kmH(80)`、`mv:kmH(80)`），不要寫裸的格數；像素距離用 `HPX`。地面「相鄰」＝`ADJ_KM`（20 km，`ring2`／`enemyAdj`：攻擊距離、支援）；控制區＝`ZOC_KM`（10 km，`inZOC`：敵軍進入相鄰格要停下）。
+  - 台灣與澎湖地形：Natural Earth 海岸線（`js/data/geo.js`）＋SRTM 海拔網格（`js/data/dem.js`，每格 `h.elev`；平均 ≥1,000 m 為山地）；兩個檔都由 `tools/geo/` 的腳本產生，不要手改、不要整檔讀。都市範圍：Natural Earth 都市區（`js/data/urban.js`，`tools/geo/build_urban.py` 產生）；每格 `h.urb`＝都市區占比，`h.town`＝城鎮（防禦 +1；打擊命中與定位的掩蔽為城市的一半，用 `terrCover(h)`；平民代價 0.2；細節見 `docs/data/map.md`），城市格數依人口換算（`js/core/map.js` 的 `METRO`）。畫面配色依 `h.elev` 每 500 m 一層。
   - 畫面：圖示、字級用 `SC`（＝R/16）縮放；地圖縮放 <160% 時 `#map.zlo`（只留勝負要點地名、棋子縮成一格 `US_SMALL`）。大陸沿岸、金門、琉球也用 Natural Earth（`GEO_CN`／`GEO_KM`／`GEO_JP`，共用 `gCover`）；馬祖沒有資料，依座標放小島格。
   - 仍以「一格」為單位、改尺度時要再檢查的：`nbrs` 一格內的鄰接（佔領擴張 `claim`、接觸判定 `gContact`、登陸）、`landDist` 步數成本、`ZONES` 等地點清單（目前都由經緯度換算，會自動跟著格子）。
   - 效能：10 km 約 9,000 格，一整場電腦推演桌機約 5 秒。熱點已改寫（`unitsAt`／`unitAt` 比對數字座標、`inZOC`／`enemyAdj` 直接掃單位、`twControl` 快取）；新程式不要在迴圈裡掃整個 `TER` 或每格呼叫 `unitsAt`。
