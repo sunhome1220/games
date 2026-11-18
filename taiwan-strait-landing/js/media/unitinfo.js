@@ -174,15 +174,17 @@ function readSetup(){
   S.ctrl=S.sim||S.video?{atk:'ai',def:'ai'}:{atk:sd==='atk'||sd==='both'?'human':'ai',def:sd==='def'||sd==='both'?'human':'ai'};
   S.newsOn=$('#optNews').value!=='0';S.newsCompact=$('#optNews').value==='2';S.fxScen=$('#optFx').value==='dice'?'interest':$('#optFx').value;S.airGen=$('#optAirGen').value;S.airModel=$('#optAirModel').value;S.ewLv=$('#optEW').value;S.allyCtl=$('#optAlly').value==='player'?'player':'ai';
 }
+// 防空增購配置的選項（最多 3 個連）：存放設定值的隱藏下拉選單（選項取自 sam.js 的 SAM_EXTRA）
+for(let i=1;i<=3;i++){const s=document.createElement('select');s.id='optAD'+i;s.innerHTML='<option value="auto" selected>auto</option>'+SAM_EXTRA.map(c=>'<option value="'+c.id+'">'+c.id+'</option>').join('');$('#wzStore').appendChild(s);}
 ['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optExer','#optLift','#optMonth','#optFxBias','#optWiLift','#optWiShip','#optWiWx',
     '#optWiDArms','#optWiLocal','#optWiAllies','#optPreDiplo','#optPreDeploy','#optReact','#optNavy','#optPenghu','#optPrepos','#optNews','#optVoice','#optFxSpd',
-    '#optTerm','#optFx','#optAlly','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
+    '#optTerm','#optFx','#optAlly','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP','#optAD1','#optAD2','#optAD3'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
 const CFG_IDS=['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optExer','optLift','optMonth','optFxBias','optWiLift','optWiShip','optWiWx',
     'optWiDArms','optWiLocal','optWiAllies','optPreDiplo','optPreDeploy','optReact','optNavy','optPenghu','optPrepos','optFx','optAlly','optAirGen','optAirModel','optEW',
-    'optNews','optVoice','optFxSpd','optTerm','optAxN','optAxC','optAxP'];
+    'optNews','optVoice','optFxSpd','optTerm','optAxN','optAxC','optAxP','optAD1','optAD2','optAD3'];
 const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optExer:'small',optLift:'1',optMonth:'4',optFxBias:'0',
     optWiLift:'0',optWiShip:'0',optWiWx:'0',optWiDArms:'0',optWiLocal:'0',optWiAllies:'0',optPreDiplo:'auto',optPreDeploy:'auto',optReact:'auto',optNavy:'auto',optPenghu:'auto',
-    optPrepos:'auto',optFx:'interest',optAlly:'ai',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optFxSpd:'1',optTerm:'plain',optAxN:'0',optAxC:'0',optAxP:'1'};
+    optPrepos:'auto',optFx:'interest',optAlly:'ai',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optFxSpd:'1',optTerm:'plain',optAxN:'0',optAxC:'0',optAxP:'1',optAD1:'auto',optAD2:'auto',optAD3:'auto'};
 $('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
 // one-off start with the default settings; the saved setup choices are left as they were
 $('#btnDefault').onclick=()=>{

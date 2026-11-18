@@ -59,6 +59,18 @@ add('手機版射程圖例不蓋住地圖按鈕','medium',async c=>{const {devic
     r.push([o.n>0&&o.ov===0,'手機'+nm+'：圖例與地圖上方 '+o.n+' 個按鈕重疊 '+o.ov+' 個（應為 0）']);r.push(...noErr(p,'手機'+nm));await ctx.close();}
   return r;});
 
+add('防空增購：各年份連數、設定頁、自動選址','medium',async c=>{const r=[];
+  const play=async(era,side,picks)=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});
+    await p.evaluate(([era,side,picks])=>{$('#optEra').value=era;$('#optEra').dispatchEvent(new Event('change'));$('#optSide').value=side;$('#optSide').dispatchEvent(new Event('change'));picks.forEach((v,i)=>{$('#optAD'+(i+1)).value=v;});},[era,side,picks]);
+    const page=await p.evaluate(()=>{const pg=SETUP_PAGES.find(x=>x.t==='防空增購配置');return pg&&pg.fields.filter(f=>f.when()).length;});
+    await L.startGame(p);const o=await p.evaluate(()=>({x:(S.samX||[]).map(x=>x.pick+'@'+x.k),n:samExtraN(S.era)}));return {p,page,o};};
+  let q=await play('2026','def',[]);r.push([q.o.n===0&&q.o.x.length===0&&q.page===0,'2026 年：沒有增購連、設定頁不出現']);r.push(...noErr(q.p,'2026'));await q.p.close();
+  q=await play('2030','def',['pt','yl']);r.push([q.o.n===2&&q.page===2,'2030 年：增購 2 個連，設定頁有 2 個問題（人類守方）']);
+  r.push([q.o.x.length===2&&q.o.x[0].startsWith('pt@')&&q.o.x[1].startsWith('yl@'),'2030 年：照設定放在屏東・恆春、宜蘭 '+q.o.x]);r.push(...noErr(q.p,'2030'));await q.p.close();
+  q=await play('2032','atk',['pt','pt','pt']);r.push([q.page===0,'你是攻方（電腦守方）：設定頁不出現']);
+  r.push([q.o.n===3&&q.o.x.length===3&&q.o.x.every(x=>!x.startsWith('pt@')),'電腦守方一律自動選址（不吃設定值）：'+q.o.x]);r.push(...noErr(q.p,'2032 電腦守方'));await q.p.close();
+  return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];
