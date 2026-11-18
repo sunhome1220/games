@@ -253,16 +253,17 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-18.01"></script>
-<script src="js/broadcast.js?v=2026-11-18.01"></script>
-<script src="js/haptics.js?v=2026-11-18.01"></script>
-<script src="js/feedback.js?v=2026-11-18.01"></script>
-<script src="js/routemap.js?v=2026-11-18.01"></script>
-<script src="js/gamepad.js?v=2026-11-18.01"></script>
-<script src="js/share.js?v=2026-11-18.01"></script>
-<script src="js/events.js?v=2026-11-18.01"></script>
-<script src="js/lines.js?v=2026-11-18.01"></script>
-<script src="js/render3d.js?v=2026-11-18.01"></script>
+<script src="js/models.js?v=2026-11-18.02"></script>
+<script src="js/broadcast.js?v=2026-11-18.02"></script>
+<script src="js/haptics.js?v=2026-11-18.02"></script>
+<script src="js/feedback.js?v=2026-11-18.02"></script>
+<script src="js/routemap.js?v=2026-11-18.02"></script>
+<script src="js/gamepad.js?v=2026-11-18.02"></script>
+<script src="js/share.js?v=2026-11-18.02"></script>
+<script src="js/events.js?v=2026-11-18.02"></script>
+<script src="js/lines.js?v=2026-11-18.02"></script>
+<script src="js/render3d.js?v=2026-11-18.02"></script>
+<script src="js/sim.js?v=2026-11-18.02"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -270,12 +271,9 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-18.01';
+const VERSION='2026-11-18.02';
 
 /* ========================= 小工具 ========================= */
-const clamp=(v,a,b)=>v<a?a:v>b?b:v;
-function hash(n){n=Math.imul((n^61)^(n>>>16),9);n^=n>>>4;n=Math.imul(n,0x27d4eb2d);n^=n>>>15;return (n>>>0)/4294967296;}
-function hstr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
 function mixc(a,b,t){return `rgb(${(a[0]+(b[0]-a[0])*t)|0},${(a[1]+(b[1]-a[1])*t)|0},${(a[2]+(b[2]-a[2])*t)|0})`;}
 const $=id=>document.getElementById(id);
@@ -284,16 +282,6 @@ function store(k,v){try{if(v===undefined){return JSON.parse(localStorage.getItem
 
 /* ========================= 路線資料（js/lines.js，由 tools/gen_lines.py 產生） ========================= */
 const LINE_KEYS=['red','blue','green','brown'];
-
-/* ========================= 列車與物理參數 ========================= */
-const ACC_FR=[0.30,0.55,0.80,1.00];                 // P1～P4 佔車型最大加速度的比例（最大值見 MODELS.accel）
-const DEC_FR=[0.15,0.30,0.45,0.60,0.75,0.88,1.00];  // B1～B7 佔車型正常減速度的比例（正常減速度、緊急減速度見 MODELS）
-const ATP_FR=0.95;                                  // ATP 停車曲線採用的減速度（占正常減速度）
-const ZONE_FR=0.75;                                 // 限速區間前的減速曲線
-const REV_LIM=5;                                     // 退行限速 km/h
-const MIN_OPEN=6;                                   // 開門後最少停留秒數
-const DWELL=22;                                     // 時刻表停站秒數
-const TOL_OPEN_SHORT=10, TOL_OPEN_LONG=30;          // 可開門的停車誤差範圍（短停 10 m／過站 30 m）
 
 /* ========================= 畫面尺寸與投影 ========================= */
 const cv=$('c'),X=cv.getContext('2d');

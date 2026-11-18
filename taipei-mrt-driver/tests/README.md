@@ -10,7 +10,11 @@ SHOT_DIR=/some/dir bash taipei-mrt-driver/tests/run.sh t8   # 部分測試會存
 
 需求：Node.js、`playwright`（含 Chromium；`require('playwright')` 要找得到）、python3（腳本自己用 `python3 -m http.server 8765` 在倉庫根目錄起伺服器）。
 
-## 內容
+## 單元測試（不開瀏覽器，約 1 秒）
+
+`node taipei-mrt-driver/tests/unit/sim.test.cjs`（也包含在 `run.sh`，名稱 `unit`）：用 Node 的 `vm` 載入 `js/sim.js`（關卡建立、物理、ATP、計分、車門；不碰 DOM）加上資料與事件引擎，畫面與聲音的副作用以空函式取代。涵蓋加速／煞停距離、ATP 限速曲線與寬鬆／嚴格復歸、計分邊界、車門連動、關卡決定性等 31 項。改物理或規則時先跑這個，比瀏覽器測試快很多。
+
+## 瀏覽器測試內容
 
 | 檔案 | 測什麼 |
 |---|---|
