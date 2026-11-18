@@ -22,17 +22,38 @@ const SAM={
     {id:'NA',sys:'n',n:'NASAMS 台北',tag:'NASAMS',lon:121.55,lat:25.06,bat:3,era:2031}],
   ch:8,emit:.35
 };
-const samSite=u=>SAM.sites.find(x=>x.id===u.sid);
+// 增購的天弓三型連（★推估）：以 2026 年的防空點數（4）為基準，之後每多 1 點就多 1 個連（2028～29 年 +1、2030 年 +2、2031～32 年 +3）；只增加連數（陣地與每階段接戰上限），攔截彈總數仍由原本的防空點數決定。
+// 位置由守方在設定精靈挑選（電腦守方、電腦推演一律「自動」＝補在目前彈道防禦涵蓋最少的地方）。候選地點是各地區的代表位置（★推估，陣地不公開）。
+const SAM_EXTRA=[{id:'kl',n:'基隆・台北東',lon:121.72,lat:25.10},{id:'hc',n:'新竹・苗栗',lon:120.90,lat:24.70},{id:'tc',n:'台中',lon:120.65,lat:24.15},{id:'cy',n:'雲林・嘉義',lon:120.40,lat:23.60},
+  {id:'ks',n:'高雄',lon:120.30,lat:22.62},{id:'pt',n:'屏東・恆春',lon:120.70,lat:22.30},{id:'yl',n:'宜蘭',lon:121.76,lat:24.72},{id:'hl',n:'花蓮',lon:121.60,lat:23.98},{id:'tt',n:'台東',lon:121.10,lat:22.76},{id:'ph',n:'澎湖',lon:119.58,lat:23.57,isl:'PH'}];
+const samExtraN=era=>{const e=ERA[era]||ERA['2026'];return Math.max(0,((e.pools&&e.pools.rocAD)||POOL0.rocAD)-POOL0.rocAD);};
+const samSite=u=>SAM.sites.find(x=>x.id===u.sid)||(S.samX||[]).find(x=>x.id===u.sid);
+// 重要地點（機場、港口、城市）：彈道防禦涵蓋判定與「自動」選址用
+const samValuable=()=>terList('samVal',h=>(h.isl==='TW'||h.isl==='PH')&&h.name&&(h.t==='air'||h.t==='port'||h.t==='city'));
+const samBmHexes=()=>samList().filter(u=>samSys(u).bmR>0).map(u=>hexOf(u));
+const samExtraHex=c=>{const [col,row]=llToRC(c.lon,c.lat),isl=c.isl||'TW';return placeNear(K(col,row),x=>x.isl===isl&&isLand(x)&&x.t!=='mtn'&&canStack({side:'def',type:'sam'},x.k));};
+const samNewCov=(h,have)=>samValuable().filter(v=>rd(v,h)<=kmH(SAM.sys.t.bmR)&&!have.some(q=>rd(v,q)<=kmH(SAM.sys.t.bmR)));
+// 設定精靈的選項說明：這個地點會新涵蓋哪些原本沒有彈道防禦的重要地點（以 2026 年的基本部署計算）
+function samExtraDesc(c){try{const base=SAM.sites.filter(s=>!s.era&&s.sys!=='n').map(s=>{const [col,row]=llToRC(s.lon,s.lat);return TER[K(col,row)];}).filter(Boolean),h=TER[K(...llToRC(c.lon,c.lat))];
+  if(!h)return '';const n=samNewCov(h,base).map(x=>x.name);return n.length?'新增涵蓋 '+n.length+' 處原本沒有彈道飛彈防禦的重要地點：'+n.slice(0,6).join('、')+(n.length>6?'…':'')+'。':'這附近的重要地點大多已有彈道飛彈防禦，主要是加厚（每連每階段多接戰 8 枚）。';}catch(e){return '';}}
 const samSys=u=>SAM.sys[(samSite(u)||{}).sys]||SAM.sys.t;
 const samList=()=>S.units.filter(u=>u.type==='sam'&&alive(u));
 const samMag=u=>(u.mag.p3||0)+(u.mag.p2||0)+(u.mag.tk||0);
 // 開局：依年代放棋子，把全台攔截彈按連數分給各營
 function samSpawn(){
-  if(S.units.some(u=>u.type==='sam'))return;S.sam=true;const era=+S.era||2026;
-  const live=SAM.sites.filter(s=>!s.era||era>=s.era),bp=live.filter(s=>s.sys==='p').reduce((a,s)=>a+s.bat,0),bt=live.filter(s=>s.sys==='t').reduce((a,s)=>a+s.bat,0),A=S.adI||{p3:0,p2:0,tk:0};
+  if(S.units.some(u=>u.type==='sam'))return;S.sam=true;const era=+S.era||2026;S.samX=[];
+  const live=SAM.sites.filter(s=>!s.era||era>=s.era),A=S.adI||{p3:0,p2:0,tk:0};
   for(const s of live){const [c,r]=llToRC(s.lon,s.lat),isl=s.isl||'TW',h=placeNear(K(c,r),x=>x.isl===isl&&isLand(x)&&x.t!=='mtn'&&canStack({side:'def',type:'sam'},x.k));if(!h)continue;
-    const mag=s.sys==='p'?{p3:Math.round(A.p3*s.bat/bp),p2:Math.round(A.p2*s.bat/bp),tk:0}:s.sys==='t'?{p3:0,p2:0,tk:Math.round(A.tk*s.bat/bt)}:{p3:0,p2:0,tk:0};
-    S.units.push(mkUnit('def','sam',h.k,{sid:s.id,bat:s.bat,bat0:s.bat,mag}));}
+    S.units.push(mkUnit('def','sam',h.k,{sid:s.id,bat:s.bat,bat0:s.bat,mag:{p3:0,p2:0,tk:0}}));}
+  // 增購的連：人類守方依設定選地點；電腦守方與「自動」＝補在新增涵蓋最多重要地點的候選地
+  const human=S.ctrl&&S.ctrl.def==='human';
+  for(let i=1;i<=samExtraN(S.era);i++){const el=document.getElementById('optAD'+i),pick=human&&el?el.value:'auto';let c=SAM_EXTRA.find(x=>x.id===pick);
+    if(!c){const have=samBmHexes();let best=-1;for(const x of SAM_EXTRA){const h=samExtraHex(x);if(!h)continue;const sc=samNewCov(h,have).length;if(sc>best){best=sc;c=x;}}}
+    if(!c)continue;const h=samExtraHex(c);if(!h)continue;const site={id:'X'+i,sys:'t',n:'天弓三型 增購（'+c.n+'）',tag:'天弓三',lon:c.lon,lat:c.lat,bat:1,k:h.k,pick:c.id};S.samX.push(site);
+    S.units.push(mkUnit('def','sam',h.k,{sid:site.id,bat:1,bat0:1,mag:{p3:0,p2:0,tk:0}}));}
+  // 攔截彈總數不變，依各營連數比例分配（增購的連也分到一份）
+  const L=samList(),bp=L.filter(u=>samSite(u).sys==='p').reduce((a,u)=>a+u.bat,0),bt=L.filter(u=>samSite(u).sys==='t').reduce((a,u)=>a+u.bat,0);
+  for(const u of L){const y=samSite(u).sys;u.mag=y==='p'?{p3:Math.round(A.p3*u.bat/bp),p2:Math.round(A.p2*u.bat/bp),tk:0}:y==='t'?{p3:0,p2:0,tk:Math.round(A.tk*u.bat/bt)}:{p3:0,p2:0,tk:0};}
 }
 // 全台合計（給原本以總數運作的規則與顯示用）
 function samAgg(){if(!S.sam)return;const A={p3:0,p2:0,tk:0};for(const u of samList()){A.p3+=u.mag.p3||0;A.p2+=u.mag.p2||0;A.tk+=u.mag.tk||0;}S.adI=A;}

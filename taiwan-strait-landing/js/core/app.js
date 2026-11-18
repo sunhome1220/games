@@ -137,6 +137,12 @@ const SETUP_PAGES=[
       '美國只提供情報與目標資料（守方反艦飛彈命中門檻 −1），不補給、不出兵、不公開參戰；日本中立，戰區基地也不能被打擊。','只提供情報'],none:['不介入（台灣孤軍）','美日全程不參戰，戰區基地也不能被打擊。'],full:['開戰即全面介入','美日第 1 回合就參戰，航艦仍要 2 回合才抵達。']}},{sel:'optAlly',
       q:'美日盟軍由誰操作',when:()=>$('#optMode').value==='play'&&$('#optSide').value!=='atk',opts:{ai:['電腦操作','美日艦隊與潛艦由電腦依戰況行動。'],player:['你操作','美日參戰後，你可以移動美航艦、護航艦、海自艦艇與攻擊潛艦，下達艦隊齊射、艦載機打擊與戰斧巡弋飛彈；沒下令的單位在結束階段由電腦代為行動。美日是否參戰仍由戰況決定。']}}],summary:true},
 ];
+// 防空增購配置（2026-11-18）：年代越後面，防空點數越多，多出來的天弓三型連由人類守方挑地點（見 sam.js 的 SAM_EXTRA）；最多 3 個連（2031～32 年）
+const adExtraOn=k=>!isSim()&&$('#optMode').value==='play'&&$('#optSide').value!=='atk'&&samExtraN($('#optEra').value)>=k;
+SETUP_PAGES.splice(SETUP_PAGES.findIndex(p=>p.t==='守方戰前準備')+1,0,{t:'防空增購配置',s:'防空',d:'年代越後面，防空預算越多，會增購天弓三型連（★推估：以 2026 年的防空點數為基準，每多 1 點增購 1 個連）。選擇這些新連要放在哪裡；原本的防空營位置不變。選「自動」＝補在目前彈道飛彈防禦涵蓋最少的地方。',
+  fields:[1,2,3].map(k=>({sel:'optAD'+k,q:'第 '+k+' 個增購的連放在哪？',when:()=>adExtraOn(k),
+    opts:Object.fromEntries([['auto',['自動（補最薄處）','補在新增涵蓋最多重要地點（機場、港口、城市）的地方。']]].concat(SAM_EXTRA.map(c=>[c.id,[c.n,samExtraDesc(c)]])))})),
+  note:()=>adExtraOn(1)?'':'這一年沒有增購的防空連，或你不是守方，這一頁不用設定。'});
 const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
 function optLabel(sel,v){for(const f of PREF_FIELDS.concat(...SETUP_PAGES.map(pg=>pg.fields)))if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
 function saveSetup(){if(typeof MISSION!=='undefined'&&MISSION)return; /* 關卡挑戰用的設定不存成玩家的設定 */try{const cfg={};CFG_IDS.forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
