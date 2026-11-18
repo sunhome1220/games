@@ -360,6 +360,11 @@ function seaClass(lon,lat,dist){
 function VTKEY(vt,main){const m=main?'main':'';
   if(vt==='mtn')return main?'mainmtn':'mtn'; if(vt==='hill')return main?'mainhill':'hill'; if(vt==='city')return main?'maincity':'city';
   if(vt==='plain2')return main?'main2':'plain2'; if(vt==='plain3')return main?'main3':'plain3'; return main?'main':'plain';}
+// 點是否落在帶狀水道內：W＝[[經度,緯度,半寬 km],…]，沿折線線性內插半寬
+function inWaterBand(lon,lat,W){const kx=111.2*Math.cos(lat*Math.PI/180),ky=111.2;
+  for(let i=0;i<W.length-1;i++){const [x1,y1,w1]=W[i],[x2,y2,w2]=W[i+1],dx=(x2-x1)*kx,dy=(y2-y1)*ky,px=(lon-x1)*kx,py=(lat-y1)*ky,L=dx*dx+dy*dy,t=L?Math.max(0,Math.min(1,(px*dx+py*dy)/L)):0;
+    if(Math.hypot(px-t*dx,py-t*dy)<=w1+(w2-w1)*t)return true;}
+  return false;}
 function buildFar(){
   // 外圍示意區：地形一律用與遊戲格相同的細格；標示、投射區仍用舊座標系（粗格）再整組縮放 KS 對齊
   const center=oCenter,VBW=OVBW,VBH=OVBH,W=OW,R=OR,COL0=OC0,COL1=OC1,ROW0=OR0,ROW1=OR1,MX0=oMX0,MX1=oMX1,MY0=oMY0,MY1=oMY1,EVBW=OVBW+oMX0+oMX1,EVBH=OVBH+oMY0+oMY1,TER=TERC;
@@ -375,7 +380,8 @@ function buildFar(){
     if(c>=FINE.c0&&c<FINE.c1&&r>=FINE.r0&&r<FINE.r1)continue;
     const [x,y]=fineCenter(c,r);if(x<fx0||x>fx1||y<fy0||y>fy1)continue;
     const [lon,lat]=rcToLL(c,r);let t='sea',name=null;
-    if(typeof OUTER_LAND!=='undefined'?inPoly(lon,lat,OUTER_LAND):inPoly(lon,lat,POLY))t='main'; // 真實海岸線（js/outer.js）；沒有資料時退回手繪
+    if(typeof OUTER_WATER!=='undefined'&&inWaterBand(lon,lat,OUTER_WATER))t='sea'; // 寬河道（長江下游）：當水格，不畫細線
+    else if(typeof OUTER_LAND!=='undefined'?inPoly(lon,lat,OUTER_LAND):inPoly(lon,lat,POLY))t='main'; // 真實海岸線（js/outer.js）；沒有資料時退回手繪
     else if(inIsl(lon,lat))t='plain';
     fine.set(K(c,r),{c,r,x,y,t});
   }

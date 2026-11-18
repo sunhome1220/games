@@ -50,7 +50,9 @@ cl = dp(cl + [cl[0]], TOL)[:-1]
 # ---- 河流：只取範圍內的名稱；方向統一成「第 0 點＝河口」
 NAMES = {'Yangtze': ('長江', 'e'), 'Han': ('漢江', 'e'), 'Huai': ('淮河', 'e'), 'Fuchun': ('富春江', 'e'), 'Min': ('閩江', 'e'), 'Ou': ('甌江', 'e'), 'Jiulong': ('九龍江', 'e'), 'Dong': ('東江', 's'), 'Mei': ('梅江', 's'), 'Gan': ('贛江', 'n'), 'Cagayan': ('卡加延河', 'n')}
 SEA = {'Yangtze', 'Min', 'Ou', 'Jiulong', 'Dong', 'Fuchun', 'Cagayan'}  # 河口在範圍內且通海（或通往河口）的河：繪圖時把河口對齊到海岸格的邊
-YZ_LOWER = [(121.95, 31.70), (121.85, 31.76), (121.50, 31.88), (121.15, 31.98), (120.85, 32.03), (120.55, 31.97), (120.28, 31.97), (120.0, 32.05), (119.75, 32.12)]
+YZ_LOWER = [(120.55, 31.97), (120.28, 31.97), (120.0, 32.05), (119.75, 32.12)]
+# ★推估：長江張家港（120.55°E）以下河道寬 5 km 以上，一格（約 10 km）都畫不下細線，改成「水格」：沿近似中線（北支水道）、半寬（km）的帶狀範圍內的格子當水面，不再畫細線
+YZ_WIDE = [(120.55, 31.97, 5), (120.85, 32.03, 5), (121.2, 31.99, 5), (121.6, 31.91, 5), (121.98, 31.83, 5)]
 rv = json.load(open(sys.argv[2])); rivers = []
 for f in rv['features']:
     nm = f['properties'].get('name')
@@ -78,6 +80,7 @@ out = ["'use strict';",
  "// 外圍示意區的真實地理資料：Natural Earth 1:10m（公有領域），由 tools/geo/build_outer.py 產生，不要手改。",
  'const OUTER_LAND=' + fmt(cl) + ';',
  'const OUTER_RIVERS=[' + ','.join('[%s,%s,%d]' % (json.dumps(n, ensure_ascii=False), fmt(p), z) for n, p, z in rivers) + '];',
+ 'const OUTER_WATER=' + json.dumps([list(q) for q in YZ_WIDE]) + ';',
  'const OUTER_LAKES=[' + ','.join('[%s,%s]' % (json.dumps(n, ensure_ascii=False), fmt(p)) for n, p in lakes) + '];', '']
 pathlib.Path(__file__).resolve().parents[2].joinpath('js', 'outer.js').write_text('\n'.join(out), encoding='utf-8')
 print(len(cl), 'land pts;', len(rivers), 'rivers;', len(lakes), 'lakes')
