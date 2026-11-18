@@ -223,6 +223,7 @@ th{color:#9fb0c8;font-weight:600}
     <div id="fb-st" class="sh-st" style="margin-top:6px"></div>
   </div>
   <p class="sub" style="font-size:12px;text-align:center">站序、站體（高架／平面／地下）、月台形式（島式／側式）與站間距離依維基百科車站表（2026-11 擷取）；限速區間與沿線地貌（河、山、湖、建築疏密）為遊戲示意，未逐站查證。</p>
+  <p class="sub" style="font-size:12px;text-align:center">本站使用不含個資、不用 cookie 的匿名統計（GoatCounter），只計算造訪次數與「開始遊玩／完成一班」；不會記錄駕駛名稱、成績或裝置資訊。瀏覽器開啟「Do Not Track」時不會送出。</p>
   <div id="ver"></div>
 </div>
 </section>
@@ -253,17 +254,18 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-18.02"></script>
-<script src="js/broadcast.js?v=2026-11-18.02"></script>
-<script src="js/haptics.js?v=2026-11-18.02"></script>
-<script src="js/feedback.js?v=2026-11-18.02"></script>
-<script src="js/routemap.js?v=2026-11-18.02"></script>
-<script src="js/gamepad.js?v=2026-11-18.02"></script>
-<script src="js/share.js?v=2026-11-18.02"></script>
-<script src="js/events.js?v=2026-11-18.02"></script>
-<script src="js/lines.js?v=2026-11-18.02"></script>
-<script src="js/render3d.js?v=2026-11-18.02"></script>
-<script src="js/sim.js?v=2026-11-18.02"></script>
+<script src="js/models.js?v=2026-11-18.03"></script>
+<script src="js/broadcast.js?v=2026-11-18.03"></script>
+<script src="js/haptics.js?v=2026-11-18.03"></script>
+<script src="js/feedback.js?v=2026-11-18.03"></script>
+<script src="js/routemap.js?v=2026-11-18.03"></script>
+<script src="js/gamepad.js?v=2026-11-18.03"></script>
+<script src="js/stats.js?v=2026-11-18.03"></script>
+<script src="js/share.js?v=2026-11-18.03"></script>
+<script src="js/events.js?v=2026-11-18.03"></script>
+<script src="js/lines.js?v=2026-11-18.03"></script>
+<script src="js/render3d.js?v=2026-11-18.03"></script>
+<script src="js/sim.js?v=2026-11-18.03"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -271,7 +273,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-18.02';
+const VERSION='2026-11-18.03';
 
 /* ========================= 小工具 ========================= */
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
@@ -1336,7 +1338,7 @@ function showBoard(sel){
   $('menu').classList.add('hidden');$('result').classList.add('hidden');$('board').classList.remove('hidden');
 }
 $('m-board').onclick=()=>showBoard();
-fbInit();rmInit();gpInit();
+fbInit();rmInit();gpInit();statInit();
 $('m-share').onclick=()=>{shareLevel();};   // 必須在點擊當下同步呼叫 navigator.share
 $('r-share').onclick=()=>{shareResult();};
 $('b-back').onclick=()=>{$('board').classList.add('hidden');$('menu').classList.remove('hidden');};
@@ -1457,6 +1459,7 @@ function showTutorial(){
 }
 $('tut-ok').onclick=()=>{try{localStorage.setItem('mrt-tut','1');}catch(e){}$('tut').hidden=true;paused=false;$('b-pause').textContent='⏸ 暫停';if(AC)AC.resume();};
 function startRun(){
+  statEvent('play','開始遊玩');statEvent('play-'+SET.line,'開始遊玩：'+(LINES[SET.line]||{}).name);
   QS=SET.quality==='low'?0.6:1;pf={n:0,t:0,warm:0};
   audioInit();if(AC&&AC.state==='suspended')AC.resume();
   store('mrt-set',SET);
@@ -1501,6 +1504,7 @@ function coachTips(g,done){
   return {tips,good};
 }
 function showResult(){
+  statEvent('finish','完成一班');
   const g=G;evAbort(g);g.state='result';rmHide();
   ['top','lever','bar'].forEach(i=>$(i).classList.add('hidden'));
   const rs=g.results.filter((_,i)=>true);
