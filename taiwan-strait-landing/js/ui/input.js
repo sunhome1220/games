@@ -20,7 +20,7 @@ $('#map').addEventListener('click',async e=>{
     S.sel=null;S.hover=k;S.hoverId=null;S.baseSel=k;UC.closedKey=null;render();return;}
   const fe=e.target.closest('[data-far]');
   if(fe){FARSEL=fe.getAttribute('data-far');S.sel=null;S.hover=null;renderInfo();return;}
-  const el=e.target.closest('[data-k]');if(!el)return;const k=el.getAttribute('data-k');FARSEL=null;S.baseSel=null;
+  const el=e.target.closest('[data-k]'),sp=!el&&e.target.closest('[data-sea]'),k=el?el.getAttribute('data-k'):sp?seaHexAt(sp,e.clientX,e.clientY):null;if(!k)return;FARSEL=null;S.baseSel=null;
   S.hover=k;const idEl=e.target.closest('[data-id]'),hitU=idEl?S.units.find(x=>x.id===+idEl.dataset.id):null;S.hoverId=hitU?hitU.id:null;
   if(!humanTurn()){S.sel=hitU||unitAtVis(k)||null;render();return;}
   let u=hitU||unitAtVis(k);
@@ -63,5 +63,6 @@ $('#map').addEventListener('click',async e=>{
   S.sel=null;render();
 });
 let LAST_TOUCH=0;document.addEventListener('touchstart',()=>{LAST_TOUCH=Date.now();},{passive:true,capture:true}); // 手機點一下會先產生模擬的滑鼠移入事件：跳過，避免資訊卡先蓋到手指下，讓這次點擊落在卡片上而不是地圖
-$('#map').addEventListener('mouseover',e=>{if(Date.now()-LAST_TOUCH<1000)return;const el=e.target.closest('[data-k]');if(!el||S.sel||S.baseSel)return;const k=el.getAttribute('data-k'), // 已點選基地（S.baseSel）：資訊卡固定住，游標移開不會換成別格
-    ue=e.target.closest('[data-id]'),hid=ue?+ue.dataset.id:null;if(k!==S.hover||hid!==S.hoverId){S.hover=k;S.hoverId=hid;if(FARSEL)FARSEL=null;renderInfo();}});
+const mapHover=e=>{if(Date.now()-LAST_TOUCH<1000)return;const el=e.target.closest('[data-k]'),sp=!el&&e.target.closest('[data-sea]');if((!el&&!sp)||S.sel||S.baseSel)return;const k=el?el.getAttribute('data-k'):seaHexAt(sp,e.clientX,e.clientY);if(!k)return;const // 已點選基地（S.baseSel）：資訊卡固定住，游標移開不會換成別格
+    ue=e.target.closest('[data-id]'),hid=ue?+ue.dataset.id:null;if(k!==S.hover||hid!==S.hoverId){S.hover=k;S.hoverId=hid;if(FARSEL)FARSEL=null;renderInfo();}};
+$('#map').addEventListener('mouseover',mapHover);$('#map').addEventListener('mousemove',e=>{if(e.target.closest&&e.target.closest('[data-sea]'))mapHover(e);}); // 海面是幾個大 path：游標在同一個 path 內移動不會再觸發 mouseover，改用 mousemove 反查格子
