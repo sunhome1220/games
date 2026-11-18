@@ -455,7 +455,8 @@ function placeLoc(){ // 「回到台灣」按鈕：貼在地圖目前看得到�
   const b=$('#btnLoc'),w=document.querySelector('.mapwrap');if(!b||!w)return;
   const r=w.getBoundingClientRect(),bar=document.querySelector('.mbar'),br=bar&&getComputedStyle(bar).display!=='none'?bar.getBoundingClientRect():null,side=br&&br.width<innerWidth*.6,lim=br&&!side?br.top:innerHeight; // 手機橫向時操作列在右側（side），不限制高度、改限制右緣 // fixed 元素的 offsetParent 是 null，不能用來判斷是否顯示
   const bottom=Math.min(r.bottom,lim,innerHeight),vis=!document.body.classList.contains('fin-open')&&r.height>0&&bottom-Math.max(r.top,0)>110&&S.started;
-  const lg=$('#rngLeg');if(lg){const on=vis&&lg.childElementCount>0;lg.style.display=on?'block':'none';if(on){lg.style.left=(Math.max(r.left,0)+8)+'px';lg.style.top=(Math.max(r.top,0)+8)+'px';lg.style.maxWidth=Math.max(160,Math.min(r.right,innerWidth)-Math.max(r.left,0)-70)+'px';}}
+  const lg=$('#rngLeg');if(lg){const on=vis&&lg.childElementCount>0;lg.style.display=on?'block':'none';if(on){lg.style.left=(Math.max(r.left,0)+8)+'px';const mb=document.querySelector('.mapbar'),mbB=mb?[...mb.children].reduce((a,c)=>{const q=c.getBoundingClientRect();return q.width&&q.height?Math.max(a,q.bottom):a;},0):0; // 手機：工具列浮在地圖上方，圖例要排在工具列下面，不然會蓋住按鈕
+      lg.style.top=(Math.max(r.top,0)+8>=mbB||mbB<=r.top?Math.max(r.top,0)+8:mbB+6)+'px';lg.style.maxWidth=Math.max(160,Math.min(r.right,innerWidth)-Math.max(r.left,0)-70)+'px';}}
   b.style.display=vis?'flex':'none';if(!vis)return;
   const left=Math.min(r.right,side?br.left:innerWidth,innerWidth)-12-44,co=document.getElementById('coach');
   let bt=bottom;

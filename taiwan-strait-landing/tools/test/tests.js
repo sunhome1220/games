@@ -47,6 +47,16 @@ add('海面點選與游標移入（反查格子）','medium',async c=>{const p=a
   r.push([await p.evaluate(()=>document.querySelectorAll('#map *').length<35000),'地圖 SVG 節點數 < 35,000（海面合併後約 30,000；合併前約 46,700）']);
   r.push(...noErr(p,'海面點選'));await p.close();return r;});
 
+add('手機版射程圖例不蓋住地圖按鈕','medium',async c=>{const {devices}=require('playwright');const r=[];
+  for(const [nm,dev] of [['直向',devices['iPhone 13']],['橫向',devices['iPhone 13 landscape']]]){
+    const ctx=await c.b.newContext({...dev}),p=await ctx.newPage();p.errs=[];p.bad=[];p.on('pageerror',e=>p.errs.push(e.message));
+    await p.goto(c.url+'?debug=1&fast=1',{timeout:90000});await p.waitForTimeout(1200);await L.startGame(p);
+    const o=await p.evaluate(()=>{RNG_LEG=[1,2,3,4,5,6].map(i=>({cls:i%2?'ad':'x',sd:'def',txt:'測試圖例 '+i+'・200 km'}));rngLegSync();placeLoc();
+      const lg=document.getElementById('rngLeg').getBoundingClientRect(),mb=[...document.querySelectorAll('.mapbar>*')].map(q=>q.getBoundingClientRect()).filter(q=>q.width&&q.height);
+      return {n:mb.length,ov:mb.filter(q=>q.left<lg.right&&q.right>lg.left&&q.top<lg.bottom&&q.bottom>lg.top).length};});
+    r.push([o.n>0&&o.ov===0,'手機'+nm+'：圖例與地圖上方 '+o.n+' 個按鈕重疊 '+o.ov+' 個（應為 0）']);r.push(...noErr(p,'手機'+nm));await ctx.close();}
+  return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];
