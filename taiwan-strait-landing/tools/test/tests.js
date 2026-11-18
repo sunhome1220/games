@@ -33,6 +33,8 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
       out[type+'/'+st]=[targets(u).length,seaPen(u)];}return out;});
   r.push([o['amph/lst'][0]>0&&o['amph/lst'][1]<0,'兩棲旅搭兩棲艦：海上可搶灘突擊（有修正）']);r.push([o['mar/lst'][0]>0&&o['mar/lst'][1]<0,'陸戰旅搭兩棲艦：海上可搶灘突擊']);
   r.push([o['amph/ro'][0]===0,'搭滾裝船的旅：海上不能突擊']);r.push([o['arm/ro'][0]===0,'重型旅：海上不能突擊']);
+  const cov=await p.evaluate(()=>['宜蘭','蘇澳','台東','志航基地','花蓮','新竹基地','桃園機場','清泉崗'].map(n=>{const h=Object.values(TER).find(x=>x.isl==='TW'&&x.name===n);return [n,!!h&&samCovBM(h)];}));
+  r.push([cov.every(x=>x[1]),'彈道飛彈防禦涵蓋重要地點（宜蘭、蘇澳、台東、志航、花蓮、新竹、桃園、清泉崗）'+cov.filter(x=>!x[1]).map(x=>' 缺：'+x[0]).join('')]);
   r.push(...noErr(p,'快速測試'));await p.close();return r;});
 
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
@@ -65,7 +67,8 @@ const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.read
     else if(!base[i])r.push([false,'設定 '+i+' 沒有基準值（執行 --update-baseline 建立）']);
     else r.push([base[i]===s,'固定種子推演（設定 '+i+'）與基準值相同'+(base[i]===s?'':'\n    基準 '+base[i]+'\n    現在 '+s)]);
     r.push([!res[k].errs.length,'推演（設定 '+i+'）沒有頁面錯誤 '+res[k].errs]);});
-  if(c.update)fs.writeFileSync(BASE,JSON.stringify(base,null,1));return r;};
+  if(c.update){const cur=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};for(const i of idx)cur[i]=base[i];fs.writeFileSync(BASE,JSON.stringify(cur,null,1));} // 寫入前重新讀檔再合併：medium 與 full 的推演同時跑，不然後寫的會蓋掉先寫的
+  return r;};
 add('固定種子推演（1 場）','medium',c=>baseCheck(c,[0]));
 add('固定種子推演（其餘 3 場）','full',c=>baseCheck(c,[1,2,3]));
 
