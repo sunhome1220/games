@@ -4,8 +4,8 @@
 function unloadCap(){ // 船團的卸載上限：攻方掌握的港口、灘岸格、灘頭堡（各格依所在海域的浪高）
   let capP=0,capB=0;
   const fb=wh=>Math.max(0,Math.min(1,(2.5-wh)/1.25)),fp=wh=>Math.max(.3,Math.min(1,(4-wh)/2)); // 浪高：灘頭 ≤1.25 公尺全額、≥2.5 公尺歸零；港口有防波堤，≥4 公尺降到三成
-  for(const h of Object.values(TER)){
-    if(h.isl==='TW'&&S.owner[h.k]==='atk'&&h.coastal&&!h.cliff&&h.t!=='mtn'){
+  for(const h of terList('twCoast',h=>h.isl==='TW'&&h.coastal&&!h.cliff&&h.t!=='mtn')){
+    if(S.owner[h.k]==='atk'){
       const wh=wxWave(h);
       if(h.t==='port')capP+=(S.portDown[h.k]?1:portCap(h.k))*fp(wh);else capB+=fb(wh);
       if(MINOR_PORTS[h.k]&&!S.portDown[h.k])capP+=2*fp(wh); // 次要港口

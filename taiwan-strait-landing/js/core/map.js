@@ -115,6 +115,8 @@ TW.forEach(([c,r,t,n,cl,mud])=>Object.assign(TERC[K(c,r)],{t,name:n||null,cliff:
 
 // 細格地形：每個粗格細分成 2×2，名稱／港口／機場只留在中心細格
 const TER={};
+// 地形是載入後就不變的：「符合條件的格子清單」第一次用到時算一次、之後直接用（每次重畫都掃 9,000 格太浪費）；條件只能看地形，不能看 S 的狀態
+const terList=(()=>{const m={};return (key,fn)=>m[key]||(m[key]=Object.values(TER).filter(fn));})();
 for(let r=ROW0;r<ROW1;r++)for(let c=COL0;c<COL1;c++)TER[K(c,r)]={c,r,k:K(c,r),t:'sea',isl:null};
 (function(){
   const cells=Object.values(TERC),cp=cells.map(h=>oCenter(h.c,h.r));

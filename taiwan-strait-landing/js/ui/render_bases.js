@@ -62,12 +62,12 @@ function textZoomFix(){ringScaleSync(); // 放大到 500% 以上時，地名、�
 }
 // 地圖動態層：攻方占領區、灘頭堡、可移動範圍
 function mapOverlaySVG(){let o='';
-  for(const h of Object.values(TER)){
-    if(!isLand(h)||h.isl==='CN'||S.owner[h.k]!=='atk')continue;
+  for(const h of terList('landNotCN',h=>isLand(h)&&h.isl!=='CN')){
+    if(S.owner[h.k]!=='atk')continue;
     const [x,y]=cen(h.c,h.r);o+='<polygon class="ov-atk" points="'+hexPts(x,y,R-1)+'"/>';
   }
-  for(const h of Object.values(TER)){ // 次要港口 ⚓ 與灘頭堡外框
-    if(h.isl!=='TW')continue;const mp=MINOR_PORTS[h.k],bh=S.bh&&S.bh[h.k]&&S.turn-S.bh[h.k]>=1&&S.owner[h.k]==='atk';if(!mp&&!bh)continue;
+  for(const h of terList('tw',h=>h.isl==='TW')){ // 次要港口 ⚓ 與灘頭堡外框
+    const mp=MINOR_PORTS[h.k],bh=S.bh&&S.bh[h.k]&&S.turn-S.bh[h.k]>=1&&S.owner[h.k]==='atk';if(!mp&&!bh)continue;
     const [x,y]=cen(h.c,h.r);if(bh)o+='<polygon class="ov-bh" points="'+hexPts(x,y,R-3)+'"/>';
   }
   if(humanTurn()&&S.sel&&alive(S.sel)&&S.sel.side===S.phase){
