@@ -446,9 +446,6 @@ function buildFar(){
     if(f.tag)o+='<text class="far-tag" x="'+x+'" y="'+(y+18)+'" fill="'+col[f.who]+'">'+f.tag+'</text>';
   }
   let oS='';
-  const Z=(c,r,rx,ry,who,t)=>{const [x,y]=center(c,r);
-    return '<ellipse pointer-events="none" cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" fill="none" stroke="'+col[who]+'" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="6 4"/>'+(t?'<text class="far-tag" x="'+x+'" y="'+(y+ry+10)+'" fill="'+col[who]+'">'+t+'</text>':'');
-    };
   const SUBG=(x,y,who,dash)=>'<g><ellipse cx="'+x+'" cy="'+(y+7)+'" rx="16" ry="4" fill="#000" opacity=".15"/><path d="M'+(x-17)+' '+(y+2)+'q0 -6 8 -6h18q9 0 9 6q0 6 -9 6h-18q-8 0 -8 -6z" fill="'+
       col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".55"':'')+'/><path d="M'+(x-4)+' '+(y-4)+'v-5h8v5" fill="'+col[who]+'" stroke="#fff" stroke-width="1"/><path d="M'+
       (x+2)+' '+(y-9)+'v-5h4" fill="none" stroke="#fff" stroke-width="1.2"/><path d="M'+(x-17)+' '+(y+2)+'l-4 -3m4 3l-4 4" stroke="'+col[who]+'" stroke-width="1.5"/></g>';
@@ -472,8 +469,6 @@ function buildFar(){
       '<ellipse class="ush" cx="0" cy="11" rx="16" ry="5"/><rect class="uside '+cls+'" x="-15" y="-9" width="30" height="22" rx="3"/><rect class="body '+cls+'" x="-15" y="-14" width="30" height="23" rx="3"/><rect class="uhi" x="-13" y="-13" width="26" height="3" rx="1.5"/>'+
           FSYM[kind]+'<text class="tx" x="0" y="6.5">'+sh+'</text></g></g>';
     return ch+'<text class="far-lbl" x="'+x+'" y="'+(y-16*FK-2).toFixed(1)+'">'+t+'</text><text class="far-tag" x="'+x+'" y="'+(y+14*FK+7).toFixed(1)+'" fill="'+col[who]+'">'+sub+'</text>';};
-  o+=Z(26.5,-1,115,70,'us','美日 沖繩投射區')+Z(19.5,4,150,95,'jp','日本 先島投射區')+Z(26.5,22,95,60,'us','美軍 關島投射區')+Z(27.5,-5.5,95,50,'jp','日本 九州')
-    +Z(-4,5,62,300,'atk','共軍 大陸沿海投射區')+Z(8,-3.5,85,55,'atk','共軍 東海艦隊');
   oS+=SH(23,17,'atk','共軍潛艦','太平洋・隱蔽',true)+'<g id="csgM">'+SH(32,10,'us','第7艦隊','航艦打擊群')+'</g>'+'<g id="jmsdfM">'+SH(26,-4,'jp','海自護衛隊群','佐世保出港')+'</g>'+SH(19,17,'us','美軍潛艦','隱蔽',true)+SH(15,17,'jp','海自潛艦','隱蔽',true);
   const T=(c,r,t,sz)=>{const [x,y]=center(c,r);return '<text class="big" font-size="'+(sz||12)+'" x="'+x+'" y="'+y+'" text-anchor="middle">'+t+'</text>';};
   o+=T(23,8,'太平洋',13)+T(5,19,'南海',13)+T(15,14,'呂宋海峽',11)+T(14,-3,'東海',13);
