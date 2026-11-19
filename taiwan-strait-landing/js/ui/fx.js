@@ -346,7 +346,7 @@ function renderCtrl(){
     hint='✈ 空軍出擊中：'+(TER[S.afK].name||'基地')+'・'+AF_MODE_N[S.mode]+'——點紅圈'+(S.mode==='afC'?'或大陸基地':'')+'的目標（可攻擊 '+n+' 個）'+(S.afPend?'；已選定，看面板確認（點其他目標可切換，面板可拖曳）':'')+'。按下方「取消出擊」或點空地離開。';
     }
   else if((S.mode==='hlS'||S.mode==='hlL')&&heliB(S.hlB))hint='🚁 攻擊直升機出擊中：'+heliB(S.hlB).n+'・'+heliModeN(heliB(S.hlB),S.mode)+'——點紅圈的目標（可攻擊 '+heliRings().length+' 個，剩 '+heliBudget(heliB(S.hlB))+' 批）。按下方「取消出擊」或點空地離開。';
-  else if(S.mode==='helo')hint='🚁 反潛直升機：點圓圈（150 km）內的海域搜索潛艦；找到會投擲魚雷攻擊。';
+  else if(S.mode==='helo')hint='🚁 反潛直升機：點圓圈（150 km）內的海域，搜索該點半徑 40 km 的範圍（游標移上去會預覽）；越靠近搜索中心越容易發現，找到會投擲魚雷攻擊。潛艦開火後會立刻隱蔽並轉移 20～40 km，地圖只留「？」虛線圈標示最後已知位置。';
   else if(S.mode==='strike'&&S.phase==='def'&&S.cnPend)hint='🎯 縱深打擊：已選定目標，看面板確認發射；點其他目標可切換，面板可拖曳。';
   else if(S.mode==='strike')hint=S.phase==='atk'?'點選任一守方單位、台灣的機場，或地圖上的美日基地進行火力打擊，每次消耗 1 點。':'點選地圖上的大陸基地（紅色圖形），或直接點右側「中方基地」清單的一列，進行長程打擊，每次消耗 1 發長程飛彈。';
   else if(S.sel&&S.sel.type==='hmr'&&S.phase==='def'){const n=targets(S.sel).length;hint='海馬士只能打陸上目標：4 格內用火箭彈，14 格內用陸軍戰術飛彈（各有庫存）；每次最多 4 輛齊射，每階段次數依可射車數，發射後可再移動。'+(n?'橘圈＝目前射程內可打擊的 '+n+' 個目標，點選目標發射。':'目前射程內沒有陸上目標（海上船團要靠反艦飛彈）。');}

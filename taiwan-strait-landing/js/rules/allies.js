@@ -71,7 +71,7 @@ function mdtFire(t0){const m=mdtPiece();if(!m||m.acted||m.mag.asm<=0)return;cons
 function ssnFire(u,tgt){
   if(u.acted)return false;const ts=shipFoes(u,6);if(!ts.length)return false;
   const t=tgt&&ts.includes(tgt)?tgt:pickBest(ts,escVal),d=rd(hexOf(u),hexOf(t)),w=(u.tp>0&&d<=kmH(60))?'tp':(u.hm>0?'hm':null);if(!w)return false;
-  if(w==='tp')u.tp=Math.max(0,u.tp-2);else u.hm--;u.revealed=true;u.acted=true;u.last={c:u.c,r:u.r,turn:S.turn};
+  if(w==='tp')u.tp=Math.max(0,u.tp-2);else u.hm--;u.acted=true;
   const nm=w==='hm'?'魚叉飛彈':'重型魚雷',sv=w==='hm'&&adCover(t).length?salvoCalc(t,1,false,'ssnSalvo>'+t.type):null;
   const hit=sv?sv.hits>0:hitP(w==='hm'?Math.max(.1,hkP(t)-.12):hkP(t),'ssn:'+w+'>'+t.type),big=t.type==='cv'||t.type==='csg',steps=!hit?0:sv&&big?takeInt(.5,'salvoBig'):1;
   log('美軍攻擊潛艦以'+nm+'攻擊 '+uname(t)+(sv?'：對方防空發射 '+sv.I+' 枚攔截彈，':'')+(hit?'命中'+(steps?'':'（航艦體積大，未造成重創）'):'未命中')+'（魚雷 '+u.tp+'、魚叉 '+u.hm+'、戰斧 '+u.mag.lam+' 枚；參數為推估）');
@@ -79,6 +79,7 @@ function ssnFire(u,tgt){
   if(hit&&steps)damage(t,steps,'美軍攻擊潛艦'+nm);
   const dd=S.units.filter(e=>e.side==='atk'&&(e.type==='dd'||isEsc(e))&&alive(e)&&rd(hexOf(u),hexOf(e))<=kmH(80)).length,pa=Math.min(.65,(.1+.12*dd)*hkE()[1]*(w==='hm'?.5:1));
   if(hitP(pa,'ssn:'+w+'>'+t.type)){log('美軍攻擊潛艦被反潛兵力發現並攻擊');damage(u,1,'反潛攻擊');}
+  if(alive(u))subEvade(u);
   return true;
 }
 async function ssnMove(u){
