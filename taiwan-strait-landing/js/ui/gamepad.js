@@ -235,7 +235,8 @@
     if(press(1)){ // ○：取消（彈窗的取消鈕 → 取消打擊模式 → 關閉資訊卡）
       if(document.querySelector('#modal.fin-on:not([hidden])'))clickIf('#btnClose'); // 結算頁：○＝檢視地圖
       else if(modal)clickIf('#modal .ghost,#modal button#cfN');
-      else if(typeof S!=='undefined'&&S&&S.mode==='strike')clickIf('#mbStrike,#fsStrike,#btnStrike',true);
+      else if(clickIf('#afPend:not([hidden]) #afPendNo,#cnPend:not([hidden]) #cnPendNo')){} // 空軍出擊／縱深打擊的確認面板：○＝取消已選的目標（面板不是彈窗，原本要移游標到「取消」才按得到）
+      else if(typeof S!=='undefined'&&S&&(S.mode==='strike'||S.mode==='afS'||S.mode==='afL'||S.mode==='afC'||S.mode==='hlS'||S.mode==='hlL'))clickIf('#mbStrike,#fsStrike,#btnStrike',true);
       else if(typeof S!=='undefined'&&S&&S.sel&&!S.mode){S.sel=null;tgtPick=null;if(typeof render==='function')render();} // 取消選取單位（之後十字鍵左右＝換單位）
       else clickIf('#ucard:not([hidden]) #ucClose');
     }

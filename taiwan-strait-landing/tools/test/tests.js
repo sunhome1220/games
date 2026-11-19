@@ -72,7 +72,7 @@ add('防空增購：各年份連數、設定頁、自動選址','medium',async c
   return r;});
 
 add('攻擊模式的快捷按鈕（取代電腦代打／結束階段）','medium',async c=>{const r=[];
-  const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});
+  const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:4242}); // 固定種子：第一波打擊後哪些基地還能出擊是隨機的，不固定會偶爾找不到
   await p.evaluate(()=>{$('#optSide').value='def';$('#optSide').dispatchEvent(new Event('change'));});await L.startGame(p);
   for(let i=0;i<100;i++){const x=await L.modalClick(p);if(x===2&&await p.evaluate(()=>humanTurn()&&document.querySelector('#modal').hidden))break;await p.waitForTimeout(150);}
   const txt=()=>p.evaluate(()=>['mbStrike','mbAssist','mbEnd','btnStrike','btnAssist','btnEnd'].map(id=>{const e=document.getElementById(id);return e.hidden?'':e.textContent.trim()+(e.disabled?'|停':'');}));
@@ -123,4 +123,17 @@ add('手把登陸流程','full',async c=>{const p=await L.open(c.b,c.url,'?debug
   r.push([ok,'手把：登陸選項排在最前面']);await press(0);await p.waitForTimeout(1500);
   r.push([await p.evaluate(()=>S.stats.firstLand!=null||S.units.some(u=>u.side==='atk'&&u.type==='amph'&&!u.ship&&hexOf(u).isl==='TW')),'手把：按 ✕ 完成登陸']);
   r.push(...noErr(p,'手把流程'));await p.close();return r;},true);
+add('手把 ○ 取消出擊確認面板','full',async c=>{const r=[];
+  const p=await L.open(c.b,c.url,'?debug=1',{pad:true,fast:true,hide:true,seed:4242});
+  await p.evaluate(()=>{$('#optSide').value='def';$('#optSide').dispatchEvent(new Event('change'));});await L.startGame(p);
+  for(let i=0;i<100;i++){const x=await L.modalClick(p);if(x===2&&await p.evaluate(()=>humanTurn()&&document.querySelector('#modal').hidden))break;await p.waitForTimeout(150);}
+  const press=async i=>{await p.evaluate(i=>{__pad.buttons[i].pressed=true;__pad.buttons[i].value=1;},i);await p.waitForTimeout(120);await p.evaluate(i=>{__pad.buttons[i].pressed=false;__pad.buttons[i].value=0;},i);await p.waitForTimeout(200);};
+  const ok=await p.evaluate(()=>{const h=afUsable().find(x=>afBudget(x.k)>0&&afBaseN(x.k)>0);if(!h)return false;S.afK=h.k;S.baseSel=h.k;S.sel=null;
+    const m=['afL','afS','afC'].find(m=>afModeN(h.k)[m]>0);if(!m)return false;S.mode=m;S.afPend=null;render();
+    const t=(m==='afS'?afShipT(h.k):m==='afL'?afLandT(h.k):afStgT(h.k))[0];if(!t)return false;S.afPend={k:h.k,x:m==='afC'?{stg:t.id}:{u:t.id}};render();return true;});
+  r.push([ok,'準備好出擊確認面板']);if(ok){
+    r.push([await p.evaluate(()=>{const e=document.getElementById('afPend');return !!e&&!e.hidden;}),'確認面板顯示中']);
+    await press(1);r.push([await p.evaluate(()=>!S.afPend&&S.mode!==null),'按 ○：取消已選的目標（仍在出擊模式）']);
+    await press(1);r.push([await p.evaluate(()=>S.mode===null),'再按 ○：取消出擊，離開出擊模式']);}
+  r.push(...noErr(p,'手把取消'));await p.close();return r;},true);
 module.exports={T};
