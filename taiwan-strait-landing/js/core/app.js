@@ -143,6 +143,12 @@ SETUP_PAGES.splice(SETUP_PAGES.findIndex(p=>p.t==='守方戰前準備')+1,0,{t:'
   fields:[1,2,3].map(k=>({sel:'optAD'+k,q:'第 '+k+' 個增購的連放在哪？',when:()=>adExtraOn(k),
     opts:Object.fromEntries([['auto',['自動（補最薄處）','補在新增涵蓋最多重要地點（機場、港口、城市）的地方。']]].concat(SAM_EXTRA.map(c=>[c.id,[c.n,samExtraDesc(c)]])))})),
   note:()=>adExtraOn(1)?'':'這一年沒有增購的防空連，或你不是守方，這一頁不用設定。'});
+// 開戰月份：4×3 月曆格，每格有天候三色條（良好／普通／惡劣的機率，取自 strike.js 的 MONTHWX）與季節小標籤；說明文字補上完整數字
+{const mf=SETUP_PAGES.flatMap(p=>p.fields).find(f=>f.sel==='optMonth'),SEA=['','東北季風','東北季風','季風尾聲','春季窗口','梅雨前後','梅雨','颱風季','颱風高峰','颱風高峰','秋季窗口','東北季風','東北季風'];
+  if(mf){mf.seg='mon';for(const m in mf.opts){const w=MONTHWX[m],o=mf.opts[m],pc=w.map(x=>Math.round(x*100));
+    o[2]='<span class="mo"><b>'+m+' 月</b><i class="wxb" title="良好 '+pc[0]+'%・普通 '+pc[1]+'%・惡劣 '+pc[2]+'%"><s style="flex:'+pc[0]+'"></s><s style="flex:'+pc[1]+'"></s><s style="flex:'+pc[2]+'"></s></i><em>'+SEA[m]+'</em></span>';
+    o[1]='天候機率：良好 '+pc[0]+'%、普通 '+pc[1]+'%、惡劣 '+pc[2]+'%（★推估）。'+o[1];}
+    mf.q='開戰月份（決定天候機率；色條＝良好／普通／惡劣）';}}
 const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
 function optLabel(sel,v){for(const f of PREF_FIELDS.concat(...SETUP_PAGES.map(pg=>pg.fields)))if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
 function saveSetup(){if(typeof MISSION!=='undefined'&&MISSION)return; /* 關卡挑戰用的設定不存成玩家的設定 */try{const cfg={};CFG_IDS.forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
@@ -172,7 +178,7 @@ function renderWizard(){
     if(f.grp!==gcur){gclose();if(f.grp){gcur=f.grp;h+='<details class="rg wzg" data-g="'+f.grp+'"'+(WZ.open[f.grp]?' open':'')+'><summary><b>'+GN[f.grp]+'</b></summary>';}}
     const cur=$('#'+f.sel).value;
     const ent=Object.entries(f.opts);
-    h+='<div class="wz-q">'+f.q+'</div><div class="seg" role="radiogroup" aria-label="'+f.q+'" style="--n:'+(ent.length<=3?ent.length:2)+'">'+ent.map(([v,o])=>'<button class="segb'+
+    h+='<div class="wz-q">'+f.q+'</div><div class="seg'+(f.seg?' '+f.seg:'')+'" role="radiogroup" aria-label="'+f.q+'" style="--n:'+(ent.length<=3?ent.length:2)+'">'+ent.map(([v,o])=>'<button class="segb'+
         (v===cur?' on':'')+'"'+''+' role="radio" aria-checked="'+(v===cur)+'" data-sel="'+f.sel+'" data-v="'+v+'">'+(o[2]||o[0])+'</button>').join('')+'</div><div class="seg-desc"><b>'+
         (f.opts[cur]?f.opts[cur][0]:'')+'</b>　'+(f.opts[cur]?f.opts[cur][1]:'')+'</div>';
   });

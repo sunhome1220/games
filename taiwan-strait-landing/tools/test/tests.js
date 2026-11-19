@@ -17,6 +17,11 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
   await p.evaluate(()=>showChangelog(true));await p.waitForFunction(()=>CHANGELOG_OLD&&document.querySelectorAll('#wn h4').length>CHANGELOG.length,null,{timeout:10000}).catch(()=>{});
   r.push([await p.evaluate(()=>!!CHANGELOG_OLD&&CHANGELOG_OLD.length>0&&document.querySelectorAll('#wn h4').length>CHANGELOG.length),'看全部時才載入舊的更新日誌']);
   r.push([await p.evaluate(()=>{const z=FXOFF&&reduce()&&fxK()<.1;document.querySelector('#wn')&&document.querySelector('#wn').remove();return z;}),'網址 fast=1：關閉動畫（reduce() 為真、動畫時間壓縮）']);
+  { // 開戰月份：4×3 月曆格、每格天候三色條；點格子會設定月份，說明文字有完整機率
+    const mo=await p.evaluate(()=>{const i=SETUP_PAGES.findIndex(pg=>pg.fields.some(f=>f.sel==='optMonth'));WZ.i=i;renderWizard();const t=[...document.querySelectorAll('.seg.mon .segb')];
+      const bars=t.every(b=>b.querySelectorAll('.wxb s').length===3);t.find(b=>b.dataset.v==='10').click();return {n:t.length,bars,v:$('#optMonth').value,desc:(document.querySelector('.seg.mon+.seg-desc')||{}).textContent||''};});
+    r.push([mo.n===12&&mo.bars,'開戰月份：12 個月曆格，每格都有天候三色條']);r.push([mo.v==='10'&&/良好 45%、普通 32%、惡劣 23%/.test(mo.desc),'點 10 月：設定月份、說明寫出完整機率 '+mo.desc.slice(0,40)]);
+    await p.evaluate(()=>{$('#optMonth').value='4';$('#optMonth').dispatchEvent(new Event('change'));WZ.i=0;renderWizard();});} // 回到第 1 頁：之後 startGame 會一頁頁按下一步，沒看過的頁面不能跳過
   await L.startGame(p);
   // 關卡判定：在已開局的一般對局上直接呼叫各關的 check()（不必真的開關卡、不必玩回合）
   const a=await p.evaluate(()=>{const cv=S.units.find(u=>u.type==='cv'&&u.side==='atk');const D=MISSION_DEFS.carrier,before=D.check();cv.hp=1;return [before,D.check()];});
