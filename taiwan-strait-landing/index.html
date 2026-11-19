@@ -122,7 +122,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 /* svg */
 .tl-sea{fill:var(--sea);stroke:var(--sea-edge);stroke-width:.5}
 .tl-sea.sh{fill:color-mix(in srgb,var(--sea) 89%,#fff)} .tl-sea.d4{fill:color-mix(in srgb,var(--sea) 91%,#000)} .tl-sea.d1{fill:color-mix(in srgb,var(--sea) 88%,#fff)} .tl-sea.d2{fill:color-mix(in srgb,var(--sea) 92%,#fff)} .tl-sea.d3{fill:color-mix(in srgb,var(--sea) 93%,#000)}
-.wv{fill:none;stroke:#fff;stroke-opacity:.3;stroke-width:1.1;stroke-linecap:round;animation:swell 5.5s ease-in-out infinite alternate;pointer-events:none}
+.noanim .wv{animation:none!important} .wv{fill:none;stroke:#fff;stroke-opacity:.3;stroke-width:1.1;stroke-linecap:round;animation:swell 5.5s ease-in-out infinite alternate;pointer-events:none}
 @keyframes swell{from{transform:translateX(-3px)}to{transform:translateX(3px)}}
 .tl-sh{fill:#000;opacity:.2;pointer-events:none}
 .tile.t-plain2,.tile.t-plain3,.tile.t-hill{--tile:var(--land)} .tile.t-mainhill,.tile.t-mainmtn,.tile.t-maincity,.tile.t-main2,.tile.t-main3{--tile:var(--main)} .tile{--tile:var(--land)} .tile.t-city{--tile:var(--city)} .tile.t-mtn{--tile:var(--mtn)} .tile.t-main{--tile:var(--main)}
@@ -922,58 +922,58 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-18.23' -->
-<script src="js/i18n/dict.js?v=2026-11-18.23"></script>
-<script src="js/i18n/i18n.js?v=2026-11-18.23"></script>
-<script src="js/ui/btnfix.js?v=2026-11-18.23"></script>
-<script src="js/data/geo.js?v=2026-11-18.23"></script>
-<script src="js/data/dem.js?v=2026-11-18.23"></script>
-<script src="js/data/urban.js?v=2026-11-18.23"></script>
-<script src="js/data/outer.js?v=2026-11-18.23"></script>
-<script src="js/core/map.js?v=2026-11-18.23"></script>
-<script src="js/core/state.js?v=2026-11-18.23"></script>
-<script src="js/rules/sealift.js?v=2026-11-18.23"></script>
-<script src="js/rules/rules.js?v=2026-11-18.23"></script>
-<script src="js/rules/killchain.js?v=2026-11-18.23"></script>
-<script src="js/rules/verdict.js?v=2026-11-18.23"></script>
-<script src="js/rules/supply.js?v=2026-11-18.23"></script>
-<script src="js/rules/ending.js?v=2026-11-18.23"></script>
-<script src="js/rules/theater.js?v=2026-11-18.23"></script>
-<script src="js/rules/airwar.js?v=2026-11-18.23"></script>
-<script src="js/rules/sam.js?v=2026-11-18.23"></script>
-<script src="js/rules/carrier.js?v=2026-11-18.23"></script>
-<script src="js/rules/asw.js?v=2026-11-18.23"></script>
-<script src="js/rules/psub.js?v=2026-11-18.23"></script>
-<script src="js/rules/strike.js?v=2026-11-18.23"></script>
-<script src="js/rules/airstrike.js?v=2026-11-18.23"></script>
-<script src="js/rules/heli.js?v=2026-11-18.23"></script>
-<script src="js/rules/decisions.js?v=2026-11-18.23"></script>
-<script src="js/media/report.js?v=2026-11-18.23"></script>
-<script src="js/rules/weather.js?v=2026-11-18.23"></script>
-<script src="js/rules/truce.js?v=2026-11-18.23"></script>
-<script src="js/rules/allies.js?v=2026-11-18.23"></script>
-<script src="js/rules/turn.js?v=2026-11-18.23"></script>
-<script src="js/rules/ai.js?v=2026-11-18.23"></script>
-<script src="js/ui/render.js?v=2026-11-18.23"></script>
-<script src="js/ui/render_outer.js?v=2026-11-18.23"></script>
-<script src="js/ui/render_bases.js?v=2026-11-18.23"></script>
-<script src="js/ui/landtips.js?v=2026-11-18.23"></script>
-<script src="js/ui/fxanim.js?v=2026-11-18.23"></script>
-<script src="js/ui/fx.js?v=2026-11-18.23"></script>
-<script src="js/ui/modebar.js?v=2026-11-18.23"></script>
-<script src="js/ui/ammo.js?v=2026-11-18.23"></script>
-<script src="js/ui/mobilecard.js?v=2026-11-18.23"></script>
-<script src="js/media/video.js?v=2026-11-18.23"></script>
-<script src="js/media/stats.js?v=2026-11-18.23"></script>
-<script src="js/ui/input.js?v=2026-11-18.23"></script>
-<script src="js/media/unitinfo.js?v=2026-11-18.23"></script>
-<script src="js/version.js?v=2026-11-18.23"></script>
-<script src="js/core/changelog.js?v=2026-11-18.23"></script>
-<script src="js/core/app.js?v=2026-11-18.23"></script>
-<script src="js/missions/common.js?v=2026-11-18.23"></script>
-<script src="js/missions/carrier.js?v=2026-11-18.23"></script>
-<script src="js/missions/port.js?v=2026-11-18.23"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-18.25' -->
+<script src="js/i18n/dict.js?v=2026-11-18.25"></script>
+<script src="js/i18n/i18n.js?v=2026-11-18.25"></script>
+<script src="js/ui/btnfix.js?v=2026-11-18.25"></script>
+<script src="js/data/geo.js?v=2026-11-18.25"></script>
+<script src="js/data/dem.js?v=2026-11-18.25"></script>
+<script src="js/data/urban.js?v=2026-11-18.25"></script>
+<script src="js/data/outer.js?v=2026-11-18.25"></script>
+<script src="js/core/map.js?v=2026-11-18.25"></script>
+<script src="js/core/state.js?v=2026-11-18.25"></script>
+<script src="js/rules/sealift.js?v=2026-11-18.25"></script>
+<script src="js/rules/rules.js?v=2026-11-18.25"></script>
+<script src="js/rules/killchain.js?v=2026-11-18.25"></script>
+<script src="js/rules/verdict.js?v=2026-11-18.25"></script>
+<script src="js/rules/supply.js?v=2026-11-18.25"></script>
+<script src="js/rules/ending.js?v=2026-11-18.25"></script>
+<script src="js/rules/theater.js?v=2026-11-18.25"></script>
+<script src="js/rules/airwar.js?v=2026-11-18.25"></script>
+<script src="js/rules/sam.js?v=2026-11-18.25"></script>
+<script src="js/rules/carrier.js?v=2026-11-18.25"></script>
+<script src="js/rules/asw.js?v=2026-11-18.25"></script>
+<script src="js/rules/psub.js?v=2026-11-18.25"></script>
+<script src="js/rules/strike.js?v=2026-11-18.25"></script>
+<script src="js/rules/airstrike.js?v=2026-11-18.25"></script>
+<script src="js/rules/heli.js?v=2026-11-18.25"></script>
+<script src="js/rules/decisions.js?v=2026-11-18.25"></script>
+<script src="js/media/report.js?v=2026-11-18.25"></script>
+<script src="js/rules/weather.js?v=2026-11-18.25"></script>
+<script src="js/rules/truce.js?v=2026-11-18.25"></script>
+<script src="js/rules/allies.js?v=2026-11-18.25"></script>
+<script src="js/rules/turn.js?v=2026-11-18.25"></script>
+<script src="js/rules/ai.js?v=2026-11-18.25"></script>
+<script src="js/ui/render.js?v=2026-11-18.25"></script>
+<script src="js/ui/render_outer.js?v=2026-11-18.25"></script>
+<script src="js/ui/render_bases.js?v=2026-11-18.25"></script>
+<script src="js/ui/landtips.js?v=2026-11-18.25"></script>
+<script src="js/ui/fxanim.js?v=2026-11-18.25"></script>
+<script src="js/ui/fx.js?v=2026-11-18.25"></script>
+<script src="js/ui/modebar.js?v=2026-11-18.25"></script>
+<script src="js/ui/ammo.js?v=2026-11-18.25"></script>
+<script src="js/ui/mobilecard.js?v=2026-11-18.25"></script>
+<script src="js/media/video.js?v=2026-11-18.25"></script>
+<script src="js/media/stats.js?v=2026-11-18.25"></script>
+<script src="js/ui/input.js?v=2026-11-18.25"></script>
+<script src="js/media/unitinfo.js?v=2026-11-18.25"></script>
+<script src="js/version.js?v=2026-11-18.25"></script>
+<script src="js/core/changelog.js?v=2026-11-18.25"></script>
+<script src="js/core/app.js?v=2026-11-18.25"></script>
+<script src="js/missions/common.js?v=2026-11-18.25"></script>
+<script src="js/missions/carrier.js?v=2026-11-18.25"></script>
+<script src="js/missions/port.js?v=2026-11-18.25"></script>
 <script>if(missionId())setTimeout(()=>missionStart(missionId()),0);</script>
-<script src="js/ui/gamepad.js?v=2026-11-18.23"></script>
+<script src="js/ui/gamepad.js?v=2026-11-18.25"></script>
 </body>
 </html>

@@ -22,7 +22,7 @@ const modalClick=p=>p.evaluate(()=>{const m=document.querySelector('#modal');if(
   const bs=[...m.querySelectorAll('button:not(.mnew)')].filter(x=>!x.disabled&&x.getClientRects().length);
   const e=bs.find(x=>['nwGo','evGo','evOk','itGo','evRoll'].includes(x.id)&&!x.disabled)||m.querySelector('.opt:not(.on)')||m.querySelector('.opt')||bs.find(x=>!x.disabled); // 守方的事件卡要先選一個選項，確認鈕才會啟用
   if(e)e.click();return 1;});
-async function startGame(p){await p.evaluate(()=>{for(let i=0;i<6;i++){const n=document.querySelector('#wzNext');if(n&&!n.disabled)n.click();}document.querySelector('#btnStart').click();});
+async function startGame(p){await p.evaluate(()=>{for(let i=0;i<14;i++){const n=document.querySelector('#wzNext');if(n&&!n.disabled)n.click();}document.querySelector('#btnStart').click();}); // 設定頁數會隨選項變多（防空增購、預先布雷位置），多按幾次，每頁都要看過才能開始
   for(let i=0;i<150;i++){const r=await modalClick(p);if(r===2)return true;await p.waitForTimeout(60);}return false;}
 // 關卡：開始任務，一直點到結束（過關或失敗）；hold＝持續把兩個港口設成攻方控制（模擬守住）
 async function playMission(p,hold){

@@ -176,15 +176,16 @@ function readSetup(){
 }
 // 防空增購配置的選項（最多 3 個連）：存放設定值的隱藏下拉選單（選項取自 sam.js 的 SAM_EXTRA）
 for(let i=1;i<=3;i++){const s=document.createElement('select');s.id='optAD'+i;s.innerHTML='<option value="auto" selected>auto</option>'+SAM_EXTRA.map(c=>'<option value="'+c.id+'">'+c.id+'</option>').join('');$('#wzStore').appendChild(s);}
+for(let i=1;i<=6;i++){const s=document.createElement('select');s.id='optMN'+i;s.innerHTML='<option value="auto" selected>auto</option>'+MINE_PORTS.map(p=>'<option value="'+p[0]+'">'+p[0]+'</option>').join('');$('#wzStore').appendChild(s);} // 預先布雷：第 1～6 處放在哪個港口附近
 ['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optExer','#optLift','#optMonth','#optFxBias','#optWiLift','#optWiShip','#optWiWx',
     '#optWiDArms','#optWiLocal','#optWiAllies','#optPreDiplo','#optPreDeploy','#optReact','#optNavy','#optPenghu','#optPrepos','#optNews','#optVoice','#optFxSpd',
-    '#optTerm','#optFx','#optAlly','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP','#optAD1','#optAD2','#optAD3'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
+    '#optTerm','#optFx','#optAlly','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP','#optAD1','#optAD2','#optAD3','#optMN1','#optMN2','#optMN3','#optMN4','#optMN5','#optMN6'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
 const CFG_IDS=['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optExer','optLift','optMonth','optFxBias','optWiLift','optWiShip','optWiWx',
     'optWiDArms','optWiLocal','optWiAllies','optPreDiplo','optPreDeploy','optReact','optNavy','optPenghu','optPrepos','optFx','optAlly','optAirGen','optAirModel','optEW',
-    'optNews','optVoice','optFxSpd','optTerm','optAxN','optAxC','optAxP','optAD1','optAD2','optAD3'];
+    'optNews','optVoice','optFxSpd','optTerm','optAxN','optAxC','optAxP','optAD1','optAD2','optAD3','optMN1','optMN2','optMN3','optMN4','optMN5','optMN6'];
 const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optExer:'small',optLift:'1',optMonth:'4',optFxBias:'0',
     optWiLift:'0',optWiShip:'0',optWiWx:'0',optWiDArms:'0',optWiLocal:'0',optWiAllies:'0',optPreDiplo:'auto',optPreDeploy:'auto',optReact:'auto',optNavy:'auto',optPenghu:'auto',
-    optPrepos:'auto',optFx:'interest',optAlly:'ai',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optFxSpd:'1',optTerm:'plain',optAxN:'0',optAxC:'0',optAxP:'1',optAD1:'auto',optAD2:'auto',optAD3:'auto'};
+    optPrepos:'auto',optFx:'interest',optAlly:'ai',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optFxSpd:'1',optTerm:'plain',optAxN:'0',optAxC:'0',optAxP:'1',optAD1:'auto',optAD2:'auto',optAD3:'auto',optMN1:'auto',optMN2:'auto',optMN3:'auto',optMN4:'auto',optMN5:'auto',optMN6:'auto'};
 $('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
 // one-off start with the default settings; the saved setup choices are left as they were
 $('#btnDefault').onclick=()=>{

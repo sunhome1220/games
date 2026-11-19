@@ -95,18 +95,22 @@ function syncShips(){
     while(extra>0&&us.length){const u=us.pop();fxq({t:'dead',at:[u.c,u.r],type:u.type,side:u.side});S.units=S.units.filter(x=>x!==u);extra--;log(uname(u)+' 在 '+hname(hexOf(u))+' 被擊沉（海上交戰）');}
   }
 }
-// 守方預先布雷：在可能的西岸灘頭與近海布設（火山布雷車用於灘頭，水雷用於近海）；攻方掃雷要耗費時間
+// 守方預先布雷（2026-11-18 改版）：依「第幾處」輪流分散到四個主要港口（自動順序：台北港、台中港、高雄、基隆）；人類守方可在設定精靈逐處指定港口。
+// 單數處＝近海水雷（海軍閔江級布雷艇）、雙數處＝灘頭地雷（火山布雷車，只能布陸上）；數量＝「布雷」點數。舊版只挑經度 121.1°E 以西的海灘，台北港、基隆永遠沒有雷。
+const MINE_PORTS=[['tamsui','台北港'],['keelung','基隆'],['tcport','台中港'],['kaohsiung','高雄']],MINE_AUTO=['tamsui','tcport','kaohsiung','keelung'];
+const mineN=era=>{const e=ERA[era]||ERA['2026'];return (e.pools&&e.pools.rocMine)||POOL0.rocMine;};
+function mineSpotsAt(port,sea,r=2){ // 某港口附近可布雷的格子（由近到遠）：海格＝貼著陸地的近海格；陸地格＝沿岸平地（不含斷崖、泥灘、山地、有單位的格）
+  const t=TER[SPOT[port]];if(!t)return [];
+  const ok=h=>h&&hd(h,t)<=r&&!(S.mines&&S.mines[h.k])&&!unitAt(h.k)&&(sea?h.t==='sea'&&nbrs(h.c,h.r).some(x=>x&&isLand(x)&&x.isl==='TW'):h.isl==='TW'&&isLand(h)&&h.t!=='mtn'&&!h.cliff&&!h.mud&&nbrs(h.c,h.r).some(x=>x&&x.t==='sea'));
+  return terList('mineNear'+port+(sea?'S':'L')+r,h=>hd(h,t)<=r).filter(ok).sort((a,b)=>hd(a,t)-hd(b,t)||a.r-b.r||a.c-b.c);
+}
 function layMines(){
-  S.mines={};let n=S.pools.rocMine||0;if(n<=0)return;
-  const cand=Object.values(TER).filter(h=>h.isl==='TW'&&(h.t==='plain'||h.t==='port'||h.t==='city')&&!h.cliff&&!h.mud&&nbrs(h.c,h.r).some(x=>x.t==='sea'&&x.c<h.c));
-  const dp=h=>Math.min(...PORTS.map(k=>hd(h,TER[k])));
-  const beach=cand.filter(h=>h.lon<121.1).sort((a,b)=>dp(a)-dp(b)||a.r-b.r);
-  const seaS=new Set();beach.forEach(h=>nbrs(h.c,h.r).filter(x=>x.t==='sea'&&x.c<h.c).forEach(x=>seaS.add(x.k)));
-  const sea=[...seaS].map(k=>TER[k]).sort((a,b)=>dp(a)-dp(b)||a.r-b.r);
-  const land=beach.filter(h=>!unitAt(h.k));
-  for(let i=0;n>0&&(sea.length||land.length);i++,n--){
-    const h=(i%2===0?sea:land).shift()||sea.shift()||land.shift();if(!h)break;
-    if(!S.mines[h.k])S.mines[h.k]=1;
+  S.mines={};const n=S.pools.rocMine||0;if(n<=0)return;
+  const human=S.ctrl&&S.ctrl.def==='human';
+  for(let i=0;i<n;i++){
+    const el=document.getElementById('optMN'+(i+1)),pick=human&&el&&el.value!=='auto'?el.value:MINE_AUTO[i%4],sea=i%2===0;
+    const h=(mineSpotsAt(pick,sea)[0])||(mineSpotsAt(pick,sea,4)[0])||(mineSpotsAt(pick,!sea)[0])||(mineSpotsAt(pick,!sea,4)[0]);
+    if(h)S.mines[h.k]=1;
   }
   syncMines();log('守方預先布雷：'+Object.keys(S.mines).length+' 處（灘頭地雷與近海水雷）。');
 }

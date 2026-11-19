@@ -16,6 +16,7 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
   r.push([await p.evaluate(()=>CHANGELOG.length<=15&&CHANGELOG_OLD===null),'開頁只載入最近的更新日誌']);
   await p.evaluate(()=>showChangelog(true));await p.waitForFunction(()=>CHANGELOG_OLD&&document.querySelectorAll('#wn h4').length>CHANGELOG.length,null,{timeout:10000}).catch(()=>{});
   r.push([await p.evaluate(()=>!!CHANGELOG_OLD&&CHANGELOG_OLD.length>0&&document.querySelectorAll('#wn h4').length>CHANGELOG.length),'看全部時才載入舊的更新日誌']);
+  r.push([await p.evaluate(()=>document.body.classList.contains('noanim')&&(!document.querySelector('.wv')||getComputedStyle(document.querySelector('.wv')).animationName==='none')),'關閉動畫時，海浪的循環動畫也停掉']);
   r.push([await p.evaluate(()=>{const z=FXOFF&&reduce()&&fxK()<.1;document.querySelector('#wn')&&document.querySelector('#wn').remove();return z;}),'網址 fast=1：關閉動畫（reduce() 為真、動畫時間壓縮）']);
   { // 開戰月份：4×3 月曆格、每格天候三色條；點格子會設定月份，說明文字有完整機率
     const mo=await p.evaluate(()=>{const i=SETUP_PAGES.findIndex(pg=>pg.fields.some(f=>f.sel==='optMonth'));WZ.i=i;renderWizard();const t=[...document.querySelectorAll('.seg.mon .segb')];
@@ -96,6 +97,23 @@ add('攻擊模式的快捷按鈕（取代電腦代打／結束階段）','medium
   r.push([await p.evaluate(()=>{const b=document.getElementById('btnLand');return !!b&&b.hidden;}),'你是守方：登陸提示按鈕不顯示（按了不會有反應）']);
   r.push([await p.evaluate(()=>{const t=TER[SPOT.tcport],sea=nbrs(t.c,t.r).find(n=>n.t==='sea'),land=nbrs(t.c,t.r).find(n=>n.t!=='sea'&&!n.cliff);S.mines=S.mines||{};S.mines[sea.k]=1;S.mines[land.k]=1;render();return document.querySelectorAll('#map .mine.sea').length>=1&&document.querySelectorAll('#map .mine:not(.sea)').length>=1;}),'你是守方：看得到水雷（海格）與地雷（陸地格），圖形不同']);
   r.push(...noErr(p,'快捷按鈕'));await p.close();return r;});
+
+add('預先布雷：分散到四個港口、設定頁指定、補布選位置','medium',async c=>{const r=[];
+  const play=async(era,side,picks)=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:9});
+    await p.evaluate(([era,side,picks])=>{$('#optEra').value=era;$('#optEra').dispatchEvent(new Event('change'));$('#optSide').value=side;$('#optSide').dispatchEvent(new Event('change'));picks.forEach((v,i)=>{$('#optMN'+(i+1)).value=v;});},[era,side,picks]);
+    const page=await p.evaluate(()=>{const pg=SETUP_PAGES.find(x=>x.t==='預先布雷位置');return pg&&pg.fields.filter(f=>f.when()).length;});
+    await p.evaluate(()=>{for(let i=0;i<8;i++){const n=document.querySelector('#wzNext');if(n&&!n.disabled)n.click();}document.querySelector('#btnStart').click();});
+    await p.waitForFunction(()=>S.started&&S.mines,null,{timeout:60000});
+    const o=await p.evaluate(()=>{const near=pk=>Object.keys(S.mines).filter(k=>hd(TER[k],TER[SPOT[pk]])<=2).length;return {n:Object.keys(S.mines).length,tamsui:near('tamsui'),keelung:near('keelung'),tcport:near('tcport'),kaohsiung:near('kaohsiung'),sea:Object.keys(S.mines).filter(k=>TER[k].t==='sea').length};});
+    return {p,page,o};};
+  let q=await play('2032','atk',[]);
+  r.push([q.o.n===6&&q.o.tamsui>=1&&q.o.keelung>=1&&q.o.tcport>=1&&q.o.kaohsiung>=1,'2032 年預設：6 處雷分散到台北港、基隆、台中港、高雄（'+JSON.stringify(q.o)+'）']);
+  r.push([q.o.sea===3,'單數處近海水雷、雙數處灘頭地雷（3 + 3）']);r.push([q.page===0,'你是攻方：布雷設定頁不出現']);r.push(...noErr(q.p,'2032 預設'));await q.p.close();
+  q=await play('2029','def',['tamsui','tamsui','tamsui','keelung']);
+  r.push([q.page===4,'2029 年人類守方：布雷設定頁有 4 個問題']);r.push([q.o.n===4&&q.o.tamsui>=3&&q.o.keelung>=1,'照設定：3 處在台北港、1 處在基隆（'+JSON.stringify(q.o)+'）']);
+  const rl=await q.p.evaluate(()=>{const k=Object.keys(S.mines)[0];delete S.mines[k];syncMines();S.mods.mineT=0;const o=interdictOptions().opts.filter(x=>x.id.startsWith('mine'));return o.map(x=>x.id+'|'+x.label);});
+  r.push([rl.length>=2&&rl.some(x=>x.startsWith('mine@')&&/台北港/.test(x)),'有雷被掃除或觸發後，補布選項可挑地點（含台北港外海）：'+rl.length+' 個']);r.push(...noErr(q.p,'2029 設定'));await q.p.close();
+  return r;});
 
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
