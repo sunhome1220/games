@@ -92,11 +92,16 @@ function mapUnitsSVG(){let o='',smk='';RNG_LEG=[];
       '<rect x="-9" y="9" width="18" height="9" rx="4.5" fill="var(--panel,#fff)" stroke="'+c+'" stroke-width=".8" opacity=".9"/><text x="0" y="15.8" text-anchor="middle" font-size="6.5" font-weight="700" fill="'+c+'">T'+u.last.turn+'</text></g>';});
   return o;}
 // 次要港口、水雷、機場與港口損毀、影片焦點
+// 水雷（圓球＋八根觸角）與地雷（扁圓盤＋叉）：小而清楚，深色底＋黃邊；圖例也用同一組圖形
+const MINE_SVG=(cx,cy,q,sea)=>{const f=n=>n.toFixed(1),st='stroke="#ffd45a" stroke-linecap="round" fill="none"';
+  if(sea){const r=4*q;let h='';for(let i=0;i<8;i++){const a=i*Math.PI/4;h+='M'+f(cx+Math.cos(a)*r)+' '+f(cy+Math.sin(a)*r)+'L'+f(cx+Math.cos(a)*r*1.65)+' '+f(cy+Math.sin(a)*r*1.65);}
+    return '<path d="'+h+'" '+st+' stroke-width="'+f(1.1*q)+'"/><circle cx="'+f(cx)+'" cy="'+f(cy)+'" r="'+f(r)+'" fill="#1d1d1d" stroke="#ffd45a" stroke-width="'+f(1*q)+'"/>';}
+  const rx=5.2*q,ry=3.2*q;return '<ellipse cx="'+f(cx)+'" cy="'+f(cy)+'" rx="'+f(rx)+'" ry="'+f(ry)+'" fill="#1d1d1d" stroke="#ffd45a" stroke-width="'+f(1*q)+'"/><path d="M'+f(cx-rx*.45)+' '+f(cy-ry*.4)+'l'+f(rx*.9)+' '+f(ry*.8)+'M'+f(cx+rx*.45)+' '+f(cy-ry*.4)+'l'+f(-rx*.9)+' '+f(ry*.8)+'" '+st+' stroke-width="'+f(.9*q)+'"/>';};
 function mapMarksSVG(){let o='';
   for(const k of Object.keys(MINOR_PORTS)){const h=TER[k];if(!h)continue;const [x,y]=cen(h.c,h.r);o+='<text class="mport" style="font-size:'+(14*Math.max(.55,SC)).toFixed(1)+'px" x="'+(x+R*.7).toFixed(1)+'" y="'+(y-R*.35).toFixed(1)+'">⚓</text>';} // 次要港口標記畫在單位之上
-  Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r);o+='<g class="mine" pointer-events="none"><circle cx="'+x.toFixed(1)+
-      '" cy="'+(y+8).toFixed(1)+'" r="4.5" fill="#222" stroke="#ffd45a" stroke-width="1.2"/><path d="M'+(x-7).toFixed(1)+' '+(y+8).toFixed(1)+'h14M'+x.toFixed(1)+' '+(y+
-      1).toFixed(1)+'v14" stroke="#ffd45a" stroke-width="1"/></g>';});
+  // 布雷區：只有守方（或旁觀、影片）看得到；攻方不知道雷區在哪裡，觸雷時才從戰報知道。海格＝近海水雷（海軍閔江級布雷艇），陸地格＝灘頭地雷（火山布雷車，M136 只能布陸上）
+  if(!(S.ctrl&&S.ctrl.atk==='human'&&S.ctrl.def!=='human'))Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r),sea=h.t==='sea',q=Math.max(.55,SC),f=n=>n.toFixed(1),cx=x,cy=y+R*.5;
+    o+='<g class="mine'+(sea?' sea':'')+'" pointer-events="none"><title>'+(sea?'水雷（近海）':'地雷（灘頭）')+'</title>'+MINE_SVG(cx,cy,q,sea)+'</g>';});
   airfields().forEach(h=>{const lv=afLevel(h.k);if(!lv)return;const [x,y]=cen(h.c,h.r);o+='<text class="fxt af'+lv+'" pointer-events="none" x="'+(x+R*.65).toFixed(1)+
       '" y="'+(y-R*.4).toFixed(1)+'" text-anchor="middle" style="font-size:'+((lv===3?15:12)*Math.max(.55,SC)).toFixed(1)+'px;stroke-width:'+(3*Math.max(.55,SC)).toFixed(1)+
       'px" fill="'+(lv===3?'#c0392b':lv===2?'#e67e22':'#e0a800')+'">'+(lv===3?'✕':'⚠')+'</text>';});
