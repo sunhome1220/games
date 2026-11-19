@@ -69,7 +69,7 @@ function ucPlace(){
 function render(){focusOwnOnce();coachUpdate();
   if(typeof MISSION!=='undefined'&&MISSION)MISSION.tick();
   /* 關卡挑戰：檢查過關條件 */if(S.rec)recordFrame();
-  else{renderAll();
+  else{renderAll();if(typeof jankPing==='function')jankPing();
   textZoomFix();
   cnPendSync();
   afPendSync();
