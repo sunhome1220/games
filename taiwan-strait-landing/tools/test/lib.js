@@ -17,7 +17,8 @@ async function open(b,base,q,opts={}){
     if(o.hide)document.addEventListener('DOMContentLoaded',()=>{const s=document.createElement('style');s.textContent='#map{display:none!important}';document.head.appendChild(s);});
     if(o.pad){window.__pad={connected:true,axes:[0,0,0,0],buttons:Array.from({length:17},()=>({pressed:false,value:0}))};navigator.getGamepads=()=>[window.__pad];}
   },opts);
-  const sep=q.includes('?')?'&':'?';await p.goto(base+q+(opts.fast?sep+'fast=1':''),{timeout:90000});await p.waitForTimeout(opts.wait||1200);return p;}
+  const sep=q.includes('?')?'&':'?';await p.goto(base+q+(opts.fast?sep+'fast=1':'')+(opts.jank?'':(q.includes('?')||opts.fast?'&':'?')+'nojank=1'),{timeout:90000});
+  await p.waitForTimeout(opts.wait||1200);return p;} // open 預設加 nojank=1 關掉卡頓偵測：測試環境沒有 GPU，閒置就只有約 15 fps，會一直跳提示
 const modalClick=p=>p.evaluate(()=>{const m=document.querySelector('#modal');if(m.hidden)return humanTurn()?2:0;
   const bs=[...m.querySelectorAll('button:not(.mnew)')].filter(x=>!x.disabled&&x.getClientRects().length);
   const e=bs.find(x=>['nwGo','evGo','evOk','itGo','evRoll'].includes(x.id)&&!x.disabled)||m.querySelector('.opt:not(.on)')||m.querySelector('.opt')||bs.find(x=>!x.disabled); // 守方的事件卡要先選一個選項，確認鈕才會啟用

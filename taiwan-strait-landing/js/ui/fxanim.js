@@ -475,7 +475,7 @@ function fxArrive(o){
   return 400;
 }
 function playFx(list){
-  if(!list||!list.length)return;if(reduce()){list.filter(o=>o.t==='toast').forEach(o=>toast(o.s,o.ms));return;}
+  if(!list||!list.length)return;if(typeof jankPing==='function')jankPing();if(reduce()){list.filter(o=>o.t==='toast').forEach(o=>toast(o.s,o.ms));return;}
   const g=document.getElementById('gF'),now=performance.now();
   if(g.childNodes.length>70){for(const n of [...g.childNodes]){if(!n.__t)n.__t=now;else if(now-n.__t>4000)n.remove();}} // 只清掉超過 4 秒的舊特效，正在播放的不刪
   while(g.childNodes.length>1200)g.removeChild(g.firstChild); // 安全網：避免異常時無限累積

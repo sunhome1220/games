@@ -115,6 +115,20 @@ add('預先布雷：分散到四個港口、設定頁指定、補布選位置','
   r.push([rl.length>=2&&rl.some(x=>x.startsWith('mine@')&&/台北港/.test(x)),'有雷被掃除或觸發後，補布選項可挑地點（含台北港外海）：'+rl.length+' 個']);r.push(...noErr(q.p,'2029 設定'));await q.p.close();
   return r;});
 
+add('卡頓偵測：連續兩次慢才提醒、三個按鈕','medium',async c=>{const r=[];
+  const feed=(p,ms,n)=>p.evaluate(([ms,n])=>{window.__jank.eval(Array(n).fill(ms));return !!document.getElementById('jankCard');},[ms,n]);
+  let p=await L.open(c.b,c.url,'?debug=1',{hide:true,jank:true});await L.startGame(p);await p.evaluate(()=>{__jank.JANK.warm=0;});
+  r.push([!(await feed(p,16,40)),'順暢（16 ms）：不提醒']);r.push([!(await feed(p,80,40)),'第一次慢：還不提醒']);r.push([!(await feed(p,16,40)),'接著順暢：計數歸零']);
+  r.push([!(await feed(p,80,10)),'樣本太少（10 筆）：不算']);await feed(p,80,40);r.push([await feed(p,80,40),'連續兩次慢（80 ms，約 12 fps）：跳出提醒']);
+  r.push([await p.evaluate(()=>document.querySelectorAll('#jankCard button').length===3&&/關閉動畫/.test(document.getElementById('jankCard').textContent)),'提醒有三個按鈕']);
+  await p.evaluate(()=>document.getElementById('jankOff').click());await p.waitForTimeout(200);
+  r.push([await p.evaluate(()=>!document.getElementById('jankCard')&&FXOFF&&document.body.classList.contains('noanim')&&document.getElementById('optFxSpd').value==='off'),'按「關閉動畫」：動畫關閉、海浪停止、設定同步']);r.push(...noErr(p,'卡頓提醒'));await p.close();
+  p=await L.open(c.b,c.url,'?debug=1',{hide:true,jank:true});await L.startGame(p);await p.evaluate(()=>{__jank.JANK.warm=0;});await feed(p,80,40);await feed(p,80,40);
+  await p.evaluate(()=>document.getElementById('jankNever').click());r.push([await p.evaluate(()=>!document.getElementById('jankCard')&&localStorage.getItem('tsl-jank')==='0'&&!FXOFF),'按「不再提醒」：記在這台裝置、動畫不變']);
+  r.push([!(await feed(p,80,40)),'這局不會再問']);await p.close();
+  p=await L.open(c.b,c.url,'?debug=1',{hide:true});await L.startGame(p);await p.evaluate(()=>{__jank.JANK.warm=0;});await feed(p,80,40);r.push([!(await feed(p,80,40)),'網址 nojank=1（測試預設）：不提醒']);await p.close();
+  return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];
