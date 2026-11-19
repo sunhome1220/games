@@ -6,7 +6,7 @@
    只畫提示，不影響規則；評分沿用電腦攻方選灘頭的算法（離目標近、守軍少、旁邊有友軍）。 */
 let LANDTIPS=null;try{LANDTIPS=localStorage.getItem('tsl-landtips');}catch(e){}
 const landTipsOn=()=>LANDTIPS==='1'?true:LANDTIPS==='0'?false:!!(S&&S.started&&S.turn<=2);
-function landTipsSync(){const b=document.getElementById('btnLand');if(!b)return;b.setAttribute('aria-pressed',landTipsOn()?'true':'false');b.hidden=!(S&&S.started);}
+function landTipsSync(){const b=document.getElementById('btnLand');if(!b)return;b.setAttribute('aria-pressed',landTipsOn()?'true':'false');b.hidden=!(S&&S.started&&S.ctrl&&S.ctrl.atk==='human'&&!S.video&&!S.sim);} // 只有人類操作攻方時才有登陸提示；守方、電腦推演、影片沒有可提示的東西，按鈕會像壞掉
 function landTipsSet(v){LANDTIPS=v?'1':'0';try{localStorage.setItem('tsl-landtips',LANDTIPS);}catch(e){}landTipsSync();if(S&&S.started&&typeof render==='function')render();}
 {const b=document.getElementById('btnLand');if(b)b.onclick=()=>landTipsSet(!landTipsOn());}
 let LTPLACED=[];

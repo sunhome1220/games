@@ -40,6 +40,7 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
   r.push([o['amph/ro'][0]===0,'搭滾裝船的旅：海上不能突擊']);r.push([o['arm/ro'][0]===0,'重型旅：海上不能突擊']);
   const cov=await p.evaluate(()=>['宜蘭','蘇澳','台東','志航基地','花蓮','新竹基地','桃園機場','清泉崗'].map(n=>{const h=Object.values(TER).find(x=>x.isl==='TW'&&x.name===n);return [n,!!h&&samCovBM(h)];}));
   r.push([cov.every(x=>x[1]),'彈道飛彈防禦涵蓋重要地點（宜蘭、蘇澳、台東、志航、花蓮、新竹、桃園、清泉崗）'+cov.filter(x=>!x[1]).map(x=>' 缺：'+x[0]).join('')]);
+  r.push([await p.evaluate(()=>{const b=document.getElementById('btnLand');return !!b&&!b.hidden;}),'你是攻方：登陸提示按鈕顯示']);
   r.push(...noErr(p,'快速測試'));await p.close();return r;});
 
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
@@ -91,6 +92,7 @@ add('攻擊模式的快捷按鈕（取代電腦代打／結束階段）','medium
     await p.evaluate(()=>document.getElementById('btnStrike').click());await p.waitForTimeout(200);r.push([await p.evaluate(()=>S.mode===null),'按「取消出擊」離開出擊模式']);
   }else r.push([true,'（目前沒有可用的出擊方式，略過出擊中的檢查）']);
   await p.evaluate(()=>{S.baseSel=null;render();});t=await txt();r.push([/縱深打擊|火力打擊/.test(t[0])&&/電腦代打/.test(t[1])&&t[2]==='結束階段','離開基地卡後：恢復原本的三個按鈕 '+t.slice(0,3)]);
+  r.push([await p.evaluate(()=>{const b=document.getElementById('btnLand');return !!b&&b.hidden;}),'你是守方：登陸提示按鈕不顯示（按了不會有反應）']);
   r.push(...noErr(p,'快捷按鈕'));await p.close();return r;});
 
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
