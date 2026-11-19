@@ -12,7 +12,8 @@ const fxToast=(s,ms)=>{if(PREVIEW)return;FXQ.push({t:'toast',s,ms});}; // 打擊
 // 「關閉動畫」：設定選「關閉」、網址加 ?fast=1（測試用）、或系統設了「減少動態效果」時，火力動畫不播放（打擊結果的訊息仍立刻顯示）、單位移動瞬間完成、電腦推演的動作之間不停頓
 const FASTURL=/[?&]fast=1/.test(location.search);let FXOFF=FASTURL;
 const reduce=()=>FXOFF||!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-let FXSPD=1;const fxSet=v=>{FXOFF=FASTURL||v==='off';FXSPD=v==='off'?1:(+v||1);};
+let FXSPD=1;const fxSet=v=>{FXOFF=FASTURL||v==='off';FXSPD=v==='off'?1:(+v||1);document.body.classList.toggle('noanim',FXOFF);}; // noanim：連地圖海浪的循環動畫也停掉（它讓整張地圖每幀都要重畫）
+document.body.classList.toggle('noanim',FXOFF);
 const fxK=()=>FXOFF?.01:((S&&S.video&&V.sp)?Math.max(.2,1/V.sp):1)/FXSPD; // 動畫速度設定：0.5／1／2／4 倍；關閉時時間壓到 1%
 function el(tag,at,parent){const e=document.createElementNS(SVGNS,tag);for(const k in at)e.setAttribute(k,at[k]);if(!parent)e.__t=performance.now();(parent||document.getElementById('gF')).appendChild(e);return e;}
 function tween(ms,fn,end){ms*=fxK();const t0=performance.now();(function f(t){const k=Math.min(1,Math.max(0,(t-t0)/ms));fn(k);if(k<1)requestAnimationFrame(f);else if(end)end();})(t0);}

@@ -16,6 +16,7 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
   r.push([await p.evaluate(()=>CHANGELOG.length<=15&&CHANGELOG_OLD===null),'開頁只載入最近的更新日誌']);
   await p.evaluate(()=>showChangelog(true));await p.waitForFunction(()=>CHANGELOG_OLD&&document.querySelectorAll('#wn h4').length>CHANGELOG.length,null,{timeout:10000}).catch(()=>{});
   r.push([await p.evaluate(()=>!!CHANGELOG_OLD&&CHANGELOG_OLD.length>0&&document.querySelectorAll('#wn h4').length>CHANGELOG.length),'看全部時才載入舊的更新日誌']);
+  r.push([await p.evaluate(()=>document.body.classList.contains('noanim')&&(!document.querySelector('.wv')||getComputedStyle(document.querySelector('.wv')).animationName==='none')),'關閉動畫時，海浪的循環動畫也停掉']);
   r.push([await p.evaluate(()=>{const z=FXOFF&&reduce()&&fxK()<.1;document.querySelector('#wn')&&document.querySelector('#wn').remove();return z;}),'網址 fast=1：關閉動畫（reduce() 為真、動畫時間壓縮）']);
   { // 開戰月份：4×3 月曆格、每格天候三色條；點格子會設定月份，說明文字有完整機率
     const mo=await p.evaluate(()=>{const i=SETUP_PAGES.findIndex(pg=>pg.fields.some(f=>f.sel==='optMonth'));WZ.i=i;renderWizard();const t=[...document.querySelectorAll('.seg.mon .segb')];
