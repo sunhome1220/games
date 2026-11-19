@@ -108,7 +108,7 @@ function layMines(){
     const h=(i%2===0?sea:land).shift()||sea.shift()||land.shift();if(!h)break;
     if(!S.mines[h.k])S.mines[h.k]=1;
   }
-  syncMines();log('守方預先布雷：'+Object.keys(S.mines).length+' 處（灘頭與近海）。');
+  syncMines();log('守方預先布雷：'+Object.keys(S.mines).length+' 處（灘頭地雷與近海水雷）。');
 }
 const syncMines=()=>{if(S.pools)S.pools.rocMine=Object.keys(S.mines).length;};
 function mineCheck(u,h){
