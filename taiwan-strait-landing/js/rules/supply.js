@@ -33,10 +33,13 @@ function interdictOptions(){
   const fobs=S.units.filter(x=>x.side==='atk'&&x.type==='fob'&&alive(x)),lchs=S.units.filter(x=>x.side==='def'&&(x.type==='hmr'||x.type==='mlrs')&&alive(x));
   if(fobs.length&&lchs.length&&(S.pools.rocRkt||0)>=1){gain.fob=Math.min(2,fobs.reduce((a,x)=>a+x.hp,0))*.5;
     opts.push({id:'fob',label:'火力打擊灘頭補給站',desc:'攻方有 '+fobs.length+' 個灘頭補給站（每個讓卸載能力 +2）。雷霆2000／海馬士集中射擊：2 次攻擊，每次約 50%（位置固定、物資集中，推估），命中扣補給站 1 步、打光就消失。代價：雷霆火箭彈存量 −1，參與的發射車開火後暴露到下個攻方階段。',est:'補給站預計損失約 '+(Math.round(gain.fob*10)/10)+' 步；全毀時卸載能力 −2',rec:false});}
-  // 近海布雷：閔江級布雷艇在攻方主要卸載點外海補布一處水雷（只能補回被掃掉的數量，★觸雷 50% 沿用既有規則）
+  // 近海補布水雷（閔江級布雷艇；只能補回被掃除或觸發的數量，★觸雷 50% 沿用既有規則）：位置由守方挑——攻方主要卸載點外海（預設推薦），或任一個還在守方手上的港口外海（台北港、基隆、台中港、高雄）
   const swept=Math.max(0,((S.p0&&S.p0.rocMine)||0)-Object.keys(S.mines||{}).length),mineSpot=intdMineSpot();
-  if(swept>0&&mineSpot&&(S.mods.mineT||0)<S.turn){gain.mine=.5;
-    opts.push({id:'mine',label:'近海補布水雷',desc:'攻方已掃除 '+swept+' 處水雷。布雷艇趁夜在 '+hname(mineSpot)+'（攻方卸載點外海）補布一處：之後經過的船團、運輸船與護航艦有 50% 機率觸雷受損（沿用水雷規則），直到被掃除。代價：布雷艇出港有被發現的風險（1/4 機率守方海軍 −1），每 2 回合最多一次。',est:'卸載點外海多一處雷區',rec:false});}
+  if(swept>0&&(S.pools.rocNavy||0)>0&&(S.mods.mineT||0)<S.turn){
+    const risk='代價：布雷艇出港有被發現的風險（1/4 機率守方海軍 −1），每 2 回合最多一次。',used=new Set();
+    if(mineSpot){used.add(mineSpot.k);gain.mine=.5;opts.push({id:'mine',label:'近海補布水雷：攻方卸載點外海',desc:'已有 '+swept+' 處水雷被掃除或觸發。布雷艇趁夜在 '+hname(mineSpot)+'（攻方卸載點外海）補布一處：之後經過的船團、運輸船與護航艦有 50% 機率觸雷受損（沿用水雷規則），直到被掃除。'+risk,est:'卸載點外海多一處雷區',rec:false});}
+    for(const [pk,pn] of MINE_PORTS){const t=TER[SPOT[pk]];if(!t||S.owner[t.k]==='atk')continue;const h=mineSpotsAt(pk,true)[0];if(!h||used.has(h.k))continue;used.add(h.k);
+      opts.push({id:'mine@'+h.k,spot:h.k,label:'近海補布水雷：'+pn+'外海',desc:'已有 '+swept+' 處水雷被掃除或觸發。布雷艇在 '+hname(h)+'（'+pn+'外海）補布一處，攻方船團靠近這個港口時有 50% 機率觸雷受損，直到被掃除。'+risk,est:pn+'外海多一處雷區',rec:false});}}
   // 阻絕就地徵用：撤離或破壞占領區附近的油料、糧食與彈藥庫存（焦土程度低於破壞港口）
   const lc=I.sup?I.sup.local.n:0;
   if(lc>0){gain.deny=Math.min(lc,1);
@@ -49,9 +52,9 @@ async function interdictEval(){
   if(S.over||S.turn<3||!hasBeachhead())return;
   const info=interdictOptions(),manual=(S.sim&&!S.simAuto)||(!S.video&&S.ctrl.def==='human');
   if(info.opts.length<=1)return; // 攻方補給沒有可打的管道，不必決策
-  const ai=()=>{const rest=info.opts.filter(x=>x.id!=='normal');
+  const ai=()=>{const rest=info.opts.filter(x=>x.id!=='normal'&&!x.id.startsWith('mine@'));
     if(Math.random()>=.3||S.pools.rocAS<3||!rest.length)return info.opts[0];
-    const w={convoy:50,air:30,sabotage:20,fob:35,mine:20,deny:15};
+    const w={convoy:50,air:30,sabotage:20,fob:35,mine:20,deny:15}; // 電腦守方只用預設的「攻方卸載點外海」補布，不挑別的港口
     let tot=rest.reduce((a,x)=>a+w[x.id],0),r=Math.random()*tot;
     for(const x of rest){r-=w[x.id];
     if(r<=0)return x;
@@ -80,7 +83,7 @@ async function interdictEval(){
   else if(o.id==='fob'){pAdd('rocRkt',-1);let hit=0;for(let i=0;i<2;i++){const fs=S.units.filter(x=>x.side==='atk'&&x.type==='fob'&&alive(x)&&x.hp>0);if(!fs.length)break;const f=pickBest(fs,x=>-x.hp);if(hitP(.5,'intdFob')){hit++;damage(f,1,'守方火力（灘頭補給站）');}}
     S.units.filter(x=>x.side==='def'&&(x.type==='hmr'||x.type==='mlrs')&&alive(x)).forEach(x=>{x.revealed=true;});
     eff.push('對灘頭補給站 2 次攻擊，命中 '+hit+' 次','雷霆火箭彈存量 −1','發射車開火後暴露');}
-  else if(o.id==='mine'){const k=intdMineSpot();if(k){S.mines=S.mines||{};S.mines[k.k]=1;syncMines();S.mods.mineT=S.turn+1;eff.push('在 '+hname(k)+' 補布一處水雷');log('守方布雷艇在 '+hname(k)+' 補布水雷');}
+  else if(o.id==='mine'||o.id.startsWith('mine@')){const k=o.spot?TER[o.spot]:intdMineSpot();if(k){S.mines=S.mines||{};S.mines[k.k]=1;syncMines();S.mods.mineT=S.turn+1;eff.push('在 '+hname(k)+' 補布一處水雷');log('守方布雷艇在 '+hname(k)+' 補布水雷');}
     if(hitP(.25,'intdMine')&&S.pools.rocNavy>0){S.pools.rocNavy--;eff.push('布雷艇被發現擊沉（守方海軍 −1）');}}
   else if(o.id==='deny'){if(S.cost&&S.cost.civ)S.cost.civ.TW+=500;eff.push('下回合就地補給 −1','平民傷亡 +500');}
   rec.snap=snap();S.events.push(rec);

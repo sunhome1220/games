@@ -149,6 +149,12 @@ SETUP_PAGES.splice(SETUP_PAGES.findIndex(p=>p.t==='守方戰前準備')+1,0,{t:'
     o[2]='<span class="mo"><b>'+m+' 月</b><i class="wxb" title="良好 '+pc[0]+'%・普通 '+pc[1]+'%・惡劣 '+pc[2]+'%"><s style="flex:'+pc[0]+'"></s><s style="flex:'+pc[1]+'"></s><s style="flex:'+pc[2]+'"></s></i><em>'+SEA[m]+'</em></span>';
     o[1]='天候機率：良好 '+pc[0]+'%、普通 '+pc[1]+'%、惡劣 '+pc[2]+'%（★推估）。'+o[1];}
     mf.q='開戰月份（決定天候機率；色條＝良好／普通／惡劣）';}}
+// 預先布雷的位置（2026-11-18）：人類守方逐處指定港口；單數處＝近海水雷、雙數處＝灘頭地雷；預設「自動」依序分散到台北港、台中港、高雄、基隆
+const mnOn=k=>!isSim()&&$('#optMode').value==='play'&&$('#optSide').value!=='atk'&&mineN($('#optEra').value)>=k;
+SETUP_PAGES.splice(SETUP_PAGES.findIndex(p=>p.t==='防空增購配置')+1,0,{t:'預先布雷位置',s:'布雷',d:'開戰前守方預先布設的雷區。單數處是近海水雷（海軍布雷艇），雙數處是灘頭地雷（火山布雷車，只能布陸上）。選「自動」＝依序分散到台北港、台中港、高雄、基隆附近；攻方不知道雷區位置，每次經過 50% 觸雷、扣 1 步（★推估）。',
+  fields:[1,2,3,4,5,6].map(k=>({sel:'optMN'+k,q:'第 '+k+' 處（'+(k%2?'近海水雷':'灘頭地雷')+'）放在哪個港口附近？',when:()=>mnOn(k),
+    opts:Object.fromEntries([['auto',['自動（分散）','依序輪流放到台北港、台中港、高雄、基隆。']]].concat(MINE_PORTS.map(p=>[p[0],[p[1],p[1]+'外海'+(k%2?'（水雷）':'岸邊（地雷）')+'：攻方船團或登陸部隊靠近這個港口時最先碰到。']])))})),
+  note:()=>mnOn(1)?'':'你不是守方，這一頁不用設定。'});
 const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
 function optLabel(sel,v){for(const f of PREF_FIELDS.concat(...SETUP_PAGES.map(pg=>pg.fields)))if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
 function saveSetup(){if(typeof MISSION!=='undefined'&&MISSION)return; /* 關卡挑戰用的設定不存成玩家的設定 */try{const cfg={};CFG_IDS.forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
