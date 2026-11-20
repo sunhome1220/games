@@ -178,13 +178,13 @@ function readSetup(){
 for(let i=1;i<=3;i++){const s=document.createElement('select');s.id='optAD'+i;s.innerHTML='<option value="auto" selected>auto</option>'+SAM_EXTRA.map(c=>'<option value="'+c.id+'">'+c.id+'</option>').join('');$('#wzStore').appendChild(s);}
 for(let i=1;i<=6;i++){const s=document.createElement('select');s.id='optMN'+i;s.innerHTML='<option value="auto" selected>auto</option>'+MINE_PORTS.map(p=>'<option value="'+p[0]+'">'+p[0]+'</option>').join('');$('#wzStore').appendChild(s);}
 {const mk=(id,vals)=>{const s=document.createElement('select');s.id=id;s.innerHTML=vals.map((v,i)=>'<option value="'+v+'"'+(i?'':' selected')+'>'+v+'</option>').join('');$('#wzStore').appendChild(s);};mk('optSubCtl',['auto','manual']);mk('optSubMisD',['auto','cvy','lnd','cv','dd']);mk('optSubMisA',['auto','csg','fl','esc']);} // 潛艦自主模式與任務 // 預先布雷：第 1～6 處放在哪個港口附近
-['#optT','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optExer','#optLift','#optMonth','#optFxBias','#optWiLift','#optWiShip','#optWiWx',
+['#optT','#optPre','#optEra','#optSide','#optMode','#optSpeed','#optVSpeed','#optBuild','#optExer','#optLift','#optMonth','#optFxBias','#optWiLift','#optWiShip','#optWiWx',
     '#optWiDArms','#optWiLocal','#optWiAllies','#optPreDiplo','#optPreDeploy','#optReact','#optNavy','#optPenghu','#optPrepos','#optNews','#optVoice','#optFxSpd',
     '#optTerm','#optFx','#optAlly','#optAirGen','#optAirModel','#optEW','#optAxN','#optAxC','#optAxP','#optAD1','#optAD2','#optAD3','#optMN1','#optMN2','#optMN3','#optMN4','#optMN5','#optMN6','#optSubCtl','#optSubMisD','#optSubMisA'].forEach(id=>$(id).addEventListener('change',()=>{readSetup();saveSetup();renderWizard();render();}));
-const CFG_IDS=['optMode','optSide','optSpeed','optVSpeed','optT','optEra','optBuild','optExer','optLift','optMonth','optFxBias','optWiLift','optWiShip','optWiWx',
+const CFG_IDS=['optMode','optSide','optSpeed','optVSpeed','optT','optPre','optEra','optBuild','optExer','optLift','optMonth','optFxBias','optWiLift','optWiShip','optWiWx',
     'optWiDArms','optWiLocal','optWiAllies','optPreDiplo','optPreDeploy','optReact','optNavy','optPenghu','optPrepos','optFx','optAlly','optAirGen','optAirModel','optEW',
     'optNews','optVoice','optFxSpd','optTerm','optAxN','optAxC','optAxP','optAD1','optAD2','optAD3','optMN1','optMN2','optMN3','optMN4','optMN5','optMN6','optSubCtl','optSubMisD','optSubMisA'];
-const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optEra:'2026',optBuild:'exercise',optExer:'small',optLift:'1',optMonth:'4',optFxBias:'0',
+const DEFAULT_CFG={optMode:'play',optSide:'atk',optSpeed:'1',optVSpeed:'2',optT:'8',optPre:'0',optEra:'2026',optBuild:'exercise',optExer:'small',optLift:'1',optMonth:'4',optFxBias:'0',
     optWiLift:'0',optWiShip:'0',optWiWx:'0',optWiDArms:'0',optWiLocal:'0',optWiAllies:'0',optPreDiplo:'auto',optPreDeploy:'auto',optReact:'auto',optNavy:'auto',optPenghu:'auto',
     optPrepos:'auto',optFx:'interest',optAlly:'ai',optAirGen:'mixed',optAirModel:'bvr',optEW:'mid',optNews:'1',optVoice:'0',optFxSpd:'1',optTerm:'plain',optAxN:'0',optAxC:'0',optAxP:'1',optAD1:'auto',optAD2:'auto',optAD3:'auto',optMN1:'auto',optMN2:'auto',optMN3:'auto',optMN4:'auto',optMN5:'auto',optMN6:'auto',optSubCtl:'auto',optSubMisD:'auto',optSubMisA:'auto'};
 $('#btnStart').onclick=()=>{if(!$('#btnStart').disabled)startGame();};
@@ -200,6 +200,8 @@ function parseSeedCode(t){t=(t||'').trim();if(!/^TSL1-/.test(t))return null;try{
 function initSeed(){HL.shots=[];HL.pend=[];const w=(WZ.seedTxt||'').trim();const o=parseSeedCode(w);const seed=o?o.s:(w||newSeed());S.seed=seed;S.seedCode=seedCode(seed);seedRng(seed);}
 function startGame(){
   readSetup();initSeed();if(S.video){startVideo();return;}
+  const pre=+$('#optPre').value; // 先由電腦推演 pre 回合，之後把操作權交還（beginPhase 的 preHandOver）；推演期間事件、快訊自動處理
+  if(!S.sim&&pre>0&&(S.ctrl.atk==='human'||S.ctrl.def==='human')){S.preAI=pre;S.preCtrl=S.ctrl;S.ctrl={atk:'ai',def:'ai'};S.simAuto=true;S.speed=.25;S.T=Math.max(S.T,pre+4);}
   S.started=true;setTab('cmd');
   applyEra();applyFxScenario();log(applyMonth().join('；')+'。');applyWhatIf();airInit();mslInit();
   if(!S.sim){const b=$('#optBuild').value,fx=applyBuildup(b);log('戰前集結：'+BUILDUP.find(x=>x.id===b).label+'。'+fx.join('、'));applyPlan();}

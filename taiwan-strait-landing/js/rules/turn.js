@@ -95,8 +95,12 @@ async function defPhaseStart(){
     await navalPhase();if(S.over)return;
   
 }
+function preHandOver(){ // 電腦先推演的回合數到了：把操作權交還給玩家
+  const n=S.preAI;S.ctrl=S.preCtrl;S.preAI=0;S.preCtrl=null;S.simAuto=false;S.speed=1;
+  log('電腦已依規則推演到第 '+n+' 回合結束；從第 '+S.turn+' 回合起由你接手。');toast('電腦已推演 '+n+' 回合，從現在起由你接手',4200);}
 async function beginPhase(side){
   if(typeof MISSION!=='undefined'&&MISSION&&MISSION.phase(side))return; // 關卡挑戰：限時到了就結束
+  if(side==='atk'&&S.preAI&&S.turn>S.preAI)preHandOver();
   phaseReset(side);
   if(side==='atk')S.turnStart={snap:snap(),lv:Object.assign({},S.fx.lv),owner:Object.assign({},S.owner)};
   if(window.TSL_RUMBLE&&humanTurn())TSL_RUMBLE('turn'); // 輪到自己操作時短震一下
