@@ -64,6 +64,9 @@ const AF_CAP={atk:.5,mid:.25,def:.1};
 function afCapP(t){if(!t||!atSea(t)||!S.air)return 0;let f=0;
   for(const u of S.units)if(u.type==='cv'&&u.side==='atk'&&u.cvi!=null&&alive(u)&&u.hp>1&&rd(hexOf(u),hexOf(t))<=kmH(300)){const full=AIR.CV[u.cvi]?AIR.CV[u.cvi].f:1;f=Math.max(f,Math.min(1,(S.air.cvF[u.cvi]||0)/Math.max(1,full)));}
   return f>0?(AF_CAP[S.airCtl||'mid']||.25)*f:0;}
+function addMix(o,p,n,rel){ // 協同攻擊的彈種組成：p＝彈種名或 {彈種:占比（或相對數量）}，n＝枚數；依枚數累加，供齊射模型依速度估攔截
+  if(typeof p==='string'){o[p]=(o[p]||0)+n;return;}
+  const w=Object.values(p).reduce((a,b)=>a+b,0)||1;for(const [k,v] of Object.entries(p))o[k]=(o[k]||0)+n*v/w;}
 function afLose(n,rate){const L=takeInt(n*rate*(S.airCtl==='atk'?1.5:1),'afLoss');return L?airLose('def',L,'ad'):0;}
 // 一次出擊：x＝{u}（海上或島上的攻方單位）｜{cn:基地 id}｜{stg:集結中的單位}；auto＝電腦自動（不跳訊息）
 function afStrike(k,x,auto){
@@ -104,18 +107,18 @@ function coAirMax(k,t){const bs=afUsable().filter(h=>afBudget(h.k)>0&&afCanHit(h
 function coordStrike(k,t,nb,co){
   const pc=afCapP(t),bases=[TER[k]].concat(afUsable().filter(h=>h.k!==k)).filter(h=>afBudget(h.k)>0&&afCanHit(h.k,{u:t}));
   let tot=0,fl=0,cut=0,L=0,LA=0,parts=[];
-  const used={};
+  const used={},mixCo={};
   for(let i=0;i<nb;i++){const h=bases.find(b=>afBudget(b.k)>0&&(S.pools[afAsm(b.k).pool]||0)>=1);if(!h)break;const A=afAsm(h.k),n=Math.min(AFS.pk,Math.floor(S.pools[A.pool]||0));if(n<=0)break;S.afB[h.k].n--;useRec('空軍出擊（批，每批 4 架）',1,null,0,h.name||'基地',t);
     if(pc>0&&hitP(pc,'afCAP')){cut++;const l=takeInt(1.5,'afCAPloss');L+=l?airLose('def',l,'air'):0;fxCapX([h.c,h.r],t);continue;}
-    S.pools[A.pool]-=n;used[A.n]=(used[A.n]||0)+n;useRec(null,0,A.n+'（空射）',n,null,t);tot+=n;fl++;const la=afLose(AFS.pk,adCover(t).length?AFS.loss:0);L+=la;LA+=la;}
+    S.pools[A.pool]-=n;used[A.n]=(used[A.n]||0)+n;addMix(mixCo,A.n,n);useRec(null,0,A.n+'（空射）',n,null,t);tot+=n;fl++;const la=afLose(AFS.pk,adCover(t).length?AFS.loss:0);L+=la;LA+=la;}
   if(fl||cut)parts.push('空軍 '+(fl+cut)+' 批'+(Object.keys(used).length?'：'+Object.entries(used).map(([a,b])=>a+' '+b+' 枚').join('、'):'')+(cut?'（'+cut+' 批遭艦載機攔截、未發射）':''));
   let sN=0,sH=0,fN=[];
   for(const id of co||[]){const m=S.units.find(x=>x.id===id);if(!m||!targets(m).includes(t))continue;const n=coN(m);if(n<=0)continue;
-    if(m.fl){m.mag.asm-=n;m.shots=0;m.acted=true;fN.push(m.fl.s);useRec('艦隊齊射',1,fleetWn(m)+'（艦射）',n,m.fl.n,t);}else{const pl=ssmPool(m);S.pools[pl]=Math.max(0,Math.round(((S.pools[pl]||0)-n/100)*100)/100);m.shots--;sN++;if(ssmHp(m))sH++;useRec('岸置反艦飛彈射擊',1,ssmHp(m)?'魚叉（岸防）':'雄二／雄三（岸置）',n,(ssmHp(m)?'魚叉岸防 ':'雄風 ')+hname(hexOf(m)),t);}
+    if(m.fl){addMix(mixCo,fleetProf(m),n,true);m.mag.asm-=n;m.shots=0;m.acted=true;fN.push(m.fl.s);useRec('艦隊齊射',1,fleetWn(m)+'（艦射）',n,m.fl.n,t);}else{addMix(mixCo,ssmMix(m),n);ssmDraw(m,n);m.shots--;sN++;if(ssmHp(m))sH++;useRec('岸置反艦飛彈射擊',1,ssmHp(m)?'魚叉（岸防）':'雄二／雄三（岸置）',n,(ssmHp(m)?'魚叉岸防 ':'雄風 ')+hname(hexOf(m)),t);}
     m.revealed=true;tot+=n;}
   if(sN-sH)parts.push('岸置雄風 '+(sN-sH)+' 個單位');if(sH)parts.push('魚叉岸防 '+sH+' 個單位');if(fN.length)parts.push('艦隊 '+fN.join('、'));
   cvAirLost(t,L);let txt;
-  if(tot>0){const r=salvoHit(t,tot,'coord>'+t.type),steps=r.steps;fxSalvo([TER[k].c,TER[k].r],t,r,fl?{km:(afAsm(k)||{km:120}).km,lost:LA}:null);t.inc=(t.inc||0)+1;
+  if(tot>0){const r=salvoHit(t,tot,'coord>'+t.type,undefined,mixCo),steps=r.steps;fxSalvo([TER[k].c,TER[k].r],t,r,fl?{km:(afAsm(k)||{km:120}).km,lost:LA}:null);t.inc=(t.inc||0)+1;
     txt='協同攻擊 '+uname(t)+'（'+parts.join('、')+'），同一波共 '+tot+' 枚：'+(r.I?'對方防空發射 '+r.I+' 枚攔截彈，約 '+fmt1(r.surv)+' 枚突破，':'')+'命中 '+r.hits+' 枚'+salvoStepTxt(t,steps)+(L?'（戰機被擊落 '+L+' 架）':'')+'（齊射模型，參數為推估）';
     if(steps)damage(t,steps,'協同反艦打擊（'+parts.join('、')+'）');}
   else txt='協同攻擊 '+uname(t)+'：'+(parts.join('、')||'沒有可用的兵力')+'，沒有飛彈發射'+(L?'（戰機被擊落 '+L+' 架）':'');
@@ -167,7 +170,7 @@ function afClick(u,cnId){
 }
 // ---- 空軍出擊確認面板（比照縱深打擊）----
 function afPendInfo(){
-  const P=S.afPend;if(!P)return null;const k=P.k,h0=TER[k],nb=afBudget(k),lr=S.airCtl==='atk'?1.5:1;let nm,lines=[],ok=nb>0,risk=0;
+  const P=S.afPend;if(!P)return null;const k=P.k,h0=TER[k],nb=afBudget(k),lr=S.airCtl==='atk'?1.5:1;let nm,lines=[],ok=nb>0,risk=0,nbX=1,pcX=0; // nbX＝這次要出幾批、pcX＝出擊前被艦載機攔截的機率：預估損失要乘批數、並算進攔截
   if(P.x.cn||P.x.stg){
     const u=P.x.stg?S.units.find(x=>x.id===P.x.stg):null;if(P.x.stg&&(!u||!alive(u)))return null;const tg=P.x.cn||{u},H=cnHitP(tg),wp=afCNwpK(k,P.x.cn||u),found=!u||stgFound(u)>0;
     nm=P.x.cn?CNB[P.x.cn].n:hname(hexOf(u)).replace(/^大陸 /,'大陸沿岸 ')+' 集結中的 '+TYPES[u.type].n;
@@ -177,8 +180,8 @@ function afPendInfo(){
     ok=ok&&!!wp&&found;risk=AFS.lossCN;
   }else{
     const t=S.units.find(x=>x.id===P.x.u);if(!t||!alive(t))return null;nm=uname(t)+'（'+hname(hexOf(t))+'）';
-    if(atSea(t)){const cov=adCover(t).length,A=afAsm(k)||{pool:'rocAAsh',n:'空射反艦'},n=Math.min(AFS.pk,Math.floor(S.pools[A.pool]||0));
-      lines.push(A.n+' '+n+' 枚（剩 '+Math.round(S.pools[A.pool]||0)+'）・'+(cov?cov+' 艘護航艦防空，先被攔截':'無護航防空，預估命中 '+fmt1(n*SALVO.pSeek)+' 枚'));
+    if(atSea(t)){const cov=adCover(t).length,A=afAsm(k)||{pool:'rocAAsh',n:'空射反艦'},mx0=coAirMax(k,t);nbX=Math.max(1,Math.max(mx0>0?1:0,Math.min(P.nb==null?1:P.nb,mx0))),pcX=afCapP(t);const n=Math.min(AFS.pk*nbX,Math.floor(S.pools[A.pool]||0));
+      lines.push(A.n+' '+n+' 枚（'+nbX+' 批；剩 '+Math.round(S.pools[A.pool]||0)+'）・'+(cov?cov+' 艘護航艦防空，先被攔截':'無護航防空，預估命中 '+fmt1(n*SALVO.pSeek)+' 枚'));
       if(cvOOA(t))lines.push('⚠ 這艘航艦已失去戰力（艦載機無法起降、撤離中），再打只是為了擊沉；改打其他目標比較省飛彈');
       {const pc=afCapP(t);if(pc>0)lines.push('航艦艦載機在附近：約 <b>'+Math.round(pc*100)+'%</b> 會在發射前被攔截（推估）');}
       ok=ok&&n>0;risk=cov?AFS.loss:0;}
@@ -187,14 +190,14 @@ function afPendInfo(){
   const tx=P.x.cn?P.x.cn:S.units.find(y=>y.id===(P.x.u||P.x.stg));if(tx)lines.unshift((h0.name||'基地')+' → '+afDist(k,tx)+' km（'+(afWing(k)?afWing(k)[1]+' ':'')+'可達 '+Math.round(afReach(k,tx))+' km）');
   const xx=P.x.cn?{cn:P.x.cn}:P.x.stg?{stg:S.units.find(y=>y.id===P.x.stg)}:{u:S.units.find(y=>y.id===P.x.u)};
   const all=afUsable().map(h=>[h,afBudget(h.k)]).filter(x=>x[1]>0&&afCanHit(x[0].k,xx));
-  lines.push((all.length?'剩 '+all.reduce((a,x)=>a+x[1],0)+' 批（'+all.map(([h,n])=>(h.name||'基地').replace(/基地$/,'')+' '+n).join('、')+'）':'沒有基地打得到或都已出擊完')+'・每批 4 架'+(risk?'・預估損失 '+fmt1(AFS.pk*risk*lr)+' 架':''));
+  lines.push((all.length?'剩 '+all.reduce((a,x)=>a+x[1],0)+' 批（'+all.map(([h,n])=>(h.name||'基地').replace(/基地$/,'')+' '+n).join('、')+'）':'沒有基地打得到或都已出擊完')+'・每批 4 架'+(risk||pcX>0?'・預估損失約 '+fmt1(nbX*(pcX*1.5+(1-pcX)*AFS.pk*risk*lr))+' 架（'+nbX+' 批'+(pcX>0?'，含艦載機攔截':'')+'）':''));
   ok=ok&&!!xx&&afCanHit(k,xx);
   let co='';
   if(P.x.u){const t=S.units.find(y=>y.id===P.x.u);if(t&&atSea(t)){ // 協同攻擊：批數與其他軍種
     const mx=coAirMax(k,t),nb=P.nb=Math.max(mx>0?1:0,Math.min(P.nb==null?1:P.nb,mx)),sel=P.co=P.co||[],sh=coShooters(t); // 空射飛彈用完或沒有份額時：空軍 0 批，仍可只用岸置飛彈與艦隊
     co='<div class="cpm co">協同：空軍 <button class="ghost cob" data-nb="-1">−</button> <b>'+nb+'</b> <button class="ghost cob" data-nb="1">＋</button> 批（最多 '+mx+(mx?'':'，空射反艦飛彈或出擊份額已用完')+'）</div>'+
       sh.map(m=>'<label class="cpm co"><input type="checkbox" data-co="'+m.id+'"'+(sel.includes(m.id)?' checked':'')+'> '+(m.fl?m.fl.n+'（'+fleetWn(m)+'）':(ssmHp(m)?'魚叉岸防':'岸置雄風')+'（'+hname(hexOf(m))+'）')+' '+coN(m)+' 枚</label>').join('')+
-      '<div class="cpm">同一波共約 <b>'+(nb*AFS.pk+sh.filter(m=>sel.includes(m.id)).reduce((a,m)=>a+coN(m),0))+'</b> 枚</div>';}}
+      '<div class="cpm">同一波最多 <b>'+(nb*AFS.pk+sh.filter(m=>sel.includes(m.id)).reduce((a,m)=>a+coN(m),0))+'</b> 枚'+(pcX>0&&nb>0?'；預估空射約 '+fmt1(nb*AFS.pk*(1-pcX))+' 枚能發射（其餘批次在發射前被艦載機攔截）':'')+'</div>';}}
   if(P.x.u&&co){const t=S.units.find(y=>y.id===P.x.u);if(t&&atSea(t))ok=(P.nb||0)>0||(P.co||[]).some(id=>coShooters(t).some(m=>m.id===id));} // 協同：空軍或勾選的岸置飛彈、艦隊有任一可用就能出擊
   return {html:'<b>'+nm+'</b>'+lines.map(l=>'<div class="cpm">'+l+'</div>').join('')+co,ok};
 }

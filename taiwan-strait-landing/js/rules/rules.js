@@ -144,7 +144,7 @@ function targets(u){
   if(u.type==='ssn'){if(u.acted||!(u.tp>0||u.hm>0))return [];return shipFoes(u,kmH(120)).filter(e=>(u.tp>0&&rd(hexOf(u),hexOf(e))<=kmH(60))||u.hm>0);}
   if(u.type==='nme'||u.type==='mdt'){if(u.acted||!u.mag||u.mag.asm<=0)return [];return shipFoes(u,u.type==='nme'?NME.R:MDT.R);}
   if(isMsl(u)){if(u.shots<=0||(u.fl&&!(u.mag&&u.mag.asm>0)))return [];
-    if(u.type==='ssm'&&(S.pools[ssmPool(u)]||0)<=0)return [];
+    if(u.type==='ssm'&&ssmStock(u)<=0)return [];
     const R=u.fl?fleetAgg(u).asmR:ssmHp(u)?kmH(120):kmH(160);
     return S.units.filter(e=>e.side!==u.side&&atSea(e)&&!e.ship&&!isSubT(e)&&rd(hexOf(u),hexOf(e))<=R);
     } // 船上的旅不單獨列為目標：打運輸船，船沉了旅一併損失
@@ -367,6 +367,14 @@ function fireMlrs(m,t){
 // 岸置反艦飛彈分兩種：雄二／雄三（中科院，存量 rocAS，射程約 160 km）與魚叉岸防系統（RGM-84L-4，存量 rocHCD，射程約 120 km，2026～2028 年交付）
 const ssmHp=u=>u&&u.type==='ssm'&&u.wp==='hp';
 const ssmPool=u=>ssmHp(u)?'rocHCD':'rocAS';
+// 岸置雄風的庫存分雄二（rocAS）與雄三（rocAS3）兩個庫存（單位：點，每點約 100 枚）；發射車混裝，每次發射按「目前剩餘庫存」的比例動用兩種，所以彈種比例隨實際消耗變化
+const r4=x=>Math.round(x*1e4)/1e4;
+const asTot=()=>((S.pools&&S.pools.rocAS)||0)+((S.pools&&S.pools.rocAS3)||0);
+const asMix=()=>{const a=S.pools.rocAS||0,b=S.pools.rocAS3||0,t=a+b;return t>0?{'雄二':a/t,'雄三':b/t}:{'雄二':.7,'雄三':.3};};
+function asAdd(pts){const a=S.pools.rocAS||0,b=S.pools.rocAS3||0,t=a+b,w=t>0?a/t:.7;S.pools.rocAS=Math.max(0,r4(a+pts*w));S.pools.rocAS3=Math.max(0,r4(b+pts*(1-w)));} // 點數增減（決策、補給）：按雄二／雄三的現有比例分攤
+const ssmStock=u=>ssmHp(u)?(S.pools.rocHCD||0):asTot();
+function ssmDraw(u,n){if(!S.pools)return;if(ssmHp(u))S.pools.rocHCD=Math.max(0,r4((S.pools.rocHCD||0)-n/100));else asAdd(-n/100);} // 發射 n 枚：魚叉岸防扣魚叉庫存，雄風按比例扣雄二、雄三
+const ssmMix=u=>ssmHp(u)?'魚叉':asMix();
 const ssmWn=u=>ssmHp(u)?'魚叉':'雄風';
 const SSM_N=2; // ★岸置發射車與艦艇每次發射 2 枚（雄風二、三型發射車每車 4 枚）
 // 岸置反艦飛彈單位＝一群分散的機動發射車（★每單位 8 輛；官方未公開實際數量）。2 步＝每步 4 輛。

@@ -226,13 +226,13 @@ if(/[?&]debug=1/.test(location.search))window.__ally={hum:()=>allyHuman(),ph:()=
   },dmg:(id,n)=>{const u=S.units.find(x=>x.id===id);
   damage(u,n,'test');
   return u.hp;
-  },as:()=>S.pools.rocAS,fireAS:id=>{const u=S.units.find(x=>x.id===id);
-  const b=S.pools.rocAS;
+  },as:()=>asTot(),fireAS:id=>{const u=S.units.find(x=>x.id===id);
+  const b=asTot();
   const t=S.units.find(x=>x.side==='atk'&&atSea(x));
   if(!t)return null;
   u.shots=1;
   fireMissile(u,t);
-  return [b,S.pools.rocAS];
+  return [b,asTot()];
   },eff:id=>{const u=S.units.find(x=>x.id===id);
   return {a:effAtk(u),d:effDef(u),n:effNote(u),mobT:u.mobT};
   },pcs:()=>S.units.filter(u=>u.ally&&alive(u)).map(u=>({id:u.id,t:u.type,c:u.c,r:u.r,moved:!!u.moved,acted:!!u.acted,shots:u.shots,mag:u.mag})),reach:id=>{const u=S.units.find(x=>x.id===id);
@@ -404,7 +404,7 @@ function stMove(u,h,st){
 function stLauncher(u,h,st){
   if(isLch(u)&&u.veh!=null&&u.side==='def'&&S.phase==='atk'&&S.started&&!S.over){const n=lchFound(u,'bm');st.push(n>0?'攻方本階段偵察找到 '+n+' 輛，可打擊':'攻方本階段偵察沒有找到（或找到的都打過了），無法打擊');}
   if(isLch(u)&&u.veh!=null){const b=ssmBroken(u);st.push('發射車 '+u.veh+' 輛（可射 '+ssmReady(u)+(b?'、火力受損修復中 '+b:'')+'）');if(u.mT&&S.turn<u.mT)st.push('機動受損：維持暴露到下一個攻方階段結束');}
-  if(u.type==='ssm')st.push(ssmHp(u)?'魚叉岸防系統（RGM-84L-4，射程約 120 km）；存量 '+fmt1(S.pools.rocHCD||0)+' 點（每點約 100 枚）':'雄二／雄三（射程約 160 km）；存量 '+fmt1(S.pools.rocAS||0)+' 點（每點約 100 枚）');
+  if(u.type==='ssm')st.push(ssmHp(u)?'魚叉岸防系統（RGM-84L-4，射程約 120 km）；庫存約 '+Math.round((S.pools.rocHCD||0)*100)+' 枚':'雄二／雄三（射程約 160 km）；庫存雄二約 '+Math.round((S.pools.rocAS||0)*100)+' 枚、雄三約 '+Math.round((S.pools.rocAS3||0)*100)+' 枚，每次發射按庫存比例動用');
   if(u.type==='ssm'||u.type==='hmr'||u.type==='mlrs')st.push(u.revealed?'已暴露（上階段開火）':'隱蔽中：火力打擊多半打到誘餌');
 }
 // 單位狀態說明：艦艇：艦載機、艦隊組成、護航艦彈藥
