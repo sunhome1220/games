@@ -35,7 +35,7 @@ function psubP(t){
 function psubFire(u,t){
   if(!psubTargets(u).includes(t))return false;
   const d=rd(hexOf(u),hexOf(t)),pref=hkPref(),w=(pref!=='hm'&&u.tp>0&&d<=PSUB.tpR)?'tp':(pref!=='tp'&&u.hm>0&&d<=PSUB.hmR)?'hm':(u.tp>0&&d<=PSUB.tpR)?'tp':null;if(!w)return false;
-  if(w==='tp')u.tp--;else u.hm--;u.shots=0;u.acted=true;u.revealed=true;u.last={c:u.c,r:u.r,turn:S.turn};useRec('潛艦攻擊',1,w==='hm'?'鷹擊-18（潛射）':'魚-6 重型魚雷（齊射）',1,psubCls(u).n,t);
+  if(w==='tp')u.tp--;else u.hm--;u.shots=0;u.acted=true;useRec('潛艦攻擊',1,w==='hm'?'鷹擊-18（潛射）':'魚-6 重型魚雷（齊射）',1,psubCls(u).n,t);
   const nm=w==='hm'?'鷹擊-18 潛射反艦飛彈':'魚-6 重型魚雷',C=psubCls(u);let hit,steps=0,sv=null;
   if(w==='hm'){sv=salvoHit(t,2,'psubHm>'+t.type);hit=sv.hits>0;steps=sv.steps;}
   else{hit=hitP(psubP(t),'psub:tp>'+t.type);steps=hit?1:0;}
@@ -46,6 +46,7 @@ function psubFire(u,t){
   const near=S.units.filter(e=>e.side==='def'&&alive(e)&&(isEsc(e)||e.fl||e.type==='csg'||e.type==='ddh'||e.type==='jdg'||e.type==='jdd')&&rd(hexOf(u),hexOf(e))<=kmH(80)).length;
   const pa=Math.min(.65,(.1+.12*near)*C.det*(w==='hm'?.5:1));
   if(near&&hitP(pa,'psubCounter')){log(C.n+'被守方反潛兵力發現並攻擊');damage(u,1,'守方反潛攻擊');}
+  if(alive(u))subEvade(u);
   checkInstant();render();return true;
 }
 // 守方階段開始：守方反潛兵力搜尋附近的共軍潛艦（護航艦、艦隊、日本護衛艦、美軍航艦打擊群，以及岸基 P-3C 反潛巡邏機）

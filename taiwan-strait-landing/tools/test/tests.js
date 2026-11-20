@@ -129,6 +129,22 @@ add('卡頓偵測：連續兩次慢才提醒、三個按鈕','medium',async c=>{
   p=await L.open(c.b,c.url,'?debug=1',{hide:true});await L.startGame(p);await p.evaluate(()=>{__jank.JANK.warm=0;});await feed(p,80,40);r.push([!(await feed(p,80,40)),'網址 nojank=1（測試預設）：不提醒']);await p.close();
   return r;});
 
+add('潛艦開火後脫離、最後已知位置、反潛搜索預覽','medium',async c=>{const r=[];
+  const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:11});await L.startGame(p);
+  const o=await p.evaluate(()=>{const u=S.units.find(x=>x.side==='def'&&x.type==='hk'&&alive(x));if(!u)return null;
+    const hu=TER[SPOT.hualien],sea=Object.values(TER).filter(h=>h.t==='sea'&&hd(h,hu)===5&&!unitsAt(h.k).length).sort((a,b)=>a.r-b.r||a.c-b.c)[0];u.c=sea.c;u.r=sea.r;u.revealed=true;
+    const from=hexOf(u);subEvade(u);const to=hexOf(u);render();
+    return {rev:u.revealed,last:u.last.c+','+u.last.r===from.k,age:S.turn-u.last.turn,d:hd(from,to),sea:to.t==='sea',marks:document.querySelectorAll('#map .lastk').length,hidden:subHidden(u)};});
+  r.push([!!o,'找得到台灣潛艦可測']);if(o){
+    r.push([o.rev===false&&o.hidden===true,'開火後立刻恢復隱蔽（對方玩家看不到）']);r.push([o.last&&o.age===0,'留下發射時的最後已知位置']);
+    r.push([o.d>=2&&o.d<=4&&o.sea,'轉移 20～40 km（'+o.d+' 格）、落在海上']);r.push([o.marks>=1,'地圖上畫出最後已知位置（？虛線圈）']);}
+  const g=await p.evaluate(()=>[heloGain(0),heloGain(ASW.area),heloGain(ASW.area/2)]);
+  r.push([g[0]===1&&Math.abs(g[1]-.4)<1e-9&&g[2]>.4&&g[2]<1,'搜索效果隨距離下降：圓心 100%、邊緣 40% '+g.map(x=>x.toFixed(2))]);
+  const pv=await p.evaluate(()=>{const u=S.units.find(x=>alive(x)&&heloN(x)>0&&x.side==='atk');if(!u)return null;S.mode='helo';S.heloU=u.id;const h=hexOf(u);heloPreview(h.k);const e=document.getElementById('heloPrev');
+    const on=!!e&&e.getAttribute('display')!=='none'&&Math.abs(+e.getAttribute('r')-(ASW.area+.5)*HPX)<1;S.mode=null;heloPreview(null);return {on,off:e.getAttribute('display')==='none'};});
+  r.push([!!pv&&pv.on&&pv.off,'反潛直升機：預覽 40 km 搜索圓，離開模式後隱藏']);
+  r.push(...noErr(p,'潛艦脫離'));await p.close();return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];

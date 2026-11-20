@@ -102,6 +102,9 @@ function mapMarksSVG(){let o='';
   // 布雷區：只有守方（或旁觀、影片）看得到；攻方不知道雷區在哪裡，觸雷時才從戰報知道。海格＝近海水雷（海軍閔江級布雷艇），陸地格＝灘頭地雷（火山布雷車，M136 只能布陸上）
   if(!(S.ctrl&&S.ctrl.atk==='human'&&S.ctrl.def!=='human'))Object.keys(S.mines||{}).forEach(k=>{const h=TER[k];if(!h)return;const [x,y]=cen(h.c,h.r),sea=h.t==='sea',q=Math.max(.55,SC),f=n=>n.toFixed(1),cx=x,cy=y+R*.5;
     o+='<g class="mine'+(sea?' sea':'')+'" pointer-events="none"><title>'+(sea?'水雷（近海）':'地雷（灘頭）')+'</title>'+MINE_SVG(cx,cy,q,sea)+'</g>';});
+  // 潛艦開火後的「最後已知位置」：潛艦已經回到隱蔽（看不到），只留一個淡淡的虛線圈，約 2 回合內逐漸變淡
+  S.units.filter(s=>alive(s)&&isSubT(s)&&s.last&&S.turn-s.last.turn<=2&&typeof subHidden==='function'&&subHidden(s)).forEach(s=>{const h=TER[K(s.last.c,s.last.r)];if(!h)return;const [x,y]=cen(h.c,h.r),age=S.turn-s.last.turn;
+    o+='<g class="lastk '+s.side+'" pointer-events="none" opacity="'+[.9,.6,.35][age]+'"><title>潛艦最後已知位置（第 '+s.last.turn+' 回合）</title><circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+(R*.62).toFixed(1)+'"/><text x="'+x.toFixed(1)+'" y="'+(y+R*.2).toFixed(1)+'" text-anchor="middle" style="font-size:'+(R*.62).toFixed(1)+'px">？</text></g>';});
   airfields().forEach(h=>{const lv=afLevel(h.k);if(!lv)return;const [x,y]=cen(h.c,h.r);o+='<text class="fxt af'+lv+'" pointer-events="none" x="'+(x+R*.65).toFixed(1)+
       '" y="'+(y-R*.4).toFixed(1)+'" text-anchor="middle" style="font-size:'+((lv===3?15:12)*Math.max(.55,SC)).toFixed(1)+'px;stroke-width:'+(3*Math.max(.55,SC)).toFixed(1)+
       'px" fill="'+(lv===3?'#c0392b':lv===2?'#e67e22':'#e0a800')+'">'+(lv===3?'✕':'⚠')+'</text>';});
@@ -169,5 +172,6 @@ function renderMap(){
   // 選了己方單位、正要下移動命令時：機場標籤變半透明且不能點，不然標籤蓋在海上的目標格上會點不到（點基地改看資訊要先取消選取）
   {const mv=!!(S.started&&S.sel&&alive(S.sel)&&S.sel.side===S.phase&&!S.mode&&humanTurn()&&reach(S.sel).size>0);$('#map').classList.toggle('mvsel',mv);}
   landmarkDim();
+  if(typeof heloPreview==='function')heloPreview(S.mode==='helo'?S.hover:null);
   animateUnitSlides();
 }
