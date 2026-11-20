@@ -165,6 +165,14 @@ add('潛艦自主執行任務：鎖定、任務設定、通訊窗口','medium',a
   r.push([JSON.stringify(q.pg)==='[true,false,true]','你是攻方：設定頁顯示操作方式與共軍潛艦任務，不顯示台灣潛艦任務']);r.push(...noErr(q.p,'攻方自主'));await q.p.close();
   return r;});
 
+add('攻方停戰＝宣布達成目標或撤退，不向守方請求','medium',async c=>{const r=[];
+  const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:31});await L.startGame(p);
+  const o=await p.evaluate(()=>{const ids=truceOptions('atk').opts.map(x=>x.id),dv=truceOptions('def').opts.map(x=>x.id),v=truceVerdict('declare');return {ids,dv,vt:v.t,vs:v.s};});
+  r.push([o.ids.includes('declare')&&o.ids.includes('retreat')&&o.ids.includes('escalate')&&!o.ids.includes('truce'),'攻方選項：宣布達成目標／撤退／升級，沒有「請求停火」 '+o.ids]);
+  r.push([/宣布達成目標/.test(o.vt)&&['atk','draw','def'].includes(o.vs),'宣布達成目標的結果依達成條件判定：'+o.vt]);
+  r.push([o.dv.includes('talks'),'守方仍可請求停火談判（'+o.dv+'）']);
+  r.push(...noErr(p,'攻方停戰'));await p.close();return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];

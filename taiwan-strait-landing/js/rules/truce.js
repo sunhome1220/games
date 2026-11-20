@@ -82,6 +82,10 @@ function needTruce(side){
 function truceVerdict(kind){
   const n=conditions(true).filter(c=>c.atk).length;
   if(kind==='surrender')return {s:'atk',t:'守方投降',d:'守方放棄抵抗並交出台北，攻方取得首都；戰事結束，平民傷亡與破壞不再擴大。'};
+  if(kind==='declare'){ // 攻方單方面宣布達成目標、停止攻勢（不向守方請求停火，守方沒有接受或拒絕的步驟）
+    if(n>=2)return {s:'atk',t:'宣布達成目標：攻方保有戰果',d:'攻方宣布目標已達成並停止攻勢；實際達成 '+n+' 項條件，實質控制了關鍵位置，守方無力反擊，被迫接受現況。'};
+    if(n===1)return {s:'draw',t:'宣布達成目標：僵局',d:'攻方宣布目標已達成並停止攻勢，但只達成 1 項條件，既沒有站穩也沒有撤出；實質上陷入僵局，後續取決於談判。'};
+    return {s:'def',t:'宣布達成目標：實質撤出',d:'攻方宣布「階段性目標已達成」並停止攻勢，但沒有達成任何條件，等同登陸失敗；守方守住主權與主要城市。'};}
   if(kind==='retreat')return {s:'def',t:'攻方撤退',d:'攻方在攻勢受挫後有限撤退、保存實力；登陸未能達成目標，守方守住台灣。'};
   const lab={truce:'停戰',talks:'談判停火',mediated:'國際斡旋停火'}[kind]||'停火';
   if(n>=2)return {s:'atk',t:lab+'：攻方保有戰果',d:'雙方依現況停火；攻方達成 '+n+' 項條件，實質控制了關鍵位置，守方被迫在不利條件下接受。'};
@@ -91,11 +95,11 @@ function truceVerdict(kind){
 function truceOptions(side){
   const ol=atkOutlook(),dl=defOutlook();
   if(side==='atk'){
-    const tv=truceVerdict('truce');
-    const rec=ol<12?'truce':'escalate';
+    const tv=truceVerdict('declare');
+    const rec=ol<12?'declare':'escalate';
     return {title:'停戰評估（攻方）',blurb:'攻勢遲遲沒有進展：沒有港口與台北、島上兵力遠遜守方。指揮部評估目前勝算約 '+ol+'%，請選擇下一步（★為系統建議的最優解）。',
       opts:[
-      {id:'truce',label:'接受現況停戰',desc:'雙方停火，依目前控制的位置判定。',est:'結果：'+tv.t+'；成本與傷亡不再擴大',rec:rec==='truce'},
+      {id:'declare',label:'宣布達成目標、停止攻勢',desc:'不向守方請求停火：單方面宣布「階段性目標已達成」並停止攻勢，部隊轉入防禦或撤回；依目前控制的位置判定。',est:'結果：'+tv.t+'；成本與傷亡不再擴大',rec:rec==='declare'},
       {id:'retreat',label:'有限撤退、保存實力',desc:'撤回島上與海上兵力，不再擴大損失與國際壓力。',est:'結果：守方勝利；攻方損失止血',rec:false},
       {id:'escalate',label:'提高賭注（升級）',desc:'擴大戰事：本回合火力 +3（消耗火箭軍存量 −2），美日參戰程度各 +1（若情境允許）。',est:'短期勝算約 '+clamp01(ol+12)+'%；但美日更快介入，全球股市再受衝擊',rec:false},
       {id:"x_total",x:1,label:"🔥 全面升級、戰時體制",desc:"本回合火力 +3（消耗火箭軍存量 −3），美日參戰程度各 +1；攻方本回合與下回合防禦 −1，平民傷亡 +30%、股市 −4。",ref:"2019〈告台灣同胞書〉",est:'短期戰力大增，但雙方平民與經濟代價急升',rec:false}]};
@@ -126,12 +130,12 @@ function askTruce(info,autoPick){
 }
 function truceAuto(side,info){
   const ol=atkOutlook(),dl=defOutlook();let w;
-  if(side==='atk')w=ol<12?[['truce',22],['retreat',9],['escalate',42]]:[['truce',9],['retreat',4],['escalate',74]];
+  if(side==='atk')w=ol<12?[['declare',22],['retreat',9],['escalate',42]]:[['declare',9],['retreat',4],['escalate',74]];
   else{const bad=S.owner[TAIPEI]==='atk'&&PORTS.filter(k=>S.owner[k]==='atk').length>=2;w=bad?[['talks',50],['surrender',15],['resist',25],['seek',10]]:[['talks',25],['surrender',5],['resist',50],['seek',20]];}
   if(side==='def'&&conditions().filter(c=>c.atk).length>=3)w=[['surrender',60],['resist',40]];
   // 停火只在條件真的不利時才請求：守方電腦要等攻方已達成 2 項以上條件才會求和／求外援；攻方電腦只在攻勢停滯（勝算 <12%）時才請和
   const n3=conditions().filter(c=>c.atk).length,noAsk=side==='def'?n3<2:ol>=12;
-  w=w.filter(([id])=>info.opts.some(o=>o.id===id)&&!(noAsk&&['truce','talks','seek'].includes(id)));
+  w=w.filter(([id])=>info.opts.some(o=>o.id===id)&&!(noAsk&&['declare','talks','seek'].includes(id)));
   if(!w.length)return info.opts.find(o=>o.id==='resist'||o.id==='escalate')||info.opts[0];
   const id=wpick(w);return info.opts.find(o=>o.id===id)||info.opts[0];
 }
@@ -140,7 +144,7 @@ function applyTruce(side,o){
   const rec={turn:S.turn,phase:S.phase,title:side==='atk'?'停戰評估（攻方）':'放棄評估（守方）',id:'truce_'+side,choice:o.label,who:side,rolls:[],effects:eff};
   log('【'+rec.title+'】'+SIDE[side]+'選擇「'+o.label+'」');
   const m=S.mods,t=S.turn;let end=null;
-  if(o.id==='truce'||o.id==='talks')end=truceVerdict(o.id);
+  if(o.id==='declare'||o.id==='talks')end=truceVerdict(o.id);
   else if(o.id==='retreat'||o.id==='surrender')end=truceVerdict(o.id);
   else if(o.id==='escalate'){
     addTurns(m.fireAdd,t,t,3);pAdd('rf',-2);setLevel('JP',Math.min(2,S.fx.lv.JP+1),'攻方升級');setLevel('US',Math.min(3,S.fx.lv.US+1),'攻方升級');
@@ -163,7 +167,7 @@ function applyTruce(side,o){
   S.stats.truce=(S.stats.truce||[]);S.stats.truce.push(side+':'+o.id);
   if(end&&!S.over)endGame(end.d,end.s,end.t);
 }
-// 請和是單方面的：對方不一定接受。對方是玩家時跳出選項；是電腦時依局勢擲骰（攻方請和：守方多半樂意；守方求和：攻方佔優時多半拒絕）
+// 請和是單方面的：對方不一定接受。對方是玩家時跳出選項；是電腦時依局勢擲骰。現在只有守方會請和（守方求和：攻方佔優時多半拒絕）；攻方改為「宣布達成目標」或「撤退」，不再向守方請求停火
 async function truceAccept(req){
   const opp=req==='atk'?'def':'atk',n=conditions().filter(c=>c.atk).length;
   let p;if(req==='atk')p=n===0?.85:.6;else p=n>=3?.15:n===2?.45:.7;
@@ -188,7 +192,7 @@ async function truceEval(side){
   if(manual){o=await askTruce(info,()=>truceAuto(side,info));}
   else{o=truceAuto(side,info);if(!(S.rec&&REC.quiet))toast(info.title+'：'+o.label);
     if(S.rec&&!REC.quiet)recordFrame({html:'<div class="eyebrow">第 '+S.turn+' 回合</div><h3>'+info.title+'</h3><p>'+info.blurb+'</p><p><span class="badge '+side+'">'+SIDE[side]+'決策</span>選擇「'+o.label+'」</p><p class="dd">'+o.desc+'<br>預估：'+o.est+'</p>',kind:'event',dur:7000});}
-  if(o.id==='truce'||o.id==='talks'){
+  if(o.id==='talks'){ // 只有守方會「請求」停火談判（由攻方決定接不接受）；攻方要停，只能宣布達成目標或撤退，不會向守方請求
     const ok=await truceAccept(side);
     if(S.over)return;
     if(!ok){log('【停火請求】'+SIDE[side]+'請求停火，'+SIDE[side==='atk'?'def':'atk']+'拒絕，戰事繼續');if(!(S.rec&&REC.quiet))toast(SIDE[side==='atk'?'def':'atk']+'拒絕停火，戰事繼續');S.stats.truceRej=(S.stats.truceRej||0)+1;return;}
