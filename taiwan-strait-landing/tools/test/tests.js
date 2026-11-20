@@ -204,6 +204,21 @@ add('四川艦（076 型）：2027 年起、載陸戰隊、海上機降','medium
   r.push([!!o&&!!o.d&&o.d.landed&&o.d.unbound&&o.d.shipStays&&o.d.pool,'機降後：陸戰隊上岸、艦留在海上、不回兩棲艦群運力池 '+JSON.stringify(o&&o.d)]);
   r.push(...noErr(p,'四川艦'));await p.close();return r;});
 
+add('飛彈突防特性：魚叉、雄二亞音速，雄三超音速','medium',async c=>{const r=[];
+  const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:5});await L.startGame(p);
+  const o=await p.evaluate(()=>{const f=n=>{const q=mslProf(n);return [+q.ch.toFixed(2),+q.pk.toFixed(2)];};
+    const t=S.units.find(u=>u.type==='cv'&&u.side==='atk'),ads=()=>S.units.filter(e=>e.side==='atk'&&alive(e)&&(isEsc(e)||e.type==='dd'));
+    const snap=()=>ads().map(e=>({e,ad:e.mag&&e.mag.ad,chU:e.chU,chT:e.chT,eng:e.engN,cpU:e.cpU,cpT:e.cpT,t:t.chU,tT:t.chT})),back=sn=>sn.forEach(x=>{if(x.e.mag)x.e.mag.ad=x.ad;x.e.chU=x.chU;x.e.chT=x.chT;x.e.engN=x.eng;x.e.cpU=x.cpU;x.e.cpT=x.cpT;t.chU=x.t;t.chT=x.tT;});
+    const run=(prof)=>{const sn=snap(),a=salvoCalc(t,8,false,'tst',prof);back(sn);return +a.surv.toFixed(2);};
+    return {harpoon:f('魚叉'),hf2:f('雄二'),hf3:f('雄三'),yj83:f('鷹擊-83'),yj18:f('鷹擊-18'),mix:f({'雄二':.5,'雄三':.5}),cover:adCover(t).length,
+      surv:{'魚叉':run('魚叉'),'雄二':run('雄二'),'雄三':run('雄三'),'鷹擊-18':run('鷹擊-18'),none:run(undefined)}};});
+  r.push([o.harpoon[0]===1&&o.harpoon[1]===1&&o.hf2[0]===1&&o.hf2[1]===1,'魚叉、雄二（亞音速）：通道與攔截率係數都是 1（與舊版相同）']);
+  r.push([o.hf3[0]<.6&&o.hf3[1]<1&&o.hf3[1]>.8,'雄三（超音速）：接戰通道約 '+o.hf3[0]+'、單枚攔截率 ×'+o.hf3[1]]);
+  r.push([o.yj18[0]<o.hf3[0]&&o.yj18[1]<o.hf3[1]&&o.yj83[0]>o.hf3[0]&&o.yj83[0]<1,'鷹擊-18（末端 Mach 3）比雄三更難攔；鷹擊-83（末端衝刺）介於中間（通道 '+o.yj83[0]+'）']);
+  r.push([o.mix[0]>o.hf3[0]&&o.mix[0]<1,'混合（雄二、雄三各半）介於兩者之間：通道 '+o.mix[0]]);
+  r.push([o.cover>0&&o.surv['雄三']>o.surv['魚叉']&&o.surv['鷹擊-18']>o.surv['雄三']&&o.surv['魚叉']===o.surv['雄二']&&o.surv.none===o.surv['魚叉'],'8 枚打有防空的航艦，突破數期望值：魚叉＝雄二＝預設 '+o.surv['魚叉']+' ＜ 雄三 '+o.surv['雄三']+' ＜ 鷹擊-18 '+o.surv['鷹擊-18']]);
+  r.push(...noErr(p,'飛彈突防'));await p.close();return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];

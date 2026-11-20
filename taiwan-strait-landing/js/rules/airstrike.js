@@ -76,7 +76,7 @@ function afStrike(k,x,auto){
       L=takeInt(1.5,'afCAPloss');L=L?airLose('def',L,'air'):0;fxCapX(from,t);
       S.afB[k].n--;const s='守方空軍（'+nm+'起飛）攻擊 '+uname(t)+'：飛到半途遭共軍艦載機攔截，未能發射飛彈'+(L?'（被擊落 '+L+' 架）':'')+'（攔截率 '+Math.round(pc*100)+'%，推估）';
       cvAirLost(t,L);log(s);if(!auto)fxToast(s,4000);checkInstant();return true;}
-    S.pools[A.pool]-=n;useRec(null,0,A.n+'（空射）',n,null,t);const r=salvoHit(t,n,'afShip>'+t.type,'afBig'),big=isBigShip(t),steps=r.steps;
+    S.pools[A.pool]-=n;useRec(null,0,A.n+'（空射）',n,null,t);const r=salvoHit(t,n,'afShip>'+t.type,'afBig',A.n),big=isBigShip(t),steps=r.steps;
     L=afLose(AFS.pk,adCover(t).length?AFS.loss:0);cvAirLost(t,L);fxSalvo(from,t,r,{km:A.km,lost:L}); // 發射前後遭艦隊防空擊落的架數也畫出來
     txt='以 '+n+' 枚'+A.n+'攻擊 '+uname(t)+'：'+(r.I?'對方防空發射 '+r.I+' 枚攔截彈，約 '+fmt1(r.surv)+' 枚突破，':'')+'命中 '+r.hits+' 枚'+salvoStepTxt(t,steps);
     if(steps)damage(t,steps,(afWing(k)||[])[1]+' 空射'+A.n+'飛彈');
