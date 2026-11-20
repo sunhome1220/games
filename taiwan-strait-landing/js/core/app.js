@@ -162,7 +162,19 @@ SETUP_PAGES.splice(SETUP_PAGES.findIndex(p=>p.t==='預先布雷位置')+1,0,{t:'
     {sel:'optSubMisD',q:'台灣潛艦的任務（劍龍級、海鯤）',when:()=>subPlay()&&subAutoSet()&&$('#optSide').value!=='atk',opts:Object.fromEntries(SUB_MIS.def.map(([v,n,d])=>[v||'auto',[n,d]]))},
     {sel:'optSubMisA',q:'共軍潛艦的任務（093、039 型）',when:()=>subPlay()&&subAutoSet()&&$('#optSide').value!=='def',opts:Object.fromEntries(SUB_MIS.atk.map(([v,n,d])=>[v||'auto',[n,d]]))}],
   note:()=>subPlay()?'':'電腦推演與純模擬的潛艦一律由電腦操作，這一頁不用設定。'});
-const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
+// 設定頁整理（2026-11-19）：9 頁併成 5 頁——方式（含回合與年代、潛艦操作方式）／攻方（戰前集結、共軍潛艦任務）／守方（戰前決策、防空增購、預先布雷、台灣潛艦任務，分組可收合）／假設情境／確認
+{const byT=t=>SETUP_PAGES.find(p=>p.t===t),tag=(p,g,n,d)=>p.fields.forEach(f=>{f.grp=g;f.grpN=n;f.grpD=d;});
+  const pMode=byT('對戰方式'),pTurn=byT('判定回合與兵力年代'),pAtk=byT('戰前集結'),pWi=byT('假設情境'),pDef=byT('守方戰前準備'),pAd=byT('防空增購配置'),pMn=byT('預先布雷位置'),pSub=byT('潛艦任務'),pEnd=byT('美日參戰與確認');
+  const subCtl=pSub.fields.find(f=>f.sel==='optSubCtl'),subD=pSub.fields.find(f=>f.sel==='optSubMisD'),subA=pSub.fields.find(f=>f.sel==='optSubMisA');
+  const page1={t:'對戰方式與年代',s:'方式',d:pMode.d,fields:pMode.fields.concat(pTurn.fields,[subCtl]),note:()=>pTurn.d+(pSub.d?'<br><br><b>潛艦：</b>'+pSub.d:'')};
+  subA.grp='asub';subA.grpN='共軍潛艦任務';subA.grpD='';
+  const pAtk2={t:'攻方戰前集結',s:'攻方',d:pAtk.d,fields:pAtk.fields.concat([subA]),note:pAtk.note};
+  tag(pDef,'dprep','戰前決策與預警','開戰前守方的備戰、預警反應與兵力部署，都在這裡先決定，開戰後不再彈窗。選「電腦決定」就由電腦隨機挑一項（不含🔥）。每項都標明好處與代價。');
+  tag(pAd,'dad','防空增購（連數隨年代增加）',pAd.d);tag(pMn,'dmn','預先布雷位置',pMn.d);subD.grp='dsub';subD.grpN='台灣潛艦任務';subD.grpD='';
+  const pDef2={t:'守方戰前部署',s:'守方',d:'守方戰前決策、防空增購、預先布雷位置與潛艦任務，都在這一頁分組設定（點組名展開）。你不是守方時，電腦會自動決定。',fields:pDef.fields.concat(pAd.fields,pMn.fields,[subD]),
+    note:()=>[pAd.note&&pAd.note(),pMn.note&&pMn.note()].filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).join('<br>')};
+  SETUP_PAGES.splice(0,SETUP_PAGES.length,page1,pAtk2,pDef2,pWi,pEnd);}
+const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0),open:{dprep:true}};
 function optLabel(sel,v){for(const f of PREF_FIELDS.concat(...SETUP_PAGES.map(pg=>pg.fields)))if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
 function saveSetup(){if(typeof MISSION!=='undefined'&&MISSION)return; /* 關卡挑戰用的設定不存成玩家的設定 */try{const cfg={};CFG_IDS.forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}
 function loadSetup(){
@@ -188,7 +200,7 @@ function renderWizard(){
   let gcur=null;const GN={atk:'攻方',def:'守方'};WZ.open=WZ.open||{};
   const gclose=()=>{if(gcur){h+='</details>';gcur=null;}};
   pg.fields.filter(f=>!f.when||f.when()).forEach(f=>{
-    if(f.grp!==gcur){gclose();if(f.grp){gcur=f.grp;h+='<details class="rg wzg" data-g="'+f.grp+'"'+(WZ.open[f.grp]?' open':'')+'><summary><b>'+GN[f.grp]+'</b></summary>';}}
+    if(f.grp!==gcur){gclose();if(f.grp){gcur=f.grp;h+='<details class="rg wzg" data-g="'+f.grp+'"'+(WZ.open[f.grp]?' open':'')+'><summary><b>'+(f.grpN||GN[f.grp])+'</b></summary>'+(f.grpD?'<div class="hint">'+f.grpD+'</div>':'');}}
     const cur=$('#'+f.sel).value;
     const ent=Object.entries(f.opts);
     h+='<div class="wz-q">'+f.q+'</div><div class="seg'+(f.seg?' '+f.seg:'')+'" role="radiogroup" aria-label="'+f.q+'" style="--n:'+(ent.length<=3?ent.length:2)+'">'+ent.map(([v,o])=>'<button class="segb'+
