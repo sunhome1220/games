@@ -61,7 +61,7 @@ function phaseReset(side){
     }u.shots=hkSpent(u)?0:1;
     }if(isEsc(u))u.shots=1;
     if(u.type==='mlrs'&&u.rl>0)u.rl--;
-    if(isMsl(u))u.shots=(u.type==='ssm'&&S.pools&&(S.pools[ssmPool(u)]||0)<=0)?0:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):u.type==='mlrs'?(u.rl>0?0:1):u.type==='hmr'?(u.lu=0,Math.ceil(ssmReady(u)/HMR_PKG)):u.type==='ff'?1:2;
+    if(isMsl(u))u.shots=(u.type==='ssm'&&S.pools&&ssmStock(u)<=0)?0:u.type==='ssm'?(ssmReady(u)>0?Math.max(1,Math.round(2*ssmReady(u)/lchV0(u))):0):u.type==='mlrs'?(u.rl>0?0:1):u.type==='hmr'?(u.lu=0,Math.ceil(ssmReady(u)/HMR_PKG)):u.type==='ff'?1:2;
     }
   for(const u of S.units)if(u.side===side&&(u.type==='hmr'||u.type==='mlrs')&&u.veh!=null&&ssmReady(u)<=0)u.shots=0; // 車都不能射了
 }

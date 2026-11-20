@@ -58,6 +58,7 @@
 - 確定性：`hitP(p,key)`、`takeInt`、`ACC`；天候 `nextWave/rollWeather`；戰局碼 `seedCode/parseSeedCode/initSeed`。
 - 補給與運輸：`unloadCap`、`resolveSupply`、`convoyTurn`、`liftTurn`、`supplyAttrition`；運輸船是真實棋子，可被攻擊。
 - 打擊大陸：`strikeCN`（人工與電腦共用同一個飛彈存量與命中公式）、`aiPickCN`。台灣方用 `lrSpend`：300 km 內優先用陸軍戰術飛彈（`rocAtc`，佔用海馬士一次齊射），其餘用雄二E（`rocMsl`）。
+- 反艦庫存：`rocAS`＝雄二、`rocAS3`＝雄三（點，每點約 100 枚）；一律用 `ssmStock`／`ssmDraw`／`asMix`／`asAdd`（`pAdd('rocAS',n)` 會分攤），不要直接改 `S.pools.rocAS`。面板（`defLedgerBars`）換算成枚顯示。
 - 海馬士：`HMR_ERA`（各年代發射車、棋子數、ATACMS 枚數、GMLRS 莢艙數）、`hmrSpread`（車數平均分配）、`HMR_PKG`（一次齊射最多 4 輛）。
 - 潛艦（海鯤）：`subTargets/fireSub/subHidden`；在海上隱蔽、回港時才看得到、可被打。
 - 地圖尺度：**每格約 10 km**（2026-11-14.46 起；`js/core/map.js` 開頭的 `KM_HEX`，`FG＝40÷KM_HEX` 是舊粗格的細分倍數）。**射程、移動、距離一律用公里寫，再用 `kmH(km)` 換成格數**（例如 `rd(a,b)<=kmH(80)`、`mv:kmH(80)`），不要寫裸的格數；像素距離用 `HPX`。地面「相鄰」＝`ADJ_KM`（20 km，`ring2`／`enemyAdj`：攻擊距離、支援）；控制區＝`ZOC_KM`（10 km，`inZOC`：敵軍進入相鄰格要停下）。

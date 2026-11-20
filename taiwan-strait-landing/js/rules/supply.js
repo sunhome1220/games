@@ -53,7 +53,7 @@ async function interdictEval(){
   const info=interdictOptions(),manual=(S.sim&&!S.simAuto)||(!S.video&&S.ctrl.def==='human');
   if(info.opts.length<=1)return; // 攻方補給沒有可打的管道，不必決策
   const ai=()=>{const rest=info.opts.filter(x=>x.id!=='normal'&&!x.id.startsWith('mine@'));
-    if(Math.random()>=.3||S.pools.rocAS<3||!rest.length)return info.opts[0];
+    if(Math.random()>=.3||asTot()<3||!rest.length)return info.opts[0];
     const w={convoy:50,air:30,sabotage:20,fob:35,mine:20,deny:15}; // 電腦守方只用預設的「攻方卸載點外海」補布，不挑別的港口
     let tot=rest.reduce((a,x)=>a+w[x.id],0),r=Math.random()*tot;
     for(const x of rest){r-=w[x.id];

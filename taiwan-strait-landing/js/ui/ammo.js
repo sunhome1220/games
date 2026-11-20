@@ -31,11 +31,13 @@ function ammoBarsHTML(u){
 }
 // 守方彈藥存量（全軍共用）：滿載＝該年代的開局存量（S.p0，previewEra 設定）；之後若有補充超過，就取看過的最大值
 function poolMax(k){const P=S.pools||{};S.poolMax=S.poolMax||{};const v=Math.max(P[k]||0,(S.p0&&S.p0[k])||0);if(!(S.poolMax[k]>=v))S.poolMax[k]=v;return S.poolMax[k];}
-function poolTrack(){if(S&&S.started&&S.pools)['rocAS','rocHCD','rocMsl','rocAtc','rocGml','rocAD','rocRkt'].forEach(poolMax);}
+function poolTrack(){if(S&&S.started&&S.pools)['rocAS','rocAS3','rocHCD','rocAAsh','rocHf2A','rocWC','rocSlam','rocMsl','rocAtc','rocGml','rocAD','rocRkt'].forEach(poolMax);}
 function defLedgerBars(){
-  const P=S.pools;if(!P)return '';const row=(n,k,unit)=>{const m=poolMax(k);return m>0?ammoBar(n,P[k]||0,m,unit):'';};
-  return '<div class="eyebrow" style="margin-top:6px">'+TX('守方彈藥存量（全軍共用）')+'</div><div class="ammo">'+row(TX('雄風反艦'),'rocAS')+row(TX('魚叉岸防'),'rocHCD')+row(TX('長程飛彈'),'rocMsl')+
-    row(TX('陸軍戰術飛彈（枚）'),'rocAtc')+row(TX('海馬士火箭（莢艙）'),'rocGml')+row(TX('雷霆2000'),'rocRkt')+row(TX('防空'),'rocAD')+'</div>'+
+  // 全部換算成「枚」顯示（庫存內部用「點」：雄二／雄三／魚叉岸防每點約 100 枚，長程飛彈每點約 25 枚），不顯示小數；防空是相對規模的點數
+  const P=S.pools;if(!P)return '';const row=(n,k,per)=>{const m=poolMax(k)*(per||1);return m>0?ammoBar(n,Math.round((P[k]||0)*(per||1)),Math.round(m)):'';};
+  return '<div class="eyebrow" style="margin-top:6px">'+TX('守方彈藥存量（全軍共用，單位：枚）')+'</div><div class="ammo">'+row(TX('雄二（岸置、艦射）'),'rocAS',100)+row(TX('雄三（岸置、艦射）'),'rocAS3',100)+row(TX('魚叉岸防'),'rocHCD',100)+row(TX('空射魚叉（F-16）'),'rocAAsh')+row(TX('空射雄二（經國號）'),'rocHf2A')+
+    row(TX('萬劍彈（空射對地）'),'rocWC')+row(TX('SLAM-ER（空射對地）'),'rocSlam')+row(TX('長程飛彈（雲峰、雄二E）'),'rocMsl',25)+
+    row(TX('陸軍戰術飛彈（ATACMS）'),'rocAtc')+row(TX('海馬士火箭（莢艙）'),'rocGml')+row(TX('雷霆2000（發）'),'rocRkt')+row(TX('防空（點，相對規模）'),'rocAD')+'</div>'+
     '<div class="adcap">'+TX('陸上防空每回合最多接戰')+' <b>'+(S.sam?samCap():MSL.adCap)+'</b> '+TX('枚來襲')+'<small>（'+TX(S.sam?'各防空營的連數 × 8 枚；只保護各營彈道飛彈防禦範圍內的機場、港口、城市；★推估':'21 個連 × 8 枚，只保護機場、港口、城市；★推估')+'）</small></div>';
 }
 function renderInfoSide(){
