@@ -81,6 +81,14 @@ add('彈藥存量：雄二／雄三分開、面板用「枚」、協同出擊卡
   r.push([!!f&&(f.max<3||(f.n3===3&&f.l3>=f.l1*1.5)),'協同出擊卡片：批數 1→3，預估損失與批數隨之增加 '+JSON.stringify(f)]);
   r.push(...noErr(p,'彈藥存量'));await p.close();return r;});
 
+add('先由電腦推演 N 回合再接手、判定回合可選 16／24','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:15});const r=[];
+  r.push([await p.evaluate(()=>[...$('#optT').options].map(o=>o.value).join()==='6,8,10,12,16,24'&&SETUP_PAGES.flatMap(x=>x.fields).find(f=>f.sel==='optT').opts['24']&&['optPre'].every(id=>CFG_IDS.includes(id)&&id in DEFAULT_CFG)),'判定回合有 16、24；先推演欄位已登記']);
+  await p.evaluate(()=>{$('#optPre').value='3';$('#optPre').dispatchEvent(new Event('change'));});await L.startGame(p).catch(()=>{});
+  await p.waitForFunction(()=>S.over||S.turn>=4&&S.ctrl.atk==='human',null,{timeout:90000}).catch(()=>{});
+  const b=await p.evaluate(()=>({turn:S.turn,phase:S.phase,ctl:S.ctrl.atk+'/'+S.ctrl.def,pre:S.preAI,auto:S.simAuto,sp:S.speed,over:S.over,log:S.log.some&&S.log.some(x=>/由你接手/.test(typeof x==='string'?x:JSON.stringify(x)))}));
+  r.push([!b.over&&b.turn===4&&b.phase==='atk'&&b.ctl==='human/ai'&&!b.pre&&!b.auto&&b.sp===1,'第 4 回合攻方階段：操作權交還給玩家，自動模式關閉 '+JSON.stringify(b)]);
+  r.push(...noErr(p,'先推演'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
