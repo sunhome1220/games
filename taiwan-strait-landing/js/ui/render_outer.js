@@ -139,6 +139,11 @@ function inWaterBand(lon,lat,W){const kx=111.2*Math.cos(lat*Math.PI/180),ky=111.
   for(let i=0;i<W.length-1;i++){const [x1,y1,w1]=W[i],[x2,y2,w2]=W[i+1],dx=(x2-x1)*kx,dy=(y2-y1)*ky,px=(lon-x1)*kx,py=(lat-y1)*ky,L=dx*dx+dy*dy,t=L?Math.max(0,Math.min(1,(px*dx+py*dy)/L)):0;
     if(Math.hypot(px-t*dx,py-t*dy)<=w1+(w2-w1)*t)return true;}
   return false;}
+// 極簡畫質的平面地形色（與 tileGrad 的漸層同色系，不做漸層）：key → [CSS 變數, 不支援 color-mix 時的備用色]
+const ULC={plain:['land','#d9d1ad'],city:['city','#cfc4a0'],mtn:['mtn','#b5a47c'],main:['main','#c8c4b8'],plain2:['land2','#d3d0a8'],plain3:['land3','#dfd5b3'],hill:['hill','#c9bd92'],main2:['main2','#c3c6b6'],main3:['main3','#cec8b8'],
+  mainhill:['mainhill','#b9b3a1'],mainmtn:['mainmtn','#a39d8c'],maincity:['maincity','#d4cfc2'],tcity:['tcity','#b8b6ae'],town:['town','#b4c0a2'],
+  e0:['e0','#a9c98b'],e1:['e1','#c3cc8f'],e2:['e2','#c9bd86'],e3:['e3','#b3a374'],e4:['e4','#998b62'],e5:['e5','#7f7552'],e6:['e6','#686344']};
+const ulFill=k=>{const c=ULC[k]||ULC.plain;return 'fill="'+c[1]+'" style="fill:color-mix(in srgb,var(--'+c[0]+') 85%,#fff)"';};
 function buildFar(){
   // 外圍示意區：地形一律用與遊戲格相同的細格；標示、投射區仍用舊座標系（粗格）再整組縮放 KS 對齊
   const center=oCenter,VBW=OVBW,VBH=OVBH,W=OW,R=OR,COL0=OC0,COL1=OC1,ROW0=OR0,ROW1=OR1,MX0=oMX0,MX1=oMX1,MY0=oMY0,MY1=oMY1,EVBW=OVBW+oMX0+oMX1,EVBH=OVBH+oMY0+oMY1,TER=TERC;
@@ -202,12 +207,16 @@ function buildFar(){
   // 精簡模式（LITE）：不畫會持續動畫的海浪、減少山丘細節，降低圖層節點與動畫數量（約 2,000 個動畫、1 萬多節點）
   let fineSvg='';let wi=0;const seaD={},wvF=[[],[],[],[],[],[],[],[],[]]; // 浪紋依動畫延遲分 9 組，每組一個 path； // 細格海面：同色的海格合併成一個 path（約 4,000 個節點 → 數個）
   const farBand=h=>{const [lo,la]=rcToLL(h.c,h.r);return la>27.9||lo<115.1;}; // 後來擴大的北、西外圍：只畫色塊，不畫山丘細節與海浪（節點太多手機會慢）
+  const ulF={}; // 極簡畫質：外圍陸地依地形分類合併成平面色塊 path（約 8,000 個 polygon → 十幾個 path）；有名稱可點的格子仍單獨畫
   for(const h of fine.values()){
     if(h.t==='sea'){const [slon,slat]=rcToLL(h.c,h.r),dd=dist.get(K(h.c,h.r)),sc=seaClass(slon,slat,dd);(seaD[sc]=seaD[sc]||[]).push('M'+hexPts(h.x,h.y,RF).replace(/ /g,'L')+'Z');
-      if(!LITE&&sc!=='d1'&&(h.c+h.r)%2===0&&!farBand(h))wvF[wi++%9].push('M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0');}
-    else{const nm=clickOf[K(h.c,h.r)];fineSvg+='<polygon class="tl-far'+(nm?' fclick':'')+'" fill="url(#gt-'+VTKEY(h.vt,h.t==='main')+')" stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'"'+(nm?' data-far="'+nm+'"':'')+'/>';
+      if(!LITE&&!ULTRA&&sc!=='d1'&&(h.c+h.r)%2===0&&!farBand(h))wvF[wi++%9].push('M'+(h.x-6)+' '+(h.y+1)+'q3 -3 6 0t6 0');}
+    else if(ULTRA&&!clickOf[K(h.c,h.r)]){const kk=VTKEY(h.vt,h.t==='main');(ulF[kk]=ulF[kk]||[]).push('M'+hexPts(h.x,h.y,RF).replace(/ /g,'L')+'Z');}
+    else{const nm=clickOf[K(h.c,h.r)];if(ULTRA){const kk=VTKEY(h.vt,h.t==='main');fineSvg+='<polygon class="tl-far fclick" '+ulFill(kk)+' stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'" data-far="'+nm+'"/>';continue;}
+      fineSvg+='<polygon class="tl-far'+(nm?' fclick':'')+'" fill="url(#gt-'+VTKEY(h.vt,h.t==='main')+')" stroke="var(--land-edge)" stroke-width=".5" points="'+hexPts(h.x,h.y,RF)+'"'+(nm?' data-far="'+nm+'"':'')+'/>';
       if(!farBand(h)&&(h.vt==='mtn'||h.vt==='city'||(!LITE&&h.vt==='hill'&&((h.c*7+h.r*13)&3)!==0)))fineSvg+='<g pointer-events="none" opacity=".9">'+tileDetail({t:h.vt,vt:h.vt,c:h.c,r:h.r},h.x,h.y)+'</g>';}
   }
+  fineSvg+=Object.entries(ulF).map(([kk,d])=>'<path class="tl-ul" '+ulFill(kk)+' d="'+d.join('')+'"/>').join('');
   fineSvg=Object.entries(seaD).map(([c,d])=>'<path class="tl-sea '+c+'" d="'+d.join('')+'"/>').join('')+fineSvg+wvF.map((d,i)=>d.length?'<path class="wv" style="animation-delay:'+(-i*.7).toFixed(1)+'s" d="'+d.join('')+'"/>':'').join('');
   const bg='<rect x="'+(-oMX0*KS-10)+'" y="'+(-oMY0*KS-10)+'" width="'+((OVBW+oMX0+oMX1)*KS+20).toFixed(0)+'" height="'+((OVBH+oMY0+oMY1)*KS+20).toFixed(0)+'" fill="url(#gSea)"/>';
   const tiles=Object.values(FAR).filter(f=>f.name).map(f=>[0,0,f.x,f.y,f]);
@@ -275,24 +284,27 @@ function buildStatic(){
   const seaP={},wvP=[[],[],[],[],[],[],[],[],[]];let wi=0;
   for(const h of sea){const [x,y]=center(h.c,h.r),[slon,slat]=rcToLL(h.c,h.r),sc=seaClass(slon,slat,dist.get(h.k));
     (seaP[sc]=seaP[sc]||[]).push('M'+hexPts(x,y,R).replace(/ /g,'L')+'Z');
-    if(!LITE&&sc!=='d1'&&(h.c+h.r)%2===0)wvP[wi++%9].push('M'+(x-9)+' '+(y+2)+'q4.5 -4 9 0t9 0');
+    if(!LITE&&!ULTRA&&sc!=='d1'&&(h.c+h.r)%2===0)wvP[wi++%9].push('M'+(x-9)+' '+(y+2)+'q4.5 -4 9 0t9 0');
   }
   o+=Object.entries(seaP).map(([c,d])=>'<path class="tl-sea '+c+'" data-sea="1" d="'+d.join('')+'"/>').join('')+wvP.map((d,i)=>d.length?'<path class="wv" style="animation-delay:'+(-i*.7).toFixed(1)+'s" d="'+d.join('')+'"/>':'').join('');
-  for(const h of land){const [x,y]=center(h.c,h.r),d=elev(h);o+='<polygon class="tl-sh" points="'+ptsStr(hexV(x+3,y+d+4,R))+'"/>';}
+  const ulN={},ulKey=h=>h.isl==='CN'||h.t==='main'?VTKEY(h.vt,true):h.elev!=null?(h.t==='city'?'tcity':h.town?'town':'e'+Math.min(6,Math.floor(h.elev/500))):(h.t==='city'?'city':h.t==='mtn'?'mtn':'plain');
+  if(ULTRA)for(const h of land){const [x,y]=center(h.c,h.r),kk=ulKey(h);(ulN[kk]=ulN[kk]||[]).push('M'+hexPts(x,y,R).replace(/ /g,'L')+'Z');}
+  if(ULTRA)o+=Object.entries(ulN).map(([kk,d])=>'<path class="tl-ul" data-sea="2" '+ulFill(kk)+' d="'+d.join('')+'"/>').join(''); // 極簡畫質：近岸陸地同類合併成平面色塊，點選用座標反查（seaHexAt，data-sea=2 表示陸地也回傳）
+  if(!ULTRA)for(const h of land){const [x,y]=center(h.c,h.r),d=elev(h);o+='<polygon class="tl-sh" points="'+ptsStr(hexV(x+3,y+d+4,R))+'"/>';}
   for(const h of land){
-    const [x,y0]=center(h.c,h.r),d=elev(h),y=y0-d,v=hexV(x,y,R),b=v.map(p=>[p[0],p[1]+d]);
+    const [x,y0]=center(h.c,h.r),d=ULTRA?0:elev(h),y=y0-d,v=hexV(x,y,R),b=v.map(p=>[p[0],p[1]+d]);
     const key=h.isl==='CN'||h.t==='main'?VTKEY(h.vt,true):h.elev!=null?(h.t==='city'?'tcity':h.town?'town':'e'+Math.min(6,Math.floor(h.elev/500))):(h.t==='city'?'city':h.t==='mtn'?'mtn':'plain'); // 台澎：依海拔每 500 公尺分色（地形圖配色），城市灰色
-    o+='<g class="tile t-'+key+'">';
+    if(!ULTRA){o+='<g class="tile t-'+key+'">';
     [[3,4,'l'],[2,3,'l'],[1,2,'r'],[0,1,'r']].forEach(([i,j,s])=>{o+='<polygon class="sd '+s+'" points="'+ptsStr([v[i],v[j],b[j],b[i]])+'"/>';});
     o+='<polygon class="tt" fill="url(#gt-'+key+')" points="'+ptsStr(v)+'" data-k="'+h.k+'"/>';
     o+='<polyline class="tg" points="'+ptsStr([v[3],v[4],v[5],v[0]])+'"/>';
     if(h.cliff)o+='<polygon class="cliff" points="'+hexPts(x,y,R-3)+'"/>';
     if(h.mud)o+='<polygon class="mud" points="'+hexPts(x,y,R-3)+'"/>';
-    o+=tileDetail(h,x,y);
+    o+=tileDetail(h,x,y);}
     if(h.name&&(h.t!=='plain'||h.isl==='JP'||['宜蘭','恆春','澎湖'].includes(h.name))&&!(h.t==='air'&&(nearCity(h)||h.isl==='TW'))){ /* 台澎機場的名稱改由可點的基地標籤（baseTagsSVG）顯示 */const ob=h.k===TAIPEI||PORTS.includes(h.k);
       lbls+='<text class="lbl'+(ob?' obj':' minor')+'" font-size="'+(8.5*Math.max(.72,SC)).toFixed(1)+'" x="'+x+'" y="'+(FG>2?y-R*1.2:y-(h.t==='mtn'?11:9))+'">'+(ob?'★':'')+h.name+'</text>';
       } // 機場旁 25 km 內已有城市或港口名就不重複標（點機場仍看得到名稱）；縮小時只顯示勝負要點
-    o+='</g>';
+    if(!ULTRA)o+='</g>';
   }
   o+=coastRiverSVG(land);
   o+=lbls; // 地名畫在河流、海岸線之後，河流不會壓過字

@@ -27,10 +27,11 @@ function jankOffer(m){
   if(!S||S.jankAsked)return;S.jankAsked=true;JANK.bad=0;
   let d=document.getElementById('jankCard');if(d)d.remove();
   d=document.createElement('div');d.id='jankCard';d.setAttribute('role','status');
-  d.innerHTML='<div>畫面好像不太順（約 '+Math.round(1000/m)+' 格／秒）。要關閉動畫讓它順一點嗎？<small>會停止火力動畫與地圖海浪，戰報與結算照常；之後可在右上角「⚙ 設定」的「火力動畫速度」改回。</small></div><div class="cpb"><button id="jankOff">關閉動畫</button><button class="ghost" id="jankKeep">繼續使用</button><button class="ghost" id="jankNever">不再提醒</button></div>';
+  d.innerHTML='<div>畫面好像不太順（約 '+Math.round(1000/m)+' 格／秒）。要讓它順一點嗎？<small>「關閉動畫」會停止火力動畫與地圖海浪；「極簡畫質」把地形改成平面色塊（節點約減九成），對舊裝置最有效。戰報與結算照常；都可在右上角「⚙ 設定」改回。</small></div><div class="cpb"><button id="jankOff">關閉動畫</button>'+(ULTRA?'':'<button id="jankUl">極簡畫質</button>')+'<button class="ghost" id="jankKeep">繼續使用</button><button class="ghost" id="jankNever">不再提醒</button></div>';
   document.body.appendChild(d);
   const close=()=>d.remove();
   d.querySelector('#jankOff').onclick=()=>{close();if(typeof applyPref==='function')applyPref('optFxSpd','off');const sel=document.getElementById('optFxSpd');if(sel)sel.value='off';fxSet('off');if(typeof toast==='function')toast('已關閉動畫，可在「⚙ 設定」改回',3500);try{if(typeof saveSetup==='function')saveSetup();}catch(e){}};
+  const ul=d.querySelector('#jankUl');if(ul)ul.onclick=()=>{close();setQual('ultra');applyPref('optFxSpd','off');fxSet('off');if(typeof toast==='function')toast('已改用極簡畫質並關閉動畫，可在「⚙ 設定」改回',3800);};
   d.querySelector('#jankKeep').onclick=close;
   d.querySelector('#jankNever').onclick=()=>{close();try{localStorage.setItem('tsl-jank','0');}catch(e){}};
 }

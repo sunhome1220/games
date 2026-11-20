@@ -65,6 +65,7 @@
   - 畫面：圖示、字級用 `SC`（＝R/16）縮放；地圖縮放 <160% 時 `#map.zlo`（只留勝負要點地名、棋子縮成一格 `US_SMALL`）。大陸沿岸、金門、琉球也用 Natural Earth（`GEO_CN`／`GEO_KM`／`GEO_JP`，共用 `gCover`）；馬祖沒有資料，依座標放小島格。
   - 仍以「一格」為單位、改尺度時要再檢查的：`nbrs` 一格內的鄰接（佔領擴張 `claim`、接觸判定 `gContact`、登陸）、`landDist` 步數成本、`ZONES` 等地點清單（目前都由經緯度換算，會自動跟著格子）。
   - 地圖 SVG（2026-11-18.14）：海面不是每格一個 polygon，而是同色的海格合併成一個 `path.tl-sea[data-sea]`，浪紋分 9 組各一個 path。點選／游標移入海面時用 `seaHexAt()` 由座標反查格子（`input.js` 的 `mapHover` 另外聽 `mousemove`）；手把要取得某格的元素用 `hexEl(k)`（海格回傳透明探針）。**不要再寫 `#map polygon[data-k=…]` 去找海格**，會找不到。
+  - **極簡畫質 `ULTRA`**（2026-11-18.36；`state.js` 的 `setQual`、localStorage `tsl-qual`、網址 `?ultra=1／0`）：靜態地形依分類合併成平面色塊 path（`path.tl-ul`，近岸的帶 `data-sea="2"`，點選用 `seaHexAt` 反查，陸地也回傳），不畫 3D 側面／陰影／山峰／建築／海浪，`elev()` 恆為 0；節點約 30,500 → 2,900。設定的「地圖畫質」與卡頓提醒的「極簡畫質」按鈕都呼叫 `setQual`。改地形繪製時，`buildStatic`／`buildFar` 兩條路徑（一般／ULTRA）都要顧到。
   - `terList(key,fn)`（`map.js`）：地形是載入後就不變的，「符合條件的格子清單」第一次用到時算一次、之後重用；**條件只能看地形，不能看 S 的狀態**（例：`terList('twCoast',…)`）。每次重畫都會執行的程式不要寫 `Object.values(TER).filter(…)`。
   - 效能：10 km 約 9,000 格，一整場電腦推演桌機約 5 秒。熱點已改寫（`unitsAt`／`unitAt` 比對數字座標、`inZOC`／`enemyAdj` 直接掃單位、`twControl` 快取）；新程式不要在迴圈裡掃整個 `TER` 或每格呼叫 `unitsAt`。
 - 除錯鉤子：網址加 `?debug=1`，提供 `window.__S`、`__dog`、`__fg`、`__ledger` 等。

@@ -6,7 +6,7 @@ function seaHexAt(el,cx,cy){
   const m=el.getScreenCTM();if(!m)return null;const p=new DOMPoint(cx,cy).matrixTransform(m.inverse());
   const r0=Math.round((p.y/KS-OY0)/(1.5*OR/FG)),c0=Math.round((p.x/KS-OX0)/(OW/FG)-.5*(r0&1));let best=null,bd=1e18;
   for(let r=r0-1;r<=r0+1;r++)for(let c=c0-1;c<=c0+1;c++){const h=TER[K(c,r)];if(!h)continue;const [x,y]=center(c,r),d=(x-p.x)**2+(y-p.y)**2;if(d<bd){bd=d;best=h;}}
-  return best&&best.t==='sea'?best.k:null;}
+  return best&&(best.t==='sea'||el.getAttribute('data-sea')==='2')?best.k:null;}
 function hexEl(k){const e=document.querySelector('#map polygon[data-k="'+k+'"]');if(e)return e;const h=TER[k];if(!h)return null;
   let pr=document.getElementById('seaProbe');if(!pr){pr=document.createElementNS(SVGNS,'polygon');pr.id='seaProbe';pr.setAttribute('fill','none');pr.setAttribute('pointer-events','none');document.getElementById('map').appendChild(pr);}
   const [x,y]=center(h.c,h.r);pr.setAttribute('points',hexPts(x,y,R));pr.setAttribute('data-k',k);return pr;}
@@ -18,7 +18,7 @@ const SC=R/16; // 格子相對 20 km 格的大小（10 km＝0.5）：地形細�
 const US_BIG=Math.max(R,16*.72)/26*1.18,US_SMALL=R/26*1.18; // 棋子：放大時保留原尺寸 72%（好點選）；縮小（地圖縮放 <160%）時縮到一格大、只留兵種符號
 const usForZoom=z=>(FG>2&&z<1.6?US_SMALL:US_BIG)*(z>5?5/z:1); // 放大到 500% 以上時棋子在畫面上不再變大（只放大地圖）
 let US=usForZoom(1); // 開局縮放 100%
-const elev=h=>isLand(h)?(DEPTH[h.t]||4)*SC:0;
+const elev=h=>!ULTRA&&isLand(h)?(DEPTH[h.t]||4)*SC:0;
 function cen(c,r){const [x,y]=center(c,r);return [x,y-elev(TER[K(c,r)])];}
 // ---------- 第 3d 階段：射程圈與艦隊資訊面板（只顯示，不影響規則）----------
 // 射程圈依直線距離畫成圓形（與「打不打得到」的 rd 判定一致：格子中心在圓內就打得到；圓多畫半格，涵蓋整個格子）
