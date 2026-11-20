@@ -61,7 +61,7 @@ $('#toast').addEventListener('click',e=>{e.stopPropagation();e.preventDefault();
   if(t.classList.contains('open')||!t.classList.contains('cut')){t.classList.remove('show','open');return;}
   t.classList.add('open');});
 function hname(h){return h.name||(TERN[h.t]+' '+h.c+'-'+h.r);}
-function uname(u){return (u.fl?u.fl.n:u.type==='psub'?psubCls(u).n:u.wp==='hp'?'魚叉岸防系統':u.hl?'劍龍級潛艦（'+u.nm+'）':TYPES[u.type].n)+'（'+SIDE[u.side]+'）';}
+function uname(u){return (u.lha?LHA.n:u.lhaMar?LHA.marN:u.fl?u.fl.n:u.type==='psub'?psubCls(u).n:u.wp==='hp'?'魚叉岸防系統':u.hl?'劍龍級潛艦（'+u.nm+'）':TYPES[u.type].n)+'（'+SIDE[u.side]+'）';}
 // ---------- 台灣海軍：依真實艦隊編制，一個棋子＝一個艦隊（★艦隊歸屬與武器數字為推估）----------
 // 每艘：防空飛彈 ad、防空涵蓋 adR（格）、反艦飛彈 asm、反艦射程 asmR（格）、同時接戰數 ch
 const RFW={kl:{n:'基隆級',w:'魚叉',ad:60,adR:kmH(120),asm:8,asmR:kmH(120),ch:2},ck:{n:'成功級',w:'雄二／雄三',ad:36,adR:kmH(40),asm:8,asmR:kmH(160),ch:2},pf:{n:'派里級',w:'雄二',ad:36,adR:kmH(40),asm:4,asmR:kmH(120),ch:2},

@@ -191,6 +191,19 @@ add('對抗性登陸（強攻有守軍的灘頭）','medium',async c=>{const r=[
   r.push([n['amph/ro']===false&&n['arm/lst']===false,'滾裝船上的旅、重型旅：不能強攻登陸 '+JSON.stringify(n)]);
   r.push(...noErr(p,'強攻登陸'));await p.close();return r;});
 
+add('四川艦（076 型）：2027 年起、載陸戰隊、海上機降','medium',async c=>{const r=[];
+  const play=async era=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:5});await p.evaluate(e=>{$('#optEra').value=e;$('#optEra').dispatchEvent(new Event('change'));},era);await L.startGame(p);return p;};
+  let p=await play('2026');r.push([await p.evaluate(()=>!S.units.some(u=>u.lha||u.lhaMar)),'2026 年：沒有四川艦']);await p.close();
+  p=await play('2027');
+  const o=await p.evaluate(()=>{const sh=S.units.find(u=>u.lha),m=S.units.find(u=>u.lhaMar);if(!sh||!m)return null;const rc=reach(m),k={},bound=sh.boundTo===m.id&&m.ship===sh.id;for(const v of rc.values())k[v.kind]=(k[v.kind]||0)+1;
+    const n0=S.units.filter(u=>u.lha).length,pool0=S.pools.plaLst;const dk=[...rc].find(([kk,v])=>v.kind==='drop');let d=null;
+    if(dk){doMove(m,dk[0],'drop');d={landed:!isShip(m)&&hexOf(m).isl!=='CN'&&!atSea(m),unbound:!m.ship&&!sh.boundTo,shipStays:S.units.some(u=>u.lha),pool:S.pools.plaLst===pool0};}
+    return {names:uname(sh)+'／'+uname(m),n:S.units.filter(u=>u.lha).length,bound,kinds:k,hp:m.hp,d};});
+  r.push([!!o&&o.n===1&&o.bound,'2027 年：1 艘四川艦載著一個陸戰隊空中突擊營（'+(o&&o.names)+'）']);
+  r.push([!!o&&o.kinds.drop>0&&o.kinds.sail>0&&o.hp===1,'陸戰隊可從海上機降（'+(o&&o.kinds.drop)+' 個落點）、也能隨艦航行；1 步＝約 1/4 個旅']);
+  r.push([!!o&&!!o.d&&o.d.landed&&o.d.unbound&&o.d.shipStays&&o.d.pool,'機降後：陸戰隊上岸、艦留在海上、不回兩棲艦群運力池 '+JSON.stringify(o&&o.d)]);
+  r.push(...noErr(p,'四川艦'));await p.close();return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];

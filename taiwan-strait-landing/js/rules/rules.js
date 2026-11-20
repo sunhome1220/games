@@ -20,7 +20,7 @@ function support(u,t){
   for(const h of ring2(t))for(const f of unitsAt(h.k))if(f!==u&&f.side===u.side&&!isMsl(f)&&!isFixT(f)&&!(h.isl==='CN'))n++;
   return Math.min(2,n);
 }
-const canSail=u=>u.type==='ff'||u.type==='hk'||u.type==='psub'||u.type==='ssn'||u.type==='csg'||(u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm'||u.type==='dd'||u.type==='cv'||u.type==='cvy'||u.type==='lst'||u.type==='ro'));
+const canSail=u=>u.type==='ff'||u.type==='hk'||u.type==='psub'||u.type==='ssn'||u.type==='csg'||(u.side==='atk'&&(u.type==='amph'||u.type==='mar'||u.type==='arm'||u.type==='dd'||u.type==='cv'||u.type==='cvy'||u.type==='lst'||u.type==='ro'||(u.type==='aas'&&!!u.ship)));
 function canEmbark(u,h){
   if(u.type==='ff'||u.type==='hk')return h.t==='port'&&unitsAt(h.k).every(x=>x.side===u.side);
   if(u.type==='psub')return h.t==='port'&&h.isl==='CN';
@@ -108,8 +108,8 @@ function seaReach(u,res){
     for(const n of nbrs(h.c,h.r)){
       if(n.t==='sea')visitSea(n,mp-1);
       else if(dockOK(u,n))res.set(n.k,{kind:'sail'}); // 潛艦與船艇可以靠進己方港口（母港、避風）
-      else if(n!==here&&!isShip(u)&&validLanding(u,n)&&canStack(u,n.k)&&(!res.has(n.k)||res.get(n.k).kind!=='move'))res.set(n.k,{kind:'land'});
-      else if(n!==here&&!isShip(u)&&!res.has(n.k)&&opposedLanding(u,n))res.set(n.k,{kind:'land',opp:true}); // 有守軍的灘頭：強攻登陸（對抗性登陸）
+      else if(n!==here&&!isShip(u)&&u.type!=='aas'&&validLanding(u,n)&&canStack(u,n.k)&&(!res.has(n.k)||res.get(n.k).kind!=='move'))res.set(n.k,{kind:'land'});
+      else if(n!==here&&!isShip(u)&&u.type!=='aas'&&!res.has(n.k)&&opposedLanding(u,n))res.set(n.k,{kind:'land',opp:true}); // 有守軍的灘頭：強攻登陸（對抗性登陸）
     }
   }
 }
@@ -117,12 +117,12 @@ function reach(u){
   const res=new Map();if(u.moved||u.acted)return res;const h=hexOf(u);
   if(u.boundTo||isFixT(u))return res; // 載著旅的運輸船跟著旅一起走；攻擊直升機旅留在基地（從基地出擊）
   if(u.esc)return res; // 護航艦跟著航艦移動，不單獨移動
-  if(isAirT(u)&&!u.dropped&&h.isl==='CN'){
+  if(isAirT(u)&&!u.dropped&&(h.isl==='CN'||u.ship)){ // 在大陸沿岸待命，或搭在四川艦上（從海上的位置起飛）
     if(S.weather.air)for(const t of Object.values(TER)){
       if((t.isl==='TW'||t.isl==='PH')&&t.t!=='mtn'&&canStack(u,t.k)&&rd(h,t)<=kmH(AIR_R[u.type]))res.set(t.k,{kind:'drop'});
     }
     for(const t of atkAF())if(afRoom(u,t.k))res.set(t.k,{kind:'drop'}); // 占領的機場：可直接機降（天候不佳時也要能起降才行）
-    return res;
+    if(!u.ship)return res; // 搭在四川艦上的陸戰隊，另外可以隨艦航行（下面的海上移動）
   }
   if(isLand(h)&&u.type!=='ff'&&u.type!=='hk'&&u.type!=='psub')landReach(u,res);
   if(canSail(u))seaReach(u,res);
@@ -150,7 +150,7 @@ function targets(u){
     } // 船上的旅不單獨列為目標：打運輸船，船沉了旅一併損失
   const h=hexOf(u);if(h.isl==='CN')return [];
   // 海上的搶灘突擊（登陸艇、兩棲載具靠岸）只有搭兩棲艦的兩棲旅與陸戰旅做得到：滾裝船沒有登陸艇、只能進港口或浮動碼頭卸載；重型旅也不能搶灘（只能在港口卸載）——這兩種在海上沒有可攻擊的目標
-  if(atSea(u)){const sh=u.ship&&shipOf(u);if(u.type==='arm'||(sh&&sh.type==='ro'))return [];}
+  if(atSea(u)){const sh=u.ship&&shipOf(u);if(u.type==='arm'||u.type==='aas'||(sh&&sh.type==='ro'))return [];}
   return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)&&(hd(h,hexOf(e))<=1||hasArt(u))); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以。相鄰格才能突擊，20 km 只有編有砲兵的旅能砲擊
 }
 
@@ -240,6 +240,7 @@ function endPhaseGuard(){ // 回傳 true＝先擋下並提示
 }
 function doMove(u,k,kind){
   const from=hexOf(u);const h=TER[k];
+  if(kind==='drop'&&u.ship){const sh=shipOf(u);if(sh){sh.boundTo=null;sh.ret=false;}u.ship=null;} // 從四川艦機降：艦留在海上（不回兩棲艦群運力池）
   if(kind==='land'&&opposedLanding(u,h)){landAssault(u,h);return;}
   if(u.type==='psub'&&kind==='sail')u.loud=hd(from,h)>SPD.subQuiet;
   if(u.type==='hk'&&kind==='sail'){u.loud=hd(from,h)>SPD.subQuiet;if(u.loud&&!subHidden(u))log(subNm(u)+'高速航行約 '+Math.round(hd(from,h)*KM_HEX)+' km（超過 '+Math.round(SPD.subQuiet*KM_HEX)+' km），噪音大，下一次被反潛發現的機率加倍');}
