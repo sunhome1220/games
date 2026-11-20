@@ -27,6 +27,8 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
     await p.evaluate(()=>{$('#optMonth').value='4';$('#optMonth').dispatchEvent(new Event('change'));WZ.i=0;renderWizard();});} // 回到第 1 頁：之後 startGame 會一頁頁按下一步，沒看過的頁面不能跳過
   await L.startGame(p);
   r.push([await p.evaluate(()=>/2026\/4\/1 白天/.test($('#phaseTitle').textContent)&&simDate(2)==='2026/4/1 夜間'&&simDate(3)==='2026/4/2 白天'&&simDate(24)==='2026/4/12 夜間'),'模擬日期：2026 年 4 月 1 日白天起，每 2 回合過 1 天（顯示在階段標題）']);
+  r.push([await p.evaluate(()=>{const ref=S.units.find(u=>u.type==='cv')||S.units[0],n=t=>{const u=Object.assign({},ref,{type:t,side:'atk',hp:TYPES[t].hp,boundTo:null,ship:null,fl:undefined,mhp:undefined});return (unitSVG(u,false).match(/class="ugh /g)||[]).length;};
+    return ['lst','ro','cvy','dd','ff','psub','csg'].every(t=>n(t)===2)&&['cv','hk','ssn','d55','f54','amph','arm'].every(t=>!TYPES[t]||n(t)===0);}),'棋子圖示：艦艇群、運輸船有疊影（2 張），單一載具、旅級部隊沒有']);
   // 關卡判定：在已開局的一般對局上直接呼叫各關的 check()（不必真的開關卡、不必玩回合）
   const a=await p.evaluate(()=>{const cv=S.units.find(u=>u.type==='cv'&&u.side==='atk');const D=MISSION_DEFS.carrier,before=D.check();cv.hp=1;return [before,D.check()];});
   r.push([a[0]===null&&a[1]&&a[1].stars===3,'擊沉航艦：未重創時不過關；重創後第 1 回合 3 星']);
