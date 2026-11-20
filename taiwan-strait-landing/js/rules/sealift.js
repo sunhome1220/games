@@ -74,6 +74,16 @@ function liftTurn(){ // 攻方階段開始：卸載完的運輸船返航大陸�
   const P=S.pools,t=S.turn;P.plaLst+=(S.lstBack&&S.lstBack[t])||0;
   const ports=Object.values(TER).filter(h=>h.t==='port'&&h.isl==='CN');if(!ports.length)return;
   const dp=h=>Math.min.apply(null,ports.map(q=>hd(h,q)));
+  for(const sh of S.units.filter(x=>x.side==='atk'&&xferDown(x)&&x.boundTo)){ // 失能的運輸船載著旅撤回大陸港口（旅隨船，不損失；到港後旅卸下、船修理 6 回合再回運力池，★設計值）
+    const b=S.units.find(y=>y.id===sh.boundTo);if(!b)continue;
+    sh.boundTo=null;sh.moved=false;const rc=reach(sh);sh.boundTo=b.id;let bk=null,bs=dp(hexOf(sh));
+    for(const [k,v] of rc){if(v.kind!=='sail')continue;const sc=dp(TER[k]);if(sc<bs){bs=sc;bk=k;}}
+    if(bk){const nh=TER[bk];sh.c=nh.c;sh.r=nh.r;b.c=nh.c;b.r=nh.r;}
+    sh.moved=true;const hh=hexOf(sh);
+    if(hh.t==='port'&&hh.isl==='CN'){b.ship=null;sh.boundTo=null;b.moved=false;b.acted=false;
+      log(uname(b)+' 隨失能的'+TYPES[sh.type].n+'返抵大陸港口卸下，兵力無損；船進入修理');
+      if(!sh.lha){S.units=S.units.filter(x=>x!==sh);if(sh.type==='lst'){S.lstBack=S.lstBack||{};S.lstBack[t+6]=(S.lstBack[t+6]||0)+1;}else{S.liftBack=S.liftBack||{};S.liftBack[t+6]=(S.liftBack[t+6]||0)+1;}}}
+  }
   for(const sh of S.units.filter(x=>x.side==='atk'&&(x.type==='lst'||x.type==='ro')&&x.ret&&t>x.retT)){
     sh.moved=false;const rc=reach(sh);let b=null,bs=dp(hexOf(sh));
     for(const [k,v] of rc){if(v.kind!=='sail')continue;const sc=dp(TER[k]);if(sc<bs){bs=sc;b=k;}}

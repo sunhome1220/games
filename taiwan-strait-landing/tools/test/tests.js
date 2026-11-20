@@ -245,6 +245,28 @@ add('四川艦（076 型）：2027 年起、載陸戰隊、海上機降','medium
   r.push([!!o&&!!o.d&&o.d.landed&&o.d.unbound&&o.d.shipStays&&o.d.pool,'機降後：陸戰隊上岸、艦留在海上、不回兩棲艦群運力池 '+JSON.stringify(o&&o.d)]);
   r.push(...noErr(p,'四川艦'));await p.close();return r;});
 
+add('運輸船失能：滾裝 1 枚、兩棲艦 2 枚失能，再 1 枚沉；旅不跟著扣血、隨船撤回','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:6});const r=[];await L.startGame(p);
+  const o=await p.evaluate(()=>{const out={};
+    const mk=(type,st)=>{const u=S.units.find(x=>x.side==='atk'&&(x.type==='amph'||x.type==='mar')&&alive(x)&&!x.ship&&hexOf(x).isl==='CN');const port=Object.values(TER).find(h=>h.t==='port'&&h.isl==='CN');
+      u.c=port.c;u.r=port.r;const sh=mkUnit('atk',st,port.k,{boundTo:u.id});S.units.push(sh);u.ship=sh.id;return [u,sh];};
+    out.hp={lst:TYPES.lst.hp,ro:TYPES.ro.hp};
+    let [u,sh]=mk('amph','ro');const b0=u.hp;damage(sh,1,'test');out.ro1={down:xferDown(sh),brig:u.hp===b0,alive:alive(sh),reach:reach(u).size};
+    damage(sh,1,'test');out.ro2={shipGone:!S.units.includes(sh),brigGone:!S.units.includes(u)};
+    [u,sh]=mk('mar','lst');const b1=u.hp;damage(sh,1,'test');out.l1={down:xferDown(sh),reach:reach(u).size>=0};damage(sh,1,'test');out.l2={down:xferDown(sh),brig:u.hp===b1,reach:reach(u).size,alive:alive(sh)};
+    damage(sh,1,'test');out.l3={shipGone:!S.units.includes(sh),brigGone:!S.units.includes(u)};
+    // 撤退：失能的船載旅在海上，liftTurn 多次後回到港口，旅卸下、船修理
+    [u,sh]=mk('amph','ro');const port=hexOf(sh);const sea=nbrs(port.c,port.r).find(n=>n&&n.t==='sea');sh.c=sea.c;sh.r=sea.r;u.c=sea.c;u.r=sea.r;damage(sh,1,'test');
+    let back=false,turns=0;for(;turns<8&&!back;turns++){S.turn++;liftTurn();if(!u.ship&&!S.units.includes(sh))back=true;}
+    out.ret={back,turns,unit:alive(u)&&hexOf(u).t==='port'&&u.hp===b0&&!u.ship,pool:Object.values(S.liftBack||{}).some(x=>x>0)};
+    return out;});
+  r.push([o.hp.lst===3&&o.hp.ro===2,'兩棲艦群 3 步、滾裝船團 2 步 '+JSON.stringify(o.hp)]);
+  r.push([o.ro1.down&&o.ro1.brig&&o.ro1.alive&&o.ro1.reach===0,'滾裝船 1 枚命中：失能（沒沉），船上的旅不扣血、不能出航或登陸 '+JSON.stringify(o.ro1)]);
+  r.push([o.ro2.shipGone&&o.ro2.brigGone,'滾裝船失能後再 1 枚：沉沒，船上的旅一併損失']);
+  r.push([!o.l1.down&&o.l2.down&&o.l2.brig&&o.l2.alive&&o.l2.reach===0,'兩棲艦 1 枚不失能、2 枚失能（旅不扣血、不能登陸）']);
+  r.push([o.l3.shipGone&&o.l3.brigGone,'兩棲艦失能後再 1 枚（第 3 枚）：沉沒，旅一併損失']);
+  r.push([o.ret.back&&o.ret.unit&&o.ret.pool,'失能的船載旅撤回大陸港口：旅無損卸下，船進入修理（回運力池）'+JSON.stringify(o.ret)]);
+  r.push(...noErr(p,'運輸船失能'));await p.close();return r;});
+
 add('飛彈突防特性：魚叉、雄二亞音速，雄三超音速','medium',async c=>{const r=[];
   const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:5});await L.startGame(p);
   const o=await p.evaluate(()=>{const f=n=>{const q=mslProf(n);return [+q.ch.toFixed(2),+q.pk.toFixed(2)];};

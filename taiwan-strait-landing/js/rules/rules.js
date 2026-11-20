@@ -115,6 +115,7 @@ function seaReach(u,res){
 }
 function reach(u){
   const res=new Map();if(u.moved||u.acted)return res;const h=hexOf(u);
+  if(u.ship&&xferDown(shipOf(u)))return res; // 載運的船已失能：旅無法出航、登陸（船會自動撤回港口）
   if(u.boundTo||isFixT(u))return res; // 載著旅的運輸船跟著旅一起走；攻擊直升機旅留在基地（從基地出擊）
   if(u.esc)return res; // 護航艦跟著航艦移動，不單獨移動
   if(isAirT(u)&&!u.dropped&&(h.isl==='CN'||u.ship)){ // 在大陸沿岸待命，或搭在四川艦上（從海上的位置起飛）
@@ -154,8 +155,11 @@ function targets(u){
   return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)&&(hd(h,hexOf(e))<=1||hasArt(u))); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以。相鄰格才能突擊，20 km 只有編有砲兵的旅能砲擊
 }
 
+const isXfer=t=>!!t&&(t.type==='lst'||t.type==='ro'); // 兩棲艦群、滾裝船團
+const xferDown=t=>isXfer(t)&&t.hp<=1; // 失能：只剩最後 1 步，失去運輸與登陸能力（不沉）
+// 運輸船與船上的旅不再同進退：船被打只讓船失能或沉沒，旅在船沉時才一併損失（見 damage 的鏡像條件）
 function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥中的損失不會讓外海的運輸艦跟著沉（損失的是登陸艇與部隊）；船被擊沉時船上的旅一併損失
-  if(!S._mir&&!(u.ship&&(!why||why==='地面戰鬥'))){const link=u.ship?S.units.find(x=>x.id===u.ship):u.boundTo?S.units.find(x=>x.id===u.boundTo):null;if(link&&alive(link)){S._mir=true;try{damage(link,n,why);}finally{S._mir=false;}if(!alive(u))return false;}} // 船與船上的旅同進退
+  if(!S._mir&&!isXfer(u)&&!(u.ship&&isXfer(shipOf(u)))&&!(u.ship&&(!why||why==='地面戰鬥'))){const link=u.ship?S.units.find(x=>x.id===u.ship):u.boundTo?S.units.find(x=>x.id===u.boundTo):null;if(link&&alive(link)){S._mir=true;try{damage(link,n,why);}finally{S._mir=false;}if(!alive(u))return false;}} // 船與船上的旅同進退
   S.hits.push({c:u.c,r:u.r,t:S.turn,side:u.side,type:u.type,n:Math.min(n,u.hp),sea:atSea(u),why:why||'地面戰鬥',dead:n>=u.hp,cvn:u.type==='cv'&&u.cvi!=null?AIR.CV[u.cvi].n:null});
   fxq({t:'dmg',id:u.id,at:[u.c,u.r],n:Math.min(n,u.hp),side:u.side});
   if(isLch(u)&&u.veh!=null&&!S._vehHit){u.veh=Math.max(0,Math.round(u.veh-n*ssmVPS(u)));u.fk=(u.fk||[]).slice(0,u.veh);} // 地面戰鬥、先制打擊：每步＝4 輛完全摧毀
@@ -166,6 +170,9 @@ function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥
 }
 // 船艦受損的連帶效果：航艦剩 1 步撤離、護航艦防空彈減少、美軍航艦與潛艦同步、手把震動、航艦受創戰報
 function shipHitEffects(u,why){
+  if(isXfer(u)&&u.hp===1&&!u.disN){u.disN=1;const b=u.boundTo&&S.units.find(x=>x.id===u.boundTo);
+    log(TYPES[u.type].n+(u.lha?'（四川艦）':'')+(u.type==='ro'?'失去動力，無法靠碼頭卸載':'失去運輸與登陸能力（無法放出登陸艇與兩棲載具）')+(b?'，船上的'+TYPES[b.type].n+'無法登陸，隨船撤回大陸港口；':'，')+'再被命中就會沉沒');
+    if(b)bigNews(TYPES[u.type].n+'失能',TYPES[b.type].n+'所搭的'+TYPES[u.type].n+'遭飛彈命中、失去運輸能力，撤回大陸港口，這個旅這次不會登陸。');}
   if((u.type==='cv'||u.type==='csg')&&u.hp===1&&!u.ooaN){u.ooaN=1;
     const nm=u.type==='csg'?(csgFx(u)?csgName(csgIdx(csgFx(u).id)):'美軍航艦'):(u.cvi!=null?AIR.CV[u.cvi].n:'共軍航艦');
     log(nm+'受創失去戰鬥能力（飛行甲板受損，艦載機無法起降），撤離戰場修理');
