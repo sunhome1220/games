@@ -145,6 +145,26 @@ add('潛艦開火後脫離、最後已知位置、反潛搜索預覽','medium',a
   r.push([!!pv&&pv.on&&pv.off,'反潛直升機：預覽 40 km 搜索圓，離開模式後隱藏']);
   r.push(...noErr(p,'潛艦脫離'));await p.close();return r;});
 
+add('潛艦自主執行任務：鎖定、任務設定、通訊窗口','medium',async c=>{const r=[];
+  const play=async(side,ctl,misD,misA)=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:21});
+    const pg=await p.evaluate(([side,ctl,misD,misA])=>{$('#optSide').value=side;$('#optSide').dispatchEvent(new Event('change'));$('#optSubCtl').value=ctl;$('#optSubMisD').value=misD;$('#optSubMisA').value=misA;
+      const pgx=SETUP_PAGES.find(x=>x.t==='潛艦任務');return pgx&&pgx.fields.map(f=>!f.when||f.when());},[side,ctl,misD,misA]);
+    await L.startGame(p);for(let i=0;i<100;i++){const x=await L.modalClick(p);if(x===2&&await p.evaluate(()=>humanTurn()&&document.querySelector('#modal').hidden))break;await p.waitForTimeout(150);}
+    return {p,pg};};
+  const st=(p,type)=>p.evaluate(type=>{const L=S.units.filter(u=>u.type===type&&alive(u));return {n:L.length,locked:L.filter(u=>u.moved&&u.acted&&u.auto).length,mis:[...new Set(L.map(u=>u.mis))].join('|'),manual:L.filter(u=>!u.moved&&!u.acted).length};},type);
+  let q=await play('def','auto','lnd','auto');let o=await st(q.p,'hk');
+  r.push([o.n>0&&o.locked===o.n,'守方自主：台灣潛艦在己方階段開始後已行動並鎖定（'+o.locked+'／'+o.n+'）']);r.push([o.mis==='lnd','任務取自設定精靈：載運部隊的登陸艦']);
+  r.push([JSON.stringify(q.pg)==='[true,true,false]','你是守方：設定頁顯示操作方式與台灣潛艦任務，不顯示共軍潛艦任務']);
+  const pn=await q.p.evaluate(()=>{const u=S.units.find(x=>x.type==='hk'&&alive(x));return {html:subMisPanelHTML(u),open:subWindowOpen(u),turn:S.turn,misT:u.misT};});
+  r.push([/自主執行任務/.test(pn.html)&&/下一次通訊窗口/.test(pn.html)||/現在是通訊窗口/.test(pn.html),'資訊卡有「自主執行任務」說明，並寫出通訊窗口']);
+  const w=await q.p.evaluate(()=>{const u=S.units.find(x=>x.type==='hk'&&alive(x));const t=S.turn;u.misT=t;const a=subWindowOpen(u);u.misT=t-3;const b=subWindowOpen(u);return [a,b];});
+  r.push([w[1]===true&&(w[0]===false||w[0]===true),'距上次交代任務滿 3 回合就有通訊窗口']);r.push(...noErr(q.p,'守方自主'));await q.p.close();
+  q=await play('def','manual','auto','auto');o=await st(q.p,'hk');r.push([o.n>0&&o.manual===o.n,'守方完全手動：潛艦沒有被自主鎖定（'+o.manual+'／'+o.n+' 可手動）']);await q.p.close();
+  q=await play('atk','auto','auto','esc');o=await st(q.p,'psub');
+  r.push([o.n>0&&o.locked===o.n&&o.mis==='esc','攻方自主：共軍潛艦已行動並鎖定，任務＝美日驅逐艦與巡洋艦（'+o.locked+'／'+o.n+'）']);
+  r.push([JSON.stringify(q.pg)==='[true,false,true]','你是攻方：設定頁顯示操作方式與共軍潛艦任務，不顯示台灣潛艦任務']);r.push(...noErr(q.p,'攻方自主'));await q.p.close();
+  return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];

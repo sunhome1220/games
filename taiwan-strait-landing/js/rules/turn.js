@@ -110,6 +110,7 @@ async function beginPhase(side){
   if(side==='def')repairAirfields(); // 跑道搶修好就能在本守方階段起飛
   if(side==='atk'){repairPorts();repairCN();resolveSupply();convoyTurn();liftTurn();supplyAttrition();abnIsolation();if(S.over)return;}
   if(side==='atk')await atkPhaseStart();else await defPhaseStart();if(S.over)return;
+  await subAutoRun(side);if(S.over)return; // 潛艦自主模式：人類操作的一方，潛艦依任務自行行動（subauto.js）
   toast('第 '+S.turn+' 回合 · '+SIDE[side]+'階段');
   render();
   if(S.ctrl[side]==='ai')runAI(side);
