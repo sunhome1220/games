@@ -374,6 +374,8 @@ function newsArt(t){
   ['台北','台中港','高雄'].forEach(n=>{const h=Object.values(TER).find(x=>x.name===n);const [x,y]=center(h.c,h.r);o+='<text class="nlbl" x="'+(x+16)+'" y="'+(y+4)+'">'+n+'</text>';});
   return '<svg class="nart" viewBox="'+(x0-W).toFixed(0)+' 0 '+(VBW-x0+W).toFixed(0)+' '+VBH.toFixed(0)+'" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'+o+'</svg>';
 }
+// 模擬日期：年＝兵力年代、月＝開戰月份，開戰日取該月 1 日（★設定；實際日期未知）；每 2 回合（白天、夜間各 12 小時）過 1 天，與 D+n 一致
+function simDate(t){const d=new Date(Date.UTC(+S.era||2026,(S.month||4)-1,1+Math.ceil(t/2)-1));return d.getUTCFullYear()+'/'+(d.getUTCMonth()+1)+'/'+d.getUTCDate()+(t%2?' 白天':' 夜間');}
 function dayLabel(t){return 'D+'+(Math.ceil(t/2)-1)+(t%2?' 白天':' 夜間');}
 function newsScript(n){ // 語音稿：直接把快訊內容轉成適合聽的短句，跳過生硬數字（依介面語言產生）
   const a=n.a,b=n.b,c=costSummary(),left=S.T-n.t,L=window.TSL_LANG||'zh-TW',T=window.TSL_T||(x=>x),en=L==='en',ja=L==='ja',zh=!en&&!ja;

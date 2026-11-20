@@ -302,7 +302,7 @@ function renderStatus(){
   const sp=supply();
   const W=S.weather,ac=S.airCtl||'mid',tip=(k,t)=>' data-tip="'+t.replace(/"/g,'&quot;')+'" tabindex="0" role="button"';
   const atkP=S.phase==='atk';
-  const stHTML='<span class="chip tp"'+tip('t','【回合】目前第 '+S.turn+' 回合，預計共 '+S.T+' 回合。第 '+S.T+' 回合結束時判定勝負（雙方還在激戰時可能延長）。')+'>回合 <b>'+S.turn+' / '+S.T+'</b></span>'+
+  const stHTML='<span class="chip tp"'+tip('t','【回合】目前第 '+S.turn+' 回合（模擬日期 '+simDate(S.turn)+'，每 2 回合＝1 天），預計共 '+S.T+' 回合。第 '+S.T+' 回合結束時判定勝負（雙方還在激戰時可能延長）。')+'>回合 <b>'+S.turn+' / '+S.T+'</b></span>'+
     '<span class="chip tp '+S.phase+'"'+tip('p','【階段】每回合分「攻方階段」與「守方階段」，輪流行動。目前輪到'+SIDE[S.phase]+(S.ctrl[S.phase]==='ai'?'（電腦操作）':'（你操作）')+'；做完按「結束階段」換對方。')+'>'+SIDE[S.phase]+'階段'+(S.ctrl[S.phase]==='ai'?' · 電腦':'')+'</span>'+
     '<span class="chip tp"'+tip('w','【天候・台灣海峽】'+W.n+(W.base!=null?'（各海域：'+Object.keys(WXZ).map(z=>WXZ[z]+' '+wxWaveLL(z==='W'?WXREF:z==='N'?[121.7,25.75]:z==='E'?[122.3,
         23.3]:[120.9,21.35]).toFixed(1)+' m').join('、')+(W.ty?'；'+TYC[W.ty.cls].n+'颱風，暴風半徑 '+W.ty.R+' km，距海峽 '+Math.round(kmLL([W.ty.lon,W.ty.lat],WXREF))+' km':'')+'）':'')+
@@ -332,7 +332,7 @@ function renderCtrl(){
   $('#setup').hidden=S.started;$('#ctrl').hidden=!S.started||S.video;$('#vbarCard').hidden=!(S.started&&S.video);$('#vcap').hidden=!(S.started&&S.video&&V.fr.length>0);
   if(!S.started)return;
   const h=humanTurn();
-  $('#phaseTitle').textContent=S.over?'作戰結束':'第 '+S.turn+' 回合 · '+SIDE[S.phase]+'指揮';
+  $('#phaseTitle').textContent=S.over?'作戰結束':'第 '+S.turn+' 回合 · '+SIDE[S.phase]+'指揮 · '+simDate(S.turn);
   const bs=$('#btnStrike'),atkP=S.phase==='atk',pts=atkP?S.fire:(S.dfire||0),afM=S.mode==='afS'||S.mode==='afL'||S.mode==='afC'||(S.mode==='hlS'||S.mode==='hlL');bs.hidden=false;bs.disabled=!h||(pts<=0&&!afM);bs.classList.toggle('on',S.mode==='strike'||afM);
   bs.textContent=afM?'取消出擊':S.mode==='strike'?'取消打擊（剩 '+pts+'）':(atkP?'火力打擊（'+pts+' 點）':'縱深打擊（'+pts+' 波）');
   $('#btnEnd').disabled=!h;$('#btnEnd').hidden=S.sim;if(S.sim)bs.hidden=true;

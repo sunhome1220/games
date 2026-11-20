@@ -26,6 +26,7 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
     r.push([mo.n===12&&mo.bars,'開戰月份：12 個月曆格，每格都有天候三色條']);r.push([mo.v==='10'&&/良好 45%、普通 32%、惡劣 23%/.test(mo.desc),'點 10 月：設定月份、說明寫出完整機率 '+mo.desc.slice(0,40)]);
     await p.evaluate(()=>{$('#optMonth').value='4';$('#optMonth').dispatchEvent(new Event('change'));WZ.i=0;renderWizard();});} // 回到第 1 頁：之後 startGame 會一頁頁按下一步，沒看過的頁面不能跳過
   await L.startGame(p);
+  r.push([await p.evaluate(()=>/2026\/4\/1 白天/.test($('#phaseTitle').textContent)&&simDate(2)==='2026/4/1 夜間'&&simDate(3)==='2026/4/2 白天'&&simDate(24)==='2026/4/12 夜間'),'模擬日期：2026 年 4 月 1 日白天起，每 2 回合過 1 天（顯示在階段標題）']);
   // 關卡判定：在已開局的一般對局上直接呼叫各關的 check()（不必真的開關卡、不必玩回合）
   const a=await p.evaluate(()=>{const cv=S.units.find(u=>u.type==='cv'&&u.side==='atk');const D=MISSION_DEFS.carrier,before=D.check();cv.hp=1;return [before,D.check()];});
   r.push([a[0]===null&&a[1]&&a[1].stars===3,'擊沉航艦：未重創時不過關；重創後第 1 回合 3 星']);
