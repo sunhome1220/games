@@ -231,7 +231,7 @@ async function aiAtkAdvance(u,C){const {h}=C;
   for(const [k,v] of rc){
     if(v.kind!=='land')continue;if(TER[k].isl!=='TW'&&TER[k].isl!=='PH')continue;const md=minD(k,goals);if(md>kmH(200))continue; // 只登陸台灣本島與澎湖（不會「登陸」回大陸海岸）
     const dS=defs.reduce((a,e)=>a+(hd(hexOf(e),TER[k])<=kmH(40)?e.hp:0),0);
-    const s=md*.5+enemyAdj(k,'atk')*1.5+dS*.25-Math.min(friendAdj(k,'atk'),3)+Math.random()*.3;if(s<bs){bs=s;best=k;}
+    const s=md*.5+enemyAdj(k,'atk')*1.5+dS*.25-Math.min(friendAdj(k,'atk'),3)+(v.opp?4:0)+Math.random()*.3;if(s<bs){bs=s;best=k;} // 強攻有守軍的灘頭：多扣 4（寧可選沒人守的灘頭，沒有才強攻）
   }
   if(best){doMove(u,best,'land');render();await sleep(340);return true;}
   if(h.t==='sea'&&await aiTryAttack(u,0))return true;
