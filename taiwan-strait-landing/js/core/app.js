@@ -155,6 +155,13 @@ SETUP_PAGES.splice(SETUP_PAGES.findIndex(p=>p.t==='防空增購配置')+1,0,{t:'
   fields:[1,2,3,4,5,6].map(k=>({sel:'optMN'+k,q:'第 '+k+' 處（'+(k%2?'近海水雷':'灘頭地雷')+'）放在哪個港口附近？',when:()=>mnOn(k),
     opts:Object.fromEntries([['auto',['自動（分散）','依序輪流放到台北港、台中港、高雄、基隆。']]].concat(MINE_PORTS.map(p=>[p[0],[p[1],p[1]+'外海'+(k%2?'（水雷）':'岸邊（地雷）')+'：攻方船團或登陸部隊靠近這個港口時最先碰到。']])))})),
   note:()=>mnOn(1)?'':'你不是守方，這一頁不用設定。'});
+// 潛艦操作方式（2026-11-19）：自主（預設）＝開戰前指定任務，開戰後潛艦依任務自行行動、不能手動操控；完全手動＝逐格操控。
+const subPlay=()=>!isSim()&&$('#optMode').value==='play',subAutoSet=()=>$('#optSubCtl').value==='auto';
+SETUP_PAGES.splice(SETUP_PAGES.findIndex(p=>p.t==='預先布雷位置')+1,0,{t:'潛艦任務',s:'潛艦',d:'潛艦在水下幾乎不能通訊，現實中指揮官只能出港前交代任務，航行中由艦長自行判斷。選「自主」：開戰前指定任務，開戰後潛艦依任務自己行動（不能移動或開火），只有回港或每 3 個回合一次的通訊窗口才能更換任務；選「完全手動」：像以前一樣逐格操控。電腦操作的一方、美軍潛艦一律自主。',
+  fields:[{sel:'optSubCtl',q:'潛艦操作方式（台灣、共軍你操作的那一方）',when:()=>subPlay(),opts:{auto:['自主執行任務','（預設）開戰前指定任務，開戰後潛艦自己行動。'],manual:['完全手動','逐格移動、自己決定何時開火（和以前相同）。']}},
+    {sel:'optSubMisD',q:'台灣潛艦的任務（劍龍級、海鯤）',when:()=>subPlay()&&subAutoSet()&&$('#optSide').value!=='atk',opts:Object.fromEntries(SUB_MIS.def.map(([v,n,d])=>[v||'auto',[n,d]]))},
+    {sel:'optSubMisA',q:'共軍潛艦的任務（093、039 型）',when:()=>subPlay()&&subAutoSet()&&$('#optSide').value!=='def',opts:Object.fromEntries(SUB_MIS.atk.map(([v,n,d])=>[v||'auto',[n,d]]))}],
+  note:()=>subPlay()?'':'電腦推演與純模擬的潛艦一律由電腦操作，這一頁不用設定。'});
 const WZ={i:0,done:SETUP_PAGES.map((_,i)=>i===0)};
 function optLabel(sel,v){for(const f of PREF_FIELDS.concat(...SETUP_PAGES.map(pg=>pg.fields)))if(f.sel===sel)return f.opts[v]?f.opts[v][0]:v;return v;}
 function saveSetup(){if(typeof MISSION!=='undefined'&&MISSION)return; /* 關卡挑戰用的設定不存成玩家的設定 */try{const cfg={};CFG_IDS.forEach(id=>cfg[id]=$('#'+id).value);localStorage.setItem('tsl-setup',JSON.stringify({cfg,done:WZ.done}));}catch(e){}}

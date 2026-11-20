@@ -71,9 +71,10 @@ function psubHome(u){
 async function psubTurn(u){
   if(!alive(u)||u.acted)return;
   if(u.tp<=0&&u.hm<=0){if(psubInPort(u))return;const k=psubHome(u);if(k){doMove(u,k,'sail');render();await sleep(200);}return;}
-  const best=()=>{const ts=psubTargets(u);ts.sort((a,b)=>(PSUB.V[b.fl?'fl':b.type]||1)*psubP(b)-(PSUB.V[a.fl?'fl':a.type]||1)*psubP(a));return ts[0];};
+  const types=u.mis&&PSUB_MISSION[u.mis]?PSUB_MISSION[u.mis]:null,mOk=e=>!types||types.includes(e.fl?'fl':e.type); // 自主模式的任務：只挑符合的目標類型
+  const best=()=>{const ts=psubTargets(u).filter(mOk);ts.sort((a,b)=>(PSUB.V[b.fl?'fl':b.type]||1)*psubP(b)-(PSUB.V[a.fl?'fl':a.type]||1)*psubP(a));return ts[0];};
   let t=best();
-  if(!t){const pool=S.units.filter(psubTargetOk);if(pool.length){const rc=reach(u);let bk=null,bs=Math.min(...pool.map(e=>hd(hexOf(u),hexOf(e))));
+  if(!t){const pool=S.units.filter(e=>psubTargetOk(e)&&mOk(e));if(pool.length){const rc=reach(u);let bk=null,bs=Math.min(...pool.map(e=>hd(hexOf(u),hexOf(e))));
       for(const [k,v] of rc){if(v.kind!=='sail')continue;const h=TER[k],sc=Math.min(...pool.map(e=>hd(h,hexOf(e))))+(hd(hexOf(u),h)>SPD.subQuiet?1.5:0);if(sc<bs-.2){bs=sc;bk=k;}}
       if(bk){doMove(u,bk,'sail');render();await sleep(200);}}
     t=best();}
