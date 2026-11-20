@@ -37,6 +37,27 @@ function validLanding(u,h){
   if(ro&&h.t!=='port'&&!floatPier(h))return false; // 滾裝船團不能搶灘：要在港口，或已控制灘頭的浮動碼頭卸載
   return true;
 }
+// 對抗性登陸（強攻，2026-11-19）：10 km 一格的地圖上，守軍佔住的格子不是整格都封死（現實中守軍只佔一部分，攻方可在同格其他海灘上岸），
+// 所以兩棲艦上的兩棲旅與陸戰旅可以強攻有守軍（沒有友軍）的灘頭：登陸時自動發生戰鬥（沿用搶灘突擊的攻防：浪高與兩棲突擊的減分），最多對 2 個守方單位各打一輪，打光才站穩；打不下來就留在船上。
+// 滾裝船、重型旅、空降不能；港口、斷崖、泥灘、山地、台北市區的限制與一般登陸相同（validLanding）。
+function opposedLanding(u,h){
+  const sh=u.ship&&shipOf(u);if(!sh||sh.type!=='lst'||(u.type!=='amph'&&u.type!=='mar'))return false;
+  if(!validLanding(u,h))return false;const us=unitsAt(h.k);
+  return us.length>0&&us.every(e=>e.side!==u.side&&!isShip(e));
+}
+function landAssault(u,h){
+  const foes=()=>unitsAt(h.k).filter(e=>e.side!==u.side&&!isShip(e));
+  log(uname(u)+' 對 '+hname(h)+' 強攻登陸（守軍 '+foes().length+' 個單位）');
+  let n=0;while(alive(u)&&foes().length&&n<2){attack(u,pickBest(foes(),x=>-x.hp));n++;}
+  u.moved=true;u.acted=true;
+  if(alive(u)&&hexOf(u).k===h.k&&isLand(hexOf(u))){ // 打光守軍並已推進佔領：和一般登陸一樣處理船
+    const sh=shipOf(u);if(sh){sh.boundTo=null;sh.ret=true;sh.retT=S.turn;}u.ship=null;
+    if(S.stats.firstLand===null&&h.isl==='TW')S.stats.firstLand=S.turn;
+    fxq({t:'land',at:[h.c,h.r]});log(uname(u)+' 強攻登陸成功，佔領 '+hname(h));mineCheck(u,h);
+  }else if(alive(u))log(uname(u)+' 強攻登陸 '+hname(h)+' 未能奪下，仍在船上');
+  else log('強攻登陸 '+hname(h)+' 失敗：'+TYPES[u.type].n+' 全軍覆沒');
+  checkInstant();
+}
 function moveCost(u,h){return h.t==='mtn'?(u.type==='arm'||u.type==='tank'?3:2):1;}
 
 // 過河（★推估）：兩格中心連線跨過主要河流（RIVERS，手繪近似線）。守方戰時會炸橋，隔河攻擊防禦 +1；在敵軍 40 km 內過河要停下（強渡、架橋需要時間）
@@ -88,6 +109,7 @@ function seaReach(u,res){
       if(n.t==='sea')visitSea(n,mp-1);
       else if(dockOK(u,n))res.set(n.k,{kind:'sail'}); // 潛艦與船艇可以靠進己方港口（母港、避風）
       else if(n!==here&&!isShip(u)&&validLanding(u,n)&&canStack(u,n.k)&&(!res.has(n.k)||res.get(n.k).kind!=='move'))res.set(n.k,{kind:'land'});
+      else if(n!==here&&!isShip(u)&&!res.has(n.k)&&opposedLanding(u,n))res.set(n.k,{kind:'land',opp:true}); // 有守軍的灘頭：強攻登陸（對抗性登陸）
     }
   }
 }
@@ -218,6 +240,7 @@ function endPhaseGuard(){ // 回傳 true＝先擋下並提示
 }
 function doMove(u,k,kind){
   const from=hexOf(u);const h=TER[k];
+  if(kind==='land'&&opposedLanding(u,h)){landAssault(u,h);return;}
   if(u.type==='psub'&&kind==='sail')u.loud=hd(from,h)>SPD.subQuiet;
   if(u.type==='hk'&&kind==='sail'){u.loud=hd(from,h)>SPD.subQuiet;if(u.loud&&!subHidden(u))log(subNm(u)+'高速航行約 '+Math.round(hd(from,h)*KM_HEX)+' km（超過 '+Math.round(SPD.subQuiet*KM_HEX)+' km），噪音大，下一次被反潛發現的機率加倍');}
   if(kind==='sail'&&isBde(u)&&!u.ship&&isLand(from)&&from.isl==='CN')embark(u,from);

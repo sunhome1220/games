@@ -173,6 +173,21 @@ add('攻方停戰＝宣布達成目標或撤退，不向守方請求','medium',a
   r.push([o.dv.includes('talks'),'守方仍可請求停火談判（'+o.dv+'）']);
   r.push(...noErr(p,'攻方停戰'));await p.close();return r;});
 
+add('對抗性登陸（強攻有守軍的灘頭）','medium',async c=>{const r=[];
+  const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:5});await L.startGame(p);
+  const o=await p.evaluate(()=>{const t=TER['26,26'],sea=nbrs(t.c,t.r).find(n=>n&&n.t==='sea'&&!unitsAt(n.k).length);const res={};
+    const setup=(type,shipType)=>{const u=S.units.find(x=>x.side==='atk'&&x.type===type&&alive(x)&&!x.ship);const k0=[...reach(u)].find(([k,v])=>v.kind==='sail')[0];humanMove(u,k0,'sail');const sh=shipOf(u);sh.type=shipType;sh.c=sea.c;sh.r=sea.r;u.c=sea.c;u.r=sea.r;u.moved=false;u.acted=false;return u;};
+    let u=setup('mar','lst');let v=reach(u).get('26,26');res.marLst=!!(v&&v.opp&&v.kind==='land');
+    humanMove(u,'26,26','land');res.after={acted:u.acted,landedOrAboard:(alive(u)&&(hexOf(u).k==='26,26'?'landed':'aboard'))||'dead',unbound:hexOf(u).k==='26,26'?!u.ship:null};
+    return res;});
+  r.push([o.marLst,'陸戰旅在兩棲艦上：緊鄰有守軍的澎湖格，可強攻登陸（reach 標示 opp）']);
+  r.push([o.after.acted&&['landed','aboard','dead'].includes(o.after.landedOrAboard)&&(o.after.unbound===null||o.after.unbound===true),'強攻登陸正常結算（成功＝上岸並放掉船；失敗＝留在船上或全軍覆沒）：'+JSON.stringify(o.after)]);
+  const n=await p.evaluate(()=>{const t=TER['26,26'],sea=nbrs(t.c,t.r).find(n=>n&&n.t==='sea'&&!unitsAt(n.k).length);const out={};
+    for(const [type,st] of [['amph','ro'],['arm','lst']]){const u=S.units.find(x=>x.side==='atk'&&x.type===type&&alive(x)&&!x.ship);if(!u)continue;const k0=[...reach(u)].find(([k,v])=>v.kind==='sail');if(!k0)continue;humanMove(u,k0[0],'sail');const sh=shipOf(u);sh.type=st;sh.c=sea.c;sh.r=sea.r;u.c=sea.c;u.r=sea.r;u.moved=false;u.acted=false;const v=reach(u).get('26,26');out[type+'/'+st]=!!(v&&v.kind==='land');}
+    return out;});
+  r.push([n['amph/ro']===false&&n['arm/lst']===false,'滾裝船上的旅、重型旅：不能強攻登陸 '+JSON.stringify(n)]);
+  r.push(...noErr(p,'強攻登陸'));await p.close();return r;});
+
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
   const s=await p.evaluate(cfg=>window.__score(cfg),CFGS[i]);const errs=p.errs.slice();await p.close();return {s,errs};};
 const baseCheck=async(c,idx)=>{const base=fs.existsSync(BASE)?JSON.parse(fs.readFileSync(BASE,'utf8')):{};const r=[];
