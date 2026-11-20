@@ -336,7 +336,7 @@ function subDetect(){ // 攻方階段開始：附近的護航艦各有機會發�
 }
 async function subTurn(u){ // 電腦操作海鯤：依指揮官意圖選目標類型，保持魚叉射程接近、攻擊；武器用盡就回港補彈
   if(!alive(u)||u.acted)return;
-  const mis=(S.intent||{}).sub,types=mis&&HK_MISSION[mis]?HK_MISSION[mis]:null;
+  const mis=u.mis?u.mis:(S.intent||{}).sub,types=mis&&HK_MISSION[mis]?HK_MISSION[mis]:null; // 自主模式：這艘潛艦自己的任務（subauto.js）優先
   const pool=S.units.filter(e=>e.side==='atk'&&atSea(e)&&HK_P[e.type]&&(!types||types.includes(e.type)));
   const best=()=>{const ts=subTargets(u).filter(e=>!types||types.includes(e.type));ts.sort((a,b)=>HK_V[b.type]*hkP(b,u)-HK_V[a.type]*hkP(a,u));return ts[0];};
   if(hkSpent(u)){ // 彈藥用盡：自動回母港補彈
