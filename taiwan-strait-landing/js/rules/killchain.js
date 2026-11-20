@@ -75,7 +75,7 @@ function fireMissile(m,t){
   if(m.type==='ssm'&&m.side==='def')useRec('岸置反艦飛彈射擊',1,ssmHp(m)?'魚叉（岸防）':'雄二／雄三（岸置）',SSM_N,(ssmHp(m)?'魚叉岸防 ':'雄風 ')+hname(hexOf(m)),t);
   if(m.type==='ssm')m.revealed=true; // 開火後暴露
   if(adCover(t).length){ // 目標在 055／052D／054A 防空涵蓋內：★每次 2 枚，以齊射模型對上艦隊防空（同階段共用接戰上限）
-    const n=SSM_N,r=salvoHit(t,n,'ssmSalvo>'+t.type),big=isBigShip(t),steps=r.steps;t.inc=(t.inc||0)+1;
+    const n=SSM_N,r=salvoHit(t,n,'ssmSalvo>'+t.type,undefined,ssmHp(m)?'魚叉':{'雄二':.7,'雄三':.3}),big=isBigShip(t),steps=r.steps;t.inc=(t.inc||0)+1;
     fxSalvo([m.c,m.r],t,r);
     log((m.type==='ff'?'守方艦艇':'岸置反艦飛彈')+'以 '+n+' 枚'+(m.type==='ssm'?ssmWn(m):'雄風')+'飛彈攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
     if(steps)damage(t,steps,(m.type==='ssm'?(ssmHp(m)?'魚叉岸防系統 魚叉':'岸置 雄二／雄三'):'雄風')+'飛彈');

@@ -113,7 +113,7 @@ function cvwBudget(side,c,sp){
 // 一波艦載機對艦打擊：k 枚打 t（齊射模型），回傳戰報文字與被擊落架數
 function cvwHit(side,c,t,k){
   c.u.wmag-=k;const cov=adCover(t).length>0;
-  const r=salvoHit(t,k,'cvw:'+side+'>'+t.type),big=isBigShip(t),steps=r.steps;
+  const r=salvoHit(t,k,'cvw:'+side+'>'+t.type,undefined,c.nm),big=isBigShip(t),steps=r.steps;
   fxq({t:'cva',from:[c.u.c,c.u.r],to:[t.c,t.r],hit:r.hits>0,side,n:Math.max(1,Math.min(3,Math.ceil(k/4))),R:c.w.asmR,ad:cov?(r.hits>0?'pass':'int'):undefined});
   const L=cov?cvwLose(c,takeInt(CVW.loss*k/CVW.per,'cvwL:'+side)):0;
   const txt=k+' 枚'+c.nm+'攻擊 '+uname(t)+'（距離 '+Math.round(rd(hexOf(c.u),hexOf(t))*10)/10+' 格）：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps)+(L?'，打擊機被擊落 '+L+' 架':'');
@@ -174,6 +174,16 @@ const SHIPW={
 // ★chan＝每艘一波能同時接戰的來襲飛彈數（推估；柏克級有 3 具 SPG-62 照射雷達、提康德羅加級 4 具，可分時導引多枚）；航艦自身近迫防禦另可處理 2 枚（攔截率 50%）
 // ★休斯齊射模型參數（推估）：反艦飛彈尋標命中率 0.8；艦隊防空每枚來襲發射 2 枚攔截彈，單枚攔截率 0.7（彈道飛彈 0.5）
 const SALVO={pSeek:.8,pSeekEW:.6,pInt:.7,pIntBM:.5,perMsl:2,ciws:2}; // pSeekEW：★有護航艦干擾與誘餌時的尋標命中率；ciws：★每艘護航艦每階段近迫防禦接戰數
+// ★飛彈種類的突防特性（2026-11-19）：魚叉、雄二是亞音速掠海；雄三全程超音速；鷹擊-83 亞音速巡航、末端超音速衝刺；鷹擊-18 末端 Mach 3。
+// 速度（馬赫）：c＝巡航、t＝末端、s＝末端衝刺距離（km）——魚叉約 0.85、雄二約 0.9、雄三約 2（中科院未公布，外電報導 2 以上）、鷹擊-83 末端約 2、鷹擊-18 末端約 3（均為公開報導的約數，★推估）。
+// 掠海飛彈被艦上雷達發現的距離受雷達地平線限制（約 30 km），防空艦的反應時間＝這段距離除以速度：越快，每艘艦能同時處理的來襲飛彈越少（接戰通道乘 ch＝這種飛彈的反應時間 ÷ 亞音速（0.9 馬赫）的反應時間，最高 1、最低 0.3），
+// 攔截彈追上高速目標也更難命中（單枚攔截率乘 pk；每高 1 馬赫扣 10%，最低 0.7，★推估：沒有公開數據可量化，方向依物理）。亞音速（魚叉、雄二、90 式）ch＝pk＝1，與舊版完全相同。
+const MSLP={'魚叉':{c:.85,t:.85,s:0},'雄二':{c:.9,t:.9,s:0},'雄三':{c:2,t:2,s:30},'鷹擊-83':{c:.9,t:2,s:20},'鷹擊-18':{c:.8,t:3,s:40},'90 式':{c:.9,t:.9,s:0}},MSL_H=30,MSL_V=.34;
+function mslProfOne(name){const key=Object.keys(MSLP).find(k=>String(name).includes(k)),P=MSLP[key||'魚叉'],s=Math.min(P.s,MSL_H),tm=s/(P.t*MSL_V)+(MSL_H-s)/(P.c*MSL_V),tRef=MSL_H/(.9*MSL_V);
+  return {ch:Math.max(.3,Math.min(1,tm/tRef)),pk:Math.max(.7,Math.min(1,1-.1*(P.t-.9)))};}
+function mslProf(p){ // p＝飛彈名稱字串，或 {名稱:占比} 的混合（例：雄二／雄三各半的艦隊）
+  if(!p)return mslProfOne('魚叉');if(typeof p==='string')return mslProfOne(p);
+  let w=0,ch=0,pk=0;for(const [k,v] of Object.entries(p)){const o=mslProfOne(k);w+=v;ch+=v*o.ch;pk+=v*o.pk;}return w?{ch:ch/w,pk:pk/w}:mslProfOne('魚叉');}
 const isEsc=u=>!!SHIPW[u.type];
 const tname=t=>t.fl?t.fl.n:t.wp==='hp'?'魚叉岸防系統':t.hl?subNm(t):TYPES[t.type].n;
 // ---------- 第 3c 階段：對地巡弋飛彈與反潛（★皆為推估）----------
@@ -217,28 +227,28 @@ const isBigShip=t=>t.type==='cv'||t.type==='csg';
 // ★航艦：每 2 枚命中扣 1 步，打到剩最後 1 步就失去戰力（無法起降、撤離）；最後 1 步（沉沒）要再多 ★6 枚命中——一般評估擊沉大型航艦需要的命中數遠多於讓它失能
 const SINK_HITS=6;
 function bigSteps(t,hits,key){let s=0,rem=hits;while(t.hp-s>1&&rem>=2){s++;rem-=2;}if(t.hp-s>1)return s+takeInt(rem/2,key);return s+Math.min(t.hp-s,takeInt(rem/SINK_HITS,key+':sink'));}
-function salvoHit(t,n,key,bigKey){const r=salvoCalc(t,n,false,key);r.steps=isBigShip(t)?bigSteps(t,r.hits,bigKey||'salvoBig'):r.hits;return r;}
+function salvoHit(t,n,key,bigKey,prof){const r=salvoCalc(t,n,false,key,prof);r.steps=isBigShip(t)?bigSteps(t,r.hits,bigKey||'salvoBig'):r.hits;return r;}
 const salvoStepTxt=(t,steps,none)=>steps?'，'+tname(t)+' −'+(t.fl?steps+' 艘':stpU(t,steps)):(none||''); // 戰報：扣了幾步（艦隊寫艘數）
-function salvoCalc(t,n,bm,key){
-  const pk=1-Math.pow(1-(bm?SALVO.pIntBM:SALVO.pInt),SALVO.perMsl),cov=adCover(t).length>0||S.units.some(e=>e!==t&&e.side===t.side&&alive(e)&&(isEsc(e)||e.type==='dd')&&rd(hexOf(e),hexOf(t))<=kmH(30));let left=n,I=0,kill=0;
+function salvoCalc(t,n,bm,key,prof){
+  const MP=mslProf(prof),cu=1/MP.ch,pk=1-Math.pow(1-(bm?SALVO.pIntBM:SALVO.pInt)*MP.pk,SALVO.perMsl),cov=adCover(t).length>0||S.units.some(e=>e!==t&&e.side===t.side&&alive(e)&&(isEsc(e)||e.type==='dd')&&rd(hexOf(e),hexOf(t))<=kmH(30));let left=n,I=0,kill=0;
   // 分攤接戰：涵蓋範圍內的每艘防空艦都出力，不再由清單前面的艦先吃完。來襲飛彈一枚一枚分配給「本階段接戰負荷（已接戰÷接戰量上限）最低」的那一艘；
   // 負荷相同時，取累計接戰次數（engN）較少的，再取接戰量大的。接戰量大的艦（055）分到較多、小的（054A）也輪得到；
   // 每艘的接戰量上限、攔截彈庫存都不變，總接戰量與總攔截彈消耗不變，命中期望值不變
-  const ads=adCover(t).map(e=>{const full=Math.max(1,chanOf(e));return {e,full,cap:Math.min(chLeft(e,full),Math.floor(e.mag.ad/SALVO.perMsl))};});
+  const ads=adCover(t).map(e=>{const full=Math.max(1,chanOf(e));return {e,full,cap:Math.min(Math.floor(chLeft(e,full)/cu+1e-9),Math.floor(e.mag.ad/SALVO.perMsl))};});
   while(left>0){let b=null,bl=0;for(const a of ads){if(a.cap<=0)continue;const l=a.e.chU/a.full;
       if(!b||l<bl-1e-9||(Math.abs(l-bl)<1e-9&&((a.e.engN||0)<(b.e.engN||0)||((a.e.engN||0)===(b.e.engN||0)&&a.full>b.full)))){b=a;bl=l;}}
-    if(!b)break;b.e.chU++;b.e.engN=(b.e.engN||0)+1;b.e.mag.ad-=SALVO.perMsl;b.cap--;I+=SALVO.perMsl;kill+=pk;left--;}
-  if(left>0&&(t.type==='cv'||t.type==='csg')){const c=Math.min(left,chLeft(t,2));t.chU+=c;kill+=c*.5;left-=c;} // 航艦自身近迫防禦
+    if(!b)break;b.e.chU+=cu;b.e.engN=(b.e.engN||0)+1;b.e.mag.ad-=SALVO.perMsl;b.cap--;I+=SALVO.perMsl;kill+=pk;left--;}
+  if(left>0&&(t.type==='cv'||t.type==='csg')){const c=Math.min(left,Math.floor(chLeft(t,2)/cu+1e-9));t.chU+=c*cu;kill+=c*.5*MP.pk;left-=c;} // 航艦自身近迫防禦
   // ★護航艦近迫防禦（近迫武器砲、紅旗-10、方陣快砲等）：目標 30 km 內的護航艦或艦隊，每階段各再接戰 2 枚突破的飛彈，攔下機率 50%
   if(left>0)for(const e of S.units){if(left<=0)break;if(e===t||e.side!==t.side||!alive(e)||!(isEsc(e)||e.fl||e.type==='dd')||rd(hexOf(e),hexOf(t))>kmH(30))continue;
-    const st=S.turn+S.phase;if(e.cpT!==st){e.cpT=st;e.cpU=0;}const c=Math.min(left,Math.max(0,SALVO.ciws-e.cpU));if(c<=0)continue;e.cpU+=c;kill+=c*.5;left-=c;}
+    const st=S.turn+S.phase;if(e.cpT!==st){e.cpT=st;e.cpU=0;}const c=Math.min(left,Math.floor(Math.max(0,SALVO.ciws-e.cpU)*MP.ch+1e-9));if(c<=0)continue;e.cpU+=c/MP.ch;kill+=c*.5*MP.pk;left-=c;}
   const surv=Math.max(0,n-kill),hits=Math.min(n,takeInt(surv*(cov?SALVO.pSeekEW:SALVO.pSeek),key||'salvo')); // ★艦隊裡有護航艦時，電子干擾與誘餌讓尋標命中率降低
   return {n,I,surv,hits};
 }
 function fireSalvo(m,t){
   const W=SHIPW[m.type];if(!m.mag||m.mag.asm<=0)return false;
   const n=Math.min(W.salvo,m.mag.asm);m.mag.asm-=n;m.shots=Math.max(0,(m.shots||1)-1);if(m.shots<=0)m.acted=true;m.revealed=true;
-  const r=salvoHit(t,n,'salvo:'+m.type+'>'+t.type),big=isBigShip(t),steps=r.steps;
+  const r=salvoHit(t,n,'salvo:'+m.type+'>'+t.type,undefined,W.asmN),big=isBigShip(t),steps=r.steps;
   fxSalvo([m.c,m.r],t,r);
   log(uname(m)+'以 '+n+' 枚'+W.asmN+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
   if(steps)damage(t,steps,W.asmN+'齊射');
@@ -251,10 +261,10 @@ function escTargets(u){
 const escVal=e=>e.type==='cv'||e.type==='csg'?(cvOOA(e)?.5:6):e.type==='tak'?5:isEsc(e)?4:e.type==='lst'||e.type==='ro'?3.5:e.type==='cvy'?3:e.type==='dd'||e.type==='ff'?2.5:1;
 // 協同齊射：射程內能打到同一目標的護航艦一起發射，用數量飽和對方防空（現實中的艦隊戰術）
 function fireVolley(shooters,t){
-  let n=0;const names=[];
-  for(const m of shooters){const k=Math.min(SHIPW[m.type].salvo,m.mag.asm);if(k<=0)continue;m.mag.asm-=k;n+=k;m.shots=0;m.acted=true;m.revealed=true;names.push(TYPES[m.type].s);fxq({t:'hmr',from:[m.c,m.r],to:[t.c,t.r],hit:false,atc:true});}
+  let n=0;const names=[],mix={};
+  for(const m of shooters){const k=Math.min(SHIPW[m.type].salvo,m.mag.asm);if(k<=0)continue;m.mag.asm-=k;n+=k;mix[SHIPW[m.type].asmN]=(mix[SHIPW[m.type].asmN]||0)+k;m.shots=0;m.acted=true;m.revealed=true;names.push(TYPES[m.type].s);fxq({t:'hmr',from:[m.c,m.r],to:[t.c,t.r],hit:false,atc:true});}
   if(!n)return false;
-  const r=salvoHit(t,n,'salvo:'+shooters[0].side+'>'+t.type),big=isBigShip(t),steps=r.steps;
+  const r=salvoHit(t,n,'salvo:'+shooters[0].side+'>'+t.type,undefined,mix),big=isBigShip(t),steps=r.steps;
   log(SIDE[shooters[0].side]+'艦隊協同齊射（'+names.join('、')+'）共 '+n+' 枚反艦飛彈攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
   if(steps)damage(t,steps,'艦隊齊射');
   checkInstant();return true;

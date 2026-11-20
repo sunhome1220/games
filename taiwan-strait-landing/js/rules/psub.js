@@ -37,7 +37,7 @@ function psubFire(u,t){
   const d=rd(hexOf(u),hexOf(t)),pref=hkPref(),w=(pref!=='hm'&&u.tp>0&&d<=PSUB.tpR)?'tp':(pref!=='tp'&&u.hm>0&&d<=PSUB.hmR)?'hm':(u.tp>0&&d<=PSUB.tpR)?'tp':null;if(!w)return false;
   if(w==='tp')u.tp--;else u.hm--;u.shots=0;u.acted=true;useRec('潛艦攻擊',1,w==='hm'?'鷹擊-18（潛射）':'魚-6 重型魚雷（齊射）',1,psubCls(u).n,t);
   const nm=w==='hm'?'鷹擊-18 潛射反艦飛彈':'魚-6 重型魚雷',C=psubCls(u);let hit,steps=0,sv=null;
-  if(w==='hm'){sv=salvoHit(t,2,'psubHm>'+t.type);hit=sv.hits>0;steps=sv.steps;}
+  if(w==='hm'){sv=salvoHit(t,2,'psubHm>'+t.type,undefined,'鷹擊-18');hit=sv.hits>0;steps=sv.steps;}
   else{hit=hitP(psubP(t),'psub:tp>'+t.type);steps=hit?1:0;}
   log(C.n+'以'+nm+'攻擊 '+uname(t)+(sv?'：對方防空發射 '+sv.I+' 枚攔截彈，約 '+fmt1(sv.surv)+' 枚突破，命中 '+sv.hits+' 枚':(hit?'：命中':'：未命中'))+'（魚雷 '+u.tp+'、鷹擊-18 '+u.hm+'；推估）');
   fxq({t:'sub',from:[u.c,u.r],to:[t.c,t.r],hit,w});

@@ -22,7 +22,7 @@ function huntFleets(){
     if(!hitP(p,'huntLoc:'+(inPort?'port':'sea'))){out.push(u.fl.n+'：沒有找到（定位 '+Math.round(p*100)+'%）');continue;}
     const st=strait(h),fac=st?facSalvo():0; // 海峽內：022 飛彈快艇也加入攻擊（★每點 0.8 枚鷹擊-83，推估）
     if(st&&S.pools.plaFAC>0){const l=takeInt(.25,'facLoss');if(l){S.pools.plaFAC=Math.max(0,S.pools.plaFAC-l);out.push(u.fl.n+'與共軍飛彈快艇交火，擊沉約 '+l*6+' 艘（推估）');}}
-    const n=Math.max(2,Math.round(KSEA.n[ac]*ffW(u)))+fac,r=salvoCalc(u,n,false,'hunt>'+u.fl.id); // 小隊分到的攻擊量依比例縮小（總攻擊量與拆分前相同）
+    const n=Math.max(2,Math.round(KSEA.n[ac]*ffW(u)))+fac,r=salvoCalc(u,n,false,'hunt>'+u.fl.id,{'鷹擊-83':.5,'鷹擊-18':.5}); // 小隊分到的攻擊量依比例縮小（總攻擊量與拆分前相同）
     fxq({t:'air',at:[u.c,u.r],hit:r.hits>0,tsea:true,org:orgPick('pla'),k:'cm',ad:r.I>0?(r.hits>0?'pass':'int'):undefined,adSide:'def'});
     out.push(u.fl.n+'（'+(inPort?'港內':u.revealed?'開火後暴露':'海上')+'）：'+n+' 枚，艦隊攔截 '+r.I+' 枚，命中 '+r.hits+(r.hits?'，沉 '+Math.min(r.hits,u.hp)+' 艘':''));
     if(r.hits)damage(u,r.hits,'共軍空射反艦飛彈');

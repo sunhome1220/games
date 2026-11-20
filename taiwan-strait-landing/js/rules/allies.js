@@ -59,7 +59,7 @@ function landSync(){
 // 單次齊射（陸基或潛艦）：n 枚打 t；有艦隊防空走齊射模型
 function pieceSalvo(m,t,n,wn,key){
   n=Math.min(n,m.mag.asm);if(n<=0)return false;m.mag.asm-=n;m.revealed=true;
-  const r=salvoHit(t,n,key+'>'+t.type),big=isBigShip(t),steps=r.steps;
+  const r=salvoHit(t,n,key+'>'+t.type,undefined,wn),big=isBigShip(t),steps=r.steps;
   fxSalvo([m.c,m.r],t,r);
   log(uname(m)+'以 '+n+' 枚'+wn+'攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
   if(steps)damage(t,steps,TYPES[m.type].n+wn);checkInstant();return true;
@@ -72,7 +72,7 @@ function ssnFire(u,tgt){
   if(u.acted)return false;const ts=shipFoes(u,6);if(!ts.length)return false;
   const t=tgt&&ts.includes(tgt)?tgt:pickBest(ts,escVal),d=rd(hexOf(u),hexOf(t)),w=(u.tp>0&&d<=kmH(60))?'tp':(u.hm>0?'hm':null);if(!w)return false;
   if(w==='tp')u.tp=Math.max(0,u.tp-2);else u.hm--;u.acted=true;
-  const nm=w==='hm'?'魚叉飛彈':'重型魚雷',sv=w==='hm'&&adCover(t).length?salvoCalc(t,1,false,'ssnSalvo>'+t.type):null;
+  const nm=w==='hm'?'魚叉飛彈':'重型魚雷',sv=w==='hm'&&adCover(t).length?salvoCalc(t,1,false,'ssnSalvo>'+t.type,'魚叉'):null;
   const hit=sv?sv.hits>0:hitP(w==='hm'?Math.max(.1,hkP(t)-.12):hkP(t),'ssn:'+w+'>'+t.type),big=t.type==='cv'||t.type==='csg',steps=!hit?0:sv&&big?takeInt(.5,'salvoBig'):1;
   log('美軍攻擊潛艦以'+nm+'攻擊 '+uname(t)+(sv?'：對方防空發射 '+sv.I+' 枚攔截彈，':'')+(hit?'命中'+(steps?'':'（航艦體積大，未造成重創）'):'未命中')+'（魚雷 '+u.tp+'、魚叉 '+u.hm+'、戰斧 '+u.mag.lam+' 枚；參數為推估）');
   fxq({t:'sub',from:[u.c,u.r],to:[t.c,t.r],hit,w});
