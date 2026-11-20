@@ -55,6 +55,7 @@
   - `index.html` 裡有一行含 `const VERSION='…'` 的註解，是給還停在單檔版的玩家端更新檢查用的，不要刪。
 - 全域狀態 `S`；單位、棋子顏色分三類（`unitCat`）；事件節點 `EVENTS`（守方決策用 `defend:true`，戰前三項用 `setup:` 對應設定頁欄位）。
 - 設定精靈：`SETUP_PAGES`（欄位 `{sel,q,when,grp,opts:{值:[標籤,說明]}}`）。新增設定項要同步四處：隱藏的 `<select id=opt…>`、change 監聽清單、`CFG_IDS`、`DEFAULT_CFG`。
+- 先由電腦推演（`optPre`，`startGame` 設 `S.preAI／S.preCtrl`，`beginPhase('atk')` 的 `preHandOver` 交還操作權）：推演期間 `S.simAuto=true`，事件、快訊自動處理；判定回合選項 6／8／10／12／16／24。
 - 確定性：`hitP(p,key)`、`takeInt`、`ACC`；天候 `nextWave/rollWeather`；戰局碼 `seedCode/parseSeedCode/initSeed`。
 - 補給與運輸：`unloadCap`、`resolveSupply`、`convoyTurn`、`liftTurn`、`supplyAttrition`；運輸船是真實棋子，可被攻擊。
 - 打擊大陸：`strikeCN`（人工與電腦共用同一個飛彈存量與命中公式）、`aiPickCN`。台灣方用 `lrSpend`：300 km 內優先用陸軍戰術飛彈（`rocAtc`，佔用海馬士一次齊射），其餘用雄二E（`rocMsl`）。
