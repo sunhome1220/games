@@ -184,6 +184,11 @@ async function aiAtkEscort(u,C){const {h}=C;
 }
 // 電腦攻方：空降旅（機降到占領的機場、或依防空與目標選落點）
 async function aiAtkAirborne(u,C){const {h}=C;
+  if(isAirT(u)&&!u.dropped&&u.ship&&h.t==='sea'){ // 搭在四川艦上的陸戰隊：第 2 回合起、天候許可就從海上機降（避開防空涵蓋），否則隨艦往台灣靠近（回傳 false 走一般的海上移動）
+    if(S.weather.air&&S.turn>=2&&S.turn<=6){const IX=(S.intent||{}).axis,zn=IX==='north'||IX==='central'?IX:aiPlan().zone,rc=reach(u),g=TER[ABN_GOAL[zn][u.goal||0]];let best=null,bs=1e9;
+      for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+dropAD(TER[k])*10+Math.random()*.4;if(s<bs){bs=s;best=k;}}
+      if(best){doMove(u,best,'drop');render();await sleep(380);return true;}}
+    return false;}
   if(isAirT(u)&&!u.dropped&&h.isl==='CN'){
     const AF=atkAF();
     if(AF.length){const t=AF.find(x=>afRoom(u,x.k));if(t){doMove(u,t.k,'drop');render();await sleep(380);return true;}} // 已占領可用的機場：直接機降
