@@ -48,10 +48,10 @@ function shipOf(u){return u.ship?S.units.find(x=>x.id===u.ship):null;}
 function freeShipKind(u,h){ // 這個旅現在能不能裝船：回傳 'lst'／'ro'／null；已裝船回傳 'have'
   if(u.ship)return 'have';
   if(!isBde(u)||h.isl!=='CN'||!isLand(h))return 'na';
-  const P=S.pools,port=h.t==='port',nearPort=port||Object.values(TER).some(q=>q.t==='port'&&q.isl==='CN'&&hd(h,q)<=kmH(40)); // 滾裝船要靠碼頭：港口或港口 2 格內
-  if(u.type==='arm')return nearPort&&P.plaLift>(S.roReserve||0)?'ro':nearPort&&P.plaLst>0?'lst':null; // 重型旅只能在港口附近裝船
+  const P=S.pools,port=h.t==='port',nearPort=port||Object.values(TER).some(q=>q.t==='port'&&q.isl==='CN'&&hd(h,q)<=kmH(40)); // 登陸艦：港口 40 km（4 格）內都能裝；滾裝船是商船改裝，要靠碼頭，只能在港口格裝（2026-11-18.41，旅要先走到港口）
+  if(u.type==='arm')return port&&P.plaLift>(S.roReserve||0)?'ro':nearPort&&P.plaLst>0?'lst':null; // 重型旅：港口格可搭滾裝船，港口附近可搭登陸艦
   if(P.plaLst>0)return 'lst';
-  if(nearPort&&P.plaLift>(S.roReserve||0))return 'ro';
+  if(port&&P.plaLift>(S.roReserve||0))return 'ro';
   return null;
 }
 // 滾裝船風險提醒（只提醒，不限制）：商船改裝、航速慢、沒有自身防空，要等制空優勢與可卸載的港口／浮動碼頭才安全
