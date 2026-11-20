@@ -29,7 +29,7 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
   // 關卡判定：在已開局的一般對局上直接呼叫各關的 check()（不必真的開關卡、不必玩回合）
   const a=await p.evaluate(()=>{const cv=S.units.find(u=>u.type==='cv'&&u.side==='atk');const D=MISSION_DEFS.carrier,before=D.check();cv.hp=1;return [before,D.check()];});
   r.push([a[0]===null&&a[1]&&a[1].stars===3,'擊沉航艦：未重創時不過關；重創後第 1 回合 3 星']);
-  r.push([!!a[1]&&/號|艦/.test(a[1].d)&&!/步|假設情境/.test(a[1].d+a[1].extra)&&/我方付出/.test(a[1].extra)&&/共軍損失/.test(a[1].extra)&&!/整個任務期間/.test(a[1].extra),'擊沉航艦結算：稱呼寫「遼寧號／山東艦／福建艦」、不用「步」、沒有假設情境與整場任務統計，只有我方付出與共軍損失']);
+  r.push([!!a[1]&&/號|艦/.test(a[1].d)&&!/步|假設情境/.test(a[1].d+a[1].extra)&&/我方付出/.test(a[1].extra)&&/共軍損失/.test(a[1].extra)&&!/整個任務期間/.test(a[1].extra),'擊沉航艦結算：稱呼寫「遼寧艦／山東艦／福建艦」、不用「步」、沒有假設情境與整場任務統計，只有我方付出與共軍損失']);
   const q=await p.evaluate(()=>{const D=MISSION_DEFS.port,ks=portPick().map(x=>x[0]);const none=D.check();
     for(const k of ks){S.owner[SPOT[k]]='atk';S.portDown[SPOT[k]]=0;}const t1=D.check();S.turn+=1;const t2=D.check();
     S.portDown[SPOT[ks[0]]]=1;const t3=D.check();S.turn-=1;return {ks:ks.join(),none,t1,t2s:t2&&t2.stars,t3};});
