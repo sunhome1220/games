@@ -48,6 +48,24 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
   r.push([await p.evaluate(()=>{const t=TER[SPOT.tcport],sea=nbrs(t.c,t.r).find(n=>n.t==='sea'),land=nbrs(t.c,t.r).find(n=>n.t!=='sea'&&!n.cliff);S.mines=S.mines||{};S.mines[sea.k]=1;S.mines[land.k]=1;render();return Object.keys(S.mines).length>=2&&document.querySelectorAll('#map .mine').length===0;}),'你是攻方：地圖上看不到守方的布雷區']);
   r.push(...noErr(p,'快速測試'));await p.close();return r;});
 
+add('極簡畫質：節點數、點選陸地與海面、設定與卡頓提醒','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1&ultra=1',{fast:true});const r=[];await L.startGame(p);
+  r.push([await p.evaluate(()=>ULTRA&&document.body.classList.contains('ultra')&&document.querySelectorAll('#map *').length<6000&&!document.querySelector('#map .tile,#map .tl-sh,#map .wv')),'極簡畫質：地圖節點 < 6,000、沒有立體地形與海浪（'+await p.evaluate(()=>document.querySelectorAll('#map *').length)+'）']);
+  const lh=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),el=document.querySelector('#map .tl-ul[data-sea="2"]');let n=0,ok=0;
+    for(const h of Object.values(TER)){if(h.isl!=='TW'||(h.c*7+h.r*3)%11!==0)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);n++;if(seaHexAt(el,q.x,q.y)===h.k)ok++;}return {n,ok};});
+  r.push([lh.n>20&&lh.ok===lh.n,'極簡畫質：陸地格由座標反查（seaHexAt）全部正確 '+lh.ok+'／'+lh.n]);
+  const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
+    for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl||unitAt(h.k)||(h.c*7+h.r*3)%23!==0)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
+      if(q.x>40&&q.x<innerWidth-40&&q.y>140&&q.y<innerHeight-60){const e=document.elementFromPoint(q.x,q.y);if(e&&e.closest('[data-sea]'))out.push({k:h.k,x:q.x,y:q.y});}}
+    return out.slice(0,6);});
+  let ok=0;for(const q of pts){await p.evaluate(()=>{S.hover=null;});await p.mouse.click(q.x,q.y);await p.waitForTimeout(60);if(await p.evaluate(k=>S.hover===k,q.k))ok++;}
+  r.push([pts.length>=3&&ok===pts.length,'極簡畫質：點海面格反查正確 '+ok+'／'+pts.length]);
+  const sw=await p.evaluate(()=>{setQual('normal');const n=document.querySelectorAll('#map *').length,t=!!document.querySelector('#map .tile'),st=localStorage.getItem('tsl-qual');setQual('ultra');return {n,t,st,u:document.querySelectorAll('#map *').length};});
+  r.push([sw.n>20000&&sw.t&&sw.u<6000,'設定切換：一般 '+sw.n+' 節點（有立體地形）↔ 極簡 '+sw.u]);
+  await p.evaluate(()=>{openSettings();});r.push([await p.evaluate(()=>!!document.querySelector('[data-qual="ultra"].on')&&!!document.querySelector('[data-qual="normal"]')),'設定視窗有「地圖畫質」選項']);
+  r.push(...noErr(p,'極簡畫質'));await p.close();
+  const q=await L.open(c.b,c.url,'?debug=1&ultra=0',{hide:true,jank:true});await L.startGame(q);await q.evaluate(()=>{__jank.JANK.warm=0;__jank.offer(40);});
+  r.push([await q.evaluate(()=>{const b=document.getElementById('jankUl');if(!b)return false;b.click();return ULTRA&&localStorage.getItem('tsl-qual')==='ultra'&&FXOFF;}),'卡頓提醒的「極簡畫質」：切換並關閉動畫、記在裝置']);await q.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
@@ -118,12 +136,12 @@ add('預先布雷：分散到四個港口、設定頁指定、補布選位置','
   r.push([rl.length>=2&&rl.some(x=>x.startsWith('mine@')&&/台北港/.test(x)),'有雷被掃除或觸發後，補布選項可挑地點（含台北港外海）：'+rl.length+' 個']);r.push(...noErr(q.p,'2029 設定'));await q.p.close();
   return r;});
 
-add('卡頓偵測：連續兩次慢才提醒、三個按鈕','medium',async c=>{const r=[];
+add('卡頓偵測：連續兩次慢才提醒、四個按鈕','medium',async c=>{const r=[];
   const feed=(p,ms,n)=>p.evaluate(([ms,n])=>{window.__jank.eval(Array(n).fill(ms));return !!document.getElementById('jankCard');},[ms,n]);
   let p=await L.open(c.b,c.url,'?debug=1',{hide:true,jank:true});await L.startGame(p);await p.evaluate(()=>{__jank.JANK.warm=0;});
   r.push([!(await feed(p,16,40)),'順暢（16 ms）：不提醒']);r.push([!(await feed(p,80,40)),'第一次慢：還不提醒']);r.push([!(await feed(p,16,40)),'接著順暢：計數歸零']);
   r.push([!(await feed(p,80,10)),'樣本太少（10 筆）：不算']);await feed(p,80,40);r.push([await feed(p,80,40),'連續兩次慢（80 ms，約 12 fps）：跳出提醒']);
-  r.push([await p.evaluate(()=>document.querySelectorAll('#jankCard button').length===3&&/關閉動畫/.test(document.getElementById('jankCard').textContent)),'提醒有三個按鈕']);
+  r.push([await p.evaluate(()=>document.querySelectorAll('#jankCard button').length===4&&/關閉動畫/.test(document.getElementById('jankCard').textContent)),'提醒有四個按鈕（含極簡畫質）']);
   await p.evaluate(()=>document.getElementById('jankOff').click());await p.waitForTimeout(200);
   r.push([await p.evaluate(()=>!document.getElementById('jankCard')&&FXOFF&&document.body.classList.contains('noanim')&&document.getElementById('optFxSpd').value==='off'),'按「關閉動畫」：動畫關閉、海浪停止、設定同步']);r.push(...noErr(p,'卡頓提醒'));await p.close();
   p=await L.open(c.b,c.url,'?debug=1',{hide:true,jank:true});await L.startGame(p);await p.evaluate(()=>{__jank.JANK.warm=0;});await feed(p,80,40);await feed(p,80,40);

@@ -3,6 +3,15 @@
 let S;
 if(/[?&]debug=1/.test(location.search))window.__S=()=>S; // 除錯用：?debug=1 時可由主控台讀取狀態
 const LITE=/[?&]lite=1/.test(location.search)||(!/[?&]lite=0/.test(location.search)&&(matchMedia('(pointer:coarse)').matches||innerWidth<=960)); // 手機／觸控：精簡地圖圖層
+// 極簡畫質（舊裝置用）：靜態地形合併成平面色塊、不畫 3D 側面／陰影／山峰／建築／海浪，節點約 3 千個。網址 ?ultra=1／0 可強制；設定的「地圖畫質」與卡頓提醒會寫入 localStorage（tsl-qual）
+const qualStored=()=>{try{return localStorage.getItem('tsl-qual');}catch(e){return null;}};
+let ULTRA=/[?&]ultra=1/.test(location.search)||(!/[?&]ultra=0/.test(location.search)&&qualStored()==='ultra');
+document.body.classList.toggle('ultra',ULTRA);
+function setQual(v){ // 切換畫質：重建靜態地圖
+  try{localStorage.setItem('tsl-qual',v);}catch(e){}
+  ULTRA=v==='ultra';document.body.classList.toggle('ultra',ULTRA);
+  if(typeof STATIC!=='undefined'){STATIC.built=false;if(S&&typeof render==='function')render();}
+}
 function mkUnit(side,type,k,extra){
   const [c,r]=k.split(',').map(Number);
   const u=Object.assign({id:S.nid++,side,type,c,r,hp:TYPES[type].hp,moved:false,acted:false,dropped:false,shots:0},extra||{});

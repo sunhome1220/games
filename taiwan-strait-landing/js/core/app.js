@@ -60,6 +60,7 @@ function renderSettings(){
     '<div class="wz-note" style="margin-top:10px">'+LANGOPTS[cur][1]+'</div><div class="wz-note" style="margin-top:8px">切換語言後頁面會重新載入；進行中的對局會結束。</div>';
   PREF_FIELDS.forEach(f=>{const v=$('#'+f.sel).value,ent=Object.entries(f.opts);
     h+='<div class="wz-q" style="margin-top:16px">'+f.q+'</div>'+seg('data-pref="'+f.sel+'" data-v',ent,v,ent.length<=3?ent.length:2)+(f.opts[v]&&f.opts[v][1]?'<div class="wz-note" style="margin-top:8px">'+f.opts[v][1]+'</div>':'');});
+  h+='<div class="wz-q" style="margin-top:16px">地圖畫質</div>'+seg('data-qual',[['normal',['一般','立體地形、山峰與建築、海浪。']],['ultra',['極簡（舊裝置）','地形改為平面色塊，不畫立體側面、陰影、山峰、建築與海浪，地圖節點約減少九成；海岸線、河流、地名、棋子、射程圈都保留。裝置卡頓時選這個。']]],ULTRA?'ultra':'normal',2)+'<div class="wz-note" style="margin-top:8px">'+(ULTRA?'極簡：地形改為平面色塊，不畫立體側面、陰影、山峰、建築與海浪。':'一般：立體地形、山峰與建築、海浪。')+'（只記在這台裝置）</div>';
   h+='<div class="wz-q" style="margin-top:16px">地圖：河流名稱</div>'+seg('data-rvl',[['0',['關閉','只畫河流，不標河名']],['1',['顯示','標出淡水河、濁水溪等 11 條河的名稱']]],rvlOn()?'1':'0',2);
   h+='<div class="wz-q" style="margin-top:16px">進階：用目前設定跑統計</div><div class="wz-note">想知道這組設定誰比較有利？讓電腦自動模擬多局，統計勝率、代價與決策的影響。</div>'+
     '<div style="margin-top:8px">'+seg('data-statn',[['50',['50 局']],['100',['100 局']],['300',['300 局']]],SETTINGS_STATN,3)+'</div>'+
@@ -74,6 +75,7 @@ function renderSettings(){
   });
   box.querySelectorAll('[data-pref]').forEach(b=>b.onclick=()=>{applyPref(b.dataset.pref,b.dataset.v);renderSettings();});
   $('#stHist').onclick=()=>{mboxSet('');$('#modal').hidden=false;renderHistory();};
+  box.querySelectorAll('[data-qual]').forEach(b=>b.onclick=()=>{setQual(b.dataset.qual);renderSettings();});
   box.querySelectorAll('[data-rvl]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('tsl-rvl',b.dataset.rvl);}catch(e){}rvlApply();renderSettings();});
   box.querySelectorAll('[data-statn]').forEach(b=>b.onclick=()=>{SETTINGS_STATN=b.dataset.statn;renderSettings();});
   $('#stRun').onclick=()=>{$('#modal').hidden=true;box.innerHTML='';if(!S.started)readSetup();runStats(+SETTINGS_STATN);};
