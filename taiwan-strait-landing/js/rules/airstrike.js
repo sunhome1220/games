@@ -181,7 +181,7 @@ function afPendInfo(){
   }else{
     const t=S.units.find(x=>x.id===P.x.u);if(!t||!alive(t))return null;nm=uname(t)+'（'+hname(hexOf(t))+'）';
     if(atSea(t)){const cov=adCover(t).length,A=afAsm(k)||{pool:'rocAAsh',n:'空射反艦'},mx0=coAirMax(k,t);nbX=Math.max(1,Math.max(mx0>0?1:0,Math.min(P.nb==null?1:P.nb,mx0))),pcX=afCapP(t);const n=Math.min(AFS.pk*nbX,Math.floor(S.pools[A.pool]||0));
-      lines.push(A.n+' '+n+' 枚（'+nbX+' 批；剩 '+Math.round(S.pools[A.pool]||0)+'）・'+(cov?cov+' 艘護航艦防空，先被攔截':'無護航防空，預估命中 '+fmt1(n*SALVO.pSeek)+' 枚'));
+      lines.push(A.n+' '+n+' 枚（'+nbX+' 批；剩 '+Math.round(S.pools[A.pool]||0)+'）・'+(cov?cov+' 艘護航艦防空，先被攔截':'無護航防空，預估命中 '+fmt1(n*seekOf(t))+' 枚'));
       if(cvOOA(t))lines.push('⚠ 這艘航艦已失去戰力（艦載機無法起降、撤離中），再打只是為了擊沉；改打其他目標比較省飛彈');
       {const pc=afCapP(t);if(pc>0)lines.push('航艦艦載機在附近：約 <b>'+Math.round(pc*100)+'%</b> 會在發射前被攔截（推估）');}
       ok=ok&&n>0;risk=cov?AFS.loss:0;}
