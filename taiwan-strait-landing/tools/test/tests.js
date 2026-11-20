@@ -258,6 +258,7 @@ add('飛彈突防特性：魚叉、雄二亞音速，雄三超音速','medium',a
   r.push([o.yj18[0]<o.hf3[0]&&o.yj18[1]<o.hf3[1]&&o.yj83[0]>o.hf3[0]&&o.yj83[0]<1,'鷹擊-18（末端 Mach 3）比雄三更難攔；鷹擊-83（末端衝刺）介於中間（通道 '+o.yj83[0]+'）']);
   r.push([o.mix[0]>o.hf3[0]&&o.mix[0]<1,'混合（雄二、雄三各半）介於兩者之間：通道 '+o.mix[0]]);
   r.push([o.cover>0&&o.surv['雄三']>o.surv['魚叉']&&o.surv['鷹擊-18']>o.surv['雄三']&&o.surv['魚叉']===o.surv['雄二']&&o.surv.none===o.surv['魚叉'],'8 枚打有防空的航艦，突破數期望值：魚叉＝雄二＝預設 '+o.surv['魚叉']+' ＜ 雄三 '+o.surv['雄三']+' ＜ 鷹擊-18 '+o.surv['鷹擊-18']]);
+  r.push([await p.evaluate(()=>{const ro=S.units.find(u=>u.type==='ro')||{type:'ro'},cv=S.units.find(u=>u.type==='cv'&&u.side==='atk');return seekOf(ro)===.9&&seekOf({type:'cvy'})===.9&&seekOf(cv)===.8&&SALVO.pSeekEW===.6;}),'無護航防空的滾裝船、補給船：尋標命中率 0.9；軍艦 0.8、有護航干擾 0.6']);
   r.push(...noErr(p,'飛彈突防'));await p.close();return r;});
 
 const score=async(c,i,tag)=>{const p=await L.open(c.b,c.url,'?debug=1',{zero:true,hide:true,seed:1234+i*77,wait:500});
