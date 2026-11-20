@@ -29,11 +29,11 @@ function landPlan(u){
   for(const [k,v] of rc){
     if(v.kind!=='land'&&v.kind!=='drop')continue;const t=TER[k];if(!t||(t.isl!=='TW'&&t.isl!=='PH'))continue;
     let dS=0;for(const e of defs)if(hd(hexOf(e),t)<=kmH(40))dS+=e.hp;
-    const md=goals.length?minD(k,goals):0,sc=md*.5+dS*.25+(v.kind==='land'?enemyAdj(k,'atk')*1.5-Math.min(friendAdj(k,'atk'),3):0);
-    (v.kind==='land'?lands:drops).push({k,t,dS,sc});
+    const md=goals.length?minD(k,goals):0,sc=md*.5+dS*.25+(v.kind==='land'?enemyAdj(k,'atk')*1.5-Math.min(friendAdj(k,'atk'),3)+(v.opp?4:0):0);
+    (v.kind==='land'?lands:drops).push({k,t,dS,sc,opp:!!v.opp});
   }
   lands.sort((a,b)=>a.sc-b.sc);drops.sort((a,b)=>a.sc-b.sc);
-  const nameOf=x=>x.t.t==='port'?(ro||u.type==='arm'?'港口卸載':'港口登陸'):(ro?'浮動碼頭':'搶灘');
+  const nameOf=x=>x.opp?'強攻登陸':x.t.t==='port'?(ro||u.type==='arm'?'港口卸載':'港口登陸'):(ro?'浮動碼頭':'搶灘');
   const recs=new Set(lands.slice(0,2).map(x=>x.k));if(drops.length&&drops[0].dS<=3)recs.add(drops[0].k);
   // 要標示／列出的登陸格：2 個港口＋4 個其他，依評分排序
   const shown=lands.filter(x=>x.t.t==='port').slice(0,2).concat(lands.filter(x=>x.t.t!=='port').slice(0,4)).sort((a,b)=>a.sc-b.sc);
