@@ -491,4 +491,4 @@ const EVENTS=[
 const hitMkt=n=>{S.cost.mkt=Math.max(-35,S.cost.mkt-n);};
 function razeAllPorts(){PORTS.forEach(k=>{S.portDown[k]=1e3;});} // 焦土：港口永久無法使用
 function hitCNUnits(n,why){const t=S.units.filter(u=>u.side==='atk'&&(u.type==='amph'||u.type==='arm')&&hexOf(u).isl==='CN').slice(0,n);t.forEach(u=>damage(u,1,why));return t.length;}
-const pAdd=(k,v)=>{if(S.pools)S.pools[k]=Math.max(0,(S.pools[k]||0)+v);};
+const pAdd=(k,v)=>{if(!S.pools)return;if(k==='rocAS'){asAdd(v);return;}S.pools[k]=Math.max(0,(S.pools[k]||0)+v);};

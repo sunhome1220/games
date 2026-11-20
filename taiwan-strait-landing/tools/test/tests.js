@@ -48,6 +48,20 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
   r.push([await p.evaluate(()=>{const t=TER[SPOT.tcport],sea=nbrs(t.c,t.r).find(n=>n.t==='sea'),land=nbrs(t.c,t.r).find(n=>n.t!=='sea'&&!n.cliff);S.mines=S.mines||{};S.mines[sea.k]=1;S.mines[land.k]=1;render();return Object.keys(S.mines).length>=2&&document.querySelectorAll('#map .mine').length===0;}),'你是攻方：地圖上看不到守方的布雷區']);
   r.push(...noErr(p,'快速測試'));await p.close();return r;});
 
+add('彈藥存量：雄二／雄三分開、面板用「枚」、協同出擊卡片隨批數連動','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:77});const r=[];
+  await p.evaluate(()=>{$('#optEra').value='2030';$('#optEra').dispatchEvent(new Event('change'));});await L.startGame(p);
+  const a=await p.evaluate(()=>{const P=S.pools,t0=asTot(),u=S.units.find(x=>x.type==='ssm'&&x.side==='def'&&!ssmHp(x)),mix0=asMix(),a0=P.rocAS,b0=P.rocAS3;ssmDraw(u,100);
+    return {as:S.p0.rocAS,as3:S.p0.rocAS3,sum:t0,after:asTot(),m:mix0,ra:P.rocAS/a0,rb:P.rocAS3/b0,html:defLedgerBars()};});
+  r.push([Math.abs(a.as-12.24)<.01&&Math.abs(a.as3-5.8)<.01,'2030 年庫存：雄二 '+a.as+' 點（約 '+Math.round(a.as*100)+' 枚）、雄三 '+a.as3+' 點（2026 年 7／3，每年 +131／+70 枚）']);
+  r.push([Math.abs(a.sum-a.after-1)<1e-6&&Math.abs(a.ra-a.rb)<1e-3,'發射 100 枚：共扣 1 點、雄二與雄三按比例同降（'+(a.ra*100).toFixed(1)+'%／'+(a.rb*100).toFixed(1)+'%）']);
+  r.push([/雄二（岸置/.test(a.html)&&/雄三（岸置/.test(a.html)&&/空射魚叉/.test(a.html)&&!/\d\.\d<small>/.test(a.html.replace(/<span class="abt">.*?<\/span>/g,''))&&!/[0-9]\.[0-9]/.test(a.html.replace(/style="[^"]*"/g,'')),'守方彈藥面板：雄二、雄三、空射魚叉分開，單位「枚」、沒有小數']);
+  const f=await p.evaluate(()=>{const k=Object.keys(AF_ASM)[0];const t=S.units.find(x=>x.side==='atk'&&atSea(x)&&isShip(x));const base=afUsable().find(h=>afBudget(h.k)>0);if(!t||!base)return null;
+    S.afK=base.k;S.afPend={k:base.k,x:{u:t.id},nb:1};const one=afPendInfo().html;S.afPend.nb=3;const three=afPendInfo().html;
+    const L=h=>{const m=h.match(/預估損失約 ([0-9.]+) 架/);return m?+m[1]:0;};const N=h=>{const m=h.match(/（(\d) 批；剩/);return m?+m[1]:0;};
+    return {l1:L(one),l3:L(three),n1:N(one),n3:N(three),max:coAirMax(base.k,t)};});
+  r.push([!!f&&(f.max<3||(f.n3===3&&f.l3>=f.l1*1.5)),'協同出擊卡片：批數 1→3，預估損失與批數隨之增加 '+JSON.stringify(f)]);
+  r.push(...noErr(p,'彈藥存量'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);

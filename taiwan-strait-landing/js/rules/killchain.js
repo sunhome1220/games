@@ -63,6 +63,7 @@ function ssmHit(t,why){ // 一次精準命中：回傳戰報文字
   if(k==='F'){t.fk=(t.fk||[]).filter(x=>x>S.turn);if(t.fk.length<t.veh)t.fk.push(S.turn+SSM.fix);fxq({t:'txt',at:[t.c,t.r],s:'火力受損',col:'def'});return '1 輛發射車火力受損，'+SSM.fix+' 回合後修復（可射 '+ssmReady(t)+' 輛）';}
   t.mT=S.turn+1;t.revealed=true;fxq({t:'txt',at:[t.c,t.r],s:'機動受損',col:'def'});return '1 輛發射車機動受損，無法轉移陣地，整個單位到下一個攻方階段結束都維持暴露';
 }
+let fireMixOf='魚叉'; // 這一發的彈種（扣庫存前依當時比例決定）
 function fireMissile(m,t){
   if(window.__fm)window.__fm.push(t.type+(atSea(t)?'@sea':'@land'));
   if(m.type==='ssn')return ssnFire(m,t);if(m.type==='nme')return nmeFire(t);if(m.type==='mdt')return mdtFire(t);
@@ -70,12 +71,12 @@ function fireMissile(m,t){
   if(m.type==='mlrs')return fireMlrs(m,t);
   if(isEsc(m))return fireSalvo(m,t);
   if(m.fl)return fleetSalvo(m,t);
-  if(m.type==='ssm'&&S.pools){const pl=ssmPool(m);S.pools[pl]=Math.max(0,Math.round(((S.pools[pl]||0)-SSM_N/100)*100)/100);} // 存量每點約 100 枚：每發 2 枚＝0.02 點（原本扣 0.2 點＝20 枚，與實際發射數不符）
+  fireMixOf=m.type==='ssm'?ssmMix(m):asMix();if(m.type==='ssm'&&S.pools)ssmDraw(m,SSM_N); // 存量每點約 100 枚：每發 2 枚＝0.02 點（原本扣 0.2 點＝20 枚，與實際發射數不符）
   m.shots--;if(m.shots<=0&&m.type!=='ssm')m.acted=true; // 岸置發射車打完仍可機動轉移
   if(m.type==='ssm'&&m.side==='def')useRec('岸置反艦飛彈射擊',1,ssmHp(m)?'魚叉（岸防）':'雄二／雄三（岸置）',SSM_N,(ssmHp(m)?'魚叉岸防 ':'雄風 ')+hname(hexOf(m)),t);
   if(m.type==='ssm')m.revealed=true; // 開火後暴露
   if(adCover(t).length){ // 目標在 055／052D／054A 防空涵蓋內：★每次 2 枚，以齊射模型對上艦隊防空（同階段共用接戰上限）
-    const n=SSM_N,r=salvoHit(t,n,'ssmSalvo>'+t.type,undefined,ssmHp(m)?'魚叉':{'雄二':.7,'雄三':.3}),big=isBigShip(t),steps=r.steps;t.inc=(t.inc||0)+1;
+    const n=SSM_N,r=salvoHit(t,n,'ssmSalvo>'+t.type,undefined,fireMixOf),big=isBigShip(t),steps=r.steps;t.inc=(t.inc||0)+1;
     fxSalvo([m.c,m.r],t,r);
     log((m.type==='ff'?'守方艦艇':'岸置反艦飛彈')+'以 '+n+' 枚'+(m.type==='ssm'?ssmWn(m):'雄風')+'飛彈攻擊 '+uname(t)+'：對方防空發射 '+r.I+' 枚攔截彈，約 '+Math.round(r.surv*10)/10+' 枚突破，命中 '+r.hits+' 枚'+salvoStepTxt(t,steps,'，未造成重創')+'（齊射模型，參數為推估）');
     if(steps)damage(t,steps,(m.type==='ssm'?(ssmHp(m)?'魚叉岸防系統 魚叉':'岸置 雄二／雄三'):'雄風')+'飛彈');
