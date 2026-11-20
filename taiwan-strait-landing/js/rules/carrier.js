@@ -173,7 +173,8 @@ const SHIPW={
   ddg:{ad:80,adR:kmH(160),asm:8,asmN:'魚叉',asmR:kmH(120),lam:8,salvo:4,chan:4}};
 // ★chan＝每艘一波能同時接戰的來襲飛彈數（推估；柏克級有 3 具 SPG-62 照射雷達、提康德羅加級 4 具，可分時導引多枚）；航艦自身近迫防禦另可處理 2 枚（攔截率 50%）
 // ★休斯齊射模型參數（推估）：反艦飛彈尋標命中率 0.8；艦隊防空每枚來襲發射 2 枚攔截彈，單枚攔截率 0.7（彈道飛彈 0.5）
-const SALVO={pSeek:.8,pSeekEW:.6,pInt:.7,pIntBM:.5,perMsl:2,ciws:2}; // pSeekEW：★有護航艦干擾與誘餌時的尋標命中率；ciws：★每艘護航艦每階段近迫防禦接戰數
+const seekOf=t=>t&&(t.type==='ro'||t.type==='cvy')?SALVO.pSeekMerch:SALVO.pSeek; // 沒有護航防空的商船改裝運輸船（滾裝船、補給船）：體積大、航速慢、沒有干擾與誘餌，★尋標命中率 0.9（其餘軍艦 0.8）
+const SALVO={pSeek:.8,pSeekMerch:.9,pSeekEW:.6,pInt:.7,pIntBM:.5,perMsl:2,ciws:2}; // pSeekEW：★有護航艦干擾與誘餌時的尋標命中率；ciws：★每艘護航艦每階段近迫防禦接戰數
 // ★飛彈種類的突防特性（2026-11-19）：魚叉、雄二是亞音速掠海；雄三全程超音速；鷹擊-83 亞音速巡航、末端超音速衝刺；鷹擊-18 末端 Mach 3。
 // 速度（馬赫）：c＝巡航、t＝末端、s＝末端衝刺距離（km）——魚叉約 0.85、雄二約 0.9、雄三約 2（中科院未公布，外電報導 2 以上）、鷹擊-83 末端約 2、鷹擊-18 末端約 3（均為公開報導的約數，★推估）。
 // 掠海飛彈被艦上雷達發現的距離受雷達地平線限制（約 30 km），防空艦的反應時間＝這段距離除以速度：越快，每艘艦能同時處理的來襲飛彈越少（接戰通道乘 ch＝這種飛彈的反應時間 ÷ 亞音速（0.9 馬赫）的反應時間，最高 1、最低 0.3），
@@ -242,7 +243,7 @@ function salvoCalc(t,n,bm,key,prof){
   // ★護航艦近迫防禦（近迫武器砲、紅旗-10、方陣快砲等）：目標 30 km 內的護航艦或艦隊，每階段各再接戰 2 枚突破的飛彈，攔下機率 50%
   if(left>0)for(const e of S.units){if(left<=0)break;if(e===t||e.side!==t.side||!alive(e)||!(isEsc(e)||e.fl||e.type==='dd')||rd(hexOf(e),hexOf(t))>kmH(30))continue;
     const st=S.turn+S.phase;if(e.cpT!==st){e.cpT=st;e.cpU=0;}const c=Math.min(left,Math.floor(Math.max(0,SALVO.ciws-e.cpU)*MP.ch+1e-9));if(c<=0)continue;e.cpU+=c/MP.ch;kill+=c*.5*MP.pk;left-=c;}
-  const surv=Math.max(0,n-kill),hits=Math.min(n,takeInt(surv*(cov?SALVO.pSeekEW:SALVO.pSeek),key||'salvo')); // ★艦隊裡有護航艦時，電子干擾與誘餌讓尋標命中率降低
+  const surv=Math.max(0,n-kill),hits=Math.min(n,takeInt(surv*(cov?SALVO.pSeekEW:seekOf(t)),key||'salvo')); // ★艦隊裡有護航艦時，電子干擾與誘餌讓尋標命中率降低
   return {n,I,surv,hits};
 }
 function fireSalvo(m,t){
