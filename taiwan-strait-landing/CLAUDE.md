@@ -79,7 +79,7 @@
   - **加速**：網址加 `?fast=1` ＝關閉動畫（設定裡也有「關閉動畫」；系統設了「減少動態效果」時自動如此）。測試再加 `hide`（`#map{display:none}`，瀏覽器不用繪製 9,000 格 SVG，回合流程快約 3 倍；只能用在不看、不點地圖的測試）。**不要同時用「縮短所有 setTimeout 為 0」跑關卡流程**：結束階段的 4 秒確認計時器會失效而永遠結束不了。
   - 「擊沉航艦」關卡是守方操作（要逐一處理事件節點），完整流程目前只測判定函式，沒有自動玩完。
 - Playwright 已預裝：`require('playwright')`，`chromium.launch({executablePath:'/opt/pw-browsers/chromium'})`。加速用：`window.setTimeout` 包一層縮短等待。
-- 設定精靈現在有 **5～6 頁**，測試要連按 `#wzNext` 至少 5 次（用 `if(n&&!n.disabled)` 保護）才能 `#btnStart`。
+- 設定精靈現在有 **5 頁**（方式／攻方／守方／假設／確認；2026-11-18.32 由 9 頁整理合併，`SETUP_PAGES` 在 `app.js` 的最後以程式合併，新增設定項請加進對應的頁面與分組），測試要連按 `#wzNext` 至少 5 次（用 `if(n&&!n.disabled)` 保護）才能 `#btnStart`。
 - 模擬對局：每個彈窗點 `#mbox .opt`／`#evRoll`／`#evGo`／`#itGo`，人類回合點 `#btnAssist`。長時間工作用 `( cmd & )` 背景執行再等結果。
 - 語法檢查：`for f in js/*.js; do node --check $f; done`。
 - 改程式用 Python 腳本替換時，對每個 `old` 先 `assert s.count(old)==1`。

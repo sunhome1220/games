@@ -17,6 +17,8 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
   await p.evaluate(()=>showChangelog(true));await p.waitForFunction(()=>CHANGELOG_OLD&&document.querySelectorAll('#wn h4').length>CHANGELOG.length,null,{timeout:10000}).catch(()=>{});
   r.push([await p.evaluate(()=>!!CHANGELOG_OLD&&CHANGELOG_OLD.length>0&&document.querySelectorAll('#wn h4').length>CHANGELOG.length),'看全部時才載入舊的更新日誌']);
   r.push([await p.evaluate(()=>document.body.classList.contains('noanim')&&(!document.querySelector('.wv')||getComputedStyle(document.querySelector('.wv')).animationName==='none')),'關閉動畫時，海浪的循環動畫也停掉']);
+  r.push([await p.evaluate(()=>SETUP_PAGES.length===5&&SETUP_PAGES.map(x=>x.s).join()==='方式,攻方,守方,假設,確認'),'設定頁整理成 5 頁：方式／攻方／守方／假設／確認']);
+  r.push([await p.evaluate(()=>{const f=SETUP_PAGES.flatMap(p=>p.fields);return ['optMode','optEra','optSubCtl','optMonth','optSubMisA','optMN1','optAD1','optSubMisD'].every(id=>f.some(x=>x.sel===id));}),'原本各頁的設定項都還在']);
   r.push([await p.evaluate(()=>{const z=FXOFF&&reduce()&&fxK()<.1;document.querySelector('#wn')&&document.querySelector('#wn').remove();return z;}),'網址 fast=1：關閉動畫（reduce() 為真、動畫時間壓縮）']);
   { // 開戰月份：4×3 月曆格、每格天候三色條；點格子會設定月份，說明文字有完整機率
     const mo=await p.evaluate(()=>{const i=SETUP_PAGES.findIndex(pg=>pg.fields.some(f=>f.sel==='optMonth'));WZ.i=i;renderWizard();const t=[...document.querySelectorAll('.seg.mon .segb')];
@@ -70,7 +72,7 @@ add('手機版射程圖例不蓋住地圖按鈕','medium',async c=>{const {devic
 add('防空增購：各年份連數、設定頁、自動選址','medium',async c=>{const r=[];
   const play=async(era,side,picks)=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});
     await p.evaluate(([era,side,picks])=>{$('#optEra').value=era;$('#optEra').dispatchEvent(new Event('change'));$('#optSide').value=side;$('#optSide').dispatchEvent(new Event('change'));picks.forEach((v,i)=>{$('#optAD'+(i+1)).value=v;});},[era,side,picks]);
-    const page=await p.evaluate(()=>{const pg=SETUP_PAGES.find(x=>x.t==='防空增購配置');return pg&&pg.fields.filter(f=>f.when()).length;});
+    const page=await p.evaluate(()=>{return SETUP_PAGES.flatMap(p=>p.fields).filter(f=>/^optAD\d$/.test(f.sel)&&(!f.when||f.when())).length;});
     await L.startGame(p);const o=await p.evaluate(()=>({x:(S.samX||[]).map(x=>x.pick+'@'+x.k),n:samExtraN(S.era)}));return {p,page,o};};
   let q=await play('2026','def',[]);r.push([q.o.n===0&&q.o.x.length===0&&q.page===0,'2026 年：沒有增購連、設定頁不出現']);r.push(...noErr(q.p,'2026'));await q.p.close();
   q=await play('2030','def',['pt','yl']);r.push([q.o.n===2&&q.page===2,'2030 年：增購 2 個連，設定頁有 2 個問題（人類守方）']);
@@ -101,7 +103,7 @@ add('攻擊模式的快捷按鈕（取代電腦代打／結束階段）','medium
 add('預先布雷：分散到四個港口、設定頁指定、補布選位置','medium',async c=>{const r=[];
   const play=async(era,side,picks)=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:9});
     await p.evaluate(([era,side,picks])=>{$('#optEra').value=era;$('#optEra').dispatchEvent(new Event('change'));$('#optSide').value=side;$('#optSide').dispatchEvent(new Event('change'));picks.forEach((v,i)=>{$('#optMN'+(i+1)).value=v;});},[era,side,picks]);
-    const page=await p.evaluate(()=>{const pg=SETUP_PAGES.find(x=>x.t==='預先布雷位置');return pg&&pg.fields.filter(f=>f.when()).length;});
+    const page=await p.evaluate(()=>{return SETUP_PAGES.flatMap(p=>p.fields).filter(f=>/^optMN\d$/.test(f.sel)&&(!f.when||f.when())).length;});
     await p.evaluate(()=>{for(let i=0;i<8;i++){const n=document.querySelector('#wzNext');if(n&&!n.disabled)n.click();}document.querySelector('#btnStart').click();});
     await p.waitForFunction(()=>S.started&&S.mines,null,{timeout:60000});
     const o=await p.evaluate(()=>{const near=pk=>Object.keys(S.mines).filter(k=>hd(TER[k],TER[SPOT[pk]])<=2).length;return {n:Object.keys(S.mines).length,tamsui:near('tamsui'),keelung:near('keelung'),tcport:near('tcport'),kaohsiung:near('kaohsiung'),sea:Object.keys(S.mines).filter(k=>TER[k].t==='sea').length};});
@@ -148,7 +150,7 @@ add('潛艦開火後脫離、最後已知位置、反潛搜索預覽','medium',a
 add('潛艦自主執行任務：鎖定、任務設定、通訊窗口','medium',async c=>{const r=[];
   const play=async(side,ctl,misD,misA)=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:21});
     const pg=await p.evaluate(([side,ctl,misD,misA])=>{$('#optSide').value=side;$('#optSide').dispatchEvent(new Event('change'));$('#optSubCtl').value=ctl;$('#optSubMisD').value=misD;$('#optSubMisA').value=misA;
-      const pgx=SETUP_PAGES.find(x=>x.t==='潛艦任務');return pgx&&pgx.fields.map(f=>!f.when||f.when());},[side,ctl,misD,misA]);
+      const F=SETUP_PAGES.flatMap(p=>p.fields);return ['optSubCtl','optSubMisD','optSubMisA'].map(id=>{const f=F.find(x=>x.sel===id);return !!f&&(!f.when||!!f.when());});},[side,ctl,misD,misA]);
     await L.startGame(p);for(let i=0;i<100;i++){const x=await L.modalClick(p);if(x===2&&await p.evaluate(()=>humanTurn()&&document.querySelector('#modal').hidden))break;await p.waitForTimeout(150);}
     return {p,pg};};
   const st=(p,type)=>p.evaluate(type=>{const L=S.units.filter(u=>u.type===type&&alive(u));return {n:L.length,locked:L.filter(u=>u.moved&&u.acted&&u.auto).length,mis:[...new Set(L.map(u=>u.mis))].join('|'),manual:L.filter(u=>!u.moved&&!u.acted).length};},type);
