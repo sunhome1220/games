@@ -67,6 +67,7 @@ function embark(u,h){
   const kind=freeShipKind(u,h);if(kind==='have'||kind==='na'||!kind)return;
   const P=S.pools;if(kind==='lst')P.plaLst--;else P.plaLift--;
   const sh=mkUnit('atk',kind,h.k,{boundTo:u.id});S.units.push(sh);u.ship=sh.id;
+  if(typeof ANIM!=='undefined'&&ANIM.pos&&ANIM.pos.size)ANIM.pos.set(sh.id,cen(h.c,h.r)); // 新船從登船的格子出發滑向目的地（不然會在終點淡入）
   log(uname(u)+' 裝上'+TYPES[kind].n+'（剩 兩棲艦群 '+fmt1(P.plaLst)+'、滾裝船團 '+fmt1(P.plaLift)+'）');
   if(kind==='ro'&&typeof humanTurn==='function'&&humanTurn()){const w=roRisk();if(w)toast(w,5200);} // 只提醒，不限制
 }
