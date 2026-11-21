@@ -63,10 +63,11 @@ function roRisk(){
   if(!dock)return '⚠ 提醒：攻方還沒控制能卸載的港口或浮動碼頭，滾裝船到了也沒地方卸載。';
   return '';
 }
+const RO_SHIPS={light:4,arm:10}; // ★推估：一個滾裝船團的船數——輕型旅（兩棲、陸戰）約 4 艘、重型合成旅約 10 艘（一個旅的車輛、人員要這麼多大型滾裝客貨輪）
 function embark(u,h){
   const kind=freeShipKind(u,h);if(kind==='have'||kind==='na'||!kind)return;
   const P=S.pools;if(kind==='lst')P.plaLst--;else P.plaLift--;
-  const sh=mkUnit('atk',kind,h.k,{boundTo:u.id});S.units.push(sh);u.ship=sh.id;
+  const nShip=u.type==='arm'?RO_SHIPS.arm:RO_SHIPS.light,sh=mkUnit('atk',kind,h.k,kind==='ro'?{boundTo:u.id,hp:nShip,mhp:nShip}:{boundTo:u.id});S.units.push(sh);u.ship=sh.id;
   if(typeof ANIM!=='undefined'&&ANIM.pos&&ANIM.pos.size)ANIM.pos.set(sh.id,cen(h.c,h.r)); // 新船從登船的格子出發滑向目的地（不然會在終點淡入）
   log(uname(u)+' 裝上'+TYPES[kind].n+'（剩 兩棲艦群 '+fmt1(P.plaLst)+'、滾裝船團 '+fmt1(P.plaLift)+'）');
   if(kind==='ro'&&typeof humanTurn==='function'&&humanTurn()){const w=roRisk();if(w)toast(w,5200);} // 只提醒，不限制
@@ -79,7 +80,7 @@ function liftTurn(){ // 攻方階段開始：卸載完的運輸船返航大陸�
     sh.moved=false;const rc=reach(sh);let b=null,bs=dp(hexOf(sh));
     for(const [k,v] of rc){if(v.kind!=='sail')continue;const sc=dp(TER[k]);if(sc<bs){bs=sc;b=k;}}
     if(b)doMove(sh,b,'sail');sh.moved=true;
-    if(hexOf(sh).t==='port'&&hexOf(sh).isl==='CN'){S.units=S.units.filter(x=>x!==sh);if(sh.type==='lst'){S.lstBack=S.lstBack||{};S.lstBack[t+2]=(S.lstBack[t+2]||0)+1;}else{S.liftBack=S.liftBack||{};S.liftBack[t+2]=(S.liftBack[t+2]||0)+1;}log(TYPES[sh.type].n+' 返抵大陸港口，裝載後再度可用');}
+    if(hexOf(sh).t==='port'&&hexOf(sh).isl==='CN'){S.units=S.units.filter(x=>x!==sh);if(sh.type==='lst'){S.lstBack=S.lstBack||{};S.lstBack[t+2]=(S.lstBack[t+2]||0)+1;}else{S.roFrac=(S.roFrac||0)+(sh.mhp?sh.hp/sh.mhp:1);const whole=Math.floor(S.roFrac+1e-9);S.roFrac-=whole;S.liftBack=S.liftBack||{};S.liftBack[t+2]=(S.liftBack[t+2]||0)+whole;}log(TYPES[sh.type].n+' 返抵大陸港口，裝載後再度可用');} // 返航的滾裝船團：剩幾艘就補回幾分之幾個運力（小數累計，滿 1 才回運力池；沉掉的船永久損失）
   }
 }
 function convoyTurn(){ // 攻方階段開始：運輸船返航入列、派出新船團、全部船團自動朝最近的卸載點前進

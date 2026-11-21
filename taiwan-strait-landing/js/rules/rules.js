@@ -154,8 +154,13 @@ function targets(u){
   return ring2(h).flatMap(n=>unitsAt(n.k)).filter(e=>e.side!==u.side&&!atSea(e)&&canHitSub(e)&&(hd(h,hexOf(e))<=1||hasArt(u))); // 海上的潛艦不能被地面部隊直接攻擊；港內的可以。相鄰格才能突擊，20 km 只有編有砲兵的旅能砲擊
 }
 
-function damage(u,n,why){ // 船與船上的旅同進退：但旅在搶灘戰鬥中的損失不會讓外海的運輸艦跟著沉（損失的是登陸艇與部隊）；船被擊沉時船上的旅一併損失
-  if(!S._mir&&!(u.ship&&(!why||why==='地面戰鬥'))){const link=u.ship?S.units.find(x=>x.id===u.ship):u.boundTo?S.units.find(x=>x.id===u.boundTo):null;if(link&&alive(link)){S._mir=true;try{damage(link,n,why);}finally{S._mir=false;}if(!alive(u))return false;}} // 船與船上的旅同進退
+function roLoss(u,n,why){ // 滾裝船團每少 1 艘，船上的旅按比例損失兵力（每艘載 旅步數÷船數，小數累計，不用亂數）
+  const b=u.boundTo&&S.units.find(x=>x.id===u.boundTo);if(!b||!alive(b))return;
+  u.lossAcc=(u.lossAcc||0)+Math.min(n,u.hp)*mhpOf(b)/(u.mhp||TYPES.ro.hp);const k=Math.floor(u.lossAcc+1e-9);if(k<=0)return;u.lossAcc-=k;
+  S._mir=true;try{damage(b,Math.min(k,b.hp),why);}finally{S._mir=false;}}
+function damage(u,n,why){
+  if(u.type==='ro'&&!S._mir)roLoss(u,n,why); // 船與船上的旅同進退：但旅在搶灘戰鬥中的損失不會讓外海的運輸艦跟著沉（損失的是登陸艇與部隊）；船被擊沉時船上的旅一併損失
+  if(!S._mir&&u.type!=='ro'&&!(u.ship&&shipOf(u)&&shipOf(u).type==='ro')&&!(u.ship&&(!why||why==='地面戰鬥'))){const link=u.ship?S.units.find(x=>x.id===u.ship):u.boundTo?S.units.find(x=>x.id===u.boundTo):null;if(link&&alive(link)){S._mir=true;try{damage(link,n,why);}finally{S._mir=false;}if(!alive(u))return false;}} // 船與船上的旅同進退
   S.hits.push({c:u.c,r:u.r,t:S.turn,side:u.side,type:u.type,n:Math.min(n,u.hp),sea:atSea(u),why:why||'地面戰鬥',dead:n>=u.hp,cvn:u.type==='cv'&&u.cvi!=null?AIR.CV[u.cvi].n:null});
   fxq({t:'dmg',id:u.id,at:[u.c,u.r],n:Math.min(n,u.hp),side:u.side});
   if(isLch(u)&&u.veh!=null&&!S._vehHit){u.veh=Math.max(0,Math.round(u.veh-n*ssmVPS(u)));u.fk=(u.fk||[]).slice(0,u.veh);} // 地面戰鬥、先制打擊：每步＝4 輛完全摧毀
