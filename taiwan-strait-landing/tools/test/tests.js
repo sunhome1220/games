@@ -101,6 +101,20 @@ add('棋子移動：連續滑動，時間依距離（遠的滑得久、超過 20
   r.push([await p.evaluate(()=>slideMs(HPX)===300&&slideMs(HPX*12)>800&&slideMs(HPX*40)===1900&&easeIO(.5)===.5&&easeIO(0)===0&&easeIO(1)===1),'時間公式：1 格 300 ms、12 格 >800 ms、上限 1,900 ms；先加速後減速']);
   r.push(...noErr(p,'棋子滑動'));await p.close();return r;});
 
+add('開火後才移動的棋子：留在原地開火、播完才滑走（火力動畫不從空格冒出）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{},);const r=[];await L.startGame(p);
+  const o=await p.evaluate(()=>{const pick=()=>S.units.filter(x=>x.side==='def'&&x.type==='ssm'&&alive(x)).slice(0,2);const [a,b]=pick();if(!a||!b)return null;
+    const mv=(u)=>{const h=hexOf(u),n=nbrs(h.c,h.r).find(q=>q&&isLand(q)&&!unitsAt(q.k).length&&q.k!==h.k);return n;};
+    const na=mv(a),nb=mv(b);render();
+    const t=S.units.find(x=>x.side==='atk'&&alive(x));
+    FXQ.push({t:'msl',from:[a.c,a.r],to:[t.c,t.r],hit:false}); // a 在舊位置開火，之後移動
+    a.c=na.c;a.r=na.r;b.c=nb.c;b.r=nb.r; // b 只是移動，沒有開火
+    render();
+    const d=u=>{const e=document.querySelector('#gD .u[data-id="'+u.id+'"]');const an=e?e.getAnimations().filter(x=>x.effect.getKeyframes().some(f=>f.transform)):[];return an.length?an[0].effect.getTiming():null;};
+    const ta=d(a),tb=d(b);return {a:ta&&{delay:ta.delay,fill:ta.fill},b:tb&&{delay:tb.delay},slid:ANIM.slid,fw:FIRE_WAIT};});
+  r.push([!!o&&o.a&&o.a.delay>=o.fw*.9&&o.a.fill==='backwards','從舊位置開火的棋子：滑動延遲 '+(o&&o.a&&Math.round(o.a.delay))+' ms（先開火再滑走）']);
+  r.push([!!o&&o.b&&o.b.delay===0,'只移動、沒有開火的棋子：立刻滑動、不延遲']);
+  r.push(...noErr(p,'開火後移動'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
