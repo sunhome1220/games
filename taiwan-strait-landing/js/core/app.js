@@ -255,20 +255,19 @@ function thFold(open){const t=document.querySelector('.theater');t.classList.tog
 $('#btnThFold').onclick=()=>thFold(document.querySelector('.theater').classList.contains('collapsed'));
 $('#btnThWide').onclick=()=>{const t=document.querySelector('.theater');t.classList.toggle('wide');$('#btnThWide').textContent=t.classList.contains('wide')?'縮小戰區圖':'放大戰區圖';};
 /* ---------- map zoom and fullscreen ---------- */
-let ZOOM=3;const ZMIN=.8,ZMAX=10,ZDEF=3; // 最大 1000%、預設 300%（10 km 格子放大看得清楚）
+let ZOOM=3;const ZMIN=.8,ZMAX=10,ZDEF=3,ZB=2; // 最大 1000%、預設 300%（10 km 格子放大看得清楚）。ZB：整體實際尺寸倍率（2026-11-18.46 起 ×2；顯示的百分比範圍不變，地圖與棋子實際畫得大一倍）
 function setZoom(z,recenter,anc){ // anc＝{fx,fy,px,py}：縮放後讓內容上的 (fx,fy)（占全圖比例）留在視窗內的 (px,py)——以手指中點或游標為錨點，像 Google 地圖
   const w=document.querySelector('.mapwrap'),m=$('#map'),old=ZOOM,fs=document.body.classList.contains('mapfs');
   const fx=(w.scrollLeft+w.clientWidth/2)/Math.max(1,w.scrollWidth),fy=(w.scrollTop+w.clientHeight/2)/Math.max(1,w.scrollHeight);
   ZOOM=Math.max(ZMIN,Math.min(ZMAX,Math.round(z*1000)/1000));
   m.classList.toggle('zlo',FG>2&&ZOOM<1.6);m.classList.toggle('zhi',ZOOM>=9);if(typeof landmarkDim==='function')landmarkDim();textZoomFix();{const nu=usForZoom(ZOOM);if(nu!==US){US=nu;if(S&&S.started)requestAnimationFrame(()=>render());}} // 縮小時棋子縮成一格、地名只留勝負要點
   // 縮放 1 = 原本可見範圍（遊戲格）填滿寬度；外圍示意區只在縮小或拖曳時看到
-  m.style.width=(ZOOM*EXT*100)+'%';m.style.minWidth=ZOOM*EXT<1?'0':'';
+  m.style.width=(ZOOM*ZB*EXT*100)+'%';m.style.minWidth=ZOOM*ZB*EXT<1?'0':'';
   w.style.maxHeight='';
   if(fs)w.style.height='';
   else{
     const ww=w.clientWidth||w.parentElement.clientWidth,h1=ww*VBH/VBW,cap=innerHeight*.86;
-    if(ZOOM>=1)w.style.height=(ZOOM===1?h1:Math.min(h1*ZOOM,cap)).toFixed(0)+'px';
-    else{const hd=Math.min(ww*ZOOM*EXT*EVBH/EVBW,cap),t=Math.min(1,(1-ZOOM)/.3);w.style.height=(h1+(hd-h1)*t).toFixed(0)+'px';}
+    w.style.height=Math.min(h1*ZOOM*ZB,cap).toFixed(0)+'px'; // ZMIN×ZB＝1.6 倍以上，一律走放大分支
   }
   const tc=ZOOM>1.2&&typeof SPOT!=='undefined'&&TER[SPOT.tcport]?center(TER[SPOT.tcport].c,TER[SPOT.tcport].r):null; // 放大時「回到台灣」以台灣中西部（台中港一帶）為中心
   const ox=tc?(MX0+tc[0]+HPX*4)/EVBW:(MX0+VBW/2)/EVBW,oy=tc?(MY0+tc[1])/EVBH:(MY0+VBH/2)/EVBH;
@@ -317,7 +316,7 @@ let savedZoom=1;
 function fitZoom(){
   const w=document.querySelector('.mapwrap');
   const h1=w.clientWidth*VBH/VBW;
-  setZoom(Math.max(ZMIN,Math.min(1,(w.clientHeight-4)/h1)),true);
+  setZoom(Math.max(ZMIN,Math.min(1,(w.clientHeight-4)/h1/ZB)),true);
 }
 $('#btnFs').onclick=()=>setFs(true);
 {const b=$('#btnRng');if(b){b.setAttribute('aria-pressed',RNG_ALL);b.onclick=()=>{RNG_ALL=!RNG_ALL;b.setAttribute('aria-pressed',RNG_ALL);try{localStorage.setItem('tsl-rng',RNG_ALL?'1':'0');}catch(e){}renderMap();};}}$('#fsExit').onclick=()=>setFs(false);

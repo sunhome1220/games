@@ -51,7 +51,7 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
   r.push([await p.evaluate(()=>{const t=TER[SPOT.tcport],sea=nbrs(t.c,t.r).find(n=>n.t==='sea'),land=nbrs(t.c,t.r).find(n=>n.t!=='sea'&&!n.cliff);S.mines=S.mines||{};S.mines[sea.k]=1;S.mines[land.k]=1;render();return Object.keys(S.mines).length>=2&&document.querySelectorAll('#map .mine').length===0;}),'你是攻方：地圖上看不到守方的布雷區']);
   r.push(...noErr(p,'快速測試'));await p.close();return r;});
 
-add('極簡畫質：節點數、點選陸地與海面、設定與卡頓提醒','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1&ultra=1',{fast:true});const r=[];await L.startGame(p);
+add('極簡畫質：節點數、點選陸地與海面、設定與卡頓提醒','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1&ultra=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200);
   r.push([await p.evaluate(()=>ULTRA&&document.body.classList.contains('ultra')&&document.querySelectorAll('#map *').length<6000&&!document.querySelector('#map .tile,#map .tl-sh,#map .wv')),'極簡畫質：地圖節點 < 6,000、沒有立體地形與海浪（'+await p.evaluate(()=>document.querySelectorAll('#map *').length)+'）']);
   const lh=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),el=document.querySelector('#map .tl-ul[data-sea="2"]');let n=0,ok=0;
     for(const h of Object.values(TER)){if(h.isl!=='TW'||(h.c*7+h.r*3)%11!==0)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);n++;if(seaHexAt(el,q.x,q.y)===h.k)ok++;}return {n,ok};});
@@ -115,7 +115,14 @@ add('開火後才移動的棋子：留在原地開火、播完才滑走（火力
   r.push([!!o&&o.b&&o.b.delay===0,'只移動、沒有開火的棋子：立刻滑動、不延遲']);
   r.push(...noErr(p,'開火後移動'));await p.close();return r;});
 
-add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
+add('地圖實際尺寸 ×2（百分比範圍不變）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
+  const o=await p.evaluate(()=>{const w=document.querySelector('.mapwrap'),m=$('#map');setZoom(3,true);const a=m.getBoundingClientRect().width/w.clientWidth;setZoom(1.5,true);const b=m.getBoundingClientRect().width/w.clientWidth;
+    const lim=[];setZoom(100);lim.push(ZOOM);setZoom(.01);lim.push(ZOOM);setZoom(3,true);return {a,b,ex:3*ZB*EXT,ex2:1.5*ZB*EXT,lim,ZB,lab:$('#zLabel').textContent};});
+  r.push([o.ZB===2&&Math.abs(o.a-o.ex)<.02&&Math.abs(o.b-o.ex2)<.02,'300% 時地圖寬 '+o.a.toFixed(2)+' 倍視窗（舊版 '+(o.ex/2).toFixed(2)+'，現 ×2）']);
+  r.push([o.lim.join()==='10,0.8'&&o.lab==='300%','百分比範圍不變：最大 1000%、最小 80%、預設 300% '+o.lim.join('／')]);
+  r.push(...noErr(p,'地圖尺寸'));await p.close();return r;});
+
+add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
       if(q.x>40&&q.x<window.innerWidth-40&&q.y>140&&q.y<window.innerHeight-60&&!unitAt(h.k)&&(h.c*7+h.r*3)%97===0&&(()=>{const e=document.elementFromPoint(q.x,q.y);return !!(e&&e.closest('[data-sea]'));})())out.push({k:h.k,x:q.x,y:q.y});}
