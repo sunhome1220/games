@@ -319,7 +319,7 @@ function fitZoom(){
   setZoom(Math.max(ZMIN,Math.min(1,(w.clientHeight-4)/h1/ZB)),true);
 }
 $('#btnFs').onclick=()=>setFs(true);
-{const b=$('#btnRng');if(b){b.setAttribute('aria-pressed',RNG_ALL);b.onclick=()=>{RNG_ALL=!RNG_ALL;b.setAttribute('aria-pressed',RNG_ALL);try{localStorage.setItem('tsl-rng',RNG_ALL?'1':'0');}catch(e){}renderMap();};}}{const b=$('#btnRngA');if(b){b.setAttribute('aria-pressed',RNG_ATK);b.onclick=()=>{RNG_ATK=!RNG_ATK;b.setAttribute('aria-pressed',RNG_ATK);try{localStorage.setItem('tsl-rnga',RNG_ATK?'1':'0');}catch(e){}renderMap();};}}$('#fsExit').onclick=()=>setFs(false);
+{const b=$('#btnRng');if(b){b.setAttribute('aria-pressed',RNG_ALL);b.onclick=()=>{RNG_ALL=!RNG_ALL;b.setAttribute('aria-pressed',RNG_ALL);try{localStorage.setItem('tsl-rng',RNG_ALL?'1':'0');}catch(e){}renderMap();};}}{const b=$('#btnRngA');if(b){const sync=()=>{b.setAttribute('aria-pressed',RNG_ATK>0);const sp=b.querySelector('.bl');if(sp)sp.textContent=' '+(RNG_ATK?ATK_MODES[RNG_ATK]:'攻擊');b.title=RNG_ATK?'目前顯示：'+ATK_MODES[RNG_ATK]+'火力的攻擊範圍（再按換下一類）':'顯示火力單位的攻擊範圍（按一下反艦飛彈、再按一下對地火力、再按關閉）';};sync();b.onclick=()=>{RNG_ATK=(RNG_ATK+1)%3;sync();try{localStorage.setItem('tsl-rnga',String(RNG_ATK));}catch(e){}renderMap();};}}$('#fsExit').onclick=()=>setFs(false);
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('mapfs')){document.body.classList.remove("mapfs");setZoom(savedZoom||1,
     true);}else if(document.fullscreenElement&&document.body.classList.contains('mapfs'))requestAnimationFrame(fitZoom);});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('mapfs'))setFs(false);});

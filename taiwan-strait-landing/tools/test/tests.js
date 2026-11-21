@@ -122,12 +122,14 @@ add('地圖實際尺寸 ×2（百分比範圍不變）','medium',async c=>{const
   r.push([o.lim.join()==='10,0.8'&&o.lab==='300%','百分比範圍不變：最大 1000%、最小 80%、預設 300% '+o.lim.join('／')]);
   r.push(...noErr(p,'地圖尺寸'));await p.close();return r;});
 
-add('「攻擊」鈕：畫出所有火力單位的攻擊範圍圈','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
-  const n0=await p.evaluate(()=>document.querySelectorAll('#map .rr').length);await p.click('#btnRngA');await p.waitForTimeout(300);
-  const a=await p.evaluate(()=>({n:document.querySelectorAll('#map .rr.r').length,leg:[...document.querySelectorAll('#rngLeg span')].map(x=>x.textContent).join('|'),on:document.getElementById('btnRngA').getAttribute('aria-pressed'),ls:localStorage.getItem('tsl-rnga')}));
-  r.push([n0===0&&a.n>=5&&a.on==='true'&&a.ls==='1'&&/雄風 160 km/.test(a.leg)&&/海馬士火箭 80 km/.test(a.leg),'按「攻擊」：畫出 '+a.n+' 個攻擊範圍圈，圖例 '+a.leg.slice(0,60)]);
-  await p.click('#btnRngA');await p.waitForTimeout(300);
-  r.push([await p.evaluate(()=>document.querySelectorAll('#map .rr').length===0&&document.getElementById('btnRngA').getAttribute('aria-pressed')==='false'),'再按一次：圈全部消失']);
+add('「攻擊」鈕：循環顯示反艦／對地火力的攻擊範圍，同類合併外框','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
+  const st=()=>p.evaluate(()=>({n:document.querySelectorAll('#map .rr').length,masks:document.querySelectorAll('#map mask').length,leg:[...document.querySelectorAll('#rngLeg span')].map(x=>x.textContent).join('|'),on:document.getElementById('btnRngA').getAttribute('aria-pressed'),lab:document.querySelector('#btnRngA .bl').textContent,ls:localStorage.getItem('tsl-rnga')}));
+  const n0=await st();await p.click('#btnRngA');await p.waitForTimeout(300);const a=await st();
+  r.push([n0.n===0&&a.n>=2&&a.on==='true'&&a.lab===' 反艦'&&/雄風 160 km/.test(a.leg)&&!/海馬士/.test(a.leg)&&a.masks>=1&&a.ls==='1','第 1 下「反艦」：只畫反艦飛彈範圍，同類合併外框（'+a.masks+' 組遮罩）：'+a.leg.slice(0,50)]);
+  await p.click('#btnRngA');await p.waitForTimeout(300);const b2=await st();
+  r.push([b2.lab===' 對地'&&/海馬士火箭 80 km/.test(b2.leg)&&!/雄風/.test(b2.leg)&&b2.ls==='2','第 2 下「對地」：只畫海馬士、雷霆：'+b2.leg]);
+  await p.click('#btnRngA');await p.waitForTimeout(300);const c3=await st();
+  r.push([c3.n===0&&c3.on==='false'&&c3.lab===' 攻擊'&&c3.ls==='0','第 3 下：關閉']);
   r.push(...noErr(p,'攻擊範圍'));await p.close();return r;});
 
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣

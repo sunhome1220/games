@@ -110,21 +110,32 @@ function fleetPanelHTML(u){
   }
   return h;
 }
-let RNG_ALL=false,RNG_ATK=false;try{RNG_ALL=localStorage.getItem('tsl-rng')==='1';RNG_ATK=localStorage.getItem('tsl-rnga')==='1';}catch(e){}
-// 「攻擊」鈕：畫出所有看得到的火力單位的攻擊範圍（虛線圈）——岸置雄風 160 km／魚叉岸防 120 km、艦隊與護航艦的反艦飛彈、海馬士火箭 80 km、雷霆 40 km、NMESIS、堤豐。同種類同射程只標一次文字，避免太雜
-function atkRingsSVG(skip){
-  const o=[],lbl=[],seen=new Set();let n=0;
-  const add=(u,R,txt)=>{if(!(R>0))return;const key=u.side+txt;const first=!seen.has(key);seen.add(key);rrRing(o,lbl,u.c,u.r,R,'r',u.side,first?txt:'',true);
-    if(first)RNG_LEG.push({cls:'r',sd:u.side,txt});n++;};
+let RNG_ALL=false,RNG_ATK=0;try{RNG_ALL=localStorage.getItem('tsl-rng')==='1';RNG_ATK=+localStorage.getItem('tsl-rnga')||0;}catch(e){}
+// 「攻擊」鈕（循環：關 → 反艦飛彈 → 對地火力）：畫出所有看得到的火力單位的攻擊範圍。同一種類同一方的圈合併成一個外框（不再一圈一圈互相疊），一次只顯示一類，避免太雜
+const ATK_MODES=['','反艦','對地'];
+function atkRingsSVG(skip,mode){
+  const G=new Map();let gi=0;
+  const add=(u,R,txt)=>{if(!(R>0))return;const key=u.side+txt,g=G.get(key)||{sd:u.side,txt,cs:[]};g.cs.push(u);g.R=R;G.set(key,g);};
   for(const u of S.units){if(!alive(u)||u===skip||subHidden(u)||(u.ship&&atSea(u)))continue;
-    if(u.type==='ssm'){if(ssmStock(u)>0)add(u,ssmHp(u)?kmH(120):kmH(160),ssmHp(u)?'魚叉岸防 120 km':'雄風 160 km');}
-    else if(u.fl){const A=fleetAgg(u);if(A.asmR&&(!u.mag||u.mag.asm>0))add(u,A.asmR,'艦隊反艦飛彈 '+kmOf(A.asmR)+' km');}
-    else if(u.type==='hmr')add(u,kmH(80),'海馬士火箭 80 km');
-    else if(u.type==='mlrs')add(u,kmH(40),'雷霆 40 km');
-    else if(u.type==='nme'&&u.mag&&u.mag.asm>0)add(u,NME.R,'NMESIS '+kmOf(NME.R)+' km');
-    else if(u.type==='mdt'&&u.mag&&u.mag.asm>0)add(u,MDT.R,'堤豐 '+kmOf(MDT.R)+' km');
-    else if(isEsc(u)&&u.mag&&u.mag.asm>0&&SHIPW[u.type]&&SHIPW[u.type].asmR)add(u,SHIPW[u.type].asmR,SHIPW[u.type].asmN+' '+kmOf(SHIPW[u.type].asmR)+' km');}
-  return o.join('')+lbl.join('');}
+    if(mode===1){
+      if(u.type==='ssm'){if(ssmStock(u)>0)add(u,ssmHp(u)?kmH(120):kmH(160),ssmHp(u)?'魚叉岸防 120 km':'雄風 160 km');}
+      else if(u.fl){const A=fleetAgg(u);if(A.asmR&&(!u.mag||u.mag.asm>0))add(u,A.asmR,'艦隊反艦飛彈 '+kmOf(A.asmR)+' km');}
+      else if(u.type==='nme'&&u.mag&&u.mag.asm>0)add(u,NME.R,'NMESIS '+kmOf(NME.R)+' km');
+      else if(u.type==='mdt'&&u.mag&&u.mag.asm>0)add(u,MDT.R,'堤豐 '+kmOf(MDT.R)+' km');
+      else if(isEsc(u)&&u.mag&&u.mag.asm>0&&SHIPW[u.type]&&SHIPW[u.type].asmR)add(u,SHIPW[u.type].asmR,SHIPW[u.type].asmN+' '+kmOf(SHIPW[u.type].asmR)+' km');
+    }else if(mode===2){
+      if(u.type==='hmr')add(u,kmH(80),'海馬士火箭 80 km');else if(u.type==='mlrs')add(u,kmH(40),'雷霆 40 km');
+    }}
+  let o='',m='';const vb='x="'+(-MX0)+'" y="'+(-MY0)+'" width="'+EVBW.toFixed(0)+'" height="'+EVBH.toFixed(0)+'"';
+  for(const g of G.values()){
+    const r=((g.R+.5)*HPX).toFixed(1),cs=g.cs.map(u=>center(u.c,u.r)),id='rm'+(gi++);
+    RNG_LEG.push({cls:'r',sd:g.sd,txt:g.txt});
+    const [lx,ly]=rangeTop(g.cs[0].c,g.cs[0].r,g.R),lab='<text class="rrl '+g.sd+'" x="'+lx.toFixed(1)+'" y="'+(ly-4).toFixed(1)+'" text-anchor="middle">'+g.txt+'</text>';
+    if(cs.length===1){o+='<circle class="rr r '+g.sd+'" cx="'+cs[0][0].toFixed(1)+'" cy="'+cs[0][1].toFixed(1)+'" r="'+r+'"/>'+lab;continue;}
+    // 外框取聯集：描邊畫兩倍粗，再用「所有圈的內部」遮掉——每個圈只剩外側的一半線，被別的圈蓋住的部分不畫
+    m+='<mask id="'+id+'" maskUnits="userSpaceOnUse" '+vb+'><rect '+vb+' fill="#fff"/>'+cs.map(c=>'<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="'+r+'" fill="#000"/>').join('')+'</mask>';
+    o+='<g mask="url(#'+id+')">'+cs.map(c=>'<circle class="rr r u2 '+g.sd+'" cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="'+r+'"/>').join('')+'</g>'+lab;}
+  return (m?'<defs>'+m+'</defs>':'')+o;}
 // 台澎海岸線（沿陸地格靠海的邊，和凸起的地塊對齊）、主要河流（★依河口與主要經過點手繪的近似線，誤差約 5～10 km，只是地圖標示、不影響規則）、玉山
 const RIVERS=[['淡水河',[[121.41,25.18],[121.46,25.12],[121.49,25.06],[121.46,25.01],[121.40,24.95],[121.33,24.88]]],
   ['頭前溪',[[120.93,24.85],[121.00,24.82],[121.07,24.80],[121.13,24.77]]],
