@@ -166,6 +166,15 @@ add('滾裝船團依旅型有船數：輕型 4、重型 10，每少一艘旅按�
   r.push([o.ret.a1===0&&o.ret.a2===1,'返航補回運力：第 1 個剩 5／10 補 0（累計 0.5），第 2 個再補 1（累計 1.0） '+JSON.stringify(o.ret)]);
   r.push(...noErr(p,'滾裝船團船數'));await p.close();return r;});
 
+add('外圍北側：舟山在真實位置、城市地標名稱','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});const r=[];
+  const o=await p.evaluate(()=>{const f=FAR['舟山'],q=FAR['路橋'],t=document.querySelector('#gX');
+    const isl=[...OFINE.values()].filter(h=>h.t==='plain').map(h=>rcToLL(h.c,h.r)).filter(([lo,la])=>la>29.5&&la<30.6&&lo>121.7&&lo<122.6).length;
+    const south=[...OFINE.values()].filter(h=>h.t==='plain').map(h=>rcToLL(h.c,h.r)).filter(([lo,la])=>la>26.2&&la<27&&lo>120&&lo<120.8).length;
+    return {sz:[f.lon,f.lat,!f.schem],lq:[q.lon,q.lat,!q.schem],isl,south,cities:[...document.querySelectorAll('#gX .city')].map(e=>e.textContent).join(),lab:[...document.querySelectorAll('#gX .far-lbl')].map(e=>e.textContent).filter(x=>/（/.test(x)).join()};});
+  r.push([o.sz[2]&&Math.abs(o.sz[1]-30.05)<.1&&o.lq[2]&&o.isl>=5&&o.south===0,'舟山在真實位置（30.05°N、122.25°E），群島 '+o.isl+' 格；東引上方不再有假的大島 '+o.south]);
+  r.push([o.cities==='上海,杭州,金華'&&/寧波/.test(o.lab)&&/台州/.test(o.lab)&&/溫州/.test(o.lab),'城市地標：'+o.cities+'；機場旁註明 '+o.lab]);
+  r.push(...noErr(p,'外圍北側'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
