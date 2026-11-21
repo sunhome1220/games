@@ -132,6 +132,17 @@ add('「攻擊」鈕：循環顯示反艦／對地火力的攻擊範圍，同類
   r.push([c3.n===0&&c3.on==='false'&&c3.lab===' 攻擊'&&c3.ls==='0','第 3 下：關閉']);
   r.push(...noErr(p,'攻擊範圍'));await p.close();return r;});
 
+add('電腦攻方護航艦：沒有運輸船時退回大陸港口，有運輸船就貼近','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:12});const r=[];await L.startGame(p);
+  const o=await p.evaluate(async()=>{const ports=Object.values(TER).filter(h=>h.t==='port'&&h.isl==='CN');const dP=u=>Math.min(...ports.map(q=>hd(hexOf(u),q)));
+    const dd=S.units.find(u=>u.side==='atk'&&u.type==='dd'&&alive(u));const tw=Object.values(TER).find(h=>h.isl==='TW'&&h.t==='sea');
+    const seaNear=Object.values(TER).filter(h=>h.t==='sea'&&!h.isl&&hd(h,TER[S.units.find(u=>u.side==='atk'&&u.type==='cv'&&alive(u))?hexOf(S.units.find(u=>u.type==='cv')).k:TER['26,26'].k])<=60).slice(0,1);
+    // 把護航艦放到海峽中間（離大陸港口約 10 格以上），海上沒有運輸船
+    const mid=Object.values(TER).filter(h=>h.t==='sea'&&!h.isl&&dP({c:h.c,r:h.r,hex:h})>0).map(h=>[h,Math.min(...ports.map(q=>hd(h,q)))]).filter(x=>x[1]>=10&&x[1]<=14&&!unitsAt(x[0].k).length)[0][0];
+    dd.c=mid.c;dd.r=mid.r;dd.moved=false;dd.acted=false;S.units.filter(u=>u.side==='atk'&&!isShip(u)&&atSea(u)).forEach(u=>{u.c=ports[0].c;u.r=ports[0].r;});
+    const before=dP(dd);await aiAtkEscort(dd,{h:hexOf(dd)});const after=dP(dd);return {before,after};});
+  r.push([o.after<o.before,'海上沒有己方運輸船：護航艦朝大陸港口退（距離 '+o.before+' → '+o.after+' 格）']);
+  r.push(...noErr(p,'護航艦待命'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
