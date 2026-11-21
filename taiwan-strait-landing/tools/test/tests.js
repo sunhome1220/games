@@ -148,6 +148,24 @@ add('護航艦棋子資訊卡：列出 052D 與 054A 各自的數字','medium',a
   r.push([/052D 防空彈 48 枚/.test(o.t)&&/054A 防空彈 32 枚/.test(o.t)&&/合計 80 枚、同時接戰 6 枚/.test(o.t)&&o.sum[0]&&o.sum[1],'資訊卡列出 052D 48／054A 32、合計 80（等於棋子的防空數字）']);
   r.push(...noErr(p,'護航艦資訊卡'));await p.close();return r;});
 
+add('滾裝船團依旅型有船數：輕型 4、重型 10，每少一艘旅按比例損失、返航按剩餘船數補回運力','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:8});const r=[];await L.startGame(p);
+  const o=await p.evaluate(()=>{const port=Object.values(TER).find(h=>h.t==='port'&&h.isl==='CN');S.pools.plaLst=0;S.pools.plaLift=20;S.roReserve=0;
+    const mk=type=>{const u=S.units.find(x=>x.side==='atk'&&x.type===type&&alive(x)&&!x.ship);u.c=port.c;u.r=port.r;embark(u,port);return [u,shipOf(u)];};
+    const out={};
+    let [u,sh]=mk('amph');out.light={hp:sh.hp,mhp:sh.mhp,b:u.hp};damage(sh,1,'t');out.l1={ship:sh.hp,brig:u.hp};damage(sh,1,'t');out.l2={ship:sh.hp,brig:u.hp};damage(sh,2,'t');out.l4={shipGone:!S.units.includes(sh),brigGone:!S.units.includes(u)};
+    [u,sh]=mk('arm');out.heavy={hp:sh.hp,mhp:sh.mhp,b:u.hp};const b0=u.hp;for(let i=0;i<3;i++)damage(sh,1,'t');out.h3={ship:sh.hp,brig:u.hp,b0};damage(sh,1,'t');out.h4={ship:sh.hp,brig:u.hp};
+    // 返航：兩個剩 5／10 的滾裝船團回港，才補回 1 個運力
+    S.pools.plaLift=3;S.liftBack={};S.roFrac=0;const t0=S.turn,mkr=()=>{const x=mkUnit('atk','ro',port.k,{hp:5,mhp:10});x.ret=true;x.retT=t0-1;S.units.push(x);return x;};
+    mkr();S.turn=t0+1;liftTurn();const a1=Object.values(S.liftBack).reduce((a,b)=>a+b,0);
+    mkr();liftTurn();const a2=Object.values(S.liftBack).reduce((a,b)=>a+b,0);
+    out.ret={a1,a2};return out;});
+  r.push([o.light.hp===4&&o.light.mhp===4&&o.heavy.hp===10&&o.heavy.mhp===10,'輕型旅船團 '+o.light.hp+'／'+o.light.mhp+' 艘、重型旅 '+o.heavy.hp+'／'+o.heavy.mhp+' 艘']);
+  r.push([o.l1.ship===3&&o.l1.brig===o.light.b&&o.l2.ship===2&&o.l2.brig===o.light.b-1,'輕型：打掉 1 艘旅仍滿（0.75 步），打掉 2 艘旅 −1 步（共 1.5 步）']);
+  r.push([o.l4.shipGone&&o.l4.brigGone,'輕型：船全沉，船上的旅一併損失']);
+  r.push([o.h3.ship===7&&o.h3.brig===o.h3.b0&&o.h4.ship===6&&o.h4.brig===o.h3.b0-1,'重型：打掉 3 艘旅仍滿（0.9 步），第 4 艘旅 −1 步（1.2 步）']);
+  r.push([o.ret.a1===0&&o.ret.a2===1,'返航補回運力：第 1 個剩 5／10 補 0（累計 0.5），第 2 個再補 1（累計 1.0） '+JSON.stringify(o.ret)]);
+  r.push(...noErr(p,'滾裝船團船數'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
