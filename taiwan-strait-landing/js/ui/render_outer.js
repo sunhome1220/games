@@ -332,9 +332,9 @@ function ghostDrop(id){
 }
 // 棋子色調分三類（攻方紅、守方藍各自三種深淺，海上與陸上共用）：深＝火力打擊（飛彈、火箭砲、潛艦、飛彈艇）、標準＝作戰部隊、淡＝後勤運輸（船團、補給站、運輸船）
 const unitCat=t=>(t==='ssm'||t==='hmr'||t==='heli'||t==='sam'||t==='mlrs'||t==='hk'||t==='ssn'||t==='psub'||t==='nme'||t==='mdt'||t==='ff')?'f':(t==='cvy'||t==='fob'||t==='lst'||t==='ro')?'l':'m';
-// 一個棋子代表「一群」艦艇或船：背後多兩張錯開的卡片（疊影），圖示內畫三艘小船；單一載具（航艦、潛艦、單艦）維持單張卡片與一艘大船
-const GRPSHIP=t=>t==='lst'||t==='ro'||t==='cvy'||t==='ff'||t==='psub'||t==='dd'||t==='jdd'||t==='csg';
-const HULLS=(bx,by)=>[0,1,2].map(i=>{const x0=bx+.3+i*6,y0=by+7.6-(i===1?1.6:0);return '<path class="sym" d="M'+x0.toFixed(1)+' '+y0.toFixed(1)+'h5.4l-1 1.9h-3.4z"/><path class="sym" d="M'+(x0+1.4).toFixed(1)+' '+y0.toFixed(1)+'v-1.8h2.6v1.8"/>';}).join('');
+// 艦艇棋子的船形數量＝這個棋子代表的船數：單艦一艘大船；護航艦棋子（052D＋054A 一對）兩艘；艦群、運輸船團三艘小船（不再疊卡片）
+const HULLN=t=>t==='dd'?2:(t==='lst'||t==='ro'||t==='cvy'||t==='ff'||t==='jdd'||t==='csg')?3:0;
+const HULLS=(bx,by,n)=>{const sp=18/n,w=sp-.7;return Array.from({length:n},(_,i)=>{const x0=bx+.35+i*sp,y0=by+7.6-(n===3?(i===1?1.6:0):(i===1?1.2:0));return '<path class="sym" data-h="1" d="M'+x0.toFixed(1)+' '+y0.toFixed(1)+'h'+w.toFixed(1)+'l-1 1.9h-'+(w-2).toFixed(1)+'z"/><path class="sym" d="M'+(x0+w*.26).toFixed(1)+' '+y0.toFixed(1)+'v-1.8h'+(w*.48).toFixed(1)+'v1.8"/>';}).join('');};
 function unitSVG(u,withSmoke){
   const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy,stacked=sx!==0,T=TYPES[u.type];
   const done=S.started&&u.side===S.phase&&u.acted,sel=S.sel===u||!!(u.boundTo&&S.sel&&S.sel.id===u.boundTo),yy=y-2;
@@ -342,14 +342,15 @@ function unitSVG(u,withSmoke){
   const box='<rect class="sym" x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'"'+(u.type==='res'?' stroke-dasharray="2 1.5"':'')+'/>';
   const X='<path class="sym" d="M'+bx+' '+by+'L'+(bx+bw)+' '+(by+bh)+'M'+(bx+bw)+' '+by+'L'+bx+' '+(by+bh)+'"/>';
   if(u.type==='arm'||u.type==='tank')sym=box+'<ellipse class="sym" cx="'+x+'" cy="'+(by+5)+'" rx="6" ry="3"/>';
-  else if(u.type==='cv'||u.type==='csg'||u.type==='ddh')sym=box+'<path class="sym" d="M'+(x-8)+' '+(by+5.5)+'h16l-1.2 3h-13.6z"/><path class="sym" d="M'+(x+2)+' '+(by+5.5)+'v-2.6h3v2.6"/>';
+  else if(u.type==='csg')sym=box+HULLS(bx,by,3);
+  else if(u.type==='cv'||u.type==='ddh')sym=box+'<path class="sym" d="M'+(x-8)+' '+(by+5.5)+'h16l-1.2 3h-13.6z"/><path class="sym" d="M'+(x+2)+' '+(by+5.5)+'v-2.6h3v2.6"/>';
   else if(u.type==='hk'||u.type==='ssn'||u.type==='psub')sym=box+'<path class="sym" d="M'+(x-8)+' '+(by+7)+'q8-8 16 0z"/><path class="sym" d="M'+(x-1)+' '+(by+3)+'h3v3h-3z"/>';
-  else if(u.type==='dd'||u.type==='ff'||u.type==='jdd')sym=box+HULLS(bx,by);
+  else if(u.type==='dd'||u.type==='ff'||u.type==='jdd')sym=box+HULLS(bx,by,HULLN(u.type));
   else if(!!SHIPW[u.type]&&u.type!=='jdd')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+6)+'h14l-2 3h-10z"/><path class="sym" d="M'+(x-2)+' '+(by+6)+'v-3h4v3"/>';
   else if(u.type==='hmr'||u.type==='mlrs')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+8)+'h12M'+(x-4)+' '+(by+7.5)+'l7 -5M'+(x-1)+' '+(by+7.5)+'l7 -5M'+(x+2)+
       ' '+(by+7.5)+'l5 -3.5"/><circle class="sym" cx="'+(x-4)+'" cy="'+(by+8.6)+'" r="1"/><circle class="sym" cx="'+(x+4)+'" cy="'+(by+8.6)+'" r="1"/>';
   else if(u.type==='ssm'||u.type==='nme'||u.type==='mdt')sym=box+'<path class="sym" d="M'+(x-5)+' '+(by+8)+'L'+x+' '+(by+2)+'L'+(x+5)+' '+(by+8)+'M'+x+' '+(by+2)+'V'+(by+9)+'"/>';
-  else if(u.type==='lst'||u.type==='ro'||u.type==='cvy')sym=box+HULLS(bx,by);
+  else if(u.type==='lst'||u.type==='ro'||u.type==='cvy')sym=box+HULLS(bx,by,3);
   else if(u.type==='fob')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+8)+'h12M'+(x-4)+' '+(by+8)+'v-5h8v5"/>';
   else if(u.type==='heli')sym=box+'<path class="sym" d="M'+(x-7)+' '+(by+3)+'h14M'+x+' '+(by+3)+'v2M'+(x-4)+' '+(by+7)+'q4 -3 7 0q-3 2.5 -7 0zM'+(x+3)+' '+(by+7)+'h4"/>';
   else if(u.type==='sam')sym=box+'<path class="sym" d="M'+(x-6)+' '+(by+9)+'Q'+x+' '+(by-1)+' '+(x+6)+' '+(by+9)+'M'+x+' '+(by+9)+'V'+(by+3)+'"/>';
@@ -374,7 +375,7 @@ function unitSVG(u,withSmoke){
   const wf=US/(16/26*1.18),wake=sea&&LITE?'<ellipse class="wk still" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':sea?'<ellipse class="wk" cx="'+
       x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/><ellipse class="wk w2" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':'';
   return '<g class="u'+(sel?' sel':'')+(done?' done':'')+(ooa?' ooa':'')+'" data-k="'+K(u.c,u.r)+'" data-id="'+u.id+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+wake+
-    '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')">'+(GRPSHIP(u.type)?'<rect class="ugh '+u.side+'" x="'+(x-9)+'" y="'+(y-19)+'" width="30" height="23" rx="3"/><rect class="ugh '+u.side+'" x="'+(x-12)+'" y="'+(y-16.5)+'" width="30" height="23" rx="3"/>':'')+'<ellipse class="ush" cx="'+x+'" cy="'+(y+11)+'" rx="16" ry="5"/>'+
+    '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')">'+'<ellipse class="ush" cx="'+x+'" cy="'+(y+11)+'" rx="16" ry="5"/>'+
     '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
     '<rect class="body '+u.side+' c'+unitCat(u.type)+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="23" rx="3"/>'+
     '<rect class="uhi" x="'+(x-13)+'" y="'+(y-13)+'" width="26" height="3" rx="1.5"/>'+sym+
