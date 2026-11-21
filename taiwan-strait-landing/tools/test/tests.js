@@ -166,6 +166,13 @@ add('滾裝船團依旅型有船數：輕型 4、重型 10，每少一艘旅按�
   r.push([o.ret.a1===0&&o.ret.a2===1,'返航補回運力：第 1 個剩 5／10 補 0（累計 0.5），第 2 個再補 1（累計 1.0） '+JSON.stringify(o.ret)]);
   r.push(...noErr(p,'滾裝船團船數'));await p.close();return r;});
 
+add('平潭島 3 格＋兩座橋（只畫圖）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});const r=[];
+  const o=await p.evaluate(()=>{const pt=Object.values(TER).filter(h=>h.pt);const ll=pt.map(h=>rcToLL(h.c,h.r));const span=[Math.max(...ll.map(x=>x[1]))-Math.min(...ll.map(x=>x[1])),Math.max(...ll.map(x=>x[0]))-Math.min(...ll.map(x=>x[0]))];
+    return {n:pt.length,land:pt.every(h=>h.isl==='CN'&&h.t!=='sea'),port:pt.some(h=>h.name==='平潭'&&h.t==='port'),span,brg:document.querySelectorAll('#gS .brg .bk').length,lbl:[...document.querySelectorAll('#gS .brg text')].map(e=>e.textContent).join(),conn:(()=>{const k=Object.values(TER).filter(h=>h.pt)[0];return nbrs(k.c,k.r).some(n=>n&&n.pt);})()};});
+  r.push([o.n===3&&o.land&&o.port&&o.span[0]>=.14&&o.conn,'平潭島 '+o.n+' 格（南北 '+(o.span[0]*111).toFixed(0)+' km 的格中心跨度，彼此相鄰，含港口格）']);
+  r.push([o.brg===2&&o.lbl==='公鐵大橋,跨海大橋','地圖上畫了兩座橋：'+o.lbl]);
+  r.push(...noErr(p,'平潭'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
