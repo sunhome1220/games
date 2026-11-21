@@ -414,6 +414,8 @@ function stNaval(u,h,st){
         ' 枚（射程 '+kmOf(c.w.asmR)+' km，對艦打擊距離 '+kmOf(c.w.r+c.w.asmR)+' km）'+(sp?'；本回合任務：制空 '+Math.round(sp[0]*100)+'%、對艦 '+Math.round(sp[1]*100)+'%、對地 '+Math.round(sp[2]*100)+'%':''));
       }}
   if(u.fl){const A=fleetAgg(u);st.push('組成：'+fleetTxt(u)+'；防空涵蓋 '+kmOf(A.adR)+' km、反艦飛彈（'+fleetWn(u)+'）射程 '+kmOf(A.asmR)+' km，每艘每次齊射 '+FLEET_PER+' 枚');}
+  if(u.type==='dd'){const a=SHIPW.d52,b=SHIPW.f54; // 護航艦棋子＝052D＋054A 一對（2 步＝2 艘）：列出各艘的數字，加起來就是這個棋子的防空（DDW）
+    st.push('組成：052D＋054A 各 1 艘（2 步＝2 艘，受損 1 步少一艘）：052D 防空彈 '+a.ad+' 枚、涵蓋 '+kmOf(a.adR)+' km、同時接戰 '+a.chan+' 枚；054A 防空彈 '+b.ad+' 枚、涵蓋 '+kmOf(b.adR)+' km、同時接戰 '+b.chan+' 枚；合計 '+(a.ad+b.ad)+' 枚、同時接戰 '+(a.chan+b.chan)+' 枚（目前防空彈 '+Math.round(u.mag?u.mag.ad:0)+'）。這個棋子只負責防空，反艦飛彈（鷹擊-18／鷹擊-83）不列入。');}
   if(isEsc(u)&&u.mag){const W=SHIPW[u.type];st.push('防空涵蓋 '+kmOf(W.adR)+' km、'+W.asmN+'射程 '+kmOf(W.asmR)+' km；海上不能補充垂直發射管；跟著航艦移動');}
 }
 // 單位狀態說明：武器單位：火箭砲、海馬士、美日飛彈、潛艦的彈藥與射擊次數

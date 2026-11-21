@@ -143,6 +143,11 @@ add('電腦攻方護航艦：沒有運輸船時退回大陸港口，有運輸船
   r.push([o.after<o.before,'海上沒有己方運輸船：護航艦朝大陸港口退（距離 '+o.before+' → '+o.after+' 格）']);
   r.push(...noErr(p,'護航艦待命'));await p.close();return r;});
 
+add('護航艦棋子資訊卡：列出 052D 與 054A 各自的數字','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:3});const r=[];await L.startGame(p);
+  const o=await p.evaluate(()=>{const u=S.units.find(x=>x.type==='dd'&&x.side==='atk'&&alive(x));const st=[];stNaval(u,hexOf(u),st);const a=SHIPW.d52,b=SHIPW.f54;return {t:st.join('|'),sum:[a.ad+b.ad===DDW.ad,a.chan+b.chan===DDW.chan]};});
+  r.push([/052D 防空彈 48 枚/.test(o.t)&&/054A 防空彈 32 枚/.test(o.t)&&/合計 80 枚、同時接戰 6 枚/.test(o.t)&&o.sum[0]&&o.sum[1],'資訊卡列出 052D 48／054A 32、合計 80（等於棋子的防空數字）']);
+  r.push(...noErr(p,'護航艦資訊卡'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);
