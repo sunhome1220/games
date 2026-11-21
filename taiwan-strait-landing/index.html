@@ -151,8 +151,8 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 #map.zlo .lbl.minor,#map.zlo .u .tx,#map.zlo .u .pip{display:none} /* 縮小時：只留勝負要點地名；棋子只留兵種符號 */
 .mine{opacity:.95} svg.lgm{vertical-align:-4px;margin-right:2px} .far{opacity:.8} .fclick{cursor:pointer;pointer-events:all} .tl-far.fclick:hover{filter:brightness(1.08)} .far-lbl{font-size:8.5px;text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:600;fill:var(--ink)}
 .far-tag{font-size:7px;text-anchor:middle;pointer-events:none;font-family:var(--f-body);font-weight:700}
-.rr{fill:none;stroke-width:1.2;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linejoin:round}.rr.atk{stroke:var(--atk)}.rr.def{stroke:var(--def)}.rr.ad.atk{fill:var(--atk);fill-opacity:.07;stroke-opacity:.55;stroke-width:1}.rr.ad.def{fill:var(--def);fill-opacity:.07;stroke-opacity:.55;stroke-width:1}.rr.r{stroke-dasharray:8 6}.rr.d{stroke-dasharray:1 5;stroke-linecap:round}.rr.x{stroke-dasharray:10 4 1 4;stroke-linecap:round}.rrl{font-size:11px;font-weight:800;pointer-events:none;paint-order:stroke;stroke:var(--panel);stroke-width:3px}
-#map .rrl{font-size:calc(11px*var(--ik,1));stroke-width:calc(3px*var(--ik,1))} /* 地圖上的射程圈文字：固定螢幕大小，不隨縮放變大 */.rrl.atk{fill:var(--atk)}.rrl.def{fill:var(--def)}#btnRng[aria-pressed=true]{background:var(--ink);color:var(--panel)}
+.rr{fill:none;stroke-width:1.2;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linejoin:round}.rr.atk{stroke:var(--atk)}.rr.def{stroke:var(--def)}.rr.ad.atk{fill:var(--atk);fill-opacity:.07;stroke-opacity:.55;stroke-width:1}.rr.ad.def{fill:var(--def);fill-opacity:.07;stroke-opacity:.55;stroke-width:1}.rr.r{stroke-dasharray:8 6}.rr.u2{stroke-width:2.4}.rr.d{stroke-dasharray:1 5;stroke-linecap:round}.rr.x{stroke-dasharray:10 4 1 4;stroke-linecap:round}.rrl{font-size:11px;font-weight:800;pointer-events:none;paint-order:stroke;stroke:var(--panel);stroke-width:3px}
+#map .rrl{font-size:calc(11px*var(--ik,1));stroke-width:calc(3px*var(--ik,1))} /* 地圖上的射程圈文字：固定螢幕大小，不隨縮放變大 */.rrl.atk{fill:var(--atk)}.rrl.def{fill:var(--def)}#btnRng[aria-pressed=true],#btnRngA[aria-pressed=true]{background:var(--ink);color:var(--panel)}
 #rngLeg{position:fixed;z-index:15;display:none;pointer-events:none;background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);border-radius:6px;padding:4px 8px;box-shadow:0 1px 4px rgba(0,0,0,.2)}#rngLeg div{display:flex;align-items:center;gap:6px;line-height:1.5}#rngLeg svg{flex:none}#rngLeg .rrl{font-size:12px;stroke:none}
 .cvord{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.cvord button{flex:1 1 140px}
 .fltab{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;margin:6px 0}.fltab th,.fltab td{padding:3px 3px;border-bottom:1px solid var(--line);text-align:right;overflow-wrap:anywhere}.fltab th:first-child,.fltab td:first-child{text-align:left;width:30%}.ucard .fltab{font-size:11px}.ucard .fltab th,.ucard .fltab td{padding:2px 2px}.fltab th{color:var(--muted);font-weight:600}.flthr{font-size:12px;margin:4px 0 0;padding-left:16px}.flthr li{margin:2px 0}.flthr .in{color:#c0392b;font-weight:700}.flthr .out{color:var(--muted)}
@@ -759,6 +759,7 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
         <button class="ghost" id="btnFs" aria-label="全螢幕" title="全螢幕">⛶<span class="bl"> 全螢幕</span></button>
         <button class="ghost" id="btnLand" aria-pressed="false" aria-label="登陸提示" title="選了要登陸的旅後，在地圖上標出各處適合的登陸方式（搶灘、港口卸載、浮動碼頭、空降）與推薦位置" hidden>⚓<span class="bl"> 登陸提示</span></button>
         <button class="ghost" id="btnRng" aria-pressed="false" aria-label="射程" title="顯示雙方航艦艦隊的防空傘與艦載機對艦打擊距離">◎<span class="bl"> 射程</span></button>
+        <button class="ghost" id="btnRngA" aria-pressed="false" aria-label="攻擊範圍" title="顯示所有岸置反艦飛彈、艦隊反艦飛彈、海馬士、雷霆的攻擊範圍（虛線圈）">⌖<span class="bl"> 攻擊</span></button>
         <span class="dd">Ctrl＋滾輪可縮放；縮小可看外圍示意區（美中日各方投射武力的基地與海域），放大後可拖曳</span>
       </div>
       <div class="mapwrap"><svg id="map" role="img" aria-label="台灣海峽六角格地圖"><defs id="mdefs"></defs><g id="gX"></g><g id="gS"></g><g id="gE"></g><g id="gD"></g><g id="gL" style="pointer-events:none"></g><g id="gF" style="pointer-events:none"></g></svg><button class="loc" id="btnLoc" aria-label="回到台灣" title="回到台灣"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3.5 11.2 20.5 3.5 12.8 20.5 11 13Z" fill="#1a73e8" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg></button></div>
@@ -928,61 +929,61 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-18.46' -->
-<script src="js/i18n/dict.js?v=2026-11-18.46"></script>
-<script src="js/i18n/i18n.js?v=2026-11-18.46"></script>
-<script src="js/ui/btnfix.js?v=2026-11-18.46"></script>
-<script src="js/data/geo.js?v=2026-11-18.46"></script>
-<script src="js/data/dem.js?v=2026-11-18.46"></script>
-<script src="js/data/urban.js?v=2026-11-18.46"></script>
-<script src="js/data/outer.js?v=2026-11-18.46"></script>
-<script src="js/core/map.js?v=2026-11-18.46"></script>
-<script src="js/core/state.js?v=2026-11-18.46"></script>
-<script src="js/rules/sealift.js?v=2026-11-18.46"></script>
-<script src="js/rules/rules.js?v=2026-11-18.46"></script>
-<script src="js/rules/killchain.js?v=2026-11-18.46"></script>
-<script src="js/rules/verdict.js?v=2026-11-18.46"></script>
-<script src="js/rules/supply.js?v=2026-11-18.46"></script>
-<script src="js/rules/ending.js?v=2026-11-18.46"></script>
-<script src="js/rules/theater.js?v=2026-11-18.46"></script>
-<script src="js/rules/airwar.js?v=2026-11-18.46"></script>
-<script src="js/rules/sam.js?v=2026-11-18.46"></script>
-<script src="js/rules/carrier.js?v=2026-11-18.46"></script>
-<script src="js/rules/asw.js?v=2026-11-18.46"></script>
-<script src="js/rules/psub.js?v=2026-11-18.46"></script>
-<script src="js/rules/subauto.js?v=2026-11-18.46"></script>
-<script src="js/rules/lha.js?v=2026-11-18.46"></script>
-<script src="js/rules/strike.js?v=2026-11-18.46"></script>
-<script src="js/rules/airstrike.js?v=2026-11-18.46"></script>
-<script src="js/rules/heli.js?v=2026-11-18.46"></script>
-<script src="js/rules/decisions.js?v=2026-11-18.46"></script>
-<script src="js/media/report.js?v=2026-11-18.46"></script>
-<script src="js/rules/weather.js?v=2026-11-18.46"></script>
-<script src="js/rules/truce.js?v=2026-11-18.46"></script>
-<script src="js/rules/allies.js?v=2026-11-18.46"></script>
-<script src="js/rules/turn.js?v=2026-11-18.46"></script>
-<script src="js/rules/ai.js?v=2026-11-18.46"></script>
-<script src="js/ui/render.js?v=2026-11-18.46"></script>
-<script src="js/ui/render_outer.js?v=2026-11-18.46"></script>
-<script src="js/ui/render_bases.js?v=2026-11-18.46"></script>
-<script src="js/ui/landtips.js?v=2026-11-18.46"></script>
-<script src="js/ui/fxanim.js?v=2026-11-18.46"></script>
-<script src="js/ui/fx.js?v=2026-11-18.46"></script>
-<script src="js/ui/modebar.js?v=2026-11-18.46"></script>
-<script src="js/ui/jank.js?v=2026-11-18.46"></script>
-<script src="js/ui/ammo.js?v=2026-11-18.46"></script>
-<script src="js/ui/mobilecard.js?v=2026-11-18.46"></script>
-<script src="js/media/video.js?v=2026-11-18.46"></script>
-<script src="js/media/stats.js?v=2026-11-18.46"></script>
-<script src="js/ui/input.js?v=2026-11-18.46"></script>
-<script src="js/media/unitinfo.js?v=2026-11-18.46"></script>
-<script src="js/version.js?v=2026-11-18.46"></script>
-<script src="js/core/changelog.js?v=2026-11-18.46"></script>
-<script src="js/core/app.js?v=2026-11-18.46"></script>
-<script src="js/missions/common.js?v=2026-11-18.46"></script>
-<script src="js/missions/carrier.js?v=2026-11-18.46"></script>
-<script src="js/missions/port.js?v=2026-11-18.46"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-18.47' -->
+<script src="js/i18n/dict.js?v=2026-11-18.47"></script>
+<script src="js/i18n/i18n.js?v=2026-11-18.47"></script>
+<script src="js/ui/btnfix.js?v=2026-11-18.47"></script>
+<script src="js/data/geo.js?v=2026-11-18.47"></script>
+<script src="js/data/dem.js?v=2026-11-18.47"></script>
+<script src="js/data/urban.js?v=2026-11-18.47"></script>
+<script src="js/data/outer.js?v=2026-11-18.47"></script>
+<script src="js/core/map.js?v=2026-11-18.47"></script>
+<script src="js/core/state.js?v=2026-11-18.47"></script>
+<script src="js/rules/sealift.js?v=2026-11-18.47"></script>
+<script src="js/rules/rules.js?v=2026-11-18.47"></script>
+<script src="js/rules/killchain.js?v=2026-11-18.47"></script>
+<script src="js/rules/verdict.js?v=2026-11-18.47"></script>
+<script src="js/rules/supply.js?v=2026-11-18.47"></script>
+<script src="js/rules/ending.js?v=2026-11-18.47"></script>
+<script src="js/rules/theater.js?v=2026-11-18.47"></script>
+<script src="js/rules/airwar.js?v=2026-11-18.47"></script>
+<script src="js/rules/sam.js?v=2026-11-18.47"></script>
+<script src="js/rules/carrier.js?v=2026-11-18.47"></script>
+<script src="js/rules/asw.js?v=2026-11-18.47"></script>
+<script src="js/rules/psub.js?v=2026-11-18.47"></script>
+<script src="js/rules/subauto.js?v=2026-11-18.47"></script>
+<script src="js/rules/lha.js?v=2026-11-18.47"></script>
+<script src="js/rules/strike.js?v=2026-11-18.47"></script>
+<script src="js/rules/airstrike.js?v=2026-11-18.47"></script>
+<script src="js/rules/heli.js?v=2026-11-18.47"></script>
+<script src="js/rules/decisions.js?v=2026-11-18.47"></script>
+<script src="js/media/report.js?v=2026-11-18.47"></script>
+<script src="js/rules/weather.js?v=2026-11-18.47"></script>
+<script src="js/rules/truce.js?v=2026-11-18.47"></script>
+<script src="js/rules/allies.js?v=2026-11-18.47"></script>
+<script src="js/rules/turn.js?v=2026-11-18.47"></script>
+<script src="js/rules/ai.js?v=2026-11-18.47"></script>
+<script src="js/ui/render.js?v=2026-11-18.47"></script>
+<script src="js/ui/render_outer.js?v=2026-11-18.47"></script>
+<script src="js/ui/render_bases.js?v=2026-11-18.47"></script>
+<script src="js/ui/landtips.js?v=2026-11-18.47"></script>
+<script src="js/ui/fxanim.js?v=2026-11-18.47"></script>
+<script src="js/ui/fx.js?v=2026-11-18.47"></script>
+<script src="js/ui/modebar.js?v=2026-11-18.47"></script>
+<script src="js/ui/jank.js?v=2026-11-18.47"></script>
+<script src="js/ui/ammo.js?v=2026-11-18.47"></script>
+<script src="js/ui/mobilecard.js?v=2026-11-18.47"></script>
+<script src="js/media/video.js?v=2026-11-18.47"></script>
+<script src="js/media/stats.js?v=2026-11-18.47"></script>
+<script src="js/ui/input.js?v=2026-11-18.47"></script>
+<script src="js/media/unitinfo.js?v=2026-11-18.47"></script>
+<script src="js/version.js?v=2026-11-18.47"></script>
+<script src="js/core/changelog.js?v=2026-11-18.47"></script>
+<script src="js/core/app.js?v=2026-11-18.47"></script>
+<script src="js/missions/common.js?v=2026-11-18.47"></script>
+<script src="js/missions/carrier.js?v=2026-11-18.47"></script>
+<script src="js/missions/port.js?v=2026-11-18.47"></script>
 <script>if(missionId())setTimeout(()=>missionStart(missionId()),0);</script>
-<script src="js/ui/gamepad.js?v=2026-11-18.46"></script>
+<script src="js/ui/gamepad.js?v=2026-11-18.47"></script>
 </body>
 </html>
