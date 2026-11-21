@@ -171,10 +171,10 @@ async function aiAtkCarrier(u,C){const {h}=C;
   }
   return false;
 }
-// 電腦攻方：護航棋子貼近己方船團，否則朝登陸區靠攏
+// 電腦攻方：護航棋子貼近己方船團，沒有船團時退回大陸港口待命
 async function aiAtkEscort(u,C){const {h}=C;
   if(u.type==='dd'){ // 護航艦：貼近己方船團，否則朝登陸區靠攏
-    const tr=S.units.filter(x=>x.side==='atk'&&x!==u&&!isShip(x)&&atSea(x)),goals=tr.length?tr.map(x=>K(x.c,x.r)):ZONES[aiPlan().zone];
+    const tr=S.units.filter(x=>x.side==='atk'&&x!==u&&!isShip(x)&&atSea(x)),goals=tr.length?tr.map(x=>K(x.c,x.r)):terList('cnPorts',h=>h.t==='port'&&h.isl==='CN').map(h=>h.k); // 護航的任務是護送：海上沒有己方運輸船時，退回大陸港口外海待命（不再單獨堆在敵方射程內的登陸區），運輸船出航後再跟上
     const rc=reach(u);let best=null,bs=minD(h.k,goals)+ssmThreat(h.k)*.6;
     for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+ssmThreat(k)*.6+Math.random()*.3-(tr.some(x=>hd(TER[k],hexOf(x))<=kmH(40))?.8:0);if(s<bs-.2){bs=s;best=k;}}
     if(best){doMove(u,best,'sail');render();await sleep(260);}
