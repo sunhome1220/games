@@ -274,6 +274,14 @@ const SPOTC={};
     if(h.t!=='sea')continue;const [lon,lat]=rcToLL(h.c,h.r);
     if(typeof GEO_CN!=='undefined'?gCover(h,GEO_CN)>=.5:inPoly(lon,lat,poly)){h.t='main';h.isl='CN';h.lon=lon;h.lat=lat;cn.push(h);}
   }
+  { // 平潭島（海壇島）：南北約 29 km、東西約 19 km、約 270 km²，單一格（約 87 km²）太小；取這個島嶼多邊形覆蓋率最高的 3 格（覆蓋率相同時取最靠島中央經度的，沿島的南北長軸）
+    const ex=P=>{const xs=P.map(q=>q[0]),ys=P.map(q=>q[1]);return [Math.min(...xs),Math.max(...xs),Math.min(...ys),Math.max(...ys)];};
+    const PTP=typeof GEO_CN!=='undefined'?GEO_CN.find(P=>{if(P.length>=100)return false;const [a,b,c,d]=ex(P);return a>119.6&&b<119.95&&c>25.3&&d<25.75;}):null;
+    if(PTP){const [x0,x1]=ex(PTP),cx=(x0+x1)/2;
+      Object.values(TER).filter(h=>{const [lo,la]=rcToLL(h.c,h.r);return lo>119.5&&lo<120.1&&la>25.3&&la<25.8;}).map(h=>[h,gCover(h,[PTP])]).filter(x=>x[1]>=.25)
+        .sort((a,b)=>b[1]-a[1]||Math.abs(rcToLL(a[0].c,a[0].r)[0]-cx)-Math.abs(rcToLL(b[0].c,b[0].r)[0]-cx)).slice(0,3)
+        .forEach(([h])=>{h.pt=1;if(h.t==='sea'){const [lon,lat]=rcToLL(h.c,h.r);h.t='main';h.isl='CN';h.lon=lon;h.lat=lat;cn.push(h);}});}
+  }
   const coastalC=h=>nbrs(h.c,h.r).some(n=>n.t==='sea');
   const dist=(h,lon,lat)=>Math.hypot((rcToLL(h.c,h.r)[0]-lon)/GEO.dlon,(rcToLL(h.c,h.r)[1]-lat)/GEO.dlat);
   const nearC=(lon,lat,filter)=>{let best=null,bd=1e9;for(const h of cn){if(filter&&!filter(h))continue;const d=dist(h,lon,lat);if(d<bd){bd=d;best=h;}}return best;};
@@ -284,7 +292,7 @@ const SPOTC={};
   put('liancheng','連城','air',116.75,25.7);put('longhai','龍海','air',117.82,24.43);put('gaoqi','高崎','air',118.1,24.56);put('chaoshan','潮汕','air',116.5,23.56);
   const AN={fuding:[120.2,26.7],lianjiang:[119.6,26.25],fuzhou:[119.62,26.0],pingtan:[119.78,25.52],putian:[119.1,25.3],huian:[118.9,25.0],quanzhou:[118.65,24.85],jinjiang:[118.55,24.7],xiamen:[118.12,24.46],dongshan:[117.5,23.75],shantou:[116.72,23.36]};
   const used={};
-  const pick=(an,i)=>{const [lon,lat]=AN[an];const list=cn.filter(h=>coastalC(h)).sort((a,b)=>dist(a,lon,lat)-dist(b,lon,lat));return list[i]||list[0];};
+  const pick=(an,i)=>{const [lon,lat]=AN[an];const list=cn.filter(h=>coastalC(h)&&!h.pt).sort((a,b)=>dist(a,lon,lat)-dist(b,lon,lat));return list[i]||list[0];};
   const M={'3,0':['fuding',0],'4,-1':['fuding',1],'4,-2':['fuding',2],'3,1':['lianjiang',0],'3,2':['fuzhou',1],'3,3':['fuzhou',0],'4,4':['pingtan',0],'3,4':['pingtan',
       1],'3,5':['putian',0],'3,6':['huian',0],'3,7':['quanzhou',0],'2,8':['jinjiang',0],'2,9':['xiamen',0],'2,10':['xiamen',1],'1,9':['xiamen',2],'1,10':['dongshan',0],
       '1,14':['shantou',1],'1,15':['shantou',0]};
