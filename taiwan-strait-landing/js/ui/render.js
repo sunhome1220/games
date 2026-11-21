@@ -110,7 +110,21 @@ function fleetPanelHTML(u){
   }
   return h;
 }
-let RNG_ALL=false;try{RNG_ALL=localStorage.getItem('tsl-rng')==='1';}catch(e){}
+let RNG_ALL=false,RNG_ATK=false;try{RNG_ALL=localStorage.getItem('tsl-rng')==='1';RNG_ATK=localStorage.getItem('tsl-rnga')==='1';}catch(e){}
+// 「攻擊」鈕：畫出所有看得到的火力單位的攻擊範圍（虛線圈）——岸置雄風 160 km／魚叉岸防 120 km、艦隊與護航艦的反艦飛彈、海馬士火箭 80 km、雷霆 40 km、NMESIS、堤豐。同種類同射程只標一次文字，避免太雜
+function atkRingsSVG(skip){
+  const o=[],lbl=[],seen=new Set();let n=0;
+  const add=(u,R,txt)=>{if(!(R>0))return;const key=u.side+txt;const first=!seen.has(key);seen.add(key);rrRing(o,lbl,u.c,u.r,R,'r',u.side,first?txt:'',true);
+    if(first)RNG_LEG.push({cls:'r',sd:u.side,txt});n++;};
+  for(const u of S.units){if(!alive(u)||u===skip||subHidden(u)||(u.ship&&atSea(u)))continue;
+    if(u.type==='ssm'){if(ssmStock(u)>0)add(u,ssmHp(u)?kmH(120):kmH(160),ssmHp(u)?'魚叉岸防 120 km':'雄風 160 km');}
+    else if(u.fl){const A=fleetAgg(u);if(A.asmR&&(!u.mag||u.mag.asm>0))add(u,A.asmR,'艦隊反艦飛彈 '+kmOf(A.asmR)+' km');}
+    else if(u.type==='hmr')add(u,kmH(80),'海馬士火箭 80 km');
+    else if(u.type==='mlrs')add(u,kmH(40),'雷霆 40 km');
+    else if(u.type==='nme'&&u.mag&&u.mag.asm>0)add(u,NME.R,'NMESIS '+kmOf(NME.R)+' km');
+    else if(u.type==='mdt'&&u.mag&&u.mag.asm>0)add(u,MDT.R,'堤豐 '+kmOf(MDT.R)+' km');
+    else if(isEsc(u)&&u.mag&&u.mag.asm>0&&SHIPW[u.type]&&SHIPW[u.type].asmR)add(u,SHIPW[u.type].asmR,SHIPW[u.type].asmN+' '+kmOf(SHIPW[u.type].asmR)+' km');}
+  return o.join('')+lbl.join('');}
 // 台澎海岸線（沿陸地格靠海的邊，和凸起的地塊對齊）、主要河流（★依河口與主要經過點手繪的近似線，誤差約 5～10 km，只是地圖標示、不影響規則）、玉山
 const RIVERS=[['淡水河',[[121.41,25.18],[121.46,25.12],[121.49,25.06],[121.46,25.01],[121.40,24.95],[121.33,24.88]]],
   ['頭前溪',[[120.93,24.85],[121.00,24.82],[121.07,24.80],[121.13,24.77]]],

@@ -122,6 +122,14 @@ add('地圖實際尺寸 ×2（百分比範圍不變）','medium',async c=>{const
   r.push([o.lim.join()==='10,0.8'&&o.lab==='300%','百分比範圍不變：最大 1000%、最小 80%、預設 300% '+o.lim.join('／')]);
   r.push(...noErr(p,'地圖尺寸'));await p.close();return r;});
 
+add('「攻擊」鈕：畫出所有火力單位的攻擊範圍圈','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
+  const n0=await p.evaluate(()=>document.querySelectorAll('#map .rr').length);await p.click('#btnRngA');await p.waitForTimeout(300);
+  const a=await p.evaluate(()=>({n:document.querySelectorAll('#map .rr.r').length,leg:[...document.querySelectorAll('#rngLeg span')].map(x=>x.textContent).join('|'),on:document.getElementById('btnRngA').getAttribute('aria-pressed'),ls:localStorage.getItem('tsl-rnga')}));
+  r.push([n0===0&&a.n>=5&&a.on==='true'&&a.ls==='1'&&/雄風 160 km/.test(a.leg)&&/海馬士火箭 80 km/.test(a.leg),'按「攻擊」：畫出 '+a.n+' 個攻擊範圍圈，圖例 '+a.leg.slice(0,60)]);
+  await p.click('#btnRngA');await p.waitForTimeout(300);
+  r.push([await p.evaluate(()=>document.querySelectorAll('#map .rr').length===0&&document.getElementById('btnRngA').getAttribute('aria-pressed')==='false'),'再按一次：圈全部消失']);
+  r.push(...noErr(p,'攻擊範圍'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);

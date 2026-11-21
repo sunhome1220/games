@@ -319,7 +319,7 @@ function fitZoom(){
   setZoom(Math.max(ZMIN,Math.min(1,(w.clientHeight-4)/h1/ZB)),true);
 }
 $('#btnFs').onclick=()=>setFs(true);
-{const b=$('#btnRng');if(b){b.setAttribute('aria-pressed',RNG_ALL);b.onclick=()=>{RNG_ALL=!RNG_ALL;b.setAttribute('aria-pressed',RNG_ALL);try{localStorage.setItem('tsl-rng',RNG_ALL?'1':'0');}catch(e){}renderMap();};}}$('#fsExit').onclick=()=>setFs(false);
+{const b=$('#btnRng');if(b){b.setAttribute('aria-pressed',RNG_ALL);b.onclick=()=>{RNG_ALL=!RNG_ALL;b.setAttribute('aria-pressed',RNG_ALL);try{localStorage.setItem('tsl-rng',RNG_ALL?'1':'0');}catch(e){}renderMap();};}}{const b=$('#btnRngA');if(b){b.setAttribute('aria-pressed',RNG_ATK);b.onclick=()=>{RNG_ATK=!RNG_ATK;b.setAttribute('aria-pressed',RNG_ATK);try{localStorage.setItem('tsl-rnga',RNG_ATK?'1':'0');}catch(e){}renderMap();};}}$('#fsExit').onclick=()=>setFs(false);
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('mapfs')){document.body.classList.remove("mapfs");setZoom(savedZoom||1,
     true);}else if(document.fullscreenElement&&document.body.classList.contains('mapfs'))requestAnimationFrame(fitZoom);});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('mapfs'))setFs(false);});

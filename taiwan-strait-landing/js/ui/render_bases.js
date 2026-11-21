@@ -78,6 +78,7 @@ function mapOverlaySVG(){let o='';
 function mapUnitsSVG(){let o='',smk='';RNG_LEG=[];
   {const iu=S.sel&&alive(S.sel)?S.sel:(S.hoverId?S.units.find(x=>x.id===S.hoverId):null); // 射程圈：一鍵全開時畫雙方所有航艦艦隊；點選（或游標停在）艦艇時畫該艦
    if(S.started&&RNG_ALL)S.units.filter(x=>(x.type==='cv'||x.type==='csg'||x.type==='ddh'||x.type==='sam')&&alive(x)&&x!==iu).forEach(x=>{o+=rangeRingsSVG(x,true);});
+   if(S.started&&RNG_ATK)o+=atkRingsSVG(iu);
    if(S.started&&iu&&(iu.type==='cv'||iu.type==='csg'||iu.type==='ddh'||isEsc(iu)||iu.fl||iu.type==='dd'||iu.type==='sam')&&!subHidden(iu))o+=rangeRingsSVG(iu,false);
    if(S.started){const bk=(S.mode==='afS'||S.mode==='afL'||S.mode==='afC')&&S.afK?S.afK:!iu&&S.baseSel&&S.baseSel===S.hover?S.baseSel:null;if(bk)o+=baseRingsSVG(bk);}
    if(S.started)o+=heliRangeSVG();
