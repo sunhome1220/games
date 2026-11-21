@@ -141,18 +141,22 @@ function mapTargetsSVG(){let o='';
   return o;}
 // 棋子移動的滑動動畫、新棋子淡入
 // 滑動時間依距離：每格約 85 ms（最短 300 ms、最長 1.9 秒），先加速再減速，遠距離移動（艦艇一回合 12 格）看得出是連續航行；超過 20 格（空降、新生成）不滑，改淡入
+const FIRE_WAIT=900; // 從舊位置開火的棋子，等這麼久（ms，乘動畫速度）才滑向新位置，讓開火動畫先從牠原本的位置發出（★近似值）
 const slideMs=dd=>Math.max(300,Math.min(1900,200+dd/HPX*85)),easeIO=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 function animateUnitSlides(){
   // slide units that moved since the previous render, pop in new ones
   const now=new Map(),act=new Map(),k=fxK(),t1=performance.now();ANIM.slid=false;ANIM.slidMs=0;
+  const srcs=(typeof FXQ!=='undefined'?FXQ:[]).filter(o=>Array.isArray(o.from)&&typeof o.from[0]==='number').map(o=>fxPos(o.from)); // 等待播放的火力動畫的出發點：從舊位置開火的棋子，先留在原地開火，播完才滑走（不然動畫會從空格冒出）
   document.querySelectorAll('#gD .u[data-id]').forEach(e=>{
     const id=+e.dataset.id,x=+e.dataset.x,y=+e.dataset.y;now.set(id,[x,y]);
     if(!ANIM.ok||ANIM.gid!==S.gid||reduce())return;
     const p=ANIM.pos.get(id);
-    if(p){let from=p;const a=ANIM.act&&ANIM.act.get(id);if(a&&t1-a.t0<a.dur){const q=easeIO((t1-a.t0)/a.dur);from=[a.fx+(a.tx-a.fx)*q,a.fy+(a.ty-a.fy)*q];} // 上一段還沒滑完又被重畫：從目前看到的位置接著滑，不跳
+    if(p){let from=p;const a=ANIM.act&&ANIM.act.get(id);if(a&&t1-a.t0<a.dur){const q=easeIO(Math.max(0,(t1-a.t0)/a.dur));from=[a.fx+(a.tx-a.fx)*q,a.fy+(a.ty-a.fy)*q];} // 上一段還沒滑完又被重畫：從目前看到的位置接著滑，不跳
       const dx=from[0]-x,dy=from[1]-y,dd=Math.hypot(dx,dy);
-      if(dd>1&&dd<HPX*20){const ms=slideMs(dd)*k;ANIM.slid=true;ANIM.slidMs=Math.max(ANIM.slidMs,ms);act.set(id,{fx:from[0],fy:from[1],tx:x,ty:y,t0:t1,dur:ms});
-        e.animate([{transform:'translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)'},{transform:'translate(0,0)'}],{duration:ms,easing:'ease-in-out'});}}
+      if(dd>1&&dd<HPX*20){const ms=slideMs(dd)*k,shot=srcs.some(q=>Math.hypot(q[0]-from[0],q[1]-from[1])<HPX*.6),dl=shot?FIRE_WAIT*k:0;
+        if(!shot){ANIM.slid=true;ANIM.slidMs=Math.max(ANIM.slidMs,ms);} // 先移動再開火的棋子：火力動畫等它滑到
+        act.set(id,{fx:from[0],fy:from[1],tx:x,ty:y,t0:t1+dl,dur:ms});
+        e.animate([{transform:'translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)'},{transform:'translate(0,0)'}],{duration:ms,delay:dl,fill:'backwards',easing:'ease-in-out'});}}
     else if(ANIM.pos.size)e.animate([{opacity:0,transform:'translateY(-14px)'},{opacity:1,transform:'translateY(0)'}],{duration:360*k,easing:'ease-out'});
   });
   ANIM.pos=now;ANIM.act=act;ANIM.gid=S.gid;
