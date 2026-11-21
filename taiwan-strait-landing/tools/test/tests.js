@@ -91,6 +91,16 @@ add('先由電腦推演 N 回合再接手、判定回合可選 16／24','medium'
   r.push([!b.over&&b.turn===4&&b.phase==='atk'&&b.ctl==='human/ai'&&!b.pre&&!b.auto&&b.sp===1,'第 4 回合攻方階段：操作權交還給玩家，自動模式關閉 '+JSON.stringify(b)]);
   r.push(...noErr(p,'先推演'));await p.close();return r;});
 
+add('棋子移動：連續滑動，時間依距離（遠的滑得久、超過 20 格不滑）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{});const r=[];await L.startGame(p);
+  const o=await p.evaluate(async()=>{const u=S.units.find(x=>x.side==='atk'&&(x.type==='amph'||x.type==='mar')&&alive(x)&&!x.ship&&hexOf(x).isl==='CN');
+    const rc=[...reach(u)].filter(([k,v])=>v.kind==='sail').map(([k])=>[k,hd(hexOf(u),TER[k])]).sort((a,b)=>a[1]-b[1]);const near=rc[1],far=rc[rc.length-1];
+    const dur=async(k)=>{const id=u.ship||u.id;humanMove(u,k,'sail');render();const sh=u.ship?S.units.find(x=>x.id===u.ship):u;const e=document.querySelector('#gD .u[data-id="'+u.id+'"]')||document.querySelector('#gD .u[data-id="'+(sh&&sh.id)+'"]');
+      const a=e?e.getAnimations().filter(x=>x.effect.getKeyframes().some(f=>f.transform)):[];return a.length?a[0].effect.getTiming().duration:0;};
+    const dFar=await dur(far[0]);return {far:far[1],dFar,farSlide:slideMs(far[1]*HPX),cap:HPX*20,slid:ANIM.slid,ms:ANIM.slidMs};});
+  r.push([o.dFar>=300&&o.dFar<=1900&&Math.abs(o.dFar-o.farSlide)<o.farSlide*.1,'滑動時間 '+Math.round(o.dFar)+' ms（距離 '+o.far+' 格，公式 '+Math.round(o.farSlide)+' ms，300～1900 ms）']);
+  r.push([await p.evaluate(()=>slideMs(HPX)===300&&slideMs(HPX*12)>800&&slideMs(HPX*40)===1900&&easeIO(.5)===.5&&easeIO(0)===0&&easeIO(1)===1),'時間公式：1 格 300 ms、12 格 >800 ms、上限 1,900 ms；先加速後減速']);
+  r.push(...noErr(p,'棋子滑動'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);

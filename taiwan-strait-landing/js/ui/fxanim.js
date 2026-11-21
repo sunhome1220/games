@@ -479,7 +479,7 @@ function playFx(list){
   const g=document.getElementById('gF'),now=performance.now();
   if(g.childNodes.length>70){for(const n of [...g.childNodes]){if(!n.__t)n.__t=now;else if(now-n.__t>4000)n.remove();}} // 只清掉超過 4 秒的舊特效，正在播放的不刪
   while(g.childNodes.length>1200)g.removeChild(g.firstChild); // 安全網：避免異常時無限累積
-  let t=ANIM.slid?300:0,last=t,hitAt=t;const k=fxK();ANIM.slid=false; // 單位還在滑到新位置：等它到了再開火
+  let t=ANIM.slid?Math.min(1200,(ANIM.slidMs||280)+20):0,last=t,hitAt=t;const k=fxK();ANIM.slid=false; // 單位還在滑到新位置：等它到了再開火
   const nShots=list.filter(x=>x.t==='air'||x.t==='msl').length,stepAir=nShots>=8?45:nShots>=4?85:170,stepMsl=nShots>=8?45:nShots>=4?70:110; // 齊射：發數多時間隔縮短，看起來是一起發射
   list.forEach(o=>{
     let start;
