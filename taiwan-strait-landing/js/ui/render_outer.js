@@ -29,6 +29,9 @@ function landmarkDim(){ // 地標和棋子重疊時變淡，不擋住棋子上�
     e.classList.toggle('dim',us.some(p=>x-p[0]>-.7*R&&x-p[0]<1.3*R&&y-p[1]>-.9*R&&y-p[1]<1.15*R));
   });
 }
+// 外圍大陸沿岸的重要城市名稱（真實位置；只是地標文字、不能點選、不影響規則；寧波、舟山、福州、廈門等已有基地標記的不重複）
+const FAR_CITIES=[['上海',121.47,31.23],['杭州',120.15,30.27],['金華',119.65,29.08]];
+const FAR_AIRCITY={'櫟社':'寧波','路橋':'台州','龍灣':'溫州'}; // 機場標記旁註明所在城市（寧波、台州、溫州不另外畫城市點，免得和機場標記疊在一起）
 const llPx=(lon,lat)=>{const o=center(GEO.c0,GEO.r0),ox=center(GEO.c0+1,GEO.r0)[0]-o[0],oy=center(GEO.c0,GEO.r0+1)[1]-o[1];
   return [o[0]+(lon-GEO.lon0)/GEO.dlon*ox,o[1]+(GEO.lat0-lat)/GEO.dlat*oy];};
 function farPlace(lon,lat,t,name,tag,who){const [x,y]=llPx(lon,lat);FAR[name]={lon,lat,x:x/KS,y:y/KS,t,name,tag:tag||null,who:who||null};}
@@ -36,9 +39,10 @@ function farSchem(c,r,t,name,tag,who){const [x,y]=oCenter(c,r);FAR[name]={x,y,t,
 const llInv=(px,py)=>{const o=center(GEO.c0,GEO.r0),ox=center(GEO.c0+1,GEO.r0)[0]-o[0],oy=center(GEO.c0,GEO.r0+1)[1]-o[1];return [GEO.lon0+(px-o[0])/ox*GEO.dlon,GEO.lat0-(py-o[1])/oy*GEO.dlat];};
 (function(){
   // 大陸機場與基地：實際位置在圖外北側，以示意位置標示
-  farSchem(-3,-4,'air','黃山','火箭軍','atk'); farSchem(-3,4,'air','梅州','火箭軍','atk');
-  farSchem(8,-5,'air','櫟社','東部戰區','atk'); farSchem(7,-6,'air','路橋','東部戰區','atk'); farSchem(5,-6,'air','龍灣','東部戰區','atk'); farSchem(-1,-3,'air','武夷山','東部戰區','atk');
-  farSchem(8,-3,'port','舟山','東部戰區','atk');
+  // 2026-11-18.51 起一律用真實經緯度（舊版是示意位置，舟山畫在東引正上方、與真實海岸線對不上）
+  farPlace(118.26,29.73,'air','黃山','火箭軍','atk'); farPlace(116.3,24.6,'air','梅州','火箭軍','atk');
+  farPlace(121.46,29.83,'air','櫟社','東部戰區','atk'); farPlace(121.43,28.56,'air','路橋','東部戰區','atk'); farPlace(120.85,27.91,'air','龍灣','東部戰區','atk'); farPlace(118.0,27.7,'air','武夷山','東部戰區','atk');
+  farPlace(122.25,30.05,'port','舟山','東部戰區','atk');
   // 先島群島、沖繩（真實位置；第 3b 階段起在遊戲格內，畫成日本的陸地格）
   farPlace(123.0,24.46,'plain','與那國','自衛隊','jp'); farPlace(124.17,24.4,'plain','石垣','自衛隊','jp'); farPlace(125.3,24.78,'air','宮古島','自衛隊','jp');
   farPlace(127.86,26.42,'air','嘉手納','美空軍','us'); farPlace(127.6,26.14,'plain','那霸','空自','jp');
@@ -61,7 +65,7 @@ const ISL_POLY=[
     return pts.map(([x,y])=>[aL+(x-rL)*sc,aB+(y-rB)*sc]);};
   ISL_POLY.push(sch('佐世保',[[129.65,33.2],[129.9,33.6],[130.3,33.65],[130.9,33.95],[131.1,33.6],[131.7,33.3],[131.9,32.6],[131.65,31.7],[131.35,31.15],[131.05,31.0],[130.7,31.0],[130.2,31.1],[130.2,31.6],[130.2,32.3],[129.95,32.55],[129.6,32.9]],.5,[129.72,33.17]));
   const g=sch('關島',[[144.78,13.62],[144.9,13.28]],1,[144.85,13.5]);GUAM_LL=[(g[0][0]+g[1][0])/2,(g[0][1]+g[1][1])/2];ISL_CAP.push([g[0][0],g[0][1],g[1][0],g[1][1],.1]);
-  const z=sch('舟山',[[122.15,30.02],[122.35,29.92]],1.6,[122.2,30.0]);ISL_CAP.push([z[0][0],z[0][1],z[1][0],z[1][1],.2]);
+  ISL_CAP.push([122.0,30.15,122.3,29.95,.13]); // 舟山群島（真實位置、舟山本島一帶，半徑留一點寬度讓窄島至少占一格）
 })();
 const inIsl=(lon,lat)=>{
   const k=Math.cos(lat*Math.PI/180);
@@ -225,9 +229,10 @@ function buildFar(){
   for(const [c,r,x,y,f] of tiles){
     if(!f||!f.name||HIDEFAR.has(f.name))continue;
     if(f.who)o+='<circle pointer-events="none" cx="'+x+'" cy="'+(y+4)+'" r="4.5" fill="'+col[f.who]+'" stroke="#fff" stroke-width="1"/>';
-    o+='<text class="far-lbl" x="'+x+'" y="'+(y-9)+'">'+f.name+'</text>';
+    o+='<text class="far-lbl" x="'+x+'" y="'+(y-9)+'">'+f.name+(FAR_AIRCITY[f.name]?'（'+FAR_AIRCITY[f.name]+'）':'')+'</text>';
     if(f.tag)o+='<text class="far-tag" x="'+x+'" y="'+(y+18)+'" fill="'+col[f.who]+'">'+f.tag+'</text>';
   }
+  for(const [nm,lo,la] of FAR_CITIES){const [px,py]=llPx(lo,la);o+='<circle pointer-events="none" cx="'+(px/KS).toFixed(2)+'" cy="'+(py/KS).toFixed(2)+'" r="2.2" fill="var(--ink)" stroke="#fff" stroke-width=".8" opacity=".75"/><text class="far-lbl city" x="'+(px/KS).toFixed(2)+'" y="'+(py/KS-4).toFixed(2)+'">'+nm+'</text>';}
   let oS='';
   const SUBG=(x,y,who,dash)=>'<g><ellipse cx="'+x+'" cy="'+(y+7)+'" rx="16" ry="4" fill="#000" opacity=".15"/><path d="M'+(x-17)+' '+(y+2)+'q0 -6 8 -6h18q9 0 9 6q0 6 -9 6h-18q-8 0 -8 -6z" fill="'+
       col[who]+'" stroke="#fff" stroke-width="1"'+(dash?' stroke-dasharray="3 2" fill-opacity=".55"':'')+'/><path d="M'+(x-4)+' '+(y-4)+'v-5h8v5" fill="'+col[who]+'" stroke="#fff" stroke-width="1"/><path d="M'+
