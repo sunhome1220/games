@@ -237,6 +237,26 @@ add('戰役模式中回首頁：標題列的首頁鈕；設定精靈不再有任
   r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&/home=1/.test(location.search)),'對局中按首頁鈕：確認後重新載入並顯示首頁']);
   r.push(...[[true,'']].slice(0,0));await p.close();return r;});
 
+add('管理者開關：status.json 關閉、管理者密碼繞過、離線照常開放','medium',async c=>{const r=[];const crypto=require('crypto');
+  const H=pw=>crypto.createHash('sha256').update('tsl-admin:'+pw).digest('hex');
+  const mk=async(st,q)=>{const pg=await c.b.newPage({viewport:{width:900,height:700}});pg.errs=[];pg.on('pageerror',e=>pg.errs.push(e.message));
+    await pg.route('**/status.json*',st===null?(rt=>rt.abort()):(rt=>rt.fulfill({status:200,contentType:'application/json',body:JSON.stringify(st)})));
+    await pg.goto(c.url+(q||''),{timeout:60000});await pg.waitForTimeout(st===null?3600:900);return pg;};
+  const info=pg=>pg.evaluate(()=>({veil:!!document.getElementById('gateVeil'),txt:(document.getElementById('gateVeil')||{textContent:''}).textContent,banner:!!document.getElementById('gateAdmin'),closed:window.TSL_CLOSED,admin:window.TSL_ADMIN,tok:localStorage.getItem('tsl-admin'),url:location.search,top:(()=>{const e=document.elementFromPoint(450,350);return e&&e.closest('#gateVeil')?'veil':'other';})()}));
+  let p=await mk({open:true,message:'',adminHash:H('pw')});let a=await info(p);r.push([!a.veil&&a.closed===false,'開放中：沒有遮罩，遊戲照常']);await p.close();
+  p=await mk({open:false,message:'維護中，稍後開放',adminHash:H('pw-correct-horse')});a=await info(p);
+  r.push([a.veil&&/目前暫停開放/.test(a.txt)&&/維護中，稍後開放/.test(a.txt)&&a.closed===true&&!a.admin&&a.top==='veil','對外關閉：顯示「目前暫停開放」與你寫的訊息，遮罩蓋住遊戲']);await p.close();
+  p=await mk({open:false,message:'x',adminHash:H('pw-correct-horse')},'?admin=wrong-pass-123456');a=await info(p);r.push([a.veil&&!a.banner&&!a.tok,'密碼錯誤：仍被擋住，沒有記住任何東西']);await p.close();
+  p=await mk({open:false,message:'x',adminHash:H('pw-correct-horse')},'?admin=pw-correct-horse');a=await info(p);
+  r.push([!a.veil&&a.banner&&a.admin===true&&a.tok===H('pw-correct-horse')&&!/admin=/.test(a.url),'管理者密碼正確：關閉期間照常使用、上方有提示條、網址的密碼被拿掉、這台裝置記住']);
+  await p.unroute('**/status.json*');await p.route('**/status.json*',rt=>rt.fulfill({status:200,contentType:'application/json',body:JSON.stringify({open:false,message:'x',adminHash:H('pw-correct-horse')})}));
+  await p.reload();await p.waitForTimeout(900);a=await info(p);r.push([!a.veil&&a.admin===true,'重新載入（沒有帶密碼）：仍是管理者']);
+  await p.unroute('**/status.json*');await p.route('**/status.json*',rt=>rt.fulfill({status:200,contentType:'application/json',body:JSON.stringify({open:false,message:'x',adminHash:H('another-new-password')})}));
+  await p.reload();await p.waitForTimeout(900);a=await info(p);r.push([a.veil&&!a.admin,'換掉 adminHash：舊的管理者身分即刻失效']);
+  r.push([!p.errs.length,'沒有頁面錯誤 '+JSON.stringify(p.errs)]);await p.close();
+  p=await mk(null);a=await info(p);r.push([!a.veil,'抓不到 status.json（離線）：照常開放，不卡住']);await p.close();
+  return r;});
+
 add('首頁：設定頁（系統設定搬到首頁）','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{});const r=[];
   await p.click('#hmSettings');
   const a=await p.evaluate(()=>({set:!!document.querySelector('#homeSet'),lang:document.querySelectorAll('#homeSet [data-lang]').length,pref:document.querySelectorAll('#homeSet [data-pref]').length,qual:document.querySelectorAll('#homeSet [data-qual]').length,hist:!!document.querySelector('#homeSet #stHist'),stRun:!!document.querySelector('#stRun'),stHome:!!document.querySelector('#stHome'),stClose:!!document.querySelector('#stClose'),back:!!document.getElementById('hmBack'),eyebrow:!!document.querySelector('#homeSet .eyebrow')}));
