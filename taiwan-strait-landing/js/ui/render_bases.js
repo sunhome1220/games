@@ -39,7 +39,7 @@ function baseMarkersSVG(){
   let o='';
   for(const [id,B] of Object.entries(CNB)){
     const pt=P['c'+id];if(!pt)continue;const [x,y]=pt,hp=cnShown(id),tg=dOn&&cnTargets().includes(id);
-    const shape=B.kind==='rf'?'<polygon class="mcb" points="0,-10 10,0 0,10 -10,0"/>':B.kind==='air'?'<polygon class="mcb" points="0,-9 9,7 -9,7"/>':B.kind==='navy'?'<rect class="mcb" x="-8" y="-8" width="16" height="16"/>':B.kind==='isr'?'<polygon class="mcb" points="0,-10 3,-3 10,0 3,3 0,10 -3,3 -10,0 -3,-3"/>':'<circle class="mcb" r="8"/>';
+    const shape=B.kind==='rkt'?'<polygon class="mcb" points="-9,-7 9,-7 0,9"/>':B.kind==='rf'?'<polygon class="mcb" points="0,-10 10,0 0,10 -10,0"/>':B.kind==='air'?'<polygon class="mcb" points="0,-9 9,7 -9,7"/>':B.kind==='navy'?'<rect class="mcb" x="-8" y="-8" width="16" height="16"/>':B.kind==='isr'?'<polygon class="mcb" points="0,-10 3,-3 10,0 3,3 0,10 -3,3 -10,0 -3,-3"/>':'<circle class="mcb" r="8"/>';
     const pd=(S.cnPend&&S.cnPend.id===id)||(S.afPend&&S.afPend.x.cn===id);
     o+='<g class="mcg'+(hp>0?'':' off')+(pd?' pend':'')+'" data-cn="'+id+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+US.toFixed(3)+')"><circle r="24" fill="transparent" class="hit"/>'+
         shape+'<text class="mnum" y="4">'+hp+'</text>'+(tg?'<circle class="ttg d" r="16"/>':'')+'<text class="mlb" x="'+(B.side==='l'?-13:13)+'" y="3"'+(B.side==='l'?' text-anchor="end"':'')+'>'+B.n+'</text></g>';
