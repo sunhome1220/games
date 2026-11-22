@@ -226,6 +226,17 @@ add('首頁：選戰役模式或任務挑戰','medium',async c=>{const r=[];
   const p2=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});r.push([await p2.evaluate(()=>document.getElementById('home').hidden),'網址有 debug／nojank 等參數（測試、關卡）：不顯示首頁']);await p2.close();
   r.push([!errs.length,'首頁：沒有頁面錯誤 '+JSON.stringify(errs)]);return r;});
 
+add('戰役模式中回首頁：標題列的首頁鈕；設定精靈不再有任務小連結','medium',async c=>{const r=[];
+  const p=await L.open(c.b,c.url,'?home=1',{});await p.click('#hmCampaign');await p.waitForTimeout(200);
+  r.push([await p.evaluate(()=>!document.getElementById('btnMission')&&!document.getElementById('btnMission2')&&!!document.getElementById('btnDefault')&&!!document.getElementById('btnHome')),'設定精靈：任務小連結已移除（保留「依預設值直接開始」）；標題列有首頁鈕']);
+  await p.evaluate(()=>{WZ.i=2;renderWizard();});await p.click('#btnHome');await p.waitForTimeout(200);
+  r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&!!document.getElementById('hmMission')),'設定精靈中按首頁鈕：直接回到首頁（不重新載入）']);
+  await p.click('#hmCampaign');await p.waitForTimeout(200);
+  r.push([await p.evaluate(()=>document.getElementById('home').hidden&&WZ.i===2),'再選戰役模式：回到剛才的設定精靈頁（第 3 頁，內容保留）']);
+  await L.startGame(p);p.once('dialog',d=>d.accept());await p.click('#btnHome');await p.waitForTimeout(2200);
+  r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&/home=1/.test(location.search)),'對局中按首頁鈕：確認後重新載入並顯示首頁']);
+  r.push(...[[true,'']].slice(0,0));await p.close();return r;});
+
 add('首頁：設定頁（系統設定搬到首頁）','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{});const r=[];
   await p.click('#hmSettings');
   const a=await p.evaluate(()=>({set:!!document.querySelector('#homeSet'),lang:document.querySelectorAll('#homeSet [data-lang]').length,pref:document.querySelectorAll('#homeSet [data-pref]').length,qual:document.querySelectorAll('#homeSet [data-qual]').length,hist:!!document.querySelector('#homeSet #stHist'),stRun:!!document.querySelector('#stRun'),stHome:!!document.querySelector('#stHome'),stClose:!!document.querySelector('#stClose'),back:!!document.getElementById('hmBack'),eyebrow:!!document.querySelector('#homeSet .eyebrow')}));
