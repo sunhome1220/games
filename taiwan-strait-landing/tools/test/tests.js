@@ -291,6 +291,7 @@ add('首頁：手把可選戰役模式／任務挑戰、○ 返回、△ 進戰�
   await p.waitForTimeout(500);let s0=await st();
   r.push([s0.home&&s0.act==='hmCampaign','手把：開首頁時游標在「戰役模式」 '+JSON.stringify(s0)]);
   await press(15);let s1=await st();r.push([s1.act==='hmMission','十字鍵右：移到「任務挑戰」 '+s1.act]);
+  r.push([await p.evaluate(()=>{const c=document.getElementById('gpCur'),a=document.activeElement,o=getComputedStyle(a);return getComputedStyle(c).display==='none'&&o.outlineColor==='rgb(245, 197, 66)'&&parseFloat(o.outlineWidth)>=3;}),'選單導覽：只用黃框標示（#f5c542、3px），不顯示圓形游標']);
   await press(0);let s2=await st();r.push([s2.home&&s2.missions>=2&&s2.back,'Ａ（✕）：進關卡列表（'+s2.missions+' 關）']);
   await press(1);let s3=await st();r.push([s3.home&&!s3.back&&s3.act==='hmCampaign','○：回首頁 '+JSON.stringify(s3)]);
   await press(9);let s4=await st();r.push([!s4.home,'Options：進入戰役模式、首頁關閉']);

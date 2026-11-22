@@ -185,7 +185,8 @@
       }
     }
     cur.style.left=x+'px';cur.style.top=y+'px';
-    cur.style.display=vis&&!hexOn?'':'none';
+    const menuNav=!!navEl&&(!!modalEl||setup); // 彈窗、設定精靈、首頁：用按鈕上的黃框表示選到哪個，不再疊一顆圓形游標
+    cur.style.display=vis&&!hexOn&&!menuNav?'':'none';
     cur.hidden=cur.style.display==='none';
     hx.style.display=vis&&hexOn?'':'none';
     const el=navEl||(hexOn?(mapEl(x,y)||document.elementFromPoint(x,y)):document.elementFromPoint(x,y)); // 六角格模式：點的是地圖上那一格（不是蓋在上面的卡片）
