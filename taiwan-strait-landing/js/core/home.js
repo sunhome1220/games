@@ -11,13 +11,18 @@ function homeShouldShow(){
   return !(HOME_SKIP_Q.test(location.search)||homeSess('tsl-home')==='1'||homeStore('tsl-home')==='0');
 }
 function homeClose(){homeSess('tsl-home','1');document.body.classList.remove('onhome');$('#home').hidden=true;try{if(/[?&]home=1/.test(location.search))history.replaceState(null,'',location.pathname);}catch(e){}} // 關掉後把網址的 home=1 拿掉，之後重新載入不會又顯示首頁
+function homeSettings(){ // 設定頁：語言、戰績紀錄、動畫速度、快訊、語音、地圖畫質…（同「⚙ 設定」視窗，不含統計與回首頁）
+  $('#homeIn').innerHTML='<button class="ghost hm-back" id="hmBack">← 回首頁</button><h1>設定</h1><div id="homeSet"></div>';
+  $('#hmBack').onclick=homeMain;renderSettings($('#homeSet'));
+}
 function homeMain(){
   $('#homeIn').innerHTML='<h1>台海兵棋推演</h1><p class="hm-sub">依公開資料與物理推估的台海攻防推演。選擇要怎麼玩：</p>'+
     '<div class="hm-cards"><button class="hm-card" id="hmCampaign"><span class="tag">完整戰局</span><b>戰役模式</b><small>自選年代（2026～2032）、兵力與規則，由你指揮攻方或守方，也可以交給電腦推演、或純模擬看影片。戰後有完整的檢討報告。</small></button>'+
-    '<button class="hm-card" id="hmMission"><span class="tag">限時短任務</span><b>關卡挑戰</b><small>用同一套規則，在固定開局下完成一個目標，依回合數評星：擊沉航艦、72 小時奪港。共 '+Object.keys(MISSION_DEFS).length+' 關。</small></button></div>'+
+    '<button class="hm-card" id="hmMission"><span class="tag">限時短任務</span><b>關卡挑戰</b><small>用同一套規則，在固定開局下完成一個目標，依回合數評星：擊沉航艦、72 小時奪港。共 '+Object.keys(MISSION_DEFS).length+' 關。</small></button>'+
+    '<button class="hm-card" id="hmSettings"><span class="tag">系統</span><b>設定</b><small>語言、戰績紀錄、動畫速度、國際快訊、語音、地圖畫質。</small></button></div>'+
     '<div class="hm-foot"><label><input type="checkbox" id="hmSkip"> 以後直接進入戰役模式</label></div>';
   $('#hmCampaign').onclick=()=>{if($('#hmSkip').checked)homeStore('tsl-home','0');homeClose();};
-  $('#hmMission').onclick=homeMissions;
+  $('#hmMission').onclick=homeMissions;$('#hmSettings').onclick=homeSettings;
   $('#hmCampaign').focus();
 }
 function homeMissions(){
@@ -29,4 +34,4 @@ function homeMissions(){
 }
 function homeOpen(){homeMain();document.body.classList.add('onhome');$('#home').hidden=false;}
 function homeAgain(){homeSess('tsl-home','0');location.href=location.pathname+'?home=1';} // 設定視窗的「回首頁」：重新載入並顯示首頁
-if(homeShouldShow())homeOpen();
+if(homeShouldShow()){homeOpen();if(homeSess('tsl-home-set')==='1'){homeSess('tsl-home-set','0');homeSettings();}} // 在首頁的設定切換語言後重新載入：回到設定頁

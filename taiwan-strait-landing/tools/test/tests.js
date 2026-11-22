@@ -226,6 +226,22 @@ add('首頁：選戰役模式或關卡挑戰','medium',async c=>{const r=[];
   const p2=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});r.push([await p2.evaluate(()=>document.getElementById('home').hidden),'網址有 debug／nojank 等參數（測試、關卡）：不顯示首頁']);await p2.close();
   r.push([!errs.length,'首頁：沒有頁面錯誤 '+JSON.stringify(errs)]);return r;});
 
+add('首頁：設定頁（系統設定搬到首頁）','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{});const r=[];
+  await p.click('#hmSettings');
+  const a=await p.evaluate(()=>({set:!!document.querySelector('#homeSet'),lang:document.querySelectorAll('#homeSet [data-lang]').length,pref:document.querySelectorAll('#homeSet [data-pref]').length,qual:document.querySelectorAll('#homeSet [data-qual]').length,hist:!!document.querySelector('#homeSet #stHist'),stRun:!!document.querySelector('#stRun'),stHome:!!document.querySelector('#stHome'),stClose:!!document.querySelector('#stClose'),back:!!document.getElementById('hmBack'),eyebrow:!!document.querySelector('#homeSet .eyebrow')}));
+  r.push([a.set&&a.lang===4&&a.pref>=8&&a.qual===2&&a.hist&&!a.stRun&&!a.stHome&&!a.stClose&&a.back&&!a.eyebrow,'設定頁：語言 '+a.lang+' 個、偏好選項 '+a.pref+' 個、畫質 '+a.qual+' 個、戰績紀錄；不含統計／回首頁／關閉 '+JSON.stringify(a)]);
+  await p.click('#homeSet [data-pref="optFxSpd"][data-v="2"]');
+  r.push([await p.evaluate(()=>$('#optFxSpd').value==='2'&&document.querySelector('#homeSet [data-pref="optFxSpd"][data-v="2"]').classList.contains('on')),'在首頁設定改「火力動畫速度」：值寫入並重畫選取狀態']);
+  await p.click('#homeSet [data-qual="ultra"]');
+  r.push([await p.evaluate(()=>ULTRA&&localStorage.getItem('tsl-qual')==='ultra'),'在首頁設定改「地圖畫質」＝極簡：已套用並記住']);
+  await p.evaluate(()=>{setQual('normal');});
+  await p.click('#homeSet #stHist');await p.waitForTimeout(300);
+  r.push([await p.evaluate(()=>{const m=document.getElementById('modal');return !m.hidden&&getComputedStyle(m).zIndex==='70';}),'戰績紀錄：彈窗蓋在首頁上面（z-index 70）']);
+  await p.evaluate(()=>{document.getElementById('modal').hidden=true;});
+  await p.click('#hmBack');
+  r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&!!document.getElementById('hmSettings')),'← 回首頁：回到三個選項']);
+  r.push(...noErr(p,'首頁設定'));await p.close();return r;});
+
 add('首頁：手把可選戰役模式／關卡挑戰、○ 返回、△ 進戰役模式','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{pad:true});const r=[];
   const press=async(i)=>{await p.evaluate(i=>{__pad.buttons[i].pressed=true;__pad.buttons[i].value=1;},i);await p.waitForTimeout(110);await p.evaluate(i=>{__pad.buttons[i].pressed=false;__pad.buttons[i].value=0;},i);await p.waitForTimeout(220);};
   const st=()=>p.evaluate(()=>({home:!document.getElementById('home').hidden,act:document.activeElement&&document.activeElement.id,missions:document.querySelectorAll('#homeIn a.hm-card').length,back:!!document.getElementById('hmBack')}));

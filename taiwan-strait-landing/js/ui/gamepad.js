@@ -45,7 +45,7 @@
   const NAVSEL='button:not(.mnew),input,select,summary';
   const homeOn=()=>{const h=document.getElementById('home');return !!h&&!h.hidden;}; // 首頁（選戰役模式或關卡挑戰）開著：導覽只在首頁的卡片與核取方塊之間跳，後面的設定精靈先不動
   const navList=()=>{const m=document.querySelector('#modal:not([hidden])');
-    if(!m&&homeOn())return [...document.querySelectorAll('#home button,#home a.hm-card,#home input')].filter(shown);
+    if(!m&&homeOn())return [...document.querySelectorAll('#home button,#home a,#home input')].filter(shown);
     if(m)return [...m.querySelectorAll(NAVSEL)].filter(shown);
     if(setupOn())return [...document.querySelectorAll('#wzBody button,#wzPrev,#wzNext,#btnStart,#btnDefault')].filter(shown);
     for(const sel of ['.cpb button','#ucard:not([hidden]) #ucBody button','#info button']){ // 打擊確認列 → 資訊卡 → 側欄資訊卡；只取第一組有按鈕的
