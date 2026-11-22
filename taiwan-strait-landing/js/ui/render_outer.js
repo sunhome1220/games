@@ -267,12 +267,8 @@ function buildFar(){
 // 平潭島與大陸的兩座橋（只畫在地圖上，不影響規則；位置為連接兩端格子的示意線，★實際橋位與長度見 docs/data/map.md）：
 // 北側＝平潭海峽公鐵兩用大橋（長樂松下→平潭蘇澳，全長 16.34 公里，2020 年通車）、南側＝平潭海峽跨海大橋（公路橋，約 4.9 公里，2010 年通車）
 function bridgesSVG(){
-  const pts=Object.values(TER).filter(h=>h.pt);if(pts.length<2)return '';
-  const main=Object.values(TER).filter(h=>h.isl==='CN'&&h.t!=='sea'&&!h.pt&&isLand(h)),near=(lon,lat,L)=>{let b=null,bd=1e9;for(const h of L){const [lo,la]=rcToLL(h.c,h.r),d=Math.hypot((lo-lon)*.9,la-lat);if(d<bd){bd=d;b=h;}}return b;};
-  const north=pts.slice().sort((a,b)=>rcToLL(b.c,b.r)[1]-rcToLL(a.c,a.r)[1])[0],west=pts.slice().sort((a,b)=>rcToLL(a.c,a.r)[0]-rcToLL(b.c,b.r)[0])[0];
-  const B=[['公鐵大橋',near(119.62,25.78,main),north],['跨海大橋',near(119.55,25.52,main),west]];
   let o='<g class="brg" pointer-events="none">';
-  for(const [nm,a,b] of B){if(!a||!b)continue;const [x1,y1]=cen(a.c,a.r),[x2,y2]=cen(b.c,b.r),d='M'+x1.toFixed(1)+' '+y1.toFixed(1)+'L'+x2.toFixed(1)+' '+y2.toFixed(1);
+  for(const {n:nm,a:ka,b:kb} of BRIDGES){const a=TER[ka],b=TER[kb];if(!a||!b)continue;const [x1,y1]=cen(a.c,a.r),[x2,y2]=cen(b.c,b.r),d='M'+x1.toFixed(1)+' '+y1.toFixed(1)+'L'+x2.toFixed(1)+' '+y2.toFixed(1);
     o+='<path class="bk" stroke-width="'+(R*.2).toFixed(1)+'" d="'+d+'"/><path class="bc" stroke-width="'+(R*.07).toFixed(1)+'" d="'+d+'"/>'
       +'<text class="lbl minor" font-size="'+(7.5*Math.max(.72,SC)).toFixed(1)+'" x="'+((x1+x2)/2).toFixed(1)+'" y="'+((y1+y2)/2-R*.35).toFixed(1)+'" text-anchor="middle">'+nm+'</text>';}
   return o+'</g>';}

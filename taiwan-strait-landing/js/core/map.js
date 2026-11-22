@@ -264,6 +264,7 @@ const GSMP=[[0,0]].concat([0,1,2,3,4,5].map(i=>[.35*Math.cos(i*Math.PI/3),.35*Ma
 const gCover=(h,polys)=>{const [lon,lat]=rcToLL(h.c,h.r);let n=0;for(const [dx,dy] of GSMP){const x=lon+dx*GEO.dlon,y=lat+dy*GEO.dlat*1.15;if(polys.some(P=>gInPoly(x,y,P)))n++;}return n/GSMP.length;};
 // ---- 大陸沿岸（福建、廣東，含沿岸島嶼）：Natural Earth 1:10m 海岸線（GEO_CN）；沒有資料時退回手繪多邊形
 const SPOTC={};
+const BRIDGES=[],BRIDGE_NB={}; // 平潭島與大陸的兩座橋：地面部隊可沿橋往返（landReach 把橋另一端算成相鄰）；BRIDGE_NB[格] ＝ 橋另一端的格子 key
 (function(){
   const COASTL=[[120.35,26.8],[119.9,26.5],[119.62,26.25],[119.68,25.95],[119.8,25.62],[119.6,25.35],[119.15,25.25],[118.95,24.98],[118.65,24.62],[118.2,24.45],[117.95,24.3],[117.5,23.7],[117.0,23.4],[116.7,23.2],[116.0,22.85],[115.4,22.7],[114.9,22.3],[114.6,22.1]];
   const poly=[[114.0,27.2],[120.5,27.2]].concat(COASTL,[[114.0,22.1]]);
@@ -290,6 +291,12 @@ const SPOTC={};
   put('xiamen','廈門','port',118.12,24.46,1);put('shantou','汕頭','port',116.72,23.36,1);
   put('changle','長樂','air',119.66,25.93);put('longtian','龍田','air',119.45,25.7);put('huian','惠安','air',118.8,25.0);
   put('liancheng','連城','air',116.75,25.7);put('longhai','龍海','air',117.82,24.43);put('gaoqi','高崎','air',118.1,24.56);put('chaoshan','潮汕','air',116.5,23.56);
+  { // 平潭的兩座橋：北側＝公鐵兩用大橋（長樂松下→平潭蘇澳）、南側＝跨海大橋（福清一側→平潭西側）；連接最近的大陸格與島上對應格（示意，不是精確橋位）
+    const pts=cn.filter(h=>h.pt);if(pts.length>=2){
+      const north=pts.slice().sort((a,b)=>rcToLL(b.c,b.r)[1]-rcToLL(a.c,a.r)[1])[0],west=pts.slice().sort((a,b)=>rcToLL(a.c,a.r)[0]-rcToLL(b.c,b.r)[0])[0];
+      for(const [n,a,b] of [['公鐵大橋',nearC(119.62,25.78,h=>!h.pt),north],['跨海大橋',nearC(119.55,25.52,h=>!h.pt),west]]){if(!a||!b)continue;
+        BRIDGES.push({n,a:a.k,b:b.k});(BRIDGE_NB[a.k]=BRIDGE_NB[a.k]||[]).push(b.k);(BRIDGE_NB[b.k]=BRIDGE_NB[b.k]||[]).push(a.k);}}
+  }
   const AN={fuding:[120.2,26.7],lianjiang:[119.6,26.25],fuzhou:[119.62,26.0],pingtan:[119.78,25.52],putian:[119.1,25.3],huian:[118.9,25.0],quanzhou:[118.65,24.85],jinjiang:[118.55,24.7],xiamen:[118.12,24.46],dongshan:[117.5,23.75],shantou:[116.72,23.36]};
   const used={};
   const pick=(an,i)=>{const [lon,lat]=AN[an];const list=cn.filter(h=>coastalC(h)&&!h.pt).sort((a,b)=>dist(a,lon,lat)-dist(b,lon,lat));return list[i]||list[0];};
