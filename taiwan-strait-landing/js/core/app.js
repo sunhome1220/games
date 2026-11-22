@@ -53,35 +53,36 @@ function applyPref(id,v){ // 設定視窗改選項：開始前走一般流程；
   else if(id==='optVSpeed'){if(S.video)V.sp=+v||2;}
   saveSetup();
 }
-function renderSettings(){
-  const box=$('#mbox'),cur=window.TSL_LANG||'zh-TW';
+function renderSettings(host){ // host：首頁的「設定」頁把內容畫在自己的容器裡（不含統計、回首頁、關閉）；沒有 host＝遊戲內的設定視窗
+  const inHome=!!host,box=host||$('#mbox'),cur=window.TSL_LANG||'zh-TW';
   const seg=(attr,ent,on,n)=>'<div class="seg" role="radiogroup" style="--n:'+n+'">'+ent.map(([v,o])=>'<button class="segb'+(v===on?' on':'')+'" role="radio" aria-checked="'+(v===on)+'" '+attr+'="'+v+'"><b>'+o[0]+'</b></button>').join('')+'</div>';
-  let h='<div class="eyebrow">⚙ 設定</div><div class="btns" style="margin:4px 0 12px"><button class="ghost" id="stHist">📜 戰績紀錄（'+loadHistory().length+' 場）</button></div><h3>語言 / Language</h3>'+seg('data-lang',Object.entries(LANGOPTS),cur,2)+
+  let h=(inHome?'':'<div class="eyebrow">⚙ 設定</div>')+'<div class="btns" style="margin:4px 0 12px"><button class="ghost" id="stHist">📜 戰績紀錄（'+loadHistory().length+' 場）</button></div><h3>語言 / Language</h3>'+seg('data-lang',Object.entries(LANGOPTS),cur,2)+
     '<div class="wz-note" style="margin-top:10px">'+LANGOPTS[cur][1]+'</div><div class="wz-note" style="margin-top:8px">切換語言後頁面會重新載入；進行中的對局會結束。</div>';
   PREF_FIELDS.forEach(f=>{const v=$('#'+f.sel).value,ent=Object.entries(f.opts);
     h+='<div class="wz-q" style="margin-top:16px">'+f.q+'</div>'+seg('data-pref="'+f.sel+'" data-v',ent,v,ent.length<=3?ent.length:2)+(f.opts[v]&&f.opts[v][1]?'<div class="wz-note" style="margin-top:8px">'+f.opts[v][1]+'</div>':'');});
   h+='<div class="wz-q" style="margin-top:16px">地圖畫質</div>'+seg('data-qual',[['normal',['一般','立體地形、山峰與建築、海浪。']],['ultra',['極簡（舊裝置）','地形改為平面色塊，不畫立體側面、陰影、山峰、建築與海浪，地圖節點約減少九成；海岸線、河流、地名、棋子、射程圈都保留。裝置卡頓時選這個。']]],ULTRA?'ultra':'normal',2)+'<div class="wz-note" style="margin-top:8px">'+(ULTRA?'極簡：地形改為平面色塊，不畫立體側面、陰影、山峰、建築與海浪。':'一般：立體地形、山峰與建築、海浪。')+'（只記在這台裝置）</div>';
   h+='<div class="wz-q" style="margin-top:16px">地圖：河流名稱</div>'+seg('data-rvl',[['0',['關閉','只畫河流，不標河名']],['1',['顯示','標出淡水河、濁水溪等 11 條河的名稱']]],rvlOn()?'1':'0',2);
-  h+='<div class="wz-q" style="margin-top:16px">進階：用目前設定跑統計</div><div class="wz-note">想知道這組設定誰比較有利？讓電腦自動模擬多局，統計勝率、代價與決策的影響。</div>'+
+  if(!inHome)h+='<div class="wz-q" style="margin-top:16px">進階：用目前設定跑統計</div><div class="wz-note">想知道這組設定誰比較有利？讓電腦自動模擬多局，統計勝率、代價與決策的影響。</div>'+
     '<div style="margin-top:8px">'+seg('data-statn',[['50',['50 局']],['100',['100 局']],['300',['300 局']]],SETTINGS_STATN,3)+'</div>'+
     '<div class="btns" style="margin-top:10px"><button class="ghost" id="stRun"'+(STAT.running?' disabled':'')+'>開始統計</button></div>';
   h+='<div class="wz-q" style="margin-top:16px">支持作者</div><a id="stTip" class="btnlink" href="https://service.jkopay.com/r/transfer?j=Transfer:900386051&amp;amount=50" target="_blank" rel="noopener noreferrer">☕ 請作者喝杯咖啡<br><small>純屬自願，不贊助也能完整遊玩。預設金額 50 元，付款時可自行修改。</small></a>';
+  if(!inHome)h+='<div class="btns" style="margin-top:16px"><button class="ghost" id="stHome">🏠 回首頁（選戰役模式或關卡挑戰）</button></div>';
   h+='<div class="btns" style="margin-top:16px"><button class="ghost" id="stCoach">💡 重看新手引導與登陸提示</button></div>';
-  h+='<div class="btns" style="margin-top:16px"><button id="stClose">關閉</button></div>';
+  if(!inHome)h+='<div class="btns" style="margin-top:16px"><button id="stClose">關閉</button></div>';
   box.innerHTML=h;
   box.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{
     const v=b.dataset.lang;if(v===cur)return;
-    if(confirm('Language / 語言 → '+LANGOPTS[v][0]+'\n\n切換後頁面會重新載入（進行中的對局會結束）/ The page reloads and the current game ends.'))window.TSL_SET(v);
+    if(confirm('Language / 語言 → '+LANGOPTS[v][0]+'\n\n切換後頁面會重新載入（進行中的對局會結束）/ The page reloads and the current game ends.')){if(inHome&&typeof homeSess==='function')homeSess('tsl-home-set','1');window.TSL_SET(v);}
   });
-  box.querySelectorAll('[data-pref]').forEach(b=>b.onclick=()=>{applyPref(b.dataset.pref,b.dataset.v);renderSettings();});
+  box.querySelectorAll('[data-pref]').forEach(b=>b.onclick=()=>{applyPref(b.dataset.pref,b.dataset.v);renderSettings(host);});
   $('#stHist').onclick=()=>{mboxSet('');$('#modal').hidden=false;renderHistory();};
-  box.querySelectorAll('[data-qual]').forEach(b=>b.onclick=()=>{setQual(b.dataset.qual);renderSettings();});
-  box.querySelectorAll('[data-rvl]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('tsl-rvl',b.dataset.rvl);}catch(e){}rvlApply();renderSettings();});
-  box.querySelectorAll('[data-statn]').forEach(b=>b.onclick=()=>{SETTINGS_STATN=b.dataset.statn;renderSettings();});
-  $('#stRun').onclick=()=>{$('#modal').hidden=true;box.innerHTML='';if(!S.started)readSetup();runStats(+SETTINGS_STATN);};
+  box.querySelectorAll('[data-qual]').forEach(b=>b.onclick=()=>{setQual(b.dataset.qual);renderSettings(host);});
+  box.querySelectorAll('[data-rvl]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('tsl-rvl',b.dataset.rvl);}catch(e){}rvlApply();renderSettings(host);});
+  box.querySelectorAll('[data-statn]').forEach(b=>b.onclick=()=>{SETTINGS_STATN=b.dataset.statn;renderSettings(host);});
+  if($('#stRun'))$('#stRun').onclick=()=>{$('#modal').hidden=true;box.innerHTML='';if(!S.started)readSetup();runStats(+SETTINGS_STATN);};
+  if($('#stHome'))$('#stHome').onclick=()=>{if(!S.started||confirm('回首頁會結束目前這一局，確定嗎？'))homeAgain();};
   $('#stCoach').onclick=()=>{try{localStorage.removeItem('tsl-coach');}catch(e){}if(typeof landTipsSet==='function')landTipsSet(true);toast('已重新開啟新手引導與登陸提示',2200);};
-  $('#stClose').onclick=()=>{$('#modal').hidden=true;box.innerHTML='';};
-  $('#stClose').focus();
+  if($('#stClose')){$('#stClose').onclick=()=>{$('#modal').hidden=true;box.innerHTML='';};$('#stClose').focus();}
 }
 function rvlOn(){try{return localStorage.getItem('tsl-rvl')==='1';}catch(e){return false;}} // 河流名稱：預設關閉
 function rvlApply(){document.body.classList.toggle('rvl-on',rvlOn());}
