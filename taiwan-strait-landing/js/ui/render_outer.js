@@ -270,7 +270,7 @@ function bridgesSVG(){
   let o='<g class="brg" pointer-events="none">';
   for(const {n:nm,a:ka,b:kb} of BRIDGES){const a=TER[ka],b=TER[kb];if(!a||!b)continue;const [x1,y1]=cen(a.c,a.r),[x2,y2]=cen(b.c,b.r),d='M'+x1.toFixed(1)+' '+y1.toFixed(1)+'L'+x2.toFixed(1)+' '+y2.toFixed(1);
     o+='<path class="bk" stroke-width="'+(R*.2).toFixed(1)+'" d="'+d+'"/><path class="bc" stroke-width="'+(R*.07).toFixed(1)+'" d="'+d+'"/>'
-      +'<text class="lbl minor" font-size="'+(7.5*Math.max(.72,SC)).toFixed(1)+'" x="'+((x1+x2)/2).toFixed(1)+'" y="'+((y1+y2)/2-R*.35).toFixed(1)+'" text-anchor="middle">'+nm+'</text>';}
+      +'<text class="lbl minor brgl" font-size="'+(4.4*Math.max(.72,SC)).toFixed(1)+'" x="'+((x1+x2)/2).toFixed(1)+'" y="'+((y1+y2)/2-R*.3).toFixed(1)+'" text-anchor="middle">'+nm+'</text>';}
   return o+'</g>';}
 const nearCity=h=>Object.values(TER).some(x=>x!==h&&x.name&&(x.t==='city'||x.t==='port')&&hd(x,h)<=Math.round(kmH(25)));
 function buildStatic(){

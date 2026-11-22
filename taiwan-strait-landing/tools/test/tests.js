@@ -180,6 +180,7 @@ add('平潭島 3 格＋兩座橋（只畫圖）','medium',async c=>{const p=awai
     return {n:pt.length,land:pt.every(h=>h.isl==='CN'&&h.t!=='sea'),port:pt.some(h=>h.name==='平潭'&&h.t==='port'),span,brg:document.querySelectorAll('#gS .brg .bk').length,lbl:[...document.querySelectorAll('#gS .brg text')].map(e=>e.textContent).join(),conn:(()=>{const k=Object.values(TER).filter(h=>h.pt)[0];return nbrs(k.c,k.r).some(n=>n&&n.pt);})()};});
   r.push([o.n===3&&o.land&&o.port&&o.span[0]>=.14&&o.conn,'平潭島 '+o.n+' 格（南北 '+(o.span[0]*111).toFixed(0)+' km 的格中心跨度，彼此相鄰，含港口格）']);
   r.push([o.brg===2&&o.lbl==='公鐵大橋,跨海大橋','地圖上畫了兩座橋：'+o.lbl]);
+  r.push([await p.evaluate(()=>{const t=document.querySelector('#gS .brg .brgl');if(!t)return false;const lo=(setZoom(3,true),getComputedStyle(t).display==='none'),hi=(setZoom(10,true),getComputedStyle(t).display!=='none'),fs=+t.getAttribute('font-size');setZoom(3,true);return lo&&hi&&fs<5;}),'橋的名稱字很小，只在放到最大（≥900%）時才顯示']);
   r.push(...noErr(p,'平潭'));await p.close();return r;});
 
 add('平潭的橋：地面部隊可走橋往返島上','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:4});const r=[];await L.startGame(p);
