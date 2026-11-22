@@ -226,6 +226,17 @@ add('首頁：選戰役模式或關卡挑戰','medium',async c=>{const r=[];
   const p2=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});r.push([await p2.evaluate(()=>document.getElementById('home').hidden),'網址有 debug／nojank 等參數（測試、關卡）：不顯示首頁']);await p2.close();
   r.push([!errs.length,'首頁：沒有頁面錯誤 '+JSON.stringify(errs)]);return r;});
 
+add('首頁：手把可選戰役模式／關卡挑戰、○ 返回、△ 進戰役模式','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{pad:true});const r=[];
+  const press=async(i)=>{await p.evaluate(i=>{__pad.buttons[i].pressed=true;__pad.buttons[i].value=1;},i);await p.waitForTimeout(110);await p.evaluate(i=>{__pad.buttons[i].pressed=false;__pad.buttons[i].value=0;},i);await p.waitForTimeout(220);};
+  const st=()=>p.evaluate(()=>({home:!document.getElementById('home').hidden,act:document.activeElement&&document.activeElement.id,missions:document.querySelectorAll('#homeIn a.hm-card').length,back:!!document.getElementById('hmBack')}));
+  await p.waitForTimeout(500);let s0=await st();
+  r.push([s0.home&&s0.act==='hmCampaign','手把：開首頁時游標在「戰役模式」 '+JSON.stringify(s0)]);
+  await press(15);let s1=await st();r.push([s1.act==='hmMission','十字鍵右：移到「關卡挑戰」 '+s1.act]);
+  await press(0);let s2=await st();r.push([s2.home&&s2.missions>=2&&s2.back,'Ａ（✕）：進關卡列表（'+s2.missions+' 關）']);
+  await press(1);let s3=await st();r.push([s3.home&&!s3.back&&s3.act==='hmCampaign','○：回首頁 '+JSON.stringify(s3)]);
+  await press(9);let s4=await st();r.push([!s4.home,'Options：進入戰役模式、首頁關閉']);
+  r.push(...noErr(p,'首頁手把'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);

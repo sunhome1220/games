@@ -43,7 +43,9 @@
   let navEl=null,navT=0,navN=0,lastBase=null;
   const setupOn=()=>typeof S!=='undefined'&&S&&!S.started&&!document.body.classList.contains('playing')&&!!document.querySelector('#wzBody')&&document.querySelector('#wzBody').getClientRects().length>0; // 作戰設定頁（開始鈕在看完每一頁前是停用的，所以看設定內容區）
   const NAVSEL='button:not(.mnew),input,select,summary';
+  const homeOn=()=>{const h=document.getElementById('home');return !!h&&!h.hidden;}; // 首頁（選戰役模式或關卡挑戰）開著：導覽只在首頁的卡片與核取方塊之間跳，後面的設定精靈先不動
   const navList=()=>{const m=document.querySelector('#modal:not([hidden])');
+    if(!m&&homeOn())return [...document.querySelectorAll('#home button,#home a.hm-card,#home input')].filter(shown);
     if(m)return [...m.querySelectorAll(NAVSEL)].filter(shown);
     if(setupOn())return [...document.querySelectorAll('#wzBody button,#wzPrev,#wzNext,#btnStart,#btnDefault')].filter(shown);
     for(const sel of ['.cpb button','#ucard:not([hidden]) #ucBody button','#info button']){ // 打擊確認列 → 資訊卡 → 側欄資訊卡；只取第一組有按鈕的
@@ -228,6 +230,7 @@
     const modal=!!document.querySelector('#modal:not([hidden])');
     if(press(3)||press(9)){ // △／Options：有彈窗時按彈窗的主要按鈕；沒有彈窗時 △＝火力打擊、Options＝結束階段
       if(modal){if(!document.querySelector('#modal.fin-on'))clickIf(PRIMARY);} // 結算頁沒有「主要按鈕」：避免誤按套用假設情境、重新開局
+      else if(homeOn()){clickIf('#hmCampaign');} // 首頁：△／Options＝進入戰役模式
       else if(setupOn()){if(press(9))clickIf('#btnStart');}
       else clickIf(press(3)?'#mbStrike,#fsStrike,#btnStrike':'#mbEnd,#fsEnd,#btnEnd',true);
     }
@@ -235,12 +238,13 @@
     if(press(1)){ // ○：取消（彈窗的取消鈕 → 取消打擊模式 → 關閉資訊卡）
       if(document.querySelector('#modal.fin-on:not([hidden])'))clickIf('#btnClose'); // 結算頁：○＝檢視地圖
       else if(modal)clickIf('#modal .ghost,#modal button#cfN');
+      else if(homeOn()){clickIf('#hmBack');} // 首頁：○＝從關卡列表回首頁
       else if(clickIf('#afPend:not([hidden]) #afPendNo,#cnPend:not([hidden]) #cnPendNo')){} // 空軍出擊／縱深打擊的確認面板：○＝取消已選的目標（面板不是彈窗，原本要移游標到「取消」才按得到）
       else if(typeof S!=='undefined'&&S&&(S.mode==='strike'||S.mode==='afS'||S.mode==='afL'||S.mode==='afC'||S.mode==='hlS'||S.mode==='hlL'))clickIf('#mbStrike,#fsStrike,#btnStrike',true);
       else if(typeof S!=='undefined'&&S&&S.sel&&!S.mode){S.sel=null;tgtPick=null;if(typeof render==='function')render();} // 取消選取單位（之後十字鍵左右＝換單位）
       else clickIf('#ucard:not([hidden]) #ucClose');
     }
-    if(press(4)||press(5)){if(!modal&&setupOn())clickIf(press(5)?'#wzNext':'#wzPrev');else tabStep(press(5)?1:-1);} // L1／R1：側欄分頁；作戰設定頁＝上一頁／下一頁
+    if(press(4)||press(5)){if(homeOn()){}else if(!modal&&setupOn())clickIf(press(5)?'#wzNext':'#wzPrev');else tabStep(press(5)?1:-1);} // L1／R1：側欄分頁；作戰設定頁＝上一頁／下一頁
     if(press(14)||press(15)){const d=press(15)?1:-1;if(modal||setupOn())dirStep(d,0);else if(TMODES.includes(S&&S.mode)&&typeof targetRings==='function'&&targetRings().length)targetStep(d);else if(S&&S.sel&&alive(S.sel)&&S.sel.side===S.phase&&!S.mode&&humanTurn()&&selStep(d)){}else unitStep(d);} // 十字鍵左右：下一個還沒行動的己方單位；彈窗裡＝切換選項
     if(press(12)||press(13)){const d=press(13)?1:-1;if(modal||setupOn())dirStep(0,d);else btnStep(d);} // 十字鍵上下：游標跳到上／下一個按鈕
     if(press(10))clickIf('#btnFs,#fsExit'); // L3：全螢幕
