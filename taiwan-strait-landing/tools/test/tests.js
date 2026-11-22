@@ -11,7 +11,7 @@ add('語法檢查','quick',async()=>{const fs2=[];(function w(d){for(const f of 
 
 const waitStarted=p=>p.waitForFunction(()=>S&&S.started,null,{timeout:60000});
 add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});const r=[];
-  r.push([await p.evaluate(()=>typeof S==='object'&&typeof startGame==='function'&&Object.keys(MISSION_DEFS).join()==='carrier,port'),'頁面載入、兩個關卡已註冊']);
+  r.push([await p.evaluate(()=>typeof S==='object'&&typeof startGame==='function'&&Object.keys(MISSION_DEFS).join()==='carrier,port,cut'),'頁面載入、兩個關卡已註冊']);
   r.push(...noErr(p,'載入'));
   r.push([await p.evaluate(()=>CHANGELOG.length<=15&&CHANGELOG_OLD===null),'開頁只載入最近的更新日誌']);
   await p.evaluate(()=>showChangelog(true));await p.waitForFunction(()=>CHANGELOG_OLD&&document.querySelectorAll('#wn h4').length>CHANGELOG.length,null,{timeout:10000}).catch(()=>{});
@@ -216,7 +216,7 @@ add('首頁：選戰役模式或任務挑戰','medium',async c=>{const r=[];
   r.push([a.show&&a.on&&a.vis==='hidden'&&a.btns==='完整戰局,情境任務,系統設定','開啟（沒有網址參數）：顯示首頁，兩個選項「'+a.btns+'」，後面的遊戲畫面先藏起來']);
   await raw.click('#hmMission');
   const m=await raw.evaluate(()=>[...document.querySelectorAll('#homeIn a.hm-card')].map(a=>a.getAttribute('href')+':'+a.querySelector('b').textContent).join());
-  r.push([m==='?mission=carrier:航艦打擊,?mission=port:72 小時港區奪控','任務挑戰：列出所有任務 '+m]);
+  r.push([m==='?mission=carrier:航艦打擊,?mission=port:72 小時港區奪控,?mission=cut:截斷後續梯隊','任務挑戰：列出所有任務 '+m]);
   await raw.click('#homeFab');await raw.click('#hmCampaign');
   const b=await raw.evaluate(()=>({hid:document.getElementById('home').hidden,on:document.body.classList.contains('onhome'),vis:getComputedStyle(document.querySelector('.app')).visibility,ss:sessionStorage.getItem('tsl-home'),wz:!!document.querySelector('#wzNext')}));
   r.push([b.hid&&!b.on&&b.vis==='visible'&&b.ss==='1'&&b.wz,'選戰役模式：首頁關閉、顯示設定精靈，這個分頁不再顯示首頁']);
@@ -285,6 +285,28 @@ add('回首頁統一用同位置的房子圖示：首頁子頁、設定視窗、
   r.push([a.vis&&a.same&&await p.evaluate(()=>!document.getElementById('misExit')&&!!document.getElementById('misGo')),'任務簡報：房子圖示在同一位置，原本的「回主遊戲」按鈕已移除']);
   await p.click('#homeFab');await p.waitForTimeout(2500);r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&/home=1/.test(location.search)),'任務中按房子圖示：回到首頁']);
   r.push(...noErr(p,'房子圖示'));await p.close();return r;});
+
+add('任務「截斷後續梯隊」：累計滾裝船損失、評星門檻、任務流程','medium',async c=>{const r=[];
+  let p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:21});await L.startGame(p);
+  const o=await p.evaluate(()=>{const D=MISSION_DEFS.cut;D.t0=null;D.init();const port=Object.values(TER).find(h=>h.t==='port'&&h.isl==='CN');S.pools.plaLst=0;S.pools.plaLift=20;S.roReserve=0;
+    const u=S.units.find(x=>x.side==='atk'&&x.type==='arm'&&alive(x)&&!x.ship);u.c=port.c;u.r=port.r;embark(u,port);const sh=shipOf(u);
+    const c0=D.count();damage(sh,3,'F-16V 空射魚叉飛彈');const c1=D.count();damage(sh,2,'602 旅攻擊直升機');const c2=D.count();
+    return {c0,c1,c2,st:[0,4,5,6,7,8,12].map(n=>D.starsOf(n)).join(),by:Object.assign({},S.stats.roBy),deb:/各武器貢獻/.test(D.debrief(c2))&&/攻擊直升機：2 艘/.test(D.debrief(c2))&&/反艦飛彈（岸置、空射、艦射）：3 艘/.test(D.debrief(c2)),n:Object.keys(MISSION_DEFS).length};});
+  r.push([o.c0===0&&o.c1===3&&o.c2===5,'累計滾裝船損失：開始 0 → 命中 3 艘（空射魚叉）→ 再 2 艘（直升機）＝ 5 艘 '+[o.c0,o.c1,o.c2]]);
+  r.push([o.st==='0,0,1,1,2,3,3','評星：<5 無、5～6 ★、7 ★★、≥8 ★★★ → '+o.st]);
+  r.push([o.deb&&o.n===3,'結算依武器分組列出貢獻；共 3 個任務']);
+  r.push(...noErr(p,'截斷任務單元'));await p.close();
+  p=await L.open(c.b,c.url,'?mission=cut',{fast:true,hide:true,seed:22});
+  r.push([await p.evaluate(()=>!!document.getElementById('misGo')&&/截斷後續梯隊/.test(document.getElementById('mbox').textContent)&&/★★★ 8 艘/.test(document.getElementById('mbox').textContent)),'任務簡報：標題與評星門檻']);
+  await p.click('#misGo');await p.waitForFunction(()=>S&&S.started,null,{timeout:60000});
+  await p.evaluate(()=>{S.stats.roShips=(S.stats.roShips||0)+8;render();});await p.waitForTimeout(2600);
+  r.push([await p.evaluate(()=>/任務成功/.test(document.getElementById('mbox').textContent)&&document.querySelectorAll('#mbox .mstars').length>0&&/打掉滾裝船/.test(document.getElementById('mbox').textContent)),'打到 8 艘：提前完成，顯示任務成功與結算']);
+  r.push(...noErr(p,'截斷任務流程'));await p.close();
+  for(const [ro,want] of [[2,'任務失敗'],[6,'任務成功']]){ // 時限到（第 7 回合開始）：不足 5 艘失敗、5～6 艘過關（★）
+    p=await L.open(c.b,c.url,'?mission=cut',{fast:true,hide:true,seed:23});await p.click('#misGo');await p.waitForFunction(()=>S&&S.started,null,{timeout:60000});
+    await p.evaluate(n=>{MISSION.D.init();S.stats.roShips=n;S.turn=7;MISSION.D.phase('atk');},ro);await p.waitForTimeout(2600);
+    r.push([await p.evaluate(w=>document.getElementById('mbox').textContent.includes(w),want),'時限到（累計 '+ro+' 艘）：'+want]);await p.close();}
+  return r;});
 
 add('首頁：設定頁（系統設定搬到首頁）','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{});const r=[];
   await p.click('#hmSettings');
