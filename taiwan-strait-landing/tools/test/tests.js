@@ -209,6 +209,23 @@ add('共軍長程火箭陣地（平潭、長樂、石獅）：可被打擊，受
   r.push([o.w0===60&&o.w1===40&&Math.abs(o.share-2/3)<1e-6,'完整時每回合 '+o.w0+' 波；平潭陣地癱瘓後 '+o.w1+' 波（3 處平均分擔 ★）']);
   r.push(...noErr(p,'長程火箭陣地'));await p.close();return r;});
 
+add('首頁：選戰役模式或關卡挑戰','medium',async c=>{const r=[];
+  const raw=await c.b.newPage({viewport:{width:1200,height:900}});const errs=[];raw.on('pageerror',e=>errs.push(e.message));
+  await raw.goto(c.url,{timeout:60000});await raw.waitForTimeout(900);
+  const a=await raw.evaluate(()=>({show:!document.getElementById('home').hidden,on:document.body.classList.contains('onhome'),vis:getComputedStyle(document.querySelector('.app')).visibility,t:document.querySelector('#home h1').textContent,btns:[...document.querySelectorAll('#home .hm-card')].map(b=>b.querySelector('b').textContent).join()}));
+  r.push([a.show&&a.on&&a.vis==='hidden'&&a.btns==='戰役模式,關卡挑戰','開啟（沒有網址參數）：顯示首頁，兩個選項「'+a.btns+'」，後面的遊戲畫面先藏起來']);
+  await raw.click('#hmMission');
+  const m=await raw.evaluate(()=>[...document.querySelectorAll('#homeIn a.hm-card')].map(a=>a.getAttribute('href')+':'+a.querySelector('b').textContent).join());
+  r.push([m==='?mission=carrier:擊沉航艦,?mission=port:72 小時奪港'||/carrier/.test(m)&&/port/.test(m),'關卡挑戰：列出所有關卡 '+m]);
+  await raw.click('#hmBack');await raw.click('#hmCampaign');
+  const b=await raw.evaluate(()=>({hid:document.getElementById('home').hidden,on:document.body.classList.contains('onhome'),vis:getComputedStyle(document.querySelector('.app')).visibility,ss:sessionStorage.getItem('tsl-home'),wz:!!document.querySelector('#wzNext')}));
+  r.push([b.hid&&!b.on&&b.vis==='visible'&&b.ss==='1'&&b.wz,'選戰役模式：首頁關閉、顯示設定精靈，這個分頁不再顯示首頁']);
+  await raw.reload();await raw.waitForTimeout(700);
+  r.push([await raw.evaluate(()=>document.getElementById('home').hidden),'同一分頁重新載入（例如切換語言）：不再顯示首頁']);
+  await raw.close();
+  const p2=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true});r.push([await p2.evaluate(()=>document.getElementById('home').hidden),'網址有 debug／nojank 等參數（測試、關卡）：不顯示首頁']);await p2.close();
+  r.push([!errs.length,'首頁：沒有頁面錯誤 '+JSON.stringify(errs)]);return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);

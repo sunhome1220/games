@@ -66,6 +66,7 @@ function renderSettings(){
     '<div style="margin-top:8px">'+seg('data-statn',[['50',['50 局']],['100',['100 局']],['300',['300 局']]],SETTINGS_STATN,3)+'</div>'+
     '<div class="btns" style="margin-top:10px"><button class="ghost" id="stRun"'+(STAT.running?' disabled':'')+'>開始統計</button></div>';
   h+='<div class="wz-q" style="margin-top:16px">支持作者</div><a id="stTip" class="btnlink" href="https://service.jkopay.com/r/transfer?j=Transfer:900386051&amp;amount=50" target="_blank" rel="noopener noreferrer">☕ 請作者喝杯咖啡<br><small>純屬自願，不贊助也能完整遊玩。預設金額 50 元，付款時可自行修改。</small></a>';
+  h+='<div class="btns" style="margin-top:16px"><button class="ghost" id="stHome">🏠 回首頁（選戰役模式或關卡挑戰）</button></div>';
   h+='<div class="btns" style="margin-top:16px"><button class="ghost" id="stCoach">💡 重看新手引導與登陸提示</button></div>';
   h+='<div class="btns" style="margin-top:16px"><button id="stClose">關閉</button></div>';
   box.innerHTML=h;
@@ -79,6 +80,7 @@ function renderSettings(){
   box.querySelectorAll('[data-rvl]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('tsl-rvl',b.dataset.rvl);}catch(e){}rvlApply();renderSettings();});
   box.querySelectorAll('[data-statn]').forEach(b=>b.onclick=()=>{SETTINGS_STATN=b.dataset.statn;renderSettings();});
   $('#stRun').onclick=()=>{$('#modal').hidden=true;box.innerHTML='';if(!S.started)readSetup();runStats(+SETTINGS_STATN);};
+  $('#stHome').onclick=()=>{if(!S.started||confirm('回首頁會結束目前這一局，確定嗎？'))homeAgain();};
   $('#stCoach').onclick=()=>{try{localStorage.removeItem('tsl-coach');}catch(e){}if(typeof landTipsSet==='function')landTipsSet(true);toast('已重新開啟新手引導與登陸提示',2200);};
   $('#stClose').onclick=()=>{$('#modal').hidden=true;box.innerHTML='';};
   $('#stClose').focus();
