@@ -510,6 +510,7 @@ add('手把登陸流程','full',async c=>{const p=await L.open(c.b,c.url,'?debug
   const st=()=>p.evaluate(()=>({human:humanTurn(),modal:!document.querySelector('#modal').hidden,turn:S.turn}));
   for(let i=0;i<5;i++)await press(5);await press(9);await p.waitForTimeout(2000);
   for(let i=0;i<150;i++){const s=await st();if(s.human&&!s.modal)break;if(s.modal)await press(3);await p.waitForTimeout(250);}
+  await p.waitForFunction(()=>{const am=S.units.find(u=>u.side==='atk'&&u.type==='amph'&&alive(u)&&!u.ship);return !!am&&[...reach(am)].some(([k,v])=>v.kind==='sail');},null,{timeout:30000}); // 負載高時開局晚一點才輪到人類：等到真的有出海選項再動，不要直接取第一個而丟例外
   await p.evaluate(()=>{const am=S.units.find(u=>u.side==='atk'&&u.type==='amph'&&alive(u)&&!u.ship);const k=[...reach(am)].find(([k,v])=>v.kind==='sail')[0];humanMove(am,k,'sail');S.sel=null;render();});
   await press(9);await press(9);
   for(let i=0;i<200;i++){const s=await st();if(s.human&&!s.modal&&s.turn>=2)break;if(s.modal)await press(3);await p.waitForTimeout(250);}
