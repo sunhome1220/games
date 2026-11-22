@@ -213,7 +213,7 @@ add('首頁：選戰役模式或關卡挑戰','medium',async c=>{const r=[];
   const raw=await c.b.newPage({viewport:{width:1200,height:900}});const errs=[];raw.on('pageerror',e=>errs.push(e.message));
   await raw.goto(c.url,{timeout:60000});await raw.waitForTimeout(900);
   const a=await raw.evaluate(()=>({show:!document.getElementById('home').hidden,on:document.body.classList.contains('onhome'),vis:getComputedStyle(document.querySelector('.app')).visibility,t:document.querySelector('#home h1').textContent,btns:[...document.querySelectorAll('#home .hm-card')].map(b=>b.querySelector('b').textContent).join()}));
-  r.push([a.show&&a.on&&a.vis==='hidden'&&a.btns==='戰役模式,關卡挑戰','開啟（沒有網址參數）：顯示首頁，兩個選項「'+a.btns+'」，後面的遊戲畫面先藏起來']);
+  r.push([a.show&&a.on&&a.vis==='hidden'&&a.btns==='戰役模式,關卡挑戰,設定','開啟（沒有網址參數）：顯示首頁，兩個選項「'+a.btns+'」，後面的遊戲畫面先藏起來']);
   await raw.click('#hmMission');
   const m=await raw.evaluate(()=>[...document.querySelectorAll('#homeIn a.hm-card')].map(a=>a.getAttribute('href')+':'+a.querySelector('b').textContent).join());
   r.push([m==='?mission=carrier:擊沉航艦,?mission=port:72 小時奪港'||/carrier/.test(m)&&/port/.test(m),'關卡挑戰：列出所有關卡 '+m]);
