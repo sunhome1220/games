@@ -122,7 +122,7 @@ const plaAirOld=()=>S.air?8*S.air.PLA/Math.max(1,S.air.PLA0):S.pools.plaAir;
 function computeFire(){
   const P=S.pools,t=S.turn,rs=cnShare('rf'),as=cnShare('air');
   mslSync();adSync();S.adLeft=MSL.adCap;samReset(); // 每個攻方階段：守方各連重新可接戰
-  const sP=Math.min(Math.floor(S.msl.srbm/MSL.srbmPer),Math.round(MSL.srbmLaunch/MSL.srbmPer*rs)),rP=Math.min(Math.floor(S.msl.rkt/MSL.rktPer),Math.round(MSL.rktLaunch/MSL.rktPer)); // 發射車數決定每回合上限；飛彈在實際打擊時才扣
+  const sP=Math.min(Math.floor(S.msl.srbm/MSL.srbmPer),Math.round(MSL.srbmLaunch/MSL.srbmPer*rs)),rP=Math.min(Math.floor(S.msl.rkt/MSL.rktPer),Math.round(MSL.rktLaunch/MSL.rktPer*cnShare('rkt'))); // 發射車數決定每回合上限；飛彈在實際打擊時才扣
   const hs=Math.min(P.plaHS,Math.round((t<=3?2:1)*rs));P.plaHS-=hs; // DF-17 hypersonic: not reduced by the defender's air defense
   const cm0=Math.min(P.plaCM,Math.round((t<=3?2:1)*as));P.plaCM-=cm0;const cm=Math.max(0,cm0-(P.rocAD>=5?1:0)); // cruise missiles are intercepted more easily than ballistic ones
   airSync();const fr=AIR.strike[S.airCtl||'mid']||.4,plaSor=sortiesOf(S.air?S.air.PLA:0,AIR.PLArate)*as*fr+cvIdx().reduce((a,i)=>{const s=sortiesOf(S.air?S.air.cvF[i]:0,AIR.CV[i].rate),w=cvwA(i);return a+s*(w?0:fr);},0); // 有棋子的航艦：對地份額改由艦載機實際空襲（cvwStrike），不再換算成火力點數

@@ -33,7 +33,7 @@ function renderTheater(){
   const strikeOn=humanTurn()&&S.phase==='atk'&&S.mode==='strike',dStrikeOn=(humanTurn()&&S.phase==='def'&&S.mode==='strike'&&S.dfire>0&&lrOK())||tomOn();
   for(const [id,B] of Object.entries(CNB)){
     const [x0,y0]=T(B.lon,B.lat),x=+x0,y=+y0,hp=cnShown(id),tg=dStrikeOn&&cnTargets().includes(id);
-    const shape=B.kind==='rf'?'<polygon class="tcb" points="'+x+','+(y-10)+' '+(x+10)+','+y+' '+x+','+(y+10)+' '+(x-10)+','+y+'"/>':
+    const shape=B.kind==='rkt'?'<polygon class="tcb" points="'+(x-9)+','+(y-7)+' '+(x+9)+','+(y-7)+' '+x+','+(y+9)+'"/>':B.kind==='rf'?'<polygon class="tcb" points="'+x+','+(y-10)+' '+(x+10)+','+y+' '+x+','+(y+10)+' '+(x-10)+','+y+'"/>':
       B.kind==='air'?'<polygon class="tcb" points="'+x+','+(y-9)+' '+(x+9)+','+(y+7)+' '+(x-9)+','+(y+7)+'"/>':
       B.kind==='navy'?'<rect class="tcb" x="'+(x-8)+'" y="'+(y-8)+'" width="16" height="16"/>':B.kind==='isr'?'<polygon class="tcb" points="'+[0,-10,3,-3,10,0,3,3,0,10,-3,3,-10,0,-3,-3].map((v,j)=>j%2?y+v:x+v).join(',')+'"/>':'<circle class="tcb" cx="'+x+'" cy="'+y+'" r="8"/>';
     o+='<g class="tcg'+(hp>0?'':' off')+(S.cnSel===id?' sel':'')+'" data-cn="'+id+'">'+shape+'<text class="tnum w" x="'+x+'" y="'+(y+4)+'">'+hp+'</text>'+(tg?'<circle class="ttg d" cx="'+x+'" cy="'+y+'" r="15"/>':'')+

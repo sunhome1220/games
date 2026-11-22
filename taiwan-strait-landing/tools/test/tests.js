@@ -182,6 +182,15 @@ add('平潭島 3 格＋兩座橋（只畫圖）','medium',async c=>{const p=awai
   r.push([o.brg===2&&o.lbl==='公鐵大橋,跨海大橋','地圖上畫了兩座橋：'+o.lbl]);
   r.push(...noErr(p,'平潭'));await p.close();return r;});
 
+add('共軍長程火箭陣地（平潭、長樂、石獅）：可被打擊，受損則長程火箭波數下降','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:9});const r=[];await L.startGame(p);
+  const o=await p.evaluate(()=>{const ids=Object.keys(CNB).filter(k=>CNB[k].kind==='rkt');const out={ids:ids.join(),known:ids.every(k=>S.cn[k]===CNB[k].hp)};
+    const w=()=>{computeFire();const m=S.fireNote.match(/長程火箭 (\d+) 波/);return m?+m[1]:-1;};
+    S.msl.rkt=1440;out.w0=w();S.cn.pingtanR=0;out.w1=w();out.share=cnShare('rkt');out.val=cnValue('pingtanR');S.cn.pingtanR=3;
+    out.inList=Object.keys(CNB).filter(k=>CNB[k].kind==='rkt').every(k=>typeof KIND_N[CNB[k].kind]==='string');return out;});
+  r.push([o.ids==='pingtanR,changleR,shishiR'&&o.known,'三處長程火箭陣地：'+o.ids]);
+  r.push([o.w0===60&&o.w1===40&&Math.abs(o.share-2/3)<1e-6,'完整時每回合 '+o.w0+' 波；平潭陣地癱瘓後 '+o.w1+' 波（3 處平均分擔 ★）']);
+  r.push(...noErr(p,'長程火箭陣地'));await p.close();return r;});
+
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
     for(const h of Object.values(TER)){if(h.t!=='sea'||h.isl)continue;const [x,y]=center(h.c,h.r),q=new DOMPoint(x,y).matrixTransform(g);

@@ -30,7 +30,7 @@ function cnIntercept(n,eng){const k=Math.min(1,(S.pools.plaAD||0)/6),pk=ROCLR.ip
 // ── 命中率依目標而不同（★推估）──
 // 距離：從台灣發射，300 km 內只過沿岸一層防空；更深的目標要多穿過防空網，每多 300 km 再多半層接戰（江西、安徽的火箭軍駐地約 500～900 km）；ATACMS 300 km 內可用（與海馬士共用庫存，見 lrWpn），更遠只有雄二E
 // 硬度（突破後命中並造成損傷的機率）：火箭軍駐地有加固掩體與坑道 25%；機場、軍港 33%（同攻方打台灣機場）；指揮中心（地下化）20%；雷達與電子偵察站 40%；碼頭邊的船與集結中的車輛（軟目標、密集）45%
-const CNHARD={rf:.25,air:.33,navy:.33,stg:.45,isrHQ:.2,isrRad:.4};
+const CNHARD={rkt:.25,rf:.25,air:.33,navy:.33,stg:.45,isrHQ:.2,isrRad:.4};
 const TWLL=[120.7,24.3];
 function kmTo(lon,lat){const k=Math.PI/180,dx=(lon-TWLL[0])*111*Math.cos(((lat+TWLL[1])/2)*k),dy=(lat-TWLL[1])*111;return Math.hypot(dx,dy);}
 function cnHitP(tg){ // tg：基地 id 或 {u}；回傳 {p（每包命中率）,km,eng,hard,IC}
@@ -47,6 +47,7 @@ function cnValue(tg){
   const left=Math.max(0,Math.min(2,(S.T||8)-S.turn+1)); // 受損約維持 2 回合（攻方每 2 回合修復一級），且不超過剩下的回合
   if(tg.u){const u=tg.u,b=u.boundTo?S.units.find(x=>x.id===u.boundTo):null;return (isShip(u)?1:(CPW[u.type]||1))+(b?(CPW[b.type]||1):0);} // 集結中的部隊或船：直接打掉 1 步（載著旅的船連旅一起）
   const B=CNB[tg],lvl=B.hp;
+  if(B.kind==='rkt'){const per=(MSL.rktLaunch/MSL.rktPer)/Object.values(CNB).filter(x=>x.kind==='rkt').reduce((a,x)=>a+x.hp,0);return (S.msl&&S.msl.rkt>0?per*left*CN_STEP_PER_PKG:0);} // 每級約少發射 6～7 波長程火箭／回合（每波視為一包）
   if(B.kind==='rf'){const per=(MSL.srbmLaunch/MSL.srbmPer)/Object.values(CNB).filter(x=>x.kind==='rf').reduce((a,x)=>a+x.hp,0);return (S.msl&&S.msl.srbm>0?per*left*CN_STEP_PER_PKG:0);} // 每級約少發射 5 包／回合
   if(B.kind==='air'){const per=(S.fire||20)*.4/Object.values(CNB).filter(x=>x.kind==='air').reduce((a,x)=>a+x.hp,0);return per*left*CN_STEP_PER_PKG+(S.cn[tg]<=2&&S.pools.plaAir>0?.5*.3:0);}
   if(B.kind==='navy')return S.cn[tg]<=1&&S.pools.plaNavy>0?1:.2; // 打到癱瘓才傷及港內艦艇
@@ -141,7 +142,8 @@ function strikeCN(id,by){
   fxq({t:'tfa',a:by==='roc'?'tw':by==='US'?(Math.random()<.5?'guam':'sea'):'sakishima',b:id,hit});
   if(hit){
     S.cn[id]--;S.stats.cn.hits++;if(!S.rec&&!reduce())(CNPEND[id]=CNPEND[id]||[]).push(Date.now()+6000);
-    if(B.kind==='rf')fx='駐地與預備陣地受損，火箭軍發射能量下降（飛彈與機動發射車多已疏散，不在駐地）';
+    if(B.kind==='rkt')fx='火箭發射車（PHL-16／PCH-191）受損，長程火箭每回合波數下降';
+    else if(B.kind==='rf')fx='駐地與預備陣地受損，火箭軍發射能量下降（飛彈與機動發射車多已疏散，不在駐地）';
     else if(B.kind==='air'){fx='跑道與機堡受損，出擊架次下降';if(S.cn[id]<=1&&P.plaAir>0&&hitP(.5,'strikeCNair'))fx+='，地面戰機 −'+airLose('atk',4,'ground')+' 架（推估：強化機堡外）';}
     else if(B.kind==='isr')fx='指揮與偵察受損，共軍定位台灣目標的能力下降';
     else if(B.kind==='navy'){fx='港區設施受損';if(S.cn[id]<=0&&P.plaNavy>0){P.plaNavy--;fx+='，仍在港內的艦艇受創（攻方護航艦隊 −1，推估）';}}
