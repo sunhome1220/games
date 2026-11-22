@@ -64,7 +64,7 @@ h1{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,4vw,38px);l
 .sub{color:var(--muted);font-size:13px;margin-top:4px}
 .stop{display:none}.htitle{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1 1 320px;min-width:0}.htitle h1{min-width:0}.hbtns{display:flex;align-items:center;gap:8px;flex:none}
 @media (min-width:961px){.htitle{flex:1 0 auto}.htitle h1{white-space:nowrap;flex:none}.statusbar{flex:0 1 auto;min-width:0;justify-content:flex-end}}
-#btnNew{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;min-width:0;min-height:0;padding:0;border-radius:50%;color:var(--ink);border:1px solid var(--line);background:transparent}#btnNew[hidden]{display:none}#btnNew svg{flex:none}#btnNew .bl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)} /* 與設定齒輪同樣的圓形圖示按鈕；文字只給螢幕閱讀器 */
+#btnNew,#btnHome{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;min-width:0;min-height:0;padding:0;border-radius:50%;color:var(--ink);border:1px solid var(--line);background:transparent}#btnNew[hidden]{display:none}#btnNew svg,#btnHome svg{flex:none}#btnNew .bl,#btnHome .bl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)} /* 與設定齒輪同樣的圓形圖示按鈕；文字只給螢幕閱讀器 */
 #btnSettings{width:40px;height:40px;min-width:0;min-height:0;padding:0;border-radius:50%;background:transparent;color:var(--ink);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center}#btnSettings:hover{border-color:var(--ink);background:var(--panel)}
 .statusbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .btnlink{display:block;border:1px solid var(--ink);border-radius:3px;padding:10px 12px;margin-top:8px;text-align:center;text-decoration:none;color:var(--ink);font-weight:700;background:var(--panel)}.btnlink small{display:block;font-weight:400;color:var(--muted);margin-top:2px}.btnlink:hover{background:var(--ink);color:var(--bg)}.btnlink:hover small{color:inherit}
@@ -290,7 +290,7 @@ body.onhome .app{visibility:hidden}
   body.playing header{gap:4px 10px;padding-bottom:8px;margin-bottom:8px;align-items:center}
   body.playing h1{font-size:19px;letter-spacing:.04em}
   body.playing #btnSettings{width:34px;height:34px}
-  body.playing #btnNew{width:34px;min-width:0;height:34px;padding:0;border-radius:50%;justify-content:center;flex:none} body.playing #btnNew .bl{display:none} /* 手機：只顯示圖示，和設定齒輪同樣大小 */
+  body.playing #btnNew,body.playing #btnHome{width:34px;min-width:0;height:34px;padding:0;border-radius:50%;justify-content:center;flex:none} body.playing #btnNew .bl,body.playing #btnHome .bl{display:none} /* 手機：只顯示圖示，和設定齒輪同樣大小 */
   body.playing .stop{overflow:hidden}
   body.playing .htitle{order:1;flex:1 1 auto;gap:8px}
   body.playing .htitle h1{font-size:16px;white-space:nowrap;flex:0 0 auto;letter-spacing:.02em}
@@ -759,7 +759,7 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
     <div class="htitle">
       <h1>台海兵棋推演</h1>
       <div class="stop" id="statusTop"></div>
-      <div class="hbtns"><button class="ghost sm" id="btnInstall" hidden>📲 安裝 App</button><button class="ghost sm" id="btnNew" hidden title="重新開始：放棄這一局，回到作戰設定" aria-label="重新開始"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg><span class="bl">重新開始</span></button><button id="btnSettings" aria-haspopup="dialog" aria-label="設定" title="設定"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+      <div class="hbtns"><button class="ghost sm" id="btnInstall" hidden>📲 安裝 App</button><button class="ghost sm" id="btnHome" title="回首頁（選戰役模式、任務挑戰或設定）" aria-label="回首頁"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span class="bl">回首頁</span></button><button class="ghost sm" id="btnNew" hidden title="重新開始：放棄這一局，回到作戰設定" aria-label="重新開始"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg><span class="bl">重新開始</span></button><button id="btnSettings" aria-haspopup="dialog" aria-label="設定" title="設定"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
     </div>
     <div class="statusbar" id="status"></div>
   </header>
@@ -840,7 +840,7 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
           <div id="wzBody"></div>
           <div class="wz-foot">
             <div class="wz-nav"><button class="ghost" id="wzPrev">← 上一步</button><button class="ghost" id="wzNext">下一步 →</button><button id="btnStart">開始作戰</button></div>
-            <div class="wz-sub"><div class="hint" id="wzHint"></div><a class="lnk" id="btnMission" href="?mission=carrier" title="情境任務：限時擊沉共軍航艦">🎯 任務挑戰：航艦打擊</a> <a class="lnk" id="btnMission2" href="?mission=port" title="情境任務：限時奪下並守住 2 個港口（攻方）">🎯 任務挑戰：72 小時港區奪控</a> <button class="lnk" id="btnDefault" title="預設：對戰、你操作攻方（電腦守方）、第 8 回合判定、演習掩護、擲骰決定參戰、快訊開啟。不會改掉你已記錄的設定。">依預設值直接開始</button></div>
+            <div class="wz-sub"><div class="hint" id="wzHint"></div><button class="lnk" id="btnDefault" title="預設：對戰、你操作攻方（電腦守方）、第 8 回合判定、演習掩護、擲骰決定參戰、快訊開啟。不會改掉你已記錄的設定。">依預設值直接開始</button></div>
           </div>
           <div id="wzStore" hidden>
             <select id="optMode"><option value="play">對戰</option><option value="sim">電腦推演</option><option value="video">純模擬</option></select>
@@ -950,62 +950,62 @@ button:not(.opt),.segb{white-space:nowrap}button small.pn,.segb small.pn{font-si
 <button id="resume" hidden>回到事件 ▲</button>
 <div id="toast"></div>
 
-<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-18.59' -->
-<script src="js/i18n/dict.js?v=2026-11-18.59"></script>
-<script src="js/i18n/i18n.js?v=2026-11-18.59"></script>
-<script src="js/ui/btnfix.js?v=2026-11-18.59"></script>
-<script src="js/data/geo.js?v=2026-11-18.59"></script>
-<script src="js/data/dem.js?v=2026-11-18.59"></script>
-<script src="js/data/urban.js?v=2026-11-18.59"></script>
-<script src="js/data/outer.js?v=2026-11-18.59"></script>
-<script src="js/core/map.js?v=2026-11-18.59"></script>
-<script src="js/core/state.js?v=2026-11-18.59"></script>
-<script src="js/rules/sealift.js?v=2026-11-18.59"></script>
-<script src="js/rules/rules.js?v=2026-11-18.59"></script>
-<script src="js/rules/killchain.js?v=2026-11-18.59"></script>
-<script src="js/rules/verdict.js?v=2026-11-18.59"></script>
-<script src="js/rules/supply.js?v=2026-11-18.59"></script>
-<script src="js/rules/ending.js?v=2026-11-18.59"></script>
-<script src="js/rules/theater.js?v=2026-11-18.59"></script>
-<script src="js/rules/airwar.js?v=2026-11-18.59"></script>
-<script src="js/rules/sam.js?v=2026-11-18.59"></script>
-<script src="js/rules/carrier.js?v=2026-11-18.59"></script>
-<script src="js/rules/asw.js?v=2026-11-18.59"></script>
-<script src="js/rules/psub.js?v=2026-11-18.59"></script>
-<script src="js/rules/subauto.js?v=2026-11-18.59"></script>
-<script src="js/rules/lha.js?v=2026-11-18.59"></script>
-<script src="js/rules/strike.js?v=2026-11-18.59"></script>
-<script src="js/rules/airstrike.js?v=2026-11-18.59"></script>
-<script src="js/rules/heli.js?v=2026-11-18.59"></script>
-<script src="js/rules/decisions.js?v=2026-11-18.59"></script>
-<script src="js/media/report.js?v=2026-11-18.59"></script>
-<script src="js/rules/weather.js?v=2026-11-18.59"></script>
-<script src="js/rules/truce.js?v=2026-11-18.59"></script>
-<script src="js/rules/allies.js?v=2026-11-18.59"></script>
-<script src="js/rules/turn.js?v=2026-11-18.59"></script>
-<script src="js/rules/ai.js?v=2026-11-18.59"></script>
-<script src="js/ui/render.js?v=2026-11-18.59"></script>
-<script src="js/ui/render_outer.js?v=2026-11-18.59"></script>
-<script src="js/ui/render_bases.js?v=2026-11-18.59"></script>
-<script src="js/ui/landtips.js?v=2026-11-18.59"></script>
-<script src="js/ui/fxanim.js?v=2026-11-18.59"></script>
-<script src="js/ui/fx.js?v=2026-11-18.59"></script>
-<script src="js/ui/modebar.js?v=2026-11-18.59"></script>
-<script src="js/ui/jank.js?v=2026-11-18.59"></script>
-<script src="js/ui/ammo.js?v=2026-11-18.59"></script>
-<script src="js/ui/mobilecard.js?v=2026-11-18.59"></script>
-<script src="js/media/video.js?v=2026-11-18.59"></script>
-<script src="js/media/stats.js?v=2026-11-18.59"></script>
-<script src="js/ui/input.js?v=2026-11-18.59"></script>
-<script src="js/media/unitinfo.js?v=2026-11-18.59"></script>
-<script src="js/version.js?v=2026-11-18.59"></script>
-<script src="js/core/changelog.js?v=2026-11-18.59"></script>
-<script src="js/core/app.js?v=2026-11-18.59"></script>
-<script src="js/missions/common.js?v=2026-11-18.59"></script>
-<script src="js/missions/carrier.js?v=2026-11-18.59"></script>
-<script src="js/missions/port.js?v=2026-11-18.59"></script>
-<script src="js/core/home.js?v=2026-11-18.59"></script>
+<!-- 舊版（單檔時期）頁面的更新檢查會抓這個檔案找下面這一行；由 tools/bump_version.py 同步更新，不要刪。 const VERSION='2026-11-18.60' -->
+<script src="js/i18n/dict.js?v=2026-11-18.60"></script>
+<script src="js/i18n/i18n.js?v=2026-11-18.60"></script>
+<script src="js/ui/btnfix.js?v=2026-11-18.60"></script>
+<script src="js/data/geo.js?v=2026-11-18.60"></script>
+<script src="js/data/dem.js?v=2026-11-18.60"></script>
+<script src="js/data/urban.js?v=2026-11-18.60"></script>
+<script src="js/data/outer.js?v=2026-11-18.60"></script>
+<script src="js/core/map.js?v=2026-11-18.60"></script>
+<script src="js/core/state.js?v=2026-11-18.60"></script>
+<script src="js/rules/sealift.js?v=2026-11-18.60"></script>
+<script src="js/rules/rules.js?v=2026-11-18.60"></script>
+<script src="js/rules/killchain.js?v=2026-11-18.60"></script>
+<script src="js/rules/verdict.js?v=2026-11-18.60"></script>
+<script src="js/rules/supply.js?v=2026-11-18.60"></script>
+<script src="js/rules/ending.js?v=2026-11-18.60"></script>
+<script src="js/rules/theater.js?v=2026-11-18.60"></script>
+<script src="js/rules/airwar.js?v=2026-11-18.60"></script>
+<script src="js/rules/sam.js?v=2026-11-18.60"></script>
+<script src="js/rules/carrier.js?v=2026-11-18.60"></script>
+<script src="js/rules/asw.js?v=2026-11-18.60"></script>
+<script src="js/rules/psub.js?v=2026-11-18.60"></script>
+<script src="js/rules/subauto.js?v=2026-11-18.60"></script>
+<script src="js/rules/lha.js?v=2026-11-18.60"></script>
+<script src="js/rules/strike.js?v=2026-11-18.60"></script>
+<script src="js/rules/airstrike.js?v=2026-11-18.60"></script>
+<script src="js/rules/heli.js?v=2026-11-18.60"></script>
+<script src="js/rules/decisions.js?v=2026-11-18.60"></script>
+<script src="js/media/report.js?v=2026-11-18.60"></script>
+<script src="js/rules/weather.js?v=2026-11-18.60"></script>
+<script src="js/rules/truce.js?v=2026-11-18.60"></script>
+<script src="js/rules/allies.js?v=2026-11-18.60"></script>
+<script src="js/rules/turn.js?v=2026-11-18.60"></script>
+<script src="js/rules/ai.js?v=2026-11-18.60"></script>
+<script src="js/ui/render.js?v=2026-11-18.60"></script>
+<script src="js/ui/render_outer.js?v=2026-11-18.60"></script>
+<script src="js/ui/render_bases.js?v=2026-11-18.60"></script>
+<script src="js/ui/landtips.js?v=2026-11-18.60"></script>
+<script src="js/ui/fxanim.js?v=2026-11-18.60"></script>
+<script src="js/ui/fx.js?v=2026-11-18.60"></script>
+<script src="js/ui/modebar.js?v=2026-11-18.60"></script>
+<script src="js/ui/jank.js?v=2026-11-18.60"></script>
+<script src="js/ui/ammo.js?v=2026-11-18.60"></script>
+<script src="js/ui/mobilecard.js?v=2026-11-18.60"></script>
+<script src="js/media/video.js?v=2026-11-18.60"></script>
+<script src="js/media/stats.js?v=2026-11-18.60"></script>
+<script src="js/ui/input.js?v=2026-11-18.60"></script>
+<script src="js/media/unitinfo.js?v=2026-11-18.60"></script>
+<script src="js/version.js?v=2026-11-18.60"></script>
+<script src="js/core/changelog.js?v=2026-11-18.60"></script>
+<script src="js/core/app.js?v=2026-11-18.60"></script>
+<script src="js/missions/common.js?v=2026-11-18.60"></script>
+<script src="js/missions/carrier.js?v=2026-11-18.60"></script>
+<script src="js/missions/port.js?v=2026-11-18.60"></script>
+<script src="js/core/home.js?v=2026-11-18.60"></script>
 <script>if(missionId())setTimeout(()=>missionStart(missionId()),0);</script>
-<script src="js/ui/gamepad.js?v=2026-11-18.59"></script>
+<script src="js/ui/gamepad.js?v=2026-11-18.60"></script>
 </body>
 </html>

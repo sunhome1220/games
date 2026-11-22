@@ -34,5 +34,8 @@ function homeMissions(){
   const f=document.querySelector('#homeIn a.hm-card');if(f)f.focus();
 }
 function homeOpen(){homeMain();document.body.classList.add('onhome');$('#home').hidden=false;}
+$('#btnHome').onclick=()=>{ // 標題列的「回首頁」：還沒開局＝直接顯示首頁（設定精靈的內容保留）；對局中＝確認後重新載入（對局結束）
+  if(!S.started||S.over){homeOpen();return;}
+  if(confirm('回首頁會結束目前這一局，確定嗎？'))homeAgain();};
 function homeAgain(){homeSess('tsl-home','0');location.href=location.pathname+'?home=1';} // 設定視窗的「回首頁」：重新載入並顯示首頁
 if(homeShouldShow()){homeOpen();if(homeSess('tsl-home-set')==='1'){homeSess('tsl-home-set','0');homeSettings();}} // 在首頁的設定切換語言後重新載入：回到設定頁
