@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>管理者設定 · 台海兵棋推演</title>
+<style>
+:root{--bg:#101A24;--panel:#1B2935;--ink:#E8EDF0;--muted:#9AAAB4;--accent:#C5A56A;--friend:#5EAA91;--foe:#D16F65;--line:rgba(232,237,240,.16)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,"Noto Sans TC","PingFang TC",sans-serif;padding:20px 16px 40px}
+main{max-width:640px;margin:0 auto}
+h1{font-size:24px;margin:0 0 4px} h2{font-size:17px;margin:26px 0 8px;color:var(--accent)}
+p,li{color:var(--muted)} .warn{color:var(--foe)} .ok{color:var(--friend)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+label{display:block;margin:10px 0 4px;color:var(--ink)}
+input[type=text],input[type=password],textarea,select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:#0c141b;color:var(--ink);font:inherit}
+textarea{min-height:130px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
+button,a.btn{display:inline-block;padding:9px 14px;margin:8px 8px 0 0;border-radius:8px;border:1px solid var(--accent);background:transparent;color:var(--accent);font:inherit;cursor:pointer;text-decoration:none}
+button.pri{background:var(--accent);color:#101A24;font-weight:700}
+code{background:#0c141b;padding:1px 6px;border-radius:5px;word-break:break-all}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;width:0;background:var(--foe)}
+</style>
+</head>
+<body>
+<main>
+<h1>管理者設定</h1>
+<p>替「台海兵棋推演」的管理者開關算出密碼雜湊、產生 <code>status.json</code> 的內容。<b>所有計算都在你的瀏覽器裡完成，密碼不會傳到任何地方。</b></p>
+
+<h2>目前狀態</h2>
+<div class="card" id="cur">讀取中…</div>
+
+<h2>1. 設定管理者密碼</h2>
+<div class="card">
+  <label for="pw">管理者密碼（建議 16 字元以上的隨機字串）</label>
+  <input id="pw" type="password" autocomplete="new-password" spellcheck="false">
+  <div class="bar"><i id="bar"></i></div><div id="strength" style="font-size:14px;margin-top:4px"></div>
+  <div class="row"><button id="show">顯示密碼</button><button id="rand">產生隨機密碼</button></div>
+  <p style="font-size:14px">密碼只有你知道，倉庫裡只存雜湊。隨機密碼請存進密碼管理員；忘記了就重新設定一組（換掉雜湊即可）。</p>
+</div>
+
+<h2>2. 開放或關閉</h2>
+<div class="card">
+  <label for="st">狀態</label>
+  <select id="st"><option value="open">開放（任何人都能玩）</option><option value="closed">對外關閉（只有管理者能玩）</option></select>
+  <label for="msg">關閉時給訪客看的訊息（可留白）</label>
+  <input id="msg" type="text" placeholder="維護中，稍後開放">
+</div>
+
+<h2>3. 貼到 status.json</h2>
+<div class="card">
+  <textarea id="out" readonly></textarea>
+  <div class="row"><button class="pri" id="copy">複製</button>
+  <a class="btn" id="edit" target="_blank" rel="noopener">開啟 GitHub 編輯 status.json</a></div>
+  <ol>
+    <li>按「複製」。</li>
+    <li>按「開啟 GitHub 編輯」，全選舊內容、貼上新內容。</li>
+    <li>按右上「Commit changes…」，直接 commit 到 <code>main</code>。</li>
+    <li>約 1～2 分鐘後生效。</li>
+  </ol>
+  <p class="warn" style="font-size:14px">如果選「對外關閉」，請先確認上面已設定管理者密碼，否則連你自己也進不去。</p>
+</div>
+
+<h2>4. 管理者登入網址</h2>
+<div class="card">
+  <p>關閉期間用這個網址進入（只需一次，這台裝置會記住）：</p>
+  <div class="row"><code id="login">先輸入密碼</code></div>
+  <div class="row"><button id="copyLogin">複製登入網址</button></div>
+  <p style="font-size:14px">登出：在網址後加 <code>?admin=logout</code>。把登入網址存在你自己的記事本，不要分享給別人。</p>
+</div>
+
+<h2>限制</h2>
+<ul>
+  <li>這是軟性關閉：程式碼是公開的，擋得住一般訪客，擋不住會自己下載程式碼的人。</li>
+  <li>要立刻、完全下線：GitHub 倉庫 Settings → Pages → Unpublish site，或把倉庫改為私人。</li>
+</ul>
+</main>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const hex=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const base=location.href.replace(/admin\.html.*$/,'');
+  $('edit').href='https://github.com/sunhome1220/games/edit/main/taiwan-strait-landing/status.json';
+  let cur={open:true,message:'',adminHash:''};
+  fetch('status.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{cur=d;
+    $('cur').innerHTML='狀態：<b class="'+(d.open===false?'warn':'ok')+'">'+(d.open===false?'已對外關閉':'開放中')+'</b>；管理者密碼：<b class="'+(d.adminHash?'ok':'warn')+'">'+(d.adminHash?'已設定':'尚未設定')+'</b>'+(d.message?'；訊息：'+String(d.message).replace(/[<>&]/g,'')+'':'');
+    $('st').value=d.open===false?'closed':'open';$('msg').value=d.message||'';render();}).catch(()=>{$('cur').textContent='讀不到 status.json（離線或尚未部署）；仍可產生新內容。';});
+  function score(p){let s=0;if(p.length>=12)s+=30;if(p.length>=16)s+=25;if(p.length>=24)s+=10;if(/[a-z]/.test(p)&&/[A-Z]/.test(p))s+=10;if(/\d/.test(p))s+=10;if(/[^A-Za-z0-9]/.test(p))s+=15;return Math.min(100,s);}
+  async function render(){
+    const p=$('pw').value,sc=score(p);$('bar').style.width=sc+'%';$('bar').style.background=sc>=70?'var(--friend)':sc>=40?'var(--accent)':'var(--foe)';
+    $('strength').textContent=!p?'':p.length<12?'太短（至少 12 字元）':sc>=70?'強度足夠':'可以更長、更隨機';
+    const h=p.length>=12?await hex('tsl-admin:'+p):(cur.adminHash||'');
+    const o={open:$('st').value!=='closed',message:$('msg').value.trim(),adminHash:h};
+    $('out').value=JSON.stringify(o,null,2)+'\n';
+    $('login').textContent=p?base+'?admin='+encodeURIComponent(p):'先輸入密碼';
+  }
+  ['pw','st','msg'].forEach(i=>$(i).addEventListener('input',render));$('st').addEventListener('change',render);
+  $('show').onclick=()=>{const t=$('pw').type==='password';$('pw').type=t?'text':'password';$('show').textContent=t?'隱藏密碼':'顯示密碼';};
+  $('rand').onclick=()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789',b=new Uint32Array(20);crypto.getRandomValues(b);$('pw').value=[...b].map(x=>A[x%A.length]).join('');$('pw').type='text';$('show').textContent='隱藏密碼';render();};
+  const cp=async(txt,btn)=>{try{await navigator.clipboard.writeText(txt);}catch(e){const t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();}const o=btn.textContent;btn.textContent='已複製';setTimeout(()=>btn.textContent=o,1400);};
+  $('copy').onclick=()=>cp($('out').value,$('copy'));
+  $('copyLogin').onclick=()=>{const p=$('pw').value;if(p)cp(base+'?admin='+encodeURIComponent(p),$('copyLogin'));};
+  render();
+})();
+</script>
+</body>
+</html>

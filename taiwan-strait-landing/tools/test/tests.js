@@ -257,6 +257,18 @@ add('管理者開關：status.json 關閉、管理者密碼繞過、離線照常
   p=await mk(null);a=await info(p);r.push([!a.veil,'抓不到 status.json（離線）：照常開放，不卡住']);await p.close();
   return r;});
 
+add('admin.html：在瀏覽器內算管理者雜湊、產生 status.json','medium',async c=>{const r=[];const crypto=require('crypto');
+  const pg=await c.b.newPage({viewport:{width:430,height:900}});const errs=[],reqs=[];pg.on('pageerror',e=>errs.push(e.message));pg.on('request',q=>{if(!q.url().startsWith(new URL(c.url).origin))reqs.push(q.url());});
+  await pg.goto(c.url.replace(/index\.html.*$/,'')+'admin.html',{timeout:60000});await pg.waitForTimeout(700);
+  const pw='test-pass-1234567',h=crypto.createHash('sha256').update('tsl-admin:'+pw).digest('hex');
+  await pg.fill('#pw','short');let o=JSON.parse(await pg.inputValue('#out'));r.push([o.adminHash===''&&/太短/.test(await pg.textContent('#strength')),'密碼太短（<12）：不產生雜湊，並提示']);
+  await pg.fill('#pw',pw);await pg.selectOption('#st','closed');await pg.fill('#msg','維護中，稍後開放');o=JSON.parse(await pg.inputValue('#out'));
+  r.push([o.adminHash===h&&o.open===false&&o.message==='維護中，稍後開放','產生的 status.json：雜湊與 SHA-256("tsl-admin:"+密碼) 相同、open:false、訊息正確']);
+  r.push([/\?admin=test-pass-1234567$/.test(await pg.textContent('#login')),'管理者登入網址帶密碼']);
+  await pg.click('#rand');const rp=await pg.inputValue('#pw');o=JSON.parse(await pg.inputValue('#out'));r.push([rp.length===20&&o.adminHash===crypto.createHash('sha256').update('tsl-admin:'+rp).digest('hex'),'產生隨機密碼（20 字元）並即時算出雜湊']);
+  r.push([await pg.getAttribute('#edit','href')==='https://github.com/sunhome1220/games/edit/main/taiwan-strait-landing/status.json','「開啟 GitHub 編輯」連結正確']);
+  r.push([!reqs.length&&!errs.length,'沒有任何對外連線、沒有頁面錯誤 '+JSON.stringify(reqs.concat(errs))]);await pg.close();return r;});
+
 add('首頁：設定頁（系統設定搬到首頁）','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{});const r=[];
   await p.click('#hmSettings');
   const a=await p.evaluate(()=>({set:!!document.querySelector('#homeSet'),lang:document.querySelectorAll('#homeSet [data-lang]').length,pref:document.querySelectorAll('#homeSet [data-pref]').length,qual:document.querySelectorAll('#homeSet [data-qual]').length,hist:!!document.querySelector('#homeSet #stHist'),stRun:!!document.querySelector('#stRun'),stHome:!!document.querySelector('#stHome'),stClose:!!document.querySelector('#stClose'),back:!!document.getElementById('hmBack'),eyebrow:!!document.querySelector('#homeSet .eyebrow')}));
