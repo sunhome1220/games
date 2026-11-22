@@ -27,7 +27,7 @@ function homeMain(){
   $('#hmCampaign').focus();
 }
 function homeMissions(){
-  const cards=Object.entries(MISSION_DEFS).map(([id,D])=>'<a class="hm-card" href="?mission='+id+'"><span class="tag">你操作：'+(D.cfg&&D.cfg.optSide==='atk'?'攻方':'守方')+'</span><b>'+D.title+'</b><small>'+(D.goal||'')+'<br>'+(D.stars||'')+'</small></a>').join('');
+  const cards=Object.entries(MISSION_DEFS).map(([id,D])=>'<a class="hm-card" href="?mission='+id+'"><span class="tag '+(D.cfg&&D.cfg.optSide==='atk'?'en':'fr')+'">你操作：'+(D.cfg&&D.cfg.optSide==='atk'?'攻方':'守方')+'</span><b>'+D.title+'</b><small>'+(D.goal||'')+'<br>'+(D.stars||'')+'</small></a>').join('');
   $('#homeIn').innerHTML='<button class="ghost hm-back" id="hmBack">← 回首頁</button><h1>任務挑戰</h1><p class="hm-sub">選一項任務，先看任務簡報，再按「開始任務」。</p><div class="hm-cards">'+cards+'</div>';
   $('#hmBack').onclick=homeMain;
   document.querySelectorAll('#homeIn a.hm-card').forEach(a=>a.addEventListener('click',()=>homeSess('tsl-home','1')));

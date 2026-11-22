@@ -191,6 +191,7 @@ footer{color:var(--muted);font-size:12px;margin-top:18px}
 .pip.full{fill:var(--accent)} .pip.lost{fill:none}
 .sea-tag{fill:var(--accent)}
 /* modal & toast */
+#home{--bg:#101A24;--panel:#1B2935;--ink:#E8EDF0;--muted:#9AAAB4;--accent:#C5A56A;--line:rgba(232,237,240,.16);--friend:#5EAA91;--foe:#D16F65;--ok:#5EAA91;color-scheme:dark} /* 首頁配色（使用者提供）：主背景深海軍藍、卡片 #1B2935、暗金強調、友軍 #5EAA91、敵軍 #D16F65；不隨亮暗主題切換，設定頁的元件也吃這組變數 */
 #home{position:fixed;inset:0;z-index:60;background:var(--bg);color:var(--ink);overflow:auto;display:flex;flex-direction:column;align-items:center;padding:calc(28px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px))}
 #home[hidden]{display:none}
 #home .hm-in{width:min(760px,100%);min-width:0;margin:auto 0}
@@ -205,7 +206,8 @@ body.onhome #modal{z-index:70}
 #home .hm-card:hover,#home .hm-card:focus-visible{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
 #home .hm-card b{display:block;font-size:22px;margin-bottom:4px}
 #home .hm-card small{display:block;color:var(--muted);font-size:13.5px;line-height:1.55;margin-top:6px}
-#home .hm-card .tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;border:1px solid var(--line);color:var(--muted);margin-bottom:8px}
+#home .hm-card .tag.fr{color:var(--friend);border-color:color-mix(in srgb,var(--friend) 55%,transparent)} #home .hm-card .tag.en{color:var(--foe);border-color:color-mix(in srgb,var(--foe) 55%,transparent)}
+#home .hm-card .tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);color:var(--accent);margin-bottom:8px;letter-spacing:.03em}
 #home .hm-back{margin-bottom:14px}
 #home .hm-foot{margin-top:22px;font-size:13px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 #home .hm-foot label{display:flex;gap:6px;align-items:center;cursor:pointer}
