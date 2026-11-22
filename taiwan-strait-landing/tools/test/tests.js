@@ -31,7 +31,7 @@ add('載入、更新日誌、關卡判定、海上突擊規則','quick',async c=
     return ['lst','ro','cvy','ff','csg'].every(t=>!TYPES[t]||n(t)[0]===3)&&n('dd')[0]===2&&['cv','hk','ssn','d55','f54','amph','arm'].every(t=>!TYPES[t]||n(t)[0]===0)&&['lst','ro','dd','cv','csg'].every(t=>n(t)[1]===0);}),'棋子圖示：船形數＝船數（艦群／運輸船三艘、護航艦一對兩艘、單艦一艘大船），不疊卡片']);
   // 關卡判定：在已開局的一般對局上直接呼叫各關的 check()（不必真的開關卡、不必玩回合）
   const a=await p.evaluate(()=>{const cv=S.units.find(u=>u.type==='cv'&&u.side==='atk');const D=MISSION_DEFS.carrier,before=D.check();cv.hp=1;return [before,D.check()];});
-  r.push([a[0]===null&&a[1]&&a[1].stars===3,'擊沉航艦：未重創時不過關；重創後第 1 回合 3 星']);
+  r.push([a[0]===null&&a[1]&&a[1].stars===3,'航艦打擊：未重創時不過關；重創後第 1 回合 3 星']);
   r.push([!!a[1]&&/號|艦/.test(a[1].d)&&!/步|假設情境/.test(a[1].d+a[1].extra)&&/我方付出/.test(a[1].extra)&&/共軍損失/.test(a[1].extra)&&!/整個任務期間/.test(a[1].extra),'擊沉航艦結算：稱呼寫「遼寧艦／山東艦／福建艦」、不用「步」、沒有假設情境與整場任務統計，只有我方付出與共軍損失']);
   const q=await p.evaluate(()=>{const D=MISSION_DEFS.port,ks=portPick().map(x=>x[0]);const none=D.check();
     for(const k of ks){S.owner[SPOT[k]]='atk';S.portDown[SPOT[k]]=0;}const t1=D.check();S.turn+=1;const t2=D.check();
@@ -209,14 +209,14 @@ add('共軍長程火箭陣地（平潭、長樂、石獅）：可被打擊，受
   r.push([o.w0===60&&o.w1===40&&Math.abs(o.share-2/3)<1e-6,'完整時每回合 '+o.w0+' 波；平潭陣地癱瘓後 '+o.w1+' 波（3 處平均分擔 ★）']);
   r.push(...noErr(p,'長程火箭陣地'));await p.close();return r;});
 
-add('首頁：選戰役模式或關卡挑戰','medium',async c=>{const r=[];
+add('首頁：選戰役模式或任務挑戰','medium',async c=>{const r=[];
   const raw=await c.b.newPage({viewport:{width:1200,height:900}});const errs=[];raw.on('pageerror',e=>errs.push(e.message));
   await raw.goto(c.url,{timeout:60000});await raw.waitForTimeout(900);
   const a=await raw.evaluate(()=>({show:!document.getElementById('home').hidden,on:document.body.classList.contains('onhome'),vis:getComputedStyle(document.querySelector('.app')).visibility,t:document.querySelector('#home h1').textContent,btns:[...document.querySelectorAll('#home .hm-card')].map(b=>b.querySelector('b').textContent).join()}));
-  r.push([a.show&&a.on&&a.vis==='hidden'&&a.btns==='戰役模式,關卡挑戰,設定','開啟（沒有網址參數）：顯示首頁，兩個選項「'+a.btns+'」，後面的遊戲畫面先藏起來']);
+  r.push([a.show&&a.on&&a.vis==='hidden'&&a.btns==='完整戰局,情境任務,系統設定','開啟（沒有網址參數）：顯示首頁，兩個選項「'+a.btns+'」，後面的遊戲畫面先藏起來']);
   await raw.click('#hmMission');
   const m=await raw.evaluate(()=>[...document.querySelectorAll('#homeIn a.hm-card')].map(a=>a.getAttribute('href')+':'+a.querySelector('b').textContent).join());
-  r.push([m==='?mission=carrier:擊沉航艦,?mission=port:72 小時奪港'||/carrier/.test(m)&&/port/.test(m),'關卡挑戰：列出所有關卡 '+m]);
+  r.push([m==='?mission=carrier:航艦打擊,?mission=port:72 小時港區奪控','任務挑戰：列出所有任務 '+m]);
   await raw.click('#hmBack');await raw.click('#hmCampaign');
   const b=await raw.evaluate(()=>({hid:document.getElementById('home').hidden,on:document.body.classList.contains('onhome'),vis:getComputedStyle(document.querySelector('.app')).visibility,ss:sessionStorage.getItem('tsl-home'),wz:!!document.querySelector('#wzNext')}));
   r.push([b.hid&&!b.on&&b.vis==='visible'&&b.ss==='1'&&b.wz,'選戰役模式：首頁關閉、顯示設定精靈，這個分頁不再顯示首頁']);
@@ -242,12 +242,12 @@ add('首頁：設定頁（系統設定搬到首頁）','medium',async c=>{const 
   r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&!!document.getElementById('hmSettings')),'← 回首頁：回到三個選項']);
   r.push(...noErr(p,'首頁設定'));await p.close();return r;});
 
-add('首頁：手把可選戰役模式／關卡挑戰、○ 返回、△ 進戰役模式','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{pad:true});const r=[];
+add('首頁：手把可選戰役模式／任務挑戰、○ 返回、△ 進戰役模式','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{pad:true});const r=[];
   const press=async(i)=>{await p.evaluate(i=>{__pad.buttons[i].pressed=true;__pad.buttons[i].value=1;},i);await p.waitForTimeout(110);await p.evaluate(i=>{__pad.buttons[i].pressed=false;__pad.buttons[i].value=0;},i);await p.waitForTimeout(220);};
   const st=()=>p.evaluate(()=>({home:!document.getElementById('home').hidden,act:document.activeElement&&document.activeElement.id,missions:document.querySelectorAll('#homeIn a.hm-card').length,back:!!document.getElementById('hmBack')}));
   await p.waitForTimeout(500);let s0=await st();
   r.push([s0.home&&s0.act==='hmCampaign','手把：開首頁時游標在「戰役模式」 '+JSON.stringify(s0)]);
-  await press(15);let s1=await st();r.push([s1.act==='hmMission','十字鍵右：移到「關卡挑戰」 '+s1.act]);
+  await press(15);let s1=await st();r.push([s1.act==='hmMission','十字鍵右：移到「任務挑戰」 '+s1.act]);
   await press(0);let s2=await st();r.push([s2.home&&s2.missions>=2&&s2.back,'Ａ（✕）：進關卡列表（'+s2.missions+' 關）']);
   await press(1);let s3=await st();r.push([s3.home&&!s3.back&&s3.act==='hmCampaign','○：回首頁 '+JSON.stringify(s3)]);
   await press(9);let s4=await st();r.push([!s4.home,'Options：進入戰役模式、首頁關閉']);
