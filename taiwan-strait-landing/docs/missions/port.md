@@ -1,4 +1,4 @@
-# 關卡：72 小時奪港（攻方）
+# 任務：72 小時港區奪控（攻方）
 
 程式：`js/missions/port.js`（本說明放 `docs/missions/`）（網址 `?mission=port`，可加 `&ex=tcport|kaohsiung|keelung` 指定排除的港口）。框架與共用工具見 `js/missions/common.js`。
 

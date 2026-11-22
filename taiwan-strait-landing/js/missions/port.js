@@ -12,7 +12,7 @@ function portPick(){ // 排除一個候選港口，回傳要奪取的兩個 [key
 }
 const portHeld=k=>S.owner[SPOT[k]]==='atk'&&!S.portDown[SPOT[k]];
 MISSION_DEFS.port={
-  title:'72 小時奪港',
+  title:'72 小時港區奪控',
   cfg:{optMode:'play',optSide:'atk',optEra:'2026',optT:'8',optNews:'2'},
   get brief(){const t=portPick().map(p=>p[1]).join('、');return '兩棲船團已在台灣海峽集結。大軍要上岸，靠的是港口：滾裝船只能在港口或浮動碼頭卸載，重型旅更是只能進港，沒有港口，後續梯隊就卸不下來。<br>你指揮攻方，在 72 小時（6 個回合）內奪下並守住 <b>'+t+'</b>。可以空降先奪、也可以搶灘再打進港，運輸船被擊沉會連船上的旅一起損失。';},
   get goal(){return '第 '+PORT_LIMIT+' 回合結束前，同時守住 '+portPick().map(p=>p[1]).join('、')+'（港口格由攻方控制、設施沒被破壞，並撐過一次守方階段）。';},
