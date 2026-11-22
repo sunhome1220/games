@@ -73,9 +73,9 @@ function landReach(u,res){
   while(q.length){
     const [h,mp]=q.shift();
     if(h!==start&&inZOC(u.side,h))continue;
-    for(const n of nbrs(h.c,h.r)){
+    for(const n of nbrs(h.c,h.r).concat((BRIDGE_NB[h.k]||[]).map(k=>TER[k]))){
       if(!isLand(n))continue;
-      const cost=moveCost(u,n);
+      const cost=moveCost(u,n)+Math.max(0,hd(h,n)-1); // 走橋：橋另一端不相鄰，每多一格加 1 點移動（橋面是道路，不算地形成本）
       if(cost>mp&&!(h===start))continue;
       const occs=unitsAt(n.k),occ=occs[0];if(occ&&occ.side!==u.side)continue;
       const left=riverX(h,n)&&foeNear(u.side,n,40)?0:Math.max(0,mp-cost); // 敵前過河：過了就停下
@@ -107,7 +107,7 @@ function seaReach(u,res){
     const [h,mp]=q.shift();if(mp<1)continue;
     for(const n of nbrs(h.c,h.r)){
       if(n.t==='sea')visitSea(n,mp-1);
-      else if(dockOK(u,n))res.set(n.k,{kind:'sail'}); // 潛艦與船艇可以靠進己方港口（母港、避風）
+      else if(dockOK(u,n)&&!(res.get(n.k)&&res.get(n.k).kind==='move'))res.set(n.k,{kind:'sail'}); // 潛艦與船艇可以靠進己方港口（母港、避風）；陸路（含平潭的橋）走得到的港口格維持「陸上移動」，不改成上船
       else if(n!==here&&!isShip(u)&&u.type!=='aas'&&validLanding(u,n)&&canStack(u,n.k)&&(!res.has(n.k)||res.get(n.k).kind!=='move'))res.set(n.k,{kind:'land'});
       else if(n!==here&&!isShip(u)&&u.type!=='aas'&&!res.has(n.k)&&opposedLanding(u,n))res.set(n.k,{kind:'land',opp:true}); // 有守軍的灘頭：強攻登陸（對抗性登陸）
     }

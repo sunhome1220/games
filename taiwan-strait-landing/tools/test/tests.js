@@ -180,7 +180,25 @@ add('平潭島 3 格＋兩座橋（只畫圖）','medium',async c=>{const p=awai
     return {n:pt.length,land:pt.every(h=>h.isl==='CN'&&h.t!=='sea'),port:pt.some(h=>h.name==='平潭'&&h.t==='port'),span,brg:document.querySelectorAll('#gS .brg .bk').length,lbl:[...document.querySelectorAll('#gS .brg text')].map(e=>e.textContent).join(),conn:(()=>{const k=Object.values(TER).filter(h=>h.pt)[0];return nbrs(k.c,k.r).some(n=>n&&n.pt);})()};});
   r.push([o.n===3&&o.land&&o.port&&o.span[0]>=.14&&o.conn,'平潭島 '+o.n+' 格（南北 '+(o.span[0]*111).toFixed(0)+' km 的格中心跨度，彼此相鄰，含港口格）']);
   r.push([o.brg===2&&o.lbl==='公鐵大橋,跨海大橋','地圖上畫了兩座橋：'+o.lbl]);
+  r.push([await p.evaluate(()=>{const t=document.querySelector('#gS .brg .brgl');if(!t)return false;const lo=(setZoom(3,true),getComputedStyle(t).display==='none'),hi=(setZoom(10,true),getComputedStyle(t).display!=='none'),fs=+t.getAttribute('font-size');setZoom(3,true);return lo&&hi&&fs<5;}),'橋的名稱字很小，只在放到最大（≥900%）時才顯示']);
   r.push(...noErr(p,'平潭'));await p.close();return r;});
+
+add('平潭的橋：地面部隊可走橋往返島上','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true,hide:true,seed:4});const r=[];await L.startGame(p);
+  const o=await p.evaluate(()=>{const out={n:BRIDGES.length,br:BRIDGES.map(x=>x.n+':'+x.a+'→'+x.b)};
+    const put=(u,k)=>{const h=TER[k];u.c=h.c;u.r=h.r;u.moved=false;u.acted=false;u.ship=null;S.units.filter(x=>x!==u&&x.c===h.c&&x.r===h.r).forEach(x=>{x.c=0;x.r=0;});};
+    const arm=S.units.find(x=>x.side==='atk'&&x.type==='arm'&&alive(x)),inf=S.units.find(x=>x.side==='atk'&&x.type==='amph'&&alive(x));
+    const B=BRIDGES[0],B2=BRIDGES[1];[B.b,B2.b,B.a,B2.a].forEach(k=>S.units.filter(x=>x!==arm&&x!==inf&&x.c===TER[k].c&&x.r===TER[k].r).forEach(x=>{x.c=0;x.r=0;}));
+    put(arm,B.a);let rc=reach(arm);out.armToIsland=rc.has(B.b)&&rc.get(B.b).kind==='move';
+    put(inf,B2.a);rc=reach(inf);out.infToIsland=rc.has(B2.b)&&rc.get(B2.b).kind==='move';
+    put(inf,B2.b);rc=reach(inf);out.back=rc.has(B2.a)&&rc.get(B2.a).kind==='move';
+    out.dist=[hd(TER[B.a],TER[B.b]),hd(TER[B2.a],TER[B2.b])];
+    // 不是橋的另一端：不能一步走到島上
+    const far=Object.values(TER).find(h=>h.isl==='CN'&&h.t!=='sea'&&!h.pt&&hd(h,TER[B.b])>=8&&!BRIDGE_NB[h.k]);put(inf,far.k);out.farNo=!reach(inf).has(B.b);
+    return out;});
+  r.push([o.n===2,'有兩座橋：'+o.br.join('、')]);
+  r.push([o.armToIsland&&o.infToIsland&&o.back,'重型旅、兩棲旅可從大陸端走橋到島上，再走回來（橋距 '+o.dist.join('、')+' 格）']);
+  r.push([o.farNo,'離橋很遠的大陸格不能一步走到島上']);
+  r.push(...noErr(p,'平潭橋'));await p.close();return r;});
 
 add('海面點選與游標移入（反查格子）','medium',async c=>{const p=await L.open(c.b,c.url,'?debug=1',{fast:true});const r=[];await L.startGame(p);await p.evaluate(()=>setZoom(1,true));await p.waitForTimeout(200); // 預設 300% 畫面內海格太少，縮到 100% 再取樣
   const pts=await p.evaluate(()=>{const g=document.querySelector('#gS').getScreenCTM(),out=[];
