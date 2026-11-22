@@ -140,8 +140,8 @@ const CN={US:'美國',JP:'日本'};
 const LV={US:['不介入','情報支援','有限介入','全面參戰'],JP:['中立','後方支援','全面參戰']};
 
 /* ---------- mainland PLA bases (publicly reported sites, positions approximate) ---------- */
-const KIND_N={rf:'火箭軍',air:'空軍基地',navy:'海軍基地',stg:'集結港',isr:'指揮與偵察'};
-const KIND_S={rf:'◆',air:'▲',navy:'■',stg:'●',isr:'✦'};
+const KIND_N={rf:'火箭軍',air:'空軍基地',navy:'海軍基地',stg:'集結港',isr:'指揮與偵察',rkt:'長程火箭陣地'};
+const KIND_S={rf:'◆',air:'▲',navy:'■',stg:'●',isr:'✦',rkt:'▼'};
 const CNB={
   huangshan:{n:'黃山',kind:'rf',lon:118.3,lat:29.7,hp:3,side:'r',d:'火箭軍飛彈旅駐地（安徽）'},
   leping:{n:'樂平',kind:'rf',lon:117.1,lat:29.0,hp:3,side:'l',d:'火箭軍飛彈旅駐地（江西）'},
@@ -155,6 +155,10 @@ const CNB={
   zhoushan:{n:'舟山',kind:'navy',lon:122.25,lat:30.05,hp:3,side:'r',d:'東海艦隊基地（浙江）'},
   xiamen:{n:'廈門',kind:'navy',lon:118.05,lat:24.45,hp:3,side:'r',d:'廈門海軍基地（福建）'},
   nanjing:{n:'南京',kind:'isr',lon:118.78,lat:32.05,hp:2,side:'r',d:'東部戰區聯合作戰指揮中心（江蘇，概略位置）'},
+  // 長程火箭（PHL-16／PCH-191）陣地：依據——美國政府出版的研究指 2022 年 8 月演習期間，第 72 集團軍第 72 砲兵旅的發射車派到平潭；2026 年《台北時報》報導沿海峽的共軍長程火箭砲部隊集中在福建沿海，包括長樂、平潭、石獅。各陣地的發射車數量與佔比沒有公開資料：★三處平均分擔長程火箭每回合發射量
+  pingtanR:{n:'平潭（火箭）',kind:'rkt',lon:119.78,lat:25.55,hp:3,side:'l',d:'長程火箭砲（PHL-16／PCH-191）發射陣地（福建；2022 年演習曾部署）'},
+  changleR:{n:'長樂（火箭）',kind:'rkt',lon:119.62,lat:25.9,hp:3,side:'l',d:'長程火箭砲發射陣地（福建；2026 年報導列為集中地之一，概略位置）'},
+  shishiR:{n:'石獅（火箭）',kind:'rkt',lon:118.65,lat:24.73,hp:3,side:'l',d:'長程火箭砲發射陣地（福建；2026 年報導列為集中地之一，概略位置）'},
   putian:{n:'莆田',kind:'isr',lon:119.1,lat:25.35,hp:2,side:'l',d:'福建沿海雷達與電子偵察站（概略位置，推估）'}
 };
 
