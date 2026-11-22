@@ -152,6 +152,7 @@ if(/[?&]debug=1/.test(location.search))window.__score=async(cfg)=>{ // 測試用
         l)=>{const q=/補給船團 (\d+) 個抵達卸貨/.exec(l.msg);return a+(q?+q[1]:0);},0),sent:S.log.reduce((a,l)=>{const q=/攻方派出 (\d+) 個補給船團/.exec(l.msg);return a+(q?+q[1]:0);},0),
         turn:S.turn,lh:S.log.reduce((h,l)=>{for(const ch of String(l.msg))h=(h*31+ch.charCodeAt(0))|0;return h;},0),uh:S.units.map(u=>u.type+u.hp+'@'+u.c+','+u.r).join(';')};
     r.uh=[...r.uh].reduce((h,ch)=>(h*31+ch.charCodeAt(0))|0,0);
+    window.__lastRun={roT:Object.assign({},S.stats.roT||{}),ro:S.stats.roShips||0,roBy:Object.assign({},S.stats.roBy||{}),tp:S.owner[TAIPEI],turn:S.turn,T:S.T}; // 任務校準用：滾裝船累計損失船數（不放進回傳值，免得改到基準）
     S=keep;
     return r;
     }; // lh、uh：戰報與棋子位置的雜湊（重構時比對新舊版是否完全相同）

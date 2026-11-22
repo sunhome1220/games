@@ -155,6 +155,7 @@ function targets(u){
 }
 
 function roLoss(u,n,why){ // 滾裝船團每少 1 艘，船上的旅按比例損失兵力（每艘載 旅步數÷船數，小數累計，不用亂數）
+  {const lost=Math.min(n,u.hp);S.stats.roShips=(S.stats.roShips||0)+lost;const by=S.stats.roBy=S.stats.roBy||{};by[why||'地面戰鬥']=(by[why||'地面戰鬥']||0)+lost;const rt=S.stats.roT=S.stats.roT||{};rt[S.turn]=(rt[S.turn]||0)+lost;} // 累計損失的滾裝船數（任務「截斷後續梯隊」用）與來源
   const b=u.boundTo&&S.units.find(x=>x.id===u.boundTo);if(!b||!alive(b))return;
   u.lossAcc=(u.lossAcc||0)+Math.min(n,u.hp)*mhpOf(b)/(u.mhp||TYPES.ro.hp);const k=Math.floor(u.lossAcc+1e-9);if(k<=0)return;u.lossAcc-=k;
   S._mir=true;try{damage(b,Math.min(k,b.hp),why);}finally{S._mir=false;}}
