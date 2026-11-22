@@ -238,7 +238,7 @@ function endGame(early,side,label){
   showFinal(html);
   render();
 }
-function mboxSet(cls){const b=$('#mbox');b.classList.remove('ev','fin','evfix');if(cls)b.classList.add(cls);$('#modal').classList.toggle('fin-on',cls==='fin');return b;}
+function mboxSet(cls){const b=$('#mbox');b.classList.remove('ev','fin','evfix','hasHome');if(cls)b.classList.add(cls);$('#modal').classList.toggle('fin-on',cls==='fin');return b;}
 function acc(title,sum,html,open){return '<details class="acc"'+(open?' open':'')+'><summary><b>'+title+'</b><span class="sum">'+sum+'</span></summary><div class="accb">'+html+'</div></details>';}
 function accTools(){const tog=o=>document.querySelectorAll('#mbox details.acc').forEach(d=>{d.open=o;});const a=$('#accAll'),n=$('#accNone');if(a)a.onclick=()=>tog(true);if(n)n.onclick=()=>tog(false);}
 function showFinal(html){

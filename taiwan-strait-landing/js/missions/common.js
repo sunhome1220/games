@@ -10,8 +10,7 @@ const misList=a=>'<ul class="mdeb">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>'
 const misDiff=(A,B)=>Object.entries(A||{}).map(([k,v])=>[k,v-((B||{})[k]||0)]).filter(x=>x[1]>0);
 function missionId(){const m=location.search.match(/[?&]mission=([a-z0-9_-]+)/i);return m?m[1]:null;}
 function missionStars(n){return '<span class="mstars">'+'★'.repeat(n)+'<span class="off">'+'★'.repeat(3-n)+'</span></span>';}
-function missionBox(html){const box=mboxSet('');box.innerHTML=html;$('#modal').hidden=false;return box;}
-function missionExit(){location.href=location.pathname;} // 回主遊戲
+function missionBox(html){const box=mboxSet('');box.classList.add('hasHome');box.innerHTML=html;$('#modal').hidden=false;return box;}
 function missionRetry(){location.href=location.pathname+'?mission='+MISSION.id;}
 function missionStart(id){
   const D=MISSION_DEFS[id];if(!D)return;
@@ -27,8 +26,8 @@ function missionBriefing(){
   const D=MISSION.D,box=missionBox('<div class="eyebrow">🎯 任務挑戰</div><h3>'+D.title+'</h3><div class="mbrief">'+D.brief+'</div>'+
     '<div class="mgoal"><b>過關條件</b>：'+D.goal+'</div><div class="mgoal"><b>評星</b>：'+D.stars+'</div>'+
     (D.tips?'<div class="mtips"><b>提示</b><ul>'+D.tips.map(t=>'<li>'+t+'</li>').join('')+'</ul></div>':'')+
-    '<div class="wz-note">'+(D.note||'')+'</div><div class="btns" style="margin-top:12px"><button id="misGo">開始任務</button><button class="ghost" id="misExit">回主遊戲</button></div>');
-  $('#misGo').onclick=()=>{$('#modal').hidden=true;startGame();};$('#misExit').onclick=missionExit;$('#misGo').focus();
+    '<div class="wz-note">'+(D.note||'')+'</div><div class="btns" style="margin-top:12px"><button id="misGo">開始任務</button></div>');
+  $('#misGo').onclick=()=>{$('#modal').hidden=true;startGame();};$('#misGo').focus();
 }
 function missionWin(r){
   MISSION.done=true;S.over=true;S.sel=null;S.mode=null;log('🎯 關卡完成：'+r.t);
@@ -38,6 +37,6 @@ function missionResult(r,win){
   S.over=true;MISSION.done=true;render();
   const box=missionBox('<div class="eyebrow">🎯 任務挑戰 · '+MISSION.D.title+'</div><h3 class="verdict '+(win?'def':'atk')+'">'+(win?'任務成功':'任務失敗')+'</h3>'+
     (win?'<div class="mstarrow">'+missionStars(r.stars||1)+'</div>':'')+'<p>'+(r.d||'')+'</p>'+(r.extra||'')+
-    '<div class="btns" style="margin-top:12px"><button id="misAgain">再挑戰一次</button><button class="ghost" id="misMap">檢視地圖</button><button class="ghost" id="misExit2">回主遊戲</button></div>');
-  $('#misAgain').onclick=missionRetry;$('#misMap').onclick=()=>{$('#modal').hidden=true;};$('#misExit2').onclick=missionExit;
+    '<div class="btns" style="margin-top:12px"><button id="misAgain">再挑戰一次</button><button class="ghost" id="misMap">檢視地圖</button></div>');
+  $('#misAgain').onclick=missionRetry;$('#misMap').onclick=()=>{$('#modal').hidden=true;};
 }

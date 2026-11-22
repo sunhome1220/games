@@ -217,7 +217,7 @@ add('首頁：選戰役模式或任務挑戰','medium',async c=>{const r=[];
   await raw.click('#hmMission');
   const m=await raw.evaluate(()=>[...document.querySelectorAll('#homeIn a.hm-card')].map(a=>a.getAttribute('href')+':'+a.querySelector('b').textContent).join());
   r.push([m==='?mission=carrier:航艦打擊,?mission=port:72 小時港區奪控','任務挑戰：列出所有任務 '+m]);
-  await raw.click('#hmBack');await raw.click('#hmCampaign');
+  await raw.click('#homeFab');await raw.click('#hmCampaign');
   const b=await raw.evaluate(()=>({hid:document.getElementById('home').hidden,on:document.body.classList.contains('onhome'),vis:getComputedStyle(document.querySelector('.app')).visibility,ss:sessionStorage.getItem('tsl-home'),wz:!!document.querySelector('#wzNext')}));
   r.push([b.hid&&!b.on&&b.vis==='visible'&&b.ss==='1'&&b.wz,'選戰役模式：首頁關閉、顯示設定精靈，這個分頁不再顯示首頁']);
   await raw.reload();await raw.waitForTimeout(700);
@@ -269,9 +269,26 @@ add('admin.html：在瀏覽器內算管理者雜湊、產生 status.json','mediu
   r.push([await pg.getAttribute('#edit','href')==='https://github.com/sunhome1220/games/edit/main/taiwan-strait-landing/status.json','「開啟 GitHub 編輯」連結正確']);
   r.push([!reqs.length&&!errs.length,'沒有任何對外連線、沒有頁面錯誤 '+JSON.stringify(reqs.concat(errs))]);await pg.close();return r;});
 
+add('回首頁統一用同位置的房子圖示：首頁子頁、設定視窗、任務簡報','medium',async c=>{const r=[];
+  const rect=pg=>pg.evaluate(()=>{const h=document.getElementById('btnHome').getBoundingClientRect(),f=document.getElementById('homeFab'),q=f.getBoundingClientRect();return {vis:!f.hidden,same:Math.abs(h.left-q.left)<1.5&&Math.abs(h.top-q.top)<1.5&&Math.abs(h.width-q.width)<1.5,mode:f.dataset.mode};});
+  let p=await L.open(c.b,c.url,'?home=1',{});
+  r.push([!(await rect(p)).vis,'首頁主畫面：不顯示（已經在首頁）']);
+  await p.click('#hmSettings');let a=await rect(p);r.push([a.vis&&a.same&&a.mode==='sub','首頁子頁（設定）：房子圖示在標題列首頁鈕的同一位置']);
+  await p.click('#homeFab');await p.waitForTimeout(150);r.push([await p.evaluate(()=>!!document.getElementById('hmCampaign')&&document.getElementById('homeFab').hidden),'按房子圖示：回首頁主畫面']);
+  await p.click('#hmMission');a=await rect(p);r.push([a.vis&&a.same,'首頁子頁（任務挑戰）：同一位置']);
+  await p.click('#homeFab');await p.click('#hmCampaign');await p.waitForTimeout(150);
+  await p.click('#btnSettings');await p.waitForTimeout(250);a=await rect(p);r.push([a.vis&&a.same&&a.mode==='go','設定視窗：同一位置的房子圖示；視窗內不再有「回首頁」文字按鈕：'+(await p.evaluate(()=>!document.getElementById('stHome')))]);
+  await p.click('#homeFab');await p.waitForTimeout(200);r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&document.getElementById('modal').hidden&&document.getElementById('homeFab').hidden),'設定視窗裡按房子圖示：關閉視窗、回到首頁']);
+  await p.click('#hmCampaign');await p.evaluate(()=>{mboxSet('');$('#mbox').innerHTML='<p>事件</p>';$('#modal').hidden=false;});await p.waitForTimeout(150);
+  r.push([await p.evaluate(()=>document.getElementById('homeFab').hidden),'一般事件彈窗（沒有標記）：不顯示，避免誤按']);await p.close();
+  p=await L.open(c.b,c.url,'?mission=carrier',{});await p.waitForTimeout(500);a=await rect(p);
+  r.push([a.vis&&a.same&&await p.evaluate(()=>!document.getElementById('misExit')&&!!document.getElementById('misGo')),'任務簡報：房子圖示在同一位置，原本的「回主遊戲」按鈕已移除']);
+  await p.click('#homeFab');await p.waitForTimeout(2500);r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&/home=1/.test(location.search)),'任務中按房子圖示：回到首頁']);
+  r.push(...noErr(p,'房子圖示'));await p.close();return r;});
+
 add('首頁：設定頁（系統設定搬到首頁）','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{});const r=[];
   await p.click('#hmSettings');
-  const a=await p.evaluate(()=>({set:!!document.querySelector('#homeSet'),lang:document.querySelectorAll('#homeSet [data-lang]').length,pref:document.querySelectorAll('#homeSet [data-pref]').length,qual:document.querySelectorAll('#homeSet [data-qual]').length,hist:!!document.querySelector('#homeSet #stHist'),stRun:!!document.querySelector('#stRun'),stHome:!!document.querySelector('#stHome'),stClose:!!document.querySelector('#stClose'),back:!!document.getElementById('hmBack'),eyebrow:!!document.querySelector('#homeSet .eyebrow')}));
+  const a=await p.evaluate(()=>({set:!!document.querySelector('#homeSet'),lang:document.querySelectorAll('#homeSet [data-lang]').length,pref:document.querySelectorAll('#homeSet [data-pref]').length,qual:document.querySelectorAll('#homeSet [data-qual]').length,hist:!!document.querySelector('#homeSet #stHist'),stRun:!!document.querySelector('#stRun'),stHome:!!document.querySelector('#stHome'),stClose:!!document.querySelector('#stClose'),back:!!document.querySelector('#homeFab:not([hidden])'),eyebrow:!!document.querySelector('#homeSet .eyebrow')}));
   r.push([a.set&&a.lang===4&&a.pref>=8&&a.qual===2&&a.hist&&!a.stRun&&!a.stHome&&!a.stClose&&a.back&&!a.eyebrow,'設定頁：語言 '+a.lang+' 個、偏好選項 '+a.pref+' 個、畫質 '+a.qual+' 個、戰績紀錄；不含統計／回首頁／關閉 '+JSON.stringify(a)]);
   await p.click('#homeSet [data-pref="optFxSpd"][data-v="2"]');
   r.push([await p.evaluate(()=>$('#optFxSpd').value==='2'&&document.querySelector('#homeSet [data-pref="optFxSpd"][data-v="2"]').classList.contains('on')),'在首頁設定改「火力動畫速度」：值寫入並重畫選取狀態']);
@@ -281,13 +298,13 @@ add('首頁：設定頁（系統設定搬到首頁）','medium',async c=>{const 
   await p.click('#homeSet #stHist');await p.waitForTimeout(300);
   r.push([await p.evaluate(()=>{const m=document.getElementById('modal');return !m.hidden&&getComputedStyle(m).zIndex==='70';}),'戰績紀錄：彈窗蓋在首頁上面（z-index 70）']);
   await p.evaluate(()=>{document.getElementById('modal').hidden=true;});
-  await p.click('#hmBack');
+  await p.click('#homeFab');
   r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&!!document.getElementById('hmSettings')),'← 回首頁：回到三個選項']);
   r.push(...noErr(p,'首頁設定'));await p.close();return r;});
 
 add('首頁：手把可選戰役模式／任務挑戰、○ 返回、△ 進戰役模式','medium',async c=>{const p=await L.open(c.b,c.url,'?home=1',{pad:true});const r=[];
   const press=async(i)=>{await p.evaluate(i=>{__pad.buttons[i].pressed=true;__pad.buttons[i].value=1;},i);await p.waitForTimeout(110);await p.evaluate(i=>{__pad.buttons[i].pressed=false;__pad.buttons[i].value=0;},i);await p.waitForTimeout(220);};
-  const st=()=>p.evaluate(()=>({home:!document.getElementById('home').hidden,act:document.activeElement&&document.activeElement.id,missions:document.querySelectorAll('#homeIn a.hm-card').length,back:!!document.getElementById('hmBack')}));
+  const st=()=>p.evaluate(()=>({home:!document.getElementById('home').hidden,act:document.activeElement&&document.activeElement.id,missions:document.querySelectorAll('#homeIn a.hm-card').length,back:!!document.querySelector('#homeFab:not([hidden])')}));
   await p.waitForTimeout(500);let s0=await st();
   r.push([s0.home&&s0.act==='hmCampaign','手把：開首頁時游標在「戰役模式」 '+JSON.stringify(s0)]);
   await press(15);let s1=await st();r.push([s1.act==='hmMission','十字鍵右：移到「任務挑戰」 '+s1.act]);
@@ -493,6 +510,7 @@ add('手把登陸流程','full',async c=>{const p=await L.open(c.b,c.url,'?debug
   const st=()=>p.evaluate(()=>({human:humanTurn(),modal:!document.querySelector('#modal').hidden,turn:S.turn}));
   for(let i=0;i<5;i++)await press(5);await press(9);await p.waitForTimeout(2000);
   for(let i=0;i<150;i++){const s=await st();if(s.human&&!s.modal)break;if(s.modal)await press(3);await p.waitForTimeout(250);}
+  await p.waitForFunction(()=>{const am=S.units.find(u=>u.side==='atk'&&u.type==='amph'&&alive(u)&&!u.ship);return !!am&&[...reach(am)].some(([k,v])=>v.kind==='sail');},null,{timeout:30000}); // 負載高時開局晚一點才輪到人類：等到真的有出海選項再動，不要直接取第一個而丟例外
   await p.evaluate(()=>{const am=S.units.find(u=>u.side==='atk'&&u.type==='amph'&&alive(u)&&!u.ship);const k=[...reach(am)].find(([k,v])=>v.kind==='sail')[0];humanMove(am,k,'sail');S.sel=null;render();});
   await press(9);await press(9);
   for(let i=0;i<200;i++){const s=await st();if(s.human&&!s.modal&&s.turn>=2)break;if(s.modal)await press(3);await p.waitForTimeout(250);}

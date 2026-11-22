@@ -10,10 +10,10 @@ function homeShouldShow(){
   if(/[?&]home=1/.test(location.search))return true;
   return !(HOME_SKIP_Q.test(location.search)||homeSess('tsl-home')==='1'||homeStore('tsl-home')==='0');
 }
-function homeClose(){homeSess('tsl-home','1');document.body.classList.remove('onhome');$('#home').hidden=true;try{if(/[?&]home=1/.test(location.search))history.replaceState(null,'',location.pathname);}catch(e){}} // 關掉後把網址的 home=1 拿掉，之後重新載入不會又顯示首頁
+function homeClose(){homeSess('tsl-home','1');document.body.classList.remove('onhome');$('#home').hidden=true;homeFabSync();try{if(/[?&]home=1/.test(location.search))history.replaceState(null,'',location.pathname);}catch(e){}} // 關掉後把網址的 home=1 拿掉，之後重新載入不會又顯示首頁
 function homeSettings(){ // 設定頁：語言、戰績紀錄、動畫速度、快訊、語音、地圖畫質…（同「⚙ 設定」視窗，不含統計與回首頁）
-  $('#homeIn').innerHTML='<button class="ghost hm-back" id="hmBack">← 回首頁</button><h1>設定</h1><div id="homeSet"></div>';
-  $('#hmBack').onclick=homeMain;renderSettings($('#homeSet'));
+  $('#homeIn').innerHTML='<h1>設定</h1><div id="homeSet"></div>';
+  renderSettings($('#homeSet'));homeFabSync();
 }
 function homeMain(){
   const ts=Object.values(MISSION_DEFS).map(D=>D.title),names=ts.length===2?'「'+ts[0]+'」及「'+ts[1]+'」':ts.map(t=>'「'+t+'」').join('、');
@@ -24,18 +24,38 @@ function homeMain(){
     '<div class="hm-foot"><label><input type="checkbox" id="hmSkip"> 以後直接進入戰役模式</label></div>';
   $('#hmCampaign').onclick=()=>{if($('#hmSkip').checked)homeStore('tsl-home','0');homeClose();};
   $('#hmMission').onclick=homeMissions;$('#hmSettings').onclick=homeSettings;
-  $('#hmCampaign').focus();
+  $('#hmCampaign').focus();homeFabSync();
 }
 function homeMissions(){
   const cards=Object.entries(MISSION_DEFS).map(([id,D])=>'<a class="hm-card" href="?mission='+id+'"><span class="tag '+(D.cfg&&D.cfg.optSide==='atk'?'en':'fr')+'">你操作：'+(D.cfg&&D.cfg.optSide==='atk'?'攻方':'守方')+'</span><b>'+D.title+'</b><small>'+(D.goal||'')+'<br>'+(D.stars||'')+'</small></a>').join('');
-  $('#homeIn').innerHTML='<button class="ghost hm-back" id="hmBack">← 回首頁</button><h1>任務挑戰</h1><p class="hm-sub">選一項任務，先看任務簡報，再按「開始任務」。</p><div class="hm-cards">'+cards+'</div>';
-  $('#hmBack').onclick=homeMain;
+  $('#homeIn').innerHTML='<h1>任務挑戰</h1><p class="hm-sub">選一項任務，先看任務簡報，再按「開始任務」。</p><div class="hm-cards">'+cards+'</div>';
+  homeFabSync();
   document.querySelectorAll('#homeIn a.hm-card').forEach(a=>a.addEventListener('click',()=>homeSess('tsl-home','1')));
   const f=document.querySelector('#homeIn a.hm-card');if(f)f.focus();
 }
-function homeOpen(){homeMain();document.body.classList.add('onhome');$('#home').hidden=false;}
+function homeOpen(){document.body.classList.add('onhome');$('#home').hidden=false;homeMain();$('#modal').hidden=true;}
 $('#btnHome').onclick=()=>{ // 標題列的「回首頁」：還沒開局＝直接顯示首頁（設定精靈的內容保留）；對局中＝確認後重新載入（對局結束）
   if(!S.started||S.over){homeOpen();return;}
   if(confirm('回首頁會結束目前這一局，確定嗎？'))homeAgain();};
 function homeAgain(){homeSess('tsl-home','0');location.href=location.pathname+'?home=1';} // 設定視窗的「回首頁」：重新載入並顯示首頁
 if(homeShouldShow()){homeOpen();if(homeSess('tsl-home-set')==='1'){homeSess('tsl-home-set','0');homeSettings();}} // 在首頁的設定切換語言後重新載入：回到設定頁
+
+// 「回首頁」統一用同一顆房子圖示、固定在標題列「首頁鈕」的位置：首頁的子頁（任務挑戰、設定）、設定視窗、任務簡報與結算都用它（標題列本身那顆就是它的原位）。
+function homeFabSync(){
+  const f=$('#homeFab');if(!f)return;
+  const home=!$('#home').hidden,sub=home&&!$('#hmCampaign'),modal=!$('#modal').hidden&&$('#mbox').classList.contains('hasHome');
+  const mode=sub?'sub':(!home&&modal)?'go':null;
+  if(!mode){f.hidden=true;return;}
+  f.dataset.mode=mode;f.hidden=false;
+  const r=$('#btnHome').getBoundingClientRect(),ok=r.width>0;
+  f.style.top=(ok?r.top:12)+'px';f.style.left=ok?r.left+'px':'auto';f.style.right=ok?'auto':'12px';f.style.width=(ok?r.width:40)+'px';f.style.height=(ok?r.height:40)+'px';
+}
+$('#homeFab').onclick=()=>{
+  if($('#homeFab').dataset.mode==='sub'){homeMain();return;}
+  const inGame=S.started&&!S.over;
+  if((typeof MISSION!=='undefined'&&MISSION)||inGame){if(!inGame||confirm('回首頁會結束目前這一局，確定嗎？'))homeAgain();return;}
+  $('#modal').hidden=true;homeOpen();
+};
+new MutationObserver(homeFabSync).observe($('#modal'),{attributes:true,attributeFilter:['hidden','class']});
+new MutationObserver(homeFabSync).observe($('#mbox'),{attributes:true,attributeFilter:['class']});
+addEventListener('resize',homeFabSync);

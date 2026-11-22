@@ -45,7 +45,7 @@
   const NAVSEL='button:not(.mnew),input,select,summary';
   const homeOn=()=>{const h=document.getElementById('home');return !!h&&!h.hidden;}; // 首頁（選戰役模式或關卡挑戰）開著：導覽只在首頁的卡片與核取方塊之間跳，後面的設定精靈先不動
   const navList=()=>{const m=document.querySelector('#modal:not([hidden])');
-    if(!m&&homeOn())return [...document.querySelectorAll('#home button,#home a,#home input')].filter(shown);
+    if(!m&&homeOn())return [...document.querySelectorAll('#home button,#home a,#home input,#homeFab')].filter(shown);
     if(m)return [...m.querySelectorAll(NAVSEL)].filter(shown);
     if(setupOn())return [...document.querySelectorAll('#wzBody button,#wzPrev,#wzNext,#btnStart,#btnDefault')].filter(shown);
     for(const sel of ['.cpb button','#ucard:not([hidden]) #ucBody button','#info button']){ // 打擊確認列 → 資訊卡 → 側欄資訊卡；只取第一組有按鈕的
@@ -239,7 +239,7 @@
     if(press(1)){ // ○：取消（彈窗的取消鈕 → 取消打擊模式 → 關閉資訊卡）
       if(document.querySelector('#modal.fin-on:not([hidden])'))clickIf('#btnClose'); // 結算頁：○＝檢視地圖
       else if(modal)clickIf('#modal .ghost,#modal button#cfN');
-      else if(homeOn()){clickIf('#hmBack');} // 首頁：○＝從關卡列表回首頁
+      else if(homeOn()){clickIf('#homeFab');} // 首頁：○＝從子頁（任務挑戰、設定）回首頁
       else if(clickIf('#afPend:not([hidden]) #afPendNo,#cnPend:not([hidden]) #cnPendNo')){} // 空軍出擊／縱深打擊的確認面板：○＝取消已選的目標（面板不是彈窗，原本要移游標到「取消」才按得到）
       else if(typeof S!=='undefined'&&S&&(S.mode==='strike'||S.mode==='afS'||S.mode==='afL'||S.mode==='afC'||S.mode==='hlS'||S.mode==='hlL'))clickIf('#mbStrike,#fsStrike,#btnStrike',true);
       else if(typeof S!=='undefined'&&S&&S.sel&&!S.mode){S.sel=null;tgtPick=null;if(typeof render==='function')render();} // 取消選取單位（之後十字鍵左右＝換單位）
