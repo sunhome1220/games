@@ -283,7 +283,7 @@ add('回首頁統一用同位置的房子圖示：首頁子頁、設定視窗、
   r.push([await p.evaluate(()=>document.getElementById('homeFab').hidden),'一般事件彈窗（沒有標記）：不顯示，避免誤按']);await p.close();
   p=await L.open(c.b,c.url,'?mission=carrier',{});await p.waitForTimeout(500);a=await rect(p);
   r.push([a.vis&&a.same&&await p.evaluate(()=>!document.getElementById('misExit')&&!!document.getElementById('misGo')),'任務簡報：房子圖示在同一位置，原本的「回主遊戲」按鈕已移除']);
-  await p.click('#homeFab');await p.waitForTimeout(2500);r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&/home=1/.test(location.search)),'任務中按房子圖示：回到首頁']);
+  await p.click('#homeFab');await p.waitForFunction(()=>/home=1/.test(location.search)&&document.getElementById('home')&&!document.getElementById('home').hidden,null,{timeout:20000}).catch(()=>{});await p.waitForTimeout(300);r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&/home=1/.test(location.search)),'任務中按房子圖示：回到首頁']);
   r.push(...noErr(p,'房子圖示'));await p.close();return r;});
 
 add('任務「截斷後續梯隊」：累計滾裝船損失、評星門檻、任務流程','medium',async c=>{const r=[];
