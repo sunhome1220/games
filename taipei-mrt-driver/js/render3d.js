@@ -56,9 +56,38 @@ const R3=(function(){
   }
   function concreteTex(){
     return canvasTex(64,64,(g,w,h)=>{
-      g.fillStyle='#fff';g.fillRect(0,0,w,h);g.fillStyle='rgba(0,0,0,.28)';g.fillRect(0,0,3,h);
-      for(let i=0;i<60;i++){g.fillStyle='rgba(0,0,0,'+(Math.random()*0.06)+')';g.fillRect(Math.random()*w,Math.random()*h,6,6);}
+      g.fillStyle='#fff';g.fillRect(0,0,w,h);
+      for(let i=0;i<400;i++){const v=hash(i*17)*0.09;g.fillStyle='rgba(0,0,0,'+v+')';g.fillRect(hash(i*3)*w,hash(i*5)*h,1+hash(i)*3,1+hash(i*9)*3);}
+      g.fillStyle='rgba(0,0,0,.35)';g.fillRect(0,0,2,h);g.fillStyle='rgba(255,255,255,.25)';g.fillRect(2,0,1,h);   // 接縫
+      g.fillStyle='rgba(0,0,0,.18)';g.fillRect(0,h*0.62,w,1);
+      for(let i=0;i<5;i++){const x=hash(i*31)*w,gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'rgba(60,50,40,0.18)');gr.addColorStop(1,'rgba(60,50,40,0)');g.fillStyle=gr;g.fillRect(x,0,2+hash(i)*5,h*(0.4+hash(i*7)*0.5));}   // 水漬
     },'concrete',true);
+  }
+  function ballastTex(){
+    return canvasTex(64,64,(g,w,h)=>{
+      g.fillStyle='#8a857c';g.fillRect(0,0,w,h);
+      for(let i=0;i<520;i++){const t=hash(i*13),c=Math.floor(90+t*90);g.fillStyle=`rgb(${c},${c-4},${c-10})`;g.fillRect(hash(i*7)*w,hash(i*11)*h,1+hash(i*3)*2.5,1+hash(i*5)*2);}
+    },'ballast',true);
+  }
+  // 台灣常見的建築立面：v=0 磁磚公寓（鐵窗、冷氣）、1 玻璃辦公大樓、2 老公寓（陽台）
+  function facadeTex2(v){
+    return canvasTex(128,128,(g,w,h)=>{
+      const lit=(r,q)=>hash(r*13+q*7+v*101+hstr(run.opt.theme||'x'))<th.lit;
+      const dark=th.lit>0?'#1d2438':'#6f8aa0';
+      if(v===1){g.fillStyle='#d8dee6';g.fillRect(0,0,w,h);
+        for(let r=0;r<8;r++){g.fillStyle='#9aa8b6';g.fillRect(0,r*16,w,2);for(let q=0;q<4;q++){g.fillStyle=lit(r,q)?'#ffe9b8':(th.lit>0?'#1a2236':'#7fa0bd');g.fillRect(q*32+1,r*16+3,30,12);}}
+        return;}
+      g.fillStyle='#ffffff';g.fillRect(0,0,w,h);
+      // 磁磚紋
+      g.fillStyle='rgba(0,0,0,.05)';for(let y=0;y<h;y+=4)g.fillRect(0,y,w,1);
+      for(let r=0;r<8;r++)for(let q=0;q<4;q++){
+        const x=q*32+5,y=r*16+3,L=lit(r,q);
+        g.fillStyle=L?'#ffe3a0':dark;g.fillRect(x,y,20,10);
+        if(v===0){g.fillStyle='rgba(60,60,60,.85)';for(let k=0;k<6;k++)g.fillRect(x-1+k*4,y-1,1,12);g.fillRect(x-2,y-2,24,1);g.fillRect(x-2,y+11,24,2);   // 鐵窗
+          if(hash(r*5+q*3)<0.45){g.fillStyle='#e9e9e4';g.fillRect(x+22,y+4,7,6);g.fillStyle='#9a9a94';g.fillRect(x+23,y+5,5,1);}}   // 冷氣室外機
+        else{g.fillStyle='rgba(80,70,60,.6)';g.fillRect(x-3,y+10,26,3);}   // 陽台
+      }
+    },'facade2-'+v+'-'+run.theme,true);
   }
   function labelTex(text,color,key,w,h,code){
     return canvasTex(w||512,h||128,(g,W,H)=>{
@@ -89,10 +118,17 @@ const R3=(function(){
       g.font='900 96px "Microsoft JhengHei","PingFang TC","Noto Sans TC","WenQuanYi Zen Hei",sans-serif';g.fillText('停',64,70);
     },'stop');
   }
+  // 天空：鏡頭幾乎水平看前方，地平線約在畫面高度一半；天頂深、地平線淡（大氣霧氣），黃昏有夕照，夜晚地平線有城市光害
+  const SKY={day:[[0,'#2f7ccc'],[0.3,'#6eaee6'],[0.47,'#cfe4f4'],[0.52,'#e2edf3'],[1,'#e2edf3']],
+             dusk:[[0,'#24366a'],[0.28,'#5b5a8c'],[0.42,'#d9876a'],[0.5,'#ffc27a'],[0.54,'#f3b07a'],[1,'#c88c64']],
+             night:[[0,'#02040b'],[0.35,'#0b1428'],[0.48,'#1f2a48'],[0.53,'#3a3a52'],[1,'#1d2a4a']]};
   function bgTex(){
-    return canvasTex(2,256,(g,w,h)=>{
-      const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,th.sky0);gr.addColorStop(0.5,th.sky1);gr.addColorStop(1,th.sky1);
+    return canvasTex(256,256,(g,w,h)=>{
+      const gr=g.createLinearGradient(0,0,0,h);for(const [o,c] of (SKY[run.theme]||SKY.day))gr.addColorStop(o,c);
       g.fillStyle=gr;g.fillRect(0,0,w,h);
+      if(run.theme==='dusk'){const r=g.createRadialGradient(w*0.72,h*0.5,2,w*0.72,h*0.5,w*0.55);r.addColorStop(0,'rgba(255,235,190,0.95)');r.addColorStop(0.08,'rgba(255,200,130,0.6)');r.addColorStop(1,'rgba(255,170,100,0)');g.fillStyle=r;g.fillRect(0,0,w,h);}
+      if(run.theme==='day'){const r=g.createRadialGradient(w*0.25,h*0.1,1,w*0.25,h*0.1,w*0.5);r.addColorStop(0,'rgba(255,255,245,0.55)');r.addColorStop(1,'rgba(255,255,245,0)');g.fillStyle=r;g.fillRect(0,0,w,h);}
+      if(run.theme==='night'){for(let i=0;i<70;i++){g.fillStyle='rgba(255,255,255,'+(0.25+hash(i*7)*0.5)+')';g.fillRect(hash(i*3)*w,hash(i*5)*h*0.4,1,1);}}
     },'bg-'+run.theme);
   }
 
@@ -129,15 +165,35 @@ const R3=(function(){
     }
     return x;
   }
+  // 文湖線（中運量，膠輪）：混凝土導軌面＋兩條走行軌＋兩側導引軌（兼供電），沒有枕木與鋼軌；尺寸為示意
+  function guideway(add,L,sd){
+    add(4.8,0.3,L,0,-0.15,mat(0x9a9890));
+    const rm=mat(0x7c8088),gm=mat(0x50545c),pm=mat(0x8a8a86);
+    add(0.42,0.06,L,-0.95,0.03,rm);add(0.42,0.06,L,0.95,0.03,rm);
+    add(0.12,0.16,L,-1.6,0.32,gm);add(0.12,0.16,L,1.6,0.32,gm);add(0.2,0.25,L,-1.6,0.12,pm);add(0.2,0.25,L,1.6,0.12,pm);
+  }
   function track(g,sa,sb){
     const len=sb-sa,mid=(sa+sb)/2;
-    box(g,4.8,0.3,len,0,-0.15,mid,mat(0x5c5852));
-    const rm=mat(0xb0b6be);
-    box(g,0.07,0.17,len,-0.7175,0.085,mid,rm);box(g,0.07,0.17,len,0.7175,0.085,mid,rm);
-    box(g,0.1,0.1,len,1.5,0.1,mid,mat(0x3c3e46));
+    if(run.opt.line==='brown'){
+      guideway((w,h,l,x,y,m)=>box(g,w,h,l,x,y,mid,m),len);
+      const flat=Math.abs(oppX(sa)+TS)<1e-6&&Math.abs(oppX(sb)+TS)<1e-6&&!run.stations.some(st=>st.plat!=='side'&&st.pos+82>sa&&st.pos-run.L.trainLen-74<sb);
+      const STEP=flat?(sb-sa+1):10;
+      for(let s0=sa;s0<sb-0.01;s0+=STEP){
+        const s1=Math.min(s0+STEP,sb),xm=oppX((s0+s1)/2),dx=oppX(s1)-oppX(s0),ds=s1-s0;
+        const sg=new T.Group();sg.position.set(xm,0,-(s0+s1)/2);sg.rotation.y=Math.atan2(dx,-ds);g.add(sg);
+        guideway((w,h,l,x,y,m)=>{const o=new T.Mesh(unitBox,m);o.scale.set(w,h,l);o.position.set(x,y,0);sg.add(o);},Math.hypot(dx,ds)+0.4);
+      }
+      return;
+    }
+    const bt=texs.get('ballast-r'+Math.round(len))||(()=>{const t=ballastTex().clone();t.needsUpdate=true;t.repeat.set(3,Math.max(1,len/1.6));texs.set('ballast-r'+Math.round(len),t);return t;})();
+    box(g,4.8,0.3,len,0,-0.15,mid,mat(0xffffff,{map:bt}));
+    const rm=mat(0x6a6e76),rh=mat(0xd6dbe2);
+    box(g,0.07,0.15,len,-0.7175,0.075,mid,rm);box(g,0.07,0.15,len,0.7175,0.075,mid,rm);
+    box(g,0.075,0.025,len,-0.7175,0.162,mid,rh);box(g,0.075,0.025,len,0.7175,0.162,mid,rh);   // 鋼軌頂面被車輪磨亮
+    box(g,0.1,0.1,len,1.5,0.1,mid,mat(0x3c3e46));box(g,0.26,0.03,len,1.5,0.17,mid,mat(0xc9b26a));   // 第三軌與防護蓋板
     const sp=0.65,n=Math.floor(len/sp),Y=new T.Vector3(0,1,0);
     // 軌枕（我方＋對向，同一個 InstancedMesh）
-    const im=new T.InstancedMesh(unitBox,mat(0x3c322c),n*2);
+    const im=new T.InstancedMesh(unitBox,mat(0x8e8b84),n*2);   // 混凝土枕木
     const M=new T.Matrix4(),q=new T.Quaternion();
     for(let i=0;i<n;i++){
       const s=sa+(i+0.5)*sp;
@@ -149,19 +205,19 @@ const R3=(function(){
     // 對向軌道：每 8 m 一段（碎石道床、兩條鋼軌、第三軌），依橫向位置的變化微轉
     // 對向軌道橫向位置不變的路段（一般區間）整段用單一物件；只有島式月台站前後需要「分開」的路段才切成小段
     const flat=Math.abs(oppX(sa)+TS)<1e-6&&Math.abs(oppX((sa+sb)/2)+TS)<1e-6&&Math.abs(oppX(sb)+TS)<1e-6&&!run.stations.some(st=>st.plat!=='side'&&st.pos+82>sa&&st.pos-run.L.trainLen-74<sb);
-    const STEP=flat?(sb-sa+1):10,bm=mat(0x5c5852),tm=mat(0x3c3e46);
+    const STEP=flat?(sb-sa+1):10,bm=mat(0xffffff,{map:bt}),tm=mat(0x3c3e46);
     for(let s0=sa;s0<sb-0.01;s0+=STEP){
       const s1=Math.min(s0+STEP,sb),xm=oppX((s0+s1)/2),dx=oppX(s1)-oppX(s0),ds=s1-s0;
       const sg=new T.Group();sg.position.set(xm,0,-(s0+s1)/2);sg.rotation.y=Math.atan2(dx,-ds);g.add(sg);
       const L=Math.hypot(dx,ds)+0.4,lb=(w,h,l,x,y,m)=>{const o=new T.Mesh(unitBox,m);o.scale.set(w,h,l);o.position.set(x,y,0);sg.add(o);};
-      lb(4.8,0.3,L,0,-0.15,bm);lb(0.07,0.17,L,-0.7175,0.085,rm);lb(0.07,0.17,L,0.7175,0.085,rm);lb(0.1,0.1,L,-1.5,0.1,tm);
+      lb(4.8,0.3,L,0,-0.15,bm);lb(0.07,0.15,L,-0.7175,0.075,rm);lb(0.07,0.15,L,0.7175,0.075,rm);if(flat){lb(0.075,0.025,L,-0.7175,0.162,rh);lb(0.075,0.025,L,0.7175,0.162,rh);}lb(0.1,0.1,L,-1.5,0.1,tm);   // 分段（站前後）時省略亮帶以減少繪製次數
     }
   }
   /* ---------- 地面段：高架 elev／平面 grade，含建築、河山湖田樹與高架下的道路 ---------- */
   const GY={elev:-12,grade:-0.3};     // 地面高度（軌道頂面為 0）
   const DENS={high:{p:0.7,h0:20,h1:90,w0:10,w1:34,o0:11,o1:45},mid:{p:0.62,h0:12,h1:42,w0:10,w1:30,o0:11,o1:50},
               low:{p:0.62,h0:4,h1:11,w0:6,w1:16,o0:9,o1:45},rural:{p:0.12,h0:3,h1:6,w0:6,w1:14,o0:16,o1:90}};
-  let coneGeo=null,headGeo=null,buildHazards_pending=false;
+  let coneGeo=null,crownGeo=null,tankGeo=null,headGeo=null,buildHazards_pending=false;
   const flatMats=new Map();
   function flatMat(color){let m=flatMats.get(color);if(!m){m=new T.MeshLambertMaterial({color,flatShading:true});flatMats.set(color,m);}return m;}
   function inst(g,geo,m,n,fill){
@@ -174,8 +230,10 @@ const R3=(function(){
     const n=Math.floor((sb-sa)*dens);if(n<1)return;
     const pos=[];for(let i=0;i<n;i++){const r=hash(seed*977+i*13+sd*7),r2=hash(seed*331+i*29+sd),r3=hash(seed*53+i*3);pos.push([sd*(x0+(x1-x0)*r2),sa+(sb-sa)*r,0.8+r3*1.1]);}
     inst(g,unitBox,mat(0x5a4632),n,(i,M)=>{const p=pos[i];M.compose(V3(p[0],gy+1.2*p[2],-p[1]),Q0(),V3(0.4*p[2],2.4*p[2],0.4*p[2]));});
-    const tm=new T.MeshLambertMaterial({color:th.tree,flatShading:true});(g.userData.mats=g.userData.mats||[]).push(tm);
-    const cm=inst(g,coneGeo,tm,n,(i,M)=>{const p=pos[i];M.compose(V3(p[0],gy+2.4*p[2]+2.6*p[2],-p[1]),Q0(),V3(3.2*p[2],5.6*p[2],3.2*p[2]));});
+    const tm=new T.MeshLambertMaterial({color:0xffffff,flatShading:true});(g.userData.mats=g.userData.mats||[]).push(tm);
+    const cm=inst(g,crownGeo,tm,n*2,(i,M)=>{const p=pos[i>>1],k=i&1,s=p[2]*(k?1.7:2.3),ox=k?(hash(i*7)-0.5)*2.2*p[2]:0,oz=k?(hash(i*11)-0.5)*2.2*p[2]:0;
+      M.compose(V3(p[0]+ox,gy+2.4*p[2]+(k?3.6:2.4)*p[2],-p[1]+oz),Q0(),V3(s,s*0.85,s));});
+    const base=new T.Color(th.tree);for(let i=0;i<n*2;i++)cm.setColorAt(i,base.clone().multiplyScalar(0.8+hash(i*5+seed)*0.45));
     return cm;
   }
   function groundPiece(g,sa,sb,sec){
@@ -265,7 +323,7 @@ const R3=(function(){
     }
     // 建築（依密度；河、田、湖的一側不建；高架下有道路時退讓）
     const D=DENS[sc.z||'mid'];if(!D)return;
-    const CELL=22,seed=hstr(run.L.short),ft=facadeTex();
+    const CELL=22,seed=hstr(run.L.short);const roof=[];
     for(let c=Math.floor(sa/CELL);c<=Math.ceil(sb/CELL);c++){
       const zf=c*CELL;if(zf<sa||zf>=sb)continue;
       for(let side=-1;side<=1;side+=2){
@@ -279,7 +337,8 @@ const R3=(function(){
         const tone=0.85+hash(c*13+seed)*0.3;
         let m;
         if(hgt>=11){
-          const key='f'+Math.round(wid/4)+'x'+Math.round(hgt/4)+run.theme;
+          const fv=hgt>50?1:hash(c*19+seed+side)<0.6?0:2,ft=facadeTex2(fv);
+          const key='f'+fv+'-'+Math.round(wid/4)+'x'+Math.round(hgt/4)+run.theme;
           let tx=texs.get(key);
           if(!tx){tx=ft.clone();tx.needsUpdate=true;tx.repeat.set(Math.max(1,Math.round(wid/4))/2,Math.max(1,Math.round(hgt/4))/2);texs.set(key,tx);}
           m=new T.MeshLambertMaterial({color:new T.Color(th.bld).multiplyScalar(tone),map:tx,emissive:th.lit>0?new T.Color(0x332a14):new T.Color(0),emissiveMap:th.lit>0?tx:null,emissiveIntensity:th.lit>0?1.1:0});
@@ -289,10 +348,22 @@ const R3=(function(){
         }
         (g.userData.mats=g.userData.mats||[]).push(m);
         const o=new T.Mesh(unitBox,m);o.scale.set(wid,hgt,dep);o.position.set(side*(off+wid/2),gy+hgt/2,-(zf+dep/2));g.add(o);
+        // 頂樓：住宅常見的水塔與加蓋鐵皮屋（高樓與辦公大樓不放）
+        if(hgt>=8&&hgt<=50){const cx=side*(off+wid/2),cz=-(zf+dep/2),top=gy+hgt,r=hash(c*23+seed+side);
+          if(r<0.75)roof.push({t:'tank',x:cx+(hash(c*29)-0.5)*wid*0.5,y:top,z:cz+(hash(c*31)-0.5)*dep*0.5,s:1+hash(c*37)*0.6,col:hash(c*41)<0.5?0xd8dcde:0xe08a3c});
+          if(r<0.45)roof.push({t:'shed',x:cx-(hash(c*43)-0.5)*wid*0.3,y:top,z:cz,w:wid*(0.35+hash(c*47)*0.3),d:dep*(0.35+hash(c*53)*0.3),col:hash(c*59)<0.5?0x5e7fa6:0x9aa2aa});}
         if(hgt<11){const rm=new T.MeshLambertMaterial({color:new T.Color(0x8a4a3a).multiplyScalar(th.lit>0.5?0.3:1)});(g.userData.mats=g.userData.mats||[]).push(rm);
           const r=new T.Mesh(unitBox,rm);r.scale.set(wid*1.04,0.6,dep*1.04);r.position.set(side*(off+wid/2),gy+hgt+0.3,-(zf+dep/2));g.add(r);}
       }
     }
+    const dk=th.lit>0.5?0.3:th.lit>0?0.65:1;
+    const tanks=roof.filter(o=>o.t==='tank'),sheds=roof.filter(o=>o.t==='shed');
+    if(tanks.length){const tm=new T.MeshLambertMaterial({color:0xffffff});(g.userData.mats=g.userData.mats||[]).push(tm);
+      const im=inst(g,tankGeo,tm,tanks.length*2,(i,M)=>{const o=tanks[i>>1];if(i&1)M.compose(V3(o.x,o.y+0.6,o.z),Q0(),V3(1.6*o.s,1.2,1.6*o.s));else M.compose(V3(o.x,o.y+1.2+1.1*o.s,o.z),Q0(),V3(1.4*o.s,2.2*o.s,1.4*o.s));});
+      for(let i=0;i<tanks.length*2;i++)im.setColorAt(i,new T.Color(i&1?0x6a6c70:tanks[i>>1].col).multiplyScalar(dk));}
+    if(sheds.length){const sm=new T.MeshLambertMaterial({color:0xffffff});(g.userData.mats=g.userData.mats||[]).push(sm);
+      const im=inst(g,unitBox,sm,sheds.length,(i,M)=>{const o=sheds[i];M.compose(V3(o.x,o.y+1.3,o.z),Q0(),V3(o.w,2.6,o.d));});
+      for(let i=0;i<sheds.length;i++)im.setColorAt(i,new T.Color(sheds[i].col).multiplyScalar(dk));}
   }
   function tunnelPiece(g,sa,sb){
     const ct=concreteTex();
@@ -305,7 +376,7 @@ const R3=(function(){
       const wh=st?4.8:4.2;
       const key='c'+Math.round(len/6*2);
       let tx=texs.get(key);if(!tx){tx=ct.clone();tx.needsUpdate=true;tx.repeat.set(Math.max(1,len/6),1);texs.set(key,tx);}
-      const wm=mat(0x9a9ea8,{map:tx});
+      const wm=mat(0x7c7f84,{map:tx});
       // 牆：右牆在我方軌道外側 +2.55，左牆在對向軌道外側 -(TS+2.55)。
       // 車站內月台側的牆由車站另行建造：島式月台在左，只省略左牆；側式月台兩側各有月台，兩面牆都省略
       const skipL=st&&(st.plat==='side'||st.side==='L'),skipR=st&&st.plat==='side';
@@ -318,6 +389,10 @@ const R3=(function(){
           box(g,0.25,0.1,1.4,-TS/2,4.15,s,mat(0xfff0c8,{basic:1}));      // 兩軌之間的頂燈
         }
         for(const x of [2.38,-(TS+2.38)])box(g,0.12,0.14,len,x,2.25,mid,mat(0x2a2c32));
+        // 逃生步道（靠牆、略高於軌面）與牆上的電纜架（位置與尺寸為示意）
+        const wk=mat(0x6e7076),cb=mat(0x55575c);
+        box(g,0.7,0.85,len,2.05,0.425,mid,wk);box(g,0.7,0.85,len,-(TS+2.05),0.425,mid,wk);
+        box(g,0.1,0.035,len,2.36,2.8,mid,cb);box(g,0.1,0.035,len,-(TS+2.36),2.8,mid,cb);
       }
     }
   }
@@ -567,9 +642,10 @@ const R3=(function(){
     try{
       renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
       renderer.outputColorSpace=T.SRGBColorSpace;
+      renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;   // 電影式色調對應：亮部不會整片死白，對比較接近真實
       scene=new T.Scene();
       camera=new T.PerspectiveCamera(52,1,0.4,520);
-      unitBox=new T.BoxGeometry(1,1,1);planeGeo=new T.PlaneGeometry(1,1);coneGeo=new T.ConeGeometry(1,1,7);headGeo=new T.SphereGeometry(0.5,12,9);
+      unitBox=new T.BoxGeometry(1,1,1);planeGeo=new T.PlaneGeometry(1,1);coneGeo=new T.ConeGeometry(1,1,7);crownGeo=new T.IcosahedronGeometry(1,0);tankGeo=new T.CylinderGeometry(0.5,0.5,1,10);headGeo=new T.SphereGeometry(0.5,12,9);
       buildHazards_pending=true;
       _q=new T.Quaternion();_q2=new T.Quaternion();_v=new T.Vector3();_s=new T.Vector3();_m=new T.Matrix4();_AX=new T.Vector3(1,0,0);_AY=new T.Vector3(0,1,0);HIDE=new T.Matrix4().makeScale(0.0001,0.0001,0.0001);
       hemi=new T.HemisphereLight(0xffffff,0x888888,1);scene.add(hemi);
