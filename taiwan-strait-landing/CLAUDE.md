@@ -70,6 +70,7 @@
   - **極簡畫質 `ULTRA`**（2026-11-18.36；`state.js` 的 `setQual`、localStorage `tsl-qual`、網址 `?ultra=1／0`）：靜態地形依分類合併成平面色塊 path（`path.tl-ul`，近岸的帶 `data-sea="2"`，點選用 `seaHexAt` 反查，陸地也回傳），不畫 3D 側面／陰影／山峰／建築／海浪，`elev()` 恆為 0；節點約 30,500 → 2,900。設定的「地圖畫質」與卡頓提醒的「極簡畫質」按鈕都呼叫 `setQual`。改地形繪製時，`buildStatic`／`buildFar` 兩條路徑（一般／ULTRA）都要顧到。
   - `terList(key,fn)`（`map.js`）：地形是載入後就不變的，「符合條件的格子清單」第一次用到時算一次、之後重用；**條件只能看地形，不能看 S 的狀態**（例：`terList('twCoast',…)`）。每次重畫都會執行的程式不要寫 `Object.values(TER).filter(…)`。
   - 效能：10 km 約 9,000 格，一整場電腦推演桌機約 5 秒。熱點已改寫（`unitsAt`／`unitAt` 比對數字座標、`inZOC`／`enemyAdj` 直接掃單位、`twControl` 快取）；新程式不要在迴圈裡掃整個 `TER` 或每格呼叫 `unitsAt`。
+- **傾斜視角**（2026-11-18.67；`js/ui/tilt.js`）：`#tiltBox`（包住 `#map` 的 div）用 inline `scaleY(cos 視角)` 壓縮，高度同步縮短；localStorage `tsl-tilt`，ULTRA 固定平面。**不能改成 3D（perspective／rotateX）**：Chrome 對 3D 變形下的 SVG 不做內部點擊判定（實測點不到單位與海面），而 2D 縮放下 `getScreenCTM`／`seaHexAt` 照常。改地圖外層結構時別移掉 `#tiltBox`。
 - 除錯鉤子：網址加 `?debug=1`，提供 `window.__S`、`__dog`、`__fg`、`__ledger` 等。
 
 ## 四、測試與工具注意事項

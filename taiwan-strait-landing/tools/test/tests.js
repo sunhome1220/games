@@ -524,6 +524,30 @@ add('固定種子推演（其餘 3 場）','full',c=>baseCheck(c,[1,2,3]));
 const mission=async(c,q,hold,opts,want,name)=>{const p=await L.open(c.b,c.url,q,opts);const t=await L.playMission(p,hold);const r=[[t.includes(want),name+'：結算「'+want+'」'],...noErr(p,name)];await p.close();return r;}; // 一定要關掉頁面：沒關的頁面會繼續在背景跑，拖慢後面的測試
 add('關卡完整流程（關閉動畫）','medium',async c=>[].concat(
   ...await Promise.all([mission(c,'?mission=port&ex=keelung&debug=1',true,{fast:true,hide:true},'任務成功','奪港過關'),mission(c,'?mission=port&ex=keelung&debug=1',false,{fast:true,hide:true},'任務失敗','奪港失敗')])));
+add('傾斜視角：縱向壓縮、捲動範圍同步、點選（單位與海面）仍正確、極簡畫質固定平面','medium',async c=>{const r=[];
+  let p=await L.open(c.b,c.url,'?nohome=1&debug=1',{fast:true,wait:2000});r.push([await L.startGame(p),'開局']);
+  const sh0=await p.evaluate(()=>document.querySelector('.mapwrap').scrollHeight);
+  await p.evaluate(()=>setTilt(40));await p.waitForTimeout(700);
+  const t=await p.evaluate(()=>{const b=document.getElementById('tiltBox'),w=document.querySelector('.mapwrap');return {tr:b.style.transform,sh:w.scrollHeight,bh:parseFloat(b.style.height),mh:document.getElementById('map').clientHeight};});
+  r.push([/scaleY\(0\.76/.test(t.tr),'傾斜 40°：縱向壓縮 cos40°（'+t.tr+'）']);
+  r.push([Math.abs(t.bh-t.mh*0.766)<2&&t.sh<sh0*0.85,'外層高度同步縮短，捲動範圍跟著變小（'+sh0+' → '+t.sh+'）']);
+  const sea=await p.evaluate(()=>{const wr=document.querySelector('.mapwrap').getBoundingClientRect();let n=0,ok=0,bad=[];
+    for(const h of Object.values(TER)){if(h.t!=='sea'||n>=12)continue;const e=hexEl(h.k);if(!e)continue;const b=e.getBoundingClientRect(),x=b.left+b.width/2,y=b.top+b.height/2;
+      if(x<wr.left+30||x>wr.right-30||y<wr.top+30||y>wr.bottom-30)continue;const el=document.elementFromPoint(x,y),sp=el&&el.closest&&el.closest('[data-sea]');if(!sp)continue;n++;if(seaHexAt(sp,x,y)===h.k)ok++;else bad.push(h.k);}
+    return {n,ok,bad};});
+  r.push([sea.n>=5&&sea.ok===sea.n,'傾斜後海面點選反查格子正確（'+sea.ok+'/'+sea.n+' '+JSON.stringify(sea.bad)+'）']);
+  const un=await p.evaluate(()=>{const u=S.units.find(x=>x.side==='atk'&&!x.boundTo);const e=document.querySelector('#map .u[data-id="'+u.id+'"]');if(!e)return null;e.scrollIntoView({block:'center',inline:'center'});return u.id;});
+  await p.waitForTimeout(400);
+  const pos=await p.evaluate(id=>{const e=document.querySelector('#map .u[data-id="'+id+'"] .body')||document.querySelector('#map .u[data-id="'+id+'"]'),b=e.getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2];},un);
+  await p.mouse.click(pos[0],pos[1]);await p.waitForTimeout(300);
+  r.push([un!=null&&await p.evaluate(id=>S.sel&&S.sel.id===id,un),'傾斜後點單位會選取該單位']);
+  await p.reload({waitUntil:'load'});await p.waitForTimeout(1500);
+  r.push([await p.evaluate(()=>TILT===40&&tiltOn()),'設定會記住（重新載入後仍是 40°）']);
+  await p.evaluate(()=>setQual('ultra'));
+  r.push([await p.evaluate(()=>!tiltOn()&&!document.getElementById('tiltBox').style.transform),'極簡畫質固定平面']);
+  await p.evaluate(()=>{setQual('normal');setTilt(0);});
+  r.push([await p.evaluate(()=>!document.getElementById('tiltBox').style.transform),'切回平面：變形清除']);
+  r.push(...noErr(p,'傾斜視角'));await p.close();return r;});
 add('關卡完整流程（正常動畫）','full',async c=>[].concat(
   ...await Promise.all([mission(c,'?mission=port&ex=keelung&debug=1',true,{shrink:true},'任務成功','奪港過關（正常動畫）'),mission(c,'?mission=port&ex=keelung&debug=1',false,{shrink:true,hide:true},'任務失敗','奪港失敗（動畫程式照跑、不繪製地圖）')])));
 

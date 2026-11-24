@@ -9,7 +9,7 @@ let ULTRA=/[?&]ultra=1/.test(location.search)||(!/[?&]ultra=0/.test(location.sea
 document.body.classList.toggle('ultra',ULTRA);
 function setQual(v){ // 切換畫質：重建靜態地圖
   try{localStorage.setItem('tsl-qual',v);}catch(e){}
-  ULTRA=v==='ultra';document.body.classList.toggle('ultra',ULTRA);
+  ULTRA=v==='ultra';document.body.classList.toggle('ultra',ULTRA);if(typeof tiltApply==='function')tiltApply();
   if(typeof STATIC!=='undefined'){STATIC.built=false;if(S&&typeof render==='function')render();}
 }
 function mkUnit(side,type,k,extra){
