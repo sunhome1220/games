@@ -233,7 +233,7 @@ add('戰役模式中回首頁：標題列的首頁鈕；設定精靈不再有任
   r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&!!document.getElementById('hmMission')),'設定精靈中按首頁鈕：直接回到首頁（不重新載入）']);
   await p.click('#hmCampaign');await p.waitForTimeout(200);
   r.push([await p.evaluate(i=>document.getElementById('home').hidden&&WZ.i===i,wzI),'再選戰役模式：回到剛才的設定精靈頁（內容保留）']);
-  await L.startGame(p);p.once('dialog',d=>d.accept());await p.click('#btnHome');await p.waitForTimeout(2200);
+  await L.startGame(p);p.once('dialog',d=>d.accept());await p.click('#btnHome');await p.waitForFunction(()=>/home=1/.test(location.search)&&document.getElementById('home')&&!document.getElementById('home').hidden,null,{timeout:20000}).catch(()=>{});await p.waitForTimeout(300);
   r.push([await p.evaluate(()=>!document.getElementById('home').hidden&&/home=1/.test(location.search)),'對局中按首頁鈕：確認後重新載入並顯示首頁']);
   r.push(...[[true,'']].slice(0,0));await p.close();return r;});
 
@@ -261,7 +261,7 @@ add('admin.html：在瀏覽器內算管理者雜湊、產生 status.json','mediu
   const pg=await c.b.newPage({viewport:{width:430,height:900}});const errs=[],reqs=[];pg.on('pageerror',e=>errs.push(e.message));pg.on('request',q=>{if(!q.url().startsWith(new URL(c.url).origin))reqs.push(q.url());});
   await pg.goto(c.url.replace(/index\.html.*$/,'')+'admin.html',{timeout:60000});await pg.waitForTimeout(700);
   const pw='test-pass-1234567',h=crypto.createHash('sha256').update('tsl-admin:'+pw).digest('hex');
-  await pg.fill('#pw','short');let o=JSON.parse(await pg.inputValue('#out'));r.push([o.adminHash===''&&/太短/.test(await pg.textContent('#strength')),'密碼太短（<12）：不產生雜湊，並提示']);
+  await pg.fill('#pw','short');let o=JSON.parse(await pg.inputValue('#out'));r.push([o.adminHash===(JSON.parse(require('fs').readFileSync(L.ROOT+'/status.json','utf8')).adminHash||'')&&/太短/.test(await pg.textContent('#strength')),'密碼太短（<12）：不產生新雜湊（保留 status.json 現有的），並提示']);
   await pg.fill('#pw',pw);await pg.selectOption('#st','closed');await pg.fill('#msg','維護中，稍後開放');o=JSON.parse(await pg.inputValue('#out'));
   r.push([o.adminHash===h&&o.open===false&&o.message==='維護中，稍後開放','產生的 status.json：雜湊與 SHA-256("tsl-admin:"+密碼) 相同、open:false、訊息正確']);
   r.push([/\?admin=test-pass-1234567$/.test(await pg.textContent('#login')),'管理者登入網址帶密碼']);
@@ -524,6 +524,38 @@ add('固定種子推演（其餘 3 場）','full',c=>baseCheck(c,[1,2,3]));
 const mission=async(c,q,hold,opts,want,name)=>{const p=await L.open(c.b,c.url,q,opts);const t=await L.playMission(p,hold);const r=[[t.includes(want),name+'：結算「'+want+'」'],...noErr(p,name)];await p.close();return r;}; // 一定要關掉頁面：沒關的頁面會繼續在背景跑，拖慢後面的測試
 add('關卡完整流程（關閉動畫）','medium',async c=>[].concat(
   ...await Promise.all([mission(c,'?mission=port&ex=keelung&debug=1',true,{fast:true,hide:true},'任務成功','奪港過關'),mission(c,'?mission=port&ex=keelung&debug=1',false,{fast:true,hide:true},'任務失敗','奪港失敗')])));
+add('存檔：自動存檔、手動存檔位、讀檔後與不中斷的結果相同','medium',async c=>{const r=[];
+  const adv=async(p,turn)=>{for(let i=0;i<600;i++){const st=await p.evaluate(t=>S.over?'over':(S.turn>=t&&humanTurn()&&S.phase==='atk'&&!S.busy&&document.querySelector('#modal').hidden)?'ok':'',turn);if(st)return st;
+    const m=await L.modalClick(p);if(m===2)await p.evaluate(()=>{if(humanTurn())document.querySelector('#btnEnd').click();});await p.waitForTimeout(30);}return 'timeout';};
+  const hash=p=>p.evaluate(()=>{const o=JSON.parse(JSON.stringify(S,function(k,v){return this===S&&SAVE_SKIP.has(k)?undefined:v;}));let h=0;const t=JSON.stringify({S:o,a:ACC,r:RNGA});for(let i=0;i<t.length;i++)h=(Math.imul(h,31)+t.charCodeAt(i))|0;return h+':'+t.length;});
+  let p=await L.open(c.b,c.url,'?nohome=1&debug=1',{fast:true,hide:true,seed:11});
+  r.push([await L.startGame(p),'開局']);
+  r.push([await p.evaluate(()=>!!saveInfo('auto')&&saveInfo('auto').turn===1),'第 1 回合自動存檔']);
+  r.push([await adv(p,2)==='ok','推到第 2 回合']);
+  r.push([await p.evaluate(()=>saveInfo('auto').turn===2&&saveWrite('1')&&saveInfo('1').turn===2&&!saveInfo('2')),'自動存檔更新到第 2 回合；手動存入位 1']);
+  r.push([await adv(p,4)==='ok','推到第 4 回合']);
+  const hA=await hash(p);
+  const err=await p.evaluate(()=>saveLoad('1'));
+  r.push([err==='','同一頁讀回存檔 1：'+err]);
+  r.push([await p.evaluate(()=>S.turn===2&&S.phase==='atk'),'讀檔後回到第 2 回合']);
+  r.push([await adv(p,4)==='ok','讀檔後再推到第 4 回合']);
+  const hB=await hash(p);r.push([hA===hB,'同一頁：讀檔後的結果與不中斷相同（'+hA+' vs '+hB+'）']);
+  const raw=await p.evaluate(()=>localStorage.getItem('tsl-save-1'));await p.close();
+  p=await L.open(c.b,c.url,'?nohome=1&debug=1',{fast:true,hide:true});
+  await p.evaluate(t=>localStorage.setItem('tsl-save-1',t),raw);
+  r.push([await p.evaluate(()=>saveLoad('1')==='' ),'新頁面讀檔']);
+  r.push([await adv(p,4)==='ok','新頁面推到第 4 回合']);
+  const hC=await hash(p);r.push([hA===hC,'新頁面：讀檔後的結果與不中斷相同（'+hC+'）']);
+  r.push([await p.evaluate(()=>{const o=JSON.parse(localStorage.getItem('tsl-save-1'));o.v=99;localStorage.setItem('tsl-save-1',JSON.stringify(o));return /讀不了/.test(saveLoad('1'));}),'存檔格式版本不同：拒絕讀取']);
+  r.push([await p.evaluate(()=>{saveDel('1');return !saveInfo('1')&&/空的/.test(saveLoad('1'));}),'刪除後讀取提示空位']);
+  r.push(...noErr(p,'存檔'));await p.close();
+  p=await L.open(c.b,c.url,'?home=1',{fast:true,hide:true});
+  r.push([await p.evaluate(()=>!document.querySelector('#hmContinue')),'沒有自動存檔時首頁沒有「繼續」']);
+  await p.evaluate(t=>{localStorage.setItem('tsl-save-auto',t);},raw);await p.evaluate(()=>homeMain());
+  r.push([await p.evaluate(()=>!!document.querySelector('#hmContinue')),'有自動存檔時首頁出現「繼續上次戰局」']);
+  await p.click('#hmContinue');await p.waitForTimeout(600);
+  r.push([await p.evaluate(()=>S.started&&S.turn===2&&$('#home').hidden),'按「繼續」：進入戰局、關閉首頁']);
+  r.push(...noErr(p,'存檔：首頁繼續'));await p.close();return r;});
 add('關卡完整流程（正常動畫）','full',async c=>[].concat(
   ...await Promise.all([mission(c,'?mission=port&ex=keelung&debug=1',true,{shrink:true},'任務成功','奪港過關（正常動畫）'),mission(c,'?mission=port&ex=keelung&debug=1',false,{shrink:true,hide:true},'任務失敗','奪港失敗（動畫程式照跑、不繪製地圖）')])));
 

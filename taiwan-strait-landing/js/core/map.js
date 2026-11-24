@@ -24,9 +24,9 @@ const $=s=>document.querySelector(s);
 let GEN=0; // 每次重新開局加一：舊的非同步流程（動畫等待中）不會再接續執行
 const sleep=ms=>S&&S.rec?Promise.resolve():(g=>new Promise(r=>setTimeout(()=>{if(g===GEN)r();},(typeof FXOFF!=='undefined'&&FXOFF?0:ms*(S&&S.speed||1)))))(GEN); // 關閉動畫時不停頓（仍讓出一次事件迴圈，畫面不會凍結）
 const NR=Math.random.bind(Math); // 原生亂數：只給動畫用，不吃種子，讓同一個戰局碼在不同機器上走同樣的結果
-let SEEDF=null;
+let SEEDF=null,RNGA=0; // RNGA：亂數產生器目前的位置（存檔時一起存，讀檔後接著同一條亂數序列）
 function seedRng(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
-  let a=(h^h>>>16)>>>0;SEEDF=()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};Math.random=SEEDF;}
+  RNGA=(h^h>>>16)>>>0;SEEDF=()=>{RNGA=(RNGA+0x6D2B79F5)>>>0;let t=RNGA;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};Math.random=SEEDF;}
 const newSeed=()=>Math.floor(NR()*0x7fffffff).toString(36).toUpperCase().padStart(6,'0');
 const d6=()=>1+Math.floor(Math.random()*6);
 // 命中判定：基礎命中率 p 由武器與條件決定，骰子只帶來有限的運氣起伏（相對 ±22%，上限 100%）。

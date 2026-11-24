@@ -21,8 +21,10 @@ function homeMain(){
     '<div class="hm-cards"><button class="hm-card" id="hmCampaign"><span class="tag">01 / 戰役模式</span><b>完整戰局</b><small>自訂年代、雙方兵力配置與交戰規則。選擇攻方或守方，親自指揮作戰，亦可交由系統進行自動推演，或觀看完整戰況模擬。<br>支援戰果統計、戰況回顧及完整戰後評估報告。</small></button>'+
     '<button class="hm-card" id="hmMission"><span class="tag">02 / 任務挑戰</span><b>情境任務</b><small>在指定戰場環境與既定作戰條件下，完成各項任務目標。系統將依據作戰成果進行評分，考驗你的決策能力與戰場應變。<br>收錄'+names+'等挑戰，共 '+ts.length+' 項任務。</small></button>'+
     '<button class="hm-card" id="hmSettings"><span class="tag">03 / 個人化配置</span><b>系統設定</b><small>自訂語言、推演速度、國際快訊、語音、地圖顯示品質及戰績紀錄。</small></button></div>'+
+    (()=>{const m=saveInfo('auto');return m?'<div class="hm-foot"><button class="hm-card" id="hmContinue" style="width:100%"><span class="tag">繼續</span><b>繼續上次戰局</b><small>'+saveDesc(m)+'</small></button></div>':'';})()+
     '<div class="hm-foot"><label><input type="checkbox" id="hmSkip"> 以後直接進入戰役模式</label></div>';
   $('#hmCampaign').onclick=()=>{if($('#hmSkip').checked)homeStore('tsl-home','0');homeClose();};
+  if($('#hmContinue'))$('#hmContinue').onclick=()=>{const e=saveLoad('auto');if(e)toast(e,4200);};
   $('#hmMission').onclick=homeMissions;$('#hmSettings').onclick=homeSettings;
   $('#hmCampaign').focus();homeFabSync();
 }
