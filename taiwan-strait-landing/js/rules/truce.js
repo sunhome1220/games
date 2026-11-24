@@ -137,7 +137,7 @@ function truceAuto(side,info){
   const n3=conditions().filter(c=>c.atk).length,noAsk=side==='def'?n3<2:ol>=12;
   w=w.filter(([id])=>info.opts.some(o=>o.id===id)&&!(noAsk&&['declare','talks','seek'].includes(id)));
   if(!w.length)return info.opts.find(o=>o.id==='resist'||o.id==='escalate')||info.opts[0];
-  const id=wpick(w);return info.opts.find(o=>o.id===id)||info.opts[0];
+  const id=wDet(w,'truce:'+side);return info.opts.find(o=>o.id===id)||info.opts[0]; // 依權重的固定選擇（不擲骰）
 }
 function applyTruce(side,o){
   const eff=[];

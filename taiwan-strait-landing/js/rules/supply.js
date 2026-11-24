@@ -53,12 +53,10 @@ async function interdictEval(){
   const info=interdictOptions(),manual=(S.sim&&!S.simAuto)||(!S.video&&S.ctrl.def==='human');
   if(info.opts.length<=1)return; // 攻方補給沒有可打的管道，不必決策
   const ai=()=>{const rest=info.opts.filter(x=>x.id!=='normal'&&!x.id.startsWith('mine@'));
-    if(Math.random()>=.3||asTot()<3||!rest.length)return info.opts[0];
+    if(asTot()<3||!rest.length)return info.opts[0];
     const w={convoy:50,air:30,sabotage:20,fob:35,mine:20,deny:15}; // 電腦守方只用預設的「攻方卸載點外海」補布，不挑別的港口
-    let tot=rest.reduce((a,x)=>a+w[x.id],0),r=Math.random()*tot;
-    for(const x of rest){r-=w[x.id];
-    if(r<=0)return x;
-    }return rest[0];
+    const tot=rest.reduce((a,x)=>a+w[x.id],0),ws=[[info.opts[0].id,70]].concat(rest.map(x=>[x.id,30*w[x.id]/tot])); // 約七成照常作戰、三成依權重攔截（依權重的固定選擇，不擲骰）
+    const id=wDet(ws,'interdict');return info.opts.find(o=>o.id===id)||info.opts[0];
     };
   let o;
   if(manual)o=await askTruce(info,ai);
@@ -108,8 +106,9 @@ async function convoyEval(){
   if(S.over||S.turn<3||!hasBeachhead())return;
   const info=convoyOptions(),manual=(S.sim&&!S.simAuto)||(!S.video&&S.ctrl.atk==='human');
   if(info.opts.length<=1)return; // 沒有可調整的項目
-  const ai=()=>{const hit=S.mods.lastInterdict===S.turn-1,r=Math.random();const O=info.opts,pickId=id=>O.find(x=>x.id===id)||O[0];
-    const nf=S.units.filter(x=>x.side==='atk'&&x.type==='fob').length;return hit?(r<.45?pickId('escort'):r<.6?pickId('airlift'):r<.72?pickId('rush'):r<.82?pickId('requisition'):r<.92&&nf<2?pickId('fob'):O[0]):(nf<2&&r<.45?pickId('fob'):r<.75?O[0]:r<.87?pickId('requisition'):pickId('airlift'));};
+  const ai=()=>{const hit=S.mods.lastInterdict===S.turn-1;const O=info.opts,pickId=id=>O.find(x=>x.id===id)||O[0]; // 依權重的固定選擇（不擲骰），比例同原本的設計
+    const nf=S.units.filter(x=>x.side==='atk'&&x.type==='fob').length,ws=hit?[['escort',45],['airlift',15],['rush',12],['requisition',10],[nf<2?'fob':O[0].id,10],[O[0].id,8]]:[[nf<2?'fob':O[0].id,45],[O[0].id,30],['requisition',12],['airlift',13]];
+    return pickId(wDet(ws.filter(([id])=>O.some(o=>o.id===id)),'convoy'));};
   let o;if(manual)o=await askTruce(info,ai);else{o=ai();if(!(S.rec&&REC.quiet)&&o.id!=='normal')toast(info.title+'：'+o.label);}
   const m=S.mods,t=S.turn,eff=[],rec={turn:t,phase:S.phase,title:info.title,id:'convoy_'+t,choice:o.label,who:'atk',rolls:[],effects:eff};
   log('【'+rec.title+'】攻方選擇「'+o.label+'」');

@@ -25,7 +25,7 @@ function newState(){
      sel:null,mode:null,busy:false,over:false,started:false,nid:1,hover:null,zoneFlip:0,
      sim:false,speed:1,events:[],lastSnap:null,mods:defaultMods(),
      pools:null,mines:{},baseStruck:{US:0,JP:0},afl:{},bh:{},bhNote:false,portDown:{},portAsked:{},truce:{atk:{n:0,t:-9},def:{n:0,t:-9}},fx:null,simAuto:false,thSel:null,
-         news:[],hits:[],newsOn:true,fxScen:'interest',fxLock:false,plan:null,video:false,rec:false,gid:Math.random(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,
+         news:[],hits:[],newsOn:true,fxScen:'interest',fxLock:false,plan:null,video:false,rec:false,gid:NR(),cost:newCost(),stats:{fire:0,badWx:0,over:0,firstLand:null,
          esc:[],reserves:0,tpHold:0,cn:{strikes:0,hits:0},retal:{strikes:0,hits:0}},turnStart:null,fireNote:''};
   for(const h of Object.values(TER))if(isLand(h))S.owner[h.k]=h.isl==='CN'?'atk':'def';
   // 每個單位約一個旅（4,000～5,000 人）。共軍第一波約 40,000～55,000 人（兩棲艦隊首波運力估計 2～4 萬），後續波次由增援補上

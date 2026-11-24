@@ -33,11 +33,15 @@ function wpick(ws){let t=ws.reduce((a,w)=>a+w[1],0),r=NR()*t;for(const [v,w] of 
 function autoChoice(ev,opts){
   opts=opts.filter(o=>!o.x); // 電腦不會選「🔥 極端」選項，只給真人選
   const has=id=>opts.some(o=>o.id===id);let id;
-  if(ev.id==='timing')id=wpick([['apr',45],['oct',35],['winter',20]]);
-  else if(ev.id==='strike')id=wpick([['ssm',40],['c2',20],['air',30]].concat(has('okinawa')?[['okinawa',10]]:[]));
-  else if(ev.id==='mobilize')id=wpick([['full',40],['capital',30],['mobile',30]]);
-  else if(ev.id==='final')id=REC.quiet?pick(opts).id:(snap().n>=2&&has('hold')?'hold':'allin'); // statistics: choose at random so the choice is not tied to who is already ahead
-  else id=pick(opts).id;
+  // 固定規則（不擲骰）：取原本權重最高的選項；有 autoPick 的依戰況；守方決策依局面
+  if(ev.autoPick)id=ev.autoPick();
+  else if(ev.id==='timing')id='apr';
+  else if(ev.id==='strike')id='ssm';
+  else if(ev.id==='mobilize')id='full';
+  else if(ev.id==='final')id=snap().n>=2&&has('hold')?'hold':'allin';
+  else if(ev.id==='counter')id='disperse'; // 先保存戰力；立即反擊大陸會升高衝突
+  else if(ev.id==='sustain')id=conditions().filter(c=>c.atk).length>=2?'counter':'hold'; // 攻方已達成 2 項條件才全力反攻，否則固守要點
+  else id=opts[0].id;
   return opts.find(o=>o.id===id)||opts[0];
 }
 function autoEvent(ev,i){
