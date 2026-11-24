@@ -34,6 +34,7 @@ SHOT_DIR=/some/dir bash taipei-mrt-driver/tests/run.sh t8   # 部分測試會存
 | `gp.cjs` | 手把（模擬 `navigator.getGamepads`） |
 | `sig.cjs` | 號誌專項（SPAD、停止信號卡死檢查） |
 | `stats.cjs` | 匿名統計：事件送出、Do Not Track、本機不統計、服務失敗不影響遊戲 |
+| `ghost.cjs` | 換關卡後上一班的 3D 車站全部移除 |
 | `soak.cjs` | 浸泡（各路線整班跑完、不報錯） |
 | `pre.cjs` | 預載腳本：讓測試略過首次教學並展開進階設定（`ui.cjs` 不用） |
 
