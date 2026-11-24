@@ -99,7 +99,7 @@ const FARWHO={atk:'共軍',us:'美軍',jp:'日本'};
 let FARSEL=null;
 const ORG={okinawa:[[26,-1],[27,-1]],sakishima:[[20,3],[18,5]],sasebo:[[27,-6]],guam:[[26,22]],sea:[[19,9],[18,13]],
   pla:[[2,2],[2,4],[2,6],[-3,-4],[-3,11],[7,-4]],plaCV:[[17,7]],roc:[[13,6],[10,10],[12,1],[9,6]]};
-const orgPick=k=>{const a=ORG[k];return a?a[Math.floor(Math.random()*a.length)].slice():null;};
+const orgPick=k=>{const a=ORG[k];return a?a[Math.floor(NR()*a.length)].slice():null;};
 function farKeyInGrid(c,r){return c>=OC0&&c<OC1&&r>=OR0&&r<OR1;}
 const TERF=(c,r)=>TER[K(c,r)];
 const fineCenter=(c,r)=>center(c,r),FINE={R,c0:COL0,c1:COL1,r0:ROW0,r1:ROW1};

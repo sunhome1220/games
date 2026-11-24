@@ -320,7 +320,7 @@ function fxDog(o){
 // 主地圖上的基地打擊動畫：發射點到基地圖示，依武器用巡弋飛彈（低空貼海面）或彈道飛彈（高拋物線）
 function tfaPx(key,side){
   const P=basePx();
-  if(key==='tw'){const ms=S.units.filter(u=>u.side==='def'&&(u.type==='hmr'||u.type==='ssm'));const u=ms.length?pick(ms):null;if(u)return cen(u.c,u.r);const h=TER[TAIPEI];return cen(h.c,h.r);}
+  if(key==='tw'){const ms=S.units.filter(u=>u.side==='def'&&(u.type==='hmr'||u.type==='ssm'));const u=ms.length?ms[Math.floor(NR()*ms.length)]:null;if(u)return cen(u.c,u.r);const h=TER[TAIPEI];return cen(h.c,h.r);}
   if(CNB[key])return P['c'+key];if(BASES[key])return P['b'+key];
   return P['b'+key]||null;
 }

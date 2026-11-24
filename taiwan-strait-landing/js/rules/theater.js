@@ -276,9 +276,9 @@ function usCarrierSunk(how){
   const idx=usIdx();bigNews('美軍航艦遭擊沉','第 7 艦隊的航艦打擊群在台海附近被擊沉，數千名官兵可能罹難，美國社會震動。');
   if(idx<0)return;
   const cas=usCas(),n=conditions().filter(c=>c.atk).length,recent=S.us.rally&&S.turn-S.us.rally<=2;
-  const wR=Math.max(.05,.18+.03*cas+(idx>=2?-.08:0)-(n>=2?.06:0)),wE=Math.max(.1,.3+.1*n+(recent?.2:0)+(idx>=2?.1:0)),wH=Math.max(.1,1-wR-wE),tot=wR+wE+wH,r=Math.random()*tot;
-  if(r<wR){S.us.drop=Math.max(S.us.drop||0,1)+1;notePosture('航艦遭擊沉，美國國內壓力暴增，政府宣布撤出戰區',true);log('美國：航艦沉沒後政治壓力過大（'+casN(cas)+'），退出戰場，改為最低限度的支援');}
-  else if(r<wR+wE){setLevel('US',Math.min(3,Math.max(S.fx.lv.US,2)+1),'航艦遭擊沉的報復');S.us.drop=0;S.us.rally=S.turn;
+  const wR=Math.max(.05,.18+.03*cas+(idx>=2?-.08:0)-(n>=2?.06:0)),wE=Math.max(.1,.3+.1*n+(recent?.2:0)+(idx>=2?.1:0)),wH=Math.max(.1,1-wR-wE),top=Math.max(wR,wE,wH); // 固定規則：取三種反應中可能性最高的一種（不擲骰）
+  if(top===wR){S.us.drop=Math.max(S.us.drop||0,1)+1;notePosture('航艦遭擊沉，美國國內壓力暴增，政府宣布撤出戰區',true);log('美國：航艦沉沒後政治壓力過大（'+casN(cas)+'），退出戰場，改為最低限度的支援');}
+  else if(top===wE){setLevel('US',Math.min(3,Math.max(S.fx.lv.US,2)+1),'航艦遭擊沉的報復');S.us.drop=0;S.us.rally=S.turn;
     let k=0;for(let i=0;i<3;i++){const id=aiPickCN();if(!id)break;strikeCN(id,'US');k++;}
     log('美國：航艦沉沒激起強烈報復，全力投入並對大陸基地發動 '+k+' 次打擊');}
   else log('美國：航艦沉沒後暫時維持現有立場，等待進一步情勢（'+casN(cas)+'）');
@@ -382,7 +382,6 @@ function allyAir(){const dh=S.units&&jmsLead(),f35=dh&&(+S.era||2026)>=2027?ptsO
 function cvyMod(t){const near=S.units.filter(e=>e.side==='atk'&&e.type==='dd'&&rd(hexOf(e),hexOf(t))<=kmH(40)).length;return -1+Math.min(2,near);}
 // 守方選目標的價值：航艦最高，其次是補給船團（打掉補給就是斷攻方的後路）、載著登陸部隊的船，護航艦最低
 const tgtVal=e=>(e.type==='cv'?(cvOOA(e)?.5:4):e.type==='cvy'?3:(e.type==='amph'||e.type==='mar'||e.type==='arm')?2.5:e.type==='dd'?1:1.5)+(e.boundTo&&S.units.some(x=>x.id===e.boundTo)?2.5:0); // 載著旅的運輸船：船＋旅的價值
-function pickW(arr,f){let t=arr.reduce((a,x)=>a+f(x),0),r=Math.random()*t;for(const x of arr){if((r-=f(x))<=0)return x;}return arr[0];}
 function escortMod(){return S.pools.plaNavy>=5?1:0;}
 // 大陸基地損傷：火箭軍旅駐地、空軍機場被打掉的比例，就是對應發射與出擊能量的損失（發射架、跑道損毀就發射不出去）
 function cnShare(kind){let a=0,b=0;for(const id of Object.keys(CNB)){if(CNB[id].kind!==kind)continue;a+=Math.max(0,S.cn[id]);b+=CNB[id].hp;}return b?a/b:1;}

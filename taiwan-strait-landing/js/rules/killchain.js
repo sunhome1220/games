@@ -107,7 +107,7 @@ function strike(t){
     fxq({t:'air',at:[t.c,t.r],hit:false,tsea:false,org:orgPick('pla'),k:pk.hs?'hs':pk.k==='g'?'cm':'bm'});
     log('火力打擊 '+hname(h)+'：沒有找到可打擊的'+tname(t)+'營級部隊，打到空的陣地（'+(t.glL?t.glL.txt:'')+'；推估）');checkInstant();return;}
   const PM=pkgMod(pk,h,t),ok=hitP((mob?lchKillP(pk):pNeed(need))*PM.m,'st:'+t.type+':'+pk.k); // 機動發射車：已定位後依武器數量計算
-  fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:atSea(t),org:orgPick(S.pools&&S.pools.plaCV>0&&Math.random()<.3?'plaCV':'pla'),k:pk.hs?'hs':pk.k!=='g'?'bm':Math.random()<.5&&S.pools.plaCM>0?'cm':'bomb',ad:!pk.hs&&S.pools.rocAD>0&&!S.sead&&!atSea(t)?(ok?'pass':'int'):undefined});
+  fxq({t:'air',at:[t.c,t.r],hit:ok,tsea:atSea(t),org:orgPick(S.pools&&S.pools.plaCV>0&&NR()<.3?'plaCV':'pla'),k:pk.hs?'hs':pk.k!=='g'?'bm':NR()<.5&&S.pools.plaCM>0?'cm':'bomb',ad:!pk.hs&&S.pools.rocAD>0&&!S.sead&&!atSea(t)?(ok?'pass':'int'):undefined});
   if(ok){if(isLch(t)&&t.veh!=null){t.locN=Math.max(0,(t.locN||0)-1);
     const x=ssmHit(t,'火力打擊');
     log('火力打擊命中 '+hname(h)+' 的 '+tname(t)+'：'+x+'（'+(PM.txt?PM.txt+'；':'')+lastTxt()+'）');

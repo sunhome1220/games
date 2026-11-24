@@ -283,7 +283,7 @@ async function runEvents(side){
     else if(S.video){if(ev.id!=='buildup')autoEvent(ev,i);}
     else if(ev.defend){ // 守方決策：人類守方彈窗選擇；電腦守方隨機抽一個選項
       if(S.ctrl&&S.ctrl.def==='human'){S.busy=true;toast('決策：'+ev.title);await playEvent(ev,i);S.busy=false;}
-      else{const rec={turn:S.turn,phase:S.phase,title:ev.title,id:ev.id},opts=ev.choice.options,ch=pick(opts.filter(o=>!o.x&&(!o.hide||!o.hide())));rec.choice=ch.label;rec.who='def';finishRec(ev,rec,ch,[]);}
+      else{const rec={turn:S.turn,phase:S.phase,title:ev.title,id:ev.id},opts=ev.choice.options,ch=autoChoice(ev,opts.filter(o=>!o.hide||!o.hide()));rec.choice=ch.label;rec.who='def';finishRec(ev,rec,ch,[]);}
     }
     else if(ev.auto){
       const rec={turn:S.turn,phase:S.phase,title:ev.title,id:ev.id};
