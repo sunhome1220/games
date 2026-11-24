@@ -15,6 +15,8 @@ const R3=(function(){
   const SHIRT=[0xff6b6b,0x4dabf7,0xffd43b,0x51cf66,0xcc5de8,0xff922b,0xf8f9fa,0x20c997,0xf06595,0x748ffc];
   const PANTS=[0x2f3b52,0x4a4f5c,0x6b4f3a,0x1f2a3a,0x7a8aa0,0x364a3c];
   const SKIN=[0xf8d3b0,0xeab98e,0xcf9468,0x9a6240,0xfbe0c6];
+  const BAGC=[0x1f2633,0x8a2f2f,0x2f5a8a,0x5a4632,0x3a3a3a,0xd9c9a3];
+  const SHOE=[0x1a1a1a,0xf2f2f2,0x5a3a26,0x2f3b52];
   const HAIR=[0x2a1d14,0x4a3020,0x111111,0xd1a94a,0x8a3b2a,0x777777,0xb04a8a];
   const TH={
     day:{sky0:'#5aa9e6',sky1:'#cfe8ff',gnd:0x7e8a78,bld:0xaeb8c4,fog:0xcfe8ff,hemi:[0xdcecff,0x8a8f86,2.1],sun:2.2,lit:0,water:0x6c9bbd,hill:0x6f8f6a,tree:0x3f7a3c,fields:[0x9ab26a,0x8aa85c,0xb8b270]},
@@ -217,7 +219,7 @@ const R3=(function(){
   const GY={elev:-12,grade:-0.3};     // 地面高度（軌道頂面為 0）
   const DENS={high:{p:0.7,h0:20,h1:90,w0:10,w1:34,o0:11,o1:45},mid:{p:0.62,h0:12,h1:42,w0:10,w1:30,o0:11,o1:50},
               low:{p:0.62,h0:4,h1:11,w0:6,w1:16,o0:9,o1:45},rural:{p:0.12,h0:3,h1:6,w0:6,w1:14,o0:16,o1:90}};
-  let coneGeo=null,crownGeo=null,tankGeo=null,headGeo=null,buildHazards_pending=false;
+  let coneGeo=null,crownGeo=null,tankGeo=null,headGeo=null,limbGeo=null,torsoGeo=null,hillGeo=null,buildHazards_pending=false;
   const flatMats=new Map();
   function flatMat(color){let m=flatMats.get(color);if(!m){m=new T.MeshLambertMaterial({color,flatShading:true});flatMats.set(color,m);}return m;}
   function inst(g,geo,m,n,fill){
@@ -286,7 +288,10 @@ const R3=(function(){
           const z=c*cell+hash(c*5+sd)*cell;if(z<sa||z>=sb)continue;
           const r=(far?110:80)+hash(c*7+sd*3)*80,h=(far?90:55)+hash(c*11+sd)*(far?110:80);
           const x=sd*((far?250:200)+hash(c*13+sd)*(far?120:150));
-          const o=new T.Mesh(coneGeo,flatMat(th.hill));o.scale.set(r,h,r);o.position.set(x,gy-4+h/2,-z);o.rotation.y=hash(c)*3;g.add(o);
+          // 圓潤的山稜：主峰＋兩側較低的山肩（半球體壓扁，平滑著色），像台北盆地周圍的丘陵，而不是尖錐
+          const hm=mat(th.hill);
+          const lump=(dx,dz,rr,hh)=>{const o=new T.Mesh(hillGeo,hm);o.scale.set(rr,hh,rr*(1.2+hash(c*17+dx)*0.6));o.position.set(x+dx,gy-4,-z+dz);o.rotation.y=hash(c+dx)*3;g.add(o);};
+          lump(0,0,r,h);lump(r*0.8,(hash(c*19)-0.5)*r,r*0.7,h*(0.55+hash(c*23)*0.2));lump(-r*0.75,(hash(c*29)-0.5)*r,r*0.65,h*(0.45+hash(c*31)*0.2));
         }
       }
       // 田野
@@ -493,7 +498,8 @@ const R3=(function(){
     const sk=hstr(L.short)+st.idx*131;
     const pick=(arr,k)=>arr[Math.floor(hash(k)*arr.length)];
     const spec=(kind,k,o)=>Object.assign({kind,shirt:pick(SHIRT,k*3+1),pants:pick(PANTS,k*5+2),skin:pick(SKIN,k*7+3),hair:pick(HAIR,k*11+4),
-      sc:hash(k*13+5)<0.16?0.72:0.9+hash(k*17+6)*0.2,ph:hash(k*19+7)*6.28},o);   // 約 16% 是小朋友
+      sc:hash(k*13+5)<0.16?0.72:0.9+hash(k*17+6)*0.2,ph:hash(k*19+7)*6.28,
+      long:hash(k*23+8)<0.38,bag:hash(k*29+9)<0.3?1:hash(k*29+9)<0.5?2:0,bagCol:pick(BAGC,k*31+10),shoe:pick(SHOE,k*37+11),short:hash(k*41+12)<0.6},o);   // 約 16% 是小朋友；長髮、背包（1）／側背包（2）、短袖
     for(let j=0;j<nd;j++){
       const sj=st.pos-4-j*sp;
       box(g,0.05,2.2,sp-2.5,sd*1.6,2.2,sj-sp/2,glass);
@@ -519,14 +525,18 @@ const R3=(function(){
       const k=sk+q*53+5000;
       P.push(spec('walk',k,{lane:sd*(lanesFor(island)[Math.floor(hash(k+3)*lanesFor(island).length)]+(hash(k+17)-0.5)*0.12),sp:0.9+hash(k+5)*0.8,off:hash(k+7)*1000}));
     }
-    // 每個人 7 個部件：頭、頭髮、軀幹、左右腿、左右臂（用實體化網格一次畫完）
+    // 每個人 17 個部件（頭、頭髮、長髮、脖子、軀幹、骨盆、左右大腿＋鞋、左右上臂＋前臂（短袖露出皮膚）、手、背包、眼睛），以實體化網格一次畫完；比例接近真人（約 7 頭身）
     const nP=P.length,cm=mat(0xffffff);
-    const parts={head:new T.InstancedMesh(headGeo,cm,nP),hair:new T.InstancedMesh(unitBox,cm,nP),torso:new T.InstancedMesh(unitBox,cm,nP),
-      legL:new T.InstancedMesh(unitBox,cm,nP),legR:new T.InstancedMesh(unitBox,cm,nP),armL:new T.InstancedMesh(unitBox,cm,nP),armR:new T.InstancedMesh(unitBox,cm,nP),
-      eyeL:new T.InstancedMesh(unitBox,cm,nP),eyeR:new T.InstancedMesh(unitBox,cm,nP)};
+    const mk=geo=>new T.InstancedMesh(geo,cm,nP);
+    const parts={head:mk(headGeo),hair:mk(headGeo),hairL:mk(unitBox),neck:mk(unitBox),torso:mk(torsoGeo),hip:mk(unitBox),
+      legL:mk(limbGeo),legR:mk(limbGeo),shoeL:mk(unitBox),shoeR:mk(unitBox),
+      armL:mk(limbGeo),armR:mk(limbGeo),foreL:mk(limbGeo),foreR:mk(limbGeo),bag:mk(unitBox),eyeL:mk(unitBox),eyeR:mk(unitBox)};
     const C=(h)=>new T.Color(h);
-    P.forEach((q,i)=>{parts.head.setColorAt(i,C(q.skin));parts.hair.setColorAt(i,C(q.hair));parts.torso.setColorAt(i,C(q.shirt));
-      parts.eyeL.setColorAt(i,C(0x111111));parts.eyeR.setColorAt(i,C(0x111111));parts.legL.setColorAt(i,C(q.pants));parts.legR.setColorAt(i,C(q.pants));parts.armL.setColorAt(i,C(q.shirt));parts.armR.setColorAt(i,C(q.skin));});
+    P.forEach((q,i)=>{const set=(k,c)=>parts[k].setColorAt(i,C(c));
+      set('head',q.skin);set('neck',q.skin);set('hair',q.hair);set('hairL',q.hair);set('torso',q.shirt);set('hip',q.pants);
+      set('legL',q.pants);set('legR',q.pants);set('shoeL',q.shoe);set('shoeR',q.shoe);
+      set('armL',q.shirt);set('armR',q.shirt);set('foreL',q.short?q.skin:q.shirt);set('foreR',q.short?q.skin:q.shirt);
+      set('bag',q.bagCol);set('eyeL',0x1a1a1a);set('eyeR',0x1a1a1a);});
     for(const k in parts){parts[k].frustumCulled=false;g.add(parts[k]);}
     g.userData={doors,P,parts,open:-1,t0:null,sd,pa,pb,pw};
     return g;
@@ -537,20 +547,33 @@ const R3=(function(){
   let _q,_q2,_v,_s,_m,_AX,_AY,HIDE;
   function hidePerson(parts,i){for(const k in parts)parts[k].setMatrixAt(i,HIDE);}
   // 擺放一個人：位置 (x,z)（世界座標，z 為 -里程）、朝向 yaw、步伐相位 ph、擺幅 amp、縮放 sc、垂直彈跳 bob
-  function poseParts(parts,i,x,z,yaw,ph,amp,sc,bob){
+  function poseParts(parts,i,x,z,yaw,ph,amp,sc,bob,q){
     const y0=1.1+bob;_q.setFromAxisAngle(_AY,yaw);
-    const sw=Math.sin(ph)*amp;
-    const put=(im,lx,ly,lz,sx,sy,sz,q)=>{_v.set(lx*sc,ly*sc,lz*sc).applyQuaternion(_q).add(_s.set(x,y0,z));
-      _m.compose(_v,q,_s.set(sx*sc,sy*sc,sz*sc));im.setMatrixAt(i,_m);};
-    put(parts.torso,0,0.88,0,0.46,0.62,0.27,_q);
-    put(parts.head,0,1.52,0,0.66,0.66,0.66,_q);
-    put(parts.hair,0,1.74,0.03,0.58,0.2,0.6,_q);              // 頭髮：蓋在頭頂偏後
-    put(parts.eyeL,-0.12,1.55,-0.32,0.08,0.11,0.05,_q);put(parts.eyeR,0.12,1.55,-0.32,0.08,0.11,0.05,_q);   // 眼睛（臉朝前進方向）
-    // 肢體：樞軸在髖／肩，繞局部 x 軸擺動（正向＝往前）
-    const limb=(im,px,py,h,w,a)=>{_q2.setFromAxisAngle(_AX,a);const q=_q.clone().multiply(_q2);
-      put(im,px,py-h/2*Math.cos(a),-h/2*Math.sin(a),w,h,w,q);};
-    limb(parts.legL,-0.11,0.58,0.58,0.16, sw);limb(parts.legR,0.11,0.58,0.58,0.16,-sw);
-    limb(parts.armL,-0.30,1.15,0.55,0.11,-sw*0.9);limb(parts.armR,0.30,1.15,0.55,0.11, sw*0.9);
+    const sw=Math.sin(ph)*amp,hide=im=>im.setMatrixAt(i,HIDE);
+    const put=(im,lx,ly,lz,sx,sy,sz,qq)=>{_v.set(lx*sc,ly*sc,lz*sc).applyQuaternion(_q).add(_s.set(x,y0,z));
+      _m.compose(_v,qq,_s.set(sx*sc,sy*sc,sz*sc));im.setMatrixAt(i,_m);};
+    // 身體（臉朝 -z，即局部前方）：身高約 1.7 m × sc
+    put(parts.hip,0,0.9,0,0.36,0.16,0.22,_q);
+    put(parts.torso,0,1.2,0,0.4,0.56,0.23,_q);
+    put(parts.neck,0,1.5,0,0.1,0.08,0.1,_q);
+    put(parts.head,0,1.62,0,0.21,0.25,0.23,_q);
+    put(parts.hair,0,1.67,0.015,0.225,0.19,0.245,_q);           // 頭髮：蓋住頭頂與後腦
+    if(q&&q.long)put(parts.hairL,0,1.5,0.1,0.2,0.3,0.06,_q);else hide(parts.hairL);   // 長髮垂到肩膀
+    put(parts.eyeL,-0.05,1.63,-0.112,0.03,0.035,0.01,_q);put(parts.eyeR,0.05,1.63,-0.112,0.03,0.035,0.01,_q);
+    if(q&&q.bag===1)put(parts.bag,0,1.2,0.19,0.3,0.38,0.14,_q);                         // 後背包
+    else if(q&&q.bag===2)put(parts.bag,0.26,0.95,0,0.08,0.26,0.3,_q);                   // 側背包
+    else hide(parts.bag);
+    // 肢體：樞軸在髖／肩，繞局部 x 軸擺動（正向＝往前）；limbGeo 的原點在頂端、往下延伸
+    const seg=(im,px,py,pz,len,w,a)=>{_q2.setFromAxisAngle(_AX,a);const qq=_q.clone().multiply(_q2);put(im,px,py,pz,w,len,w,qq);};
+    const end=(px,py,len,a)=>[py-len*Math.cos(a),-len*Math.sin(a)];
+    for(const [side,a] of [[-1,sw],[1,-sw]]){
+      const px=side*0.1,[fy,fz]=end(px,0.88,0.86,a);
+      seg(side<0?parts.legL:parts.legR,px,0.88,0,0.86,0.15,a);
+      put(side<0?parts.shoeL:parts.shoeR,px,fy+0.04,fz-0.05,0.12,0.08,0.26,_q);
+      const aa=-a*0.9,ax=side*0.25,[ey,ez]=end(ax,1.44,0.3,aa),fa=aa+0.25;    // 手肘微彎
+      seg(side<0?parts.armL:parts.armR,ax,1.44,0,0.3,0.09,aa);
+      seg(side<0?parts.foreL:parts.foreR,ax,ey,ez,0.3,0.08,fa);
+    }
   }
   const pingpong=(x,L)=>{const m=((x%(2*L))+2*L)%(2*L);return m<L?m:2*L-m;};
   function animatePeople(gg,st,g){
@@ -561,7 +584,7 @@ const R3=(function(){
     const face=sd>0?Math.PI/2:-Math.PI/2;                                      // 面向軌道
     u.P.forEach((q,i)=>{
       q._v=false;
-      const put=(x,z,yaw,ph,amp,sc,bob)=>{q._v=true;q._x=x;q._z=z;poseParts(parts,i,x,z,yaw,ph,amp,sc,bob);};
+      const put=(x,z,yaw,ph,amp,sc,bob)=>{q._v=true;q._x=x;q._z=z;poseParts(parts,i,x,z,yaw,ph,amp,sc,bob,q);};
       if(q.kind==='queue'){
         const zw=-q.s,dx=sd*1.78-q.x,dz=-q.sj-zw;
         if(te>=q.delay){
@@ -648,7 +671,7 @@ const R3=(function(){
       renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;   // 電影式色調對應：亮部不會整片死白，對比較接近真實
       scene=new T.Scene();
       camera=new T.PerspectiveCamera(52,1,0.4,520);
-      unitBox=new T.BoxGeometry(1,1,1);planeGeo=new T.PlaneGeometry(1,1);coneGeo=new T.ConeGeometry(1,1,7);crownGeo=new T.IcosahedronGeometry(1,0);tankGeo=new T.CylinderGeometry(0.5,0.5,1,10);headGeo=new T.SphereGeometry(0.5,12,9);
+      unitBox=new T.BoxGeometry(1,1,1);planeGeo=new T.PlaneGeometry(1,1);coneGeo=new T.ConeGeometry(1,1,7);crownGeo=new T.IcosahedronGeometry(1,0);tankGeo=new T.CylinderGeometry(0.5,0.5,1,10);headGeo=new T.SphereGeometry(0.5,14,10);limbGeo=new T.CylinderGeometry(0.5,0.42,1,8);limbGeo.translate(0,-0.5,0);torsoGeo=new T.CylinderGeometry(0.5,0.42,1,10);hillGeo=new T.SphereGeometry(1,24,12,0,Math.PI*2,0,Math.PI/2);
       buildHazards_pending=true;
       _q=new T.Quaternion();_q2=new T.Quaternion();_v=new T.Vector3();_s=new T.Vector3();_m=new T.Matrix4();_AX=new T.Vector3(1,0,0);_AY=new T.Vector3(0,1,0);HIDE=new T.Matrix4().makeScale(0.0001,0.0001,0.0001);
       hemi=new T.HemisphereLight(0xffffff,0x888888,1);scene.add(hemi);
@@ -666,6 +689,8 @@ const R3=(function(){
     camera.aspect=w/h;camera.updateProjectionMatrix();
   }
   function setRun(g){
+    // 先移除上一班留下的車站（以前只清新一班的車站，重新開始或換關卡後，上一班的車站會殘留在新路線上）
+    if(run&&run!==g)for(const st of run.stations){if(st.g3){scene.remove(st.g3);st.g3=null;}}
     run=g;th=TH[g.theme]||TH.day;
     for(const c of chunks.values())freeChunk(c);chunks.clear();
     for(const t of texs.values())t.dispose();texs.clear();
