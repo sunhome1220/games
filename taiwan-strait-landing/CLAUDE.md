@@ -71,6 +71,7 @@
   - `terList(key,fn)`（`map.js`）：地形是載入後就不變的，「符合條件的格子清單」第一次用到時算一次、之後重用；**條件只能看地形，不能看 S 的狀態**（例：`terList('twCoast',…)`）。每次重畫都會執行的程式不要寫 `Object.values(TER).filter(…)`。
   - 效能：10 km 約 9,000 格，一整場電腦推演桌機約 5 秒。熱點已改寫（`unitsAt`／`unitAt` 比對數字座標、`inZOC`／`enemyAdj` 直接掃單位、`twControl` 快取）；新程式不要在迴圈裡掃整個 `TER` 或每格呼叫 `unitsAt`。
 - **存檔**（2026-11-18.66；`js/core/save.js`，說明 `docs/save.md`）：輪到人類操作的階段開始時自動存檔（`beginPhase` 結尾 `saveAuto()`）＋ 3 個手動存檔位，放 localStorage（`tsl-save-auto／1／2／3`）。存的是 S（排除畫面暫存 `SAVE_SKIP`）＋ 亂數位置 `RNGA` ＋ `ACC` ＋ `LOGN` ＋ 設定選項。**新增會跨階段保留的全域變數（`let`）時，要一併存進去**，否則讀檔後結果會和不中斷不同；測試「存檔」會比對。`SAVE_VER` 只在 S 結構不相容時才加 1。
+- **傾斜視角**（2026-11-18.67；`js/ui/tilt.js`）：`#tiltBox`（包住 `#map` 的 div）用 inline `scaleY(cos 視角)` 壓縮，高度同步縮短；localStorage `tsl-tilt`，ULTRA 固定平面。**不能改成 3D（perspective／rotateX）**：Chrome 對 3D 變形下的 SVG 不做內部點擊判定（實測點不到單位與海面），而 2D 縮放下 `getScreenCTM`／`seaHexAt` 照常。改地圖外層結構時別移掉 `#tiltBox`。
 - 除錯鉤子：網址加 `?debug=1`，提供 `window.__S`、`__dog`、`__fg`、`__ledger` 等。
 
 ## 四、測試與工具注意事項
