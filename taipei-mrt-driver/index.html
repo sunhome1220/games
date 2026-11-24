@@ -37,18 +37,48 @@ table.gp{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}table.g
 
 /* 底部按鈕列 */
 #bar{position:fixed;left:0;right:0;bottom:0;height:58px;display:flex;gap:8px;padding:6px 10px calc(6px + env(safe-area-inset-bottom));z-index:6;box-sizing:content-box}
-#bar button{flex:1;border-radius:10px;border:1px solid #3d4b63;background:#1d2636;font-weight:700;font-size:14px;touch-action:manipulation}
-#bar button:active{background:#2c3a52}
-#bar #b-eb{background:#6d1f1f;border-color:#b24a4a;flex:.9}
-#bar #b-rev{flex:.9}
+/* 駕駛台按鍵面板：金屬面板上的照光按鈕（按鈕帽會依狀態亮燈），緊急煞車為紅色蕈狀鈕加黃色護圈；外觀為示意，非北捷實際配置 */
+#bar{background:linear-gradient(#2b3038,#191c22);border-top:1px solid #454c58;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+#bar button.pb{flex:1;position:relative;display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:9px;border:1px solid #11141a;
+  background:linear-gradient(#323843,#22262e);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 1px 2px rgba(0,0,0,.6);color:#dfe6f1;font-weight:700;font-size:14px;touch-action:manipulation;text-align:left;overflow:hidden}
+#bar button.pb .cap{flex:none;width:28px;height:28px;border-radius:50%;border:3px solid #7c838e;background:radial-gradient(circle at 35% 30%,#5b626c,#2c3037 70%);
+  box-shadow:inset 0 -2px 3px rgba(0,0,0,.6),0 0 0 2px #1a1d22,0 2px 3px rgba(0,0,0,.7);transition:background .15s,box-shadow .15s}
+#bar button.pb .lb{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+#bar button.pb .lb b{font-weight:700}
+#bar button.pb small{font-size:9px;letter-spacing:.06em;color:#8f99a8;font-weight:600}
+#bar button.pb:active .cap{transform:scale(.9);box-shadow:inset 0 2px 4px rgba(0,0,0,.8),0 0 0 2px #1a1d22}
+#bar button.pb:active{background:linear-gradient(#2a2f38,#1d2128)}
+/* 亮燈：門可開（白）、門已開（綠）、可關門（琥珀）、退行中（琥珀）、緊急煞車作用中（紅色閃爍） */
+#bar button.door.ready .cap{background:radial-gradient(circle at 35% 30%,#ffffff,#cfd8e4 55%,#8b96a6);box-shadow:0 0 10px rgba(230,240,255,.55),0 0 0 2px #1a1d22}
+#bar button.door.on .cap{background:radial-gradient(circle at 35% 30%,#d8ffd8,#4fd36a 55%,#1f7a35);box-shadow:0 0 12px rgba(80,230,110,.7),0 0 0 2px #1a1d22}
+#bar button.close .cap,#bar button.rev .cap{border-color:#8a7a4a}
+#bar button.close.ready .cap,#bar button.rev.on .cap{background:radial-gradient(circle at 35% 30%,#fff2c8,#ffb52e 55%,#a0620c);box-shadow:0 0 12px rgba(255,180,50,.65),0 0 0 2px #1a1d22}
+#bar button.close.blink .cap{animation:pbBlink .5s steps(2) infinite}
+@keyframes pbBlink{0%{background:radial-gradient(circle at 35% 30%,#fff2c8,#ffb52e 55%,#a0620c)}50%{background:radial-gradient(circle at 35% 30%,#5b626c,#2c3037 70%)}}
+#bar button.eb{background:linear-gradient(#3a2226,#241417);flex:.95}
+#bar button.eb .cap{width:30px;height:30px;border:4px solid #f2c230;background:radial-gradient(circle at 35% 30%,#ff8a80,#d32020 55%,#7a0e0e);box-shadow:0 0 0 2px #2a2410,0 3px 4px rgba(0,0,0,.8)}
+#bar button.eb.on .cap{animation:ebPulse .8s ease-in-out infinite}
+@keyframes ebPulse{0%,100%{box-shadow:0 0 0 2px #2a2410,0 0 4px rgba(255,40,40,.4)}50%{box-shadow:0 0 0 2px #2a2410,0 0 16px rgba(255,60,60,.95)}}
+#bar button.rev{flex:.9}
 #bar button.dis{opacity:.4}
+/* 直握：按鈕窄，改成燈在上、字在下，隱藏英文小字 */
+@media not ((orientation:landscape) and (max-height:520px)){
+  #bar button.pb{flex-direction:column;justify-content:center;gap:3px;padding:3px 2px;text-align:center}
+  #bar button.pb .cap{width:22px;height:22px;border-width:2px}
+  #bar button.eb .cap{width:24px;height:24px;border-width:3px}
+  #bar button.pb .lb{align-items:center;font-size:12.5px;white-space:nowrap}
+  #bar button.pb small{display:none}
+}
 
 /* 手機橫握：手把在右、車門按鈕在左直排，儀表縮成中間窄條，把畫面留給前方景色 */
 @media (orientation:landscape) and (max-height:520px){
   #lever{bottom:calc(8px + env(safe-area-inset-bottom));top:50px;height:auto;width:68px}
   #lever .cap{display:none}
-  #bar{left:var(--ll,6px);right:auto;top:auto;bottom:6px;width:108px;height:auto;flex-direction:column;gap:5px;padding:0;box-sizing:border-box}
-  #bar button{flex:none;height:42px;font-size:13px;padding:0}
+  #bar{left:var(--ll,6px);right:auto;top:auto;bottom:6px;width:108px;height:auto;flex-direction:column;gap:5px;padding:5px;box-sizing:border-box;border:1px solid #454c58;border-radius:12px}
+  #bar button.pb{flex:none;height:40px;font-size:13px;padding:0 6px;gap:6px}
+  #bar button.pb .cap{width:22px;height:22px;border-width:2px}
+  #bar button.eb .cap{width:24px;height:24px;border-width:3px}
+  #bar button.pb small{font-size:8px}
   #bar #b-eb,#bar #b-rev{flex:none}
   #top{top:4px}
   #rmap{left:176px;right:calc(var(--lr,10px) + 76px);top:50px;height:136px}
@@ -133,11 +163,11 @@ th{color:#9fb0c8;font-weight:600}
 <div id="lever" class="hidden"><div class="cap">主控器</div><div id="knob"></div></div>
 
 <div id="bar" class="hidden">
-  <button id="b-ol">◀ 開左門</button>
-  <button id="b-close">關門</button>
-  <button id="b-or">開右門 ▶</button>
-  <button id="b-rev">◀ 退行</button>
-  <button id="b-eb">緊急煞車</button>
+  <button id="b-ol" class="pb door"><i class="cap"></i><span class="lb">開左門<small>◀ LEFT</small></span></button>
+  <button id="b-close" class="pb close"><i class="cap"></i><span class="lb">關門<small>CLOSE</small></span></button>
+  <button id="b-or" class="pb door"><i class="cap"></i><span class="lb">開右門<small>RIGHT ▶</small></span></button>
+  <button id="b-rev" class="pb rev"><i class="cap"></i><span class="lb"><b id="b-rev-t">退行</b><small>REVERSE</small></span></button>
+  <button id="b-eb" class="pb eb"><i class="cap"></i><span class="lb">緊急煞車<small>EMERGENCY</small></span></button>
 </div>
 
 <section id="menu" class="screen">
@@ -254,18 +284,18 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-24.03"></script>
-<script src="js/broadcast.js?v=2026-11-24.03"></script>
-<script src="js/haptics.js?v=2026-11-24.03"></script>
-<script src="js/feedback.js?v=2026-11-24.03"></script>
-<script src="js/routemap.js?v=2026-11-24.03"></script>
-<script src="js/gamepad.js?v=2026-11-24.03"></script>
-<script src="js/stats.js?v=2026-11-24.03"></script>
-<script src="js/share.js?v=2026-11-24.03"></script>
-<script src="js/events.js?v=2026-11-24.03"></script>
-<script src="js/lines.js?v=2026-11-24.03"></script>
-<script src="js/render3d.js?v=2026-11-24.03"></script>
-<script src="js/sim.js?v=2026-11-24.03"></script>
+<script src="js/models.js?v=2026-11-24.04"></script>
+<script src="js/broadcast.js?v=2026-11-24.04"></script>
+<script src="js/haptics.js?v=2026-11-24.04"></script>
+<script src="js/feedback.js?v=2026-11-24.04"></script>
+<script src="js/routemap.js?v=2026-11-24.04"></script>
+<script src="js/gamepad.js?v=2026-11-24.04"></script>
+<script src="js/stats.js?v=2026-11-24.04"></script>
+<script src="js/share.js?v=2026-11-24.04"></script>
+<script src="js/events.js?v=2026-11-24.04"></script>
+<script src="js/lines.js?v=2026-11-24.04"></script>
+<script src="js/render3d.js?v=2026-11-24.04"></script>
+<script src="js/sim.js?v=2026-11-24.04"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -273,7 +303,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-24.03';
+const VERSION='2026-11-24.04';
 
 /* ========================= 小工具 ========================= */
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
@@ -441,9 +471,20 @@ function toggleReverse(){
   }else{g.rev=false;setNotch(0);toast('恢復前進','#9be39b');}
   syncRevBtn();
 }
+// 駕駛台按鈕燈號：只在狀態改變時改 class
+const barState={};
+function barSet(id,cls){if(barState[id]===cls)return;barState[id]=cls;const b=$(id);if(!b)return;
+  b.classList.remove('ready','on','blink');if(cls)cls.split(' ').forEach(c=>b.classList.add(c));}
+function syncBar(g){
+  const D=g.doors,canOpen=D.state==='closed'&&g.v<=0.05&&stationNear(g)>=0&&g.state!=='result';
+  for(const [id,side] of [['b-ol','L'],['b-or','R']])barSet(id,(D.state==='opening'||D.state==='open')&&D.side===side?'on':canOpen?'ready':'');
+  barSet('b-close',D.state==='closing'?'ready blink':D.state==='open'&&D.openT>=MIN_OPEN&&!g.evBlockClose?'ready':'');
+  barSet('b-rev',g.rev?'on':'');
+  barSet('b-eb',g.notch===-8||g.trip?'on':'');
+}
 function syncRevBtn(){
   const b=$('b-rev');if(!b||!G)return;
-  b.textContent=G.rev?'▶ 恢復前進':'◀ 退行';b.style.background=G.rev?'#7a4a12':'';
+  const t=$('b-rev-t');if(t)t.textContent=G.rev?'恢復前進':'退行';b.classList.toggle('on',!!G.rev);
 }
 function stationNear(g){ // 目前車頭所在的月台（誤差在可開門範圍內）
   for(let j=0;j<g.stations.length;j++){const e=g.S[j]-g.pos;if(e<=TOL_OPEN_SHORT&&e>=-TOL_OPEN_LONG)return j;}
@@ -1215,6 +1256,7 @@ function render(){
   drawCabFrame(g);
   drawDash(g);
   if(typeof rmUpdate==='function')rmUpdate(g);
+  syncBar(g);
   const bc=$('b-call'),want=g.doorFault&&!g.doorFault.call?'':'none';if(bc.style.display!==want)bc.style.display=want;
   if($('menu').classList.contains('hidden')&&$('result').classList.contains('hidden'))drawHud(g); // 選單／結算頁底下不畫 HUD，避免文字透出
 }
