@@ -55,7 +55,10 @@ const unitAt=k=>{const h=kCR(k);return S.units.find(u=>u.c===h.c&&u.r===h.r);};
 const STACK_MAX=2;
 const unitsAt=k=>{const h=kCR(k);return S.units.filter(u=>u.c===h.c&&u.r===h.r);};
 const canStack=(u,k)=>{const a=unitsAt(k).filter(x=>!x.boundTo);return a.length<STACK_MAX&&a.every(x=>x.side===u.side&&x!==u)&&(!a.length||!isLand(TER[k])||!inZOC(u.side,TER[k]));};
-const stackPos=u=>{const a=unitsAt(K(u.c,u.r));if(a.length<2)return [0,0];const i=a.indexOf(u),s=R/16;return i<0?[0,0]:[i?8*s:-8*s,i?4*s:-4*s];}; // 同格兩個單位錯開（隨格子大小縮放）
+const stackVis=k=>unitsAt(k).filter(x=>!subHidden(x)&&!(x.ship&&atSea(x))&&!x.dropHide); // 地圖上畫得出來的單位（隱蔽的潛艦不算，免得從錯開的位置洩漏行蹤）
+const stackOpen=k=>!!S&&((S.sel&&alive(S.sel)&&K(S.sel.c,S.sel.r)===k)||S.hover===k); // 點選或游標停在這一格：疊放的棋子展開
+const stackPos=u=>{const k=K(u.c,u.r),a=stackVis(k);if(a.length<2)return [0,0];const i=a.indexOf(u),s=R/16;if(i<0)return [0,0];
+  return stackOpen(k)?[i?8*s:-8*s,i?4*s:-4*s]:[i?2.6*s:0,i?-2.6*s:0];}; // 同格兩個單位：平常疊成一疊（後面的露出一角），選到這格才左右展開
 const atSea=u=>hexOf(u).t==='sea';
 const onTW=u=>hexOf(u).isl==='TW'&&u.type!=='ff'&&u.type!=='hk'; // 港內艦艇不算島上地面部隊
 const alive=u=>S.units.includes(u);

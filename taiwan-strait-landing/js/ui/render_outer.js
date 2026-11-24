@@ -345,12 +345,13 @@ function ghostDrop(id){
   document.querySelectorAll('[data-id="'+id+'"]').forEach(e=>{if(!e.closest('#gF'))e.remove();});
 }
 // 棋子色調分三類（攻方紅、守方藍各自三種深淺，海上與陸上共用）：深＝火力打擊（飛彈、火箭砲、潛艦、飛彈艇）、標準＝作戰部隊、淡＝後勤運輸（船團、補給站、運輸船）
-const unitCat=t=>(t==='ssm'||t==='hmr'||t==='heli'||t==='sam'||t==='mlrs'||t==='hk'||t==='ssn'||t==='psub'||t==='nme'||t==='mdt'||t==='ff')?'f':(t==='cvy'||t==='fob'||t==='lst'||t==='ro')?'l':'m';
+const unitCat=t=>(t==='cvy'||t==='fob'||t==='lst'||t==='ro'||t==='tak')?'l':(t==='ssm'||t==='hmr'||t==='heli'||t==='sam'||t==='mlrs'||t==='hk'||t==='ssn'||t==='psub'||t==='nme'||t==='mdt'||t==='ff'||t==='dd'||t==='cv'||t==='csg'||!!SHIPW[t])?'f':'m'; // 色帶：l 後勤（運輸、補給、戰鬥支援艦）／f 火力（飛彈、火箭、防空、直升機、潛艦、作戰艦）／m 地面機動部隊
 // 艦艇棋子的船形數量＝這個棋子代表的船數：單艦一艘大船；護航艦棋子（052D＋054A 一對）兩艘；艦群、運輸船團三艘小船（不再疊卡片）
 const HULLN=t=>t==='dd'?2:(t==='lst'||t==='ro'||t==='cvy'||t==='ff'||t==='jdd'||t==='csg')?3:0;
 const HULLS=(bx,by,n)=>{const sp=18/n,w=sp-.7;return Array.from({length:n},(_,i)=>{const x0=bx+.35+i*sp,y0=by+7.6-(n===3?(i===1?1.6:0):(i===1?1.2:0));return '<path class="sym" data-h="1" d="M'+x0.toFixed(1)+' '+y0.toFixed(1)+'h'+w.toFixed(1)+'l-1 1.9h-'+(w-2).toFixed(1)+'z"/><path class="sym" d="M'+(x0+w*.26).toFixed(1)+' '+y0.toFixed(1)+'v-1.8h'+(w*.48).toFixed(1)+'v1.8"/>';}).join('');};
 function unitSVG(u,withSmoke){
-  const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy,stacked=sx!==0,T=TYPES[u.type];
+  const [x0,y0]=cen(u.c,u.r),[sx,sy]=stackPos(u),x=x0+sx,y=y0+sy,stk=stackVis(K(u.c,u.r)),open=stk.length>1&&stackOpen(K(u.c,u.r)),stacked=open,T=TYPES[u.type];
+  const deckTop=stk.length>1&&!open&&stk.indexOf(u)===stk.length-1; // 疊放時最上面那一個：右上角標「×2」
   const done=S.started&&u.side===S.phase&&u.acted,sel=S.sel===u||!!(u.boundTo&&S.sel&&S.sel.id===u.boundTo),yy=y-2;
   let sym='';const bx=x-9,by=yy-10,bw=18,bh=10;
   const box='<rect class="sym" x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'"'+(u.type==='res'?' stroke-dasharray="2 1.5"':'')+'/>';
@@ -374,31 +375,31 @@ function unitSVG(u,withSmoke){
   else sym=box+X;
   let pips='';
     const lv=isLch(u)&&u.veh!=null&&!u.ghostFleet,n=u.mhp>6||lv?0:(u.mhp||T.hp);
-    if(lv&&(ssmReady(u)<lchV0(u)||sel))pips='<text x="'+x+'" y="'+(y+20.5)+'" text-anchor="middle" font-size="7" font-weight="800" fill="'+(ssmReady(u)<lchV0(u)?'#c0392b':'var(--ink)')+'">'+ssmReady(u)+'/'+lchV0(u)+' 車</text>';
-    else if(u.mhp>6)pips='<text x="'+x+'" y="'+(y+20.5)+'" text-anchor="middle" font-size="7" font-weight="800" fill="var(--ink)">'+u.hp+'/'+u.mhp+' 艘</text>';
-    for(let i=0;i<n;i++){const px=x-(n-1)*3.5+i*7;
-    pips+='<circle class="pip '+(i<u.hp?'full':'lost')+'" cx="'+px+'" cy="'+(y+17.5)+'" r="2"/>';
+    if(lv)pips='<text class="unum'+(ssmReady(u)<lchV0(u)?' low':'')+'" x="'+x+'" y="'+(y+12.2)+'" text-anchor="middle">'+ssmReady(u)+'/'+lchV0(u)+' 車</text>';
+    else if(u.mhp>6)pips='<text class="unum" x="'+x+'" y="'+(y+12.2)+'" text-anchor="middle">'+u.hp+'/'+u.mhp+' 艘</text>';
+    for(let i=0;i<n;i++){const px=x-(n-1)*3.2+i*6.4;
+    pips+='<circle class="pip '+(i<u.hp?'full':'lost')+'" cx="'+px+'" cy="'+(y+10.6)+'" r="1.8"/>';
     }
   // 重創、失去戰鬥能力（航艦剩 1 步）：棋子變暗、右上角冒黑煙
   const ooa=cvOOA(u),smoke=ooa?'<g class="smk'+(LITE?' still':'')+'" transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')"><circle class="s1" cx="'+(x+8)+'" cy="'+(y-15)+'" r="3"/><circle class="s2" cx="'+(x+10.5)+'" cy="'+(y-20)+'" r="3.8"/><circle class="s3" cx="'+
       (x+13.5)+'" cy="'+(y-26)+'" r="4.6"/><path class="fl" d="M'+(x+5.5)+' '+(y-13)+'q1.2 -3.2 2.6 -4.6q.4 2 1.6 2.8q1 1 .6 1.8z"/></g>':'';
   {const ar=typeof ammoRows==='function'?ammoRows(u):[],tm=ar.reduce((a,x)=>a+x.m,0),tv=ar.reduce((a,x)=>a+x.v,0);
-    if(tm>0&&tv<tm-.01){const r=tv/tm,by=y+(u.mhp>6?23.5:21.5); // 艦隊棋子下方有「x/y 艘」文字，長條再往下一點
-      pips+='<rect class="ub-t" x="'+(x-12)+'" y="'+by+'" width="24" height="2.6" rx="1.3"/><rect class="ub-f '+ammoLv(r)+'" x="'+(x-12)+'" y="'+by+'" width="'+(24*r).toFixed(1)+'" height="2.6" rx="1.3"/>';}}
+    if(tm>0&&tv<tm-.01){const r=tv/tm,by=y+13.4; // 彈藥長條：棋子底緣內側
+      pips+='<rect class="ub-t" x="'+(x-12)+'" y="'+by+'" width="24" height="2" rx="1"/><rect class="ub-f '+ammoLv(r)+'" x="'+(x-12)+'" y="'+by+'" width="'+(24*r).toFixed(1)+'" height="2" rx="1"/>';}}
   const sea=atSea(u);
   const wf=US/(16/26*1.18),wake=sea&&LITE?'<ellipse class="wk still" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':sea?'<ellipse class="wk" cx="'+
       x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/><ellipse class="wk w2" cx="'+x+'" cy="'+(y+12*wf)+'" rx="'+(14*wf).toFixed(1)+'" ry="'+(4*wf).toFixed(1)+'"/>':'';
   return '<g class="u'+(sel?' sel':'')+(done?' done':'')+(ooa?' ooa':'')+'" data-k="'+K(u.c,u.r)+'" data-id="'+u.id+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+wake+
-    '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')">'+'<ellipse class="ush" cx="'+x+'" cy="'+(y+11)+'" rx="16" ry="5"/>'+
-    '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="22" rx="3"/>'+
-    '<rect class="body '+u.side+' c'+unitCat(u.type)+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="23" rx="3"/>'+
-    '<rect class="uhi" x="'+(x-13)+'" y="'+(y-13)+'" width="26" height="3" rx="1.5"/>'+sym+
+    '<g class="ui"'+(sel?' transform="translate(0,-3)"':'')+'><g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+') scale('+(US*(stacked?.86:1)).toFixed(3)+') translate('+(-x).toFixed(1)+' '+(-y).toFixed(1)+')">'+'<ellipse class="ush" cx="'+x+'" cy="'+(y+17)+'" rx="16" ry="5"/>'+
+    '<rect class="uside '+u.side+'" x="'+(x-15)+'" y="'+(y-9)+'" width="30" height="28" rx="3"/>'+
+    '<rect class="body '+u.side+' c'+unitCat(u.type)+'" x="'+(x-15)+'" y="'+(y-14)+'" width="30" height="29" rx="3"/>'+
+    '<rect class="uband c'+unitCat(u.type)+'" x="'+(x-14.6)+'" y="'+(y-13.6)+'" width="29.2" height="2.4" rx="1.2"/>'+sym+
     '<text class="tx" x="'+x+'" y="'+(y+6.5)+'">'+(u.fl?u.fl.s:u.type==='heli'&&heliB(u.hb)?heliB(u.hb).tag:u.type==='sam'&&samSite(u)?samSite(u).tag:T.s)+'</text>'+pips+((()=>{ // 運輸船載著什麼：只有攻方自己（或觀戰）看得到，格式「兵種簡稱＋剩餘步數」；守方玩家只能看到船
       const b=u.boundTo&&S.units.find(z=>z.id===u.boundTo);if(!b)return '';
       if(S.ctrl&&S.ctrl.def==='human'&&S.ctrl.atk!=='human'&&!S.sim&&!S.video)return '';
       const t=TYPES[b.type].s+b.hp,w=Math.max(14,t.length*6.4+4);
       return '<rect x="'+(x-15)+'" y="'+(y-18)+'" width="'+w.toFixed(1)+'" height="8.5" rx="2" fill="#111" opacity=".9"/><text x="'+(x-15+w/2).toFixed(1)+'" y="'+
-          (y-11.6)+'" text-anchor="middle" font-size="6.3" font-weight="700" fill="#fff">'+t+'</text>';})())+(sea?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-12)+'" r="2.6"/>':'')+'</g></g></g>'+(withSmoke&&smoke?'\u0001'+smoke:''); // 黑煙接在 \u0001 後面，由 mapUnitsSVG 移到所有棋子上方，才不會被旁邊的棋子蓋住
+          (y-11.6)+'" text-anchor="middle" font-size="6.3" font-weight="700" fill="#fff">'+t+'</text>';})())+(sea?'<circle class="sea-tag" cx="'+(x+15)+'" cy="'+(y-12)+'" r="2.6"/>':'')+(deckTop?'<g class="udeck"><rect x="'+(x+8)+'" y="'+(y-18.5)+'" width="10" height="7" rx="3.5"/><text x="'+(x+13)+'" y="'+(y-13.2)+'" text-anchor="middle">×'+stk.length+'</text></g>':'')+'</g></g></g>'+(withSmoke&&smoke?'\u0001'+smoke:''); // 黑煙接在 \u0001 後面，由 mapUnitsSVG 移到所有棋子上方，才不會被旁邊的棋子蓋住
 }
 const FLEETS=[{id:'csg',el:'csgM',from:[32,10],to:[31,10]},{id:'jmsdf',el:'jmsdfM',from:[26,-4],to:[20,-3]}]; // 美日艦隊：參戰後逐回合由基地海域駛向台灣周邊（from／to 為遠景格座標）
 function fleetProgress(F){ // 0＝在原處、1＝到位
