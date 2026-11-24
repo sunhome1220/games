@@ -384,9 +384,12 @@ const R3=(function(){
       if(!skipL)box(g,0.3,wh,len,-(TS+2.55),wh/2,mid,wm);
       if(!st){
         box(g,2.55+TS+2.55+0.3,0.3,len,-TS/2,4.35,mid,mat(0x6a6e78));
-        for(let s=Math.ceil(a/18)*18;s<b;s+=18){
-          for(const x of [2.38,-(TS+2.38)])box(g,0.1,0.2,1.4,x,3.45,s,mat(0xfff0c8,{basic:1}));
-          box(g,0.25,0.1,1.4,-TS/2,4.15,s,mat(0xfff0c8,{basic:1}));      // 兩軌之間的頂燈
+        // 燈具（外殼＋燈管、兩軌之間的頂燈）：每段用 InstancedMesh 一次畫，減少繪製次數
+        const ls=[];for(let s=Math.ceil(a/18)*18;s<b;s+=18)ls.push(s);
+        if(ls.length){
+          inst(g,unitBox,mat(0x3a3c42),ls.length*2,(i,M)=>{const x=i&1?-(TS+2.38):2.38;M.compose(V3(x,3.45,-ls[i>>1]),Q0(),V3(0.12,0.16,1.3));});
+          inst(g,unitBox,mat(0xfff0c8,{basic:1}),ls.length*3,(i,M)=>{const k=i%3,s=ls[Math.floor(i/3)];
+            if(k===2)M.compose(V3(-TS/2,4.15,-s),Q0(),V3(0.25,0.1,1.4));else{const x=k?-(TS+2.38):2.38;M.compose(V3(x-Math.sign(x)*0.07,3.42,-s),Q0(),V3(0.04,0.08,1.2));}});
         }
         for(const x of [2.38,-(TS+2.38)])box(g,0.12,0.14,len,x,2.25,mid,mat(0x2a2c32));
         // 逃生步道（靠牆、略高於軌面）與牆上的電纜架（位置與尺寸為示意）
