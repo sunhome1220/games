@@ -60,7 +60,7 @@ function aiPlan(){
     for(const d of S.units)if(d.side==='def'&&onTW(d)&&!isMsl(d)&&ZONES[z].some(k=>hd(TER[k],hexOf(d))<=kmH(80)))s+=d.hp*(effDef(d)+terrDef(hexOf(d)));
     s+=S.units.filter(d=>d.side==='def'&&isMsl(d)&&d.type!=='hmr'&&d.type!=='mlrs'&&ZONES[z].some(k=>hd(TER[k],hexOf(d))<=kmH(160))).reduce((a,d)=>a+d.hp*4,0);
     s-=OBJ.filter(o=>ZONES[z].some(k=>hd(TER[k],TER[o])<=kmH(120))).length*12;
-    s+=Math.random()*2;
+    s+=HJ(z)*2;
     if(s<bs){bs=s;best=z;}
   }
   S.plan={zone:best};if(S.ctrl.def!=='human')log('攻方主登陸區：'+(best==='north'?'北部（林口、桃園）':'中部（新竹、苗栗、台中港）'));
@@ -80,7 +80,7 @@ async function aiAtk(){
     for(const id in FAC)if(S.turn<=3)for(let i=0;i<2&&facUp(id)&&S.fire>0&&!S.over;i++){if(strikeFac(id)===false)break;n++;} // 開局打固定雷達站（★每站每回合 2 包，第 1～3 回合）
     { // 澎湖軸線：整波火力先撥一部分打澎湖守軍（★同時進攻 25%、先取澎湖 60%），直到拿下馬公
       let pn=S.plan&&S.plan.penghu&&S.owner[MAGONG]!=='atk'?Math.round(S.fire*(penghuFirst()?.6:.25)):0;
-      while(pn>0&&S.fire>0&&!S.over){const ts=S.units.filter(d=>d.side==='def'&&alive(d)&&strikeable(d)&&hexOf(d).isl==='PH');if(!ts.length)break;const t=pickBest(ts,d=>(d.type==='ssm'?2:0)+(TYPES[d.type].hp-d.hp)+Math.random());if(strike(t)===false)break;n++;pn--;}
+      while(pn>0&&S.fire>0&&!S.over){const ts=S.units.filter(d=>d.side==='def'&&alive(d)&&strikeable(d)&&hexOf(d).isl==='PH');if(!ts.length)break;const t=pickBest(ts,d=>(d.type==='ssm'?2:0)+(TYPES[d.type].hp-d.hp)+HJ(d.id));if(strike(t)===false)break;n++;pn--;}
     }
     while(S.fire>0&&!S.over){const t=pickStrike(),af=afN<12?pickAirfield():null;if(af&&(!t||af.sc>(t._sc||0))){if(!strikeAirfield(af.k))break;n++;afN++;continue;}if(!t)break;if(strike(t)===false)break;n++;} // 剩下的火力打不到（例如只剩長程火箭、目標在射程外）就停
     if(n){render();await sleep(Math.min(1500,500+n*90));}
@@ -119,7 +119,7 @@ function prepSector(){
 }
 function pickAirfield(){ // 電腦攻方：開局壓制機場（守方空軍還在、機場還沒癱瘓者優先；有戰機的基地每 10 架 +1，沒有戰鬥機的 −6）
   if(!S.pools.rocAir||afShare()<=0)return null;let best=null,bs=-9;
-  for(const h of airfields()){const lv=afLevel(h.k);if(lv>=3||S.owner[h.k]==='atk')continue;const n=afBaseN(h.k),sc=Math.random()*1.5+(S.turn<=2?16:8)+(S.airCtl==='atk'?-3:0)-lv*2.5+(n>0?n/10:-6);if(sc>bs){bs=sc;best=h.k;}}
+  for(const h of airfields()){const lv=afLevel(h.k);if(lv>=3||S.owner[h.k]==='atk')continue;const n=afBaseN(h.k),sc=HJ(h.k)*1.5+(S.turn<=2?16:8)+(S.airCtl==='atk'?-3:0)-lv*2.5+(n>0?n/10:-6);if(sc>bs){bs=sc;best=h.k;}}
   return best?{k:best,sc:bs}:null;
 }
 function pickStrike(){
@@ -132,7 +132,7 @@ function pickStrike(){
     if(isLch(d)&&lchFound(d,'bm')<=0)continue; // 發射車：本階段偵察沒找到、或找到的都打過了——看不到的目標排不進打擊清單 // 海上的潛艦打不到；港內補給中的潛艦是固定目標
     const subBonus=d.type==='hk'?4:0;
     if(h.isl==='KM')continue; // 金馬無駐軍，雙方無視
-    let s=Math.random()+subBonus;
+    let s=HJ(d.id)+subBonus;
     if(d.type==='ssm')s+=9;else if(d.type==='ff')s-=3;else if(d.type==='sam')s+=10; // ★壓制防空：打開空降與後續打擊的缺口
     if(atkLand.some(a=>hd(hexOf(a),h)<=kmH(40)))s+=7+(TYPES[d.type].hp-d.hp);
     else if(!isMsl(d)&&atkSea.some(a=>hd(hexOf(a),h)<=kmH(40)))s+=6; // 登陸前火力準備：海上的登陸部隊附近（預定灘頭）的守軍
@@ -165,7 +165,7 @@ async function aiAtkCarrier(u,C){const {h}=C;
     const rc=reach(u),others=S.units.filter(x=>x.type==='cv'&&x!==u);let best=null;
     const sc=(k)=>{const d=cvTwKm(TER[k]);return ssmThreat(k)*3+others.reduce((a,x)=>a+Math.max(0,kmH(140)-hd(TER[k],hexOf(x))),0)*.6+(d<CV_STANDOFF?(CV_STANDOFF-d)/10:(d-CV_STANDOFF)/60)+cvAggr(u,TER[k]);}; // 保持在台灣岸置與艦射飛彈射程外（約 300 km）
     let bs=sc(h.k)-.6;
-    for(const [k,v] of rc){if(v.kind!=='sail')continue;const t=sc(k)+Math.random()*.8;if(t<bs){bs=t;best=k;}}
+    for(const [k,v] of rc){if(v.kind!=='sail')continue;const t=sc(k)+HJ(k)*.8;if(t<bs){bs=t;best=k;}}
     if(best){doMove(u,best,'sail');render();await sleep(240);}
     return true;
   }
@@ -176,7 +176,7 @@ async function aiAtkEscort(u,C){const {h}=C;
   if(u.type==='dd'){ // 護航艦：貼近己方船團，否則朝登陸區靠攏
     const tr=S.units.filter(x=>x.side==='atk'&&x!==u&&!isShip(x)&&atSea(x)),goals=tr.length?tr.map(x=>K(x.c,x.r)):terList('cnPorts',h=>h.t==='port'&&h.isl==='CN').map(h=>h.k); // 護航的任務是護送：海上沒有己方運輸船時，退回大陸港口外海待命（不再單獨堆在敵方射程內的登陸區），運輸船出航後再跟上
     const rc=reach(u);let best=null,bs=minD(h.k,goals)+ssmThreat(h.k)*.6;
-    for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+ssmThreat(k)*.6+Math.random()*.3-(tr.some(x=>hd(TER[k],hexOf(x))<=kmH(40))?.8:0);if(s<bs-.2){bs=s;best=k;}}
+    for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+ssmThreat(k)*.6+HJ(k)*.3-(tr.some(x=>hd(TER[k],hexOf(x))<=kmH(40))?.8:0);if(s<bs-.2){bs=s;best=k;}}
     if(best){doMove(u,best,'sail');render();await sleep(260);}
     return true;
   }
@@ -186,7 +186,7 @@ async function aiAtkEscort(u,C){const {h}=C;
 async function aiAtkAirborne(u,C){const {h}=C;
   if(isAirT(u)&&!u.dropped&&u.ship&&h.t==='sea'){ // 搭在四川艦上的陸戰隊：第 2 回合起、天候許可就從海上機降（避開防空涵蓋），否則隨艦往台灣靠近（回傳 false 走一般的海上移動）
     if(S.weather.air&&S.turn>=2&&S.turn<=6){const IX=(S.intent||{}).axis,zn=IX==='north'||IX==='central'?IX:aiPlan().zone,rc=reach(u),g=TER[ABN_GOAL[zn][u.goal||0]];let best=null,bs=1e9;
-      for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+dropAD(TER[k])*10+Math.random()*.4;if(s<bs){bs=s;best=k;}}
+      for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+dropAD(TER[k])*10+HJ(k)*.4;if(s<bs){bs=s;best=k;}}
       if(best){doMove(u,best,'drop');render();await sleep(380);return true;}}
     return false;}
   if(isAirT(u)&&!u.dropped&&h.isl==='CN'){
@@ -196,7 +196,7 @@ async function aiAtkAirborne(u,C){const {h}=C;
     if(dropAD()>=.3&&S.turn<3)return true; // ★防空還強時先不空降，等防空被壓制（最晚第 3 回合仍要執行）
     const IX=(S.intent||{}).axis,zn=IX==='north'||IX==='central'?IX:aiPlan().zone;
     const rc=reach(u);let best=null,bs=1e9;const g=TER[ABN_GOAL[zn][u.goal||0]];
-    for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+dropAD(TER[k])*10+Math.random()*.4; /* 避開防空涵蓋 */if(s<bs){bs=s;best=k;}}
+    for(const [k,v] of rc){if(v.kind!=='drop')continue;const s=hd(TER[k],g)+(inZOC('atk',TER[k])?3:0)-friendAdj(k,'atk')*.5+dropAD(TER[k])*10+HJ(k)*.4; /* 避開防空涵蓋 */if(s<bs){bs=s;best=k;}}
     if(best){doMove(u,best,'drop');render();await sleep(380);}
     return true;
   }
@@ -236,7 +236,7 @@ async function aiAtkAdvance(u,C){const {h}=C;
   for(const [k,v] of rc){
     if(v.kind!=='land')continue;if(TER[k].isl!=='TW'&&TER[k].isl!=='PH')continue;const md=minD(k,goals);if(md>kmH(200))continue; // 只登陸台灣本島與澎湖（不會「登陸」回大陸海岸）
     const dS=defs.reduce((a,e)=>a+(hd(hexOf(e),TER[k])<=kmH(40)?e.hp:0),0);
-    const s=md*.5+enemyAdj(k,'atk')*1.5+dS*.25-Math.min(friendAdj(k,'atk'),3)+(v.opp?4:0)+Math.random()*.3;if(s<bs){bs=s;best=k;} // 強攻有守軍的灘頭：多扣 4（寧可選沒人守的灘頭，沒有才強攻）
+    const s=md*.5+enemyAdj(k,'atk')*1.5+dS*.25-Math.min(friendAdj(k,'atk'),3)+(v.opp?4:0)+HJ(k)*.3;if(s<bs){bs=s;best=k;} // 強攻有守軍的灘頭：多扣 4（寧可選沒人守的灘頭，沒有才強攻）
   }
   if(best){doMove(u,best,'land');render();await sleep(340);return true;}
   if(h.t==='sea'&&await aiTryAttack(u,0))return true;
@@ -253,7 +253,7 @@ async function aiAtkAdvance(u,C){const {h}=C;
     if(ready<2&&!afloat)return true;
   }
   const cur=minD(h.k,goals);bs=h.t==='sea'?cur+ssmThreat(h.k)*.6:1e9;best=null;
-  for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+ssmThreat(k)*.6+Math.random()*.3;if(s<bs){bs=s;best=k;}}
+  for(const [k,v] of rc){if(v.kind!=='sail')continue;const s=minD(k,goals)+ssmThreat(k)*.6+HJ(k)*.3;if(s<bs){bs=s;best=k;}}
   if(best){doMove(u,best,'sail');render();await sleep(300);}
   if(atSea(u))await aiTryAttack(u,1);
   return false;
@@ -349,8 +349,8 @@ async function subTurn(u){ // 電腦操作海鯤：依指揮官意圖選目標�
   let t=best();
   if(!t&&pool.length){
     const rc=reach(u),want=hkRange(u)>kmH(60)?kmH(100):kmH(40);let bk=null,bs=Math.min.apply(null,pool.map(e=>hd(hexOf(u),hexOf(e))));
-    for(const [k,v] of rc){if(v.kind!=='sail')continue;const h=TER[k],sc=Math.min.apply(null,pool.map(e=>hd(h,hexOf(e))))+Math.random()*.3+(hd(hexOf(u),h)>SPD.subQuiet?1.5:0);if(sc<bs-.2&&sc>=want-kmH(10)){bs=sc;bk=k;}} // ★高速航行容易被發現：除非能明顯接近目標，否則維持安靜潛航
-    if(!bk)for(const [k,v] of rc){if(v.kind!=='sail')continue;const h=TER[k],sc=Math.min.apply(null,pool.map(e=>hd(h,hexOf(e))))+Math.random()*.3;if(sc<bs-.2){bs=sc;bk=k;}}
+    for(const [k,v] of rc){if(v.kind!=='sail')continue;const h=TER[k],sc=Math.min.apply(null,pool.map(e=>hd(h,hexOf(e))))+HJ(k)*.3+(hd(hexOf(u),h)>SPD.subQuiet?1.5:0);if(sc<bs-.2&&sc>=want-kmH(10)){bs=sc;bk=k;}} // ★高速航行容易被發現：除非能明顯接近目標，否則維持安靜潛航
+    if(!bk)for(const [k,v] of rc){if(v.kind!=='sail')continue;const h=TER[k],sc=Math.min.apply(null,pool.map(e=>hd(h,hexOf(e))))+HJ(k)*.3;if(sc<bs-.2){bs=sc;bk=k;}}
     if(bk){doMove(u,bk,'sail');render();await sleep(240);}
     t=best();
   }
@@ -381,7 +381,7 @@ async function ffSortie(m){ // 艦艇出港，保持在飛彈射程（約 6 格�
   if(!en.length)return;
   const rc=reach(m);let best=null;const here=Math.min(...en.map(e=>hd(hexOf(m),hexOf(e)))),dd=k=>Math.min(99,...S.units.filter(e=>e.side==='atk'&&e.type==='dd').map(e=>hd(TER[k],hexOf(e))));
   let bs=Math.abs(here-6)+(dd(K(m.c,m.r))<=3?2:0);
-  for(const [k,v] of rc){if(v.kind!=='sail')continue;const dm=Math.min(...en.map(e=>hd(TER[k],hexOf(e)))),sc=Math.abs(dm-kmH(120))+(dd(k)<=kmH(60)?2:0)+Math.random()*.4+(m.type==='hk'&&hd(hexOf(m),TER[k])>SPD.subQuiet?1.5:0);if(sc<bs-.3){bs=sc;best=k;}}
+  for(const [k,v] of rc){if(v.kind!=='sail')continue;const dm=Math.min(...en.map(e=>hd(TER[k],hexOf(e)))),sc=Math.abs(dm-kmH(120))+(dd(k)<=kmH(60)?2:0)+HJ(k)*.4+(m.type==='hk'&&hd(hexOf(m),TER[k])>SPD.subQuiet?1.5:0);if(sc<bs-.3){bs=sc;best=k;}}
   if(best){doMove(m,best,'sail');render();await sleep(260);}
 }
 async function aiDef(){
@@ -417,7 +417,7 @@ async function aiDef(){
     if((m.type==='ssm'||m.type==='hmr'||m.type==='mlrs')&&alive(m)&&!m.moved&&!S.over&&MS!=='salvo'){ // 打了就跑：轉移到山區或離敵較遠的陣地，重新隱蔽
       const rc=reach(m),foes=S.units.filter(e=>e.side==='atk'&&!isShip(e));let best=null,bs=-1e9;
       for(const [k,v] of rc){if(v.kind!=='move')continue;const h2=TER[k];
-        const sc=Math.min(kmH(600),...foes.map(e=>hd(h2,hexOf(e))))+(h2.t==='mtn'?4:0)-enemyAdj(k,'def')*5+Math.random()*2;if(sc>bs){bs=sc;best=k;}}
+        const sc=Math.min(kmH(600),...foes.map(e=>hd(h2,hexOf(e))))+(h2.t==='mtn'?4:0)-enemyAdj(k,'def')*5+HJ(k)*2;if(sc>bs){bs=sc;best=k;}}
       if(best)scoot.push([m,best]); // 等齊射畫完再轉移，特效才不會從空掉的陣地發出
     }
   }

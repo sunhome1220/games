@@ -28,11 +28,17 @@ let SEEDF=null,RNGA=0; // RNGA：亂數產生器目前的位置（存檔時一�
 function seedRng(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   RNGA=(h^h>>>16)>>>0;SEEDF=()=>{RNGA=(RNGA+0x6D2B79F5)>>>0;let t=RNGA;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};Math.random=SEEDF;}
 const newSeed=()=>Math.floor(NR()*0x7fffffff).toString(36).toUpperCase().padStart(6,'0');
-const d6=()=>1+Math.floor(Math.random()*6);
+// 電腦決策的平手判定（取代評分裡的 Math.random）：依鍵與回合算出固定的 0～1 值，不吃戰局種子，同樣的局面永遠得到同樣的選擇
+const HJ=key=>{let h=2166136261^((typeof S!=='undefined'&&S&&S.turn)||0)*2654435761;for(const ch of String(key)){h=Math.imul(h^ch.charCodeAt(0),16777619);}h^=h>>>13;h=Math.imul(h,1274126177);return ((h^h>>>16)>>>0)/4294967296;};
+// 依權重的固定選擇（取代「依權重擲骰」）：每次評估把各選項的權重比例加進累計值，選累計最高的、再扣 1（平滑加權輪替）。
+//  不擲骰、不吃戰局種子；同一個決策重複評估時，各選項出現的比例符合原本的權重；只評估一次時就是權重最高的選項。
+function wDet(ws,key){const t=ws.reduce((a,x)=>a+Math.max(0,x[1]),0)||1;let best=null,bv=-1e9;
+  for(const [id,w] of ws){const k='w:'+key+':'+id;ACC[k]=(ACC[k]||0)+Math.max(0,w)/t;if(ACC[k]>bv){bv=ACC[k];best=id;}}
+  ACC['w:'+key+':'+best]-=1;return best;}
+const d6=()=>1+Math.floor(NR()*6); // 只給擲骰動畫用，不吃戰局種子
 // 命中判定：基礎命中率 p 由武器與條件決定，骰子只帶來有限的運氣起伏（相對 ±22%，上限 100%）。
 const LUCK=.22;let LAST={p:.5,r:3,pe:.5,hit:false};
 const pNeed=need=>Math.max(.03,Math.min(.97,(7-need)/6)); // 舊的門檻 → 基礎命中率
-function trial(p){const r=d6(),L=(r-3.5)/2.5,pe=Math.max(0,Math.min(1,p*(1+LUCK*L))),hit=Math.random()<pe;LAST={p,r,L,pe,hit};return hit;}
 // 固定規則的命中判定（不擲骰）：把命中率累積起來，累積滿 1 就命中——10 發 90% 剛好中 9 發，3 發 33% 中 1 發，零頭留到下一次
 const ACC={};
 function hitP(p,key){const k=key||'x';p=Math.max(0,Math.min(1,p));let a=(ACC[k]===undefined?.5:ACC[k])+p,h=false;if(a>=1){a-=1;h=true;}ACC[k]=a;LAST={p,r:'—',L:0,pe:p,hit:h,det:true};return h;}

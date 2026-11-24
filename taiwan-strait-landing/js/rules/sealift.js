@@ -93,7 +93,7 @@ function convoyTurn(){ // 攻方階段開始：運輸船返航入列、派出新
   for(const u of S.units.filter(x=>x.side==='atk'&&x.type==='cvy')){
     if(u.fresh===t){u.moved=true;continue;} // 剛裝載好的船團這回合留在港內集結，下回合才出航（港內時守方的長程飛彈可以打到）
     u.moved=false;const rc=reach(u),h=hexOf(u);let best=null,bs=Math.min.apply(null,sinks.map(s2=>hd(h,s2)))+ssmThreat(h.k)*.6;
-    for(const [k,v] of rc){if(v.kind!=='sail')continue;const hh=TER[k],sc=Math.min.apply(null,sinks.map(s2=>hd(hh,s2)))+ssmThreat(k)*.6+Math.random()*.3-(S.units.some(x=>x.side==='atk'&&x.type==='dd'&&hd(hexOf(x),hh)<=kmH(40))?.8:0);if(sc<bs-.2){bs=sc;best=k;}}
+    for(const [k,v] of rc){if(v.kind!=='sail')continue;const hh=TER[k],sc=Math.min.apply(null,sinks.map(s2=>hd(hh,s2)))+ssmThreat(k)*.6+HJ(k)*.3-(S.units.some(x=>x.side==='atk'&&x.type==='dd'&&hd(hexOf(x),hh)<=kmH(40))?.8:0);if(sc<bs-.2){bs=sc;best=k;}}
     if(best)doMove(u,best,'sail');u.moved=true;u.acted=true;
   }
 }

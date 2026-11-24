@@ -139,7 +139,7 @@ function strikeCN(id,by){
   S.stats.cn.strikes++;
   const HP=cnHitP(id),IC=HP.IC,hit=hitP(HP.p,'strikeCN');let fx='';
   const itx=ROCLR.pk+' 枚，距離約 '+HP.km+' km'+(IC.I?'，共軍防空發射 '+Math.round(IC.I)+' 枚攔截彈，約 '+(Math.round(IC.surv*10)/10)+' 枚突破':'，共軍防空已失效')+'，命中率 '+Math.round(HP.p*100)+'%';
-  fxq({t:'tfa',a:by==='roc'?'tw':by==='US'?(Math.random()<.5?'guam':'sea'):'sakishima',b:id,hit});
+  fxq({t:'tfa',a:by==='roc'?'tw':by==='US'?(NR()<.5?'guam':'sea'):'sakishima',b:id,hit});
   if(hit){
     S.cn[id]--;S.stats.cn.hits++;if(!S.rec&&!reduce())(CNPEND[id]=CNPEND[id]||[]).push(Date.now()+6000);
     if(B.kind==='rkt')fx='火箭發射車（PHL-16／PCH-191）受損，長程火箭每回合波數下降';
@@ -161,7 +161,7 @@ function aiPickCN(roc){ // 期望效果最高的目標（命中率 × 效果，�
   const DP=roc&&S.intent&&S.intent.deep,kd=tg=>tg.u?'stg':CNB[tg].kind,isP=tg=>DP==='stg'?(kd(tg)==='stg'||kd(tg)==='navy'):kd(tg)===DP;
   let C=roc?cand.filter(c=>lrWpn(cnHitP(c.tg).km,c.tg)):cand; // 守方：只挑射程到得了的目標
   if(DP&&C.some(c=>isP(c.tg)))C=C.filter(c=>isP(c.tg)); // 指揮官意圖「縱深打擊目標」：先打指定種類，打不到（沒有、射程外）才打其他
-  for(const c of C){const H=cnHitP(c.tg);const v=H.p*cnValue(c.tg)*(.9+Math.random()*.2);if(v>bs){bs=v;best=c.k;}}
+  for(const c of C){const H=cnHitP(c.tg);const v=H.p*cnValue(c.tg)*(.9+HJ(c.k)*.2);if(v>bs){bs=v;best=c.k;}}
   return best;
 }
 const allyCanStrike=f=>f.land&&fxActive(f)&&(f.c==='US'?S.fx.lv.US>=3&&usIdx()>=1:S.fx.lv.JP>=2&&S.fx.lv.US>=2);

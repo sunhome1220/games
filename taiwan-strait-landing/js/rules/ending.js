@@ -84,7 +84,7 @@ function rateLine(side,m){ // 回傳 {share,tier,grade,line}
   const score=side==='atk'?m.A.total:m.D.total,sh=shareAtLeast(side,score);if(sh==null)return null;
   const tier=RTIER(sh),won=S.result&&S.result.side===side,arr=RLINES[won?'win':'lose'][tier],pct=Math.max(1,Math.round(sh*100));
   const ally=allyShare(),extra=side==='def'&&won&&ally>=.5?'（而且有一半以上的功勞是美日的。）':'';
-  return {share:sh,tier,grade:RGRADE[tier],pct,line:arr[Math.floor(Math.random()*arr.length)].replace(/\{p\}/g,String(pct))+extra,score};
+  return {share:sh,tier,grade:RGRADE[tier],pct,line:arr[Math.floor(NR()*arr.length)].replace(/\{p\}/g,String(pct))+extra,score};
 }
 function failGuide(k){ // 攻方失敗時：這局輸在哪裡，以及對應的假設情境（開了會在結算標明）
   if(S.sim||S.video||!S.ctrl||S.ctrl.atk!=='human'||!/^d/.test(k))return '';
