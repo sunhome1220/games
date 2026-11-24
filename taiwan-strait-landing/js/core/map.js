@@ -24,9 +24,9 @@ const $=s=>document.querySelector(s);
 let GEN=0; // 每次重新開局加一：舊的非同步流程（動畫等待中）不會再接續執行
 const sleep=ms=>S&&S.rec?Promise.resolve():(g=>new Promise(r=>setTimeout(()=>{if(g===GEN)r();},(typeof FXOFF!=='undefined'&&FXOFF?0:ms*(S&&S.speed||1)))))(GEN); // 關閉動畫時不停頓（仍讓出一次事件迴圈，畫面不會凍結）
 const NR=Math.random.bind(Math); // 原生亂數：只給動畫用，不吃種子，讓同一個戰局碼在不同機器上走同樣的結果
-let SEEDF=null;
+let SEEDF=null,RNGA=0; // RNGA：亂數產生器目前的位置（存檔時一起存，讀檔後接著同一條亂數序列）
 function seedRng(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
-  let a=(h^h>>>16)>>>0;SEEDF=()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};Math.random=SEEDF;}
+  RNGA=(h^h>>>16)>>>0;SEEDF=()=>{RNGA=(RNGA+0x6D2B79F5)>>>0;let t=RNGA;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};Math.random=SEEDF;}
 const newSeed=()=>Math.floor(NR()*0x7fffffff).toString(36).toUpperCase().padStart(6,'0');
 // 電腦決策的平手判定（取代評分裡的 Math.random）：依鍵與回合算出固定的 0～1 值，不吃戰局種子，同樣的局面永遠得到同樣的選擇
 const HJ=key=>{let h=2166136261^((typeof S!=='undefined'&&S&&S.turn)||0)*2654435761;for(const ch of String(key)){h=Math.imul(h^ch.charCodeAt(0),16777619);}h^=h>>>13;h=Math.imul(h,1274126177);return ((h^h>>>16)>>>0)/4294967296;};

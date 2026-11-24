@@ -116,7 +116,7 @@ async function beginPhase(side){
   if(side==='atk')await atkPhaseStart();else await defPhaseStart();if(S.over)return;
   await subAutoRun(side);if(S.over)return; // 潛艦自主模式：人類操作的一方，潛艦依任務自行行動（subauto.js）
   toast('第 '+S.turn+' 回合 · '+SIDE[side]+'階段');
-  render();
+  render();saveAuto(); // 輪到人類操作的階段開始時自動存檔
   if(S.ctrl[side]==='ai')runAI(side);
 }
 async function endPhase(){
