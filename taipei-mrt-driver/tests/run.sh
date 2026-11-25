@@ -14,13 +14,13 @@ if ! curl -s -o /dev/null "$URL"; then
 fi
 curl -s -o /dev/null "$URL" || { echo "伺服器沒有起來：$URL"; exit 1; }
 cd "$ROOT"
-ALL="unit evunit stats ghost bar bend post mats radio events-ui cab assist quizunit quiz landscape atp e1 t7 t8 r1 b1 tap name share ped fb lever map ui gp sig soak"
+ALL="unit evunit stats ghost bar bend post mats radio events-ui cab assist quizunit voiceunit quiz landscape atp e1 t7 t8 r1 b1 tap name share ped fb lever map ui gp sig soak"
 LIST="${@:-$ALL}"
 bad=0
 for t in $LIST; do
-  f="$HERE/$t.cjs"; [ "$t" = unit ] && f="$HERE/unit/sim.test.cjs"; [ "$t" = evunit ] && f="$HERE/unit/events.test.cjs"; [ "$t" = quizunit ] && f="$HERE/unit/quiz.test.cjs"; [ -f "$f" ] || { echo "$t: 找不到測試"; bad=1; continue; }
+  f="$HERE/$t.cjs"; [ "$t" = unit ] && f="$HERE/unit/sim.test.cjs"; [ "$t" = evunit ] && f="$HERE/unit/events.test.cjs"; [ "$t" = quizunit ] && f="$HERE/unit/quiz.test.cjs"; [ "$t" = voiceunit ] && f="$HERE/unit/voice.test.cjs"; [ -f "$f" ] || { echo "$t: 找不到測試"; bad=1; continue; }
   # ui 要看「第一次使用」的真實狀態，不能預先略過教學／展開進階設定；其他測試用 pre.cjs 略過
-  pre="-r $HERE/pre.cjs"; { [ "$t" = ui ] || [ "$t" = unit ] || [ "$t" = evunit ] || [ "$t" = quizunit ]; } && pre=""
+  pre="-r $HERE/pre.cjs"; { [ "$t" = ui ] || [ "$t" = unit ] || [ "$t" = evunit ] || [ "$t" = quizunit ] || [ "$t" = voiceunit ]; } && pre=""
   out=$(timeout 600 node $pre "$f" 2>&1)
   case "$t" in
     sig)  n=$(echo "$out" | grep -c '"ok":true'); st=$(echo "$out" | grep -c '"stuck"'); echo "$t: 完成 $n 組，卡住 $st"; { [ "$n" -gt 0 ] && [ "$st" -eq 0 ]; } || bad=1;;

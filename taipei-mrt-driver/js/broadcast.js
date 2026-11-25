@@ -35,15 +35,33 @@ let BCV=[];            // 裝置語音清單
 let BCAP=null;         // 目前字幕 {lines:[{id,name,tag,text,voice}],t0,dur}
 function bcLoadVoices(){try{if('speechSynthesis' in window)BCV=speechSynthesis.getVoices()||[];}catch(e){BCV=[];}}
 if('speechSynthesis' in window){bcLoadVoices();try{speechSynthesis.addEventListener('voiceschanged',()=>{bcLoadVoices();if(typeof fillMenu==='function'&&document.getElementById('m-bcinfo'))bcShowInfo();});}catch(e){}}
+// 語音品質評分：名稱含 Premium／Enhanced／Neural／Natural 等（較自然的神經網路或加強版語音）加分，
+// 含 Compact／eSpeak 等（簡化版、機械感重）扣分。這只是依名稱的啟發式，不保證每個裝置都更好聽。
+function bcVoiceScore(v){
+  const n=(v.name||'');let s=0;
+  if(/premium|enhanced|neural|natural|wavenet|studio/i.test(n))s+=30;
+  if(/online/i.test(n))s+=5;
+  if(/^(google|microsoft)/i.test(n))s+=8;
+  if(/siri/i.test(n))s+=12;
+  if(/compact|espeak|novelty|whisper|zarvox|bad news|bells|cellos|organ|boing|bubbles|trinoids/i.test(n))s-=40;
+  if(v.localService===false&&!/online/i.test(n))s+=2;
+  return s;
+}
+// 從語音清單中挑出語言前綴相符的最佳語音（同分取清單中靠前者）
+function bcPickVoice(list,prefix){
+  let best=null,bs=-1e9;
+  for(const v of list){if(!(v.lang||'').toLowerCase().replace('_','-').startsWith(prefix))continue;const s=bcVoiceScore(v);if(s>bs){bs=s;best=v;}}
+  return best;
+}
 function bcVoice(id){
   const L=BC_LANGS.find(l=>l.id===id);if(!L)return null;
-  for(const p of L.vp){const v=BCV.find(v=>(v.lang||'').toLowerCase().replace('_','-').startsWith(p));if(v)return v;}
+  for(const p of L.vp){const v=bcPickVoice(BCV,p);if(v)return v;}
   return null;
 }
 function bcShowInfo(){
   const el=document.getElementById('m-bcinfo');if(!el)return;
   if(!('speechSynthesis' in window)){el.innerHTML='這個瀏覽器不支援語音播報，只會顯示字幕。';return;}
-  el.innerHTML='此裝置的語音：'+BC_LANGS.map(l=>`<span style="color:${bcVoice(l.id)?'#7bd88f':'#ff9b7b'}">${l.name}${bcVoice(l.id)?'✓':'✗'}</span>`).join('　')+
+  el.innerHTML='此裝置的語音：'+BC_LANGS.map(l=>`<span style="color:${bcVoice(l.id)?'#7bd88f':'#ff9b7b'}">${l.name}${bcVoice(l.id)?'✓':'✗'}</span>`).join('　')+(bcVoice('zh')||bcVoice('en')?'<br><span style="opacity:.7">使用的語音：'+['zh','en'].map(i=>bcVoice(i)).filter(Boolean).map(v=>v.name).join('、')+'（自動挑選名稱含 Premium／Enhanced／Neural 等較自然的語音；要更自然可到系統設定下載「加強版」語音）</span>':'')+
     '<br>✗ 的語言只顯示字幕（瀏覽器通常沒有台語、客語語音）。日語、韓語站名以裝置語音唸漢字，唸法可能不準。';
 }
 // 英語廣播的站名唸法：站名是漢語拼音時，英文語音會把拼音當英文單字唸錯（例如 Jiangzicui），
@@ -92,7 +110,7 @@ function announce(kind,st){
       const parts=l.id==='en'?bcEnParts(kind,st,n.en):[[l.id,l.text]];
       for(const [lang,text] of parts){
         const v=bcVoice(lang);if(!v)continue;
-        const u=new SpeechSynthesisUtterance(text);u.voice=v;u.lang=v.lang;u.rate=l.id==='en'?0.88:0.95;u.pitch=1;speechSynthesis.speak(u);
+        const u=new SpeechSynthesisUtterance(text);u.voice=v;u.lang=v.lang;u.rate=(l.id==='en'?0.88:0.95)*(0.97+Math.random()*0.06);u.pitch=0.98+Math.random()*0.05;speechSynthesis.speak(u);
       }
     }
   }catch(e){}
