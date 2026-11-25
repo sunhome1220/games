@@ -26,17 +26,17 @@ const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x?'  '+x:''));
   await press(0);
   ok('A 回 N',await notch()===0);
   // 搖桿：推下去一次一檔，要回中才能再觸發
-  await p.evaluate(()=>{__pad.axes[1]=0.9;});await p.waitForTimeout(200);
+  await p.evaluate(()=>{__pad.axes[1]=0.9;});await raf2();
   ok('搖桿往上推（axes<0）才加檔：往下推 = B1',await notch()===-1,String(await notch()));
   await p.evaluate(()=>{__pad.axes[1]=0.9;});await p.waitForTimeout(250);
   ok('不回中、未達長按時間不連續跳檔',await notch()===-1,String(await notch()));
   await p.waitForTimeout(2200);
   ok('長按超過 0.5 秒後連續減檔',await notch()<=-2,String(await notch()));
-  await p.evaluate(()=>{__pad.axes[1]=0.2;});await p.waitForTimeout(100);
+  await p.evaluate(()=>{__pad.axes[1]=0.2;});await raf2();
   const n0=await notch();
-  await p.evaluate(()=>{__pad.axes[1]=0.4;});await p.waitForTimeout(200);   // 低於死區：不動
+  await p.evaluate(()=>{__pad.axes[1]=0.4;});await raf2();   // 低於死區：不動
   ok('小幅漂移（0.4）不動作',await notch()===n0);
-  await p.evaluate(()=>{__pad.axes[1]=0;});await p.waitForTimeout(100);
+  await p.evaluate(()=>{__pad.axes[1]=0;});await raf2();
   await press(0);
   await press(1);
   ok('B = EB',await notch()===-8);

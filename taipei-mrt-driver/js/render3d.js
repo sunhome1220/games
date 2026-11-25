@@ -27,15 +27,31 @@ const R3=(function(){
   function hstr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 
   /* ---------- 材質與貼圖 ---------- */
+  /* ---------- 材質貼圖（Poly Haven，CC0；見 assets/tex/CREDITS.md）----------
+     用「三平面（triplanar）世界座標」貼圖：不需要 UV，任何大小的方塊都能依實際公尺比例貼（每 s 公尺一個圖塊），不會被拉伸。
+     貼圖只取明暗細節（c＝保留多少原圖顏色，0＝只取亮度）並除以平均亮度，所以不會改變原本的色調與整體亮度；k＝強度。
+     畫質非「省電」時，用 tri 的 mat() 會建立 MeshStandardMaterial（粗糙度＋環境反射）；省電則維持較便宜的 Lambert。 */
+  const TRI_AVG={asphalt_02:0.351,concrete_wall_003:0.733,grey_plaster_02:0.51,large_grey_tiles:0.498,leafy_grass:0.519,rocky_gravel:0.287};
+  const triTexs={};let pbrOn=true;
+  function triTex(name){
+    let t=triTexs[name];if(t)return t;
+    t=new T.Texture();t.wrapS=t.wrapT=T.RepeatWrapping;t.colorSpace=T.SRGBColorSpace;t.generateMipmaps=true;t.anisotropy=renderer?Math.min(8,renderer.capabilities.getMaxAnisotropy()):1;
+    const img=new Image();img.onload=()=>{t.image=img;t.needsUpdate=true;};img.onerror=()=>{t.userData.failed=true;};
+    img.src='assets/tex/'+name+'.jpg'+(typeof VERSION!=='undefined'?'?v='+VERSION:'');
+    triTexs[name]=t;return t;
+  }
+  function triAttach(m,tri){m.userData.tri={tex:triTex(tri.n),s:tri.s||3,c:tri.c||0,k:tri.k==null?1:tri.k,avg:TRI_AVG[tri.n]||0.5};return m;}
   function mat(color,opt){
     opt=opt||{};
-    const key=color+'|'+(opt.basic?'b':'l')+'|'+(opt.op||1)+'|'+(opt.em||0)+'|'+(opt.map?opt.map.uuid:'')+'|'+(opt.side||0)+'|'+(opt.k||1);
+    const key=color+'|'+(opt.basic?'b':'l')+'|'+(opt.op||1)+'|'+(opt.em||0)+'|'+(opt.map?opt.map.uuid:'')+'|'+(opt.side||0)+'|'+(opt.k||1)+'|'+(opt.tri?opt.tri.n+opt.tri.s+(opt.tri.c||0)+(opt.tri.k==null?1:opt.tri.k)+pbrOn:'');
     let m=mats.get(key);if(m)return m;
     const p={color:opt.k?new T.Color(color).multiplyScalar(opt.k):color,transparent:(opt.op||1)<1,opacity:opt.op||1,fog:true};   // opt.k：發光亮度倍率（HDR）
     if(opt.map)p.map=opt.map;
     if(opt.side)p.side=T.DoubleSide;
     if(opt.basic)m=new T.MeshBasicMaterial(p);
+    else if(opt.tri&&pbrOn){m=new T.MeshStandardMaterial(Object.assign(p,{roughness:opt.tri.rough==null?0.88:opt.tri.rough,metalness:opt.tri.metal||0}));}   // PBR：粗糙度與環境反射
     else{if(opt.em){p.emissive=color;p.emissiveIntensity=opt.em;}m=new T.MeshLambertMaterial(p);}
+    if(opt.tri)triAttach(m,opt.tri);
     if(opt.depthWrite===false)m.depthWrite=false;
     mats.set(key,m);return m;
   }
@@ -146,9 +162,15 @@ const R3=(function(){
     if(!m||m.userData.bent||!bendU)return;m.userData.bent=true;
     m.onBeforeCompile=sh=>{
       sh.uniforms.uBend=bendU.uBend;sh.uniforms.uPos=bendU.uPos;sh.uniforms.uOn=bendU.uOn;sh.uniforms.uTun=bendU.uTun;sh.uniforms.uHall=bendU.uHall;
-      const lit=!!m.isMeshLambertMaterial;
+      const lit=!!(m.isMeshLambertMaterial||m.isMeshStandardMaterial),tri=m.userData.tri;
+      if(tri){sh.uniforms.tTri={value:tri.tex};sh.uniforms.uTri={value:[tri.s,tri.c,tri.k,tri.avg]};}
+      const triV=tri?`vWp=wPos.xyz;vec3 nO=normal;
+        #ifdef USE_INSTANCING
+        nO=mat3(instanceMatrix)*nO;
+        #endif
+        vWn=normalize(mat3(modelMatrix)*nO);`:'';
       sh.vertexShader=sh.vertexShader.replace('#include <common>',`#include <common>
-        uniform float uBend[${BEND_SAMPLES}];uniform float uPos;uniform float uOn;varying float vWz;
+        uniform float uBend[${BEND_SAMPLES}];uniform float uPos;uniform float uOn;varying float vWz;${tri?'varying vec3 vWp;varying vec3 vWn;':''}
         float bendAt(float d){float f=clamp((d+${BEND_BACK.toFixed(1)})/${(BEND_BACK+BEND_AHEAD).toFixed(1)},0.0,1.0)*${(BEND_SAMPLES-1).toFixed(1)};int i=int(floor(f));int j=min(i+1,${BEND_SAMPLES-1});return mix(uBend[i],uBend[j],f-float(i));}`)
         .replace('#include <project_vertex>',`vec4 mvPosition=vec4(transformed,1.0);
         #ifdef USE_INSTANCING
@@ -156,12 +178,19 @@ const R3=(function(){
         #endif
         vec4 wPos=modelMatrix*mvPosition;
         vWz=wPos.z;
+        ${triV}
         wPos.x+=uOn*bendAt(-wPos.z-uPos);
         mvPosition=viewMatrix*wPos;
         gl_Position=projectionMatrix*mvPosition;`);
-      // 隧道燈光：每 18 m 一盞燈（與 tunnelPiece 的燈具位置一致），燈下亮、燈與燈之間暗；車站範圍（uHall）不調變，亮度維持一致
       if(lit)sh.fragmentShader=sh.fragmentShader.replace('#include <common>',`#include <common>
-        varying float vWz;uniform float uTun;uniform vec2 uHall[6];`).replace('#include <opaque_fragment>',`{
+        varying float vWz;uniform float uTun;uniform vec2 uHall[6];${tri?'varying vec3 vWp;varying vec3 vWn;uniform sampler2D tTri;uniform vec4 uTri;':''}`);
+      // 材質貼圖（三平面、世界座標）：接在原本的 map 之後，只取明暗細節
+      if(tri)sh.fragmentShader=sh.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
+        {vec3 an=abs(vWn);vec2 uvT=(an.y>an.x&&an.y>an.z)?vWp.xz:(an.x>an.z?vWp.zy:vWp.xy);
+         vec3 tc=texture2D(tTri,uvT/uTri.x).rgb;float tl=dot(tc,vec3(0.2126,0.7152,0.0722));
+         vec3 tv=mix(vec3(tl),tc,uTri.y)/max(uTri.w,0.05);diffuseColor.rgb*=mix(vec3(1.0),tv,uTri.z);}`);
+      // 隧道燈光：每 18 m 一盞燈（與 tunnelPiece 的燈具位置一致），燈下亮、燈與燈之間暗；車站範圍（uHall）不調變，亮度維持一致
+      if(lit)sh.fragmentShader=sh.fragmentShader.replace('#include <opaque_fragment>',`{
         float sPos=-vWz;float mm=mod(sPos,${TUN_LAMP.toFixed(1)});float dl=min(mm,${TUN_LAMP.toFixed(1)}-mm);
         float pool=exp(-dl*dl/(2.0*5.0*5.0));
         float f=mix(0.38,1.6,pool);
@@ -171,13 +200,14 @@ const R3=(function(){
       }
       #include <opaque_fragment>`);
     };
-    m.customProgramCacheKey=()=>'bend'+(m.isMeshLambertMaterial?'L':'B');m.needsUpdate=true;
+    m.customProgramCacheKey=()=>'bend'+(m.isMeshStandardMaterial?'S':m.isMeshLambertMaterial?'L':'B')+(m.userData.tri?'T':'');m.needsUpdate=true;
   }
   function bendTree(o){o.traverse(c=>{if(c.material){if(Array.isArray(c.material))c.material.forEach(bendPatch);else bendPatch(c.material);}});}
   function bendUpdate(g){
     if(!bendU)return;
     const has=!!(g.L&&g.L.shape&&typeof pathLateral==='function')&&bendForce!==false;bendU.uOn.value=has?1:0;bendU.uPos.value=g.pos;
     bendU.uTun.value=lampForce===false?0:tun;
+    if(scene.environment)scene.environmentIntensity=(run.theme==='night'?0.22:run.theme==='dusk'?0.45:0.6)*(1-tun)+0.1*tun;   // 隧道內的反射很弱
     {const H=bendU.uHall.value;let k=0;for(const st of g.stations){const r=hallRange(st);if(r[1]>g.pos-120&&r[0]<g.pos+560&&k<6){H[2*k]=-r[1];H[2*k+1]=-r[0];k++;}}for(;k<6;k++){H[2*k]=1;H[2*k+1]=0;}}   // 世界 z = −里程
     if(!has)return;
     const a=bendU.uBend.value,n=BEND_SAMPLES-1,span=BEND_BACK+BEND_AHEAD;
@@ -227,6 +257,7 @@ const R3=(function(){
   function ppRender(){
     ppSize();
     renderer.setRenderTarget(pp.sceneRT);renderer.render(scene,camera);
+    pp.sceneCalls=renderer.info.render.calls;pp.sceneTris=renderer.info.render.triangles;   // 只含場景本身（不含後製的全螢幕處理）
     const full=pp.mode==='full',[a4,b4,a8,b8]=pp.rt;
     if(full){
       pp.mBright.uniforms.tDiff.value=pp.sceneRT.texture;ppPass(pp.mBright,a4);
@@ -239,6 +270,25 @@ const R3=(function(){
     pp.mFinal.uniforms.uBloom.value=full?1:0;
     ppPass(pp.mFinal,null);
   }
+  // 環境貼圖（PBR 材質的反射）：用天空漸層畫一張等距圓柱圖，轉成 PMREM；強度隨天色與是否在隧道內調整（隧道內反射很弱）
+  let envRT=null;
+  function buildEnv(){
+    if(!renderer||!scene)return;
+    if(envRT){envRT.dispose();envRT=null;scene.environment=null;}
+    if(!pbrOn||!T.PMREMGenerator)return;
+    try{
+      const c=document.createElement('canvas');c.width=256;c.height=128;const g=c.getContext('2d');
+      const gr=g.createLinearGradient(0,0,0,64);for(const [o,col] of (SKY[run.theme]||SKY.day)){if(o<=0.55)gr.addColorStop(Math.min(1,o/0.52),col);}
+      g.fillStyle=gr;g.fillRect(0,0,256,64);
+      const gg=g.createLinearGradient(0,64,0,128),gc=new T.Color(th.gnd);gg.addColorStop(0,'#'+gc.clone().multiplyScalar(0.9).getHexString());gg.addColorStop(1,'#'+gc.clone().multiplyScalar(0.4).getHexString());
+      g.fillStyle=gg;g.fillRect(0,64,256,64);
+      const sun=g.createRadialGradient(64,36,1,64,36,30);sun.addColorStop(0,run.theme==='night'?'rgba(150,170,220,0.5)':'rgba(255,245,215,0.95)');sun.addColorStop(1,'rgba(255,240,200,0)');g.fillStyle=sun;g.fillRect(0,0,256,128);
+      const tex=new T.CanvasTexture(c);tex.mapping=T.EquirectangularReflectionMapping;tex.colorSpace=T.SRGBColorSpace;
+      const pm=new T.PMREMGenerator(renderer);envRT=pm.fromEquirectangular(tex);pm.dispose();tex.dispose();
+      scene.environment=envRT.texture;
+    }catch(e){console.error(e);scene.environment=null;envRT=null;}
+  }
+  function setPbr(on){pbrOn=!!on;}
   function setPost(mode){if(!renderer)return;if(mode!=='off'){try{ppInit();}catch(e){console.error(e);mode='off';}}pp.mode=mode;}
 
   /* ---------- 幾何小工具 ---------- */
@@ -276,7 +326,7 @@ const R3=(function(){
   }
   // 文湖線（中運量，膠輪）：混凝土導軌面＋兩條走行軌＋兩側導引軌（兼供電），沒有枕木與鋼軌；尺寸為示意
   function guideway(add,L,sd){
-    add(4.8,0.3,L,0,-0.15,mat(0x9a9890));
+    add(4.8,0.3,L,0,-0.15,mat(0x9a9890,{tri:{n:'concrete_wall_003',s:3.2,k:0.7,rough:0.86}}));
     const rm=mat(0x7c8088),gm=mat(0x50545c),pm=mat(0x8a8a86);
     add(0.42,0.06,L,-0.95,0.03,rm);add(0.42,0.06,L,0.95,0.03,rm);
     add(0.12,0.16,L,-1.6,0.32,gm);add(0.12,0.16,L,1.6,0.32,gm);add(0.2,0.25,L,-1.6,0.12,pm);add(0.2,0.25,L,1.6,0.12,pm);
@@ -295,7 +345,7 @@ const R3=(function(){
       return;
     }
     const bt=texs.get('ballast-r'+Math.round(len))||(()=>{const t=ballastTex().clone();t.needsUpdate=true;t.repeat.set(3,Math.max(1,len/1.6));texs.set('ballast-r'+Math.round(len),t);return t;})();
-    box(g,4.8,0.3,len,0,-0.15,mid,mat(0xffffff,{map:bt}));
+    box(g,4.8,0.3,len,0,-0.15,mid,mat(0xffffff,{map:bt,tri:{n:'rocky_gravel',s:1.3,k:0.75,rough:0.95}}));
     const rm=mat(0x6a6e76),rh=mat(0xd6dbe2);
     box(g,0.07,0.15,len,-0.7175,0.075,mid,rm);box(g,0.07,0.15,len,0.7175,0.075,mid,rm);
     box(g,0.075,0.025,len,-0.7175,0.162,mid,rh);box(g,0.075,0.025,len,0.7175,0.162,mid,rh);   // 鋼軌頂面被車輪磨亮
@@ -314,7 +364,7 @@ const R3=(function(){
     // 對向軌道：每 8 m 一段（碎石道床、兩條鋼軌、第三軌），依橫向位置的變化微轉
     // 對向軌道橫向位置不變的路段（一般區間）整段用單一物件；只有島式月台站前後需要「分開」的路段才切成小段
     const flat=Math.abs(oppX(sa)+TS)<1e-6&&Math.abs(oppX((sa+sb)/2)+TS)<1e-6&&Math.abs(oppX(sb)+TS)<1e-6&&!run.stations.some(st=>st.plat!=='side'&&st.pos+82>sa&&st.pos-run.L.trainLen-74<sb);
-    const STEP=flat?(sb-sa+1):10,bm=mat(0xffffff,{map:bt}),tm=mat(0x3c3e46);
+    const STEP=flat?(sb-sa+1):10,bm=mat(0xffffff,{map:bt,tri:{n:'rocky_gravel',s:1.3,k:0.75,rough:0.95}}),tm=mat(0x3c3e46);
     for(let s0=sa;s0<sb-0.01;s0+=STEP){
       const s1=Math.min(s0+STEP,sb),xm=oppX((s0+s1)/2),dx=oppX(s1)-oppX(s0),ds=s1-s0;
       const sg=new T.Group();sg.position.set(xm,0,-(s0+s1)/2);sg.rotation.y=Math.atan2(dx,-ds);g.add(sg);
@@ -349,20 +399,20 @@ const R3=(function(){
     const env=sec.env,gy=GY[env],sc=sec.sc||{},len=sb-sa,mid=(sa+sb)/2;
     const feat=sd=>sd>0?(sc.R||[]):(sc.L||[]);
     const roadW=sc.ro?24:0;
-    const gm=mat(th.gnd);
+    const gm=mat(th.gnd,{tri:{n:'leafy_grass',s:5,c:0.45,rough:0.95}});
     // 平面段的地面板（有河的一側只鋪到岸邊）
     if(env==='grade'){
       for(const sd of [-1,1]){const w=feat(sd).includes('river')?60:320;box(g,w,0.6,len,sd*w/2,-0.6,mid,gm);}
     }
     // 高架橋面、護欄、路燈／平面段圍籬
     if(env==='elev'){
-      box(g,6.4+TS,0.5,len,-TS/2,-0.5,mid,mat(0x78797e));   // 雙軌橋面：從對向軌道外側到我方軌道外側
-      const pm=mat(0x96989c),holes=run.stations.map(hallRange);
+      box(g,6.4+TS,0.5,len,-TS/2,-0.5,mid,mat(0x78797e,{tri:{n:'concrete_wall_003',s:3.2,k:0.7,rough:0.86}}));   // 雙軌橋面：從對向軌道外側到我方軌道外側
+      const pm=mat(0x96989c,{tri:{n:'concrete_wall_003',s:3.2,k:0.7,rough:0.86}}),holes=run.stations.map(hallRange);
       for(const [a,b] of minusRanges(sa,sb,holes)){box(g,0.3,1.2,b-a,-(TS+3.05),0.35,(a+b)/2,pm);box(g,0.3,1.2,b-a,3.05,0.35,(a+b)/2,pm);}   // 護欄（車站大廳範圍除外）
       for(let s=Math.ceil(sa/36)*36;s<sb;s+=36){if(holes.some(([a,b])=>s>=a&&s<=b))continue;for(const sd of [-1,1]){
         const px=sd>0?3.3:-(TS+3.3);box(g,0.12,5.3,0.12,px,3.6,s,mat(0x464850));box(g,0.9,0.14,0.35,px-sd*0.4,6.3,s,mat(0xfff4d0,{basic:1,k:3}));}}
       // 高架橋墩（在道路中央時可從兩側看到）
-      if(sc.ro)for(let s=Math.ceil(sa/30)*30;s<sb;s+=30)box(g,2.4,11.7,2.4,-TS/2,-6.3,s,mat(0x8a8c92));
+      if(sc.ro)for(let s=Math.ceil(sa/30)*30;s<sb;s+=30)box(g,2.4,11.7,2.4,-TS/2,-6.3,s,mat(0x8a8c92,{tri:{n:'concrete_wall_003',s:3.2,k:0.7,rough:0.86}}));
     }else{
       const fm=mat(0x6a7078,{op:0.55,depthWrite:false}),holes=run.stations.map(hallRange);
       for(const sd of [-1,1]){const fx=sd>0?4.6:-(TS+4.6);
@@ -373,7 +423,7 @@ const R3=(function(){
     }
     // 高架下道路：柏油、車道線、人行道、靜止的車流
     if(sc.ro&&env==='elev'){
-      box(g,roadW,0.1,len,0,gy+0.05,mid,mat(0x2a2c30));
+      box(g,roadW,0.1,len,0,gy+0.05,mid,mat(0x2a2c30,{tri:{n:'asphalt_02',s:4,rough:0.8}}));
       box(g,1.6,0.2,len,-roadW/2-0.8,gy+0.1,mid,mat(0x9a9a98));box(g,1.6,0.2,len,roadW/2+0.8,gy+0.1,mid,mat(0x9a9a98));
       const nd=Math.floor(len/8);
       inst(g,unitBox,mat(0xe8e8e0,{basic:1}),nd*2,(i,M)=>{const k=i>>1,sd=i&1?1:-1;M.compose(V3(sd*4.2,gy+0.12,-(sa+k*8+2)),Q0(),V3(0.15,0.02,3.4));});
@@ -453,10 +503,10 @@ const R3=(function(){
           const key='f'+fv+'-'+Math.round(wid/4)+'x'+Math.round(hgt/4)+run.theme;
           let tx=texs.get(key);
           if(!tx){tx=ft.clone();tx.needsUpdate=true;tx.repeat.set(Math.max(1,Math.round(wid/4))/2,Math.max(1,Math.round(hgt/4))/2);texs.set(key,tx);}
-          m=new T.MeshLambertMaterial({color:new T.Color(th.bld).multiplyScalar(tone),map:tx,emissive:th.lit>0?new T.Color(0x332a14):new T.Color(0),emissiveMap:th.lit>0?tx:null,emissiveIntensity:th.lit>0?1.1:0});
+          m=triAttach(new T.MeshLambertMaterial({color:new T.Color(th.bld).multiplyScalar(tone),map:tx,emissive:th.lit>0?new T.Color(0x332a14):new T.Color(0),emissiveMap:th.lit>0?tx:null,emissiveIntensity:th.lit>0?1.1:0}),{n:'concrete_wall_003',s:5,c:0,k:0.5});   // 立面窗戶＋輕微混凝土髒污細節
         }else{
           const hc=[0xd9cdb8,0xcfc6b4,0xb9b2a4,0xe4ddd0,0xa8a398][Math.floor(hash(c*17+side)*5)];
-          m=new T.MeshLambertMaterial({color:new T.Color(hc).multiplyScalar(th.lit>0.5?0.28:th.lit>0?0.6:1)});
+          m=triAttach(new T.MeshLambertMaterial({color:new T.Color(hc).multiplyScalar(th.lit>0.5?0.28:th.lit>0?0.6:1)}),{n:'grey_plaster_02',s:3.5,c:0,k:1});
         }
         (g.userData.mats=g.userData.mats||[]).push(m);
         const o=new T.Mesh(unitBox,m);o.scale.set(wid,hgt,dep);o.position.set(side*(off+wid/2),gy+hgt/2,-(zf+dep/2));g.add(o);
@@ -488,14 +538,14 @@ const R3=(function(){
       const wh=st?4.8:4.2;
       const key='c'+Math.round(len/6*2);
       let tx=texs.get(key);if(!tx){tx=ct.clone();tx.needsUpdate=true;tx.repeat.set(Math.max(1,len/6),1);texs.set(key,tx);}
-      const wm=mat(0x7c7f84,{map:tx});
+      const wm=mat(0x7c7f84,{map:tx,tri:{n:'concrete_wall_003',s:3.2,k:0.7,rough:0.86}});
       // 牆：右牆在我方軌道外側 +2.55，左牆在對向軌道外側 -(TS+2.55)。
       // 車站內月台側的牆由車站另行建造：島式月台在左，只省略左牆；側式月台兩側各有月台，兩面牆都省略
       const skipL=st&&(st.plat==='side'||st.side==='L'),skipR=st&&st.plat==='side';
       if(!skipR)box(g,0.3,wh,len,2.55,wh/2,mid,wm);
       if(!skipL)box(g,0.3,wh,len,-(TS+2.55),wh/2,mid,wm);
       if(!st){
-        box(g,2.55+TS+2.55+0.3,0.3,len,-TS/2,4.35,mid,mat(0x6a6e78));
+        box(g,2.55+TS+2.55+0.3,0.3,len,-TS/2,4.35,mid,mat(0x6a6e78,{tri:{n:'concrete_wall_003',s:3.2,k:0.7,rough:0.86}}));
         // 燈具（外殼＋燈管、兩軌之間的頂燈）：每段用 InstancedMesh 一次畫，減少繪製次數
         const ls=[];for(let s=Math.ceil(a/18)*18;s<b;s+=18)ls.push(s);
         if(ls.length){
@@ -545,7 +595,7 @@ const R3=(function(){
     const island=st.plat!=='side';
     const pw=island?7:5,px0=1.45,px1=px0+pw,pc=sd*(px0+pw/2);
     const wallX=island?px1+4.05:px1+1.3;
-    box(g,pw,1.1,len,pc,0.55,mid,mat(0xc0c2c8));
+    box(g,pw,1.1,len,pc,0.55,mid,mat(0xc0c2c8,{tri:{n:'large_grey_tiles',s:2.4,rough:0.55}}));
     box(g,0.45,0.03,len,sd*1.7,1.11,mid,mat(0xf5c828,{basic:1}));
     box(g,0.06,1.1,len,sd*px0,0.55,mid,mat(0x70727a));
     if(!tun2)box(g,pw,2,len,pc,-1.2,mid,mat(0x6c6e74));
@@ -554,11 +604,11 @@ const R3=(function(){
       box(g,0.45,0.03,len,sd*(px1-0.25),1.11,mid,mat(0xf5c828,{basic:1}));
       box(g,0.06,1.1,len,sd*px1,0.55,mid,mat(0x70727a));
       box(g,0.05,2.2,len,sd*(px1-0.15),2.2,mid,mat(0x96cde1,{basic:1,op:0.2,depthWrite:false}));   // 對向月台門
-      if(!tun2)box(g,4.6,0.5,hlen,-(TS+3.2)-2.3+0.0,-0.5,hmid,mat(0x78797e));                      // 高架：對向軌道分開到橋面之外，大廳範圍內把橋面加寬
+      if(!tun2)box(g,4.6,0.5,hlen,-(TS+3.2)-2.3+0.0,-0.5,hmid,mat(0x78797e,{tri:{n:'concrete_wall_003',s:3.2,k:0.7,rough:0.86}}));                      // 高架：對向軌道分開到橋面之外，大廳範圍內把橋面加寬
     }else{
       // 側式月台：對向軌道在 -TS，它自己的月台在更外側（左邊）；只做月台本體與月台門，沒有旅客
       const ox=-(TS+px0+pw/2),ex=-(TS+px0);
-      box(g,pw,1.1,len,ox,0.55,mid,mat(0xc0c2c8));
+      box(g,pw,1.1,len,ox,0.55,mid,mat(0xc0c2c8,{tri:{n:'large_grey_tiles',s:2.4,rough:0.55}}));
       box(g,0.45,0.03,len,-(TS+1.7),1.11,mid,mat(0xf5c828,{basic:1}));
       box(g,0.06,1.1,len,ex,0.55,mid,mat(0x70727a));
       box(g,0.05,2.2,len,-(TS+1.6),2.2,mid,mat(0x96cde1,{basic:1,op:0.2,depthWrite:false}));
@@ -826,7 +876,7 @@ const R3=(function(){
     for(const m of flatMats.values())m.dispose();flatMats.clear();
     if(scene._signs){scene.remove(scene._signs);}
     for(const st of g.stations){if(st.g3){scene.remove(st.g3);st.g3=null;}}
-    scene.background=bgTex();
+    scene.background=bgTex();buildEnv();
     ground.material.color.setHex(th.gnd);
     scene._signs=buildSigns();scene.add(scene._signs);
     tun=sectorEnv(g.pos+15)==='tunnel'?1:0;
@@ -874,6 +924,7 @@ const R3=(function(){
     // 鏡頭
     if(dbgCam){camera.up.set(dbgCam.up[0],dbgCam.up[1],dbgCam.up[2]);camera.position.set(...dbgCam.p);camera.lookAt(...dbgCam.t);}   // 測試用的除錯鏡頭（例如俯視）
     else{camera.up.set(0,1,0);camera.position.set(camX,CAMH+camY,-pos);camera.lookAt(camX,CAMH+camY-0.05,-pos-50);}
+    renderer.info.autoReset=false;renderer.info.reset();   // 一格有多次 render（場景＋後製各道），統計要整格累計
     if(pp.mode!=='off'&&pp.ready){try{ppRender();}catch(e){console.error(e);pp.mode='off';renderer.setRenderTarget(null);renderer.render(scene,camera);}}   // 後製失敗就退回直接繪製
     else renderer.render(scene,camera);
   }
@@ -885,5 +936,5 @@ const R3=(function(){
     frame(g,0,0,0);const gl=renderer.getContext(),px=new Uint8Array(w*h*4);gl.readPixels(x,gl.drawingBufferHeight-y-h,w,h,gl.RGBA,gl.UNSIGNED_BYTE,px);
     let t=0;for(let i=0;i<px.length;i+=4)t+=0.2126*px[i]+0.7152*px[i+1]+0.0722*px[i+2];return t/(w*h);}
   let bendForce=null;function setBend(v){bendForce=v;}   // 測試用：true／false 強制開／關彎曲，null 回到自動
-  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,walkAnim:()=>WALK_ANIM,setPost,postMode:()=>pp.mode,postInfo:()=>({mode:pp.mode,float:pp.float,msaa:pp.msaa,w:pp.w,h:pp.h}),hazInfo:()=>({debris:!!hzDebris&&hzDebris.visible,debrisZ:hzDebris?hzDebris.position.z:null,person:!!hzPerson&&hzPerson.visible}),setDebugCam,setBend,bendInfo,setLamps,probe,oppX:s=>oppX(s),info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
+  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,walkAnim:()=>WALK_ANIM,matInfo:()=>{const o={standard:0,lambert:0,triLambert:0,unpatched:0};scene.traverse(m=>{if(m.isMesh&&m!==ground){const ms=Array.isArray(m.material)?m.material:[m.material];ms.forEach(x=>{if(x.isMeshStandardMaterial)o.standard++;else if(x.isMeshLambertMaterial){o.lambert++;if(x.userData.tri)o.triLambert++;}if(!x.userData.bent)o.unpatched++;});}});return o;},setPbr,pbrInfo:()=>({pbr:pbrOn,env:!!(scene&&scene.environment),tex:Object.fromEntries(Object.entries(triTexs).map(([k,t])=>[k,!!t.image&&!t.userData.failed]))}),setPost,postMode:()=>pp.mode,postInfo:()=>({mode:pp.mode,float:pp.float,msaa:pp.msaa,w:pp.w,h:pp.h}),hazInfo:()=>({debris:!!hzDebris&&hzDebris.visible,debrisZ:hzDebris?hzDebris.position.z:null,person:!!hzPerson&&hzPerson.visible}),setDebugCam,setBend,bendInfo,setLamps,probe,oppX:s=>oppX(s),info(){const r=renderer.info.render,post=pp.mode!=='off'&&pp.ready;return {calls:post?pp.sceneCalls:r.calls,triangles:post?pp.sceneTris:r.triangles,totalCalls:r.calls,chunks:chunks.size};}};
 })();
