@@ -310,20 +310,20 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-25.10"></script>
-<script src="js/broadcast.js?v=2026-11-25.10"></script>
-<script src="js/haptics.js?v=2026-11-25.10"></script>
-<script src="js/feedback.js?v=2026-11-25.10"></script>
-<script src="js/routemap.js?v=2026-11-25.10"></script>
-<script src="js/gamepad.js?v=2026-11-25.10"></script>
-<script src="js/stats.js?v=2026-11-25.10"></script>
-<script src="js/quiz.js?v=2026-11-25.10"></script>
-<script src="js/radio.js?v=2026-11-25.10"></script>
-<script src="js/share.js?v=2026-11-25.10"></script>
-<script src="js/events.js?v=2026-11-25.10"></script>
-<script src="js/lines.js?v=2026-11-25.10"></script>
-<script src="js/render3d.js?v=2026-11-25.10"></script>
-<script src="js/sim.js?v=2026-11-25.10"></script>
+<script src="js/models.js?v=2026-11-25.11"></script>
+<script src="js/broadcast.js?v=2026-11-25.11"></script>
+<script src="js/haptics.js?v=2026-11-25.11"></script>
+<script src="js/feedback.js?v=2026-11-25.11"></script>
+<script src="js/routemap.js?v=2026-11-25.11"></script>
+<script src="js/gamepad.js?v=2026-11-25.11"></script>
+<script src="js/stats.js?v=2026-11-25.11"></script>
+<script src="js/quiz.js?v=2026-11-25.11"></script>
+<script src="js/radio.js?v=2026-11-25.11"></script>
+<script src="js/share.js?v=2026-11-25.11"></script>
+<script src="js/events.js?v=2026-11-25.11"></script>
+<script src="js/lines.js?v=2026-11-25.11"></script>
+<script src="js/render3d.js?v=2026-11-25.11"></script>
+<script src="js/sim.js?v=2026-11-25.11"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -331,7 +331,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-25.10';
+const VERSION='2026-11-25.11';
 
 /* ========================= 小工具 ========================= */
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
@@ -420,7 +420,7 @@ const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e
 
 /* ========================= 遊戲狀態 ========================= */
 let G=null;          // 目前這一班
-let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,nameplate:true,fqListen:false,fqLevel:'g5',radio:true,radioNoise:'light',quality:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
+let SET={line:'red',from:27,to:25,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,nameplate:true,fqListen:false,fqLevel:'g5',radio:true,radioNoise:'light',quality:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
 const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
 if(!LINES[SET.line])SET.line='red';
 
@@ -1328,11 +1328,11 @@ fbInit();rmInit();gpInit();statInit();
 $('m-share').onclick=()=>{shareLevel();};   // 必須在點擊當下同步呼叫 navigator.share
 $('r-share').onclick=()=>{shareResult();};
 $('b-back').onclick=()=>{$('board').classList.add('hidden');$('menu').classList.remove('hidden');};
-const PRESETS={
-  red:[['淡水 → 北投（平面轉高架）',27,21],['士林 → 台北車站',15,9],['台北車站 → 廣慈/奉天宮（新延伸段）',9,0],['紅樹林 → 淡水',26,27]],
-  blue:[['板橋 → 台北車站',6,11],['台北車站 → 南港展覽館',11,22],['頂埔 → 板橋',0,6]],
-  green:[['松山 → 西門',18,11],['西門 → 公館',11,6],['新店 → 公館',0,6]],
-  brown:[['動物園 → 大安',0,8],['中山國中 → 劍南路（地下轉高架）',11,14],['港墘 → 南港展覽館',16,23]]
+const PRESETS={   // 預設關卡：最少 1 站、最多 3 站（短關卡好上手）；自訂關卡仍可選更長
+  red:[['淡水 → 竹圍（高架轉平面）',27,25],['紅樹林 → 淡水',26,27],['北投 → 石牌',21,18],['台北101/世貿 → 廣慈/奉天宮（新延伸段）',2,0]],
+  blue:[['板橋 → 江子翠',6,8],['台北車站 → 忠孝復興',11,14],['頂埔 → 海山',0,3],['昆陽 → 南港展覽館',20,22]],
+  green:[['松山 → 南京復興',18,15],['西門 → 中山',11,13],['新店 → 大坪林',0,3],['公館 → 古亭',6,8]],
+  brown:[['動物園 → 萬芳社區',0,2],['松山機場 → 劍南路（地下轉高架）',12,14],['港墘 → 內湖',16,18],['科技大樓 → 大安',7,8]]
 };
 function infoText(){
   const L=LINES[SET.line],n=Math.abs(SET.to-SET.from);let m=0;for(let i=Math.min(SET.from,SET.to);i<Math.max(SET.from,SET.to);i++)m+=L.d[i];
