@@ -22,9 +22,18 @@ const EV_INFO={
     tip:'供電異常時牽引力會變弱：不要硬推高檔位，利用惰行維持速度，提早煞車。'},
   trainfault:{name:'列車故障清客',color:'#e599f7',
     news:'2025-10-31 板南線列車繼電器異常，依 SOP 請車上約 550 位旅客換乘後續列車；2025 年文湖線列車因元件故障自動停車，約 8,400 人受影響。',
-    tip:'列車故障告警後降速駛往下一站，開門讓旅客換乘，清客完成前不要關門。'}
+    tip:'列車故障告警後降速駛往下一站，開門讓旅客換乘，清客完成前不要關門。'},
+  intercom:{name:'乘客緊急對講',color:'#4dabf7',
+    news:'中時 2014-06-04〈直擊駕駛室 北捷司機5秒看6車廂〉：板南線每列車廂有 4 組監視器與緊急對講系統，乘客按下對講鈕後，駕駛室即顯示該對講機畫面，司機員可與乘客對話；若乘客按完就離開，司機員要切換畫面逐節檢視，看完 6 節車廂約需 5 秒；行控中心可與司機員通訊，有緊急事件時再通報捷運警察隊與轄區警消。',
+    tip:'對講機響了要立刻接聽；沒人說話就逐節切換車廂畫面找出是哪一節，確認狀況後回報行控，下一站停車交由站務人員處理。（遊戲中的狀況內容與分數是設計，不是營運手冊）'},
+  debris:{name:'軌道異物',color:'#a9e34b',
+    news:'知新聞 2025-04-01 專訪北捷行車專員：淡水信義線有高架平面段，颱風天會有大樹枝或異物飛到軌道，只有行車專員能排除異物，要穿好裝備、告知旅客後離開駕駛室去處理。',
+    tip:'看到軌道上有異物，要在異物前停車並通報行控；取得行控同意後穿好裝備下車排除，回到駕駛室後以低速通過。（處理時間與流程是遊戲簡化）'},
+  rain:{name:'豪大雨',color:'#4dd0e1',
+    news:'知新聞 2025-04-01 專訪北捷行車專員：淡水信義線高架段遇到暴雨，行控中心會降低速限，因為下雨車子容易打滑，行車專員要更留意停準車站，若發現車子抖動就要立刻停車，避免停車超出車站標線。',
+    tip:'下雨時高架與平面路段限速降低、煞車距離變長：提早煞車、不要等到最後才重踩，才停得準。（限速與煞車效果的數值是遊戲設定）'}
 };
-const EV_ORDER=['quake','wind','trespass','doorfault','signal','power','trainfault'];
+const EV_ORDER=['quake','wind','trespass','doorfault','signal','power','trainfault','intercom','debris','rain'];
 const EV_RATE={low:{first:[150,300],gap:[300,500],max:2,door:0.12},mid:{first:[80,200],gap:[180,320],max:3,door:0.25},high:{first:[50,120],gap:[90,180],max:5,door:0.4}};
 const rndR=(a,b)=>a+Math.random()*(b-a);
 
@@ -32,7 +41,7 @@ function evInit(g){
   const R=EV_RATE[SET.evRate]||EV_RATE.mid;
   g.evOn=!!SET.events;g.evR=R;g.evAllowed=EV_ORDER.filter(id=>!(SET.evOff||[]).includes(id));
   g.ev=null;g.evLog=[];g.evCount=0;g.evPts=0;
-  g.evLim=null;g.evRamp=null;g.evWindOnly=false;g.evAcc=1;g.evHold=0;g.evForceEB=false;g.evBlockClose=false;
+  g.evLim=null;g.evRamp=null;g.evWindOnly=false;g.evAcc=1;g.evHold=0;g.evForceEB=false;g.evBlockClose=false;g.evBrake=1;g.evAct=null;g.ic=null;
   g.hold=null;g.hz=null;g.doorFault=null;g.flicker=false;
   g.nextEv=rndR(R.first[0],R.first[1]);
 }
@@ -51,7 +60,7 @@ function evFinish(g,outcome,pts,note){
   evClear(g);g.ev=null;
   g.nextEv=g.time+rndR(g.evR.gap[0],g.evR.gap[1]);
 }
-function evClear(g){g.evLim=null;g.evRamp=null;g.evWindOnly=false;g.evAcc=1;g.evHold=0;g.evForceEB=false;g.evBlockClose=false;g.hold=null;g.hz=null;g.doorFault=null;g.flicker=false;g.rain=false;}
+function evClear(g){g.evLim=null;g.evRamp=null;g.evWindOnly=false;g.evAcc=1;g.evHold=0;g.evForceEB=false;g.evBlockClose=false;g.evBrake=1;g.evAct=null;g.ic=null;g.hold=null;g.hz=null;g.doorFault=null;g.flicker=false;g.rain=false;}
 function evStart(g,id){
   if(g.ev)return false;
   const E=EV[id];if(!E)return false;
@@ -147,8 +156,79 @@ const EV={
       }else if(e.state==='depart'){
         if(g.time-e.t2>=60)evFinish(g,'ok',10,'');
       }
-    }}
+    }},
+  // 乘客緊急對講：按「接聽」；乘客按完就離開時要「逐節檢視」找出是哪一節；接著「回報行控」，下一站停車交由站務處理
+  intercom:{can:g=>g.state==='run'&&g.k<g.S.length&&g.doors.state==='closed'&&g.v>3&&g.S[g.S.length-1]-g.pos>400,
+    start(g,e){
+      const cars=g.L.cars;e.car=1+Math.floor(Math.random()*cars);e.left=Math.random()<0.5;
+      e.scn=['medical','item','mistake'][Math.floor(Math.random()*3)];
+      e.phase='ring';e.curAt=g.cur;e.found=null;
+      g.ic={car:e.car,view:0,left:e.left,phase:'ring',scn:e.scn};
+      e.title=`第 ${e.car} 節車廂：乘客按下緊急對講`;
+      e.sub=e.left?'乘客按完就離開了：按「📹 檢視車廂」逐節確認是哪一節':'按「📞 接聽」與乘客通話';
+      evIcAct(g,e);
+    },
+    tick(g,e,dt){
+      g.ic.phase=e.phase;
+      if(e.phase==='handover'){if(g.cur!==e.curAt||g.state==='finish'){evFinish(g,'ok',e.pts,e.note);return;}}
+      if(g.time-e.t0>(e.phase==='handover'?150:60)){evFinish(g,'late',0,e.phase==='ring'?'太久沒有回應，行控改請站務人員處理':'未在下一站交接，行控另行安排');}
+    }},
+  // 軌道異物（颱風天樹枝）：停車→通報行控→等候授權→下車排除→低速通過
+  debris:{can:g=>{
+      if(g.v<8||g.k>=g.S.length||g.rev)return false;
+      const d=g.v*g.v/(2*0.9*g.M.brake)+120,at=g.pos+d;
+      return g.S[g.k]-at>100&&evEnvAt(g,at)!=='tunnel'&&evEnvAt(g,g.pos)!=='tunnel';},
+    start(g,e){
+      const d=g.v*g.v/(2*0.9*g.M.brake)+120;
+      e.hz=g.pos+d;g.hz={kind:'debris',pos:e.hz};e.phase='approach';e.failT=0;e.trips0=g.pen.atp;g.rain=true;
+      e.title='軌道異物：前方有樹枝';e.sub='減速並在異物前停車，停妥後通報行控';ramp(g,45);
+    },
+    tick(g,e,dt){
+      const d=e.hz-g.pos;
+      if(e.phase==='fail'){e.failT+=dt;if(g.v<=0.05&&e.failT>6)evFinish(g,'fail',-25,'未能在異物前停車（遊戲不呈現後果，行控接管）');return;}
+      if(e.phase==='approach'){
+        e.sub=`前方 ${Math.max(0,Math.round(d))} m 軌道有異物：減速並在異物前停車`;
+        if(g.v<=0.3&&d>3){e.phase='stopped';e.sub='已停妥：請通報行控';g.evHold=9999;
+          g.evAct={label:'📻 通報行控',fn:()=>{e.phase='report';e.tRep=g.time;g.evAct=null;e.sub='已通報行控，等候授權下車處理…';if(typeof ocSay==='function')ocSay(g,'行控收到，請稍候確認安全。');}};}
+        else if(d<=2){e.phase='fail';g.evForceEB=true;g.evAct=null;toast('來不及停車，行控接管：緊急煞車','#ff7b7b',3.2);}
+      }else if(e.phase==='report'){
+        if(g.time-e.tRep>=6){e.phase='ready';e.sub='行控已授權：穿好裝備、告知旅客後下車排除異物';
+          if(typeof ocSay==='function')ocSay(g,'行控授權，請穿戴裝備並廣播告知旅客後下車，排除軌道異物。');
+          g.evAct={label:'🧰 下車排除異物',fn:()=>{e.phase='clearing';e.tClr=g.time;g.evAct=null;toast('司機員離開駕駛室處理異物（旅客已廣播告知）','#a9e34b',3);}};}
+      }else if(e.phase==='clearing'){
+        const left=10-(g.time-e.tClr);e.sub=`排除異物中…（剩 ${Math.max(0,Math.ceil(left))} 秒）`;
+        if(left<=0){g.hz=null;g.evHold=0;e.phase='resume';e.tRes=g.time;e.at=g.pos;g.evLim=25;g.evRamp=null;e.title='異物已排除';e.sub='以 25 km/h 以下通過，之後恢復正常';}
+      }else if(e.phase==='resume'){
+        if(g.pos-e.at>=180||g.time-e.tRes>60){const clean=g.pen.atp===e.trips0;evFinish(g,clean?'ok':'late',clean?12:4,clean?'':'處理期間 ATP 動作');}
+      }
+    }},
+  // 豪大雨：高架／平面段降速（行控）、煞車效果變差（輪軌打滑），要提早煞車、停準車站
+  rain:{can:g=>g.stations.some(s=>s.env!=='tunnel'),
+    start(g,e){e.dur=90;e.lim=50;e.title='豪大雨：高架／平面段降速';e.sub=`行控降低速限至 ${e.lim} km/h（地下段不受限）；輪軌易打滑、煞車效果變差，請提早煞車、停準車站`;
+      g.rain=true;g.evBrake=0.75;g.evWindOnly=true;ramp(g,e.lim);},
+    tick(g,e){if(g.time-e.t0>=e.dur){g.rain=false;const clean=g.pen.atp===e.trips0;evFinish(g,clean?'ok':'late',clean?6:0,clean?'':'限速期間 ATP 動作');}}}
 };
+// 軌道上某里程所在的場景（高架 elev／平面 grade／地下 tunnel）
+function evEnvAt(g,s){for(const c of g.sec)if(s>=c.a&&s<c.b)return c.env;return g.sec[g.sec.length-1].env;}
+// 乘客對講的操作按鈕（依階段換標籤）：接聽／檢視下一節車廂／回報行控
+function evIcAct(g,e){
+  const cars=g.L.cars,scn={medical:['有乘客身體不適，需要協助','（遊戲設計）乘客表示身體不適'],item:['車廂內有無人認領的可疑物品','（遊戲設計）乘客回報發現遺留物品'],mistake:['乘客表示是誤觸對講鈕，沒有異狀','（遊戲設計）乘客誤觸']}[e.scn];
+  const found=()=>{
+    e.found=g.time;const fast=g.time-e.t0<=(e.left?15:12);
+    if(e.scn==='mistake'){evFinish(g,'ok',fast?8:5,'確認為誤觸，無須處置');return;}
+    e.phase='report';e.sub=`${scn[0]}：請回報行控，下一站停車交由站務處理`;e.pts=fast?10:6;e.note=fast?'':'反應較慢';
+    toast(`第 ${e.car} 節：${scn[0]}`,'#4dabf7',4);
+    g.evAct={label:'📻 回報行控',fn:()=>{e.phase='handover';g.evAct=null;e.sub='已回報行控：下一站停車開門，交由站務人員處理';if(typeof ocSay==='function')ocSay(g,'行控收到，下一站請站務人員在月台等候，列車請正常停靠。');}};
+  };
+  if(e.left){
+    g.evAct={label:`📹 檢視車廂 1/${cars}`,fn:()=>{
+      g.ic.view=(g.ic.view%cars)+1;const v=g.ic.view;
+      if(v===e.car){found();}else{g.evAct.label=`📹 檢視車廂 ${v%cars+1}/${cars}`;}
+    }};
+  }else{
+    g.evAct={label:'📞 接聽',fn:()=>{g.ic.view=e.car;found();}};
+  }
+}
 // 關門完成時：有進行中的車門故障就判斷是否排除；否則依機率觸發新的車門故障
 function evOnDoorsClosed(g){
   if(!g.evOn)return;

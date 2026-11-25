@@ -14,7 +14,7 @@ const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x?'  '+x:''));
   const sb=await sum.boundingBox();await p.touchscreen.tap(sb.x+sb.width/2,sb.y+sb.height/2);await p.waitForTimeout(300);
   ok('觸控展開事件清單',await p.evaluate(()=>document.querySelector('details.evd').open));
   const ids=await p.evaluate(()=>[...document.querySelectorAll('.evrow')].map(x=>x.dataset.ev));
-  ok('事件清單為整列按鈕，共 7 種',ids.length===7,ids.join());
+  ok('事件清單為整列按鈕，共 10 種',ids.length===10,ids.join());
   // 逐列點擊：在不同捲動位置、以及視窗高度改變（模擬 Safari 工具列收合）後，被切換的必須就是點的那一列
   let bad=[];const scrollsY=[0,300,700,1100,99999];
   for(const vh of [700,790,610]){
