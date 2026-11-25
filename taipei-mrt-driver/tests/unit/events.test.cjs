@@ -6,7 +6,7 @@ const ctx=vm.createContext({console,Math,JSON,Object,Array,Number,String,Set,Map
 vm.runInContext(`var G=null;var SET={line:'red',from:0,to:12,theme:'day',model:'C381',atpStrict:false,events:true,evRate:'mid',evOff:[],haptic:false};
 ${['haptic','hapRumble','beep','sfxNotch','sfxStop','playChime','chimeOpen','chimeClose','announce','syncLever','syncRevBtn','showResult'].map(n=>`var ${n}=function(){};`).join('')}
 var envNow=function(){return 'elev';};var toast=function(){};`,ctx);
-for(const f of ['models.js','lines.js','events.js','sim.js','routemap.js','radio.js'])vm.runInContext(fs.readFileSync(path.join(dir,f),'utf8'),ctx,{filename:f});
+for(const f of ['models.js','lines.js','events.js','sim.js','routemap.js','quiz.js','radio.js'])vm.runInContext(fs.readFileSync(path.join(dir,f),'utf8'),ctx,{filename:f});
 const run=c=>vm.runInContext(c,ctx);
 let pass=0,fail=0;const ok=(n,c,x)=>{c?pass++:fail++;console.log((c?'PASS ':'FAIL ')+n+(x!==undefined?'  '+x:''));};
 
@@ -121,6 +121,24 @@ ok('上方進度條不讀事件狀態',a>0&&!/\bg\.(ev|hz|hold)\b|evLimit/.test(
   // 7i. 新聞出處
   ok('新事件都附新聞出處與處置建議，且標明遊戲設計的部分',['intercom','debris','rain'].every(id=>run(`EV_INFO['${id}'].news.length>40&&EV_INFO['${id}'].tip.length>20`))&&run("EV_INFO.intercom.tip.includes('遊戲中')&&EV_INFO.debris.tip.includes('遊戲簡化')&&EV_INFO.rain.tip.includes('遊戲設定')"));
   ok('事件共 11 種（含外籍旅客求助）',run('EV_ORDER.length')===11);
+  // 7d. 外籍旅客來電不在快到站時打擾：離下一站近就不來電；通話中靠近車站就中止、不扣分
+  fresh();
+  run("G.pos=G.S[G.k]-300;1");
+  ok('離下一站 300 m：外籍旅客不會來電',run("EV.foreign.can(G)")===false);
+  run("G.zones=[];G.pos=G.S[G.k]-1500;1");
+  ok('離下一站 1500 m：可以來電',run("EV.foreign.can(G)")===true);
+  run("evStart(G,'foreign');G.evAct.fn();G.pos=G.S[G.k]-400;evTick(G,1/60);");
+  ok('通話中距下一站 400 m：通話中止、事件結束、不扣分',run("G.ev===null&&G.fq===null&&G.evLog[G.evLog.length-1].pts===0&&G.evLog[G.evLog.length-1].outcome==='ok'"));
+  // 7e. 彎道與自動駕駛：人工駕駛前方有彎道時不來電、通話中接近彎道就中止；全自動（文湖線）不受影響
+  fresh();
+  run("G.zones=[{s0:G.pos+400,s1:G.pos+500,lim:40,R:200,dir:'L'}];G.pos=G.S[G.k]-1500;G.zones[0].s0=G.pos+400;G.zones[0].s1=G.pos+500;1");
+  ok('前方 400 m 有彎道：人工駕駛不會來電',run("EV.foreign.can(G)")===false);
+  run("G.zones[0].s0=G.pos+900;G.zones[0].s1=G.pos+1000;1");
+  ok('彎道在 900 m 外（直線段）：可以來電',run("EV.foreign.can(G)")===true);
+  run("evStart(G,'foreign');G.evAct.fn();G.zones[0].s0=G.pos+200;G.zones[0].s1=G.pos+300;evTick(G,1/60);");
+  ok('通話中彎道在 200 m 內：通話中止、不扣分',run("G.ev===null&&G.evLog[G.evLog.length-1].pts===0"));
+  run("G.ev=null;G.zones[0].s0=G.pos+100;G.zones[0].s1=G.pos+200;G.pos=G.S[G.k]-300;G.M.driverless=true;1");
+  ok('全自動駕駛（文湖線）：彎道、近站都可以來電',run("EV.foreign.can(G)")===true);
 }
 
 console.log(`\n合計：通過 ${pass} 項、失敗 ${fail} 項`);

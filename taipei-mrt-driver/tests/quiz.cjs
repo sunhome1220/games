@@ -9,7 +9,7 @@ for(const [n,vp] of [['手機橫握',{width:844,height:390}],['iPad',{width:1024
     Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>voices,addEventListener(){},cancel(){},speak(u){window.__spoken.push({text:u.text,lang:u.lang,rate:u.rate});}},configurable:true});});
   const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto('http://localhost:8765/taipei-mrt-driver/index.html');await p.waitForTimeout(1000);
-  const start=(o)=>p.evaluate(o=>{Object.assign(SET,{line:'blue',from:2,to:10,events:true,bcOn:false,radio:false,snd:true,fqLevel:'g5',fqListen:false},o||{});startRun();const g=G;g.state='run';g.pos=g.S[1]+300;g.k=2;g.v=18;g.time=5;g.ev=null;window.__spoken.length=0;evStart(g,'foreign');},o);
+  const start=(o)=>p.evaluate(o=>{Object.assign(SET,{line:'blue',from:2,to:10,events:true,bcOn:false,radio:false,snd:true,fqLevel:'g5',fqListen:false},o||{});startRun();const g=G;g.state='run';g.pos=g.S[1]+300;g.k=2;g.v=18;g.time=5;g.zones=[];g.ev=null;window.__spoken.length=0;evStart(g,'foreign');},o);
   const vis=()=>p.evaluate(()=>!document.getElementById('fq').hidden);
   const until=(fn,ms)=>p.waitForFunction(fn,null,{timeout:ms||6000}).catch(()=>{});   // DOM 在下一個畫面更新時才變，慢機器上要等
   const answerCall=async()=>{await p.waitForFunction(()=>getComputedStyle(document.getElementById('b-act')).display!=='none',null,{timeout:6000}).catch(()=>{});const r=await p.evaluate(()=>{const b=document.getElementById('b-act').getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2];});await p.touchscreen.tap(...r);await p.waitForFunction(()=>!document.getElementById('fq').hidden,null,{timeout:6000}).catch(()=>{});};
