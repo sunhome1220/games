@@ -14,6 +14,8 @@ SHOT_DIR=/some/dir bash taipei-mrt-driver/tests/run.sh t8   # 部分測試會存
 
 `node taipei-mrt-driver/tests/unit/sim.test.cjs`（也包含在 `run.sh`，名稱 `unit`）：用 Node 的 `vm` 載入 `js/sim.js`（關卡建立、物理、ATP、計分、車門；不碰 DOM）加上資料與事件引擎，畫面與聲音的副作用以空函式取代。涵蓋加速／煞停距離、ATP 限速曲線與寬鬆／嚴格復歸、計分邊界、車門連動、關卡決定性等 31 項。改物理或規則時先跑這個，比瀏覽器測試快很多。
 
+`node taipei-mrt-driver/tests/unit/events.test.cjs`（`run.sh` 名稱 `evunit`）：突發事件的時間與種類是隨機的，事件發生前沒有預先設定的限速／停止信號／障礙物，路線圖、限速預告與上方進度條都不會顯示事件。
+
 ## 瀏覽器測試內容
 
 | 檔案 | 測什麼 |
