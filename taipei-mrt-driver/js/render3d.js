@@ -682,7 +682,7 @@ const R3=(function(){
     return {te:u.t0===null?-1:run.time-u.t0,people:u.P.map(q=>({k:q.kind,x:q._x,z:q._z,v:q._v,delay:q.delay,sj:q.sj})),pillar:{x:px,zs,half:0.25},sd};
   }
   /* ---------- 突發事件：軌道上的人與號誌（位置由 g.hz 決定） ---------- */
-  let hzPerson=null,hzSignal=null,hzRed=null,hzGreen=null;
+  let hzPerson=null,hzSignal=null,hzRed=null,hzGreen=null,hzDebris=null;
   function buildHazards(){
     hzPerson=new T.Group();
     const vest=mat(0xff7a1a),skin=mat(0xf0c8a0),pants=mat(0x2f3b52),hat=mat(0xffe03a);
@@ -691,6 +691,14 @@ const R3=(function(){
     const h=new T.Mesh(headGeo,skin);h.scale.set(0.34,0.34,0.34);h.position.set(0,1.78,0);hzPerson.add(h);
     box(hzPerson,0.4,0.12,0.4,0,1.98,0,hat);
     hzPerson.visible=false;bendTree(hzPerson);scene.add(hzPerson);
+    // 軌道異物（颱風吹落的樹枝）：幾根斜躺的粗細枝條加一團樹葉
+    hzDebris=new T.Group();
+    const wood=mat(0x5a4330),wood2=mat(0x6b5239),leaf=mat(0x3f7a3c);
+    for(const [x,z,l,w,ry,y] of [[0,0,3.6,0.22,0.15,0.16],[0.5,0.6,2.8,0.15,-0.55,0.3],[-0.4,-0.5,3.0,0.12,0.8,0.42],[0.2,0.2,2.2,0.1,1.2,0.5]]){
+      const o=new T.Mesh(unitBoxZ,l>3?wood:wood2);o.scale.set(w,w,l);o.position.set(x,y,z);o.rotation.y=ry;hzDebris.add(o);}
+    for(const [x,z,r] of [[0.6,-0.3,0.9],[-0.7,0.3,0.8],[0,0.9,0.7],[-0.2,-1.0,0.75]]){
+      const o=new T.Mesh(crownGeo,leaf);o.scale.set(r,r*0.55,r);o.position.set(x,0.4,z);hzDebris.add(o);}
+    hzDebris.visible=false;bendTree(hzDebris);scene.add(hzDebris);
     hzSignal=new T.Group();
     box(hzSignal,0.12,4.2,0.12,2.4,2.1,0,mat(0x555a62));box(hzSignal,0.6,1.3,0.3,2.4,4.1,0,mat(0x1a1c20));
     hzRed=new T.Mesh(unitBox,new T.MeshBasicMaterial({color:0xff2a2a}));hzRed.scale.set(0.38,0.38,0.08);hzRed.position.set(2.4,4.4,0.18);hzSignal.add(hzRed);
@@ -699,9 +707,11 @@ const R3=(function(){
   }
   function updateHazards(g){
     const h=g.hz;
-    if(!hzPerson)return;
+    if(!hzPerson||!hzDebris)return;
     hzPerson.visible=!!h&&h.kind==='person';
     if(hzPerson.visible)hzPerson.position.set(0,0.17,-h.pos);
+    hzDebris.visible=!!h&&h.kind==='debris';
+    if(hzDebris.visible)hzDebris.position.set(0,0,-h.pos);
     const sg=!!h&&h.kind.startsWith('signal');hzSignal.visible=sg;
     if(sg){hzSignal.position.set(0,0,-h.pos);const green=h.kind==='signalgreen';hzRed.visible=!green;hzGreen.visible=green;}
   }
@@ -817,5 +827,5 @@ const R3=(function(){
     frame(g,0,0,0);const gl=renderer.getContext(),px=new Uint8Array(w*h*4);gl.readPixels(x,gl.drawingBufferHeight-y-h,w,h,gl.RGBA,gl.UNSIGNED_BYTE,px);
     let t=0;for(let i=0;i<px.length;i+=4)t+=0.2126*px[i]+0.7152*px[i+1]+0.0722*px[i+2];return t/(w*h);}
   let bendForce=null;function setBend(v){bendForce=v;}   // 測試用：true／false 強制開／關彎曲，null 回到自動
-  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,walkAnim:()=>WALK_ANIM,setDebugCam,setBend,bendInfo,setLamps,probe,oppX:s=>oppX(s),info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
+  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,walkAnim:()=>WALK_ANIM,hazInfo:()=>({debris:!!hzDebris&&hzDebris.visible,debrisZ:hzDebris?hzDebris.position.z:null,person:!!hzPerson&&hzPerson.visible}),setDebugCam,setBend,bendInfo,setLamps,probe,oppX:s=>oppX(s),info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
 })();

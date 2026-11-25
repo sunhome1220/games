@@ -19,6 +19,8 @@ function ocText(g,id,e){
     case 'doorfault':return `行控呼叫${c}。第 ${e.car} 節車門閉鎖燈未亮，請重新開關門；仍無法排除，請按行控鈕與我們聯絡。`;
     case 'signal':return `行控呼叫${c}。前方號誌故障，顯示停止，請在號誌前停車待命，等候行控指示，不得越過。`;
     case 'power':return `行控呼叫${c}。供電異常，牽引電力受限，請以惰行為主、每小時 ${e.lim||g.evLim||60} 公里以下行駛，並提早煞車。`;
+    case 'debris':return `行控呼叫${c}。接獲通報，前方軌道有樹枝等異物，請減速並在異物前停車，停妥後回報行控。`;
+    case 'rain':return `行控呼叫${c}。豪大雨，高架與平面路段請降速至每小時 ${e.lim||50} 公里以下，煞車請提早，注意停準車站，若列車抖動請立即停車。`;
     case 'trainfault':{const nx=g.stations[g.k]?g.stations[g.k].name.replace('/','、'):'下一';return `行控呼叫${c}。列車故障告警，請以每小時 ${e.lim||g.evLim||40} 公里以下駛往${nx}站，開門讓旅客換乘，清客完成前請勿關門。`;}
   }
   return '';
@@ -42,8 +44,12 @@ function ocStaticStop(st,level){
   try{burst(0.12,3000,1400,0.8,level==='mid'?0.09:0.05,0,0.004);}catch(e){}      // 通話結束的「嚓」聲
 }
 function ocRadio(g,id,e){
-  if(!SET.radio||!g||!e)return;
-  const text=ocText(g,id,e);if(!text)return;
+  const text=ocText(g,id,e);if(!text)return;       // 沒有通話稿的事件（例如乘客對講）不來電
+  ocSay(g,text);
+}
+// 播出一段行控通話（事件開始時，或處置過程中的回覆／授權）
+function ocSay(g,text){
+  if(!SET.radio||!g||!text)return;
   const level=SET.radioNoise||'light';
   const dur=ocSecs(text);
   OC.cap={text,t0:performance.now(),dur:dur*1000+1500};

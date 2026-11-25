@@ -101,20 +101,21 @@ function toast(text,color,dur){G.toast={text,color:color||'#fff',t:0,dur:dur||2.
 /* ========================= 物理與規則 ========================= */
 function atpLimit(g){
   if(g.rev)return REV_LIM;                             // 退行：低速限制
+  const br=g.M.brake*(g.evBrake||1);                   // 豪大雨時煞車減速度較低，ATP 曲線也跟著提早
   let lim=g.M.vmax;
   for(const z of g.zones){
     if(g.pos>z.s1)continue;
     if(g.pos>=z.s0)lim=Math.min(lim,z.lim);
-    else{const vz=z.lim/3.6;lim=Math.min(lim,Math.sqrt(vz*vz+2*ZONE_FR*g.M.brake*(z.s0-g.pos))*3.6+3);} // 牌子前以平緩曲線遞減，到牌子時剛好降到限速
+    else{const vz=z.lim/3.6;lim=Math.min(lim,Math.sqrt(vz*vz+2*ZONE_FR*br*(z.s0-g.pos))*3.6+3);} // 牌子前以平緩曲線遞減，到牌子時剛好降到限速
   }
   if(g.k<g.S.length){
     const d=g.S[g.k]-g.pos;
     const dd=Math.max(d,0);
-    lim=Math.min(lim,Math.sqrt(2*ATP_FR*g.M.brake*dd)*3.6+8);
+    lim=Math.min(lim,Math.sqrt(2*ATP_FR*br*dd)*3.6+8);
   }
   lim=Math.min(lim,evLimit(g));                         // 突發事件的臨時限速
   if(g.hold!=null){                                      // 前方停止信號：像停車線一樣的減速曲線
-    const dh=g.hold-g.pos;lim=dh<=0.5?0:Math.min(lim,Math.sqrt(2*ATP_FR*g.M.brake*(dh-0.5))*3.6+3);
+    const dh=g.hold-g.pos;lim=dh<=0.5?0:Math.min(lim,Math.sqrt(2*ATP_FR*br*(dh-0.5))*3.6+3);
   }
   return lim;
 }
@@ -160,8 +161,8 @@ function step(dt){
   const kmh=g.v*3.6;
   let cmd=0,jl=1.1;
   if(n>0){cmd=ACC_FR[n-1]*g.M.accel*Math.min(1,g.M.knee/Math.max(g.v,0.1))*g.evAcc;jl=1.1;}   // 低速恆定加速度，高速受功率限制
-  else if(n>-8&&n<0){cmd=-g.dec[-n-1];jl=1.6;}
-  else if(n===-8){cmd=-g.M.eb;jl=4;}
+  else if(n>-8&&n<0){cmd=-g.dec[-n-1]*(g.evBrake||1);jl=1.6;}   // 豪大雨：輪軌打滑，煞車效果降低（g.evBrake）
+  else if(n===-8){cmd=-g.M.eb*(g.evBrake||1);jl=4;}
   const da=cmd-g.aAct;g.aAct+=clamp(da,-jl*dt,jl*dt);
   const resist=g.v>0?(0.02+0.00008*g.v*g.v):0;
   let vN=g.v+(g.aAct-resist)*dt;

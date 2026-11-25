@@ -1,4 +1,4 @@
-// 行控無線電通話：事件開始時顯示字幕、朗讀（有國語語音時）、播放提示音與雜訊；可關閉；雜訊強度可選；7 種事件都有
+// 行控無線電通話（9 種事件；乘客對講無開頭來電）：事件開始時顯示字幕、朗讀（有國語語音時）、播放提示音與雜訊；可關閉；雜訊強度可選；7 種事件都有
 const { chromium } = require('playwright');
 const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x!==undefined?'  '+x:''));
 (async()=>{const b=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
@@ -12,7 +12,7 @@ const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.messag
 await p.goto('http://localhost:8765/taipei-mrt-driver/index.html');await p.waitForTimeout(1200);
 const start=(o)=>p.evaluate(o=>{Object.assign(SET,{line:'blue',from:2,to:10,events:true,bcOn:false,snd:true,radio:true,radioNoise:'light'},o);startRun();audioInit();const g=G;g.state='run';g.pos=g.S[1]+200;g.k=2;g.v=20;g.time=1;g.ev=null;},o||{});
 await start();await p.waitForTimeout(300);
-const ids=['quake','wind','trespass','doorfault','signal','power','trainfault'];
+const ids=['quake','wind','trespass','doorfault','signal','power','trainfault','debris','rain'];   // 乘客對講沒有開頭來電
 for(const id of ids){
   await p.evaluate(()=>{window.__spoken.length=0;OC.cap=null;G.ev=null;});
   await p.evaluate(id=>{evStart(G,id);},id);await p.waitForTimeout(200);

@@ -20,6 +20,12 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 table.gp{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}table.gp td{border-bottom:1px solid #2c3850;padding:4px 6px}table.gp td:first-child{white-space:nowrap}
 #tut{position:fixed;inset:0;z-index:25;background:rgba(5,8,14,.78);display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}#tut[hidden]{display:none}
 .tut-c{max-width:460px;background:#141b27;border:1px solid #39465c;border-radius:14px;padding:14px 18px;font-size:14px;color:#dfe7f3}.tut-c h2{margin:0 0 6px;font-size:18px}.tut-c ol{padding-left:20px;margin:6px 0}.tut-c li{margin:6px 0}.tut-c .big{margin-top:8px}
+#ic{position:fixed;left:8px;top:calc(150px + env(safe-area-inset-top));z-index:5;width:186px;padding:7px 7px 5px;border-radius:12px;background:linear-gradient(#e9dfc6,#cdbf9c);box-shadow:0 3px 10px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.6);color:#3a3322;font-size:12px;font-weight:700;text-align:center}
+#ic[hidden]{display:none}#ic.ring{box-shadow:0 0 0 3px #4dabf7,0 3px 12px rgba(77,171,247,.8)}
+#ic-cv{position:static;display:block;width:172px;height:106px;border-radius:5px;background:#000;border:2px solid #1a1d22}#ic-lb{margin-top:4px;line-height:1.25}
+@media (orientation:landscape) and (max-height:520px){#ic{left:calc(var(--ll,6px) + 118px);top:148px;width:136px;padding:4px 4px 3px;border-radius:9px}#ic-cv{width:128px;height:79px}#ic-lb{font-size:10px;margin-top:2px;white-space:nowrap}}
+#top #b-act{background:#1d5fa8;border-color:#7fb8ff;font-weight:800}
+@media not ((orientation:landscape) and (max-height:520px)){#top #b-act{position:fixed;right:calc(var(--tr,8px));top:calc(150px + env(safe-area-inset-top));padding:10px 14px;font-size:15px;box-shadow:0 2px 10px rgba(0,0,0,.6)}}
 #rmap{display:flex;position:fixed;left:6px;right:8px;top:calc(140px + env(safe-area-inset-top));height:136px;background:rgba(8,12,20,.95);border:1px solid #39465c;border-radius:10px;z-index:4;overflow:hidden}
 #rmap[hidden]{display:none}
 #rmap-plan{flex:none;width:112px;height:100%;border-right:1px solid #2c3850;display:flex;align-items:center;justify-content:center}#rmap-main{flex:1;min-width:0;display:flex;flex-direction:column}
@@ -148,11 +154,13 @@ th{color:#9fb0c8;font-weight:600}
 <button id="rot">📱 橫放手機操作更順手（點此全螢幕橫向）</button>
 <button id="newver" hidden>🔔 有新版本，點此重新整理</button>
 
+<div id="ic" hidden><div class="ic-bz"><canvas id="ic-cv" width="168" height="104"></canvas></div><div id="ic-lb"></div></div>
 <div id="rmap" hidden><div id="rmap-plan" title="路線平面形狀（北在上）"></div><div id="rmap-main"><div id="rmap-hd"><span id="rmap-now"></span><span class="rmap-lg"><span style="margin-right:8px">© OpenStreetMap</span><i style="background:#f0a64a"></i>高架 <i style="background:#4a8fe0"></i>地下 <i style="background:#5bbf6a"></i>平面 <i style="background:#d32f2f"></i>彎道（限速為推估）</span></div><div id="rmap-in"></div></div></div>
 <div id="tut" hidden><div class="tut-c"><h2>第一次開車？30 秒學會</h2><ol><li><b>發車</b>：關好門，把右側手把往上推到 <b>P2</b>（鍵盤 ↑）。</li><li><b>看限速與距離</b>：左上圓牌是現在的限速；下方儀表顯示離停車線還有多遠。接近站時，把手把往下拉到 <b>B 位</b>煞車，畫面會 💡 建議檔位。</li><li><b>停準</b>：車頭停在<b>綠色停車線</b>，越準分數越高；快停時要<b>慢慢放鬆</b>煞車。</li><li><b>開門</b>：照畫面提示開左門或右門，乘客上下車後再<b>關門</b>，繼續下一站。</li></ol><p class="sub">超速太多會被自動煞車（ATP），不用緊張，回到 N 位就能繼續。需要時可在選單看完整「操作說明」。</p><button class="big" id="tut-ok">知道了，開始駕駛</button></div></div>
 <div id="gptut" hidden><div class="tut-c"><h2>🎮 手把操作</h2><table class="gp"><tr><td><b>十字鍵 ↑／↓</b>或<b>左搖桿</b>上／下</td><td>加／減一檔（長按連續）</td></tr><tr><td><b>A</b>（PS：✕）</td><td>主控器回 N 位</td></tr><tr><td><b>B</b>（PS：○）</td><td>緊急煞車 EB</td></tr><tr><td><b>LB</b>／<b>RB</b></td><td>開左門／開右門</td></tr><tr><td><b>X</b>（PS：□）</td><td>關門</td></tr><tr><td><b>Y</b>（PS：△）</td><td>鳴笛</td></tr><tr><td><b>Back／Select</b></td><td>退行（超過停車線時）</td></tr><tr><td><b>Start</b></td><td>暫停／繼續</td></tr><tr><td>選單、教學、結算頁</td><td><b>A</b> 確認／開始，<b>B</b> 回選單</td></tr></table><p class="sub">手把有震動馬達的話，換檔與緊急煞車會震動（設定裡關閉震動即停用）。按下手把任何按鍵即啟用；若按鍵與預期不同，可能是手把非標準對應。</p><button class="big" id="gptut-ok">知道了</button></div></div>
 <div id="top" class="hidden">
   <button id="b-pause">⏸ 暫停</button>
+  <button id="b-act" style="display:none"></button>
   <button id="b-call" style="display:none">📞 行控</button>
   <button id="b-map">🗺</button>
   <button id="b-horn">📯</button>
@@ -288,19 +296,19 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-25.03"></script>
-<script src="js/broadcast.js?v=2026-11-25.03"></script>
-<script src="js/haptics.js?v=2026-11-25.03"></script>
-<script src="js/feedback.js?v=2026-11-25.03"></script>
-<script src="js/routemap.js?v=2026-11-25.03"></script>
-<script src="js/gamepad.js?v=2026-11-25.03"></script>
-<script src="js/stats.js?v=2026-11-25.03"></script>
-<script src="js/radio.js?v=2026-11-25.03"></script>
-<script src="js/share.js?v=2026-11-25.03"></script>
-<script src="js/events.js?v=2026-11-25.03"></script>
-<script src="js/lines.js?v=2026-11-25.03"></script>
-<script src="js/render3d.js?v=2026-11-25.03"></script>
-<script src="js/sim.js?v=2026-11-25.03"></script>
+<script src="js/models.js?v=2026-11-25.04"></script>
+<script src="js/broadcast.js?v=2026-11-25.04"></script>
+<script src="js/haptics.js?v=2026-11-25.04"></script>
+<script src="js/feedback.js?v=2026-11-25.04"></script>
+<script src="js/routemap.js?v=2026-11-25.04"></script>
+<script src="js/gamepad.js?v=2026-11-25.04"></script>
+<script src="js/stats.js?v=2026-11-25.04"></script>
+<script src="js/radio.js?v=2026-11-25.04"></script>
+<script src="js/share.js?v=2026-11-25.04"></script>
+<script src="js/events.js?v=2026-11-25.04"></script>
+<script src="js/lines.js?v=2026-11-25.04"></script>
+<script src="js/render3d.js?v=2026-11-25.04"></script>
+<script src="js/sim.js?v=2026-11-25.04"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -308,7 +316,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-25.03';
+const VERSION='2026-11-25.04';
 
 /* ========================= 小工具 ========================= */
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
@@ -807,6 +815,7 @@ function drawDash(g){
    X.fillStyle='#d9dde4';rr(px,py,pw,ph,4);X.fill();X.fillStyle=cab.trim;X.fillRect(px,py,5,ph);
    T(label,px+pw/2+2,py+ph/2+1,12,'#1b2230','center',800);
    if(g.M.driverless)T('無人駕駛車型・模擬手動',px+pw+8,py+ph/2+1,10,'#ffb347','left',700);}
+  drawCabLamps(g,top);
   const gx0=dashX0+10,gx1=land?dashX1-8:W-(lrPx+82),gh=H-barH-top-(land?10:18);
   const dia=Math.min(gh,(gx1-gx0)*0.5,240),R=dia/2;
   const cx=gx0+R+6,cy=top+(land?6:10)+R;
@@ -879,6 +888,40 @@ function drawDash(g){
     drawTcms(g,ix+iw+16,top+10,gx1-(ix+iw+16)-4,gh);
   }
 }
+// 駕駛台的燈號列與小儀表（外觀依新聞照片：桌面上的 EB-A／EB-B 紅燈、車門警示燈、故障燈、煞車壓力表，窗邊的手持無線電；
+// 位置與造型是示意，不是北捷駕駛台的實際配置）
+function cabLampState(g){
+  const D=g.doors;
+  return {eb:g.notch===-8||!!g.trip||!!g.evForceEB,                     // EB-A／EB-B：緊急煞車（含 ATP 動作、事件強制 EB）
+    door:D.state!=='closed'||!!g.interlock,                            // 車門警示燈：門未全關或閉鎖連動
+    fault:!!g.doorFault||!!(g.ev&&(g.ev.id==='trainfault'||g.ev.id==='power'||g.ev.id==='debris'))};   // 故障燈
+}
+function drawCabLamps(g,top){
+  const right=land?dashX1-10:W-(lrPx+90),y=land?top:top-24,D=g.doors;   // 直握：燈號列放在儀表上緣外（不蓋住名牌）
+  const L=cabLampState(g);
+  const chips=[['EB-A',L.eb,'#ff3b3b'],['EB-B',L.eb,'#ff3b3b'],['門警',L.door,'#ff9f1a'],['故障',L.fault,'#ffd43b']];
+  let x=right;const cw=34,ch=16,gap=5;
+  for(let i=chips.length-1;i>=0;i--){
+    const [lb,on,col]=chips[i];x-=cw;
+    X.fillStyle=on?col:'#1c222c';rr(x,y-ch/2,cw,ch,4);X.fill();X.strokeStyle=on?'#fff':'#394457';X.lineWidth=1;X.stroke();
+    if(on){X.globalAlpha=0.35;X.fillStyle=col;rr(x-2,y-ch/2-2,cw+4,ch+4,6);X.fill();X.globalAlpha=1;}
+    T(lb,x+cw/2,y+1,10,on?'#1a0f00':'#5d6b82','center',800);x-=gap;
+  }
+  // 煞車壓力表（小）：紅針＝煞車缸壓力（依施加的煞車量），黃針＝總風缸壓力（示意為固定值）
+  const gr=11,gcx=x-gr-4,gcy=y;
+  if(gcx-gr>(dashX0+(dashX1-dashX0)*0.5)){
+    X.fillStyle='#0b0f17';X.beginPath();X.arc(gcx,gcy,gr,0,6.3);X.fill();X.strokeStyle='#4a5670';X.lineWidth=1.5;X.stroke();
+    const A0=Math.PI*0.75,SW=Math.PI*1.5,pr=clamp(-g.aAct/g.M.brake,0,1.4)/1.4,mr=0.62;
+    for(const [k,col] of [[mr,'#ffd43b'],[pr,'#ff5a4a']]){const a=A0+SW*k;X.strokeStyle=col;X.lineWidth=1.6;X.beginPath();X.moveTo(gcx,gcy);X.lineTo(gcx+Math.cos(a)*(gr-3),gcy+Math.sin(a)*(gr-3));X.stroke();}
+    T('BRAKE',gcx,gcy+gr+7,7,'#7f8fa8','center',700);
+    // 手持無線電（窗邊的支架）：行控來電時指示燈亮綠色
+    const rx=gcx-gr-14,live=!!(typeof OC!=='undefined'&&OC.cap&&SET.radio);
+    X.fillStyle='#14171c';rr(rx-5,gcy-9,10,18,2);X.fill();X.strokeStyle='#3a414d';X.lineWidth=1;X.stroke();
+    X.strokeStyle='#14171c';X.lineWidth=1.5;X.beginPath();X.moveTo(rx+2,gcy-9);X.lineTo(rx+2,gcy-16);X.stroke();
+    X.fillStyle=live?'#53e37a':'#2a3a2e';X.beginPath();X.arc(rx-1,gcy-5,1.8,0,6.3);X.fill();
+    X.fillStyle='#2b313b';X.fillRect(rx-3,gcy-1,6,5);
+  }
+}
 // TCMS 車輛資訊面板：編組、各車門狀態、牽引／煞車、供電（DC 750 V 第三軌，各車型條目所載）
 function drawTcms(g,x,y,w,h){
   if(w<170||h<95)return;
@@ -888,10 +931,10 @@ function drawTcms(g,x,y,w,h){
   // 編組：車頭在右（前進方向），各節車門以上（左側）下（右側）兩排小方塊表示
   const cx0=x+12,cw=(w-24-(n-1)*3)/n,cy=y+30;
   for(let i=0;i<n;i++){
-    const car=n-i,bx=cx0+i*(cw+3),fault=g.doorFault&&g.doorFault.car===car&&Math.floor(g.time*2)%2===0;
+    const car=n-i,bx=cx0+i*(cw+3),fault=g.doorFault&&g.doorFault.car===car&&Math.floor(g.time*2)%2===0,icf=g.ic&&g.ic.car===car&&g.ic.phase==='ring'&&Math.floor(g.time*2)%2===0;
     X.fillStyle=i===n-1?'#2b3a52':'#1d2735';rr(bx,cy,cw,22,3);X.fill();
     for(const s of [0,1]){const open=D.state!=='closed'&&D.side===(s?'R':'L')&&D.frac>0.2;
-      X.fillStyle=fault?'#ff4a4a':open?'#7bd88f':'#3b4658';X.fillRect(bx+3,cy+(s?14:3),cw-6,5);}
+      X.fillStyle=fault?'#ff4a4a':icf?'#4dabf7':open?'#7bd88f':'#3b4658';X.fillRect(bx+3,cy+(s?14:3),cw-6,5);}
   }
   T('◀ 後　　　　　　　　前 ▶',x+w/2,cy+36,9,'#6b7b94','center',600);
   // 牽引與煞車（依目前加速度占車型最大值）
@@ -955,6 +998,46 @@ function drawRadioCap(){
   X.fillStyle='#5fb3ff';rr(x+8,y+8,58,18,9);X.fill();T('行控',x+37,y+17,11,'#06121f','center',800);
   lines.forEach((l,i)=>T(l,x+74,y+17+i*lh,13,'#e6f1ff','left',600));
   X.globalAlpha=1;
+}
+// 乘客緊急對講的監視螢幕（外觀依新聞照片的米色護框小螢幕；車廂畫面是示意圖）
+function drawIc(g){
+  const el=$('ic'),on=!!g.ic;
+  if(el.hidden===on)el.hidden=!on;
+  if(!on)return;
+  const c=$('ic-cv'),x=c.getContext('2d'),w=c.width,h=c.height,I=g.ic;
+  const showing=I.left?I.view>0:true,car=I.left?I.view:I.car;
+  x.fillStyle='#0b0e13';x.fillRect(0,0,w,h);
+  if(!showing){
+    for(let i=0;i<14;i++){x.fillStyle=`rgba(255,255,255,${0.04+Math.random()*0.06})`;x.fillRect(0,Math.random()*h,w,1+Math.random()*2);}
+    x.fillStyle='#8fa0b8';x.font='700 14px sans-serif';x.textAlign='center';x.fillText('對講機：無訊號',w/2,h/2-2);
+    x.font='600 10px sans-serif';x.fillText('乘客已離開，請逐節檢視',w/2,h/2+16);
+  }else{
+    // 車廂內部示意：天花板、地板、兩側座椅、吊環扶手、站立與坐著的乘客
+    const gr=x.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#cfd3c4');gr.addColorStop(0.45,'#aeb4a4');gr.addColorStop(1,'#6a6f66');x.fillStyle=gr;x.fillRect(0,0,w,h);
+    x.fillStyle='#8a8e86';x.fillRect(0,h*0.72,w,h*0.28);                                   // 地板
+    x.fillStyle='#2f8f8a';x.fillRect(4,h*0.52,w*0.22,h*0.18);x.fillRect(w-4-w*0.22,h*0.52,w*0.22,h*0.18);   // 座椅
+    x.strokeStyle='#d8dad4';x.lineWidth=2;x.beginPath();x.moveTo(w*0.5,6);x.lineTo(w*0.5,h*0.72);x.stroke();   // 立柱
+    const n=3+Math.floor(hash(car*13+g.stations.length)*4);
+    for(let i=0;i<n;i++){
+      const px=w*0.2+hash(car*31+i*7)*w*0.6,py=h*0.5+hash(car*17+i*3)*h*0.22,col=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#34495e'][Math.floor(hash(car*5+i)*6)];
+      x.fillStyle=col;x.fillRect(px-5,py,10,16);x.fillStyle='#e8c9a6';x.beginPath();x.arc(px,py-4,5,0,6.3);x.fill();
+    }
+    if(car===I.car){   // 有狀況的車廂：標出對講機呼叫的乘客
+      const t=Math.floor(g.time*2)%2===0;
+      x.strokeStyle=t?'#4dabf7':'#a5d8ff';x.lineWidth=2;x.strokeRect(w*0.62,h*0.34,26,40);
+      x.fillStyle='#4dabf7';x.font='700 10px sans-serif';x.textAlign='left';x.fillText('對講',w*0.62,h*0.32);
+    }
+  }
+  x.fillStyle='rgba(255,255,255,.75)';x.font='700 10px sans-serif';x.textAlign='left';x.fillText('CAM '+(showing?car:'--')+'/'+g.L.cars,6,13);
+  if(Math.floor(g.time*1.5)%2===0){x.fillStyle='#ff4a4a';x.beginPath();x.arc(w-10,10,4,0,6.3);x.fill();}
+  el.classList.toggle('ring',I.phase==='ring'&&Math.floor(g.time*2)%2===0);
+  const lb=I.phase==='ring'?(I.left?'對講機呼叫（乘客已離開）':`第 ${I.car} 節　對講機呼叫中`):I.phase==='report'?`第 ${I.car} 節　已確認，請回報行控`:`第 ${I.car} 節　已回報行控`;
+  if($('ic-lb').textContent!==lb)$('ic-lb').textContent=lb;
+}
+function syncAct(g){
+  const b=$('b-act'),a=g.evAct,want=a?'':'none';
+  if(b.style.display!==want)b.style.display=want;
+  if(a&&b.textContent!==a.label)b.textContent=a.label;
 }
 function drawCaptions(){
   if(!BCAP||!SET.bcOn)return;
@@ -1055,7 +1138,7 @@ function render(){
   drawCabFrame(g);
   drawDash(g);
   if(typeof rmUpdate==='function')rmUpdate(g);
-  syncBar(g);
+  syncBar(g);drawIc(g);syncAct(g);
   const bc=$('b-call'),want=g.doorFault&&!g.doorFault.call?'':'none';if(bc.style.display!==want)bc.style.display=want;
   if($('menu').classList.contains('hidden')&&$('result').classList.contains('hidden'))drawHud(g); // 選單／結算頁底下不畫 HUD，避免文字透出
 }
@@ -1112,6 +1195,7 @@ $('b-close').onclick=()=>closeDoors();
 $('b-eb').onclick=()=>setNotch(-8);
 $('b-rev').onclick=toggleReverse;
 $('b-call').onclick=()=>evCallControl();
+$('b-act').onclick=()=>{if(G&&G.evAct)G.evAct.fn();};
 
 /* ========================= 選單與流程 ========================= */
 let paused=false;
@@ -1434,7 +1518,7 @@ if(location.protocol.startsWith('http')){
 resize();fillMenu();G=buildRun(SET);
 R3.load().then(ok=>{if(ok&&R3.init($('gl')))resize();else force2d=true;});
 syncLever();updateBest();
-window.__mrt={get G(){return G;},setNotch,openDoors,closeDoors,toggleReverse,startRun,step,SET,buildRun,render,LINES,MODELS,evStart,evOnDoorsClosed,evCallControl,EV_INFO};
+window.__mrt={cabLampState,get G(){return G;},setNotch,openDoors,closeDoors,toggleReverse,startRun,step,SET,buildRun,render,LINES,MODELS,evStart,evOnDoorsClosed,evCallControl,EV_INFO};
 requestAnimationFrame(loop);
 </script>
 </body>
