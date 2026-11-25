@@ -14,7 +14,7 @@ const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x?'  '+x:''));
   const sb=await sum.boundingBox();await p.touchscreen.tap(sb.x+sb.width/2,sb.y+sb.height/2);await p.waitForTimeout(300);
   ok('觸控展開事件清單',await p.evaluate(()=>document.querySelector('details.evd').open));
   const ids=await p.evaluate(()=>[...document.querySelectorAll('.evrow')].map(x=>x.dataset.ev));
-  ok('事件清單為整列按鈕，共 10 種',ids.length===10,ids.join());
+  ok('事件清單為整列按鈕，共 11 種',ids.length===11,ids.join());
   // 逐列點擊：在不同捲動位置、以及視窗高度改變（模擬 Safari 工具列收合）後，被切換的必須就是點的那一列
   let bad=[];const scrollsY=[0,300,700,1100,99999];
   for(const vh of [700,790,610]){
@@ -46,6 +46,7 @@ const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x?'  '+x:''));
   await p.evaluate(()=>{document.getElementById('m-go').click();});await p.waitForTimeout(500);
   const g=await p.evaluate(()=>({scroll:document.documentElement.classList.contains('scroll'),ov:getComputedStyle(document.body).overflow,y:window.scrollY}));
   ok('遊戲進行中：文件不可捲動、回到頂端',!g.scroll&&g.y===0,JSON.stringify(g));
+  await p.setViewportSize({width:844,height:390});await p.waitForTimeout(300); // 觸控裝置直握時遊戲會暫停（僅限橫式），結算流程改在橫握下驗證
   await p.evaluate(()=>{const m=__mrt;m.G.state='finish';m.G.endT=0.01;});await p.waitForTimeout(1500);
   const r2=await p.evaluate(()=>({scroll:document.documentElement.classList.contains('scroll'),res:!document.getElementById('result').classList.contains('hidden')}));
   ok('結算頁顯示時文件可捲動',r2.scroll&&r2.res,JSON.stringify(r2));

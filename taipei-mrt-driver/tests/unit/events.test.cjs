@@ -120,7 +120,7 @@ ok('上方進度條不讀事件狀態',a>0&&!/\bg\.(ev|hz|hold)\b|evLimit/.test(
   ok('豪大雨與軌道異物有行控通話稿，乘客對講沒有',run("ocText(G,'rain',G.ev).includes('50')&&ocText(G,'debris',{}).includes('異物')&&ocText(G,'intercom',{})===''"));
   // 7i. 新聞出處
   ok('新事件都附新聞出處與處置建議，且標明遊戲設計的部分',['intercom','debris','rain'].every(id=>run(`EV_INFO['${id}'].news.length>40&&EV_INFO['${id}'].tip.length>20`))&&run("EV_INFO.intercom.tip.includes('遊戲中')&&EV_INFO.debris.tip.includes('遊戲簡化')&&EV_INFO.rain.tip.includes('遊戲設定')"));
-  ok('事件共 10 種',run('EV_ORDER.length')===10);
+  ok('事件共 11 種（含外籍旅客求助）',run('EV_ORDER.length')===11);
 }
 
 console.log(`\n合計：通過 ${pass} 項、失敗 ${fail} 項`);

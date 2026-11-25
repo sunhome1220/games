@@ -31,9 +31,12 @@ const EV_INFO={
     tip:'看到軌道上有異物，要在異物前停車並通報行控；取得行控同意後穿好裝備下車排除，回到駕駛室後以低速通過。（處理時間與流程是遊戲簡化）'},
   rain:{name:'豪大雨',color:'#4dd0e1',
     news:'知新聞 2025-04-01 專訪北捷行車專員：淡水信義線高架段遇到暴雨，行控中心會降低速限，因為下雨車子容易打滑，行車專員要更留意停準車站，若發現車子抖動就要立刻停車，避免停車超出車站標線。',
-    tip:'下雨時高架與平面路段限速降低、煞車距離變長：提早煞車、不要等到最後才重踩，才停得準。（限速與煞車效果的數值是遊戲設定）'}
+    tip:'下雨時高架與平面路段限速降低、煞車距離變長：提早煞車、不要等到最後才重踩，才停得準。（限速與煞車效果的數值是遊戲設定）'},
+  foreign:{name:'外籍旅客求助（英語）',color:'#ff922b',
+    news:'知新聞 2025-04-01 專訪北捷行車專員：外國旅客需要幫助時，司機員能及時以英文回應（受訪者多益 975 分，也擔任北捷「搭乘捷運安全指南」影片的英文解說）；公司每年提供英語檢定補助。',
+    tip:'聽（或讀）清楚外籍旅客的問題，依駕駛室的資訊（下一站、車門側、轉乘站、終點、站數）選出正確的英語回答。（題目、措辭與分數是遊戲設計，不是北捷的標準應答）'}
 };
-const EV_ORDER=['quake','wind','trespass','doorfault','signal','power','trainfault','intercom','debris','rain'];
+const EV_ORDER=['quake','wind','trespass','doorfault','signal','power','trainfault','intercom','debris','rain','foreign'];
 const EV_RATE={low:{first:[150,300],gap:[300,500],max:2,door:0.12},mid:{first:[80,200],gap:[180,320],max:3,door:0.25},high:{first:[50,120],gap:[90,180],max:5,door:0.4}};
 const rndR=(a,b)=>a+Math.random()*(b-a);
 
@@ -41,7 +44,7 @@ function evInit(g){
   const R=EV_RATE[SET.evRate]||EV_RATE.mid;
   g.evOn=!!SET.events;g.evR=R;g.evAllowed=EV_ORDER.filter(id=>!(SET.evOff||[]).includes(id));
   g.ev=null;g.evLog=[];g.evCount=0;g.evPts=0;
-  g.evLim=null;g.evRamp=null;g.evWindOnly=false;g.evAcc=1;g.evHold=0;g.evForceEB=false;g.evBlockClose=false;g.evBrake=1;g.evAct=null;g.ic=null;
+  g.evLim=null;g.evRamp=null;g.evWindOnly=false;g.evAcc=1;g.evHold=0;g.evForceEB=false;g.evBlockClose=false;g.evBrake=1;g.evAct=null;g.ic=null;g.fq=null;
   g.hold=null;g.hz=null;g.doorFault=null;g.flicker=false;
   g.nextEv=rndR(R.first[0],R.first[1]);
 }
@@ -60,7 +63,7 @@ function evFinish(g,outcome,pts,note){
   evClear(g);g.ev=null;
   g.nextEv=g.time+rndR(g.evR.gap[0],g.evR.gap[1]);
 }
-function evClear(g){g.evLim=null;g.evRamp=null;g.evWindOnly=false;g.evAcc=1;g.evHold=0;g.evForceEB=false;g.evBlockClose=false;g.evBrake=1;g.evAct=null;g.ic=null;g.hold=null;g.hz=null;g.doorFault=null;g.flicker=false;g.rain=false;}
+function evClear(g){g.evLim=null;g.evRamp=null;g.evWindOnly=false;g.evAcc=1;g.evHold=0;g.evForceEB=false;g.evBlockClose=false;g.evBrake=1;g.evAct=null;g.ic=null;g.fq=null;g.hold=null;g.hz=null;g.doorFault=null;g.flicker=false;g.rain=false;}
 function evStart(g,id){
   if(g.ev)return false;
   const E=EV[id];if(!E)return false;
@@ -206,8 +209,32 @@ const EV={
   rain:{can:g=>g.stations.some(s=>s.env!=='tunnel'),
     start(g,e){e.dur=90;e.lim=50;e.title='豪大雨：高架／平面段降速';e.sub=`行控降低速限至 ${e.lim} km/h（地下段不受限）；輪軌易打滑、煞車效果變差，請提早煞車、停準車站`;
       g.rain=true;g.evBrake=0.75;g.evWindOnly=true;ramp(g,e.lim);},
-    tick(g,e){if(g.time-e.t0>=e.dur){g.rain=false;const clean=g.pen.atp===e.trips0;evFinish(g,clean?'ok':'late',clean?6:0,clean?'':'限速期間 ATP 動作');}}}
+    tick(g,e){if(g.time-e.t0>=e.dur){g.rain=false;const clean=g.pen.atp===e.trips0;evFinish(g,clean?'ok':'late',clean?6:0,clean?'':'限速期間 ATP 動作');}}},
+  // 外籍旅客求助：按「接聽」後聽（讀）英文問題，四選一；答對加分（快一點多加）、答錯扣分、逾時不計
+  foreign:{can:g=>g.state==='run'&&g.k<g.S.length&&g.doors.state==='closed'&&g.v>3&&g.S[g.S.length-1]-g.pos>300&&typeof fqMake==='function'&&fqMake(g,Math.random)!==null,
+    start(g,e){
+      e.q=fqMake(g,Math.random);e.phase='ring';e.pts=0;
+      g.fq={q:e.q,phase:'ring',pick:-1};
+      e.title='外籍旅客求助：對講機呼叫';e.sub='有外籍旅客用英語求助：按「📞 接聽」';
+      g.evAct={label:'📞 接聽',fn:()=>{e.phase='ask';e.tAsk=g.time;g.fq.phase='ask';g.evAct=null;e.title='外籍旅客求助（英語）';e.sub='聽（或讀）旅客的問題，選出最適當的回答';fqSpeak(e.q.en);}};
+    },
+    tick(g,e){
+      if(e.phase==='ring'&&g.time-e.t0>40){evFinish(g,'late',0,'太久沒有接聽');return;}
+      if(e.phase==='ask'&&g.time-e.tAsk>40){g.fq.phase='result';g.fq.pick=-2;e.phase='result';e.tRes=g.time;e.outcome='late';e.pts=0;e.note='逾時未作答';e.sub='逾時：正確答案已標示';}
+      if(e.phase==='result'&&g.time-e.tRes>=5)evFinish(g,e.outcome,e.pts,e.note);
+    }}
 };
+// 作答：i 為選項編號（0～3）
+function fqAnswer(g,i){
+  const e=g&&g.ev,f=g&&g.fq;if(!e||e.id!=='foreign'||e.phase!=='ask'||!(i>=0&&i<4))return false;
+  const right=i===f.q.ans,fast=g.time-e.tAsk<=12;
+  f.pick=i;f.phase='result';e.phase='result';e.tRes=g.time;
+  if(typeof fqMark==='function')fqMark(f.q,right);
+  e.outcome=right?'ok':'fail';e.pts=right?(fast?10:8):-3;e.note=right?(fast?'':'答對，但稍慢'):'答錯';
+  e.title=right?'答對了！':'答錯了';e.sub=f.q.exp;
+  toast(right?`答對了 +${e.pts}`:'答錯了 −3，正確答案已標示',right?'#9be39b':'#ff9b7b',3);
+  return true;
+}
 // 軌道上某里程所在的場景（高架 elev／平面 grade／地下 tunnel）
 function evEnvAt(g,s){for(const c of g.sec)if(s>=c.a&&s<c.b)return c.env;return g.sec[g.sec.length-1].env;}
 // 乘客對講的操作按鈕（依階段換標籤）：接聽／檢視下一節車廂／回報行控

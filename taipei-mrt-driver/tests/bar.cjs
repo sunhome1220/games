@@ -3,7 +3,7 @@
 const { chromium } = require('playwright');
 const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x!==undefined?'  '+x:''));
 (async()=>{const b=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
-for(const [n,vp] of [['橫握',{width:844,height:390}],['直握',{width:390,height:800}]]){
+for(const [n,vp] of [['橫握',{width:844,height:390}],]){
   const ctx=await b.newContext({viewport:vp,isMobile:true,hasTouch:true});await ctx.addInitScript(()=>localStorage.setItem('mrt-tut','1'));
   const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto('http://localhost:8765/taipei-mrt-driver/index.html');await p.waitForTimeout(1000);

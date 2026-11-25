@@ -9,6 +9,7 @@ const { chromium } = require('playwright');
   // 從選單用真實點擊操作
   await p.click('.chip.ln >> text=板南線');
   ok('選單切換路線',await q(()=>__mrt.SET.line==='blue'));
+  await p.locator('#rs').scrollIntoViewIfNeeded();
   const rb=await p.locator('#rs').boundingBox();
   const fx=i=>rb.x+17+(rb.width-34)*(i/22), cy=rb.y+rb.height/2;
   // 拖「起」到第 22 站（南港展覽館），再拖「終」到第 19 站（後山埤）

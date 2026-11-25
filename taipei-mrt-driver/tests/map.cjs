@@ -3,7 +3,7 @@ const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x?'  '+x:''));
 (async()=>{
   const b=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
   const S=process.env.SHOT_DIR||require('os').tmpdir();
-  for(const [name,vp] of [['land',{width:844,height:390}],['port',{width:390,height:800}]]){
+  for(const [name,vp] of [['land',{width:844,height:390}],]){
     const ctx=await b.newContext({viewport:vp,deviceScaleFactor:2,isMobile:true,hasTouch:true});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto('http://localhost:8765/taipei-mrt-driver/index.html');await p.waitForTimeout(800);
