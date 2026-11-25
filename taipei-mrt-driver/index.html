@@ -108,6 +108,20 @@ table.gp{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}table.g
 html.scroll{height:auto;overflow-y:auto;overflow-x:hidden;touch-action:pan-y}
 html.scroll body{height:auto;overflow:visible;touch-action:pan-y;user-select:auto;-webkit-user-select:auto}
 .screen>div{max-width:680px;margin:0 auto}
+/* 手機橫握（高度矮）：選單改左右兩欄——左：路線與預設關卡，右：關卡資訊與「開始值勤」，不必捲動就能開始 */
+@media (orientation:landscape) and (max-height:520px){
+  .screen{padding-top:calc(8px + env(safe-area-inset-top))}
+  #menu>div{max-width:none}
+  #menu h1{font-size:20px;margin:2px 0 0}
+  #menu .sub{font-size:12px;margin:2px 0 4px}
+  #menu .lab{margin:6px 0 3px;font-size:12px}
+  #menu .chips{gap:5px}
+  #menu .chip{padding:5px 9px;font-size:13px;min-height:32px}
+  .mcols{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+  .mc2{position:sticky;top:6px}
+  .mc2 .big{margin-top:8px;padding:12px;font-size:18px}
+  #m-adv{margin-top:10px}
+}
 h1{margin:6px 0 2px;font-size:26px;letter-spacing:1px}
 h1 small{font-size:13px;color:#9fb0c8;font-weight:400;margin-left:8px}
 .sub{color:#9fb0c8;margin:0 0 12px;font-size:14px}
@@ -195,14 +209,20 @@ th{color:#9fb0c8;font-weight:600}
   <div id="sharebanner" class="card" hidden></div>
   <p class="sub">加速、惰行、煞車，準點、準確地把列車停在月台停車位置，並維持乘坐舒適。</p>
 
+  <div class="mcols">
+  <div class="mc1">
   <div class="lab">路線</div>
   <div class="chips" id="m-lines"></div>
 
   <div class="lab">預設關卡</div>
   <div class="chips" id="m-presets"></div>
+  </div>
+  <div class="mc2">
   <div id="m-info" class="sub" style="margin:6px 0 0"></div>
   <button class="big" id="m-go">開始值勤</button>
   <div id="m-best" class="sub" style="text-align:center;margin-top:8px"></div>
+  </div>
+  </div>
   <details class="evd adv" id="m-adv"><summary>⚙ 自訂關卡與遊戲設定（可略過，用預設即可）</summary>
   <div class="lab">駕駛名稱（顯示在駕駛室名牌、成績與排行榜）</div>
   <input id="m-driver" type="text" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="ANDY">
@@ -310,20 +330,20 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-25.11"></script>
-<script src="js/broadcast.js?v=2026-11-25.11"></script>
-<script src="js/haptics.js?v=2026-11-25.11"></script>
-<script src="js/feedback.js?v=2026-11-25.11"></script>
-<script src="js/routemap.js?v=2026-11-25.11"></script>
-<script src="js/gamepad.js?v=2026-11-25.11"></script>
-<script src="js/stats.js?v=2026-11-25.11"></script>
-<script src="js/quiz.js?v=2026-11-25.11"></script>
-<script src="js/radio.js?v=2026-11-25.11"></script>
-<script src="js/share.js?v=2026-11-25.11"></script>
-<script src="js/events.js?v=2026-11-25.11"></script>
-<script src="js/lines.js?v=2026-11-25.11"></script>
-<script src="js/render3d.js?v=2026-11-25.11"></script>
-<script src="js/sim.js?v=2026-11-25.11"></script>
+<script src="js/models.js?v=2026-11-25.12"></script>
+<script src="js/broadcast.js?v=2026-11-25.12"></script>
+<script src="js/haptics.js?v=2026-11-25.12"></script>
+<script src="js/feedback.js?v=2026-11-25.12"></script>
+<script src="js/routemap.js?v=2026-11-25.12"></script>
+<script src="js/gamepad.js?v=2026-11-25.12"></script>
+<script src="js/stats.js?v=2026-11-25.12"></script>
+<script src="js/quiz.js?v=2026-11-25.12"></script>
+<script src="js/radio.js?v=2026-11-25.12"></script>
+<script src="js/share.js?v=2026-11-25.12"></script>
+<script src="js/events.js?v=2026-11-25.12"></script>
+<script src="js/lines.js?v=2026-11-25.12"></script>
+<script src="js/render3d.js?v=2026-11-25.12"></script>
+<script src="js/sim.js?v=2026-11-25.12"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -331,7 +351,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-25.11';
+const VERSION='2026-11-25.12';
 
 /* ========================= 小工具 ========================= */
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
