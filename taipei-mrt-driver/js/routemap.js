@@ -84,6 +84,9 @@ function planUpdate(g){
   const p=RM.plan;RM.dot.setAttribute('cx',p.ox+(q[0]-p.x0)*p.k);RM.dot.setAttribute('cy',p.oy+(p.y1-q[1])*p.k);
 }
 function rmUpdate(g,force){
+  // 手機橫握（螢幕小）：事件進行中或行控來電時，路線圖暫時隱藏，免得蓋住事件橫幅與行控字幕；結束後自動回來。平板螢幕大，不隱藏。
+  if(RM.on&&g===RM.g){const el=document.getElementById('rmap'),busy=!!(typeof land!=='undefined'&&land&&((g.ev&&g.ev.title)||(typeof OC!=='undefined'&&OC.cap)));
+    const v=busy?'hidden':'';if(el&&el.style.visibility!==v)el.style.visibility=v;}
   if(!RM.on||g!==RM.g||!RM.mk)return;
   const now=performance.now();if(!force&&now-RM.t<200)return;RM.t=now;
   const x=RM.ox+Math.max(0,g.pos)*RM_PX;

@@ -210,6 +210,9 @@ th{color:#9fb0c8;font-weight:600}
   <div class="lab">ATP 超速動作後</div>
   <select id="m-atp"><option value="relaxed">寬鬆：速度降到限速以下、手把回 N 就復歸（預設）</option><option value="strict">嚴格：必須完全停車、等 2 秒、手把回 N 才復歸</option></select>
   <label class="ck"><input type="checkbox" id="m-assist" checked> 新手輔助（顯示建議煞車檔位）</label>
+  <label class="ck"><input type="checkbox" id="m-radio" checked> 📻 行控無線電通話（突發事件時行控來電：語音＋字幕；內容為遊戲設計，非北捷實際用語）</label>
+  <div class="lab">無線電雜訊</div>
+  <select id="m-radionoise"><option value="off">無</option><option value="light">輕微（預設，像數位無線電）</option><option value="mid">明顯</option></select>
   <details class="evd" id="m-bcbox"><summary>🔊 廣播語言與 📳 手機震動</summary>
     <label class="ck"><input type="checkbox" id="m-bc"> 車內廣播（語音＋字幕）</label>
     <div id="m-bclang" class="chips" style="margin:4px 0"></div>
@@ -285,18 +288,19 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-25.02"></script>
-<script src="js/broadcast.js?v=2026-11-25.02"></script>
-<script src="js/haptics.js?v=2026-11-25.02"></script>
-<script src="js/feedback.js?v=2026-11-25.02"></script>
-<script src="js/routemap.js?v=2026-11-25.02"></script>
-<script src="js/gamepad.js?v=2026-11-25.02"></script>
-<script src="js/stats.js?v=2026-11-25.02"></script>
-<script src="js/share.js?v=2026-11-25.02"></script>
-<script src="js/events.js?v=2026-11-25.02"></script>
-<script src="js/lines.js?v=2026-11-25.02"></script>
-<script src="js/render3d.js?v=2026-11-25.02"></script>
-<script src="js/sim.js?v=2026-11-25.02"></script>
+<script src="js/models.js?v=2026-11-25.03"></script>
+<script src="js/broadcast.js?v=2026-11-25.03"></script>
+<script src="js/haptics.js?v=2026-11-25.03"></script>
+<script src="js/feedback.js?v=2026-11-25.03"></script>
+<script src="js/routemap.js?v=2026-11-25.03"></script>
+<script src="js/gamepad.js?v=2026-11-25.03"></script>
+<script src="js/stats.js?v=2026-11-25.03"></script>
+<script src="js/radio.js?v=2026-11-25.03"></script>
+<script src="js/share.js?v=2026-11-25.03"></script>
+<script src="js/events.js?v=2026-11-25.03"></script>
+<script src="js/lines.js?v=2026-11-25.03"></script>
+<script src="js/render3d.js?v=2026-11-25.03"></script>
+<script src="js/sim.js?v=2026-11-25.03"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -304,7 +308,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-25.02';
+const VERSION='2026-11-25.03';
 
 /* ========================= 小工具 ========================= */
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
@@ -382,7 +386,7 @@ const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e
 
 /* ========================= 遊戲狀態 ========================= */
 let G=null;          // 目前這一班
-let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,quality:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
+let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,radio:true,radioNoise:'light',quality:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
 const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
 if(!LINES[SET.line])SET.line='red';
 
@@ -938,6 +942,20 @@ function drawStopGauge(g){
   T('◀ 短',x0+8,y0+h+6,10,'#9fb0c8','left',600);
 }
 // 廣播字幕：各語言一行（沒有語音的語言以灰字標示），最後 1 秒淡出
+// 行控無線電字幕（事件發生時；與車內廣播字幕分開，不受「車內廣播」開關影響）
+function drawRadioCap(){
+  const c=OC.cap;if(!c||!SET.radio)return;
+  const el=performance.now()-c.t0;if(el>c.dur){OC.cap=null;return;}
+  const a=Math.min(1,(c.dur-el)/800,el/200),x=land?214:12,w=land?Math.min(540,W-214-(lrPx+96)):W-24,y=land?100:104;
+  X.font='600 13px sans-serif';
+  const lines=[];let cur='';for(const ch of c.text){if(X.measureText(cur+ch).width>w-84){lines.push(cur);cur=ch;}else cur+=ch;}if(cur)lines.push(cur);
+  const lh=18,h=lines.length*lh+14;c.h=h;
+  X.globalAlpha=a;X.fillStyle='rgba(8,12,20,.9)';rr(x,y,w,h,10);X.fill();
+  X.strokeStyle='#5fb3ff';X.lineWidth=1.2;rr(x,y,w,h,10);X.stroke();
+  X.fillStyle='#5fb3ff';rr(x+8,y+8,58,18,9);X.fill();T('行控',x+37,y+17,11,'#06121f','center',800);
+  lines.forEach((l,i)=>T(l,x+74,y+17+i*lh,13,'#e6f1ff','left',600));
+  X.globalAlpha=1;
+}
 function drawCaptions(){
   if(!BCAP||!SET.bcOn)return;
   const el=performance.now()-BCAP.t0;if(el>BCAP.dur){BCAP=null;return;}
@@ -971,6 +989,7 @@ function drawHud(g){
   drawStrip(g);
   drawEvBanner(g);
   drawCaptions();
+  drawRadioCap();
   drawStopGauge(g);
   // 限速牌
   const r=24,cx=r+14,cy=64+r;
@@ -1006,9 +1025,9 @@ function drawHud(g){
     const a=clamp(Math.min(1,(g.toast.dur-g.toast.t)*2,g.toast.t*5),0,1);
     X.globalAlpha=a;
     X.font='700 16px sans-serif';const w=Math.min(W-20,X.measureText(g.toast.text).width+34);
-    X.fillStyle='rgba(8,12,20,.86)';rr(W/2-w/2,HY*0.62+(g.ev&&g.ev.title?54:0),w,38,12);X.fill();
+    X.fillStyle='rgba(8,12,20,.86)';rr(W/2-w/2,HY*0.62+(g.ev&&g.ev.title?54:0)+(OC.cap&&OC.cap.h?OC.cap.h+8:0),w,38,12);X.fill();
     X.strokeStyle=g.toast.color;X.lineWidth=1.5;X.stroke();
-    T(g.toast.text,W/2,HY*0.62+19+(g.ev&&g.ev.title?54:0),16,g.toast.color,'center',700);
+    T(g.toast.text,W/2,HY*0.62+19+(g.ev&&g.ev.title?54:0)+(OC.cap&&OC.cap.h?OC.cap.h+8:0),16,g.toast.color,'center',700);
     X.globalAlpha=1;
   }
 }
@@ -1202,6 +1221,7 @@ function fillMenu(){
   $('m-driver').value=SET.driver===DRIVER_DEFAULT?DRIVER_DEFAULT:SET.driver;
   $('m-atp').value=SET.atpStrict?'strict':'relaxed';
   $('m-quality').value=SET.quality||'auto';
+  $('m-radio').checked=SET.radio!==false;$('m-radionoise').value=SET.radioNoise||'light';
   $('m-bc').checked=SET.bcOn;$('m-bcjk').value=SET.bcJk;$('m-hap').checked=SET.haptic;
   const bl=$('m-bclang');bl.innerHTML='';
   BC_LANGS.forEach(L=>{const b=document.createElement('button');b.className='chip sm'+(SET.bcLangs.includes(L.id)?' on':'');b.textContent=L.name;
@@ -1269,6 +1289,8 @@ $('m-driver').onblur=e=>{e.target.value=drvName();SET.driver=e.target.value;stor
 $('m-driver').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}e.stopPropagation();};   // 輸入時不要觸發遊戲快捷鍵
 $('m-quality').onchange=e=>{SET.quality=e.target.value;store('mrt-set',SET);applyQuality();};
 $('m-atp').onchange=e=>{SET.atpStrict=e.target.value==='strict';store('mrt-set',SET);};
+$('m-radio').onchange=e=>{SET.radio=e.target.checked;store('mrt-set',SET);};
+$('m-radionoise').onchange=e=>{SET.radioNoise=e.target.value;store('mrt-set',SET);};
 $('m-bc').onchange=e=>{SET.bcOn=e.target.checked;};
 $('m-bcjk').onchange=e=>{SET.bcJk=e.target.value;};
 $('m-hap').onchange=e=>{SET.haptic=e.target.checked;if(SET.haptic)haptic('n');};

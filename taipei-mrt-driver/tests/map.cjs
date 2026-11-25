@@ -27,6 +27,16 @@ const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x?'  '+x:''));
     ok(name+' 區間內文字',/(左|右)彎 R\d+\s+限速 \d+，還有 \d+ m/.test(await p.textContent('#rmap-now')));
     await p.touchscreen.tap(...r);await p.waitForTimeout(200);
     ok(name+' 再點收合',await p.evaluate(()=>document.getElementById('rmap').hidden));
+    // 手機橫握：事件進行中或行控來電時路線圖暫時隱藏（免得蓋住事件橫幅與字幕），結束後回來；螢幕大（直握視為大版面）不隱藏
+    await p.touchscreen.tap(...r);await p.waitForTimeout(300);                       // 再展開
+    await p.evaluate(()=>{Object.assign(SET,{radio:true,events:true});const g=__mrt.G;g.state='run';g.ev=null;OC.cap=null;});await p.waitForTimeout(500);
+    const vis=()=>p.evaluate(()=>getComputedStyle(document.getElementById('rmap')).visibility);
+    ok(name+' 沒有事件時路線圖可見',await vis()==='visible');
+    await p.evaluate(()=>{evStart(__mrt.G,'power');});await p.waitForTimeout(800);
+    const want=name==='land'?'hidden':'visible';
+    ok(name+' 事件進行中路線圖'+(want==='hidden'?'暫時隱藏':'維持可見'),await vis()===want,await vis());
+    await p.evaluate(()=>{const g=__mrt.G;evClear(g);g.ev=null;OC.cap=null;});await p.waitForTimeout(800);
+    ok(name+' 事件結束後路線圖回來',await vis()==='visible');
     ok(name+' 無錯誤',errs.length===0,errs.join());
     await ctx.close();
   }

@@ -138,31 +138,47 @@ const R3=(function(){
      偏移量由 pathLateral（js/sim.js，來自 OpenStreetMap 形狀）每格算出：目前位置前後各取樣，存進 uniform 陣列，頂點著色器依距離線性內插。
      長條物件（軌道、牆、橋面）預先在 z 方向細分，才會跟著彎（每 BEND_SEG 公尺一段）。 */
   const BEND_N=14,BEND_SEG=6,BEND_BACK=60,BEND_AHEAD=480;      // 細分段數、細分間距、取樣範圍（後方／前方公尺）
+  const TUN_LAMP=18;                                          // 隧道燈間距（公尺），與 tunnelPiece 一致
   const BEND_SAMPLES=121;                                     // uniform 取樣點數
   let bendU=null,bendOn=false;
-  function bendInit(){bendU={uBend:{value:new Float32Array(BEND_SAMPLES)},uPos:{value:0},uOn:{value:0}};}
+  function bendInit(){bendU={uBend:{value:new Float32Array(BEND_SAMPLES)},uPos:{value:0},uOn:{value:0},uTun:{value:0},uHall:{value:(()=>{const a=new Float32Array(12);for(let i=0;i<6;i++){a[2*i]=1;a[2*i+1]=0;}return a;})()}};}
   function bendPatch(m){
     if(!m||m.userData.bent||!bendU)return;m.userData.bent=true;
     m.onBeforeCompile=sh=>{
-      sh.uniforms.uBend=bendU.uBend;sh.uniforms.uPos=bendU.uPos;sh.uniforms.uOn=bendU.uOn;
+      sh.uniforms.uBend=bendU.uBend;sh.uniforms.uPos=bendU.uPos;sh.uniforms.uOn=bendU.uOn;sh.uniforms.uTun=bendU.uTun;sh.uniforms.uHall=bendU.uHall;
+      const lit=!!m.isMeshLambertMaterial;
       sh.vertexShader=sh.vertexShader.replace('#include <common>',`#include <common>
-        uniform float uBend[${BEND_SAMPLES}];uniform float uPos;uniform float uOn;
+        uniform float uBend[${BEND_SAMPLES}];uniform float uPos;uniform float uOn;varying float vWz;
         float bendAt(float d){float f=clamp((d+${BEND_BACK.toFixed(1)})/${(BEND_BACK+BEND_AHEAD).toFixed(1)},0.0,1.0)*${(BEND_SAMPLES-1).toFixed(1)};int i=int(floor(f));int j=min(i+1,${BEND_SAMPLES-1});return mix(uBend[i],uBend[j],f-float(i));}`)
         .replace('#include <project_vertex>',`vec4 mvPosition=vec4(transformed,1.0);
         #ifdef USE_INSTANCING
         mvPosition=instanceMatrix*mvPosition;
         #endif
         vec4 wPos=modelMatrix*mvPosition;
+        vWz=wPos.z;
         wPos.x+=uOn*bendAt(-wPos.z-uPos);
         mvPosition=viewMatrix*wPos;
         gl_Position=projectionMatrix*mvPosition;`);
+      // 隧道燈光：每 18 m 一盞燈（與 tunnelPiece 的燈具位置一致），燈下亮、燈與燈之間暗；車站範圍（uHall）不調變，亮度維持一致
+      if(lit)sh.fragmentShader=sh.fragmentShader.replace('#include <common>',`#include <common>
+        varying float vWz;uniform float uTun;uniform vec2 uHall[6];`).replace('#include <opaque_fragment>',`{
+        float sPos=-vWz;float mm=mod(sPos,${TUN_LAMP.toFixed(1)});float dl=min(mm,${TUN_LAMP.toFixed(1)}-mm);
+        float pool=exp(-dl*dl/(2.0*5.0*5.0));
+        float f=mix(0.38,1.6,pool);
+        for(int i=0;i<6;i++){if(vWz>uHall[i].x&&vWz<uHall[i].y)f=1.0;}
+        vec3 warm=vec3(1.0+0.10*pool,1.0+0.03*pool,1.0-0.10*pool);
+        outgoingLight*=mix(vec3(1.0),f*warm,uTun);
+      }
+      #include <opaque_fragment>`);
     };
-    m.customProgramCacheKey=()=>'bend';m.needsUpdate=true;
+    m.customProgramCacheKey=()=>'bend'+(m.isMeshLambertMaterial?'L':'B');m.needsUpdate=true;
   }
   function bendTree(o){o.traverse(c=>{if(c.material){if(Array.isArray(c.material))c.material.forEach(bendPatch);else bendPatch(c.material);}});}
   function bendUpdate(g){
     if(!bendU)return;
     const has=!!(g.L&&g.L.shape&&typeof pathLateral==='function')&&bendForce!==false;bendU.uOn.value=has?1:0;bendU.uPos.value=g.pos;
+    bendU.uTun.value=lampForce===false?0:tun;
+    {const H=bendU.uHall.value;let k=0;for(const st of g.stations){const r=hallRange(st);if(r[1]>g.pos-120&&r[0]<g.pos+560&&k<6){H[2*k]=-r[1];H[2*k+1]=-r[0];k++;}}for(;k<6;k++){H[2*k]=1;H[2*k+1]=0;}}   // 世界 z = −里程
     if(!has)return;
     const a=bendU.uBend.value,n=BEND_SAMPLES-1,span=BEND_BACK+BEND_AHEAD;
     for(let i=0;i<=n;i++){const d=-BEND_BACK+span*i/n;a[i]=pathLateral(g,g.pos,d);}
@@ -610,8 +626,12 @@ const R3=(function(){
     }
   }
   const pingpong=(x,L)=>{const m=((x%(2*L))+2*L)%(2*L);return m<L?m:2*L-m;};
+  // 行人是否走動：目前關閉——走路動畫（腿、手臂擺動）看起來很怪，先讓所有人站好；之後若能把走路動畫做順再改成 true。
+  // 關閉時：排隊的人站在原位，下車旅客不出現，月台上原本走動的人改站在原本走道上的某一點；只在建立車站時擺一次姿勢（之後每格不再計算，省效能）。
+  const WALK_ANIM=false;
   function animatePeople(gg,st,g){
     const u=gg.userData,sd=u.sd,D=g.doors,now=g.time,parts=u.parts;
+    if(!WALK_ANIM&&u.posed)return;
     const isStop=g.stopSt!==null&&g.stations[g.stopSt]===st&&D.side===st.side;
     if(isStop&&u.t0===null)u.t0=now-(D.state==='opening'?D.t:2.2+D.openT);   // 開始開門的時刻
     const te=u.t0===null?-1:now-u.t0;                                         // 開門後經過秒數
@@ -619,6 +639,12 @@ const R3=(function(){
     u.P.forEach((q,i)=>{
       q._v=false;
       const put=(x,z,yaw,ph,amp,sc,bob)=>{q._v=true;q._x=x;q._z=z;poseParts(parts,i,x,z,yaw,ph,amp,sc,bob,q);};
+      if(!WALK_ANIM){   // 全部站好：不走動、不擺手腳
+        if(q.kind==='queue'){put(q.x,-q.s,face+(hash(q.ph*977)-0.5)*0.5,0,0,q.sc,0);}      // 排隊：面向軌道，稍微有點不同的朝向
+        else if(q.kind==='alight'){hidePerson(parts,i);}
+        else{const L=Math.max(10,u.pb-u.pa-10),m=((q.off)%(2*L)+2*L)%(2*L),s=u.pa+5+pingpong(q.off,L);put(q.lane,-s,m<L?0:Math.PI,0,0,q.sc,0);}   // 走道上站著
+        return;
+      }
       if(q.kind==='queue'){
         const zw=-q.s,dx=sd*1.78-q.x,dz=-q.sj-zw;
         if(te>=q.delay){
@@ -646,6 +672,7 @@ const R3=(function(){
       }
     });
     for(const k in parts)parts[k].instanceMatrix.needsUpdate=true;
+    if(!WALK_ANIM)u.posed=true;
   }
   // 測試用：回傳某站所有人的目前位置與柱子位置
   function debugPeople(i){
@@ -785,6 +812,10 @@ const R3=(function(){
   const CAMH=2.4;
   let dbgCam=null;function setDebugCam(c){dbgCam=c;}
   function bendInfo(){if(!bendU)return null;const a=bendU.uBend.value;let mx=0;for(const v of a)mx=Math.max(mx,Math.abs(v));return {on:bendU.uOn.value,max:mx,last:a[a.length-1],unpatched:(()=>{const out=new Set();scene.traverse(o=>{if(o.isMesh&&o!==ground){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{if(m&&!m.userData.bent)out.add(m.type+':'+(m.color?m.color.getHexString():''));});}});return [...out];})()};}
+  let lampForce=null;function setLamps(v){lampForce=v;}   // 測試用：false 關閉隧道燈光調變
+  function probe(g,x,y,w,h){   // 測試用：重畫一格後立刻讀回指定矩形的平均亮度（0～255）
+    frame(g,0,0,0);const gl=renderer.getContext(),px=new Uint8Array(w*h*4);gl.readPixels(x,gl.drawingBufferHeight-y-h,w,h,gl.RGBA,gl.UNSIGNED_BYTE,px);
+    let t=0;for(let i=0;i<px.length;i+=4)t+=0.2126*px[i]+0.7152*px[i+1]+0.0722*px[i+2];return t/(w*h);}
   let bendForce=null;function setBend(v){bendForce=v;}   // 測試用：true／false 強制開／關彎曲，null 回到自動
-  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,setDebugCam,setBend,bendInfo,oppX:s=>oppX(s),info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
+  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,walkAnim:()=>WALK_ANIM,setDebugCam,setBend,bendInfo,setLamps,probe,oppX:s=>oppX(s),info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
 })();
