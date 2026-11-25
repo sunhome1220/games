@@ -19,12 +19,12 @@ const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x?'  '+x:''));
     await p.touchscreen.tap(...r);await p.waitForTimeout(500);
     ok(name+' 觸控展開地圖',!await p.evaluate(()=>document.getElementById('rmap').hidden));
     const info=await p.evaluate(()=>({txt:document.getElementById('rmap-now').textContent,st:document.querySelectorAll('#rmap-in text').length,rects:document.querySelectorAll('#rmap-in rect').length,sl:document.getElementById('rmap-in').scrollLeft}));
-    ok(name+' 預告文字',/前方 \d+ m 降為 \d+ km\/h/.test(info.txt),info.txt);
+    ok(name+' 預告文字',/前方 \d+ m (左|右)彎 R\d+\s+降為 \d+ km\/h/.test(info.txt),info.txt);
     ok(name+' 地圖有站名與區段',info.st>=11&&info.rects>5,JSON.stringify(info));
     await p.screenshot({path:`${S}/map-${name}.png`});
     // 進入區間
     await p.evaluate(z=>{__mrt.G.pos=z.s0+10;},zi.z0);await p.waitForTimeout(400);
-    ok(name+' 區間內文字',/限速 \d+ 區間，還有 \d+ m/.test(await p.textContent('#rmap-now')));
+    ok(name+' 區間內文字',/(左|右)彎 R\d+\s+限速 \d+，還有 \d+ m/.test(await p.textContent('#rmap-now')));
     await p.touchscreen.tap(...r);await p.waitForTimeout(200);
     ok(name+' 再點收合',await p.evaluate(()=>document.getElementById('rmap').hidden));
     ok(name+' 無錯誤',errs.length===0,errs.join());

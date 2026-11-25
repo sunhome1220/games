@@ -43,12 +43,20 @@ function buildRun(opt){
   const S=stations.map(s=>s.pos);
   // 場景分段（以站間中點為界，同一站的月台都在同一種場景）
   const sec=stations.map((s,i)=>({a:i===0?-1e9:(S[i-1]+S[i])/2,b:i===stations.length-1?1e9:(S[i]+S[i+1])/2,env:s.env,sc:s.sc,pos:s.pos}));
-  // 限速區間
+  // 限速區間：由 OpenStreetMap 的真實軌道形狀算出的彎道（js/lines.js 的 curves，半徑與依半徑推估的限速）。
+  // 推估限速 = √(橫向加速度 1.0 m/s² × 半徑)，不是北捷公布的彎道限速。只取限速低於車型上限的彎道，且不含月台範圍內的彎道。
   const zones=[];
-  for(let i=0;i<stations.length-1;i++){
-    const d=S[i+1]-S[i],h=hash(hstr(stations[i].name)+i);
-    if(d>=1100&&h>0.35){zones.push({s0:S[i]+d*0.38,s1:S[i]+d*0.62,lim:60});}
-    if(d>=1900){zones.push({s0:S[i]+d*0.14,s1:S[i]+d*0.26,lim:45});}
+  {
+    const C0=L.d.slice(0,idxs[0]).reduce((x,y)=>x+y,0);   // 起點站在路線上的累計里程
+    const end=S[S.length-1];
+    for(const c of (L.curves||[])){
+      const a0=rev?C0-c.s1:c.s0-C0,a1=rev?C0-c.s0:c.s1-C0;   // 轉成本班的里程（反向行駛時前後對調、左右對調）
+      const s0=Math.max(a0,0),s1=Math.min(a1,end);
+      if(s1-s0<80||c.lim>=M.vmax)continue;
+      if(S.some(p=>p>s0-60&&p<s1+60))continue;               // 站內與進出站範圍的彎道由進站減速曲線處理
+      zones.push({s0,s1,lim:Math.max(25,c.lim),R:c.R,dir:rev?(c.dir==='L'?'R':'L'):c.dir});
+    }
+    zones.sort((x,y)=>x.s0-y.s0);
   }
   // 時刻表
   const tArr=[0],tDep=[20];
