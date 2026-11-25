@@ -38,6 +38,7 @@ SHOT_DIR=/some/dir bash taipei-mrt-driver/tests/run.sh t8   # 部分測試會存
 | `stats.cjs` | 匿名統計：事件送出、Do Not Track、本機不統計、服務失敗不影響遊戲 |
 | `ghost.cjs` | 換關卡後上一班的 3D 車站全部移除 |
 | `bar.cjs` | 駕駛台按鈕燈號（門可開、門已開、可關門、關門中、退行、緊急煞車）與文字版面 |
+| `bend.cjs` | 3D 軌道轉彎（彎曲世界）：彎道前偏移量大、直線段小、材質全部補丁、無著色器錯誤、開關有效 |
 | `soak.cjs` | 浸泡（各路線整班跑完、不報錯） |
 | `pre.cjs` | 預載腳本：讓測試略過首次教學並展開進階設定（`ui.cjs` 不用） |
 

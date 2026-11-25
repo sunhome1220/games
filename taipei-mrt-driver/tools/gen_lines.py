@@ -55,8 +55,8 @@ for k, m in META.items():
     out.append(f"    env:{json.dumps(env)},")
     out.append(f"    plat:{json.dumps(pl)},")
     out.append(f"    sc:{json.dumps(sc,ensure_ascii=False,separators=(',',':'))},")
-    c = CUR[k]   # 彎道（路線上的累計里程，公尺，站序遞增方向）：s0／s1 起訖、dir 左右、R 半徑（公尺）、lim 依半徑推估的限速；shape 為平面形狀（每約 100 m 一點，相對起點的東／北公尺）、scale／skip 為 OSM 弧長換算成遊戲里程的比例與起點偏移
-    out.append(f"    curves:{json.dumps(c['curves'],separators=(',',':'))},shape:{json.dumps(c['shape'],separators=(',',':'))},shapeScale:{c['scale']},shapeSkip:{c['skip']}}},")
+    c = CUR[k]   # 彎道（路線上的累計里程，公尺，站序遞增方向）：s0／s1 起訖、dir 左右、R 半徑（公尺）、lim 依半徑推估的限速；shape 為平面形狀（每 25 m 一點，相對起點的東／北公尺）、scale／skip 為 OSM 弧長換算成遊戲里程的比例與起點偏移
+    out.append(f"    curves:{json.dumps(c['curves'],separators=(',',':'))},shape:{json.dumps(c['shape'],separators=(',',':'))},shapeScale:{c['scale']},shapeSkip:{c['skip']},shapeStep:{c['step']}}},")
 out.append('};')
 (root / 'js' / 'lines.js').write_text('\n'.join(out) + '\n', encoding='utf-8')
 print('js/lines.js 已產生：', {k: len(D[k]) for k in META})

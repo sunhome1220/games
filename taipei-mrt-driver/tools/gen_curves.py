@@ -76,9 +76,9 @@ for e in raw['elements']:
         if length < 100: continue
         lim = math.sqrt(A_LAT*R)*3.6
         res.append({'s0': round((c['s'])*scale+skip), 's1': round(c['e']*scale+skip), 'dir': 'L' if c['sg'] > 0 else 'R', 'R': round(R), 'lim': int(lim//5*5)})
-    # 平面形狀：每 100 m 一點（相對起點的公尺座標，x 東、y 北）
-    shape = [[round(xy[i][0]), round(xy[i][1])] for i in range(0, len(xy), 4)]
-    out['lines'][key] = {'len_osm': round(L), 'len_game': round(gt), 'skip': round(skip), 'scale': round(scale, 4), 'shape': shape, 'curves': res}
+    # 平面形狀：每 25 m 一點（相對起點的公尺座標，x 東、y 北）
+    shape = [[round(xy[i][0]), round(xy[i][1])] for i in range(0, len(xy))]    # 每 25 m 一點（3D 軌道轉彎需要較細的形狀）
+    out['lines'][key] = {'len_osm': round(L), 'len_game': round(gt), 'skip': round(skip), 'scale': round(scale, 4), 'shape': shape, 'step': 25, 'curves': res}
     print(key, 'OSM %.1f km / 遊戲 %.1f km, 縮放 %.3f, 彎道 %d 個, 半徑最小 %s m' % (L/1000, gt/1000, scale, len(res), min([c['R'] for c in res], default='-')))
 json.dump(out, open(H/'data/curves.json', 'w'), ensure_ascii=False, separators=(',', ':'))
 print('data/curves.json', (H/'data/curves.json').stat().st_size, 'bytes')

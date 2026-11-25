@@ -134,8 +134,42 @@ const R3=(function(){
     },'bg-'+run.theme);
   }
 
+  /* ---------- 彎曲世界：資料與場景維持直線（z 軸），繪圖時把頂點往旁邊推，讓軌道看起來沿真實路線轉彎 ----------
+     偏移量由 pathLateral（js/sim.js，來自 OpenStreetMap 形狀）每格算出：目前位置前後各取樣，存進 uniform 陣列，頂點著色器依距離線性內插。
+     長條物件（軌道、牆、橋面）預先在 z 方向細分，才會跟著彎（每 BEND_SEG 公尺一段）。 */
+  const BEND_N=14,BEND_SEG=6,BEND_BACK=60,BEND_AHEAD=480;      // 細分段數、細分間距、取樣範圍（後方／前方公尺）
+  const BEND_SAMPLES=121;                                     // uniform 取樣點數
+  let bendU=null,bendOn=false;
+  function bendInit(){bendU={uBend:{value:new Float32Array(BEND_SAMPLES)},uPos:{value:0},uOn:{value:0}};}
+  function bendPatch(m){
+    if(!m||m.userData.bent||!bendU)return;m.userData.bent=true;
+    m.onBeforeCompile=sh=>{
+      sh.uniforms.uBend=bendU.uBend;sh.uniforms.uPos=bendU.uPos;sh.uniforms.uOn=bendU.uOn;
+      sh.vertexShader=sh.vertexShader.replace('#include <common>',`#include <common>
+        uniform float uBend[${BEND_SAMPLES}];uniform float uPos;uniform float uOn;
+        float bendAt(float d){float f=clamp((d+${BEND_BACK.toFixed(1)})/${(BEND_BACK+BEND_AHEAD).toFixed(1)},0.0,1.0)*${(BEND_SAMPLES-1).toFixed(1)};int i=int(floor(f));int j=min(i+1,${BEND_SAMPLES-1});return mix(uBend[i],uBend[j],f-float(i));}`)
+        .replace('#include <project_vertex>',`vec4 mvPosition=vec4(transformed,1.0);
+        #ifdef USE_INSTANCING
+        mvPosition=instanceMatrix*mvPosition;
+        #endif
+        vec4 wPos=modelMatrix*mvPosition;
+        wPos.x+=uOn*bendAt(-wPos.z-uPos);
+        mvPosition=viewMatrix*wPos;
+        gl_Position=projectionMatrix*mvPosition;`);
+    };
+    m.customProgramCacheKey=()=>'bend';m.needsUpdate=true;
+  }
+  function bendTree(o){o.traverse(c=>{if(c.material){if(Array.isArray(c.material))c.material.forEach(bendPatch);else bendPatch(c.material);}});}
+  function bendUpdate(g){
+    if(!bendU)return;
+    const has=!!(g.L&&g.L.shape&&typeof pathLateral==='function')&&bendForce!==false;bendU.uOn.value=has?1:0;bendU.uPos.value=g.pos;
+    if(!has)return;
+    const a=bendU.uBend.value,n=BEND_SAMPLES-1,span=BEND_BACK+BEND_AHEAD;
+    for(let i=0;i<=n;i++){const d=-BEND_BACK+span*i/n;a[i]=pathLateral(g,g.pos,d);}
+  }
+
   /* ---------- 幾何小工具 ---------- */
-  function box(parent,w,h,l,x,y,s,m){const o=new T.Mesh(unitBox,m);o.scale.set(w,h,l);o.position.set(x,y,-s);parent.add(o);return o;}
+  function box(parent,w,h,l,x,y,s,m){const o=new T.Mesh(l>BEND_SEG*1.5?unitBoxZ:unitBox,m);o.scale.set(w,h,l);o.position.set(x,y,-s);parent.add(o);return o;}
   function plane(parent,w,h,x,y,s,m){const o=new T.Mesh(planeGeo,m);o.scale.set(w,h,1);o.position.set(x,y,-s);parent.add(o);return o;}
   let planeGeo=null;
   function sectorAt(s){const S=run.sec;for(let i=0;i<S.length;i++)if(s>=S[i].a&&s<S[i].b)return S[i];return S[S.length-1];}
@@ -219,7 +253,7 @@ const R3=(function(){
   const GY={elev:-12,grade:-0.3};     // 地面高度（軌道頂面為 0）
   const DENS={high:{p:0.7,h0:20,h1:90,w0:10,w1:34,o0:11,o1:45},mid:{p:0.62,h0:12,h1:42,w0:10,w1:30,o0:11,o1:50},
               low:{p:0.62,h0:4,h1:11,w0:6,w1:16,o0:9,o1:45},rural:{p:0.12,h0:3,h1:6,w0:6,w1:14,o0:16,o1:90}};
-  let coneGeo=null,crownGeo=null,tankGeo=null,headGeo=null,limbGeo=null,torsoGeo=null,hillGeo=null,buildHazards_pending=false;
+  let unitBoxZ=null,coneGeo=null,crownGeo=null,tankGeo=null,headGeo=null,limbGeo=null,torsoGeo=null,hillGeo=null,buildHazards_pending=false;
   const flatMats=new Map();
   function flatMat(color){let m=flatMats.get(color);if(!m){m=new T.MeshLambertMaterial({color,flatShading:true});flatMats.set(color,m);}return m;}
   function inst(g,geo,m,n,fill){
@@ -415,7 +449,7 @@ const R3=(function(){
       track(g,a,b);
       if(env==='tunnel')tunnelPiece(g,a,b);else groundPiece(g,a,b,sectorAt((a+b)/2));
     }
-    return g;
+    bendTree(g);return g;
   }
   function freeChunk(g){
     scene.remove(g);
@@ -539,7 +573,7 @@ const R3=(function(){
       set('bag',q.bagCol);set('eyeL',0x1a1a1a);set('eyeR',0x1a1a1a);});
     for(const k in parts){parts[k].frustumCulled=false;g.add(parts[k]);}
     g.userData={doors,P,parts,open:-1,t0:null,sd,pa,pb,pw};
-    return g;
+    bendTree(g);return g;
   }
 
   /* ---------- 卡通人物動畫 ---------- */
@@ -629,12 +663,12 @@ const R3=(function(){
     box(hzPerson,0.12,0.55,0.12,-0.34,1.2,0,vest);box(hzPerson,0.12,0.55,0.12,0.34,1.2,0,vest);
     const h=new T.Mesh(headGeo,skin);h.scale.set(0.34,0.34,0.34);h.position.set(0,1.78,0);hzPerson.add(h);
     box(hzPerson,0.4,0.12,0.4,0,1.98,0,hat);
-    hzPerson.visible=false;scene.add(hzPerson);
+    hzPerson.visible=false;bendTree(hzPerson);scene.add(hzPerson);
     hzSignal=new T.Group();
     box(hzSignal,0.12,4.2,0.12,2.4,2.1,0,mat(0x555a62));box(hzSignal,0.6,1.3,0.3,2.4,4.1,0,mat(0x1a1c20));
     hzRed=new T.Mesh(unitBox,new T.MeshBasicMaterial({color:0xff2a2a}));hzRed.scale.set(0.38,0.38,0.08);hzRed.position.set(2.4,4.4,0.18);hzSignal.add(hzRed);
     hzGreen=new T.Mesh(unitBox,new T.MeshBasicMaterial({color:0x35e06a}));hzGreen.scale.set(0.38,0.38,0.08);hzGreen.position.set(2.4,3.85,0.18);hzSignal.add(hzGreen);
-    hzSignal.visible=false;scene.add(hzSignal);
+    hzSignal.visible=false;bendTree(hzSignal);scene.add(hzSignal);
   }
   function updateHazards(g){
     const h=g.hz;
@@ -654,7 +688,7 @@ const R3=(function(){
         plane(g,1.0,1.0,2.05,2.5,s+0.05,mat(0xffffff,{basic:1,map:signTex(String(lim)),side:1}));
       }
     }
-    return g;
+    bendTree(g);return g;
   }
 
   /* ---------- 公開介面 ---------- */
@@ -669,9 +703,9 @@ const R3=(function(){
       renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
       renderer.outputColorSpace=T.SRGBColorSpace;
       renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;   // 電影式色調對應：亮部不會整片死白，對比較接近真實
-      scene=new T.Scene();
+      bendInit();scene=new T.Scene();
       camera=new T.PerspectiveCamera(52,1,0.4,520);
-      unitBox=new T.BoxGeometry(1,1,1);planeGeo=new T.PlaneGeometry(1,1);coneGeo=new T.ConeGeometry(1,1,7);crownGeo=new T.IcosahedronGeometry(1,0);tankGeo=new T.CylinderGeometry(0.5,0.5,1,10);headGeo=new T.SphereGeometry(0.5,14,10);limbGeo=new T.CylinderGeometry(0.5,0.42,1,8);limbGeo.translate(0,-0.5,0);torsoGeo=new T.CylinderGeometry(0.5,0.42,1,10);hillGeo=new T.SphereGeometry(1,24,12,0,Math.PI*2,0,Math.PI/2);
+      unitBox=new T.BoxGeometry(1,1,1);unitBoxZ=new T.BoxGeometry(1,1,1,1,1,BEND_N);planeGeo=new T.PlaneGeometry(1,1);coneGeo=new T.ConeGeometry(1,1,7);crownGeo=new T.IcosahedronGeometry(1,0);tankGeo=new T.CylinderGeometry(0.5,0.5,1,10);headGeo=new T.SphereGeometry(0.5,14,10);limbGeo=new T.CylinderGeometry(0.5,0.42,1,8);limbGeo.translate(0,-0.5,0);torsoGeo=new T.CylinderGeometry(0.5,0.42,1,10);hillGeo=new T.SphereGeometry(1,24,12,0,Math.PI*2,0,Math.PI/2);
       buildHazards_pending=true;
       _q=new T.Quaternion();_q2=new T.Quaternion();_v=new T.Vector3();_s=new T.Vector3();_m=new T.Matrix4();_AX=new T.Vector3(1,0,0);_AY=new T.Vector3(0,1,0);HIDE=new T.Matrix4().makeScale(0.0001,0.0001,0.0001);
       hemi=new T.HemisphereLight(0xffffff,0x888888,1);scene.add(hemi);
@@ -706,6 +740,7 @@ const R3=(function(){
   function frame(g,dt,camX,camY){
     if(!renderer||run!==g)return;
     const pos=g.pos;
+    bendUpdate(g);
     // 區塊
     const c0=Math.floor((pos-60)/CH),c1=Math.floor((pos+480)/CH);
     for(let c=c0;c<=c1;c++)if(!chunks.has(c)){const k=buildChunk(c);scene.add(k);chunks.set(c,k);}
@@ -749,5 +784,7 @@ const R3=(function(){
   }
   const CAMH=2.4;
   let dbgCam=null;function setDebugCam(c){dbgCam=c;}
-  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,setDebugCam,oppX:s=>oppX(s),info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
+  function bendInfo(){if(!bendU)return null;const a=bendU.uBend.value;let mx=0;for(const v of a)mx=Math.max(mx,Math.abs(v));return {on:bendU.uOn.value,max:mx,last:a[a.length-1],unpatched:(()=>{const out=new Set();scene.traverse(o=>{if(o.isMesh&&o!==ground){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{if(m&&!m.userData.bent)out.add(m.type+':'+(m.color?m.color.getHexString():''));});}});return [...out];})()};}
+  let bendForce=null;function setBend(v){bendForce=v;}   // 測試用：true／false 強制開／關彎曲，null 回到自動
+  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,setDebugCam,setBend,bendInfo,oppX:s=>oppX(s),info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
 })();

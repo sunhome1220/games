@@ -78,6 +78,24 @@ function buildRun(opt){
   evInit(g);return g;
 }
 
+// ---- 軌道的平面路徑（來自 OpenStreetMap 形狀，供 3D 場景把軌道畫成真的轉彎；不碰 DOM） ----
+// 本班里程 s 處的軌道位置 [東, 北]（公尺，已換算成遊戲里程尺度）；超出形狀資料範圍（例如紅線廣慈／奉天宮延伸段）時取端點，即視為直線
+function pathPoint(g,s){
+  const L=g.L,sh=L.shape;if(!sh)return null;
+  if(g._pC0===undefined){g._pC0=L.d.slice(0,g.stations[0].idx).reduce((x,y)=>x+y,0);g._pRev=g.stations.length>1&&g.stations[1].idx<g.stations[0].idx;}
+  const line=g._pRev?g._pC0-s:g._pC0+s;
+  const f=clamp((line-(L.shapeSkip||0))/L.shapeScale/(L.shapeStep||100),0,sh.length-1.001),i=Math.floor(f),t=f-i,k=L.shapeScale;
+  return [(sh[i][0]+(sh[i+1][0]-sh[i][0])*t)*k,(sh[i][1]+(sh[i+1][1]-sh[i][1])*t)*k];
+}
+// 站在里程 pos、朝行進方向看，往前 d 公尺（d 可為負＝後方）處的軌道相對於 pos 處切線的橫向偏移（公尺，正＝偏右）
+function pathLateral(g,pos,d){
+  const p0=pathPoint(g,pos);if(!p0)return 0;
+  const a=pathPoint(g,pos-12),b=pathPoint(g,pos+12);
+  let hx=b[0]-a[0],hy=b[1]-a[1],n=Math.hypot(hx,hy);
+  if(n<1e-6){const c=pathPoint(g,pos+30);hx=c[0]-p0[0];hy=c[1]-p0[1];n=Math.hypot(hx,hy);if(n<1e-6)return 0;}   // 起點之前（里程為負）改用前方切線
+  hx/=n;hy/=n;
+  const q=pathPoint(g,pos+d);return (q[0]-p0[0])*hy-(q[1]-p0[1])*hx;   // 與右手方向 (hy,-hx) 的內積
+}
 function toast(text,color,dur){G.toast={text,color:color||'#fff',t:0,dur:dur||2.6};}
 
 /* ========================= 物理與規則 ========================= */
