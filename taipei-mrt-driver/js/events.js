@@ -58,6 +58,7 @@ function evStart(g,id){
   g.ev={id,t0:g.time,trips0:g.pen.atp,state:'start'};g.evCount++;
   E.start(g,g.ev);
   evAlarm();haptic(id==='quake'?'quake':'alert');
+  if(typeof ocRadio==='function')ocRadio(g,id,g.ev);          // 行控無線電通話（js/radio.js；語音＋字幕）
   return true;
 }
 const kmhOf=g=>g.v*3.6;

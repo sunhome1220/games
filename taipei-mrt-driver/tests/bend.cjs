@@ -3,7 +3,8 @@ const { chromium } = require('playwright');
 const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x!==undefined?'  '+x:''));
 (async()=>{const b=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
 const ctx=await b.newContext({viewport:{width:844,height:390}});await ctx.addInitScript(()=>localStorage.setItem('mrt-tut','1'));
-const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error'||(m.type()==='warning'&&/shader|GL|program/i.test(m.text())))errs.push(m.text().slice(0,200));});
+const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{const t=m.text();if(/GPU stall|ReadPixels|Performance/i.test(t))return;   // 量亮度時讀回像素的效能提示不算錯誤
+  if(m.type()==='error'||(m.type()==='warning'&&/shader|GL|program/i.test(t)))errs.push(t.slice(0,200));});
 await p.goto('http://localhost:8765/taipei-mrt-driver/index.html');await p.waitForTimeout(1500);
 for(const [n,o] of [['藍線地下',{line:'blue',from:0,to:8}],['紅線高架',{line:'red',from:27,to:20}],['文湖線',{line:'brown',from:0,to:8}],['綠線',{line:'green',from:0,to:8}]]){
   await p.evaluate(([o])=>{Object.assign(SET,o,{events:false,bcOn:false,theme:'day'});startRun();G.state='run';rmHide();R3.setBend(null);},[o]);
@@ -27,5 +28,25 @@ for(const [n,o] of [['藍線地下',{line:'blue',from:0,to:8}],['紅線高架',{
   if(pos.straight!==null){await p.evaluate(s=>{G.pos=s;},pos.straight);await p.waitForTimeout(800);
     const bs=await p.evaluate(()=>R3.bendInfo());ok(n+' 直線段前方偏移量小（<5 m）',bs.max<5,bs.max.toFixed(2));}
 }
+// ---- 隧道燈光：燈下亮、燈間暗（每 18 m 一盞）；關閉調變後亮度均勻；車站內不調變 ----
+await p.evaluate(()=>{Object.assign(SET,{line:'blue',from:0,to:8,events:false,bcOn:false,theme:'day'});startRun();G.state='run';rmHide();G.v=0;R3.setBend(null);R3.setLamps(null);});
+await p.waitForTimeout(500);
+const tunPos=await p.evaluate(()=>{const g=G;for(let s=300;s<g.S[g.S.length-1]-300;s+=18){if(g.sec.find(c=>s>=c.a&&s<c.b).env==='tunnel'&&g.S.every(q=>Math.abs(q-s)>400))return s;}return null;});
+ok('找得到遠離車站的隧道直線段',tunPos!==null);
+const lum=async(on)=>{await p.evaluate(v=>R3.setLamps(v),on);const base=Math.ceil(tunPos/18)*18,r=[];
+  for(const off of [0,3,6,9,12,15]){await p.evaluate(x=>{G.pos=x;},base+off);await p.waitForTimeout(450);r.push(await p.evaluate(()=>R3.probe(G,140,100,180,120)));}return r;};
+const lOff=await lum(false),lOn=await lum(true);
+const spread=a=>(Math.max(...a)-Math.min(...a))/(a.reduce((x,y)=>x+y,0)/a.length);
+ok('關閉燈光調變：沿隧道前進亮度幾乎不變（變化 <8%）',spread(lOff)<0.08,spread(lOff).toFixed(3));
+ok('開啟燈光調變：沿隧道前進亮度明顯起伏（變化 >25%）',spread(lOn)>0.25,spread(lOn).toFixed(3)+'  '+lOn.map(v=>v.toFixed(0)).join(','));
+// 車站內不調變
+const stPos=await p.evaluate(()=>{const g=G;return g.stations.findIndex(st=>st.env==='tunnel')>=0?g.stations.find(st=>st.env==='tunnel').pos:null;});
+if(stPos!==null){
+  const inSt=async(on)=>{await p.evaluate(v=>R3.setLamps(v),on);const r=[];for(const off of [-30,-24,-18,-12]){await p.evaluate(x=>{G.pos=x;},stPos+off);await p.waitForTimeout(450);r.push(await p.evaluate(()=>R3.probe(G,140,100,180,120)));}return r;};
+  const sOff=await inSt(false),sOn=await inSt(true);
+  const diff=Math.max(...sOff.map((v,i)=>Math.abs(v-sOn[i])/Math.max(1,v)));
+  ok('車站內不調變：開／關亮度差 <10%',diff<0.10,diff.toFixed(3));
+}
+await p.evaluate(()=>R3.setLamps(null));
 ok('沒有 JS 錯誤或著色器／GL 警告',errs.length===0,errs.slice(0,3).join(' | '));
 await b.close();})();
