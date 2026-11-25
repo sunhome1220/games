@@ -14,7 +14,7 @@ if ! curl -s -o /dev/null "$URL"; then
 fi
 curl -s -o /dev/null "$URL" || { echo "伺服器沒有起來：$URL"; exit 1; }
 cd "$ROOT"
-ALL="unit evunit stats ghost bar bend radio events-ui atp e1 t7 t8 r1 b1 tap name share ped fb lever map ui gp sig soak"
+ALL="unit evunit stats ghost bar bend post radio events-ui cab atp e1 t7 t8 r1 b1 tap name share ped fb lever map ui gp sig soak"
 LIST="${@:-$ALL}"
 bad=0
 for t in $LIST; do
