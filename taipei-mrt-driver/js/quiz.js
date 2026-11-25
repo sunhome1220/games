@@ -94,5 +94,5 @@ function fqMake(g,r,only,levelId){
 function fqSpeak(text){
   if(typeof SET==='undefined'||!SET.snd||typeof bcVoice!=='function'||typeof window==='undefined'||!('speechSynthesis' in window))return false;
   const v=bcVoice('en');if(!v)return false;
-  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.voice=v;u.lang=v.lang;u.rate=(SET.fqLevel==='g3')?0.8:0.88;u.pitch=1;speechSynthesis.speak(u);return true;}catch(e){return false;}
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.voice=v;u.lang=v.lang;u.rate=((SET.fqLevel==='g3')?0.8:0.88)*(0.97+Math.random()*0.06);u.pitch=0.98+Math.random()*0.05;speechSynthesis.speak(u);return true;}catch(e){return false;}
 }

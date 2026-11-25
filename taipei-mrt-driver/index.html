@@ -310,20 +310,20 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-25.07"></script>
-<script src="js/broadcast.js?v=2026-11-25.07"></script>
-<script src="js/haptics.js?v=2026-11-25.07"></script>
-<script src="js/feedback.js?v=2026-11-25.07"></script>
-<script src="js/routemap.js?v=2026-11-25.07"></script>
-<script src="js/gamepad.js?v=2026-11-25.07"></script>
-<script src="js/stats.js?v=2026-11-25.07"></script>
-<script src="js/quiz.js?v=2026-11-25.07"></script>
-<script src="js/radio.js?v=2026-11-25.07"></script>
-<script src="js/share.js?v=2026-11-25.07"></script>
-<script src="js/events.js?v=2026-11-25.07"></script>
-<script src="js/lines.js?v=2026-11-25.07"></script>
-<script src="js/render3d.js?v=2026-11-25.07"></script>
-<script src="js/sim.js?v=2026-11-25.07"></script>
+<script src="js/models.js?v=2026-11-25.08"></script>
+<script src="js/broadcast.js?v=2026-11-25.08"></script>
+<script src="js/haptics.js?v=2026-11-25.08"></script>
+<script src="js/feedback.js?v=2026-11-25.08"></script>
+<script src="js/routemap.js?v=2026-11-25.08"></script>
+<script src="js/gamepad.js?v=2026-11-25.08"></script>
+<script src="js/stats.js?v=2026-11-25.08"></script>
+<script src="js/quiz.js?v=2026-11-25.08"></script>
+<script src="js/radio.js?v=2026-11-25.08"></script>
+<script src="js/share.js?v=2026-11-25.08"></script>
+<script src="js/events.js?v=2026-11-25.08"></script>
+<script src="js/lines.js?v=2026-11-25.08"></script>
+<script src="js/render3d.js?v=2026-11-25.08"></script>
+<script src="js/sim.js?v=2026-11-25.08"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -331,7 +331,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-25.07';
+const VERSION='2026-11-25.08';
 
 /* ========================= 小工具 ========================= */
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;

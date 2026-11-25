@@ -47,6 +47,7 @@ SHOT_DIR=/some/dir bash taipei-mrt-driver/tests/run.sh t8   # 部分測試會存
 | `assist.cjs` | 新手輔助提示：巡航時不再永遠顯示「惰行（N）」，該提醒時才出現 |
 | `quiz.cjs` | 外籍旅客求助：面板流程、橫握手機／平板版面、答對後不再出同題、答錯會再問 |
 | `unit/quiz.test.cjs` | 題庫純函式：各等級／路線共數百題的答案正確性、四選項不重複、已答對不再出 |
+| `unit/voice.test.cjs` | 語音挑選：同語言多語音時挑較自然者（Enhanced/Neural/Natural），避開機械語音 |
 | `landscape.cjs` | 觸控裝置僅限橫式：直握時遮罩＋自動暫停、轉橫後自動繼續 |
 | `soak.cjs` | 浸泡（各路線整班跑完、不報錯） |
 | `pre.cjs` | 預載腳本：讓測試略過首次教學並展開進階設定（`ui.cjs` 不用） |
