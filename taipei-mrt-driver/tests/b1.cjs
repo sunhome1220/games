@@ -72,7 +72,7 @@ const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x?'  '+x:''));
     const m=__mrt;Object.assign(m.SET,{haptic:true});m.startRun();const g=m.G;const out={};
     window.__vib.length=0;g.v=0;g.pos=g.S[0];g.cur=0;g.k=1;m.openDoors(g.stations[0].side);out.open=window.__vib.slice();
     window.__vib.length=0;g.doors.state='open';g.doors.openT=9;m.closeDoors();out.close=window.__vib.slice();
-    window.__vib.length=0;g.trip=false;g.v=20;g.pos=g.S[0]+300;m.setNotch(0);g.trip=true;m.step(1/60);m.step(1/60);m.step(1/60);out.atp=window.__vib.slice();
+    window.__vib.length=0;g.trip=false;g.v=28;g.pos=g.S[0]+300;m.setNotch(0);g.trip=true;m.step(1/60);m.step(1/60);m.step(1/60);out.atp=window.__vib.slice();
     window.__vib.length=0;g.trip=false;g._tripH=false;g.evOn=true;g.ev=null;m.evStart(g,'quake');out.quake=window.__vib.slice(-1)[0];
     return out;});
   ok('車門開／關各有不同圖案',r.open[0].length===1&&r.close[0].length===3,JSON.stringify([r.open,r.close]));

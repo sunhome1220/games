@@ -1,7 +1,7 @@
 // 模擬核心單元測試：不開瀏覽器，用 Node 的 vm 載入 js/models.js、js/lines.js、js/events.js、js/sim.js（畫面與聲音的副作用以空函式取代；事件引擎用真的，但 SET.events=false 不會觸發事件）。
 // 執行：node taipei-mrt-driver/tests/unit/sim.test.cjs（約 1 秒）
 const vm=require('vm'),fs=require('fs'),path=require('path');
-const dir=path.join(__dirname,'..','..','js');
+const dir=path.join(__dirname,'..','..','js'),root=path.join(__dirname,'..','..');
 const ctx=vm.createContext({console,Math,JSON,Object,Array,Number,String,Set,Map,Date,Promise,isNaN});
 const noop='function(){}';
 vm.runInContext(`
@@ -21,7 +21,7 @@ newRun({line:'red',from:0,to:5,model:'C381'});
 let g=JSON.parse(run(`JSON.stringify({n:G.stations.length,S:G.S,tA:G.tArr,tD:G.tDep,z:G.zones,M:G.M.id,k:G.k})`));
 ok('建立關卡：6 站、站位遞增、第一站在 0',g.n===6&&g.S[0]===0&&g.S.every((x,i)=>i===0||x>g.S[i-1]),g.S.join());
 ok('時刻表：抵達遞增、離站晚於抵達',g.tA.every((x,i)=>i===0||x>g.tA[i-1])&&g.tD.every((x,i)=>x>=g.tA[i]));
-ok('限速區間在站間、數值為 45／60',g.z.every(z=>z.s1>z.s0&&z.s0>=0&&z.s1<=g.S[g.S.length-1]&&(z.lim===45||z.lim===60)));
+ok('限速區間（彎道）在行程範圍內，限速 = √(1.0 m/s²×半徑) 向下取到 5 的倍數',g.z.every(z=>z.s1>z.s0&&z.s0>=0&&z.s1<=g.S[g.S.length-1]&&z.lim>=25&&z.lim<80&&Math.abs(z.lim-Math.sqrt(z.R)*3.6)<=5.01&&(z.dir==='L'||z.dir==='R')),JSON.stringify(g.z.slice(0,2)));
 ok('指定車型被採用',g.M==='C381');
 newRun({line:'blue',from:10,to:3,model:'321'});
 g=JSON.parse(run(`JSON.stringify({S:G.S,n:G.stations.length})`));
@@ -104,6 +104,32 @@ run(`closeDoors()`);ok('開門未滿最少停留時間不能關門',run('G.doors
 newRun({line:'green',from:2,to:9,model:'C371'});const A=run('JSON.stringify([G.S,G.zones])');
 newRun({line:'green',from:2,to:9,model:'C371'});const B=run('JSON.stringify([G.S,G.zones])');
 ok('同一關卡兩次建立結果相同',A===B);
+
+// 彎道限速：整條線正向與反向各跑一次，彎道數量一致、左右相反、位置鏡射；彎道不落在月台範圍
+{
+  const full=(a,b)=>{newRun({line:'blue',from:a,to:b,model:'321'});return JSON.parse(run('JSON.stringify({z:G.zones,S:G.S})'));};
+  const f=full(0,22),r=full(22,0),end=f.S[f.S.length-1];
+  ok('藍線全程正反向彎道數量一致',f.z.length===r.z.length&&f.z.length>=5,f.z.length+' vs '+r.z.length);
+  const mirror=f.z.every(z=>r.z.some(q=>Math.abs((end-z.s1)-q.s0)<30&&Math.abs((end-z.s0)-q.s1)<30&&q.R===z.R&&q.dir!==z.dir));
+  ok('反向行駛時彎道位置鏡射、左右對調',mirror);
+  ok('彎道不落在月台前後 60 m 內',f.z.every(z=>f.S.every(p=>!(p>z.s0-60&&p<z.s1+60))));
+  newRun({line:'brown',from:0,to:8,model:'VAL256'});const bz=JSON.parse(run('JSON.stringify(G.zones)'));
+  ok('文湖線（車型上限 70）的彎道限速都低於 70',bz.length>0&&bz.every(z=>z.lim<70));
+}
+
+// 9. 重複定義檢查：index.html 的內嵌程式與 js/*.js 不能定義同名的函式／常數
+//    （曾經 sim.js 與 index.html 各有一份，後載入的內嵌版本會蓋掉 sim.js，單元測試測的是沒被用到的那份）
+{
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  const names=src=>new Set([...src.matchAll(/^(?:function\s+([A-Za-z_$][\w$]*)|(?:const|let|var)\s+([A-Za-z_$][\w$]*))/gm)].map(m=>m[1]||m[2]));
+  const inl=names(html.slice(html.indexOf('<script>\n')));
+  const dup=[];
+  for(const f of fs.readdirSync(dir).filter(x=>x.endsWith('.js'))){
+    for(const n of names(fs.readFileSync(path.join(dir,f),'utf8')))if(inl.has(n))dup.push(n+'（'+f+'）');
+  }
+  ok('index.html 內嵌程式與 js/*.js 沒有同名的函式或常數',dup.length===0,dup.join('、'));
+  ok('index.html 不再含物理與規則（buildRun／step／atpLimit／scoreArrival）',!/^function (buildRun|step|atpLimit|scoreArrival)\(/m.test(html));
+}
 
 console.log(`\n合計：通過 ${pass} 項、失敗 ${fail} 項`);
 process.exit(fail?1:0);
