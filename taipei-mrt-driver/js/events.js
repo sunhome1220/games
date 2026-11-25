@@ -1,4 +1,9 @@
 'use strict';
+const FQ_SAFE_FAR=900,FQ_SAFE_NEAR=450,FQ_CURVE_AHEAD=600,FQ_CURVE_ABORT=250;
+// 前方 ahead 公尺內、以及目前所在位置沒有彎道／限速區（直線段）
+function fqStraight(g,ahead){for(const z of g.zones||[]){if(g.pos>z.s1+30)continue;if(z.s0-g.pos<ahead)return false;}return true;}
+// 外籍旅客求助的時機：全自動駕駛（文湖線）隨時可以；人工駕駛只在「直線段、離下一站夠遠」才來電
+function fqSafeNow(g){return !!g.M.driverless||(g.S[g.k]-g.pos>FQ_SAFE_FAR&&fqStraight(g,FQ_CURVE_AHEAD));}
 // 突發事件。事件種類依新聞與北捷公開規定挑選（搜尋於 2026-11），每項附出處 news 與處置建議 tip。
 // 注意：遊戲內的數值（限速、時間）是依規定精神簡化的設定，不是營運手冊原文；找不到具體數值的（例如強風停駛風速門檻）不假裝有。
 const EV_INFO={
@@ -211,7 +216,8 @@ const EV={
       g.rain=true;g.evBrake=0.75;g.evWindOnly=true;ramp(g,e.lim);},
     tick(g,e){if(g.time-e.t0>=e.dur){g.rain=false;const clean=g.pen.atp===e.trips0;evFinish(g,clean?'ok':'late',clean?6:0,clean?'':'限速期間 ATP 動作');}}},
   // 外籍旅客求助：按「接聽」後聽（讀）英文問題，四選一；答對加分（快一點多加）、答錯扣分、逾時不計
-  foreign:{can:g=>g.state==='run'&&g.k<g.S.length&&g.doors.state==='closed'&&g.v>3&&g.S[g.S.length-1]-g.pos>300&&typeof fqMake==='function'&&fqMake(g,Math.random)!==null,
+  // 距下一站多遠才會來電（FQ_SAFE_FAR），以及通話中靠近到多近就中止（FQ_SAFE_NEAR），單位公尺
+  foreign:{can:g=>g.state==='run'&&g.k<g.S.length&&g.doors.state==='closed'&&g.v>3&&g.S[g.S.length-1]-g.pos>300&&fqSafeNow(g)&&typeof fqMake==='function'&&fqMake(g,Math.random)!==null,
     start(g,e){
       e.q=fqMake(g,Math.random);e.phase='ring';e.pts=0;
       g.fq={q:e.q,phase:'ring',pick:-1};
@@ -219,6 +225,8 @@ const EV={
       g.evAct={label:'📞 接聽',fn:()=>{e.phase='ask';e.tAsk=g.time;g.fq.phase='ask';g.evAct=null;e.title='外籍旅客求助（英語）';e.sub='聽（或讀）旅客的問題，選出最適當的回答';fqSpeak(e.q.en);}};
     },
     tick(g,e){
+      // 快到站或前方有彎道：先專心開車，通話取消、不扣分（全自動駕駛的文湖線不受影響）
+      if(e.phase!=='result'&&!g.M.driverless&&((g.k<g.S.length&&g.S[g.k]-g.pos<FQ_SAFE_NEAR)||!fqStraight(g,FQ_CURVE_ABORT))){evFinish(g,'ok',0,'快到站或彎道，通話中止（不計分）');return;}
       if(e.phase==='ring'&&g.time-e.t0>40){evFinish(g,'late',0,'太久沒有接聽');return;}
       if(e.phase==='ask'&&g.time-e.tAsk>40){g.fq.phase='result';g.fq.pick=-2;e.phase='result';e.tRes=g.time;e.outcome='late';e.pts=0;e.note='逾時未作答';e.sub='逾時：正確答案已標示';}
       if(e.phase==='result'&&g.time-e.tRes>=5)evFinish(g,e.outcome,e.pts,e.note);
