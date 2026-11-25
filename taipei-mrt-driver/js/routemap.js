@@ -59,7 +59,7 @@ function planXY(g,pos){   // 本班里程 → 形狀點的內插位置（公尺�
   const L=g.L,sh=L.shape;if(!sh)return null;
   const C0=L.d.slice(0,g.stations[0].idx).reduce((x,y)=>x+y,0);
   const line=g.stations[1]&&g.stations[1].idx<g.stations[0].idx?C0-pos:C0+pos;     // 在路線上的累計里程
-  const f=Math.min(sh.length-1.001,Math.max(0,(line-(L.shapeSkip||0))/L.shapeScale/100));
+  const f=Math.min(sh.length-1.001,Math.max(0,(line-(L.shapeSkip||0))/L.shapeScale/(L.shapeStep||100)));
   const i=Math.floor(f),t=f-i;return [sh[i][0]+(sh[i+1][0]-sh[i][0])*t,sh[i][1]+(sh[i+1][1]-sh[i][1])*t];
 }
 function planBuild(g){

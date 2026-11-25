@@ -117,6 +117,25 @@ ok('同一關卡兩次建立結果相同',A===B);
   ok('文湖線（車型上限 70）的彎道限速都低於 70',bz.length>0&&bz.every(z=>z.lim<70));
 }
 
+// 3D 軌道轉彎用的路徑函式：往前的橫向偏移符合彎道方向與半徑（右彎為正）、直線段為 0、反向行駛左右對調
+{
+  newRun({line:'blue',from:0,to:22,model:'321'});
+  const zs=JSON.parse(run('JSON.stringify(G.zones)')).filter(z=>z.R<400&&z.s1-z.s0>150);
+  const zR=zs.find(z=>z.dir==='R'),zL=zs.find(z=>z.dir==='L');
+  const lat=(pos,d)=>run(`pathLateral(G,${pos},${d})`);
+  ok('起點處（pos=0）與 d=0 的偏移為 0',Math.abs(lat(0,0))<1e-9);
+  // 進入彎道後 d 公尺的偏移 ≈ d²/(2R)（小角度近似，容許 ±45%：彎道的起訖是 100 m 窗口偵測，含緩和曲線）
+  const chk=(z,sign)=>{const d=Math.min(150,(z.s1-z.s0)*0.8),v=lat(z.s0+20,d+20)-0;return sign*v>0&&Math.abs(Math.abs(v)-(d*d)/(2*z.R))<(d*d)/(2*z.R)*0.45+4;};
+  ok('右彎的偏移為正、量級與 d²/2R 相符',!!zR&&chk(zR,1),zR&&JSON.stringify([zR.R,lat(zR.s0+20,170)]));
+  ok('左彎的偏移為負、量級與 d²/2R 相符',!!zL&&chk(zL,-1),zL&&JSON.stringify([zL.R,lat(zL.s0+20,170)]));
+  const f=JSON.parse(run('JSON.stringify(G.S)')),end=f[f.length-1];
+  newRun({line:'blue',from:22,to:0,model:'321'});
+  const rz=JSON.parse(run('JSON.stringify(G.zones)')).find(z=>Math.abs(z.R-zR.R)<1&&z.dir==='L');
+  ok('反向行駛時同一個右彎變成左彎（偏移為負）',!!rz&&lat(rz.s0+20,170)<0);
+  newRun({line:'red',from:0,to:3,model:'C381'});
+  ok('資料範圍外（紅線延伸段、起點之前）不報錯且為有限數',[ -50,0,300,1500].every(d=>Number.isFinite(lat(0,d))));
+}
+
 // 9. 重複定義檢查：index.html 的內嵌程式與 js/*.js 不能定義同名的函式／常數
 //    （曾經 sim.js 與 index.html 各有一份，後載入的內嵌版本會蓋掉 sim.js，單元測試測的是沒被用到的那份）
 {
