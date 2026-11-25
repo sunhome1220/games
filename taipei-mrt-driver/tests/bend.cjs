@@ -35,6 +35,7 @@ const tunPos=await p.evaluate(()=>{const g=G;for(let s=300;s<g.S[g.S.length-1]-3
 ok('找得到遠離車站的隧道直線段',tunPos!==null);
 const lum=async(on)=>{await p.evaluate(v=>R3.setLamps(v),on);const base=Math.ceil(tunPos/18)*18,r=[];
   for(const off of [0,3,6,9,12,15]){await p.evaluate(x=>{G.pos=x;},base+off);await p.waitForTimeout(450);r.push(await p.evaluate(()=>R3.probe(G,140,100,180,120)));}return r;};
+await p.evaluate(()=>R3.setPost('off'));   // 量「燈光調變」本身：關掉後製（光暈會隨燈的遠近讓亮度起伏，混在一起量不準）
 const lOff=await lum(false),lOn=await lum(true);
 const spread=a=>(Math.max(...a)-Math.min(...a))/(a.reduce((x,y)=>x+y,0)/a.length);
 ok('關閉燈光調變：沿隧道前進亮度幾乎不變（變化 <8%）',spread(lOff)<0.08,spread(lOff).toFixed(3));
@@ -48,5 +49,6 @@ if(stPos!==null){
   ok('車站內不調變：開／關亮度差 <10%',diff<0.10,diff.toFixed(3));
 }
 await p.evaluate(()=>R3.setLamps(null));
+await p.evaluate(()=>R3.setPost('full'));
 ok('沒有 JS 錯誤或著色器／GL 警告',errs.length===0,errs.slice(0,3).join(' | '));
 await b.close();})();

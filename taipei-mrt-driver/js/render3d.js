@@ -29,9 +29,9 @@ const R3=(function(){
   /* ---------- 材質與貼圖 ---------- */
   function mat(color,opt){
     opt=opt||{};
-    const key=color+'|'+(opt.basic?'b':'l')+'|'+(opt.op||1)+'|'+(opt.em||0)+'|'+(opt.map?opt.map.uuid:'')+'|'+(opt.side||0);
+    const key=color+'|'+(opt.basic?'b':'l')+'|'+(opt.op||1)+'|'+(opt.em||0)+'|'+(opt.map?opt.map.uuid:'')+'|'+(opt.side||0)+'|'+(opt.k||1);
     let m=mats.get(key);if(m)return m;
-    const p={color,transparent:(opt.op||1)<1,opacity:opt.op||1,fog:true};
+    const p={color:opt.k?new T.Color(color).multiplyScalar(opt.k):color,transparent:(opt.op||1)<1,opacity:opt.op||1,fog:true};   // opt.k：發光亮度倍率（HDR）
     if(opt.map)p.map=opt.map;
     if(opt.side)p.side=T.DoubleSide;
     if(opt.basic)m=new T.MeshBasicMaterial(p);
@@ -184,6 +184,63 @@ const R3=(function(){
     for(let i=0;i<=n;i++){const d=-BEND_BACK+span*i/n;a[i]=pathLateral(g,g.pos,d);}
   }
 
+  /* ---------- 後製（畫質「高」）：場景先畫到離屏緩衝（HDR、4 倍 MSAA），再做光暈、色彩分級、暈影與色調對應 ----------
+     mode：'off' 直接畫到螢幕；'grade' 只做色彩分級＋暈影（便宜）；'full' 再加光暈。由 index.html 依畫質設定與自動降級決定（setPost）。
+     光暈：亮度門檻取出亮部 → 縮小到 1/4、1/8 各做一次可分離高斯模糊 → 疊回。色彩分級在線性空間做：飽和度、對比、陰影偏冷／亮部偏暖，之後才色調對應與輸出編碼。 */
+  const PP_VERT='varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}';
+  let pp={mode:'off',ready:false,sceneRT:null,rt:null,w:0,h:0};
+  function ppMat(frag,uniforms){return new T.ShaderMaterial({vertexShader:PP_VERT,fragmentShader:frag,uniforms,depthTest:false,depthWrite:false});}
+  function ppInit(){
+    if(pp.ready)return;
+    const ex=renderer.extensions;pp.float=ex.has('EXT_color_buffer_float')||ex.has('EXT_color_buffer_half_float');pp.msaa=ex.has('EXT_color_buffer_float');
+    pp.cam=new T.OrthographicCamera(-1,1,1,-1,0,1);pp.scene=new T.Scene();pp.quad=new T.Mesh(new T.PlaneGeometry(2,2),null);pp.quad.frustumCulled=false;pp.scene.add(pp.quad);
+    pp.mBright=ppMat('varying vec2 vUv;uniform sampler2D tDiff;uniform float uThr;void main(){vec3 c=texture2D(tDiff,vUv).rgb;float l=max(max(c.r,c.g),c.b);float k=smoothstep(uThr,uThr+0.7,l);gl_FragColor=vec4(c*k,1.0);}',{tDiff:{value:null},uThr:{value:pp.float?1.05:0.85}});
+    pp.mBlur=ppMat('varying vec2 vUv;uniform sampler2D tDiff;uniform vec2 uDir;void main(){vec3 c=texture2D(tDiff,vUv).rgb*0.227027;c+=texture2D(tDiff,vUv+uDir*1.3846).rgb*0.3162162+texture2D(tDiff,vUv-uDir*1.3846).rgb*0.3162162;c+=texture2D(tDiff,vUv+uDir*3.2308).rgb*0.0702703+texture2D(tDiff,vUv-uDir*3.2308).rgb*0.0702703;gl_FragColor=vec4(c,1.0);}',{tDiff:{value:null},uDir:{value:[0,0]}});
+    pp.mFinal=ppMat(`varying vec2 vUv;uniform sampler2D tScene;uniform sampler2D tB1;uniform sampler2D tB2;uniform float uBloom;uniform float uVig;
+      void main(){   // 色調對應與輸出編碼的函式宣告由 three 的前置程式碼提供（重複引入會「重複定義」）
+        vec3 c=texture2D(tScene,vUv).rgb+(texture2D(tB1,vUv).rgb*0.65+texture2D(tB2,vUv).rgb*0.55)*uBloom;
+        gl_FragColor=vec4(c,1.0);
+        #include <tonemapping_fragment>
+        // 色彩分級在色調對應之後（顯示空間）做：這樣暗部不會被壓得太黑，各後製等級的亮度才一致
+        vec3 t=gl_FragColor.rgb;
+        float l=dot(t,vec3(0.2126,0.7152,0.0722));
+        t=mix(vec3(l),t,1.12);                                                  // 飽和度
+        float sh=smoothstep(0.0,0.6,l);t*=mix(vec3(0.95,0.98,1.05),vec3(1.05,1.0,0.95),sh);   // 陰影偏冷、亮部偏暖
+        t=pow(max(t,0.0),vec3(1.0/2.2));t=(t-0.5)*1.06+0.5;t=pow(max(t,0.0),vec3(2.2));       // 輕微對比（在 gamma 空間，以中灰為軸）
+        gl_FragColor=vec4(t,1.0);
+        #include <colorspace_fragment>
+        vec2 d=vUv-0.5;gl_FragColor.rgb*=1.0-uVig*dot(d,d)*1.5;   // 暈影
+      }`,{tScene:{value:null},tB1:{value:null},tB2:{value:null},uBloom:{value:1},uVig:{value:0.38}});
+    pp.ready=true;
+  }
+  function ppSize(){
+    const gl=renderer.getContext(),w=gl.drawingBufferWidth,h=gl.drawingBufferHeight;
+    if(pp.w===w&&pp.h===h&&pp.sceneRT)return;
+    pp.w=w;pp.h=h;
+    for(const r of [pp.sceneRT,...(pp.rt||[])])if(r)r.dispose();
+    const type=pp.float?T.HalfFloatType:T.UnsignedByteType;
+    pp.sceneRT=new T.WebGLRenderTarget(w,h,{type,samples:pp.msaa?4:0,depthBuffer:true,minFilter:T.LinearFilter,magFilter:T.LinearFilter});
+    const mk=(k)=>new T.WebGLRenderTarget(Math.max(2,w>>k),Math.max(2,h>>k),{type,depthBuffer:false,minFilter:T.LinearFilter,magFilter:T.LinearFilter});
+    pp.rt=[mk(2),mk(2),mk(3),mk(3)];     // 1/4 與 1/8 解析度各一組（水平、垂直模糊）
+  }
+  function ppPass(mat,target){pp.quad.material=mat;renderer.setRenderTarget(target);renderer.render(pp.scene,pp.cam);}
+  function ppRender(){
+    ppSize();
+    renderer.setRenderTarget(pp.sceneRT);renderer.render(scene,camera);
+    const full=pp.mode==='full',[a4,b4,a8,b8]=pp.rt;
+    if(full){
+      pp.mBright.uniforms.tDiff.value=pp.sceneRT.texture;ppPass(pp.mBright,a4);
+      pp.mBlur.uniforms.tDiff.value=a4.texture;pp.mBlur.uniforms.uDir.value=[1/a4.width,0];ppPass(pp.mBlur,b4);
+      pp.mBlur.uniforms.tDiff.value=b4.texture;pp.mBlur.uniforms.uDir.value=[0,1/a4.height];ppPass(pp.mBlur,a4);
+      pp.mBlur.uniforms.tDiff.value=a4.texture;pp.mBlur.uniforms.uDir.value=[1/a8.width,0];ppPass(pp.mBlur,a8);     // 縮到 1/8 再模糊（光暈更寬）
+      pp.mBlur.uniforms.tDiff.value=a8.texture;pp.mBlur.uniforms.uDir.value=[0,1/a8.height];ppPass(pp.mBlur,b8);
+    }
+    pp.mFinal.uniforms.tScene.value=pp.sceneRT.texture;pp.mFinal.uniforms.tB1.value=full?a4.texture:pp.sceneRT.texture;pp.mFinal.uniforms.tB2.value=full?b8.texture:pp.sceneRT.texture;
+    pp.mFinal.uniforms.uBloom.value=full?1:0;
+    ppPass(pp.mFinal,null);
+  }
+  function setPost(mode){if(!renderer)return;if(mode!=='off'){try{ppInit();}catch(e){console.error(e);mode='off';}}pp.mode=mode;}
+
   /* ---------- 幾何小工具 ---------- */
   function box(parent,w,h,l,x,y,s,m){const o=new T.Mesh(l>BEND_SEG*1.5?unitBoxZ:unitBox,m);o.scale.set(w,h,l);o.position.set(x,y,-s);parent.add(o);return o;}
   function plane(parent,w,h,x,y,s,m){const o=new T.Mesh(planeGeo,m);o.scale.set(w,h,1);o.position.set(x,y,-s);parent.add(o);return o;}
@@ -303,7 +360,7 @@ const R3=(function(){
       const pm=mat(0x96989c),holes=run.stations.map(hallRange);
       for(const [a,b] of minusRanges(sa,sb,holes)){box(g,0.3,1.2,b-a,-(TS+3.05),0.35,(a+b)/2,pm);box(g,0.3,1.2,b-a,3.05,0.35,(a+b)/2,pm);}   // 護欄（車站大廳範圍除外）
       for(let s=Math.ceil(sa/36)*36;s<sb;s+=36){if(holes.some(([a,b])=>s>=a&&s<=b))continue;for(const sd of [-1,1]){
-        const px=sd>0?3.3:-(TS+3.3);box(g,0.12,5.3,0.12,px,3.6,s,mat(0x464850));box(g,0.9,0.14,0.35,px-sd*0.4,6.3,s,mat(0xfff4d0,{basic:1}));}}
+        const px=sd>0?3.3:-(TS+3.3);box(g,0.12,5.3,0.12,px,3.6,s,mat(0x464850));box(g,0.9,0.14,0.35,px-sd*0.4,6.3,s,mat(0xfff4d0,{basic:1,k:3}));}}
       // 高架橋墩（在道路中央時可從兩側看到）
       if(sc.ro)for(let s=Math.ceil(sa/30)*30;s<sb;s+=30)box(g,2.4,11.7,2.4,-TS/2,-6.3,s,mat(0x8a8c92));
     }else{
@@ -443,7 +500,7 @@ const R3=(function(){
         const ls=[];for(let s=Math.ceil(a/18)*18;s<b;s+=18)ls.push(s);
         if(ls.length){
           inst(g,unitBox,mat(0x3a3c42),ls.length*2,(i,M)=>{const x=i&1?-(TS+2.38):2.38;M.compose(V3(x,3.45,-ls[i>>1]),Q0(),V3(0.12,0.16,1.3));});
-          inst(g,unitBox,mat(0xfff0c8,{basic:1}),ls.length*3,(i,M)=>{const k=i%3,s=ls[Math.floor(i/3)];
+          inst(g,unitBox,mat(0xfff0c8,{basic:1,k:3.5}),ls.length*3,(i,M)=>{const k=i%3,s=ls[Math.floor(i/3)];
             if(k===2)M.compose(V3(-TS/2,4.15,-s),Q0(),V3(0.25,0.1,1.4));else{const x=k?-(TS+2.38):2.38;M.compose(V3(x-Math.sign(x)*0.07,3.42,-s),Q0(),V3(0.04,0.08,1.2));}});
         }
         for(const x of [2.38,-(TS+2.38)])box(g,0.12,0.14,len,x,2.25,mid,mat(0x2a2c32));
@@ -701,8 +758,8 @@ const R3=(function(){
     hzDebris.visible=false;bendTree(hzDebris);scene.add(hzDebris);
     hzSignal=new T.Group();
     box(hzSignal,0.12,4.2,0.12,2.4,2.1,0,mat(0x555a62));box(hzSignal,0.6,1.3,0.3,2.4,4.1,0,mat(0x1a1c20));
-    hzRed=new T.Mesh(unitBox,new T.MeshBasicMaterial({color:0xff2a2a}));hzRed.scale.set(0.38,0.38,0.08);hzRed.position.set(2.4,4.4,0.18);hzSignal.add(hzRed);
-    hzGreen=new T.Mesh(unitBox,new T.MeshBasicMaterial({color:0x35e06a}));hzGreen.scale.set(0.38,0.38,0.08);hzGreen.position.set(2.4,3.85,0.18);hzSignal.add(hzGreen);
+    hzRed=new T.Mesh(unitBox,new T.MeshBasicMaterial({color:new T.Color(0xff2a2a).multiplyScalar(3)}));hzRed.scale.set(0.38,0.38,0.08);hzRed.position.set(2.4,4.4,0.18);hzSignal.add(hzRed);
+    hzGreen=new T.Mesh(unitBox,new T.MeshBasicMaterial({color:new T.Color(0x35e06a).multiplyScalar(3)}));hzGreen.scale.set(0.38,0.38,0.08);hzGreen.position.set(2.4,3.85,0.18);hzSignal.add(hzGreen);
     hzSignal.visible=false;bendTree(hzSignal);scene.add(hzSignal);
   }
   function updateHazards(g){
@@ -817,7 +874,8 @@ const R3=(function(){
     // 鏡頭
     if(dbgCam){camera.up.set(dbgCam.up[0],dbgCam.up[1],dbgCam.up[2]);camera.position.set(...dbgCam.p);camera.lookAt(...dbgCam.t);}   // 測試用的除錯鏡頭（例如俯視）
     else{camera.up.set(0,1,0);camera.position.set(camX,CAMH+camY,-pos);camera.lookAt(camX,CAMH+camY-0.05,-pos-50);}
-    renderer.render(scene,camera);
+    if(pp.mode!=='off'&&pp.ready){try{ppRender();}catch(e){console.error(e);pp.mode='off';renderer.setRenderTarget(null);renderer.render(scene,camera);}}   // 後製失敗就退回直接繪製
+    else renderer.render(scene,camera);
   }
   const CAMH=2.4;
   let dbgCam=null;function setDebugCam(c){dbgCam=c;}
@@ -827,5 +885,5 @@ const R3=(function(){
     frame(g,0,0,0);const gl=renderer.getContext(),px=new Uint8Array(w*h*4);gl.readPixels(x,gl.drawingBufferHeight-y-h,w,h,gl.RGBA,gl.UNSIGNED_BYTE,px);
     let t=0;for(let i=0;i<px.length;i+=4)t+=0.2126*px[i]+0.7152*px[i+1]+0.0722*px[i+2];return t/(w*h);}
   let bendForce=null;function setBend(v){bendForce=v;}   // 測試用：true／false 強制開／關彎曲，null 回到自動
-  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,walkAnim:()=>WALK_ANIM,hazInfo:()=>({debris:!!hzDebris&&hzDebris.visible,debrisZ:hzDebris?hzDebris.position.z:null,person:!!hzPerson&&hzPerson.visible}),setDebugCam,setBend,bendInfo,setLamps,probe,oppX:s=>oppX(s),info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
+  return {load,init,resize,setRun,frame,get ok(){return !!renderer;},debugPeople,walkAnim:()=>WALK_ANIM,setPost,postMode:()=>pp.mode,postInfo:()=>({mode:pp.mode,float:pp.float,msaa:pp.msaa,w:pp.w,h:pp.h}),hazInfo:()=>({debris:!!hzDebris&&hzDebris.visible,debrisZ:hzDebris?hzDebris.position.z:null,person:!!hzPerson&&hzPerson.visible}),setDebugCam,setBend,bendInfo,setLamps,probe,oppX:s=>oppX(s),info(){const r=renderer.info.render;return {calls:r.calls,triangles:r.triangles,chunks:chunks.size};}};
 })();

@@ -196,6 +196,7 @@ th{color:#9fb0c8;font-weight:600}
   <details class="evd adv" id="m-adv"><summary>⚙ 自訂關卡與遊戲設定（可略過，用預設即可）</summary>
   <div class="lab">駕駛名稱（顯示在駕駛室名牌、成績與排行榜）</div>
   <input id="m-driver" type="text" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="ANDY">
+  <label class="ck"><input type="checkbox" id="m-nameplate" checked> 在駕駛室顯示小名牌（真實駕駛室沒有名牌，可關閉）</label>
   <div class="lab">自訂關卡：拖曳「起」「終」兩端選站（可選相鄰兩站；兩端交叉就是反向）</div>
   <div id="rs"><div id="rs-ticks"></div><div id="rs-fill"></div><div class="th a" id="rs-a">起</div><div class="th b" id="rs-b">終</div></div>
   <div class="rs-leg"><span style="color:#e0a040">▮高架</span><span style="color:#5fbf6f">▮平面</span><span style="color:#7d8bab">▮地下</span></div>
@@ -233,7 +234,7 @@ th{color:#9fb0c8;font-weight:600}
   </details>
 
   <div class="lab">畫質（覺得卡頓可選「省電」）</div>
-  <select id="m-quality"><option value="auto">自動：太卡時自動降低畫質（預設）</option><option value="high">高畫質</option><option value="low">省電：較低畫質，較順暢</option></select>
+  <select id="m-quality"><option value="auto">自動：太卡時自動降低畫質（預設）</option><option value="high">高畫質：光暈、色彩分級、暈影、邊緣抗鋸齒（較吃效能）</option><option value="low">省電：關閉後製、較低解析度，較順暢</option></select>
   </details>
   <details class="evd adv" id="m-howto"><summary>📖 操作說明</summary>
   <ul class="how">
@@ -296,19 +297,19 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-25.04"></script>
-<script src="js/broadcast.js?v=2026-11-25.04"></script>
-<script src="js/haptics.js?v=2026-11-25.04"></script>
-<script src="js/feedback.js?v=2026-11-25.04"></script>
-<script src="js/routemap.js?v=2026-11-25.04"></script>
-<script src="js/gamepad.js?v=2026-11-25.04"></script>
-<script src="js/stats.js?v=2026-11-25.04"></script>
-<script src="js/radio.js?v=2026-11-25.04"></script>
-<script src="js/share.js?v=2026-11-25.04"></script>
-<script src="js/events.js?v=2026-11-25.04"></script>
-<script src="js/lines.js?v=2026-11-25.04"></script>
-<script src="js/render3d.js?v=2026-11-25.04"></script>
-<script src="js/sim.js?v=2026-11-25.04"></script>
+<script src="js/models.js?v=2026-11-25.05"></script>
+<script src="js/broadcast.js?v=2026-11-25.05"></script>
+<script src="js/haptics.js?v=2026-11-25.05"></script>
+<script src="js/feedback.js?v=2026-11-25.05"></script>
+<script src="js/routemap.js?v=2026-11-25.05"></script>
+<script src="js/gamepad.js?v=2026-11-25.05"></script>
+<script src="js/stats.js?v=2026-11-25.05"></script>
+<script src="js/radio.js?v=2026-11-25.05"></script>
+<script src="js/share.js?v=2026-11-25.05"></script>
+<script src="js/events.js?v=2026-11-25.05"></script>
+<script src="js/lines.js?v=2026-11-25.05"></script>
+<script src="js/render3d.js?v=2026-11-25.05"></script>
+<script src="js/sim.js?v=2026-11-25.05"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -316,7 +317,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-25.04';
+const VERSION='2026-11-25.05';
 
 /* ========================= 小工具 ========================= */
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
@@ -349,7 +350,7 @@ function resize(){
   dashTop=H-dashH;HY=dashTop*0.46;F=Math.max(W*0.72,dashTop*0.9);
   sceneH=land?H:dashTop;   // 橫握時 3D 畫面鋪滿整個螢幕，儀表只蓋在中間下緣
   const gl=$('gl');gl.style.height=sceneH+'px';
-  if(typeof R3!=='undefined'&&R3.ok)R3.resize(W,sceneH,Math.min(DPR,1.5)*QS);
+  if(typeof R3!=='undefined'&&R3.ok){R3.resize(W,sceneH,Math.min(DPR,1.5)*QS);R3.setPost(postMode());}
   const rot=$('rot');if(rot)rot.style.display=(!land&&W<H&&('ontouchstart' in window)&&!rotDismissed&&document.getElementById('top')&&!$('top').classList.contains('hidden'))?'block':'none';
 }
 let rotDismissed=false;
@@ -394,7 +395,7 @@ const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e
 
 /* ========================= 遊戲狀態 ========================= */
 let G=null;          // 目前這一班
-let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,radio:true,radioNoise:'light',quality:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
+let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,nameplate:true,radio:true,radioNoise:'light',quality:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
 const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
 if(!LINES[SET.line])SET.line='red';
 
@@ -797,6 +798,7 @@ function needAssist(g){
   return '惰行（N）';
 }
 
+let NPR=null;
 function drawDash(g){
   const top=dashTop;
   const cab=g.M.cab;
@@ -804,17 +806,27 @@ function drawDash(g){
   X.fillStyle=gr;
   if(land){rr(dashX0,top,dashX1-dashX0,H-top+12,12);X.fill();X.fillStyle='#394760';X.fillRect(dashX0+8,top,dashX1-dashX0-16,2);}
   else{X.fillRect(0,top,W,H-top);X.fillStyle=cab.trim;X.globalAlpha=0.55;X.fillRect(0,top,W,2);X.globalAlpha=1;}
-  // 駕駛名牌
-  {const pw=Math.min(150,(dashX1-dashX0)*0.3),ph=22,px=(dashX0+dashX1)/2-pw/2,py=top-ph/2;
-   const pg=X.createLinearGradient(0,py,0,py+ph);pg.addColorStop(0,'#e9d49a');pg.addColorStop(0.5,'#b99a4e');pg.addColorStop(1,'#8d7234');
-   X.fillStyle=pg;rr(px,py,pw,ph,4);X.fill();X.strokeStyle='#5a4a20';X.lineWidth=1.2;X.stroke();
-   X.fillStyle='#3a2f10';[px+6,px+pw-6].forEach(sx=>{X.beginPath();X.arc(sx,py+ph/2,1.8,0,6.3);X.fill();});
-   T('駕駛 '+drvName(),px+pw/2,py+ph/2+1,13,'#2b2208','center',800);}
   // 車型銘板（左上）：型號與編組；無人駕駛車型另標示
   {const label=g.M.name.replace(' 型','')+(g.formation?'  '+g.formation:''),pw=Math.min(Math.max(120,label.length*9+22),(dashX1-dashX0)*0.36),ph=20,px=dashX0+10,py=top-ph/2;
    X.fillStyle='#d9dde4';rr(px,py,pw,ph,4);X.fill();X.fillStyle=cab.trim;X.fillRect(px,py,5,ph);
    T(label,px+pw/2+2,py+ph/2+1,12,'#1b2230','center',800);
-   if(g.M.driverless)T('無人駕駛車型・模擬手動',px+pw+8,py+ph/2+1,10,'#ffb347','left',700);}
+   let ex=px+pw+8;
+   if(g.M.driverless){const t0=(dashX1-dashX0<500)?'無人駕駛・模擬':'無人駕駛車型・模擬手動';   // 窄螢幕用短一點的說明，才有空間放名牌
+   T(t0,ex,py+ph/2+1,10,'#ffb347','left',700);X.font='700 10px sans-serif';ex+=X.measureText(t0).width+10;}
+   // 駕駛名牌：縮小並移到左上（車型銘板旁），不再蓋在儀表正上方；新聞照片裡的真實駕駛室沒有名牌，可在設定關閉
+   NPR=null;
+   if(SET.nameplate!==false){
+     const nm='駕駛 '+drvName();X.font='800 10px sans-serif';
+     const avail=dashX1-ex-(land?150:lrPx+90),nw=Math.min(X.measureText(nm).width+14,avail),nh=16,ny=top-nh/2;   // 短名字就畫短牌子；空間不夠（<44 px）才不畫
+     if(nw>=44){
+       const pg=X.createLinearGradient(0,ny,0,ny+nh);pg.addColorStop(0,'#e9d49a');pg.addColorStop(0.5,'#b99a4e');pg.addColorStop(1,'#8d7234');
+       NPR={x:ex,y:ny,w:nw,h:nh};   // 測試用：目前名牌的位置
+       X.fillStyle=pg;rr(ex,ny,nw,nh,3);X.fill();X.strokeStyle='#5a4a20';X.lineWidth=1;X.stroke();
+       X.fillStyle='#2b2208';let fs=10;X.font='800 10px sans-serif';while(X.measureText(nm).width>nw-10&&fs>7){fs-=0.5;X.font=`800 ${fs}px sans-serif`;}
+       T(nm,ex+nw/2,ny+nh/2+1,fs,'#2b2208','center',800);
+     }
+   }
+  }
   drawCabLamps(g,top);
   const gx0=dashX0+10,gx1=land?dashX1-8:W-(lrPx+82),gh=H-barH-top-(land?10:18);
   const dia=Math.min(gh,(gx1-gx0)*0.5,240),R=dia/2;
@@ -1305,7 +1317,7 @@ function fillMenu(){
   $('m-driver').value=SET.driver===DRIVER_DEFAULT?DRIVER_DEFAULT:SET.driver;
   $('m-atp').value=SET.atpStrict?'strict':'relaxed';
   $('m-quality').value=SET.quality||'auto';
-  $('m-radio').checked=SET.radio!==false;$('m-radionoise').value=SET.radioNoise||'light';
+  $('m-nameplate').checked=SET.nameplate!==false;$('m-radio').checked=SET.radio!==false;$('m-radionoise').value=SET.radioNoise||'light';
   $('m-bc').checked=SET.bcOn;$('m-bcjk').value=SET.bcJk;$('m-hap').checked=SET.haptic;
   const bl=$('m-bclang');bl.innerHTML='';
   BC_LANGS.forEach(L=>{const b=document.createElement('button');b.className='chip sm'+(SET.bcLangs.includes(L.id)?' on':'');b.textContent=L.name;
@@ -1373,6 +1385,7 @@ $('m-driver').onblur=e=>{e.target.value=drvName();SET.driver=e.target.value;stor
 $('m-driver').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}e.stopPropagation();};   // 輸入時不要觸發遊戲快捷鍵
 $('m-quality').onchange=e=>{SET.quality=e.target.value;store('mrt-set',SET);applyQuality();};
 $('m-atp').onchange=e=>{SET.atpStrict=e.target.value==='strict';store('mrt-set',SET);};
+$('m-nameplate').onchange=e=>{SET.nameplate=e.target.checked;store('mrt-set',SET);};
 $('m-radio').onchange=e=>{SET.radio=e.target.checked;store('mrt-set',SET);};
 $('m-radionoise').onchange=e=>{SET.radioNoise=e.target.value;store('mrt-set',SET);};
 $('m-bc').onchange=e=>{SET.bcOn=e.target.checked;};
@@ -1466,6 +1479,8 @@ function showResult(){
 }
 
 /* ========================= 主迴圈 ========================= */
+// 後製等級：省電＝關；高畫質＝光暈＋分級；自動＝解析度正常時全開、稍降就只留分級、降到很低就關（把效能留給畫面）
+function postMode(){const q=SET.quality||'auto';return q==='low'?'off':q==='high'?'full':(QS>=0.95?'full':QS>=0.7?'grade':'off');}
 let last=0,acc=0,pf={n:0,t:0,warm:0};
 function applyQuality(){QS=SET.quality==='low'?0.6:1;pf={n:0,t:0,warm:0};resize();}
 // 自動畫質：連續約 1.5 秒平均每格超過 28 ms（低於約 36 fps）就把 3D 解析度降一級，最低 0.5 倍；只降不升，避免忽高忽低
@@ -1518,7 +1533,7 @@ if(location.protocol.startsWith('http')){
 resize();fillMenu();G=buildRun(SET);
 R3.load().then(ok=>{if(ok&&R3.init($('gl')))resize();else force2d=true;});
 syncLever();updateBest();
-window.__mrt={cabLampState,get G(){return G;},setNotch,openDoors,closeDoors,toggleReverse,startRun,step,SET,buildRun,render,LINES,MODELS,evStart,evOnDoorsClosed,evCallControl,EV_INFO};
+window.__mrt={cabLampState,get NPR(){return NPR;},get G(){return G;},setNotch,openDoors,closeDoors,toggleReverse,startRun,step,SET,buildRun,render,LINES,MODELS,evStart,evOnDoorsClosed,evCallControl,EV_INFO};
 requestAnimationFrame(loop);
 </script>
 </body>

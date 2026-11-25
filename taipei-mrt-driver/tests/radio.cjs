@@ -15,8 +15,8 @@ await start();await p.waitForTimeout(300);
 const ids=['quake','wind','trespass','doorfault','signal','power','trainfault','debris','rain'];   // 乘客對講沒有開頭來電
 for(const id of ids){
   await p.evaluate(()=>{window.__spoken.length=0;OC.cap=null;G.ev=null;});
-  await p.evaluate(id=>{evStart(G,id);},id);await p.waitForTimeout(200);
-  const statDuring=await p.evaluate(()=>!!OC.stat);await p.waitForTimeout(500);
+  const statDuring=await p.evaluate(id=>{evStart(G,id);return !!OC.stat;},id);   // 在同一個同步呼叫裡檢查雜訊（機器忙時計時器可能先觸發）
+  await p.waitForFunction(()=>window.__spoken.length>=1,null,{timeout:5000}).catch(()=>{});await p.waitForTimeout(150);
   const r=await p.evaluate(()=>({cap:OC.cap&&OC.cap.text,spoken:window.__spoken.slice(),stat:true}));r.stat=statDuring;
   const want=await p.evaluate(id=>ocText(G,id,G.ev),id);
   ok(id+'：字幕與朗讀內容一致、國語語音、有雜訊',r.cap===want&&r.spoken.length===1&&r.spoken[0].text===want&&r.stat,r.cap&&r.cap.slice(0,30));
