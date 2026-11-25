@@ -20,6 +20,13 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 table.gp{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}table.gp td{border-bottom:1px solid #2c3850;padding:4px 6px}table.gp td:first-child{white-space:nowrap}
 #tut{position:fixed;inset:0;z-index:25;background:rgba(5,8,14,.78);display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}#tut[hidden]{display:none}
 .tut-c{max-width:460px;background:#141b27;border:1px solid #39465c;border-radius:14px;padding:14px 18px;font-size:14px;color:#dfe7f3}.tut-c h2{margin:0 0 6px;font-size:18px}.tut-c ol{padding-left:20px;margin:6px 0}.tut-c li{margin:6px 0}.tut-c .big{margin-top:8px}
+#fq{position:fixed;left:8px;right:8px;top:calc(150px + env(safe-area-inset-top));z-index:5;max-width:460px;padding:8px 10px;border-radius:12px;background:rgba(14,19,30,.96);border:2px solid #ff922b;box-shadow:0 4px 14px rgba(0,0,0,.65);color:#eef2f7;font-size:13px}
+#fq[hidden]{display:none}.fq-h{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:5px;color:#ffc078}.fq-bt button{font-size:11px;padding:3px 7px;margin-left:4px;border-radius:7px;border:1px solid #5a4a30;background:#2a2218;color:#ffd8a8}
+#fq-q{font-size:15px;font-weight:700;line-height:1.3;margin:2px 0 6px}#fq-q small{display:block;font-size:11px;font-weight:600;color:#9fb0c8;margin-top:2px}
+#fq-o{display:grid;grid-template-columns:1fr 1fr;gap:6px}#fq-o button{text-align:left;padding:7px 8px;border-radius:9px;border:1px solid #3d4b63;background:#1d2636;color:#eef2f7;font-size:12.5px;line-height:1.25;min-height:44px}
+#fq-o button.ok{background:#1f5a34;border-color:#7be0a0}#fq-o button.bad{background:#6a2424;border-color:#ff8a8a}#fq-o button:disabled{opacity:1}
+#fq-r{margin-top:6px;font-size:12px;color:#c7d6ec;line-height:1.3}
+@media (orientation:landscape) and (max-height:520px){#fq{left:calc(var(--ll,6px) + 118px);right:auto;top:96px;width:min(56vw,430px);padding:5px 8px}#fq-q{font-size:13px;margin:0 0 3px;line-height:1.2}#fq-q small{font-size:10px;margin-top:0}#fq-o{gap:4px}#fq-o button{min-height:30px;padding:3px 6px;font-size:11.5px;line-height:1.15}.fq-h{margin-bottom:1px}#fq-r{margin-top:3px;font-size:11px;line-height:1.2}}
 #ic{position:fixed;left:8px;top:calc(150px + env(safe-area-inset-top));z-index:5;width:186px;padding:7px 7px 5px;border-radius:12px;background:linear-gradient(#e9dfc6,#cdbf9c);box-shadow:0 3px 10px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.6);color:#3a3322;font-size:12px;font-weight:700;text-align:center}
 #ic[hidden]{display:none}#ic.ring{box-shadow:0 0 0 3px #4dabf7,0 3px 12px rgba(77,171,247,.8)}
 #ic-cv{position:static;display:block;width:172px;height:106px;border-radius:5px;background:#000;border:2px solid #1a1d22}#ic-lb{margin-top:4px;line-height:1.25}
@@ -90,7 +97,9 @@ table.gp{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}table.g
   #top{top:4px}
   #rmap{left:176px;right:calc(var(--lr,10px) + 76px);top:50px;height:136px}
 }
-#rot{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:8;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:18px;padding:7px 14px;font-weight:700;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.4);display:none}
+#rot{position:fixed;inset:0;z-index:40;background:rgba(8,11,17,.97);color:#eef2f7;border:0;border-radius:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-size:18px;font-weight:700;text-align:center;padding:24px;box-shadow:none}
+#rot .ph{font-size:64px;display:inline-block;animation:rotPh 2.4s ease-in-out infinite}#rot small{font-size:13px;font-weight:600;color:#9fb0c8;line-height:1.5}
+@keyframes rotPh{0%,25%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
 
 /* 選單與結算 */
 .screen{position:absolute;top:0;left:0;right:0;min-height:100vh;min-height:100dvh;z-index:10;background:rgba(8,11,18,.94);padding:calc(16px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(30px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left))}
@@ -145,15 +154,16 @@ th{color:#9fb0c8;font-weight:600}
 .sh-st{margin-bottom:6px;color:#9fb0c8;font-size:13px}.card textarea{width:100%;background:#0e131c;color:#eef2f7;border:1px solid #3d4b63;border-radius:8px;padding:8px;font:inherit;font-size:16px;resize:none}
 .rk{width:100%}.rk tr.me td{background:rgba(232,200,138,.18);color:#ffe9a0;font-weight:700}.rk td:nth-child(2){text-align:left}
 .pill{display:inline-block;background:#1a2231;border:1px solid #3d4b63;border-radius:8px;padding:3px 10px;margin:2px 4px 2px 0;font-size:13px}
-#newver{position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:30;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:20px;padding:8px 16px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+#newver{position:fixed;left:50%;top:70px;transform:translateX(-50%);white-space:nowrap;max-width:calc(100vw - 16px);z-index:30;background:#ffe9a0;color:#2b3a1e;border:0;border-radius:20px;padding:8px 16px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
 <canvas id="gl"></canvas>
 <canvas id="c"></canvas>
-<button id="rot">📱 橫放手機操作更順手（點此全螢幕橫向）</button>
-<button id="newver" hidden>🔔 有新版本，點此重新整理</button>
+<button id="rot" type="button"><span class="ph">📱</span><span>請把裝置橫放來玩</span><small>這個遊戲只支援橫式操作。<br>轉成橫放就會繼續（暫停中的遊戲不會損失）。</small></button>
+<button id="newver" hidden>🔔 有新版本，點此更新</button>
 
+<div id="fq" hidden><div class="fq-h"><b>🗣 外籍旅客求助</b><span class="fq-bt"><button id="fq-ear" type="button">🔊 再聽一次</button><button id="fq-eye" type="button">👁 顯示文字</button></span></div><div id="fq-q"></div><div id="fq-o"><button type="button" data-i="0"></button><button type="button" data-i="1"></button><button type="button" data-i="2"></button><button type="button" data-i="3"></button></div><div id="fq-r"></div></div>
 <div id="ic" hidden><div class="ic-bz"><canvas id="ic-cv" width="168" height="104"></canvas></div><div id="ic-lb"></div></div>
 <div id="rmap" hidden><div id="rmap-plan" title="路線平面形狀（北在上）"></div><div id="rmap-main"><div id="rmap-hd"><span id="rmap-now"></span><span class="rmap-lg"><span style="margin-right:8px">© OpenStreetMap</span><i style="background:#f0a64a"></i>高架 <i style="background:#4a8fe0"></i>地下 <i style="background:#5bbf6a"></i>平面 <i style="background:#d32f2f"></i>彎道（限速為推估）</span></div><div id="rmap-in"></div></div></div>
 <div id="tut" hidden><div class="tut-c"><h2>第一次開車？30 秒學會</h2><ol><li><b>發車</b>：關好門，把右側手把往上推到 <b>P2</b>（鍵盤 ↑）。</li><li><b>看限速與距離</b>：左上圓牌是現在的限速；下方儀表顯示離停車線還有多遠。接近站時，把手把往下拉到 <b>B 位</b>煞車，畫面會 💡 建議檔位。</li><li><b>停準</b>：車頭停在<b>綠色停車線</b>，越準分數越高；快停時要<b>慢慢放鬆</b>煞車。</li><li><b>開門</b>：照畫面提示開左門或右門，乘客上下車後再<b>關門</b>，繼續下一站。</li></ol><p class="sub">超速太多會被自動煞車（ATP），不用緊張，回到 N 位就能繼續。需要時可在選單看完整「操作說明」。</p><button class="big" id="tut-ok">知道了，開始駕駛</button></div></div>
@@ -197,6 +207,9 @@ th{color:#9fb0c8;font-weight:600}
   <div class="lab">駕駛名稱（顯示在駕駛室名牌、成績與排行榜）</div>
   <input id="m-driver" type="text" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="ANDY">
   <label class="ck"><input type="checkbox" id="m-nameplate" checked> 在駕駛室顯示小名牌（真實駕駛室沒有名牌，可關閉）</label>
+  <div class="lab">🗣 外籍旅客求助：英語題目程度（程度是粗估，不是課綱字表對照）</div>
+  <select id="m-fqlevel"></select><div id="m-fqnote" class="sub" style="font-size:12px;margin:2px 0"></div>
+  <label class="ck"><input type="checkbox" id="m-fqlisten"> 🎧 聽力模式（先不顯示英文題目，要按「顯示文字」才看得到）</label>
   <div class="lab">自訂關卡：拖曳「起」「終」兩端選站（可選相鄰兩站；兩端交叉就是反向）</div>
   <div id="rs"><div id="rs-ticks"></div><div id="rs-fill"></div><div class="th a" id="rs-a">起</div><div class="th b" id="rs-b">終</div></div>
   <div class="rs-leg"><span style="color:#e0a040">▮高架</span><span style="color:#5fbf6f">▮平面</span><span style="color:#7d8bab">▮地下</span></div>
@@ -297,19 +310,20 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-25.06"></script>
-<script src="js/broadcast.js?v=2026-11-25.06"></script>
-<script src="js/haptics.js?v=2026-11-25.06"></script>
-<script src="js/feedback.js?v=2026-11-25.06"></script>
-<script src="js/routemap.js?v=2026-11-25.06"></script>
-<script src="js/gamepad.js?v=2026-11-25.06"></script>
-<script src="js/stats.js?v=2026-11-25.06"></script>
-<script src="js/radio.js?v=2026-11-25.06"></script>
-<script src="js/share.js?v=2026-11-25.06"></script>
-<script src="js/events.js?v=2026-11-25.06"></script>
-<script src="js/lines.js?v=2026-11-25.06"></script>
-<script src="js/render3d.js?v=2026-11-25.06"></script>
-<script src="js/sim.js?v=2026-11-25.06"></script>
+<script src="js/models.js?v=2026-11-25.07"></script>
+<script src="js/broadcast.js?v=2026-11-25.07"></script>
+<script src="js/haptics.js?v=2026-11-25.07"></script>
+<script src="js/feedback.js?v=2026-11-25.07"></script>
+<script src="js/routemap.js?v=2026-11-25.07"></script>
+<script src="js/gamepad.js?v=2026-11-25.07"></script>
+<script src="js/stats.js?v=2026-11-25.07"></script>
+<script src="js/quiz.js?v=2026-11-25.07"></script>
+<script src="js/radio.js?v=2026-11-25.07"></script>
+<script src="js/share.js?v=2026-11-25.07"></script>
+<script src="js/events.js?v=2026-11-25.07"></script>
+<script src="js/lines.js?v=2026-11-25.07"></script>
+<script src="js/render3d.js?v=2026-11-25.07"></script>
+<script src="js/sim.js?v=2026-11-25.07"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -317,7 +331,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-25.06';
+const VERSION='2026-11-25.07';
 
 /* ========================= 小工具 ========================= */
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
@@ -351,9 +365,20 @@ function resize(){
   sceneH=land?H:dashTop;   // 橫握時 3D 畫面鋪滿整個螢幕，儀表只蓋在中間下緣
   const gl=$('gl');gl.style.height=sceneH+'px';
   if(typeof R3!=='undefined'&&R3.ok){R3.resize(W,sceneH,Math.min(DPR,1.5)*QS);R3.setPost(postMode());R3.setPbr(SET.quality!=='low');}   // PBR 材質：省電以外都開（只在下一班建立場景時生效）
-  const rot=$('rot');if(rot)rot.style.display=(!land&&W<H&&('ontouchstart' in window)&&!rotDismissed&&document.getElementById('top')&&!$('top').classList.contains('hidden'))?'block':'none';
+  rotCheck();
 }
-let rotDismissed=false;
+// 只支援橫式：觸控裝置（手機、平板）直放時，遊戲進行中整個擋住並自動暫停，轉橫後自動繼續。選單、結算與排行榜不受限（可直放瀏覽）。
+// 桌機瀏覽器的窄視窗不擋（沒有觸控就不判定為直放裝置）。直式版面的程式仍在，但不再維護與測試。
+let rotPaused=false;
+function rotCheck(){
+  const rot=$('rot');if(!rot)return;
+  const touch=('ontouchstart' in window)||(navigator.maxTouchPoints||0)>0;
+  const playing=!!G&&!$('top').classList.contains('hidden');
+  const block=touch&&H>W&&playing;
+  rot.style.display=block?'flex':'none';
+  if(block&&!paused){paused=true;rotPaused=true;$('b-pause').textContent='▶ 繼續';if(AC)AC.suspend();}
+  else if(!block&&rotPaused){rotPaused=false;if(paused&&$('tut').hidden&&$('gptut').hidden){paused=false;$('b-pause').textContent='⏸ 暫停';if(AC)AC.resume();}}
+}
 // 讀取裝置安全區域（iPhone 瀏海／動態島／圓角），回傳 {l,r}
 function safeInsets(){
   const d=document.createElement('div');d.style.cssText='position:fixed;left:0;top:0;visibility:hidden;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)';
@@ -395,7 +420,7 @@ const PCOL=['#d9534f','#5bc0de','#f0ad4e','#5cb85c','#9b59b6','#ecf0f1','#34495e
 
 /* ========================= 遊戲狀態 ========================= */
 let G=null;          // 目前這一班
-let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,nameplate:true,radio:true,radioNoise:'light',quality:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
+let SET={line:'red',from:0,to:5,theme:'auto',assist:true,voice:false,snd:true,model:'auto',driver:'ANDY',atpStrict:false,nameplate:true,fqListen:false,fqLevel:'g5',radio:true,radioNoise:'light',quality:'auto',events:true,evRate:'mid',evOff:[],bcOn:true,bcLangs:['zh','en','ja','ko'],bcJk:'part',haptic:true};
 const saved=store('mrt-set');if(saved)Object.assign(SET,saved);
 if(!LINES[SET.line])SET.line='red';
 
@@ -1015,6 +1040,23 @@ function drawRadioCap(){
   lines.forEach((l,i)=>T(l,x+74,y+17+i*lh,13,'#e6f1ff','left',600));
   X.globalAlpha=1;
 }
+// 外籍旅客求助（英語四選一）的面板：只在狀態改變時重建 DOM，題目由 g.fq 提供（見 js/quiz.js）
+let FQK='';
+function drawFq(g){
+  const el=$('fq'),f=g.fq,on=!!f&&f.phase!=='ring';
+  if(el.hidden===on)el.hidden=!on;
+  if(!on){FQK='';return;}
+  const hasVoice=typeof bcVoice==='function'&&!!bcVoice('en')&&'speechSynthesis' in window;
+  const hideQ=!!SET.fqListen&&hasVoice&&!f.reveal&&f.phase==='ask';
+  const key=[f.q.en,f.phase,f.pick,hideQ,hasVoice].join('|');   // 含題目文字：新的一題一定重建
+  if(key===FQK)return;FQK=key;
+  const q=f.q,done=f.phase==='result';
+  $('fq-q').innerHTML=hideQ?'🎧 請聽旅客的問題（按「顯示文字」可看題目）':`${escHtml(q.en)}${done?`<small>${escHtml(q.zh)}</small>`:''}`;
+  $('fq-eye').style.display=hideQ?'':'none';$('fq-ear').style.display=hasVoice?'':'none';
+  [...$('fq-o').children].forEach((b,i)=>{b.textContent=String.fromCharCode(65+i)+'. '+q.opts[i];b.disabled=done;b.className=done?(i===q.ans?'ok':(i===f.pick?'bad':'')):'';});
+  $('fq-r').textContent=done?(f.pick===q.ans?'✔ ':f.pick===-2?'⏱ 逾時。':'✘ ')+q.exp:(hasVoice?'':'（此裝置沒有英語語音，只顯示文字）');
+}
+function drawIcBase(){}
 // 乘客緊急對講的監視螢幕（外觀依新聞照片的米色護框小螢幕；車廂畫面是示意圖）
 function drawIc(g){
   const el=$('ic'),on=!!g.ic;
@@ -1154,7 +1196,7 @@ function render(){
   drawCabFrame(g);
   drawDash(g);
   if(typeof rmUpdate==='function')rmUpdate(g);
-  syncBar(g);drawIc(g);syncAct(g);
+  syncBar(g);drawIc(g);syncAct(g);drawFq(g);
   const bc=$('b-call'),want=g.doorFault&&!g.doorFault.call?'':'none';if(bc.style.display!==want)bc.style.display=want;
   if($('menu').classList.contains('hidden')&&$('result').classList.contains('hidden'))drawHud(g); // 選單／結算頁底下不畫 HUD，避免文字透出
 }
@@ -1212,6 +1254,9 @@ $('b-eb').onclick=()=>setNotch(-8);
 $('b-rev').onclick=toggleReverse;
 $('b-call').onclick=()=>evCallControl();
 $('b-act').onclick=()=>{if(G&&G.evAct)G.evAct.fn();};
+[...$('fq-o').children].forEach(b=>{b.onclick=()=>{if(G&&fqAnswer(G,+b.dataset.i))FQK='';};});
+$('fq-ear').onclick=()=>{if(G&&G.fq)fqSpeak(G.fq.q.en);};
+$('fq-eye').onclick=()=>{if(G&&G.fq){G.fq.reveal=true;FQK='';}};
 
 /* ========================= 選單與流程 ========================= */
 let paused=false;
@@ -1230,7 +1275,7 @@ function goFullscreen(){
   }catch(e){}
 }
 $('b-fs').onclick=()=>{if(document.fullscreenElement){document.exitFullscreen();}else goFullscreen();};
-$('rot').onclick=()=>{goFullscreen();rotDismissed=true;resize();};
+$('rot').onclick=()=>{goFullscreen();};   // 點一下嘗試全螢幕並鎖定橫向（iOS Safari 多半不支援，仍需手動轉橫）
 $('b-snd').onclick=()=>{SET.snd=!SET.snd;$('b-snd').textContent=SET.snd?'🔊':'🔇';store('mrt-set',SET);};
 $('b-quit').onclick=()=>{showMenu();};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!paused&&$('menu').classList.contains('hidden')&&$('result').classList.contains('hidden'))togglePause();});
@@ -1321,7 +1366,8 @@ function fillMenu(){
   $('m-driver').value=SET.driver===DRIVER_DEFAULT?DRIVER_DEFAULT:SET.driver;
   $('m-atp').value=SET.atpStrict?'strict':'relaxed';
   $('m-quality').value=SET.quality||'auto';
-  $('m-nameplate').checked=SET.nameplate!==false;$('m-radio').checked=SET.radio!==false;$('m-radionoise').value=SET.radioNoise||'light';
+  {const sel=$('m-fqlevel');if(!sel.options.length)Object.keys(FQ_LEVELS).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=FQ_LEVELS[k].name;sel.appendChild(o);});if(!FQ_LEVELS[SET.fqLevel])SET.fqLevel=FQ_DEFAULT_LEVEL;sel.value=SET.fqLevel;$('m-fqnote').textContent=FQ_LEVELS[SET.fqLevel].note;}
+  $('m-fqlisten').checked=!!SET.fqListen;$('m-nameplate').checked=SET.nameplate!==false;$('m-radio').checked=SET.radio!==false;$('m-radionoise').value=SET.radioNoise||'light';
   $('m-bc').checked=SET.bcOn;$('m-bcjk').value=SET.bcJk;$('m-hap').checked=SET.haptic;
   const bl=$('m-bclang');bl.innerHTML='';
   BC_LANGS.forEach(L=>{const b=document.createElement('button');b.className='chip sm'+(SET.bcLangs.includes(L.id)?' on':'');b.textContent=L.name;
@@ -1389,6 +1435,8 @@ $('m-driver').onblur=e=>{e.target.value=drvName();SET.driver=e.target.value;stor
 $('m-driver').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}e.stopPropagation();};   // 輸入時不要觸發遊戲快捷鍵
 $('m-quality').onchange=e=>{SET.quality=e.target.value;store('mrt-set',SET);applyQuality();};
 $('m-atp').onchange=e=>{SET.atpStrict=e.target.value==='strict';store('mrt-set',SET);};
+$('m-fqlevel').onchange=e=>{SET.fqLevel=e.target.value;$('m-fqnote').textContent=FQ_LEVELS[SET.fqLevel].note;store('mrt-set',SET);};
+$('m-fqlisten').onchange=e=>{SET.fqListen=e.target.checked;store('mrt-set',SET);};
 $('m-nameplate').onchange=e=>{SET.nameplate=e.target.checked;store('mrt-set',SET);};
 $('m-radio').onchange=e=>{SET.radio=e.target.checked;store('mrt-set',SET);};
 $('m-radionoise').onchange=e=>{SET.radioNoise=e.target.value;store('mrt-set',SET);};
@@ -1537,7 +1585,7 @@ if(location.protocol.startsWith('http')){
 resize();fillMenu();G=buildRun(SET);
 R3.load().then(ok=>{if(ok&&R3.init($('gl')))resize();else force2d=true;});
 syncLever();updateBest();
-window.__mrt={cabLampState,get NPR(){return NPR;},get G(){return G;},setNotch,openDoors,closeDoors,toggleReverse,startRun,step,SET,buildRun,render,LINES,MODELS,evStart,evOnDoorsClosed,evCallControl,EV_INFO};
+window.__mrt={fqAnswer,fqMake,cabLampState,get NPR(){return NPR;},get G(){return G;},setNotch,openDoors,closeDoors,toggleReverse,startRun,step,SET,buildRun,render,LINES,MODELS,evStart,evOnDoorsClosed,evCallControl,EV_INFO};
 requestAnimationFrame(loop);
 </script>
 </body>

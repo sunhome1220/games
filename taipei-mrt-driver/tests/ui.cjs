@@ -15,7 +15,8 @@ const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x?'  '+x:''));
   await p.selectOption('#m-quality','low');
   ok('畫質設定存檔',await p.evaluate(()=>JSON.parse(localStorage.getItem('mrt-set')).quality==='low'));
   await p.selectOption('#m-quality','auto');
-  // 首次教學
+  // 首次教學（遊戲只支援橫式：先轉成橫放再開始）
+  await p.setViewportSize({width:844,height:390});await p.waitForTimeout(400);
   await p.evaluate(()=>{document.getElementById('m-adv').open=false;window.scrollTo(0,0);});
   const r=await p.evaluate(()=>{const b=document.getElementById('m-go').getBoundingClientRect();return [b.left+b.width/2,b.top+b.height/2];});
   await p.touchscreen.tap(...r);await p.waitForTimeout(600);
