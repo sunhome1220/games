@@ -297,19 +297,19 @@ th{color:#9fb0c8;font-weight:600}
 </div>
 </section>
 
-<script src="js/models.js?v=2026-11-25.05"></script>
-<script src="js/broadcast.js?v=2026-11-25.05"></script>
-<script src="js/haptics.js?v=2026-11-25.05"></script>
-<script src="js/feedback.js?v=2026-11-25.05"></script>
-<script src="js/routemap.js?v=2026-11-25.05"></script>
-<script src="js/gamepad.js?v=2026-11-25.05"></script>
-<script src="js/stats.js?v=2026-11-25.05"></script>
-<script src="js/radio.js?v=2026-11-25.05"></script>
-<script src="js/share.js?v=2026-11-25.05"></script>
-<script src="js/events.js?v=2026-11-25.05"></script>
-<script src="js/lines.js?v=2026-11-25.05"></script>
-<script src="js/render3d.js?v=2026-11-25.05"></script>
-<script src="js/sim.js?v=2026-11-25.05"></script>
+<script src="js/models.js?v=2026-11-25.06"></script>
+<script src="js/broadcast.js?v=2026-11-25.06"></script>
+<script src="js/haptics.js?v=2026-11-25.06"></script>
+<script src="js/feedback.js?v=2026-11-25.06"></script>
+<script src="js/routemap.js?v=2026-11-25.06"></script>
+<script src="js/gamepad.js?v=2026-11-25.06"></script>
+<script src="js/stats.js?v=2026-11-25.06"></script>
+<script src="js/radio.js?v=2026-11-25.06"></script>
+<script src="js/share.js?v=2026-11-25.06"></script>
+<script src="js/events.js?v=2026-11-25.06"></script>
+<script src="js/lines.js?v=2026-11-25.06"></script>
+<script src="js/render3d.js?v=2026-11-25.06"></script>
+<script src="js/sim.js?v=2026-11-25.06"></script>
 <script>
 'use strict';
 // 每次更新遊戲都要改 VERSION（可執行 python3 taipei-mrt-driver/tools/bump_version.py 2026-xx-xx.nn）；頁面會定期抓自己比對，有新版就提示
@@ -317,7 +317,7 @@ const DRIVER_DEFAULT='ANDY',DRIVER_MAX=12;
 // 駕駛名稱：預設 ANDY，可在選單的設定裡修改；去掉前後空白、最多 12 字、空白時回到預設
 function drvName(){const s=String((typeof SET!=='undefined'&&SET.driver)||'').trim().slice(0,DRIVER_MAX);return s||DRIVER_DEFAULT;}
 const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VERSION='2026-11-25.05';
+const VERSION='2026-11-25.06';
 
 /* ========================= 小工具 ========================= */
 const rgb=a=>`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`;
@@ -350,7 +350,7 @@ function resize(){
   dashTop=H-dashH;HY=dashTop*0.46;F=Math.max(W*0.72,dashTop*0.9);
   sceneH=land?H:dashTop;   // 橫握時 3D 畫面鋪滿整個螢幕，儀表只蓋在中間下緣
   const gl=$('gl');gl.style.height=sceneH+'px';
-  if(typeof R3!=='undefined'&&R3.ok){R3.resize(W,sceneH,Math.min(DPR,1.5)*QS);R3.setPost(postMode());}
+  if(typeof R3!=='undefined'&&R3.ok){R3.resize(W,sceneH,Math.min(DPR,1.5)*QS);R3.setPost(postMode());R3.setPbr(SET.quality!=='low');}   // PBR 材質：省電以外都開（只在下一班建立場景時生效）
   const rot=$('rot');if(rot)rot.style.display=(!land&&W<H&&('ontouchstart' in window)&&!rotDismissed&&document.getElementById('top')&&!$('top').classList.contains('hidden'))?'block':'none';
 }
 let rotDismissed=false;
@@ -791,11 +791,15 @@ function needAssist(g){
   const braking=g.notch<0;
   // 還沒開始煞車時，要惰行到需要 B4 左右的距離才煞，太早煞會誤點；開始煞車後再依所需減速度逐步放鬆
   if(a>=(braking?0.12:0.72)){let i=g.dec.findIndex(b=>b>=a*1.08);if(i<0)i=6;return v<2.5?'輕煞（B1），快停時放鬆':`建議 B${i+1} 煞車`+(braking&&i<g.notch*-1-1?'（可放鬆）':'');}
+  if(g.notch<0)return '不需要煞車了，回到 N';   // 還在煞車但已經不需要（上面的煞車建議條件都不成立）
   const kmh=v*3.6;
   const nz=g.zones.find(z=>z.s0>g.pos&&z.s0-g.pos<400&&kmh>z.lim+2);
   if(nz)return `前方 ${Math.round(nz.s0-g.pos)} m 限速 ${nz.lim}，請減速`;
   if(d>350&&kmh<g.lim-8&&g.notch<=0)return '可加速（P2～P3）';
-  return '惰行（N）';
+  // 沒有需要提醒的事就不顯示（以前這裡永遠回傳「惰行（N）」，巡航時整段路都掛著提示，很吵）：
+  // 只有「該停止動作卻還在動作」才提醒——還在加速但已接近限速，或煞車已經不需要了
+  if(g.notch>0&&kmh>=g.lim-8)return '已接近限速，回到 N 惰行';
+  return '';
 }
 
 let NPR=null;

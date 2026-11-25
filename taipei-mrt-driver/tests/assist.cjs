@@ -1,0 +1,20 @@
+// 新手輔助提示：沒有需要提醒的事就不顯示（不再永遠顯示「惰行（N）」），該提醒時才出現
+const { chromium } = require('playwright');
+const ok=(n,c,x)=>console.log((c?'PASS ':'FAIL ')+n+(x!==undefined?'  '+x:''));
+(async()=>{const b=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const ctx=await b.newContext({viewport:{width:844,height:390}});await ctx.addInitScript(()=>localStorage.setItem('mrt-tut','1'));
+const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+await p.goto('http://localhost:8765/taipei-mrt-driver/index.html');await p.waitForTimeout(1000);
+const hint=(o)=>p.evaluate(o=>{Object.assign(SET,{line:'blue',from:0,to:8,events:false,bcOn:false,assist:true});startRun();const g=G;g.state='run';g.doors.state='closed';g.zones=[];
+  g.pos=g.S[0]+300;g.k=1;g.v=o.v;g.notch=o.notch;g.lim=o.lim||80;g.hold=null;return needAssist(g);},o);
+ok('巡航在接近限速的速度（75 km/h、限速 80）：不顯示提示',await hint({v:21,notch:0})==='');
+ok('各種速度下都不再出現永遠不變的「惰行（N）」',(await Promise.all([8,12,16,20,22].map(v=>hint({v,notch:0})))).every(t=>t!=='惰行（N）'));
+ok('還在加速但已接近限速：提醒回到 N',(await hint({v:21,notch:3,lim:80})).includes('回到 N'));
+ok('離停車線還很遠、速度低：仍提示可加速',(await hint({v:8,notch:0})).includes('可加速'));
+const near=await p.evaluate(()=>{const g=G;g.pos=g.S[1]-60;g.v=10;g.notch=0;return needAssist(g);});
+ok('接近站時：提示煞車（建議 B 檔）',/B\d/.test(near),near);
+ok('煞車已不需要時：提醒回到 N',await p.evaluate(()=>{const g=G;g.pos=g.S[0]+300;g.k=1;g.v=12;g.notch=-3;g.lim=80;return needAssist(g);}).then(t=>t.includes('回到 N')));
+await p.evaluate(()=>{SET.assist=false;});
+ok('關閉新手輔助：完全不提示',await p.evaluate(()=>{const g=G;g.pos=g.S[1]-60;g.v=14;return needAssist(g);})==='');
+ok('無錯誤',errs.length===0,errs.join());
+await b.close();})();
