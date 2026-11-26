@@ -80,12 +80,30 @@ function buildRun(opt){
 
 // ---- 軌道的平面路徑（來自 OpenStreetMap 形狀，供 3D 場景把軌道畫成真的轉彎；不碰 DOM） ----
 // 本班里程 s 處的軌道位置 [東, 北]（公尺，已換算成遊戲里程尺度）；超出形狀資料範圍（例如紅線廣慈／奉天宮延伸段）時取端點，即視為直線
+// 路線形狀（OSM 折線，約每 25 m 一點）先做高斯平滑再用 Catmull-Rom 曲線內插，軌道才是圓順的弧形、沒有折角。
+// 平滑只在第一次用到時做、結果存在 L._shS（約 ±75 m 的範圍），弧線半徑 > 約 150 m 的彎道幾乎不受影響。
+function shapeSmooth(L){
+  if(L._shS)return L._shS;
+  const sh=L.shape,n=sh.length,w=[0.06,0.12,0.19,0.26,0.19,0.12,0.06],h=3,out=[];   // 7 點高斯核
+  const stepM=(L.shapeStep||100)*L.shapeScale;
+  const half=Math.max(1,Math.round(stepM>=60?1:h));   // 取樣點距 ≥60 m 時只平滑相鄰 1 點，避免把整個彎道削平
+  for(let i=0;i<n;i++){
+    if(i===0||i===n-1){out.push([sh[i][0],sh[i][1]]);continue;}
+    let x=0,y=0,ws=0;
+    for(let k=-half;k<=half;k++){const j=i+k;if(j<0||j>=n)continue;const wk=half===1?(k===0?0.5:0.25):w[k+h];x+=sh[j][0]*wk;y+=sh[j][1]*wk;ws+=wk;}
+    out.push([x/ws,y/ws]);
+  }
+  return L._shS=out;
+}
 function pathPoint(g,s){
-  const L=g.L,sh=L.shape;if(!sh)return null;
+  const L=g.L;if(!L.shape)return null;
   if(g._pC0===undefined){g._pC0=L.d.slice(0,g.stations[0].idx).reduce((x,y)=>x+y,0);g._pRev=g.stations.length>1&&g.stations[1].idx<g.stations[0].idx;}
+  const sh=shapeSmooth(L);
   const line=g._pRev?g._pC0-s:g._pC0+s;
-  const f=clamp((line-(L.shapeSkip||0))/L.shapeScale/(L.shapeStep||100),0,sh.length-1.001),i=Math.floor(f),t=f-i,k=L.shapeScale;
-  return [(sh[i][0]+(sh[i+1][0]-sh[i][0])*t)*k,(sh[i][1]+(sh[i+1][1]-sh[i][1])*t)*k];
+  const f=clamp((line-(L.shapeSkip||0))/L.shapeScale/(L.shapeStep||100),0,sh.length-1.001),i=Math.floor(f),t=f-i,k=L.shapeScale,n=sh.length;
+  const P0=sh[Math.max(0,i-1)],P1=sh[i],P2=sh[i+1],P3=sh[Math.min(n-1,i+2)],t2=t*t,t3=t2*t;
+  const cr=c=>0.5*((2*P1[c])+(-P0[c]+P2[c])*t+(2*P0[c]-5*P1[c]+4*P2[c]-P3[c])*t2+(-P0[c]+3*P1[c]-3*P2[c]+P3[c])*t3);
+  return [cr(0)*k,cr(1)*k];
 }
 // 站在里程 pos、朝行進方向看，往前 d 公尺（d 可為負＝後方）處的軌道相對於 pos 處切線的橫向偏移（公尺，正＝偏右）
 function pathLateral(g,pos,d){
