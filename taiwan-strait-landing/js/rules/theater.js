@@ -56,6 +56,7 @@ function applyEra(){
   const ex=AMPH_ERA[S.era]||0;for(let i=0;i<ex;i++){const h=placeNear(FK(i%2?'3,5':'3,2'),q=>q.isl==='CN'&&q.coastal);if(h)S.units.push(mkUnit('atk','amph',h.k,{zone:i%2?'central':'north'}));}
   if(ex)log('共軍渡海運力成長：首波增加 '+ex+' 個兩棲旅，補給運輸船 '+fmt1(S.pools.plaLift)+' 個。');
   placeShips();
+  if(typeof MISSION!=='undefined'&&MISSION&&MISSION.D.setup)MISSION.D.setup(); // 關卡挑戰：開局後的額外配置（例如多幾艘護航艦）
   layMines();
 }
 // 水面艦艇上地圖：共軍護航艦在港口外海，守方艦艇群停泊在港口；兩者都很脆弱，擊沉會連動減少海軍點數

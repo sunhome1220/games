@@ -1,29 +1,34 @@
 'use strict';
 /* ---------- 關卡：擊沉共軍航艦（守方） ----------
-   用主遊戲 2026 年的兵力與規則（武器數字不為關卡調整）；限時 4 回合內把任一艘共軍航艦打到失去戰力（重創或沉沒）。
+   用主遊戲 2026 年的兵力與規則（武器數字不為關卡調整）；限時 5 回合內把兩艘共軍航艦都打到失去戰力（重創或沉沒）。
+   難度（2026-11-27）：原本只要打倒任一艘、第 2 回合前三顆星，第 1 回合集中火力就能過關；改成兩艘都要，每支航艦群再多 3 艘護航艦（setup）。
    結局「攻方暫停攻台」是假設情境：損失航艦的政治與軍事衝擊很大，但是否因此放棄攻台沒有可靠依據。 */
 MISSION_DEFS.carrier={
   title:'航艦打擊',
   cfg:{optMode:'play',optSide:'def',optEra:'2026',optT:'8',optNews:'2'},
-  brief:'共軍兩個航艦群（遼寧艦、山東艦）在台灣東側海域活動，掩護登陸並從東面夾擊。航艦是共軍的指標性資產，每艘約 2,500 名官兵，周圍有 055、052D、054A 護航艦的多層防空與反潛。<br>你指揮台灣守方，要在攻方登陸台灣之前，把至少一艘航艦打到失去戰力。',
-  goal:'第 4 回合結束前，任一艘共軍航艦沉沒或遭重創、失去作戰能力。台灣在這之前失守也算失敗。',
-  stars:'第 2 回合前完成 ★★★、第 3 回合 ★★、第 4 回合 ★',
+  brief:'共軍兩個航艦群（遼寧艦、山東艦）在台灣東側海域活動，掩護登陸並從東面夾擊。航艦是共軍的指標性資產，每艘約 2,500 名官兵，周圍有 055、052D、054A 護航艦的多層防空與反潛。<br>你指揮台灣守方，要在攻方登陸台灣之前，把兩艘航艦都打到失去戰力；每支航艦群的護航艦比一般局多 3 艘，要一艘一艘打。',
+  goal:'第 5 回合結束前，兩艘共軍航艦都沉沒或遭重創、失去作戰能力。台灣在這之前失守也算失敗。',
+  stars:'第 3 回合前完成 ★★★、第 4 回合 ★★、第 5 回合 ★',
   tips:['潛艦（劍龍級、海鯤）的重型魚雷是打航艦最有效的武器，但要先接近到約 60 km 內；護航艦越多，命中率越低。',
     '空軍「攻擊船團」用空射反艦飛彈，岸置雄風與艦隊齊射也能打；航艦在護航艦防空範圍內，飛彈要先被攔截，同時打的枚數越多越能突破。',
-    '先打掉護航艦，削弱航艦的防空與反潛。',
+    '先打掉護航艦，削弱航艦的防空與反潛；兩艘都要打，別把火力全壓在同一艘。',
     '美國情報與天候都會影響戰局；別忘了台灣本身也要守住。'],
-  note:'本關沿用主遊戲的規則與 2026 年的兵力，武器數字沒有為了關卡調整。結局「攻方暫停攻台」是假設情境，不是對真實戰局的預測。',
+  note:'本關沿用主遊戲的規則與 2026 年的兵力，武器數字沒有為了關卡調整；唯一的差別是每支航艦群多 3 艘護航艦（共 8 艘）。結局「攻方暫停攻台」是假設情境，不是對真實戰局的預測。',
   ids:null,
+  setup(){ // 開局後：每支航艦群多 3 艘護航艦（原 5 艘：055、052D×2、054A×2；加 052D、054A×2），不改主遊戲規則
+    S.units.filter(u=>u.type==='cv'&&u.side==='atk').forEach(cv=>spawnEscorts(cv,['d52','f54','f54'],'atk'));
+  },
   check(){
     if(!this.ids||!this.ids.length){const cvs=S.units.filter(u=>u.type==='cv'&&u.side==='atk');this.ids=cvs.map(u=>u.id);this.snap={CV:JSON.parse(JSON.stringify(S.stats.cvUse||{})),UB:JSON.parse(JSON.stringify(S.stats.useBy||{})),U:Object.assign({},S.stats.use||{}),F:Object.assign({},S.stats.fired||{}),P:Object.assign({},S.pools),TW:S.air?S.air.TW:0,PLA:S.air?S.air.PLA:0,ships:S.units.filter(u=>u.fl&&alive(u)).reduce((a,u)=>a+u.hp,0)};this.nm={};cvs.forEach(u=>{this.nm[u.id]=u.cvi!=null&&AIR.CV[u.cvi]?AIR.CV[u.cvi].n:'共軍航艦';});} // 開局時航艦棋子還沒擺上前不算；先記下艦名（沉沒後棋子就不在了）
     if(!this.ids.length)return null;
-    for(const id of this.ids){const u=S.units.find(x=>x.id===id);const nm=(this.nm&&this.nm[id])||'共軍航艦';
-      if(!u||!alive(u)||u.hp<=1){const t=S.turn,st=t<=2?3:t===3?2:1;
-        return {t:(u&&alive(u)?'重創':'擊沉')+'航艦',stars:st,d:'第 '+t+' 回合，'+cvName(nm)+(u&&alive(u)?'遭重創、失去作戰能力。':'被擊沉。'),extra:carrierDebrief(nm,t,st)};}}
+    const down=id=>{const u=S.units.find(x=>x.id===id);return !u||!alive(u)||u.hp<=1;};
+    if(this.ids.every(down)){const t=S.turn,st=t<=3?3:t===4?2:1,names=this.ids.map(id=>(this.nm&&this.nm[id])||'共軍航艦');
+      const sunk=this.ids.filter(id=>{const u=S.units.find(x=>x.id===id);return !u||!alive(u);}).length;
+      return {t:'兩艘航艦失去戰力',stars:st,d:'第 '+t+' 回合，'+names.map(cvName).join('、')+(sunk===this.ids.length?'都被擊沉。':sunk?'失去戰力（其中 '+sunk+' 艘被擊沉，其餘重創）。':'都遭重創、失去作戰能力。'),extra:names.map(nm=>'<h4>'+cvName(nm)+'</h4>'+carrierDebrief(nm,t,st)).join('')};}
     return null;
   },
-  phase(side){if(side==='atk'&&S.turn>4){endGame('第 4 回合結束，共軍航艦仍保有戰力，任務失敗。','atk','任務失敗');return true;}return false;},
-  lose(early){return {d:(early||'未能在時限內重創航艦。')+'<br>可以試試先讓潛艦接近航艦、集中空軍與岸置飛彈同時齊射，或先打掉護航艦。'};}
+  phase(side){if(side==='atk'&&S.turn>5){endGame('第 5 回合結束，仍有共軍航艦保有戰力，任務失敗。','atk','任務失敗');return true;}return false;},
+  lose(early){return {d:(early||'未能在時限內重創兩艘航艦。')+'<br>可以試試先讓潛艦接近航艦、集中空軍與岸置飛彈同時齊射，或先打掉護航艦。'};}
 };
 
 // 航艦的通稱：遼寧艦、山東艦、福建艦（內部記錄仍用「遼寧」「山東」「福建」）
