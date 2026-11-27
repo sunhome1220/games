@@ -1,7 +1,7 @@
 'use strict';
 /* ---------- 關卡挑戰（框架）：網址加 ?mission=<id> 時啟用；沒有參數時完全不動作 ----------
    戰鬥規則全部沿用主遊戲；關卡只負責：開局設定、過關判定、限時、簡報與結算。
-   核心程式只有三個掛勾點：beginPhase（MISSION.phase）、render（MISSION.tick）、endGame（MISSION.onEnd）。
+   核心程式只有四個掛勾點：開局擺完棋子後（MISSION.D.setup，選用）、beginPhase（MISSION.phase）、render（MISSION.tick）、endGame（MISSION.onEnd）。
    各關放在 js/missions/<id>.js，用 MISSION_DEFS[id]={...} 註冊；各關共用的小工具（結算清單、差量）放在這個檔案。 */
 const MISSION_DEFS={};
 var MISSION=null; // 用 var：核心程式以 typeof 檢查，沒有關卡時為 null
